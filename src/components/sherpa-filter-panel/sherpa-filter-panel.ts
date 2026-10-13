@@ -24,7 +24,7 @@ import {
 import {
   FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter, type ListedFilter,
 } from '../../core/ui/filters-button.js';
-import { extraRows, folded, limitOn, openMore, pickMore, resetRows } from '../../core/ui/more-menu.js';
+import { extraRows, folded, switchesOf, openMore, pickMore, resetRows } from '../../core/ui/more-menu.js';
 import { report } from '../../core/data/report.js';
 import {
   fieldState, readingRows, savedReading, type FieldReading,
@@ -131,8 +131,10 @@ export class SherpaFilterPanel extends SherpaElement {
   static override asks: DataAsk = { shape: 'scope' };
 
   static override props = {
-    /* The host offers "Limit matching filters", on or off. Will, TODO 178. */
+    /* The host offers "Limit to matching filters", on or off. Will, TODO 178. */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
+    // …and, while it is on, hides what it rules out. Will, TODO 205.
+    'data-hide-unmatched': { type: 'enum', kind: 'style', values: ['on', 'off'] },
     /* The host says a Reset to default would change nothing, so it is not
        offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
     'data-at-default': { type: 'boolean', kind: 'style' },
@@ -232,6 +234,7 @@ export class SherpaFilterPanel extends SherpaElement {
     else if (name === 'data-saveable') this.#syncSaveable();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
+    else if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const held of this.#held.values()) this.#markPresent(held);
   }
 
   /** Follow the arrangement onto each Group and Sort chip: a toolbar, a grid
@@ -446,6 +449,8 @@ export class SherpaFilterPanel extends SherpaElement {
     const keep = left ? new Set(left) : null;
     const offers = offered ? new Set(offered) : null;
     const out = (value: string): boolean => (!!offers && !offers.has(value)) || (!!keep && !keep.has(value));
+    // Hiding unmatched, a menu's ruled-out rows go too. Will, TODO 205.
+    held.menu?.toggleAttribute('data-hide-unavailable', this.dataset['limitOptions'] === 'on' && this.dataset['hideUnmatched'] === 'on');
     const one = this.#answerChip(held);
     if (one) {
       // ONE chip is greyed when every pick is ruled out, as a bar chip is.
@@ -457,7 +462,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(chip) !== held) continue;
       const value = chip.dataset['value'] ?? '';
-      chip.toggleAttribute('data-not-offered', !!offers && !offers.has(value) && !chip.hasAttribute('data-current'));
+      chip.toggleAttribute('data-removed', !!offers && !offers.has(value) && !chip.hasAttribute('data-current'));
       chip.toggleAttribute('data-unavailable', out(value));
     }
     if (held.menu) Object.assign(held.menu, { present: left, offered });
@@ -1811,7 +1816,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /**
    * THE ⋮ MENU, built on each open: what has FOLDED away at this width — Reset,
    * Reset all to default, the host's own buttons — then the host's own option,
-   * "Limit matching filters". A row does what its button does. Will, TODO 178.
+   * "Limit to matching filters". A row does what its button does. Will, TODO 178.
    * TRAP T-the-more-menu-holds-what-folded
    */
   #openMore = (event: Event): void => {
@@ -1833,7 +1838,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => {
-    this.emit('limit-options-change', { on: limitOn(event) });
+    const { limit, hide } = switchesOf(event);
+    if (limit !== (this.dataset['limitOptions'] === 'on')) this.emit('limit-options-change', { on: limit });
+    if (hide !== (this.dataset['hideUnmatched'] === 'on')) this.emit('hide-unmatched-change', { on: hide });
   };
 
   /** Reset, and Reset all to default, are not offered where they would change

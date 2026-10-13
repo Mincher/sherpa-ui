@@ -1,6 +1,6 @@
 /**
  * more-menu.ts — the ⋮ menu a filter bar and the filter panel share: what has
- * FOLDED away at this width, then the host's "Limit matching filters". TODO 196
+ * FOLDED away at this width, then the host's "Limit to matching filters". TODO 196
  * TRAP T-the-more-menu-holds-what-folded
  *
  * Map:
@@ -10,7 +10,7 @@
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
  * - pickMore — A row was chosen: the menu hides; a page button's row hands back that button.
- * - limitOn — The ⋮ menu's switch, as its request: is "Limit matching filters" now on?
+ * - switchesOf — The ⋮ menu's two switches, as their request: Limit, and Hide unmatching.
  */
 
 type Menu = HTMLElement & { show?: (trigger?: HTMLElement) => void; hide?: () => void };
@@ -59,7 +59,17 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   if (limit && check) {
     const one = check.cloneNode(true) as HTMLElement;
     one.querySelector('input')!.checked = limit === 'on';
-    drawn.push([one]);
+    const own = [one];
+    // …and while Limit is on, whether what it rules out is shown at all. Will, TODO 205.
+    if (limit === 'on') {
+      const hide = check.cloneNode(true) as HTMLElement;
+      const box = hide.querySelector('input')!;
+      box.value = 'hide-unmatched';
+      box.checked = host.dataset['hideUnmatched'] === 'on';
+      hide.querySelector('.menu-row-label')!.textContent = 'Hide unmatching filters';
+      own.push(hide);
+    }
+    drawn.push(own);
   }
   menu.replaceChildren(...drawn.filter((g) => g.length)
     .flatMap((g, i) => (i ? [divider.cloneNode(true) as HTMLElement, ...g] : g)));
@@ -74,11 +84,12 @@ export function pickMore(host: HTMLElement, root: ParentNode, event: Event): str
   return value.startsWith(EXTRA) ? extras(host)[Number(value.slice(EXTRA.length))] : value;
 }
 
-/** The ⋮ menu's switch, as its REQUEST — the host owns whether filters limit
- *  each other: is "Limit matching filters" now on? */
-export function limitOn(event: Event): boolean {
+/** The ⋮ menu's two switches, as their REQUEST — the host owns both: Limit to
+ *  matching filters, and Hide unmatching filters. */
+export function switchesOf(event: Event): { limit: boolean; hide: boolean } {
   event.stopPropagation();
-  return (((event as CustomEvent).detail?.values ?? []) as string[]).includes('limit-options');
+  const on = ((event as CustomEvent).detail?.values ?? []) as string[];
+  return { limit: on.includes('limit-options'), hide: on.includes('hide-unmatched') };
 }
 
 function extras(host: HTMLElement): HTMLElement[] {

@@ -21,7 +21,7 @@ import {
   FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter,
 } from '../../core/ui/filters-button.js';
 import {
-  extraRows, folded, limitOn, openMore, pickMore, resetRows, type MoreRow,
+  extraRows, folded, switchesOf, openMore, pickMore, resetRows, type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type FilterOp } from '../../core/data/store.js';
@@ -89,9 +89,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
-    /* The host offers "Limit matching filters", on or off. Will, TODO 178.
+    /* The host offers "Limit to matching filters", on or off. Will, TODO 178.
        TRAP T-the-more-menu-holds-what-folded */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
+    // …and, while it is on, hides what it rules out. Will, TODO 205.
+    'data-hide-unmatched': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
     /* The host says a Reset to default would change nothing, so it is not
        offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
     'data-at-default': { type: 'boolean', kind: 'style' },
@@ -579,6 +581,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const offered = this.#offered[field] ?? null;
     menu.present = left;
     menu.offered = offered;
+    // Hiding unmatched, a row Limit rules out goes. Will, TODO 205.
+    menu.toggleAttribute('data-hide-unavailable', this.dataset['limitOptions'] === 'on' && this.dataset['hideUnmatched'] === 'on');
     const picks = menu.values ?? [];
     const out = (v: string): boolean => (!!left && !left.includes(v)) || (!!offered && !offered.includes(v));
     chip.toggleAttribute('data-unavailable', picks.length > 0 && picks.every(out));
@@ -1093,6 +1097,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if (name === 'data-remote' && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
+    if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const chip of this.#chips()) this.#markPresent(chip);
     this.#syncArrangement('group');
     this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();
@@ -1704,7 +1709,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => {
-    this.emit('limit-options-change', { on: limitOn(event) });
+    const { limit, hide } = switchesOf(event);
+    if (limit !== (this.dataset['limitOptions'] === 'on')) this.emit('limit-options-change', { on: limit });
+    if (hide !== (this.dataset['hideUnmatched'] === 'on')) this.emit('hide-unmatched-change', { on: hide });
   };
 
   /** A ⋮ row was chosen: do what its folded button does. */

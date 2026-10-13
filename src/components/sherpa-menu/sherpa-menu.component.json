@@ -610,6 +610,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-hide-unavailable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-inline",
       "type": "boolean",
       "observed": true,

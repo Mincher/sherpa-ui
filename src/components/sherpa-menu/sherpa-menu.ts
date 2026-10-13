@@ -120,6 +120,9 @@ export class SherpaMenu extends SherpaElement {
     'data-body': { type: 'enum', kind: 'style', values: ['number', 'date'] },
     /* A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
     'data-time': { type: 'boolean', kind: 'style' },
+    /* A row the other answers rule out GOES, unless ticked — Hide unmatching
+       filters. Will, TODO 205. TRAP T-a-ruled-out-value-is-greyed */
+    'data-hide-unavailable': { type: 'boolean', kind: 'behaviour' },
     /* A number body's ends and step. They CLAMP the field as well as the
        slider — typing 500 into a 0..100 filter asks for a row that cannot
        exist. TRAP T-grid-slider-spans-real-values */
@@ -1078,8 +1081,9 @@ export class SherpaMenu extends SherpaElement {
     return [...this.children].filter((n): n is HTMLElement => n instanceof HTMLElement);
   }
 
-  override onChange(): void {
+  override onChange(name?: string): void {
     this.#sync();
+    if (name === 'data-hide-unavailable') this.#markPresent();
   }
 
   /* ── Public API ──────────────────────────────────────────────────── */
@@ -1333,15 +1337,18 @@ export class SherpaMenu extends SherpaElement {
   #offered: Set<string> | null = null;
 
   /** Grey each row the other answers rule out; refuse it unless it is ticked.
-   *  A row the chain does not offer goes, unless it is ticked. */
+   *  A row the chain does not offer goes, unless it is ticked — and, hiding
+   *  unmatched, so does one they rule out. */
   #markPresent(): void {
     const given = new Map(this.#items.map((i) => [i.value, i]));
+    const hides = this.hasAttribute('data-hide-unavailable');
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
       const offered = this.#offered === null || this.#offered.has(box.value);
-      row?.toggleAttribute('data-not-offered', !offered && !box.checked);
-      const out = given.get(box.value)?.available === false || !offered
+      const ruled = given.get(box.value)?.available === false
         || (this.#present !== null && !this.#present.has(box.value));
+      row?.toggleAttribute('data-removed', (!offered || (hides && ruled)) && !box.checked);
+      const out = ruled || !offered;
       // Only ever undo its OWN refusal.
       if (out) box.disabled = !box.checked;
       else if (row?.hasAttribute('data-unavailable')) box.disabled = false;

@@ -30,6 +30,26 @@ test('a menu removes a row its chain does not offer, and keeps a pick, greyed', 
   expect(r.all).toEqual(['AMER', 'EMEA', 'APAC']);
 });
 
+test('hiding unmatched, a menu removes a row the other answers rule out, and keeps a pick — TODO 205', async ({ page }) => {
+  const r = await page.evaluate(async (items) => {
+    const menu = await window.__mount<HTMLElement & {
+      items(i: unknown): void; values: string[]; present: readonly string[] | null;
+    }>('sherpa-menu', undefined, { 'data-select': 'multiple' });
+    menu.items(items);
+    menu.values = ['EMEA'];
+    menu.present = ['AMER'];
+    await window.__settled();
+    const read = (): string[] => [...menu.querySelectorAll<HTMLElement>('.menu-row:not(.qf-all)')]
+      .filter((row) => getComputedStyle(row).display !== 'none').map((row) => row.querySelector('input')!.value);
+    const greyed = read();
+    menu.setAttribute('data-hide-unavailable', '');
+    await window.__settled();
+    return { greyed, hidden: read() };
+  }, REGIONS);
+  expect(r.greyed).toEqual(['AMER', 'EMEA', 'APAC']);
+  expect(r.hidden).toEqual(['AMER', 'EMEA']);
+});
+
 test('the bar tells a chip\'s menu what its chain offers', async ({ page }) => {
   const r = await page.evaluate(async (options) => {
     const bar = await window.__mount<HTMLElement & { drawOffered(o: Offered): void }>('sherpa-quick-filter-toolbar', [

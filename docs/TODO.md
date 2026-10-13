@@ -126,7 +126,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
-| ⬜ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
+| ✅ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
 | ✅ | 22b | 154 | A data viz section in the filter panel has a chart icon | quick |
 | ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | ✅ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
@@ -167,7 +167,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
 | ⬜ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
-| ⬜ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
+| ✅ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -2910,7 +2910,7 @@ the provider owns it, and the Demos app keeps it in its session, beside the
 Settings switch (renamed "Limit matching filters" to match).
 `T-the-more-menu-holds-what-folded`
 
-### `[ ]` 205 — "Hide unmatching filters", and "Limit to matching filters"
+### `[x]` ✅ 205 — "Hide unmatching filters", and "Limit to matching filters"
 
 Will, 2026-10-12: *"In the filter panel and toolbar overflow menus, when
 'Limit matching filters' is enabled, show a menu item to toggle 'Hide
@@ -2927,6 +2927,14 @@ filters'."*
   (`T-a-ruled-out-value-is-greyed`). A ruled-out value that is still PICKED
   stays shown, greyed (180), so the reader can untick it. This also answers
   174's old question, hidden or greyed: greyed by default, hidden on request.
+
+**✅ Done 2026-10-13.** `openMore()` draws the Hide row under Limit while
+Limit is on; `switchesOf()` reads both. A bar or panel emits
+`hide-unmatched-change`, and the provider's `hideUnmatched` writes
+`data-hide-unmatched` on each. A menu with `data-hide-unavailable` marks a
+ruled-out row `data-removed`; the panel hides a ruled-out value chip. A picked
+value stays. Demos keeps it at `/filters/hideUnmatched`, and the label is
+"Limit to matching filters" everywhere.
 
 ### `[x]` ✅ 176 — A greyed-out chip says WHY in its tooltip
 
@@ -3004,7 +3012,7 @@ the one chart glyph in the icon set now; the others near it are `gauge`,
 `dashboard` (four squares) and `insights` (a light bulb). If you draw a chart
 glyph in Figma (115), it is one word to change in `SHOWS_ICON`.
 
-### `[ ]` 115 — Figma: a chart glyph and a table glyph for the panel's section icons
+### `[x]` ✅ 115 — Figma: a chart glyph and a table glyph for the panel's section icons
 
 Found building 97, 2026-09-29: Figma's Icons section (`17:3931`) has neither,
 and nothing else in the file does. **❓ Will:** add a chart glyph — and a
@@ -3013,6 +3021,8 @@ table glyph, if `table-columns` is not the one you want for a grid — then
 (`sherpa-filter-panel.ts`).
 
 **✅ Will, 2026-10-12 — all my picks:** B — keep the stand-ins: `reports` for charts, `table-columns` for grids.
+
+**✅ Closed 2026-10-13** by that ruling: `SHOWS_ICON` already draws the stand-ins.
 
 ### `[x]` ✅ 60 — Once applied, a chip's badge shows the number of results
 

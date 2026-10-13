@@ -299,6 +299,19 @@
     },
     {
       "$type": "prop",
+      "name": "data-hide-unmatched",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "on",
+        "off"
+      ],
+      "description": "on | off — the host hides what Limit rules out, when it is on"
+    },
+    {
+      "$type": "prop",
       "name": "data-limit-options",
       "type": "enum",
       "observed": true,
@@ -308,7 +321,7 @@
         "on",
         "off"
       ],
-      "description": "on | off — the host offers \"Limit matching filters\": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178."
+      "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178."
     },
     {
       "$type": "prop",
@@ -655,6 +668,15 @@
     {
       "$type": "event",
       "name": "limit-options-change",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "on": "boolean"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "hide-unmatched-change",
       "bubbles": true,
       "composed": true,
       "detail": {

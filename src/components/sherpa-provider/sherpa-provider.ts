@@ -155,6 +155,10 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('limit-options-change', (event) => {
       this.limitOptions = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
     });
+    // …and its Hide unmatching filters. Will, TODO 205.
+    this.addEventListener('hide-unmatched-change', (event) => {
+      this.hideUnmatched = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
+    });
     this.addEventListener('panel-room-change', this.#onRoom);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
@@ -196,9 +200,22 @@ export class SherpaProvider extends SherpaElement {
     for (const el of [...this.#bars(), ...this.#panels()]) this.#offerLimit(el);
   }
 
-  /** One bar or panel, told the setting it offers in its ⋮ menu. */
+  /** While Limit is on, a value it rules out is HIDDEN, not greyed — on every
+   *  bar and panel. The app sets it, from its session. TODO 205 */
+  get hideUnmatched(): boolean {
+    return this.#hide;
+  }
+  set hideUnmatched(on: boolean) {
+    this.#hide = on;
+    for (const el of [...this.#bars(), ...this.#panels()]) this.#offerLimit(el);
+  }
+  /** The app's choice: hide what Limit rules out. */
+  #hide = false;
+
+  /** One bar or panel, told the settings it offers in its ⋮ menu. */
   #offerLimit(el: Element): void {
     el.setAttribute('data-limit-options', this.#limit ? 'on' : 'off');
+    el.setAttribute('data-hide-unmatched', this.#hide ? 'on' : 'off');
   }
   /** The app's choice, for every source. */
   #limit = false;

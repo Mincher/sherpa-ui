@@ -838,7 +838,7 @@ test('the search spans the header, less its padding, with room above', async ({ 
 /* Will, TODO 178: "Add an ellipsis overflow menu button to the top of the
    filter panel header, after the toggle toolbar button. Other header buttons
    reflow into the menu of this button." TRAP T-the-more-menu-holds-what-folded */
-test('the ⋮ holds the host\'s "Limit matching filters", and what folds away when narrow', async ({ page }) => {
+test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away when narrow', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount('sherpa-filter-panel', undefined, { open: true, style: 'inline-size: 360px' }) as HTMLElement & {
       populate(d: unknown): void };
@@ -862,8 +862,46 @@ test('the ⋮ holds the host\'s "Limit matching filters", and what folds away wh
   });
   // Narrow: Reset folds into the ⋮.
   expect(r.narrow).toEqual({ more: true, reset: false });
-  expect(r.rows).toEqual(['Reset filters', 'Reset all to default', 'HR', 'Limit matching filters']);
+  // Limit OFF: no Hide unmatching row. Will, TODO 205.
+  expect(r.rows).toEqual(['Reset filters', 'Reset all to default', 'HR', 'Limit to matching filters']);
   expect(r.heard).toEqual([{ on: true }]);
   // Wide, and no host option: no ⋮.
   expect(r.wide).toEqual({ more: false, reset: true });
+});
+
+/**
+ * HIDE UNMATCHING FILTERS — Will, TODO 205. While Limit is on, the ⋮ offers it;
+ * on, a value the other answers rule out is HIDDEN, not greyed — unless it is
+ * picked, so the reader can untick it. TRAP T-a-ruled-out-value-is-greyed
+ */
+test('while Limit is on, the ⋮ offers Hide unmatching filters; on, a ruled-out value goes unless picked', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount('sherpa-filter-panel', undefined, { open: true, style: 'inline-size: 360px' }) as HTMLElement & {
+      populate(d: unknown): Promise<void>; drawPresent(p: unknown, scope: string): void };
+    await el.populate([{ scope: 'view', label: 'View filters', filters: [
+      { id: 'region', label: 'Region', select: 'multiple', options: ['EMEA', 'APAC', 'AMER'].map((v) => ({ value: v, label: v, selected: v === 'AMER' })) },
+    ] }]);
+    el.setAttribute('data-limit-options', 'on');
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const heard: unknown[] = [];
+    el.addEventListener('hide-unmatched-change', (e) => heard.push((e as CustomEvent).detail));
+    sr.querySelector('.more-btn')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    await new Promise((res) => setTimeout(res, 150));
+    const rows = [...sr.querySelectorAll<HTMLElement>('.more-menu .more-check')].map((n) => n.textContent!.trim());
+    sr.querySelector<HTMLInputElement>('.more-menu input[value="hide-unmatched"]')!.click();
+    await new Promise((res) => setTimeout(res, 50));
+    // The other answers leave EMEA alone; AMER is picked.
+    el.drawPresent({ region: ['EMEA'] }, 'view');
+    const shown = () => [...sr.querySelectorAll<HTMLElement>('.field[data-field="region"] .value')]
+      .filter((c) => getComputedStyle(c).display !== 'none').map((c) => c.dataset['value']);
+    const greyed = shown();
+    el.setAttribute('data-hide-unmatched', 'on');
+    await new Promise((res) => requestAnimationFrame(() => res(null)));
+    return { rows, heard, greyed, hidden: shown() };
+  });
+  expect(r.rows).toEqual(['Limit to matching filters', 'Hide unmatching filters']);
+  expect(r.heard).toEqual([{ on: true }]);
+  expect(r.greyed).toEqual(['EMEA', 'APAC', 'AMER']);
+  expect(r.hidden).toEqual(['EMEA', 'AMER']);
 });

@@ -61,7 +61,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -156,6 +156,11 @@
         },
         {
           "name": "limitOptions",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "hideUnmatched",
           "type": "boolean",
           "access": "read-write"
         },

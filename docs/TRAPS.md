@@ -6698,6 +6698,13 @@ other filters: no matches." A disabled
 chip says "Not available here." A chip the View took says where it went
 (`T-an-inactive-chip-says-where-its-filter-went`).
 
+**Greyed by default, HIDDEN on request** — Will, TODO 205. While Limit is on,
+the ⋮ also offers "Hide unmatching filters" (`hideUnmatched` on the provider,
+`data-hide-unmatched` on a bar or panel). The menu then removes a ruled-out
+row (`data-hide-unavailable` → `data-removed`) and the panel hides a
+ruled-out value chip. A value still PICKED is never hidden, so it can be let
+go.
+
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/ui/shared-constants.ts`
@@ -6711,6 +6718,7 @@ chip says "Not available here." A chip the View took says where it went
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
