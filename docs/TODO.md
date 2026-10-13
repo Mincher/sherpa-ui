@@ -104,7 +104,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
 | ✅ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ✅ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
-| 🚧 | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
+| ✅ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
 | ⬜ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
 | ⬜ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ⬜ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
@@ -3915,7 +3915,7 @@ and `chrome.header: false` is the loader's, not chat's. A page definition's
 dead `template` key is deleted. The loader itself is 194.
 `T-an-app-is-its-definition`
 
-### `[ ]` 191 — Library parts that empty `contexts/`
+### `[x]` ✅ 191 — Library parts that empty `contexts/`
 
 ❓ Waits on choice 1 in 183. `SherpaDialog.prompt()` and `.confirm()`; saved filters owned by the provider, as saved Views are; `data-setting="/pointer"` binds a control to the session; stores take a seed, a version and a fallback; public APIs for the three shadow-root reaches. Then Sherpa Demos sorts by kind: `stores/`, `contexts/` (page behaviour only), `views/`, `view-schemas/`. `docs/CONSUMER-REVIEW.md` §3.5.
 
@@ -3930,11 +3930,16 @@ Six parts, one commit each:
 | ✅ | 3. `data-setting="/pointer"` binds a control to the session (`bindSettings`); `persist()` takes its guard from the default | `T-a-setting-is-a-pointer` |
 | ✅ | 4. a store takes a seed, a seed version and a fallback: `localRecords(options)` → `{ store, ready }` | `T-local-records-seed-themselves` |
 | ✅ | 5. public doors for the three shadow-root reaches in `index.html`: `nav.expandedIds`, `header.notificationsAnchor`, `data-theme-mode` | `T-a-shadow-reach-is-a-missing-door` |
-| ⬜ | 6. Sherpa Demos sorted by kind: `stores/`, `contexts/`, `views/`, `view-schemas/` | |
+| ✅ | 6. Sherpa Demos sorted by kind: `stores/`, `contexts/`, `views/`, `view-schemas/`; the shell's Reset all helper beside `index.html` | |
 
 Part 1 keeps the five dialogs' markup — HTML first, and their ids are what
 the tests press — and deletes the JS that wired each by hand. Part 2 moves
 Save filter to the app shell, beside Save view: one flow for every page.
+
+**✅ Done 2026-10-13**, six commits. Sherpa Demos' `contexts/` is page
+behaviour only: four modules, no store, no dialog wiring, no session wiring,
+no `document` lookups. Not done: a schema `default` — no ledger row asked
+for it, and 183 named it beside the seed.
 
 **Found in part 2, queued:** Sherpa Demos' `reforged-saved-filter.spec.ts:86`
 reads `window.sherpa` after a reload, when the grid has rows but
