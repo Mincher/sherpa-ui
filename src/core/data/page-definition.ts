@@ -9,7 +9,7 @@
  * - PageDefinition — One page, as JSON — its source, and its components' configuration.
  * - openSource — Build a page's source from its definition, over the app's store.
  */
-import { DataSource, type FieldDeclaration } from './data-source.js';
+import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
 import { report } from './report.js';
 import type { Store } from './store.js';
 import type { Where } from './where.js';
@@ -23,6 +23,8 @@ export interface ScopeDefinition {
   holds?: readonly string[];
   /** The saved filters its bar shows, each off. */
   presets?: readonly string[];
+  /** Fields drawn as one group; a `serial` set chains them. TRAP T-a-filter-set-groups-or-chains */
+  sets?: readonly FilterSet[];
 }
 
 /** A page's source: which store, how it pages and searches, its fields, scopes
@@ -78,6 +80,17 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
     if (facts.label) source.declareScope(scope, { label: facts.label });
     if (facts.offers) source.offer(scope, facts.offers === 'all' ? fields : facts.offers);
     if (facts.holds) source.hold(scope, facts.holds);
+    for (const set of facts.sets ?? []) {
+      for (const field of set.fields) {
+        if (facts.holds?.includes(field)) continue;
+        report({
+          code: 'set-field-not-held',
+          message: `openSource: the set "${set.id}" names "${field}", which scope "${scope}" does not hold.`,
+          at: { scope, set: set.id, field },
+        });
+      }
+    }
+    if (facts.sets?.length) source.declareSets(scope, facts.sets);
     if (facts.presets?.length) source.answer(scope, {}, Object.fromEntries(facts.presets.map((id) => [id, false])));
   }
   return source;

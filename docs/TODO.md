@@ -115,7 +115,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
-| ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| 🚧 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
@@ -2225,6 +2225,16 @@ same helper.
     by each of the bar and the panel.
 
 **✅ Will, 2026-10-12 — all my picks:** Q5 A — a `sherpa-filterset` component. (Q3 was overtaken by 180.)
+
+**Build, from 2026-10-13:**
+
+| | step |
+|---|---|
+| ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
+| ⬜ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does |
+| ⬜ | 3. The `sherpa-filterset` component, stamped by the bar and the panel |
+| ⬜ | 4. Sort and group per scope — the Organise set |
+| ⬜ | 5. Sherpa Demos: Customer then Region, serial |
 
 ### `[ ]` 89 — Every filter added to the panel starts SIMPLE
 

@@ -11,6 +11,7 @@
  * - SourceState — A source's whole question as JSON: its applied Query, arrangement and saved filters.
  * - HeldFilter — One filter a scope holds, as a control draws it.
  * - ScopeShows — What a scope's filters narrow: the View, or the content one component shows.
+ * - FilterSet — Fields a scope draws as ONE group.
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
  * - ViewState — The view state a source owns.
  * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
@@ -62,6 +63,8 @@
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
  * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note.
+ * - .declareSets — A scope's filter sets, in order.
+ * - .sets — A scope's filter sets, as declared.
  * - .scopeLabel — A scope's name as a reader sees it, or its id.
  * - .addable — What a scope may still add, each noting where it lives now.
  * - .valuesFor — What `declareValues` was told, as the data holds it.
@@ -208,6 +211,17 @@ export interface HeldFilter extends FieldFilter {
 /** What a scope's filters narrow: the View, or the content one component shows. */
 export type ScopeShows = 'view' | 'grid' | 'chart' | 'form' | 'list';
 
+/** Fields a scope draws as ONE group. `serial` chains them: each offers only
+ *  what the answers of the fields above it leave. TODO 99 · TRAP T-a-filter-set-groups-or-chains */
+export interface FilterSet {
+  id: string;
+  label?: string;
+  /** `parallel`, the default, only groups them. */
+  mode?: 'serial' | 'parallel';
+  /** In order: in a serial set, the order IS the chain. */
+  fields: readonly string[];
+}
+
 /** One scope as a control draws it WHOLE — what it holds and answers, what it
  *  may add, and how its rows are arranged. JSON. TRAP T-a-panel-asks-for-its-scopes */
 export interface ScopeDescription {
@@ -220,6 +234,8 @@ export interface ScopeDescription {
   part?: boolean;
   filters: HeldFilter[];
   available: FieldFilter[];
+  /** Its filter sets, each drawn as one group. TRAP T-a-filter-set-groups-or-chains */
+  sets?: FilterSet[];
   group?: { field: string; label: string }[];
   sort?: { field: string; label: string }[];
   groupField?: string;
@@ -1005,9 +1021,10 @@ export class DataSource extends EventTarget {
         says: this.#says(id) }));
     const shows = scope === VIEW ? 'view'
       : [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows;
+    const sets = this.sets(scope);
     const out: ScopeDescription = {
       scope, label: this.scopeLabel(scope), ...(shows ? { shows } : {}), filters: [...presets, ...fields],
-      available: [...this.addable(scope), ...offered],
+      available: [...this.addable(scope), ...offered], ...(sets.length ? { sets } : {}),
     };
     /* HOW its rows are arranged — a component's, never the View's.
        TRAP T-group-and-sort-are-component-scope */
@@ -1316,6 +1333,35 @@ export class DataSource extends EventTarget {
   declareScope(scope: string, facts: { label: string }): void {
     this.#scopeLabels.set(scope, facts.label);
   }
+
+  /** A scope's filter sets, in order. A field is in one set at most; a second
+   *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
+  declareSets(scope: string, sets: readonly FilterSet[]): void {
+    const taken = new Set<string>();
+    this.#sets.set(scope, sets.map((set) => ({
+      ...structuredClone(set),
+      fields: set.fields.filter((field) => {
+        if (!taken.has(field)) {
+          taken.add(field);
+          return true;
+        }
+        report({
+          code: 'field-in-two-sets',
+          message: `declareSets: "${field}" is in two of scope "${scope}"'s sets; it stays in the first.`,
+          at: { scope, set: set.id, field },
+        });
+        return false;
+      }),
+    })));
+  }
+
+  /** A scope's filter sets, as declared. */
+  sets(scope: string): FilterSet[] {
+    return structuredClone(this.#sets.get(scope) ?? []);
+  }
+
+  /** Each scope's filter sets. */
+  #sets = new Map<string, FilterSet[]>();
 
   /** A scope's name as a reader sees it, or its id. */
   scopeLabel(scope: string): string {

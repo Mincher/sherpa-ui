@@ -103,6 +103,35 @@ test('openSource builds the page\'s source: fields, labels, scopes, holds and pr
   assert.deepEqual(data.filters.map((f) => [f.id, f.active]), [['busy', false]]);
 });
 
+test('a scope lists its filter SETS; a field in two, or one it does not hold, is said', async () => {
+  const { onReport } = await import(new URL('report.js', core));
+  const said = [];
+  const stop = onReport((r) => said.push([r.code, r.at?.field]));
+  const rows = [{ id: 1, region: 'AMER', customer: 'Contoso', tier: 'Pro' }];
+  const source = await openSource({
+    store: 'alerts',
+    fields: { customer: { label: 'Customer' }, region: { label: 'Region' }, tier: { label: 'Tier' } },
+    scopes: {
+      view: {
+        holds: ['customer', 'region'],
+        sets: [
+          { id: 'account', label: 'Account', mode: 'serial', fields: ['customer', 'region', 'tier'] },
+          { id: 'again', fields: ['region'] },
+        ],
+      },
+    },
+  }, new ArrayStore(rows));
+  stop();
+  // TRAP T-a-filter-set-groups-or-chains
+  assert.deepEqual(said, [['set-field-not-held', 'tier'], ['field-in-two-sets', 'region']]);
+  assert.deepEqual(source.sets('view'), [
+    { id: 'account', label: 'Account', mode: 'serial', fields: ['customer', 'region', 'tier'] },
+    { id: 'again', fields: [] },
+  ]);
+  assert.deepEqual(source.describe('view').sets, source.sets('view'));
+  assert.equal(source.describe('data').sets, undefined);
+});
+
 test('a scope says what it narrows: the View is the view, a bound component names its own', async () => {
   // TRAP T-a-scope-says-what-it-shows
   const store = new ArrayStore([{ region: 'EMEA', status: 'open' }]);

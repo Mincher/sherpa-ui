@@ -110,6 +110,7 @@ export {
   type ViewState,
   type FieldDeclaration,
   type FieldFilter,
+  type FilterSet,
   type SourceState,
 } from './core/data/data-source.js';
 /* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */

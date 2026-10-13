@@ -79,7 +79,22 @@
           "oneOf": [{ "const": "all" }, { "type": "array", "items": { "type": "string" } }]
         },
         "holds": { "description": "The fields it holds at the start.", "type": "array", "items": { "type": "string" } },
-        "presets": { "description": "The saved filters its bar shows, each off.", "type": "array", "items": { "type": "string" } }
+        "presets": { "description": "The saved filters its bar shows, each off.", "type": "array", "items": { "type": "string" } },
+        "sets": {
+          "description": "Fields drawn as one group. A serial set chains them: each offers only what the answers of the fields above it leave.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "fields"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "mode": { "description": "parallel, the default, only groups them.", "enum": ["serial", "parallel"] },
+              "fields": { "description": "In order: in a serial set, the order is the chain.", "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            }
+          }
+        }
       }
     },
     "preset": {

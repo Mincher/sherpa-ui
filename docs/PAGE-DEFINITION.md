@@ -65,6 +65,10 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `declareField` takes it, each scope's name, what it holds at the start, and
   the saved filters the page ships, each a `where` (DATA-SOURCE-RULES §2).
   **No field lists its values** — see §3.
+- **A scope's `sets`** draw fields as one group:
+  `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
+  A `serial` set chains them — Region offers only the regions of the picked
+  Customers. `parallel`, the default, only groups (`T-a-filter-set-groups-or-chains`).
 - **`ui`** — each component's configuration, by id, set through its own API
   before it is answered — as a View's `ui` is. The grid's columns live here.
 - **Its Views** are filed under its `id`: the ones it ships, and a reader's

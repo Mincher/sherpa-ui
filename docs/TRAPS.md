@@ -1295,6 +1295,25 @@ itself. Figma has no chart glyph of its own yet, so a chart's section wears
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/page-definition.test.mjs`
 
+### T-a-filter-set-groups-or-chains
+
+**A filter SET is fields a scope draws as one group** — Will, TODO 99. It is
+in the page definition, `"sets": [{ "id", "label", "mode", "fields" }]` on a
+scope, so the markup and the definition say one thing. `parallel`, the
+default, only groups. `serial` CHAINS: each field offers only the values the
+rows hold under the answers of the fields ABOVE it in the set — never a
+filter outside the set, and never one below. Every filter is parallel without
+a set, as before.
+
+A field is in ONE set of a scope: `declareSets` keeps the first and reports
+the second (`field-in-two-sets`). A set names fields the scope HOLDS;
+`openSource` reports one it does not (`set-field-not-held`), as the reader
+may still add it.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `test/unit/page-definition.test.mjs`
+
 ### T-a-view-keeps-a-draft
 
 **A View keeps a DRAFT: the filters a reader left on it, unsaved** — Will,
