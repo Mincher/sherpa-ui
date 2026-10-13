@@ -108,7 +108,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
 | ✅ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
-| ⬜ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
+| ❓ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ⬜ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
 | ⬜ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
@@ -3969,6 +3969,20 @@ Figma access token. It is git-ignored, so it is not committed — but the token
 must move to an environment variable before that file is shared.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 2) — its own package, `sherpa-ui-mcp`.
+
+**❓ Will, 2026-10-13 — how the package is laid out.** Six of seven MCP modules
+import `scripts/lib/generation/`, and it reads the specs, `schemas/` and three
+served docs.
+- **A:** `mcp-server/` becomes `sherpa-ui-mcp` in this repo, with its own
+  `package.json` and real dependencies, and depends on `sherpa-ui`, which then
+  ships the specs, the served docs and the generation lib it reads. Sherpa
+  Demos gets a committed `.mcp.json` that runs it (no secret in it).
+- **B:** bundle the MCP into one file at pack time, with its libs and copies
+  of the specs and docs inside.
+My pick: A — one copy of each file, and `npm pack` proves what ships.
+**Before it is registered in sherpa-ui:** move the Figma token in your local
+`.mcp.json` to an environment variable (yours to do). Publishing the package
+is yours too.
 
 ### `[x]` ✅ 193 — One app guide, served to agents
 
