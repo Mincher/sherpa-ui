@@ -13385,6 +13385,11 @@ again, each in its field's own menu, and edits them in place
 `{ health: { op: 'lt', text: '60' } }`, not `['health', 'lt', 60]` — and the
 data layer compiles it, with the field's type, as it compiles every reading.
 
+**Stored, it is the plain form** (TODO 197): `{ health: { lt: 60 } }` under
+`where` — still field by field, so it opens again the same way. The source
+reads it back into readings; one stored before 197 still opens.
+`T-one-way-to-write-a-condition`
+
 **It applies as ONE named part.** A def with `readings` is a toggle of kind
 `advanced`. The bar reports every ON one in `savedReadings`, by chip id, and a
 bound source applies each with `apply(readings, { reach: 'component', key:
@@ -15119,15 +15124,16 @@ page that still wants them.
 
 ### T-a-component-default-outlives-a-view
 
-**A component's OWN filter — `data-readings`, the Query's readings by field as
-JSON — narrows that component alone, and a View pick keeps it.** Provider
+**A component's OWN filter — `data-where`, a condition by field as JSON
+(`T-one-way-to-write-a-condition`) — narrows that component alone, and a View
+pick keeps it.** Provider
 P3e, 2026-09-27. The Dashboard's Critical tile counts critical alerts only;
 before this it was bound by hand, because a component filter written into the
 Query vanished at the first View pick: `setQuery` replaces the whole Query, and
 a View is a clean slate.
 
-The provider reads the attribute (the component's own, never inherited) and
-calls `source.declareDefault('own:<id>', readings, { only: el })`: a scope
+The provider reads the attribute (the component's own, never inherited) into
+readings and calls `source.declareDefault('own:<id>', readings, { only: el })`: a scope
 that narrows that one component, like a legend's. The source keeps it as a
 DEFAULT and puts it back under any Query that does not name that scope — a
 View, or a restore from before the component joined. A View's JSON may name
@@ -15338,7 +15344,7 @@ reads the attributes into its JSON. Five things to know:
   declared points, a bucketed series fills every step from first to last.
 - **A legend's pick narrows its chart alone** — through its `picked` door,
   wired by `bindSelection` with component reach.
-- **A component's OWN filter is `data-readings`** — see
+- **A component's OWN filter is `data-where`** — see
   `T-a-component-default-outlives-a-view`.
 
 A new declaration asks again: the base class leaves and re-asks when a
@@ -16556,3 +16562,39 @@ the host's goes on.
 
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-input.spec.ts`
+
+### T-one-way-to-write-a-condition
+
+**A definition or a View writes ONE form of condition** (Will, TODO 197, B):
+`{ "openTickets": { "gt": 0 } }`, numbers as numbers. An agent had two
+grammars to learn — a store's `[field, op, value]` and readings with numbers
+as strings, `{ "op": "gt", "text": "0" }`. The plain form is the ops by field:
+several ops all hold, `and` / `or` take a list, `off` keeps it unapplied.
+
+It goes under `where` in a View's scope and a page definition's saved filter,
+in a stored saved filter, and in a component's `data-where`. **Readings stay
+inside**: every control, event and the live Query speak them. The source turns
+one into the other at the edge — `source.readingsOf(where)` and
+`source.whereOf(readings)` — by its field types, so a number comes out a number.
+
+`whereOf` writes the CLAUSE the field compiles to, so the two cannot disagree.
+It keeps the answer in force only: Simple's picks or Advanced's rows, never
+both, and nothing a control keeps for itself (`mirror`, `kept`, `present`).
+An Advanced answer of one row reads back as Simple; the filter is the same.
+
+**A reading is told apart by its keys** — `picked`, `op`, `text`,
+`conditions`… — and none is an op. So a View or a saved filter stored before
+197 still opens: each field's old reading passes as it was, and the next save
+writes the plain form. A page definition's preset with `readings` and no
+`where` reports `preset-without-where`. An `or` inside an `and` cannot be
+condition rows, so it reports `unreadable-condition` and filters nothing.
+
+- Site: `src/core/data/where.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/saved-filters.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/one-way-to-write-a-condition.test.mjs`

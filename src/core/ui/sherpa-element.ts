@@ -137,8 +137,8 @@ export const SUMMARY_PROPS = {
   'data-bucket': { type: 'enum', kind: 'style', values: ['day', 'month', 'year'] },
   /** A number segment field cut at these edges, "0,20,40" — a histogram. */
   'data-bands': { type: 'string', kind: 'style' },
-  /** Its OWN default filter — readings by field, as JSON — narrowing it alone. */
-  'data-readings': { type: 'string', kind: 'style' },
+  /** Its OWN default filter — a condition by field, as JSON — narrowing it alone. */
+  'data-where': { type: 'string', kind: 'style' },
 } as const satisfies PropMap;
 
 /**

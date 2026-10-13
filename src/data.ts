@@ -264,10 +264,15 @@ export {
   VIEW,
   type Query,
   type QueryDefaults,
+  type ViewScope,
   type ScopeQuery,
   type CompileFacts,
   type Compiled,
 } from './core/data/query.js';
+
+/* ONE way to write a condition in a definition or a View: `{ gt: 0 }`.
+   TRAP T-one-way-to-write-a-condition */
+export { whereOf, readingsOf, type Condition, type Where } from './core/data/where.js';
 
 /* A store that ACTS remote — slow, and failing when told to — until there is a
    real one. TRAP T-apply-and-discard-wait-for-a-change */

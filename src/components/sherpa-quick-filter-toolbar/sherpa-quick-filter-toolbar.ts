@@ -28,7 +28,6 @@ import {
   fieldState, readingRows, savedReading,
   type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
-import type { SavedFilter } from '../../core/browser/saved-filters.js';
 import type { ScopeQuery } from '../../core/data/query.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
@@ -1248,7 +1247,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * comes ON and those fields clear, in ONE event. The host calls it once it
    * has stored the filter. TRAP T-save-packs-the-fields-into-one-chip
    */
-  packFilter(saved: SavedFilter & { id: string }): void {
+  packFilter(saved: { id: string; label: string; readings: Record<string, FieldReading> }): void {
     const { id, label, readings } = saved;
     if (this.#filters.some((f) => f.id === id && !f.readings)) {
       // TRAP T-a-broken-assumption-reports — two chips, one id.

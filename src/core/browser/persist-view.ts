@@ -26,6 +26,8 @@
  */
 import type { DataSource, ViewState } from '../data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../data/query.js';
+import type { FieldReading } from '../data/filter-state.js';
+import { whereOf, type Where } from '../data/where.js';
 import { applyState } from '../ui/apply-state.js';
 import { report } from '../data/report.js';
 import { parseViewMarkup } from './view-markup.js';
@@ -541,7 +543,7 @@ export function saveViewAs(
   page: string,
   label: string,
   targets: {
-    source?: { state: ViewState; query?: { applied: Query } };
+    source?: Omit<ViewSource, 'query'> & { query?: ViewSource['query'] };
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},
@@ -557,7 +559,7 @@ export function saveViewAs(
   const ui = captureView({ elements: targets.elements ?? {} }, reads).elements;
   views[labelId(trimmed)] = {
     label: trimmed,
-    ...(source?.query ? { query: viewQueryOf(source as { state: ViewState; query: { applied: Query } }) }
+    ...(source?.query ? { query: viewQueryOf(source as ViewSource) }
       : { snapshot: captureView(targets, reads) }),
     ...(source?.query && ui ? { ui } : {}),
     // TRAP T-view-content-is-a-view-definition — a built screen is remembered.
@@ -570,12 +572,28 @@ export function saveViewAs(
 
 /** What is on screen as a View's JSON: the applied Query, with the rows'
  *  arrangement on the View scope. TRAP T-a-view-is-json */
-export function viewQueryOf(source: { state: ViewState; query: { applied: Query } }): QueryDefaults {
-  const scopes: QueryDefaults['scopes'] = structuredClone(source.query.applied.scopes);
+export function viewQueryOf(source: ViewSource): QueryDefaults {
+  // In the plain form, by the source's field types. TRAP T-one-way-to-write-a-condition
+  const plain = (readings: Record<string, FieldReading>): Where => source.whereOf?.(readings) ?? whereOf(readings);
+  const scopes: QueryDefaults['scopes'] = {};
+  for (const [id, { readings, edits, ...rest }] of Object.entries(structuredClone(source.query.applied.scopes))) {
+    const where = plain(readings);
+    scopes[id] = {
+      ...rest, ...(Object.keys(where).length ? { where } : {}),
+      ...(edits ? { edits: Object.fromEntries(Object.entries(edits).map(([p, e]) => [p, plain(e)])) } : {}),
+    };
+  }
   const { sort, group, search } = source.state;
-  scopes[VIEW] = { ...(scopes[VIEW] ?? { holds: [], readings: {} }), sort, group, search };
+  scopes[VIEW] = { ...(scopes[VIEW] ?? { holds: [] }), sort, group, search };
   return { v: 1, scopes };
 }
+
+/** A source as a View is saved from: its state, its Query, and its field types. */
+type ViewSource = {
+  state: ViewState;
+  query: { applied: Query };
+  whereOf?(readings: Record<string, FieldReading>): Where;
+};
 
 /** Forget one saved view. Returns what is left, for the same reason. */
 export function deleteSavedView(

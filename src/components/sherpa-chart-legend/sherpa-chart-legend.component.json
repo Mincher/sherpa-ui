@@ -132,14 +132,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-readings",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-readonly",
       "type": "boolean",
       "observed": true,
@@ -154,6 +146,14 @@
       "declared": true,
       "kind": "style",
       "description": "ASKED of its provider, or read off its chart: one row per value. A click narrows its chart alone"
+    },
+    {
+      "$type": "prop",
+      "name": "data-where",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     }
   ],
   "populate": {

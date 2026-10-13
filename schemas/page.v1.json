@@ -86,11 +86,30 @@
     "preset": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["readings"],
+      "required": ["where"],
       "properties": {
         "label": { "type": "string" },
         "editable": { "type": "boolean" },
-        "readings": { "description": "Its answer, field by field.", "type": "object", "additionalProperties": { "type": "object" } }
+        "where": {
+          "description": "Its condition, field by field: { \"openTickets\": { \"gt\": 0 } }.",
+          "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" }
+        }
+      }
+    },
+    "condition": {
+      "description": "One field's condition. Several ops all hold; numbers as numbers.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "eq": {}, "ne": {}, "lt": {}, "lte": {}, "gt": {}, "gte": {},
+        "contains": { "type": "string" }, "notcontains": { "type": "string" },
+        "startswith": { "type": "string" }, "endswith": { "type": "string" },
+        "in": { "type": "array" }, "notin": { "type": "array" },
+        "between": { "type": "array", "minItems": 2, "maxItems": 2 },
+        "and": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+        "or": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+        "off": { "description": "Kept, not applied.", "type": "boolean" }
       }
     }
   }

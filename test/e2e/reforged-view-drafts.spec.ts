@@ -9,7 +9,7 @@ test('a draft made over another definition of its View is dropped, not applied',
       clearDraft(p: string, v?: string): void;
       draftSig(view: unknown): string;
     };
-    const query = { v: 1, scopes: { view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } } } };
+    const query = { v: 1, scopes: { view: { holds: ['region'], where: { region: { eq: 'EMEA' } } } } };
     const sig = d.draftSig({ query: { v: 1, scopes: {} } });
     d.saveDraft('page', 'risk', query, sig, 'always');
     const same = d.loadDraft('page', 'risk', sig, 'always');
@@ -23,7 +23,7 @@ test('a draft made over another definition of its View is dropped, not applied',
     return { same, changed, after, off, gone: d.loadDraft('page', 'all', sig, 'always'),
       stored: [sessionStorage.getItem('sherpa:drafts:page'), localStorage.getItem('sherpa:drafts:page')] };
   });
-  expect(r.same).toEqual({ v: 1, scopes: { view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } } } });
+  expect(r.same).toEqual({ v: 1, scopes: { view: { holds: ['region'], where: { region: { eq: 'EMEA' } } } } });
   expect(r.changed).toBeUndefined();
   expect(r.after).toBeUndefined();
   expect(r.off).toBeUndefined();

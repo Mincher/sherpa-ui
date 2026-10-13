@@ -53,7 +53,7 @@ One JSON document per page. The same rule as a View: **a definition is data**
                 "presets": ["has-tickets", "at-risk", "unassigned"] }
     },
     "presets": {
-      "has-tickets": { "label": "Has open tickets", "readings": { "openTickets": { "op": "gt", "text": "0" } } }
+      "has-tickets": { "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } }
     }
   },
   "ui": {
@@ -64,7 +64,8 @@ One JSON document per page. The same rule as a View: **a definition is data**
 
 - **`source`** — which store, how it pages and searches, every field as
   `declareField` takes it, each scope's name, what it holds at the start, and
-  the saved filters the page ships. **No field lists its values** — see §3.
+  the saved filters the page ships, each a `where` (DATA-SOURCE-RULES §2).
+  **No field lists its values** — see §3.
 - **`ui`** — each component's configuration, by id, set through its own API
   before it is answered — as a View's `ui` is. The grid's columns live here.
 - **Its Views** are filed under its `id`: the ones it ships, and a reader's

@@ -73,6 +73,27 @@ The operators, in full:
 They are DevExtreme's names, deliberately: a vocabulary a backend author has
 probably met beats one Sherpa invented.
 
+**A definition or a View writes the same ops by field** — the ONE way to
+write a condition, with numbers as numbers:
+
+```json
+{ "openTickets": { "gt": 0 }, "status": { "in": ["active", "trial"] } }
+```
+
+| | |
+|---|---|
+| one value | `{ "eq": "EMEA" }` — `{ "ne": "churned" }` |
+| several | `{ "in": ["Pro", "Free"] }` — `{ "notin": [...] }` |
+| a range | `{ "between": [10, 60] }` |
+| typed | `{ "gt": 0 }` — `{ "contains": "acme" }` |
+| all hold | `{ "gte": 10, "lt": 60 }` — `{ "and": [{ "contains": "a" }, { "contains": "b" }] }` |
+| any holds | `{ "or": [{ "lt": 10 }, { "gt": 90 }] }` |
+| kept, not applied | `{ "eq": "trial", "off": true }` |
+
+It goes under `where` — a page definition's saved filter, a View's scope —
+and in a component's `data-where`. The source compiles it into the clause
+above. `T-one-way-to-write-a-condition`
+
 ---
 
 ## 3. A load returns rows AND a total
@@ -243,8 +264,8 @@ its own fields and their answers:
 
 ```json
 { "v": 1, "scopes": {
-  "view":  { "holds": ["region"], "readings": { "region": { "picked": ["EMEA"] } } },
-  "data":  { "holds": ["status"], "readings": { "status": { "picked": ["active"] } } }
+  "view":  { "holds": ["region"], "where": { "region": { "eq": "EMEA" } } },
+  "data":  { "holds": ["status"], "where": { "status": { "eq": "active" } } }
 } }
 ```
 

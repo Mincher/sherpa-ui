@@ -35,9 +35,9 @@
       }
     },
     "presets": {
-      "has-tickets": { "label": "Has open tickets", "readings": { "openTickets": { "op": "gt", "text": "0" } } },
-      "at-risk": { "label": "At risk", "readings": { "health": { "op": "lt", "text": "60" } } },
-      "unassigned": { "label": "Unassigned", "readings": { "owner": { "op": "eq", "picked": ["Unassigned"] } } }
+      "has-tickets": { "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } },
+      "at-risk": { "label": "At risk", "where": { "health": { "lt": 60 } } },
+      "unassigned": { "label": "Unassigned", "where": { "owner": { "eq": "Unassigned" } } }
     }
   },
   "ui": {

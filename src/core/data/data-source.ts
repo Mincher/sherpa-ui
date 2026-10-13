@@ -54,6 +54,8 @@
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
  * - .fieldFacts — What `declareField` was told.
+ * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
+ * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
  * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note.
  * - .scopeLabel — A scope's name as a reader sees it, or its id.
@@ -95,7 +97,10 @@ import {
 } from './store.js';
 import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { sayReadings, type SaidField } from './filter-face.js';
-import { compile, VIEW, withoutDropped, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
+import {
+  compile, VIEW, withoutDropped, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery, type ViewScope,
+} from './query.js';
+import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
@@ -1284,6 +1289,17 @@ export class DataSource extends EventTarget {
     return { ...(this.#fields.get(field) ?? {}) };
   }
 
+  /** Readings in the plain form a definition or a View writes, by this source's
+   *  field types. TRAP T-one-way-to-write-a-condition */
+  whereOf(readings: Readonly<Record<string, FieldReading>>): Where {
+    return whereOf(readings, (f) => this.#facts(f));
+  }
+
+  /** The plain form as readings, by this source's field types. */
+  readingsOf(where: Readonly<Record<string, Condition | FieldReading>>): Record<string, FieldReading> {
+    return readingsOf(where, (f) => this.#facts(f));
+  }
+
   /** A field's filter, as any bar or panel draws it — ONE definition, so two
    *  controls over a field cannot offer it two ways. Its options are the values
    *  the rows HOLD, never a lower-cased copy a heading's menu would not share.
@@ -1807,8 +1823,13 @@ export class DataSource extends EventTarget {
     const next: Query = { v: 1, scopes: {} };
     let arrange: Arrange | null = null;
     for (const [id, scope] of Object.entries(structuredClone(given.scopes))) {
-      const { sort, group, search, ...rest } = scope;
-      next.scopes[id] = { ...rest, holds: rest.holds ?? [], readings: rest.readings ?? {} };
+      /* A View says `where`; a whole Query, and a View saved before TODO 197,
+         `readings`. TRAP T-one-way-to-write-a-condition */
+      const { sort, group, search, where, edits, readings, ...rest } = scope as ViewScope & Partial<Pick<ScopeQuery, 'readings'>>;
+      next.scopes[id] = {
+        ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? this.readingsOf(where) : {}) },
+        ...(edits ? { edits: Object.fromEntries(Object.entries(edits).map(([p, e]) => [p, this.readingsOf(e)])) } : {}),
+      };
       if (sort) (arrange ??= {}).sort = sort;
       if (group !== undefined) (arrange ??= {}).group = group;
       if (search !== undefined) (arrange ??= {}).search = search;
@@ -2566,7 +2587,7 @@ export class DataSource extends EventTarget {
           this.#answerScopes(detail['readings'] as Record<string, Record<string, FieldReading>> | undefined);
           return;
         }
-        const readings = bar?.readings ?? readingsOf(detail['values']);
+        const readings = bar?.readings ?? pickedReadings(detail['values']);
         /* A REPORT IS THE WHOLE ANSWER. A field this control answered before
            and does not name now is a field it has stopped filtering by, so it
            is cleared — its OWN fields only, never another control's.
@@ -2864,7 +2885,7 @@ function setAttr(el: HTMLElement, name: string, value: string | undefined): void
  * `readings` getter of its own. Parameters — `apply()` still builds the query.
  * TRAP T-one-query-builder-in-the-data-layer
  */
-function readingsOf(values: unknown): Record<string, FieldReading> {
+function pickedReadings(values: unknown): Record<string, FieldReading> {
   const out: Record<string, FieldReading> = {};
   if (!values || typeof values !== 'object') return out;
   for (const [field, picked] of Object.entries(values as Record<string, unknown>)) {

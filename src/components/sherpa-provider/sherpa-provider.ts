@@ -31,7 +31,7 @@ import { loadSavedFilters } from '../../core/browser/saved-filters.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
-import type { FieldReading } from '../../core/data/filter-state.js';
+import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
@@ -365,7 +365,7 @@ export class SherpaProvider extends SherpaElement {
     /* A reader's own saved filters are kept with the DATA, not the page, and
        offered in each bar's Add list. TRAP T-a-saved-filter-lives-with-its-data */
     for (const [id, saved] of Object.entries(loadSavedFilters(def.store))) {
-      source.declarePreset(`custom:${id}`, saved.readings, { label: saved.label, editable: true });
+      source.declarePreset(`custom:${id}`, source.readingsOf(saved.where), { label: saved.label, editable: true });
     }
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
@@ -579,9 +579,10 @@ export class SherpaProvider extends SherpaElement {
     const opened = this.#opened;
     if (!opened) return;
     // In the source's words, so a field the bar does not hold still has its name.
-    const saved = Object.entries(loadSavedFilters(opened.store)).map(([id, { label, readings }]) => ({
-      id: `custom:${id}`, label, readings, editable: true, says: opened.source.say(readings),
-    }));
+    const saved = Object.entries(loadSavedFilters(opened.store)).map(([id, { label, where }]) => {
+      const readings = opened.source.readingsOf(where);
+      return { id: `custom:${id}`, label, readings, editable: true, says: opened.source.say(readings) };
+    });
     for (const bar of this.#bars() as Bar[]) {
       const scope = this.#inherited(bar, 'data-scope');
       if (!scope) continue;
@@ -935,26 +936,26 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * A component's OWN default filter — `data-readings`, the Query's readings
-   * by field, as JSON — narrowing it alone, and outliving a View pick.
-   * TRAP T-a-component-default-outlives-a-view
+   * A component's OWN default filter — `data-where`, a condition by field as
+   * JSON — narrowing it alone, and outliving a View pick.
+   * TRAP T-a-component-default-outlives-a-view · TRAP T-one-way-to-write-a-condition
    */
   #own(el: Element, source: DataSource): (() => void) | undefined {
-    const raw = el.getAttribute('data-readings');
+    const raw = el.getAttribute('data-where');
     if (!raw) return undefined;
-    let readings: Record<string, FieldReading>;
+    let where: Where;
     try {
-      readings = JSON.parse(raw) as Record<string, FieldReading>;
+      where = JSON.parse(raw) as Where;
     } catch {
       report({
-        code: 'provider-bad-readings',
-        message: 'sherpa-provider: data-readings is not readings by field as JSON, so this component filters nothing of its own.',
-        at: { tag: el.localName, readings: raw },
+        code: 'provider-bad-where',
+        message: 'sherpa-provider: data-where is not a condition by field as JSON, so this component filters nothing of its own.',
+        at: { tag: el.localName, where: raw },
       });
       return undefined;
     }
     const scope = `own:${el.id || this.#ownId(el)}`;
-    source.declareDefault(scope, readings, { only: el as Populatable });
+    source.declareDefault(scope, source.readingsOf(where), { only: el as Populatable });
     return () => source.declareDefault(scope, undefined);
   }
 

@@ -86,27 +86,29 @@ test('a chip that carries its readings is an Advanced filter, and a bound source
  */
 test('saved filters live with their data: saved, read back, replaced by name, deleted', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    type Set = Record<string, { label: string; readings: Record<string, unknown> }>;
+    type Set = Record<string, { label: string; where: Record<string, unknown> }>;
     const m = await import('/dist/data.js') as unknown as {
-      saveFilterAs(data: string, label: string, readings: Record<string, unknown>): Set;
+      saveFilterAs(data: string, label: string, where: Record<string, unknown>): Set;
       loadSavedFilters(data: string): Set;
       deleteSavedFilter(data: string, id: string): Set;
     };
     localStorage.clear();
-    m.saveFilterAs('customers', 'At risk', { health: { op: 'lt', text: '60' } });
-    const two = m.saveFilterAs('customers', 'Big spenders', { spend: { op: 'gt', text: '1000' } });
+    m.saveFilterAs('customers', 'At risk', { health: { lt: 60 } });
+    const two = m.saveFilterAs('customers', 'Big spenders', { spend: { gt: 1000 } });
     const elsewhere = m.loadSavedFilters('orders');
-    const again = m.saveFilterAs('customers', 'At risk', { health: { op: 'lt', text: '50' } });
+    const again = m.saveFilterAs('customers', 'At risk', { health: { lt: 50 } });
     const left = m.deleteSavedFilter('customers', 'at-risk');
     const read = m.loadSavedFilters('customers');
-    // A broken entry is dropped, never handed on to a bar.
-    localStorage.setItem('sherpa:filters:customers',
-      JSON.stringify({ ok: { label: 'OK', readings: {} }, bad: { label: 3 }, worse: 'x' }));
+    // A broken entry is dropped, never handed on to a bar; one saved before TODO 197 is read.
+    localStorage.setItem('sherpa:filters:customers', JSON.stringify({
+      ok: { label: 'OK', where: {} }, old: { label: 'Old', readings: { tier: { picked: ['gold'] } } },
+      bad: { label: 3 }, worse: 'x',
+    }));
     const guarded = m.loadSavedFilters('customers');
     localStorage.clear();
     return {
       two: Object.keys(two), elsewhere, again: again['at-risk'],
-      left: Object.keys(left), read: Object.keys(read), guarded: Object.keys(guarded),
+      left: Object.keys(left), read: Object.keys(read), guarded: Object.keys(guarded), old: guarded['old'],
     };
   });
 
@@ -114,10 +116,12 @@ test('saved filters live with their data: saved, read back, replaced by name, de
   // Other records see none of them.
   expect(r.elsewhere).toEqual({});
   // The same NAME saves over the old one.
-  expect(r.again).toEqual({ label: 'At risk', readings: { health: { op: 'lt', text: '50' } } });
+  expect(r.again).toEqual({ label: 'At risk', where: { health: { lt: 50 } } });
   expect(r.left).toEqual(['big-spenders']);
   expect(r.read).toEqual(['big-spenders']);
-  expect(r.guarded).toEqual(['ok']);
+  expect(r.guarded).toEqual(['ok', 'old']);
+  // Its old readings, under `where`: readingsOf passes them as they were.
+  expect(r.old).toEqual({ label: 'Old', where: { tier: { picked: ['gold'] } } });
 });
 
 /**

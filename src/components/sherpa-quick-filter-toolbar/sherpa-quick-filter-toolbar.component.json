@@ -733,7 +733,7 @@
         {
           "$type": "method",
           "name": "packFilter",
-          "args": "saved: SavedFilter & { id: string }",
+          "args": "saved: { id: string; label: string; readings: Record<string, FieldReading> }",
           "description": "Show a SAVED filter in place of the fields it was made from — PACK. Its chip comes ON and those fields clear, in ONE event. The host calls it once it has stored the filter."
         },
         {

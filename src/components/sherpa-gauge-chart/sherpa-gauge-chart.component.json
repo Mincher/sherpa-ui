@@ -260,14 +260,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-readings",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
       "observed": true,
@@ -305,6 +297,14 @@
       "declared": true,
       "kind": "behaviour",
       "description": "number on the scale (drives the fill sweep + needle angle)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-where",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",

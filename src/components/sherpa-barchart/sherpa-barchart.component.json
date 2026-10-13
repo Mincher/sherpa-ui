@@ -204,14 +204,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-readings",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
       "observed": true,
@@ -228,6 +220,14 @@
       "kind": "behaviour",
       "default": "4",
       "description": "number of y gridlines/values"
+    },
+    {
+      "$type": "prop",
+      "name": "data-where",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     }
   ],
   "slots": [

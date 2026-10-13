@@ -161,14 +161,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-readings",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
       "observed": true,
@@ -215,6 +207,14 @@
         "pie"
       ],
       "description": "donut  | pie   (pie fills to the centre, no hole)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-where",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     }
   ],
   "slots": [

@@ -128,6 +128,10 @@ suspended }` — so every control already speaks it.
 }
 ```
 
+A View writes the same scopes with `where` in place of `readings` — the plain
+form, `{ "region": { "eq": "EMEA" } }` — and the source reads it into readings.
+`T-one-way-to-write-a-condition`
+
 The rules that exist today become rules OF the Query, checked in one place:
 
 - **One field lives in ONE of `view` / a component scope.** Moving it is one

@@ -12,6 +12,7 @@
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
+ * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
  * - CompileFacts — What compiling needs to know that the Query does not say.
  * - withoutDropped — A reading without the picks set aside.
  * - Compiled — A Query as the source runs it: one shared filter, and each one-component filter.
@@ -21,6 +22,7 @@
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import { report } from './report.js';
+import type { Where } from './where.js';
 
 /** Every scope's setup, as plain data — what a page's data is under. */
 export interface Query {
@@ -62,7 +64,16 @@ export interface ScopeQuery {
  */
 export interface QueryDefaults {
   v: 1;
-  scopes: Record<string, Partial<ScopeQuery>>;
+  scopes: Record<string, ViewScope>;
+}
+
+/** One scope as a View writes it: each field's condition in the plain form.
+ *  TRAP T-one-way-to-write-a-condition */
+export interface ViewScope extends Partial<Omit<ScopeQuery, 'readings' | 'edits'>> {
+  /** `{ openTickets: { gt: 0 } }` — numbers as numbers. */
+  where?: Where;
+  /** A changed saved filter's conditions, by its id. */
+  edits?: Record<string, Where>;
 }
 
 /** What compiling needs to know that the Query does not say. */

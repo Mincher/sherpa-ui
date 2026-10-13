@@ -88,7 +88,7 @@ test('openSource builds the page\'s source: fields, labels, scopes, holds and pr
       view: { label: 'View filters', holds: ['customer', 'region'] },
       data: { label: 'Alerts', offers: 'all', presets: ['busy'] },
     },
-    presets: { busy: { label: 'Has tickets', readings: { tickets: { op: 'gt', text: '0' } } } },
+    presets: { busy: { label: 'Has tickets', where: { tickets: { gt: 0 } } } },
   }, store);
   assert.deepEqual(source.scope('view'), ['customer', 'region']);
   assert.equal(source.scopeLabel('data'), 'Alerts');
@@ -249,8 +249,8 @@ test('a View keeps a scope\'s saved filter chips: each OFF, unless the View turn
     fields: { status: { label: 'Status' }, health: { label: 'Health', type: 'number' } },
     scopes: { data: { label: 'Alerts', holds: ['status'], presets: ['at-risk', 'shut'] } },
     presets: {
-      'at-risk': { label: 'At risk', readings: { health: { op: 'lt', text: '60' } } },
-      shut: { label: 'Shut', readings: { status: { picked: ['shut'] } } },
+      'at-risk': { label: 'At risk', where: { health: { lt: 60 } } },
+      shut: { label: 'Shut', where: { status: { eq: 'shut' } } },
     },
   }, store);
   const presets = () => source.query.applied.scopes.data.presets;

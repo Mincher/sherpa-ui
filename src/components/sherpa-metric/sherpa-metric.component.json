@@ -176,15 +176,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-readings",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "— its OWN default filter, readings by field as JSON; narrows this tile alone"
-    },
-    {
-      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
       "observed": true,
@@ -225,6 +216,15 @@
       "declared": true,
       "kind": "content",
       "description": "— the formatted value string (big number)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-where",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "— its OWN default filter, a condition by field as JSON; narrows this tile alone"
     }
   ],
   "populate": {

@@ -10,8 +10,9 @@
  * - openSource — Build a page's source from its definition, over the app's store.
  */
 import { DataSource, type FieldDeclaration } from './data-source.js';
-import type { FieldReading } from './filter-state.js';
+import { report } from './report.js';
 import type { Store } from './store.js';
+import type { Where } from './where.js';
 
 /** One scope: its name, the fields it offers and holds at the start, and the
  *  saved filters it shows. */
@@ -34,10 +35,9 @@ export interface SourceDefinition {
   search?: readonly string[];
   fields?: Readonly<Record<string, FieldDeclaration>>;
   scopes?: Readonly<Record<string, ScopeDefinition>>;
-  /** Saved filters, each a whole clause flipped on or off. TRAP T-a-toggle-is-a-clause-not-a-value */
-  presets?: Readonly<Record<string, {
-    label?: string; editable?: boolean; readings: Readonly<Record<string, FieldReading>>;
-  }>>;
+  /** Saved filters, each a whole clause flipped on or off — `where` in the
+   *  plain form. TRAP T-a-toggle-is-a-clause-not-a-value · TRAP T-one-way-to-write-a-condition */
+  presets?: Readonly<Record<string, { label?: string; editable?: boolean; where: Where }>>;
 }
 
 /** One page, as JSON — its template, its source, its Views. */
@@ -62,7 +62,15 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
   for (const [field, facts] of Object.entries(def.fields ?? {})) source.declareField(field, facts);
   await source.declareFromRows(fields);
   for (const [id, preset] of Object.entries(def.presets ?? {})) {
-    source.declarePreset(id, preset.readings, {
+    if (!preset.where) {
+      report({
+        code: 'preset-without-where',
+        message: `openSource: the saved filter "${id}" has no where, so it is left out. Write where: { field: { gt: 0 } }.`,
+        at: { preset: id },
+      });
+      continue;
+    }
+    source.declarePreset(id, source.readingsOf(preset.where), {
       ...(preset.label ? { label: preset.label } : {}), editable: !!preset.editable,
     });
   }

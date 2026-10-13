@@ -102,7 +102,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
 | ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
 | ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
-| ⬜ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
+| ✅ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ⬜ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ⬜ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
 | ⬜ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
@@ -3999,11 +3999,20 @@ chart, which meant the chart's name: the four charts now take a host
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 3) — the app layer first; this after it, or beside it.
 
-### `[ ]` 197 — One way to write a filter condition
+### `[x]` ✅ 197 — One way to write a filter condition
 
 ❓ Waits on choice 4 in 183. Today an agent learns two grammars: `[field, op, value]` (DATA-SOURCE-RULES §2) and readings with numbers as strings, `{"op":"gt","text":"0"}`. Keep readings, or store a plain form with numbers as numbers and migrate saved Views. Decide before 193.
 
 **✅ Will, 2026-10-12 — all my picks:** B (183 choice 4) — the plain form, `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views are migrated.
+
+**✅ Done 2026-10-13.** `src/core/data/where.ts` reads the plain form into
+readings and back; `source.readingsOf()` / `source.whereOf()` do it by the
+field types. It is `where` in a View's scope, a definition's preset and a
+stored saved filter, and `data-where` on a component (was `data-readings`).
+A View or saved filter stored before 197 still opens, field by field, and the
+next save writes the plain form. Readings stay inside. The Sherpa Demos Views,
+presets and dashboard tile are moved. Not moved: `export()` / `import()` keep
+the exact Query, as a session restore does. `T-one-way-to-write-a-condition`
 
 ### `[x]` ✅ 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
 
