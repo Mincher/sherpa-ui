@@ -24,7 +24,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
 | | | | **B — The foundation: what is left** | |
-| ❓ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
+| ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | ✅ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
@@ -33,7 +33,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
-| ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
+| ⬜ | 6 | 112 | DEFERRED (Will, 2026-10-13) — an Equals row in Advanced will not open its value list | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -123,7 +123,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ✅ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ✅ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ✅ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
@@ -195,7 +195,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
-| ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
+| 🚧 | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | ✅ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
@@ -301,7 +301,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 
 ## B — The foundation: what is left
 
-### `[~]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
+### `[x]` ✅ 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 
 **Assessed and decided 2026-09-29 — `docs/COMPONENT-API-AUDIT.md`.** About
 1,300 copied lines in six families; seven build steps (A1–A7), one commit
@@ -371,8 +371,8 @@ behaviour unchanged.
 | ✅ | 1. Events: the menu's `filter-mode-change` becomes `condition-mode-change` (the provider's has the same name); `filter-clear` and `filter-condition-change` go — a field's mode is in its answer. **Kept:** `calendar-apply` and `calendar-cancel`, a lone calendar's only report of its own footer's buttons |
 | ✅ | 2. The bar's `quick-filter-change` carries its whole answer — `{ scope, readings, presets, holds, active, values }` — and its `filter-add` / `filter-remove` carry `holds`, so the binder reads the event, never the bar. `savedReadings` goes (`presets` says it). **Kept, found while building:** `active` is a field-less toggle chip's only report; `presets` and `heldFields` are read-backs (State ownership), and the provider's Add list reads `heldFields` |
 | ✅ | 3. `filter-add` / `filter-remove { scope, ids }`, always a REQUEST: the panel's `filter-add-request` folds in. Done: the panel asks with `filter-add { scope, ids, from? }`; the binder tells a panel's ask from a bar's report by the binding's scope list, as it did for `filter-remove`. A bar still adds its own chip, then reports its `holds` |
-| ❓ | 4. The grid: its heading's answer is `quick-filter-change { scope, readings }`; `column-filter-change` and the six column members go; `supersedeColumns` is drawn as the bar is |
-| ❓ | 5. The toolbar's `setChipValues`, `setChipReading`, `supersede`, `superseded`, the panel's `setFieldReading` and `values`, and the app-header's `values` and `available` go — `drawReading` and `drawScope` are the doors |
+| ✅ | 4. KEPT by Will's B (2026-10-13) — The grid: its heading's answer is `quick-filter-change { scope, readings }`; `column-filter-change` and the six column members go; `supersedeColumns` is drawn as the bar is |
+| ✅ | 5. KEPT by Will's B (2026-10-13) — The toolbar's `setChipValues`, `setChipReading`, `supersede`, `superseded`, the panel's `setFieldReading` and `values`, and the app-header's `values` and `available` go — `drawReading` and `drawScope` are the doors |
 
 **❓ Will — stages 4 and 5, found while building.** They delete doors that
 the State ownership rule asks for: CLAUDE.md names `grid.columnClause(field)`
@@ -386,6 +386,8 @@ a WHOLE answer, so renaming it changes what it means.
   `readings` are the only doors.
 - **B:** keep them as the doors and read-backs, and close A7 at stage 3.
 My pick: B.
+
+**✅ Will, 2026-10-13: B** — the doors stay, and A7 closes at stage 3. 86 is done.
 
 
 ### `[x]` ✅ 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
@@ -816,6 +818,8 @@ in the bar's Owner menu (Chromium) and in the panel's Owner field (Chromium and
 WebKit); the menu stays open and the select keeps focus. Firefox reports
 `:open` false — maybe only how Firefox reports it. **❓ Waits on Will:** which
 surface (bar, panel or grid heading), which browser, and the steps.
+
+**DEFERRED — Will, 2026-10-13.** Not in the churn until he brings it back.
 
 ### `[x]` ✅ 114 — BUG: about 1 time in 20, a folded Advanced-only filter's row opens nothing
 
@@ -2322,7 +2326,7 @@ same helper.
 | ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
 | ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
 | ✅ | 3. The `sherpa-filterset` component, stamped by the bar and the panel — **✅ Will, 2026-10-13: A.** Built: a heading, its filters (joined with `.sherpa-group` in the bar, stacked in the panel), and a `link-simple` mark when serial. A set whose chips all fold is parked, as they are. Records in Sherpa Demos draws its Account set |
-| ❓ | 4. Sort and group per scope — the Organise set. **❓ Will, found while building:** a source has ONE arrangement today — one sort, group and page, loaded once — and `export()` writes it in the View scope. A real arrangement PER scope means each grid on a source gets its own sorted page: the source loads once per arranged scope. No page in Sherpa Demos has two arranged components on one source yet. **A:** build it now — one load per arranged scope, each grid its own sort, group and page. **B:** the source records WHICH scope arranged the rows (from `sort-change`'s `scope`): a scope's Organise chips show only its own sort, and a saved View keeps the arrangement in that scope — still one load, until a page has two arranged grids. My pick: B |
+| ⬜ | 4. Sort and group per scope — the Organise set. **✅ Will, 2026-10-13: B** — *"Only certain component scopes, and possibly view scope, will have group and sort. Not all component scopes."* **❓ Will, found while building:** a source has ONE arrangement today — one sort, group and page, loaded once — and `export()` writes it in the View scope. A real arrangement PER scope means each grid on a source gets its own sorted page: the source loads once per arranged scope. No page in Sherpa Demos has two arranged components on one source yet. **A:** build it now — one load per arranged scope, each grid its own sort, group and page. **B:** the source records WHICH scope arranged the rows (from `sort-change`'s `scope`): a scope's Organise chips show only its own sort, and a saved View keeps the arrangement in that scope — still one load, until a page has two arranged grids. My pick: B |
 | ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
 
 ### `[x]` ✅ 89 — Every filter added to the panel starts SIMPLE
@@ -2645,6 +2649,10 @@ presets from a definition stay preset chips.
     The per-scope card goes, and 186 closes with it.
   - **B:** keep both: sets for every scope, and the per-scope saved chip and
     its card as they are.
+
+**✅ Will, 2026-10-13:** (1) neither — *"An option in the toolbars overflow
+menu"*: in toolbar mode, Save filters is a row in the filter toolbar's ⋮
+menu. (2) A — the set replaces the per-scope saved chip and its card.
 
 ### `[x]` ✅ 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
 
@@ -4875,6 +4883,8 @@ Demos: the Dashboard's storage gauge draws `storage`'s bands, and Records'
 - **B: a derived field** in the page JSON — `"risk": { "from": "health",
   "invert": true }` — that any component can use. Larger: the data layer
   gains derived fields.
+
+**✅ Will, 2026-10-13: A** — `data-invert` on the gauge.
 
 ### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
 
