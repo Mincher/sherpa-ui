@@ -531,6 +531,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#present = present;
     for (const chip of this.#chips()) this.#markPresent(chip);
   }
+
+  /** drawOffered(offered) — what each serial-set field OFFERS: its menu
+   *  removes the rest, but keeps a pick. TRAP T-a-filter-set-groups-or-chains */
+  drawOffered(offered: Readonly<Record<string, readonly string[]>>): void {
+    this.#offered = offered;
+    for (const chip of this.#chips()) this.#markPresent(chip);
+  }
+  /** What each chained field offers, as last drawn. */
+  #offered: Readonly<Record<string, readonly string[]>> = {};
   /** What each field's other answers leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
   /** Each chip's results, as the source last said — a rebuilt chip is given them. */
@@ -560,12 +569,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';
     const field = this.#filters.find((f) => f.id === id)?.field ?? id;
-    const menu = chip.querySelector<HTMLElement & { present?: readonly string[] | null; values?: string[] }>('sherpa-menu');
+    const menu = chip.querySelector<HTMLElement & {
+      present?: readonly string[] | null; offered?: readonly string[] | null; values?: string[];
+    }>('sherpa-menu');
     if (!menu || this.superseded.includes(id)) return;
     const left = this.#present[field] ?? null;
+    const offered = this.#offered[field] ?? null;
     menu.present = left;
+    menu.offered = offered;
     const picks = menu.values ?? [];
-    chip.toggleAttribute('data-unavailable', !!left && picks.length > 0 && picks.every((v) => !left.includes(v)));
+    const out = (v: string): boolean => (!!left && !left.includes(v)) || (!!offered && !offered.includes(v));
+    chip.toggleAttribute('data-unavailable', picks.length > 0 && picks.every(out));
   }
 
   /**

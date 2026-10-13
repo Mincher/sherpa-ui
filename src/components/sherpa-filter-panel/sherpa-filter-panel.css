@@ -185,6 +185,8 @@
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }
+/* …and so does a serial set's chain. TRAP T-a-filter-set-groups-or-chains */
+.value[data-not-offered] { display: none; }
 
 /* A field the search emptied is HIDDEN. Will, 2026-09-24: a column of labels
    with nothing under them is harder to read than a shorter list. */

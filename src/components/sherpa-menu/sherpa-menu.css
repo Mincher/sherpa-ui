@@ -397,6 +397,8 @@
 /* `display: none`, not a filter class, so a hidden row also leaves the tab
    order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
+/* …and a value a serial set's chain does not offer. TRAP T-a-filter-set-groups-or-chains */
+.rows ::slotted([data-not-offered]) { display: none; }
 
 /* Clear, Reset, Save, Remove, Today — each opt-in, so a plain menu is unchanged. */
 .clear,

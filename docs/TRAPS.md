@@ -1305,6 +1305,14 @@ rows hold under the answers of the fields ABOVE it in the set — never a
 filter outside the set, and never one below. Every filter is parallel without
 a set, as before.
 
+`source.offered(scope)` says what each chained field offers, and a bound
+control is told it (`drawOffered`). A value the chain does not offer is
+REMOVED — serial exists to offer less, and the way back is the field above —
+but a PICK it rules out stays, set aside as 180 sets one aside: kept in the
+Query, out of the rows, drawn inactive. A field is never ruled out by one
+BELOW it in its chain, so with Limit on the chain beats "the later answer
+wins". This runs whatever Limit says.
+
 A field is in ONE set of a scope: `declareSets` keeps the first and reports
 the second (`field-in-two-sets`). A set names fields the scope HOLDS;
 `openSource` reports one it does not (`set-field-not-held`), as the reader
@@ -1313,6 +1321,13 @@ may still add it.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/page-definition.test.mjs`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `test/unit/a-serial-set-chains-its-fields.test.mjs`
+- Site: `test/e2e/reforged-serial-set.spec.ts`
 
 ### T-a-view-keeps-a-draft
 

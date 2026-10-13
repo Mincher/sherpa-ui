@@ -1247,12 +1247,27 @@ export class SherpaMenu extends SherpaElement {
   /** What the other answers leave; `null` is everything. */
   #present: Set<string> | null = null;
 
-  /** Grey each row the other answers rule out; refuse it unless it is ticked. */
+  /** What a serial set's chain OFFERS; a row it does not is removed, unless
+   *  ticked. `null` is everything. TRAP T-a-filter-set-groups-or-chains */
+  set offered(values: readonly string[] | null) {
+    this.#offered = values ? new Set(values) : null;
+    this.#markPresent();
+  }
+  get offered(): readonly string[] | null {
+    return this.#offered ? [...this.#offered] : null;
+  }
+  /** What the chain offers; `null` is everything. */
+  #offered: Set<string> | null = null;
+
+  /** Grey each row the other answers rule out; refuse it unless it is ticked.
+   *  A row the chain does not offer goes, unless it is ticked. */
   #markPresent(): void {
     const given = new Map(this.#items.map((i) => [i.value, i]));
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
-      const out = given.get(box.value)?.available === false
+      const offered = this.#offered === null || this.#offered.has(box.value);
+      row?.toggleAttribute('data-not-offered', !offered && !box.checked);
+      const out = given.get(box.value)?.available === false || !offered
         || (this.#present !== null && !this.#present.has(box.value));
       // Only ever undo its OWN refusal.
       if (out) box.disabled = !box.checked;

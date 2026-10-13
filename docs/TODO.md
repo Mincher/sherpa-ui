@@ -2231,7 +2231,7 @@ same helper.
 | | step |
 |---|---|
 | ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
-| ⬜ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does |
+| ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
 | ⬜ | 3. The `sherpa-filterset` component, stamped by the bar and the panel |
 | ⬜ | 4. Sort and group per scope — the Organise set |
 | ⬜ | 5. Sherpa Demos: Customer then Region, serial |

@@ -417,16 +417,31 @@ export class SherpaFilterPanel extends SherpaElement {
   /** What each field's other answers leave, by scope, as last drawn. */
   #presentBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
 
-  /** One field's chips and menu, told what its other answers leave. */
+  /** drawOffered(offered, scope) — what each serial-set field OFFERS: a value
+   *  chip it does not is removed, unless it is on. TRAP T-a-filter-set-groups-or-chains */
+  drawOffered(offered: Readonly<Record<string, readonly string[]>>, scope: string): void {
+    this.#offeredBy.set(scope, offered);
+    for (const held of this.#held.values()) if (held.scope === scope) this.#markPresent(held);
+  }
+  /** What each serial-set field offers, by scope, as last drawn. */
+  #offeredBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
+
+  /** One field's chips and menu, told what its other answers leave, and what its chain offers. */
   #markPresent(held: Held): void {
     if (held.def.id === 'presets' || held.def.appliedAt) return;
-    const left = this.#presentBy.get(held.scope)?.[held.def.field ?? held.def.id] ?? null;
+    const field = held.def.field ?? held.def.id;
+    const left = this.#presentBy.get(held.scope)?.[field] ?? null;
+    const offered = this.#offeredBy.get(held.scope)?.[field] ?? null;
     const keep = left ? new Set(left) : null;
+    const offers = offered ? new Set(offered) : null;
     for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(chip) !== held) continue;
-      chip.toggleAttribute('data-unavailable', !!keep && !keep.has(chip.dataset['value'] ?? ''));
+      const value = chip.dataset['value'] ?? '';
+      const chained = !!offers && !offers.has(value);
+      chip.toggleAttribute('data-not-offered', chained && !chip.hasAttribute('data-current'));
+      chip.toggleAttribute('data-unavailable', chained || (!!keep && !keep.has(value)));
     }
-    if (held.menu) (held.menu as HTMLElement & { present?: readonly string[] | null }).present = left;
+    if (held.menu) Object.assign(held.menu, { present: left, offered });
   }
 
   /** A field's results, on its header's badge — or none. Will, TODO 133. */
@@ -617,6 +632,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [scope, results] of this.#counted) this.drawResults(results, scope);
     for (const [scope, results] of this.#valueCounted) this.drawValueResults(results, scope);
     for (const [scope, present] of this.#presentBy) this.drawPresent(present, scope);
+    for (const [scope, offered] of this.#offeredBy) this.drawOffered(offered, scope);
   }
 
   /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip

@@ -96,6 +96,7 @@
  * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
  * - .limitOptions — Does each list field offer only the values the other answers leave?
  * - .present — Each list field's values the rows still HOLD under the OTHER answers in its scope — a component scope's withi…
+ * - .offered — What each field below the top of a SERIAL set OFFERS: the values the rows hold under the answers above it, as…
  * - .bind — Point a component at this source — `bindSource()`, kept as a bridge.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
  * - .unbind — Stop steering and stop populating this component.
@@ -2356,25 +2357,30 @@ export class DataSource extends EventTarget {
    * A LATER answer wins (Will, TODO 180): newest first, each list field keeps
    * the picks the rows still hold under the answers after it, and the rest are
    * SET ASIDE — kept in the reading, left out of the filter, drawn inactive. The
-   * View first; a component scope's under the View's. Off, nothing is set aside.
-   * TRAP T-a-later-answer-sets-an-earlier-pick-aside
+   * View first; a component scope's under the View's. Off, nothing is set aside
+   * but what a serial set's chain rules out — and a field is never ruled out by
+   * one BELOW it in its chain.
+   * TRAP T-a-later-answer-sets-an-earlier-pick-aside · TRAP T-a-filter-set-groups-or-chains
    */
   async #setAsideNow(): Promise<Map<string, Record<string, string[]>>> {
-    const out = new Map<string, Record<string, string[]>>();
+    const out = await this.#chainAside();
     if (!this.#limitOptions) return out;
     const facts = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
     const viewHolds = new Set(this.#applied.scopes[VIEW]?.holds ?? []);
-    const run = async (scope: string, base: readonly Filter[]): Promise<Filter[]> => {
+    const below = this.#below();
+    type Part = { field?: string; clause: Filter };
+    const run = async (scope: string, base: readonly Part[]): Promise<Part[]> => {
       const q = this.#applied.scopes[scope];
-      const filters = [...base];
-      if (!q || q.narrows?.length) return filters;
+      const parts = [...base];
+      if (!q || q.narrows?.length) return parts;
       for (const [id, on] of Object.entries(q.presets ?? {})) {
         if (!on) continue;
         for (const [f, reading] of Object.entries(q.edits?.[id] ?? this.#presets.get(id) ?? {})) {
           const clause = readingClause({ field: f, ...facts(f) }, reading);
-          if (clause) filters.push(clause);
+          if (clause) parts.push({ clause });
         }
       }
+      const chained = out.get(scope) ?? {};
       const newest = Object.keys(q.readings)
         .sort((a, b) => this.#recency.indexOf(`${scope}:${b}`) - this.#recency.indexOf(`${scope}:${a}`));
       for (const f of newest) {
@@ -2384,23 +2390,98 @@ export class DataSource extends EventTarget {
         const picks = reading.picked ?? [];
         if (!this.#isListField(f) || state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP || !picks.length) {
           const clause = readingClause({ field: f, ...facts(f) }, reading);
-          if (clause) filters.push(clause);
+          if (clause) parts.push({ field: f, clause });
           continue;
         }
-        const held = new Set((await this.#presentUnder([f], andFilter(filters)))[f]);
-        const aside = picks.map(valueKey).filter((k) => !held.has(k));
+        const under = below.get(`${scope}:${f}`);
+        const ruling = parts.filter((p) => !p.field || !under?.has(p.field)).map((p) => p.clause);
+        const held = new Set((await this.#presentUnder([f], andFilter(ruling)))[f]);
+        const aside = [...new Set([...(chained[f] ?? []), ...picks.map(valueKey).filter((k) => !held.has(k))])];
         if (aside.length) {
           if (!out.has(scope)) out.set(scope, {});
           out.get(scope)![f] = aside;
         }
         const clause = readingClause({ field: f, ...facts(f) }, withoutDropped(reading, aside));
-        if (clause) filters.push(clause);
+        if (clause) parts.push({ field: f, clause });
       }
-      return filters;
+      return parts;
     };
-    const parts = [...this.#parts.values()];
-    const viewed = await run(VIEW, parts);
+    const viewed = await run(VIEW, [...this.#parts.values()].map((clause) => ({ clause })));
     for (const scope of Object.keys(this.#applied.scopes)) if (scope !== VIEW) await run(scope, viewed);
+    return out;
+  }
+
+  /** Each SERIAL set's chain, by scope: the fields it holds, in the set's order.
+   *  A field the View holds is answered there, so it is out of a component's chain. */
+  #chains(): Array<[scope: string, chain: string[]]> {
+    const viewHolds = new Set(this.#applied.scopes[VIEW]?.holds ?? []);
+    const out: Array<[string, string[]]> = [];
+    for (const [scope, sets] of this.#sets) {
+      const holds = new Set(this.#applied.scopes[scope]?.holds ?? []);
+      for (const set of sets) {
+        if (set.mode !== 'serial') continue;
+        const chain = set.fields.filter((f) => holds.has(f) && (scope === VIEW || !viewHolds.has(f)));
+        if (chain.length > 1) out.push([scope, chain]);
+      }
+    }
+    return out;
+  }
+
+  /** The fields BELOW each chained field, by `scope:field`. */
+  #below(): Map<string, Set<string>> {
+    const out = new Map<string, Set<string>>();
+    for (const [scope, chain] of this.#chains()) {
+      chain.forEach((f, i) => out.set(`${scope}:${f}`, new Set(chain.slice(i + 1))));
+    }
+    return out;
+  }
+
+  /** One field's answer as a clause, less the picks set aside. */
+  #clauseOf(scope: string, field: string, aside: readonly string[] | undefined): Filter | undefined {
+    const reading = this.#applied.scopes[scope]?.readings[field];
+    if (!reading || reading.suspended) return undefined;
+    return readingClause({ field, ...this.#facts(field) }, withoutDropped(reading, aside));
+  }
+
+  /** Down each serial chain: a list field keeps the picks the rows hold under
+   *  the answers ABOVE it, and the rest are set aside. TRAP T-a-filter-set-groups-or-chains */
+  async #chainAside(): Promise<Map<string, Record<string, string[]>>> {
+    const out = new Map<string, Record<string, string[]>>();
+    for (const [scope, chain] of this.#chains()) {
+      const above: Filter[] = [];
+      for (const f of chain) {
+        const picks = this.#applied.scopes[scope]?.readings[f]?.picked ?? [];
+        let aside: string[] = [];
+        if (above.length && picks.length && this.#isListField(f)) {
+          const held = new Set((await this.#presentUnder([f], andFilter(above)))[f]);
+          aside = picks.map(valueKey).filter((k) => !held.has(k));
+          if (aside.length) out.set(scope, { ...out.get(scope), [f]: aside });
+        }
+        const clause = this.#clauseOf(scope, f, aside);
+        if (clause) above.push(clause);
+      }
+    }
+    return out;
+  }
+
+  /**
+   * What each field below the top of a SERIAL set OFFERS: the values the rows
+   * hold under the answers above it, as value keys. A control REMOVES the rest
+   * — but a pick it holds stays, set aside. Whatever `limitOptions` says.
+   * TRAP T-a-filter-set-groups-or-chains
+   */
+  async offered(scope: string): Promise<Record<string, string[]>> {
+    const out: Record<string, string[]> = {};
+    const aside = this.#setAside.get(scope) ?? {};
+    for (const [s, chain] of this.#chains()) {
+      if (s !== scope) continue;
+      const above: Filter[] = [];
+      for (const f of chain) {
+        if (above.length && this.#isListField(f)) Object.assign(out, await this.#presentUnder([f], andFilter(above)));
+        const clause = this.#clauseOf(scope, f, aside[f]);
+        if (clause) above.push(clause);
+      }
+    }
     return out;
   }
 
@@ -2463,7 +2544,7 @@ export class DataSource extends EventTarget {
    *  per applied Query; a later pass wins. Off, each is told nothing is limited.
    *  A chart's own scope too, announced as `present` for its legend (179). */
   async #drawPresent(): Promise<void> {
-    const drawn = [...this.#bound].flatMap(([el, b]) => (el.drawPresent && b.scope
+    const drawn = [...this.#bound].flatMap(([el, b]) => ((el.drawPresent || el.drawOffered) && b.scope
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
     const parts = [...this.#narrowing.keys()];
     const key = `${this.#limitOptions}:${drawn.length}:${parts.join()}:${JSON.stringify(this.#applied)}`;
@@ -2471,12 +2552,17 @@ export class DataSource extends EventTarget {
     this.#presentFor = key;
     const ticket = (this.#presenting = Symbol('present'));
     const byScope = new Map<string, Record<string, string[]>>();
+    const offers = new Map<string, Record<string, string[]>>();
     for (const scope of new Set([...drawn.flatMap((d) => d.scopes), ...parts])) {
       byScope.set(scope, await this.present(scope));
+      offers.set(scope, await this.offered(scope));
       if (this.#presenting !== ticket) return;
     }
     for (const { el, scopes } of drawn) {
-      for (const scope of scopes) el.drawPresent?.(byScope.get(scope) ?? {}, scope);
+      for (const scope of scopes) {
+        el.drawPresent?.(byScope.get(scope) ?? {}, scope);
+        el.drawOffered?.(offers.get(scope) ?? {}, scope);
+      }
     }
     this.dispatchEvent(new CustomEvent('present', { detail: { byScope: Object.fromEntries(byScope) } }));
   }
@@ -2522,7 +2608,7 @@ export class DataSource extends EventTarget {
     if (Array.isArray(facts.scope) && el.drawScopes) this.#drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
-    if (facts.scope && el.drawPresent && this.#loaded) this.#presentSoon();
+    if (facts.scope && (el.drawPresent || el.drawOffered) && this.#loaded) this.#presentSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
