@@ -1852,7 +1852,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#emptyChip(chip);
     }
     if (organise) this.#clearOrganise();
-    this.emit('filter-clear');
     this.#emitChange();
     if (!organise) return;
     this.emit('group-change', { field: null });

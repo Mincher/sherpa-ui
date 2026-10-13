@@ -591,7 +591,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
     const before = { active: el.active, values: el.values };
 
     const seen: string[] = [];
-    for (const ev of ['filter-clear', 'quick-filter-change', 'group-change', 'sort-change'])
+    for (const ev of ['quick-filter-change', 'group-change', 'sort-change'])
       el.addEventListener(ev, () => seen.push(ev));
 
     const undo = el.shadowRoot!.querySelector('[data-act="clear"]') as HTMLElement;
@@ -615,7 +615,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
   expect(r.after.group).toBe(null);
 
   // One event per concern, not one per chip.
-  expect(r.seen).toEqual(['filter-clear', 'quick-filter-change', 'group-change', 'sort-change']);
+  expect(r.seen).toEqual(['quick-filter-change', 'group-change', 'sort-change']);
 });
 
 test('the view group is snapped: outer corners round, inner ones square', async ({ page }) => {

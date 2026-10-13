@@ -387,7 +387,7 @@ export class SherpaMenu extends SherpaElement {
        TRAP T-a-mode-switch-carries-the-answer-over */
     if (next === 'advanced') this.#seedFromPicks();
     // Will's two words for the two modes of ONE system. TRAP T-one-condition-system
-    this.emit('filter-mode-change', { mode: next });
+    this.emit('condition-mode-change', { mode: next });
     this.#emitConditions();
     // Its own `change` stops here, so the footer is told directly.
     this.#syncDirty();

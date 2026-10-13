@@ -1454,10 +1454,6 @@ export class SherpaFilterPanel extends SherpaElement {
       menu.reading = { ...now, picked: this.#picked(held), mode: 'advanced', mirror: true };
     }
     this.#syncAnswered(held);
-    // The menu's own words, so one reader hears both. TRAP T-one-condition-system
-    this.emit('filter-condition-change', {
-      scope: held.scope, id: held.def.id, mode: on ? 'advanced' : 'simple',
-    });
     /* ONCE ITS ROWS ARE DRAWN. Read at once, a menu just built has none: the
        report said "Advanced, no rows", and the filter dropped until the next
        edit. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */

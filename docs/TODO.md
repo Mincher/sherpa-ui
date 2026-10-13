@@ -360,6 +360,19 @@ templates are gone. A grid with no source builds the def from its column.
 **Left of A7:** one event per act, and the 18 members go — still built with
 89.
 
+**A7 build, from 2026-10-13** — measured first (a read-only agent): all 18
+members and the 8 events are still there; 13 calls in `src`, about 101 in
+sherpa-ui's tests and 28 in Sherpa Demos' tests. Each stage ships with
+behaviour unchanged.
+
+| | stage |
+|---|---|
+| ✅ | 1. Events: the menu's `filter-mode-change` becomes `condition-mode-change` (the provider's has the same name); `filter-clear` and `filter-condition-change` go — a field's mode is in its answer. **Kept:** `calendar-apply` and `calendar-cancel`, a lone calendar's only report of its own footer's buttons |
+| ⬜ | 2. The bar's `quick-filter-change` carries its whole answer — `{ scope, readings, presets, holds }` — so the binder reads the event, never `bar.readings`, `presets`, `savedReadings` or `heldFields`; then those four and `active` go |
+| ⬜ | 3. `filter-add` / `filter-remove { scope, ids }`, always a REQUEST: the panel's `filter-add-request` folds in |
+| ⬜ | 4. The grid: its heading's answer is `quick-filter-change { scope, readings }`; `column-filter-change` and the six column members go; `supersedeColumns` is drawn as the bar is |
+| ⬜ | 5. The toolbar's `setChipValues`, `setChipReading`, `supersede`, `superseded`, the panel's `setFieldReading` and `values`, and the app-header's `values` and `available` go — `drawReading` and `drawScope` are the doors |
+
 ### `[x]` ✅ 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
 Will, 2026-09-27: *"The query language, and single query object, can be used

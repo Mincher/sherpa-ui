@@ -940,7 +940,7 @@
     },
     {
       "$type": "event",
-      "name": "filter-mode-change",
+      "name": "condition-mode-change",
       "bubbles": true,
       "composed": true,
       "detail": {

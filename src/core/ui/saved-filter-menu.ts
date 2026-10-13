@@ -56,7 +56,7 @@ const cards = new WeakMap<HTMLElement, Card>();
 /** Every event a field menu, or a part inside it, sends. None is the card's. */
 const FIELD_EVENTS = [
   'menu-change', 'menu-apply', 'menu-cancel', 'menu-clear', 'menu-select', 'menu-open', 'menu-close',
-  'menu-items', 'menu-drill', 'menu-back', 'menu-range-change', 'condition-change', 'filter-mode-change',
+  'menu-items', 'menu-drill', 'menu-back', 'menu-range-change', 'condition-change', 'condition-mode-change',
   'datetime-change', 'range-select', 'calendar-apply', 'calendar-cancel', 'find-step', 'find-replace',
   'button-click', 'breadcrumb-select', 'selection-scenario', 'input', 'change',
 ] as const;

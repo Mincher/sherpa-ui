@@ -604,12 +604,6 @@
     },
     {
       "$type": "event",
-      "name": "filter-clear",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
       "name": "view-reset",
       "bubbles": true,
       "composed": true

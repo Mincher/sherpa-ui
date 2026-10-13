@@ -13345,7 +13345,6 @@ ones. TRAP T-a-renamed-attribute-keeps-its-old-name
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/one-condition-system.test.mjs`
 - Site: `test/e2e/reforged-one-condition-system.spec.ts`
@@ -13377,10 +13376,10 @@ Two kinds of alias, and they take two different doors:
   reader one value to match.
 
 **No alias for what a component WRITES.** An alias protects a host's writes.
-The chip's `data-condition` (it was a boolean, `data-conditioned`), the
-`filter-mode-change` detail and the panel's `filter-condition-change` detail
-(`mode`, was `conditional: boolean`) are reports, and their readers follow the
-new words.
+The chip's `data-condition` (it was a boolean, `data-conditioned`) and the
+menu's `condition-mode-change` detail (`mode`, was `conditional: boolean`; the
+event was `filter-mode-change`, the provider's name for another job) are
+reports, and their readers follow the new words.
 
 **And the def.** A filter def says `advanced: true | 'only'`, the same word as
 the menu, and that kind is `'advanced'`. Both are a host's writes, so both keep

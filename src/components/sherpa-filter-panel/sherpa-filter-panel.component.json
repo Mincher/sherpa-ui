@@ -458,17 +458,6 @@
     },
     {
       "$type": "event",
-      "name": "filter-condition-change",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string",
-        "mode": "'advanced' | 'simple'",
-        "scope": "string"
-      }
-    },
-    {
-      "$type": "event",
       "name": "menu-change",
       "bubbles": true,
       "composed": true

@@ -19,7 +19,7 @@ test('a menu speaks the new words', async ({ page }) => {
     const btn = menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
     const flip = () => btn.querySelector('sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     const heard: unknown[] = [];
-    menu.addEventListener('filter-mode-change', (e) => heard.push((e as CustomEvent).detail));
+    menu.addEventListener('condition-mode-change', (e) => heard.push((e as CustomEvent).detail));
     const shown = getComputedStyle(btn).display !== 'none';
     const start = menu.mode;
     flip();
@@ -174,7 +174,8 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     panel.show();
     await window.__settled();
     const heard: unknown[] = [];
-    panel.addEventListener('filter-condition-change', (e) => heard.push((e as CustomEvent).detail));
+    // The switch is in the field's answer, as every report carries it.
+    panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.readings.data.owner.mode));
     const sr = panel.shadowRoot!;
     const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced')!
       .shadowRoot!.querySelector('button')!.click();
@@ -189,10 +190,7 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
 
   expect(r.on).toEqual({ box: true, mode: 'advanced' });
   expect(r.off).toBe('simple');
-  expect(r.heard).toEqual([
-    { scope: 'data', id: 'owner', mode: 'advanced' },
-    { scope: 'data', id: 'owner', mode: 'simple' },
-  ]);
+  expect([...new Set(r.heard)]).toEqual(['advanced', 'simple']);
 });
 
 /**
