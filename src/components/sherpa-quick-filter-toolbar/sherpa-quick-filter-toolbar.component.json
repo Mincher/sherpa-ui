@@ -598,7 +598,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "filters": "QuickFilterDef[]",
+        "filters": "FilterDef[]",
         "ids": "string[]"
       }
     },
@@ -745,7 +745,7 @@
         {
           "$type": "method",
           "name": "available",
-          "args": "defs: QuickFilterDef[]",
+          "args": "defs: FilterDef[]",
           "description": "available([...]) — the filters the Add chip offers, over the populate() set."
         },
         {

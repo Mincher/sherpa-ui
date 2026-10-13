@@ -4,8 +4,6 @@
  * TRAP T-actions-were-a-slot
  *
  * Map:
- * - QuickFilterOption — One value a filter chip's menu can offer.
- * - QuickFilterDef — one filter chip as data: its id, kind, values, and how it answers
  * - OrganiseColumn — One column the grid can be grouped or sorted by.
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
  * - SortDirection — Matches the standard data-sort-direction values.
@@ -13,12 +11,12 @@
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
-import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
+import { advancedOf, kindOf } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
+import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
   drawSavedMenu, editSavedMenu, endSavedEdit, type SavedMenuHost,
 } from '../../core/ui/saved-filter-menu.js';
-import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -39,81 +37,6 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
 import '../sherpa-switch/sherpa-switch.js';
-
-/** One value a filter chip's menu can offer. */
-export interface QuickFilterOption {
-  value: string;
-  label: string;
-  selected?: boolean;
-  /** `false`: ruled out — listed, greyed and refused unless picked. TRAP T-a-ruled-out-value-is-greyed */
-  available?: boolean;
-  /** A second fact its menu row shows, muted. */
-  note?: string;
-  /** The section its menu row is in, headed where it changes. */
-  section?: string;
-}
-
-export interface QuickFilterDef extends OffersAdvanced {
-  id: string;
-  label: string;
-  /** Its answer survives a View change. TRAP T-a-field-can-carry-over-views */
-  carryOver?: boolean;
-  /** The FIELD this chip answers, when its id is not that field — the header's
-   *  Date chip answers the record's time. A source draws the chip by it.
-   *  `null`: it answers no field HERE, so it reports nothing. */
-  field?: string | null;
-  type?: string;
-  active?: boolean;
-  icon?: string;
-  /** Values this chip filters by — a menu of checkbox or radio rows. */
-  options?: QuickFilterOption[];
-  select?: 'single' | 'multiple';
-  /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. A def that leaves it
-   *  out has it worked out from `select`, `advanced` and whether there are
-   *  options, in ONE place rather than at fifteen.
-   *  TRAP T-number-and-date-lead-with-a-range-switch
-   *  TRAP T-a-chip-knows-what-kind-it-is */
-  kind?: FilterKind | 'values';
-  /** A number filter's slider ends and field clamp. Default 0..100. */
-  min?: number;
-  max?: number;
-  step?: number;
-  /** ISO days a DATE chip may pick. A SET, not a span; every other day draws inactive. */
-  availableDates?: string[];
-  /** Start in RANGE mode. The user may still flip it. */
-  range?: boolean;
-  /** A chip that cannot be switched OFF. TRAP T-persistent-chip-is-a-selector */
-  persistent?: boolean;
-  /** `false`: its menu has no Select all row. */
-  selectAll?: boolean;
-  /** Offer "Remove" in this chip's menu. OPT-IN: a host-placed chip must not delete itself. */
-  removable?: boolean;
-  /** Defer picks behind Apply. TRAP T-commit-follows-select-mode — else the select mode decides. */
-  commit?: boolean;
-  /** Which condition this chip is on. Defaults to `eq`. */
-  op?: FilterOp;
-  /** What the reader TYPED, for a condition that takes text rather than a pick. */
-  text?: string;
-  /** WHAT THE READER ANSWERED — filled by the `held` read-back, never by a
-   *  caller. TRAP T-a-panel-builds-its-own-menus */
-  state?: FieldReading;
-  /** What the ADD menu shows beside it — where it lives now, if somewhere else.
-   *  The host's to say: this bar cannot see another scope. */
-  note?: string;
-  /** A SAVED Advanced filter: its answer, given field by field. The chip is a
-   *  toggle, and a bound source applies it as one part.
-   *  TRAP T-a-saved-filter-is-its-readings */
-  readings?: Record<string, FieldReading>;
-  /** The reader's OWN saved filter: its menu offers Edit filter and Delete filter.
-   *  TRAP T-a-saved-filter-keeps-its-edit */
-  editable?: boolean;
-  /** A saved filter's conditions in WORDS, as its source says them; without
-   *  one the bar words its readings. TRAP T-a-saved-chip-lists-its-conditions */
-  says?: SaidField[];
-  /** A saved filter the reader CHANGED and has not saved, from its source:
-   *  what it applies now. TRAP T-a-saved-filter-keeps-its-edit */
-  edited?: Record<string, FieldReading>;
-}
 
 interface ChipEl extends HTMLElement {
   current: boolean;
@@ -202,11 +125,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  paint the star. TRAP T-the-star-reports-it-does-not-decide */
 
   /** The filter defs this bar holds, in order. */
-  #filters: QuickFilterDef[] = [];
+  #filters: FilterDef[] = [];
   /** The columns the Group and Sort chips offer. */
   #organise: OrganiseDef = {};
   /** Filters the user MAY add but has not — the Add chip's menu. */
-  #available: QuickFilterDef[] = [];
+  #available: FilterDef[] = [];
 
   /* ── Fitting the bar ─────────────────────────────────────────────── */
 
@@ -441,7 +364,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** populate([{ id, label, type?, active?, icon?, options? }]). TRAP T-toggle-chip-has-no-count */
   protected override renderData(data: unknown): void {
-    this.#filters = Array.isArray(data) ? (data as QuickFilterDef[]) : [];
+    this.#filters = Array.isArray(data) ? (data as FilterDef[]) : [];
     this.#render();
   }
 
@@ -861,7 +784,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
-  #addMenu(chip: HTMLElement, def: QuickFilterDef, picked?: Set<string>): void {
+  #addMenu(chip: HTMLElement, def: FilterDef, picked?: Set<string>): void {
     /* ONE DEF, ONE MENU. The panel and a column heading build theirs the same
        way, so a field cannot open with a different control in each.
        TRAP T-one-field-one-filter-menu */
@@ -1001,7 +924,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * field — and, for a reader's own, Edit filter and Delete filter; Remove if
    * it may go. Will, TODO 181. TRAP T-a-saved-chip-lists-its-conditions
    */
-  #addSavedMenu(chip: HTMLElement, def: QuickFilterDef): void {
+  #addSavedMenu(chip: HTMLElement, def: FilterDef): void {
     // It wears its change, not yet saved, as a pending chip does. TRAP T-a-saved-filter-keeps-its-edit
     chip.toggleAttribute('data-edited', !!def.edited);
     const menu = this.clone<HTMLElement>('template.qf-saved-menu-tpl');
@@ -1018,7 +941,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** A saved filter's card, drawn in place: an open card stays open. */
-  #drawSaved(def: QuickFilterDef, menu = this.#chips().find((c) => c.dataset['id'] === def.id)
+  #drawSaved(def: FilterDef, menu = this.#chips().find((c) => c.dataset['id'] === def.id)
     ?.querySelector<HTMLElement>(':scope > sherpa-menu')): void {
     if (!def.readings || !menu) return;
     drawSavedMenu(menu, { readings: def.readings ?? {}, edited: def.edited, says: def.says }, this.#savedHost(def.id));
@@ -1066,7 +989,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** Give a chip's menu its "Remove" action. TRAP T-remove-is-opt-in-and-a-footer-button */
-  #addRemove(chip: HTMLElement, menu: HTMLElement, def: QuickFilterDef): void {
+  #addRemove(chip: HTMLElement, menu: HTMLElement, def: FilterDef): void {
     if (!chip.classList.contains('chip')) return;
     if (!def.removable || def.persistent) return;
     menu.setAttribute('data-removable', '');
@@ -1268,7 +1191,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-a-saved-filter-keeps-its-edit */
     const spent = this.#filters.filter((f) => f.edited
       && (f.id === id || JSON.stringify(f.edited) === JSON.stringify(readings))).map((f) => f.id);
-    const def: QuickFilterDef = { id, label, readings, active: true, removable: true, editable: true };
+    const def: FilterDef = { id, label, readings, active: true, removable: true, editable: true };
     const i = this.#filters.findIndex((f) => f.id === id);
     if (i >= 0) this.#filters[i] = def;
     else this.#filters = [...this.#filters, def];
@@ -1419,7 +1342,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** available([...]) — the filters the Add chip offers, over the populate() set. */
-  available(defs: QuickFilterDef[]): void {
+  available(defs: FilterDef[]): void {
     this.#available = Array.isArray(defs) ? defs : [];
     this.#renderAvailable();
     // A saved filter's field this bar can now draw becomes its menu.
@@ -1502,7 +1425,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (!def.readings || JSON.stringify(edited) === JSON.stringify(def.edited)) continue;
       // Its words were for the answer it had; the bar words the new one.
       const { edited: _was, says: _said, ...rest } = def;
-      const next: QuickFilterDef = { ...rest, ...(edited ? { edited: structuredClone(edited) } : {}) };
+      const next: FilterDef = { ...rest, ...(edited ? { edited: structuredClone(edited) } : {}) };
       this.#filters[i] = next;
       const chip = this.#chips().find((c) => c.dataset['id'] === next.id);
       if (!chip) continue;
@@ -1591,7 +1514,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Move the chosen available filters onto the bar. SILENT for a restore. */
   #addFilters(ids: string[], { silent = false } = {}): void {
     this.#keepSavedEdits();
-    const added: QuickFilterDef[] = [];
+    const added: FilterDef[] = [];
     for (const id of ids) {
       const i = this.#available.findIndex((f) => f.id === id);
       if (i < 0) {
@@ -1639,7 +1562,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     const [def] = this.#filters.splice(i, 1);
     const { active: _active, ...clean } = def!;
-    this.#available = [...this.#available, clean as QuickFilterDef];
+    this.#available = [...this.#available, clean as FilterDef];
     this.#render();
     this.#renderAvailable();
     if (silent) return;
@@ -1957,7 +1880,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        reload restores both — so the chip is built on that column rather than
        waiting for a second pass to tick it. */
     const on = { group: this.dataset['groupField'] ?? '', sort: this.dataset['sortField'] ?? '' };
-    const cols = (list: readonly OrganiseColumn[], field: string): QuickFilterOption[] =>
+    const cols = (list: readonly OrganiseColumn[], field: string): FilterOption[] =>
       list.map((c) => ({ value: c.field, label: c.label, selected: c.field === field }));
 
     if (group.length) {
@@ -1982,7 +1905,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     id: string,
     label: string,
     icon: string,
-    options: QuickFilterOption[],
+    options: FilterOption[],
     column = '',
   ): HTMLElement {
     const chip = this.clone('template.qf-tpl');

@@ -6,8 +6,6 @@
  * TRAP T-the-panel-is-the-toolbar-in-a-column
  *
  * Map:
- * - PanelValue — One value a field offers.
- * - PanelFilter — One field the panel draws.
  * - PanelColumn — A column Group or Sort may arrange by.
  * - PanelScope — One scope: a named group of fields, plus what the Filters menu offers for it.
  */
@@ -16,13 +14,13 @@ import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import {
-  arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
+  arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  drawSavedMenu, editSavedMenu, endSavedEdit, type SavedAnswer, type SavedMenuHost,
+  drawSavedMenu, editSavedMenu, endSavedEdit, type SavedMenuHost,
 } from '../../core/ui/saved-filter-menu.js';
-import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter, type ListedFilter,
 } from '../../core/ui/filters-button.js';
@@ -47,78 +45,6 @@ import '../sherpa-badge/sherpa-badge.js';
 /** A count, in the reader's own digits — as a chip's badge writes it. */
 const RESULTS = new Intl.NumberFormat();
 
-/** One value a field offers. */
-export interface PanelValue {
-  value: string;
-  label?: string;
-  selected?: boolean;
-  /** What the value's own chip IS — a preset that carries its answer is `advanced`. */
-  kind?: FilterKind;
-  /** A reader's OWN saved filter: its chip opens Edit filter and Delete filter. */
-  editable?: boolean;
-  /** A saved filter's answer, as its chip's card draws it.
-   *  TRAP T-a-saved-chip-lists-its-conditions */
-  saved?: SavedAnswer;
-  /** A saved filter CHANGED and not saved: its chip wears the pending look, and
-   *  its menu offers Save and Discard. TRAP T-a-saved-filter-keeps-its-edit */
-  edited?: boolean;
-  /** The data-viz series a chart draws this value in, from 1 — its chip's swatch. */
-  swatch?: number;
-}
-
-/** One field the panel draws. The shape a quick-filter toolbar takes. */
-export interface PanelFilter extends OffersAdvanced {
-  id: string;
-  label: string;
-  /** The FIELD it answers, when its id is not that field — the header's Date. */
-  field?: string;
-  options?: PanelValue[];
-  select?: 'single' | 'multiple';
-  /** The chip's leading glyph. Group and Sort carry the toolbar's own. */
-  icon?: string;
-  /** Offer Remove in this field's header. */
-  removable?: boolean;
-  /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. */
-  kind?: FilterKind | 'values';
-  /** A number filter's slider ends and field clamp. */
-  min?: number;
-  max?: number;
-  step?: number;
-  /** ISO days a DATE field may pick. */
-  availableDates?: string[];
-  /** Start in RANGE mode. */
-  range?: boolean;
-  /** WHAT IS IN FORCE now, from the data layer — the conditions and the text a
-   *  reader last applied. The panel seeds its own menu from this, so it shows
-   *  the answer the rows are under without asking another view.
-   *  TRAP T-a-panel-builds-its-own-menus */
-  state?: FieldReading;
-  /** A chip with no field behind it — one question, answered yes or no.
-   *  TRAP T-a-chip-with-no-field-is-a-preset */
-  preset?: boolean;
-  /** Draw as ONE chip with its menu, not a run. A date is the case: its menu
-   *  IS a calendar, and a calendar in a 360px column is the whole panel.
-   *  TRAP T-only-group-and-sort-stay-one-chip */
-  asChip?: boolean;
-  /** ON, with nothing picked — a preset's whole state. */
-  active?: boolean;
-  /** A SAVED filter's answer, given — drawn as a preset. TRAP T-a-saved-filter-is-its-readings */
-  readings?: Readonly<Record<string, unknown>>;
-  /** The reader's OWN saved filter. TRAP T-the-panel-saves-a-whole-scope */
-  editable?: boolean;
-  /** A saved filter's conditions in words, as its source says them.
-   *  TRAP T-a-saved-chip-lists-its-conditions */
-  says?: SaidField[];
-  /** A saved filter's change, not saved: what it applies now. TRAP T-a-saved-filter-keeps-its-edit */
-  edited?: Record<string, FieldReading>;
-  /** A scope ABOVE holds it now: it keeps its place here — its heading, and
-   *  one line saying so — and draws no values. TRAP T-a-panel-asks-for-its-scopes */
-  appliedAt?: string;
-  /** Where a View field may be SENT DOWN. One: the button sends it. More: the
-   *  button opens them. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string; origin?: boolean }[];
-}
-
 /** A column Group or Sort may arrange by. */
 export interface PanelColumn {
   field: string;
@@ -135,9 +61,9 @@ export interface PanelScope {
   /** ONE component's own answer to one field — a chart's legend field: nothing
    *  to add, nothing to save. TRAP T-a-chart-scope-is-its-legend-field */
   part?: boolean;
-  filters?: PanelFilter[];
+  filters?: FilterDef[];
   /** Fields this scope may still add. */
-  available?: PanelFilter[];
+  available?: FilterDef[];
   /**
    * How this component ARRANGES its rows — not which rows it shows.
    *
@@ -162,7 +88,7 @@ const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
 
 /** What one drawn field holds. */
 interface Held {
-  def: PanelFilter;
+  def: FilterDef;
   scope: string;
   box: HTMLElement;
   values: HTMLElement;
@@ -234,7 +160,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** The scopes as last given. */
   #scopes: PanelScope[] = [];
   /** Each scope's Filters list: the removable fields it holds, then what it may add. */
-  #lists = new Map<string, { held: PanelFilter[]; offers: PanelFilter[] }>();
+  #lists = new Map<string, { held: FilterDef[]; offers: FilterDef[] }>();
   /** The scopes a reader SHUT, kept across a redraw. TRAP T-a-shut-scope-folds-like-a-bar */
   #shut = new Set<string>();
   /** A hidden filter's rows, moved into its scope's Filters menu. TRAP T-drill-moves-not-clones */
@@ -695,7 +621,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip
    *  says — no values, nothing to answer here. TRAP T-an-inactive-chip-says-where-its-filter-went */
-  #drawApplied(def: PanelFilter): HTMLElement {
+  #drawApplied(def: FilterDef): HTMLElement {
     const { box } = this.#drawSection(def.id, def.label);
     box.setAttribute('data-applied-at', def.appliedAt ?? '');
     const note = this.clone('template.applied-tpl');
@@ -713,7 +639,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * TRAP T-a-panel-asks-for-its-scopes · TRAP T-a-chip-with-no-field-is-a-preset
    */
   drawScopes(scopes: readonly ScopeDescription[]): Promise<void> {
-    const asFilter = (given: FieldFilter | HeldFilter): PanelFilter => {
+    const asFilter = (given: FieldFilter | HeldFilter): FilterDef => {
       // OFF filters nothing, so it is drawn as no answer. TRAP T-a-suspended-answer-is-drawn-as-off
       const { state, ...rest } = given as HeldFilter;
       // A date is ONE chip, and a chip has an OFF of its own: it keeps its days.
@@ -776,7 +702,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * `box` and `values` are where the field was drawn: its own field box, or
    * the shared Organise section. TRAP T-a-chip-knows-what-kind-it-is
    */
-  #fieldChip(def: PanelFilter, scope: string,
+  #fieldChip(def: FilterDef, scope: string,
     box: HTMLElement, values: HTMLElement): HTMLElement | null {
     const kind = kindOf(def);
     const on = (def.options ?? []).find((o) => o.selected)?.value;
@@ -798,7 +724,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** One field: its header, its actions, and its run of value chips. */
-  #drawField(def: PanelFilter, scope: string, isPresets: boolean): HTMLElement | null {
+  #drawField(def: FilterDef, scope: string, isPresets: boolean): HTMLElement | null {
     const options = def.options ?? [];
     /* A field with NO VALUES and NO BODY has nothing to draw at all — so it
        SAYS SO rather than leaving a gap in the scope. A preset is the one
@@ -1564,7 +1490,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A saved preset's menu: each field's own menu, read-only, a heading per
    *  field — and, for a reader's own, Edit filter and Delete filter. Will,
    *  TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
-  #addSavedMenu(chip: HTMLElement, option: PanelValue, scope: string): void {
+  #addSavedMenu(chip: HTMLElement, option: FilterOption, scope: string): void {
     // Its change, not saved, wears the pending look. TRAP T-a-saved-filter-keeps-its-edit
     chip.toggleAttribute('data-edited', !!option.edited);
     const menu = this.clone<MenuApi>('template.saved-menu-tpl');
@@ -1587,7 +1513,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** A field's def: its own scope's first, then any scope's — the View may hold it. Never a preset. */
-  #fieldDefIn(scope: string, field: string): PanelFilter | undefined {
+  #fieldDefIn(scope: string, field: string): FilterDef | undefined {
     return [this.#scopes.find((s) => s.scope === scope), ...this.#scopes]
       .flatMap((s) => [...(s?.filters ?? []), ...(s?.available ?? [])])
       .find((f) => !f.preset && (f.field ?? f.id) === field);
@@ -1641,7 +1567,7 @@ export class SherpaFilterPanel extends SherpaElement {
   };
 
   /** A saved filter one scope holds, as it was drawn. */
-  #presetOf(scope: string, id: string): PanelFilter | undefined {
+  #presetOf(scope: string, id: string): FilterDef | undefined {
     return this.#scopes.find((s) => s.scope === scope)?.filters?.find((f) => f.preset && f.id === id);
   }
 

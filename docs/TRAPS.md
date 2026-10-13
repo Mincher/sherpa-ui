@@ -429,6 +429,7 @@ the intermittent amber view chip: whether it appeared depended only on whether
 the host remembered to mark an option `selected`.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-commit-follows-select-mode
 
@@ -440,7 +441,7 @@ FINISHED.
 - MULTI is still being built — each tick would fire a query on the way to an
   answer
 
-`commit` in `QuickFilterDef` overrides, and only against that. A host that
+`commit` in `FilterDef` overrides, and only against that. A host that
 named `commit` meant it either way, so the Range switch must NOT move it
 (`#chipDefers`) — the switch only supplies the default the definition left out.
 
@@ -462,6 +463,7 @@ counts as local.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 (none — `T-custom-element-upgrade` already exists and already lists this file as a Site.)
 
@@ -1154,6 +1156,7 @@ Nothing on Records carries over yet — the default is Will's.
 - Site: `src/core/browser/persist-view.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-carry-over.spec.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-send-to-view-filters
 
@@ -1200,6 +1203,7 @@ forgotten.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/send-down.test.mjs`
 - Site: `src/core/data/query.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -6626,6 +6630,7 @@ chip says "Not available here." A chip the View took says where it went
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
@@ -6681,7 +6686,7 @@ on, it may be let go. A chip with a menu always opens it.
 
 ### T-unavailable-value-sorts-below-a-divider
 
-`QuickFilterOption.available: false` means still SELECTABLE, but no row carries
+`FilterOption.available: false` means still SELECTABLE, but no row carries
 it under the filters ALREADY applied — so ticking it changes nothing visible.
 Absent means available.
 
@@ -6717,7 +6722,7 @@ with no provider.
 - Site: `src/core/data/filter-state.ts`
 ### T-number-and-date-lead-with-a-range-switch
 
-`QuickFilterDef.kind` picks what a chip's menu holds:
+`FilterDef.kind` picks what a chip's menu holds:
 
 | kind | the menu |
 |---|---|
@@ -6737,11 +6742,11 @@ The switch moving the menu between the two modes at runtime is
 `T-range-switch-swaps-not-rebuilds`; what it does to the Apply footer is
 `T-commit-follows-select-mode`.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-toggle-chip-has-no-count
 
-There is deliberately NO `count` in `QuickFilterDef`.
+There is deliberately NO `count` in `FilterDef`.
 
 A badge on a plain TOGGLE chip could only mean "how many rows match", and the
 host often cannot know that up front — a server-side query has not answered yet
@@ -9040,6 +9045,7 @@ the view selector's glyph itself rather than taking it from the chip def. There
 is no `office`; `buildings` is the set's word for it.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-native-select-keeps-its-own-shape
 
@@ -9504,6 +9510,7 @@ own label is what a search matches, exactly as a value's is.
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-scope-is-named-for-its-content
 
@@ -9819,6 +9826,7 @@ accordion section too, in its own `.field-body`, replacing the chips.
  Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-an-edge-resizes-its-box
 
@@ -10211,6 +10219,7 @@ column in `data-column`; a menu, where there is one, is the answer.
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-kind.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-off-is-not-forgotten
 
@@ -10908,7 +10917,7 @@ seeds its own menu from that.
 
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-def.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-the-panel-is-the-toolbar-in-a-column
@@ -10944,6 +10953,7 @@ under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-the-view-chip-stays-on-the-header
 
@@ -13385,6 +13395,7 @@ actions and no words.
 - Site: `test/unit/filter-face.test.mjs`
 - Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-saved-filter-is-its-readings
 
@@ -13429,6 +13440,7 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-saved-filter-keeps-its-edit
 
@@ -13514,6 +13526,7 @@ scope's header holds nothing to press; Save is in the chip's own menu.
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-save-packs-the-fields-into-one-chip
 
@@ -15233,6 +15246,7 @@ reaching into the bar's shadow root.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-bar-reports-its-holds
 

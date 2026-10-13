@@ -123,7 +123,9 @@ export { SherpaRadialChart, type RadialSlice } from './components/sherpa-radial-
 export { SherpaBarchart, type BarDatum } from './components/sherpa-barchart/sherpa-barchart.js';
 export { SherpaLineChart } from './components/sherpa-line-chart/sherpa-line-chart.js';
 export { SherpaDataGrid, type GridColumn } from './components/sherpa-data-grid/sherpa-data-grid.js';
-export { SherpaQuickFilterToolbar, type QuickFilterDef } from './components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
+export { SherpaQuickFilterToolbar } from './components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
+/* ONE filter, as a bar or the panel draws it. */
+export type { FilterDef, FilterOption } from './core/ui/filter-def.js';
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export type { GridLayout } from './components/sherpa-layout-grid/grid-resize.js';
