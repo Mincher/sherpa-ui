@@ -123,7 +123,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ✅ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ✅ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ⬜ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
@@ -2612,6 +2612,27 @@ the panel's sections; say if you meant nav Contexts).
     sees it, but a scope another page lacks is dropped on apply.
 
 **✅ Will, 2026-10-12 — all my picks:** A and A — an old preset chip is read as a one-scope set; a saved set is kept per page, beside its Views. "All contexts" means all filter scopes.
+
+**Plan, 2026-10-13** — a saved SET is `{ label, query }`, the query in a View's
+JSON form, kept per page beside its Views. The Filters menu's `Saved filters`
+lists the sets; applying one keeps the Query from before (for Dismiss) and
+shows the `Saved: <name>` chip in the panel header; an edit turns it warning
+with ` *`; Save (or Save as) clears it; Dismiss puts the Query back. App
+presets from a definition stay preset chips.
+
+**❓ Will — two choices, found while planning:**
+- **In toolbar mode**, the panel is hidden, so its header's Save filters is too.
+  - **A (my pick):** the View bar's Save ▾ also offers "Save filters" and
+    "Save filters as", and the Saved chip shows on the View bar.
+  - **B:** Save filters is the panel's alone.
+- **A reader's saved chip today** sits in one scope, with its edit-in-place
+  card (Edit filter, Delete filter, its change kept — 49, 50, 181). Old ones
+  become one-scope SETS by your ruling, so:
+  - **A (my pick):** the set replaces it — a set is changed by changing the
+    filters and saving again, and deleted from the Save ▾ menu, as a View is.
+    The per-scope card goes, and 186 closes with it.
+  - **B:** keep both: sets for every scope, and the per-scope saved chip and
+    its card as they are.
 
 ### `[x]` ✅ 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
 
