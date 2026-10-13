@@ -128,6 +128,7 @@ export class SherpaDataGrid extends SherpaElement {
     'data-column-filters': { type: 'boolean', kind: 'style' },
     'data-filterable': { type: 'boolean', kind: 'style' },
     'data-locked': DATA_PROPS['data-locked'],
+    'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-sort-field': DATA_PROPS['data-sort-field'],
     'data-sort-direction': DATA_PROPS['data-sort-direction'],
     'data-group-field': DATA_PROPS['data-group-field'],
@@ -472,7 +473,7 @@ export class SherpaDataGrid extends SherpaElement {
     const held = this.#shown(col.field);
     const def = this.#filterDef(col, held);
     // A top-layer popover escapes the scroller, inside the HOST's named region.
-    const { menu, items } = menuFor(def, { bounds: this.dataset['bounds'] });
+    const { menu, items } = menuFor(def, { bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input' });
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
     menu.setAttribute('data-removable', '');
     /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where

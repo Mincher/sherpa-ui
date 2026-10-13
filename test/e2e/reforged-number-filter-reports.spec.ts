@@ -76,6 +76,54 @@ test('a toolbar number chip sends a drag or a typed number on Apply, and Cancel 
   expect(r.typed.at(-1)).toEqual(['250']);
 });
 
+/* LIVE — Will, TODO 107. Over a source with `applyOn: 'input'`, a number does
+   not wait for Apply: a handle still MOVING is reported, and the source waits
+   for the moves to stop. TRAP T-coalesce-microtask-not-debounce */
+test('over a LIVE source, a number chip reports a handle while it moves, with no Apply', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000, step: 10, range: true, active: true },
+    ], { style: 'inline-size: 1200px', 'data-apply-on': 'input' });
+    await window.__settled();
+    const heard: unknown[] = [];
+    bar.addEventListener('quick-filter-change', () => heard.push(bar.readings['spend']?.picked));
+    const chip = bar.shadowRoot!.querySelector('.chip[data-id="spend"]') as HTMLElement;
+    const menu = chip.querySelector('sherpa-menu') as Menu & { show(t: Element): void };
+    const slider = menu.shadowRoot.querySelector('.body-number-range') as Slider;
+    await slider.rendered;
+    menu.show(chip);
+    await window.__settled();
+    const range = slider.shadowRoot.querySelector<HTMLInputElement>('.range')!;
+    range.value = '400';
+    // Still moving: an `input`, and no `change`.
+    range.dispatchEvent(new Event('input', { bubbles: true }));
+    await window.__settled();
+    return { commits: menu.hasAttribute('data-commit'), live: menu.dataset['applyOn'], heard };
+  });
+  expect(r.commits).toBe(false);
+  expect(r.live).toBe('input');
+  expect(r.heard.at(-1)).toEqual(['400', '1000']);
+});
+
+test('a binder tells a control over a live source so; never one over a remote source', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js');
+    const said = (store: unknown) => {
+      const bar = document.createElement('sherpa-quick-filter-toolbar');
+      document.getElementById('root')!.replaceChildren(bar);
+      const source = new DataSource({ store: store as never, applyOn: 'input' });
+      bindSource(source, bar as never, { scope: 'view' });
+      return bar.getAttribute('data-apply-on');
+    };
+    const rows = [{ id: 1, spend: 10 }];
+    return {
+      local: said(new ArrayStore(rows, { key: 'id' })),
+      remote: said(Object.assign(new ArrayStore(rows, { key: 'id' }), { remote: true })),
+    };
+  });
+  expect(r).toEqual({ local: 'input', remote: null });
+});
+
 test('a panel number field reports a dragged handle and a typed number', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const panel = await window.__mount<HTMLElement & {

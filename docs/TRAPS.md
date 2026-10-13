@@ -1595,7 +1595,8 @@ filter menus need apply/cancel buttons."* A number is TYPED, so there is no
 moment its answer is obviously finished. A pick applies at once locally (62);
 a number is the one exception. `menuFor()` gives every number menu
 `data-commit` and `data-commit-fixed`, so the Range switch cannot turn Apply
-off. A definition that NAMES `commit` still wins.
+off. A definition that NAMES `commit` still wins. Over a LIVE source (TODO
+107) a number applies as it moves instead.
 
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
@@ -2312,9 +2313,16 @@ ONE load, and a keystroke still queries on its own tick. A debounce would be a
 policy about how fast people type, which is the caller's to decide, not this
 layer's.
 
+**So the APP chooses one** — Will, TODO 107: `applyOn: 'input'` with
+`debounce` ms, per source, in its page JSON. Its filters apply while a value
+moves, and the source loads once the moves stop. The default stays the
+microtask. A remote source is never live: it already waits for Apply.
+
 `load()` stays immediate and public: a caller that awaits it means it.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-live-filter-waits-for-the-moves-to-stop.test.mjs`
+- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 
 ### T-push-writes-state-as-attributes
 

@@ -34,6 +34,9 @@ export interface SourceDefinition {
   /** The name the app registered its store under. */
   store: string;
   pageSize?: number;
+  /** `input`: its filters apply live, debounced. Will, TODO 107 */
+  applyOn?: 'change' | 'input';
+  debounce?: number;
   search?: readonly string[];
   fields?: Readonly<Record<string, FieldDeclaration>>;
   scopes?: Readonly<Record<string, ScopeDefinition>>;
@@ -58,6 +61,8 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
   const source = new DataSource({
     store,
     ...(def.pageSize ? { pageSize: def.pageSize } : {}),
+    ...(def.applyOn ? { applyOn: def.applyOn } : {}),
+    ...(def.debounce != null ? { debounce: def.debounce } : {}),
     ...(def.search ? { searchFields: [...def.search] } : {}),
   });
   const fields = Object.keys(def.fields ?? {});

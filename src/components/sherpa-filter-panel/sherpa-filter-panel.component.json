@@ -194,6 +194,19 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-apply-on",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "change",
+        "input"
+      ],
+      "description": "input: its source applies LIVE, so a value reports while it moves. Set by a bound source. TODO 107"
+    },
+    {
+      "$type": "prop",
       "name": "data-at-default",
       "type": "boolean",
       "observed": true,

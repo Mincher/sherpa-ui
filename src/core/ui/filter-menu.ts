@@ -66,6 +66,9 @@ export interface FilterMenuOptions {
   /** Its source fetches from OUTSIDE the data layer. `false`: every pick applies
    *  at once. Left out, the select mode decides, as before. */
   remote?: boolean | undefined;
+  /** Its source applies LIVE: a number does not wait for Apply, and its body
+   *  reports while it moves. Will, TODO 107 */
+  live?: boolean | undefined;
 }
 
 /**
@@ -94,10 +97,12 @@ export function menuFor(
      TRAP T-commit-follows-select-mode */
   const local = opts.remote === false;
   /* A NUMBER is TYPED, so it waits for Apply wherever it is, and Cancel puts
-     back what was applied — Will, TODO 94. TRAP T-a-number-waits-for-apply */
-  const typed = kind === 'number';
+     back what was applied — Will, TODO 94 — unless its source is LIVE (107).
+     TRAP T-a-number-waits-for-apply */
+  const typed = kind === 'number' && !opts.live;
   const defers = def.commit ?? (typed || (!local && !one && !(hasOwnBody(kind) && !asRange)));
   if (defers) menu.setAttribute('data-commit', '');
+  if (opts.live) menu.setAttribute('data-apply-on', 'input');
   // A def that NAMED `commit` outranks the Range switch's own rule; so does a number.
   if (def.commit != null || local || typed) menu.setAttribute('data-commit-fixed', '');
   // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.

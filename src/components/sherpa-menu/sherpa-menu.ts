@@ -15,7 +15,7 @@
  * Map:
  * - MenuItem — One item a menu draws for itself.
  */
-import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
   DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
@@ -123,6 +123,7 @@ export class SherpaMenu extends SherpaElement {
     /* A row the other answers rule out GOES, unless ticked — Hide unmatching
        filters. Will, TODO 205. TRAP T-a-ruled-out-value-is-greyed */
     'data-hide-unavailable': { type: 'boolean', kind: 'behaviour' },
+    'data-apply-on': DATA_PROPS['data-apply-on'],
     /* A number body's ends and step. They CLAMP the field as well as the
        slider — typing 500 into a 0..100 filter asks for a row that cannot
        exist. TRAP T-grid-slider-spans-real-values */
@@ -1910,7 +1911,8 @@ export class SherpaMenu extends SherpaElement {
     const from = event.target as Element;
     if (!from.matches('.body-number-one, .body-number-range')) return;
     this.#passOn(event);
-    if (event.type === 'change') this.#report();
+    // LIVE, it reports while it moves; its source waits for the moves to stop. TODO 107
+    if (event.type === 'change' || this.dataset['applyOn'] === 'input') this.#report();
   };
 
   /** A PART's `input` or `change` stops at this host, so the menu passes a

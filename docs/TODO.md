@@ -139,7 +139,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
 | ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
 | ✅ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
-| ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
+| ✅ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ✅ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ✅ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
@@ -3276,7 +3276,7 @@ is needed: `sherpa-input-text` passes `type` to its `<input>`, so
 
 **✅ Built 2026-10-13, in 90** — its three steps are there. `T-a-relative-date-stays-relative`
 
-### `[ ]` 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
+### `[x]` ✅ 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
 
 Will, 2026-09-29, choosing A of "once per act" / "live while dragging, with a
 debounce": *"A but save it as a configurable option to support later. Apps
@@ -3309,6 +3309,16 @@ the last report before it loads.
   - **B: may choose live too**, with the debounce.
 
 **✅ Will, 2026-10-12 — all my picks:** A and A — set per source; a remote source always stays on Apply.
+
+**✅ Done 2026-10-13.** `new DataSource({ applyOn: 'input', debounce })`, or
+`"applyOn": "input"` in the page JSON's source (schema too). `source.applyOn`
+is `'change'` for a remote source, whatever was asked. A live filter change
+loads `debounce` ms (default 300) after the last one; everything else still
+coalesces on the tick. The binder writes `data-apply-on="input"` on a scope's
+control; bar, panel and grid pass `live` to `menuFor()`, so a number menu does
+not wait for Apply and its body reports on `input`. A panel's CARD menus keep
+committing (`T-a-chip-menu-in-the-panel-commits`); only its inline bodies go
+live.
 
 ### `[x]` ✅ 52 — A data viz scope in the filter panel
 

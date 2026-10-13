@@ -84,6 +84,7 @@
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
+ * - .applyOn — When a filter applies: once per act, or LIVE while its value moves — never live for a remote source.
  * - .commit — SEND the draft — Apply, on a remote source.
  * - .discard — Put the applied answers back over the draft — Discard, on a remote source.
  * - .pending — Has this field been changed and not yet applied?
@@ -289,6 +290,12 @@ export interface DataSourceOptions {
   /** Each list field offers only the values the other answers leave; the rest
    *  are drawn greyed. Default false. TRAP T-a-ruled-out-value-is-greyed */
   limitOptions?: boolean;
+  /** `'input'`: a filter applies LIVE, while its value moves, `debounce` ms after
+   *  the last move. Default `'change'`, once per act. A remote source always waits
+   *  for Apply. Will, TODO 107. TRAP T-coalesce-microtask-not-debounce */
+  applyOn?: 'change' | 'input';
+  /** How long a live filter waits after the last move, in ms. Default 300. */
+  debounce?: number;
 }
 
 /** What the binder tells the source about one component. `bindSource()` says it. */
@@ -462,6 +469,8 @@ export class DataSource extends EventTarget {
     if (this.#remote) this.#draft = { v: 1, scopes: {} };
     this.#autoLoad = options.autoLoad ?? true;
     this.#limitOptions = options.limitOptions ?? false;
+    this.#applyOn = options.applyOn ?? 'change';
+    this.#debounce = options.debounce ?? 300;
     this.#searchFields = options.searchFields;
     this.#state = {
       sort: options.sort ?? [],
@@ -1826,7 +1835,7 @@ export class DataSource extends EventTarget {
     this.#viewFilter = viewed;
     this.#scoped = scoped;
     this.#syncPending();
-    if (!same) this.#requery();
+    if (!same) this.#requery(this.applyOn === 'input');
     /* The rows did not move, so no load will count again — yet an answer that
        is OFF, or one chart's own, changed, and its badge wears a number.
        TRAP T-a-chip-counts-its-own-results */
@@ -1853,6 +1862,16 @@ export class DataSource extends EventTarget {
   get remote(): boolean {
     return this.#remote;
   }
+
+  /** When a filter applies: once per act, or LIVE while its value moves — never
+   *  live for a remote source. Will, TODO 107 */
+  get applyOn(): 'change' | 'input' {
+    return this.#remote ? 'change' : this.#applyOn;
+  }
+  /** When a filter applies, as the app asked. */
+  #applyOn: 'change' | 'input' = 'change';
+  /** A live filter's wait after the last move, in ms. */
+  #debounce = 300;
 
   /** The same, for this class's own branches. */
   get #remote(): boolean {
@@ -2049,10 +2068,20 @@ export class DataSource extends EventTarget {
    * a seventh to write one and forget the other — a filter that narrows while
    * the pager still points at page four.
    */
-  #requery(): void {
+  #requery(live = false): void {
     this.#state.page = 1;
-    this.#schedule();
+    if (live) this.#settle();
+    else this.#schedule();
   }
+
+  /** LIVE: load once the moves stop — `debounce` ms after the last. The app
+   *  chose the wait, per source. Will, TODO 107. TRAP T-coalesce-microtask-not-debounce */
+  #settle(): void {
+    clearTimeout(this.#liveWait);
+    this.#liveWait = setTimeout(() => this.#schedule(), this.#debounce);
+  }
+  /** The live load waiting for the moves to stop. */
+  #liveWait: ReturnType<typeof setTimeout> | undefined;
 
   /** COALESCE one tick's writes into a single load. TRAP T-coalesce-microtask-not-debounce */
   #schedule(): void {

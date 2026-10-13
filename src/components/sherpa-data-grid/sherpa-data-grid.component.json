@@ -237,6 +237,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-apply-on",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "change",
+        "input"
+      ]
+    },
+    {
+      "$type": "prop",
       "name": "data-bounds",
       "type": "string",
       "observed": true,

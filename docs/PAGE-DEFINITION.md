@@ -69,6 +69,10 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
   Customers. `parallel`, the default, only groups (`T-a-filter-set-groups-or-chains`).
+- **`applyOn: "input"`** makes the source's filters apply LIVE: a number does
+  not wait for Apply, and a value reports while it moves. The source loads
+  `debounce` ms (default 300) after the last move. The default, `"change"`,
+  applies once per act. A remote source always waits for Apply (TODO 107).
 - **`ui`** — each component's configuration, by id, set through its own API
   before it is answered — as a View's `ui` is. The grid's columns live here.
 - **Its Views** are filed under its `id`: the ones it ships, and a reader's

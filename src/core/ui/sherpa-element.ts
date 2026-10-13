@@ -119,6 +119,8 @@ export const DATA_PROPS = {
   'data-page-size': { type: 'number', kind: 'style' },
   /** The host owns this component's state; report, never write. */
   'data-locked': { type: 'boolean', kind: 'style' },
+  /** `input`: its source applies LIVE, so a value reports while it moves. TODO 107 */
+  'data-apply-on': { type: 'enum', kind: 'behaviour', values: ['change', 'input'] },
 } as const satisfies PropMap;
 
 /**

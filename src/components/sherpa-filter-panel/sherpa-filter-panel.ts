@@ -148,6 +148,7 @@ export class SherpaFilterPanel extends SherpaElement {
     /* Set by a bound source: a change waits for its field's Apply, and which
        FIELDS have one waiting. TRAP T-apply-and-discard-wait-for-a-change */
     'data-remote': { type: 'boolean', kind: 'style' },
+    'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-pending': { type: 'string', kind: 'style' },
     // A change waits somewhere in its scopes: the footer's Apply all. TODO 98
     'data-dirty': { type: 'boolean', kind: 'style' },
@@ -906,7 +907,7 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     // TRAP T-an-inline-menu-is-the-same-menu — the same card, drawn in the flow.
-    const { menu, items } = menuFor(def, { inline });
+    const { menu, items } = menuFor(def, { inline, live: this.dataset['applyOn'] === 'input' });
     if (inline) {
       menu.removeAttribute('slot');
     } else {

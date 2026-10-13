@@ -122,6 +122,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-saveable': { type: 'boolean', kind: 'behaviour' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },
+    'data-apply-on': DATA_PROPS['data-apply-on'],
     // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
     'data-pending': { type: 'string', kind: 'behaviour' },
   } as const;
@@ -811,6 +812,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-one-field-one-filter-menu */
     const { menu, items } = menuFor(def, {
       bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
+      live: this.dataset['applyOn'] === 'input',
     });
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
@@ -1095,7 +1097,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
-    if (name === 'data-remote' && this.#filters.length) this.#render();
+    if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const chip of this.#chips()) this.#markPresent(chip);
     this.#syncArrangement('group');

@@ -73,6 +73,8 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   /* A control over a scope of a REMOTE source is told so: its menus wait for
      Apply. TRAP T-apply-and-discard-wait-for-a-change */
   if (options.scope && source.remote) el.setAttribute('data-remote', '');
+  // …and over a LIVE one, its values report while they move. Will, TODO 107.
+  if (options.scope && source.applyOn === 'input') el.setAttribute('data-apply-on', 'input');
   // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
   options.signal?.addEventListener('abort', () => source.unbind(el), { once: true });
 
@@ -95,6 +97,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       // UNLOCKED on the way out, or a component that outlives its source is mute.
       el.removeAttribute('data-locked');
       el.removeAttribute('data-remote');
+      el.removeAttribute('data-apply-on');
     },
   });
   return () => source.unbind(el);

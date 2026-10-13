@@ -213,6 +213,12 @@ bindSource(source, chart, { readonly: true, as: byCategory });  // reads only
 - **`as`** — an adapter from rows to that component's payload shape.
 - **`into`** — this bind owns ONE named part of the payload, so two sources can
   feed one component without the last writer winning.
+
+A source's own options say WHEN a filter applies. **`applyOn: 'input'`** with
+**`debounce`** (ms, default 300) applies it LIVE, while a value moves, and
+loads once the moves stop — for a large local dataset that suits it. The
+default, `'change'`, applies once per act. A remote source always waits for
+Apply.
 - **`rows: 'all'`** — this bind wants the WHOLE matching set, not the page. A
   grid shows page one of four; a total, a chart or a legend counting the same
   query must count all of it, or a donut redraws itself every time the reader
