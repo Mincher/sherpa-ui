@@ -6,7 +6,7 @@
  * Map:
  * - ScopeDefinition — One scope: its name, the fields it offers and holds at the start, and the saved filters it shows.
  * - SourceDefinition — A page's source: which store, how it pages and searches, its fields, scopes and saved filters.
- * - PageDefinition — One page, as JSON — its template, its source, its Views.
+ * - PageDefinition — One page, as JSON — its source, and its components' configuration.
  * - openSource — Build a page's source from its definition, over the app's store.
  */
 import { DataSource, type FieldDeclaration } from './data-source.js';
@@ -40,11 +40,11 @@ export interface SourceDefinition {
   presets?: Readonly<Record<string, { label?: string; editable?: boolean; where: Where }>>;
 }
 
-/** One page, as JSON — its template, its source, its Views. */
+/** One page, as JSON — its source, and its components' configuration. Its
+ *  markup is its Context's, in the app definition. */
 export interface PageDefinition {
   v: 1;
   id: string;
-  template?: string;
   source?: SourceDefinition;
   /** Each component's CONFIGURATION, by id — set before it is answered.
    *  TRAP T-configuration-is-not-data */

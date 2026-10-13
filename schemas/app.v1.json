@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schema/app/v1.json",
+  "title": "Sherpa-UI app definition",
+  "description": "One app, as JSON: its Contexts, the one it opens on, its nav sections and its Settings pages. Each path is relative to this file. checkApp() checks its names.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "default", "contexts"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "product": {
+      "description": "The product the nav names.",
+      "type": "object", "additionalProperties": false, "required": ["name"],
+      "properties": { "name": { "type": "string" }, "icon": { "type": "string" } }
+    },
+    "default": { "description": "The Context the app opens on: the nav's Home.", "type": "string" },
+    "contexts": {
+      "description": "Each Context, by the name the URL carries: ?context=<name>.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "$ref": "#/$defs/context" }
+    },
+    "sections": {
+      "description": "The nav's sections, in order.",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["contexts"],
+        "properties": {
+          "label": { "type": "string" },
+          "contexts": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "settings": {
+      "description": "The pages that open OVER a Context, ?settings=<name>, and the one module that runs them.",
+      "type": "object", "additionalProperties": false, "required": ["module", "pages"],
+      "properties": {
+        "module": { "type": "string" },
+        "pages": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+          "additionalProperties": { "$ref": "#/$defs/page" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "template"],
+      "properties": {
+        "label": { "description": "Its row's name, which the header shows too.", "type": "string" },
+        "icon": { "type": "string" },
+        "template": { "description": "Its markup.", "type": "string" },
+        "definition": { "description": "Its page definition (page.v1.json). Absent, it has no data.", "type": "string" },
+        "views": { "description": "Its Views, as JSON.", "type": "string" },
+        "module": { "description": "Its module, which exports init(root, ctx).", "type": "string" },
+        "chrome": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "header": { "description": "false takes the app header away while it is open.", "type": "boolean" },
+            "resizable": { "description": "A reader may resize its cards.", "type": "boolean" }
+          }
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "template"],
+      "properties": {
+        "label": { "type": "string" },
+        "icon": { "type": "string" },
+        "template": { "type": "string" }
+      }
+    }
+  }
+}

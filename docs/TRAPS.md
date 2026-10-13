@@ -16598,3 +16598,33 @@ condition rows, so it reports `unreadable-condition` and filters nothing.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/one-way-to-write-a-condition.test.mjs`
+
+### T-an-app-is-its-definition
+
+**An app names its Contexts ONCE, in `app.json`** (TODO 190; Will, 183 choice
+1, A: the app layer lives in sherpa-ui). Sherpa Demos kept the Context names
+in about 25 places: `index.html` alone held the list, the defined ones, the
+resizable ones, the Settings pages, the default, the router's default, the
+session's slots, the nav rows and every path; the server had its own copy.
+
+`AppDefinition` (`schemas/app.v1.json`) holds each Context's row — label and
+icon, which the header shows too — its files (template, definition, views,
+module) and its `chrome` (`header: false`, `resizable`); the default, which
+is the nav's Home; the nav sections; and the Settings pages with their one
+module. Each path is relative to the file. `checkApp()` reports each name
+that is broken — a default that is not a Context, a section naming one that
+is not, a name that is both a Context and a Settings page.
+
+**One `init(root, ctx)` for every Context** — `ContextModule`. `ctx` is
+`{ session, view, source, signal, header, panels, label }`, the same for a
+Context, a Settings page and the assistant panel, so no Context reaches into
+the document for the header or a panel. `signal` aborts when it goes. The
+CHROME is the loader's: a Context with `header: false` no longer sets and
+clears the shell's attribute itself.
+
+A page definition has no `template` key now: nothing read it, and its markup
+is its Context's, named here.
+
+- Site: `src/core/data/app-definition.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/an-app-is-its-definition.test.mjs`

@@ -2,7 +2,6 @@
   "$schema": "../../schemas/page.v1.json",
   "v": 1,
   "id": "records",
-  "template": "records",
   "source": {
     "store": "customers",
     "pageSize": 25,

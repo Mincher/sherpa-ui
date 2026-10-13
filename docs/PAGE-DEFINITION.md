@@ -34,7 +34,6 @@ One JSON document per page. The same rule as a View: **a definition is data**
 {
   "v": 1,
   "id": "records",
-  "template": "records",
   "source": {
     "store": "customers",
     "pageSize": 25,
@@ -73,7 +72,8 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **The header's chips are not listed.** They are the View scope's holds,
   each drawn from its field — one definition per field
   (`T-a-field-is-declared-once`). The View chip lists `views`.
-- **`template`** — the markup, until the Templater (68) builds it from JSON.
+- **Its markup is its Context's**, named in the app definition (`app.v1.json`,
+  TODO 190) — not here.
 
 ---
 

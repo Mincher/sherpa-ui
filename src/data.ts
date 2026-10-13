@@ -116,6 +116,15 @@ export {
   type ScopeDefinition,
   type SourceDefinition,
 } from './core/data/page-definition.js';
+/* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */
+export {
+  checkApp,
+  type AppDefinition,
+  type ContextDefinition,
+  type SettingsPage,
+  type ContextInit,
+  type ContextModule,
+} from './core/data/app-definition.js';
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
 export {

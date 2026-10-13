@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schema/page/v1.json",
   "title": "Sherpa-UI page definition",
-  "description": "One page, as JSON: its template, its data source and its Views. The provider's open() reads it. docs/PAGE-DEFINITION.md",
+  "description": "One page, as JSON: its data source and its components' configuration. Its markup is its Context's, in app.v1.json. The provider's open() reads it. docs/PAGE-DEFINITION.md",
   "type": "object",
   "additionalProperties": false,
   "required": ["v", "id"],
@@ -13,7 +13,6 @@
       "description": "The page's id: its Views, its saved Views and its kept Query are filed under it.",
       "type": "string", "pattern": "^[a-z][a-z0-9-]*$"
     },
-    "template": { "description": "The page's markup, by name.", "type": "string" },
     "ui": {
       "description": "Each component's configuration, by id, set through its own API before it is answered — as a View's ui is.",
       "type": "object",

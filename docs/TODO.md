@@ -103,7 +103,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
 | ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
 | ✅ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
-| ⬜ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
+| ✅ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ⬜ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
 | ⬜ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
 | ⬜ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
@@ -3889,7 +3889,7 @@ is the readable copy. Each icon is its own module, loaded the first time it is
 drawn; `settled()` waits for them. One button: 570 KB (JS + fetched) before
 208, 214 KB now, nothing fetched. `T-an-icon-loads-when-first-drawn`
 
-### `[ ]` 190 — A Context contract and one `app.json`
+### `[x]` ✅ 190 — A Context contract and one `app.json`
 
 ❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/CONSUMER-REVIEW.md` §3.4.
 
@@ -3902,6 +3902,18 @@ dead; the page schema says it holds Views, and has no `views`; and a Context,
 Settings and the Assistant get three different `init` shapes.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — the app layer lives in sherpa-ui, beside `sherpa-router`.
+
+**✅ Done 2026-10-13.** `src/core/data/app-definition.ts`: `AppDefinition`,
+`ContextModule`, `ContextInit` and `checkApp()`, with `schemas/app.v1.json`.
+Sherpa Demos' `app/app.json` names the three Contexts, the default, the nav
+section and the four Settings pages; `index.html` and the server read every
+list from it, and the server's `/template/context/` route is gone (a template
+is a file where `app.json` names it). Every Context, Settings page and the
+assistant get ONE `ctx` — `{ session, view, source, signal, header, panels,
+label }` — so the six `document.querySelector` calls in `contexts/` are gone,
+and `chrome.header: false` is the loader's, not chat's. A page definition's
+dead `template` key is deleted. The loader itself is 194.
+`T-an-app-is-its-definition`
 
 ### `[ ]` 191 — Library parts that empty `contexts/`
 
