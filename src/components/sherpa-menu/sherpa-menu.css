@@ -237,6 +237,36 @@
 .condition-row[data-takes="list"] .condition-pick { display: block; }
 .condition-row[data-takes="text"] .condition-value { display: block; }
 
+/* A DATE answers with a day (and a time), two for Between, or a count and a
+   unit — side by side in the value's place, so its row is a flex run. TODO 21d */
+.condition-date, .condition-time, .condition-date-to, .condition-time-to,
+.condition-count, .condition-unit { display: none; }
+.condition-row:is([data-takes="date"], [data-takes="dates"]) .condition-date,
+.condition-row[data-takes="dates"] .condition-date-to,
+.condition-row[data-takes="duration"] :is(.condition-count, .condition-unit) { display: block; }
+:host([data-time]) .condition-row:is([data-takes="date"], [data-takes="dates"]) .condition-time,
+:host([data-time]) .condition-row[data-takes="dates"] .condition-time-to { display: block; }
+.condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) { display: flex; align-items: center; }
+.condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > .join { flex: 0 0 3.5rem; }
+.condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > .condition { flex: 2 1 6.5rem; min-inline-size: 0; }
+.condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > :is(.condition-date, .condition-date-to, .condition-count) { flex: 3 1 0; min-inline-size: 0; }
+.condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > :is(.condition-time, .condition-time-to, .condition-unit) { flex: 2 1 0; min-inline-size: 0; }
+/* …and the row's real right end, where nothing follows it. TRAP T-a-hidden-sibling-still-counts-as-first-child */
+:host(:not([data-time])) .condition-row[data-only][data-takes="date"] > .condition-date,
+:host([data-time]) .condition-row[data-only][data-takes="date"] > .condition-time,
+:host(:not([data-time])) .condition-row[data-only][data-takes="dates"] > .condition-date-to,
+:host([data-time]) .condition-row[data-only][data-takes="dates"] > .condition-time-to,
+.condition-row[data-only][data-takes="duration"] > .condition-unit,
+:host([data-readonly]:not([data-time])) .condition-row[data-takes="date"] > .condition-date,
+:host([data-readonly][data-time]) .condition-row[data-takes="date"] > .condition-time,
+:host([data-readonly]:not([data-time])) .condition-row[data-takes="dates"] > .condition-date-to,
+:host([data-readonly][data-time]) .condition-row[data-takes="dates"] > .condition-time-to,
+:host([data-readonly]) .condition-row[data-takes="duration"] > .condition-unit {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
 /* Every part of a row is the same height, so the joints read as one edge. */
 .condition-row > * {
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
@@ -428,11 +458,11 @@
 }
 
 /* A calendar keeps Today in the footer's left slot, as the node has it. */
-:host([data-type="calendar"]) .today { display: inline-flex; }
+:host(:is([data-type="calendar"], [data-body="date"])) .today { display: inline-flex; }
 
 /* The spacer splits the row: filter actions lead, the commit pair trails. It
    earns its place whenever BOTH sides are occupied. */
-:host(:is([data-type="calendar"], [data-clearable], [data-removable], [data-saveable])) .footer-spacer {
+:host(:is([data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], [data-saveable])) .footer-spacer {
   display: block;
   flex: 1 1 auto;
 }
@@ -516,7 +546,7 @@
  * (Cancel·Apply), data-removable, data-clearable, data-saveable, Type=calendar
  * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-clearable], [data-removable], [data-saveable], [data-has-footer])) .footer {
+:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], [data-saveable], [data-has-footer])) .footer {
   display: block;
 }
 
@@ -537,7 +567,7 @@
 /* ── Type = Calendar ── a variant of the menu, not its own component. It
  * differs in two things only: the width, and a HORIZONTAL list axis
  * ([ day grid | time ]). Header, footer and commit behaviour are inherited. */
-:host([data-type="calendar"]) .menu {
+:host(:is([data-type="calendar"], [data-body="date"])) .menu {
   /* Drops the 240 FLOOR and hugs: a calendar with no time picker should be
      narrower rather than half empty. Figma's 562 is a result, not a step. */
   min-inline-size: min-content;
@@ -546,7 +576,7 @@
 /* Horizontal (Figma's `list` frame there, gap 4), holding Grid and Time as
    siblings. `wrap` plus a full-width first row lets a MODE row (a Range
    switch) sit ABOVE them instead of being squeezed into a narrow column. */
-:host([data-type="calendar"]) .rows {
+:host(:is([data-type="calendar"], [data-body="date"])) .rows {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -554,14 +584,14 @@
 }
 
 /* The full-width row — see above. */
-:host([data-type="calendar"]) .rows > ::slotted([data-row]) {
+:host(:is([data-type="calendar"], [data-body="date"])) .rows > ::slotted([data-row]) {
   flex: 0 0 100%;
   inline-size: 100%;
 }
 
 /* A flex item does not grow by default, so the grid drew at its 224 floor and
    left a wider card empty beside it. */
-:host([data-type="calendar"]) .rows > ::slotted(sherpa-calendar) {
+:host(:is([data-type="calendar"], [data-body="date"])) .rows > ::slotted(sherpa-calendar) {
   flex: 1 1 auto;
   min-inline-size: 0;
 }
@@ -616,6 +646,7 @@
    TRAP T-a-number-has-advanced-rows */
 :host([data-type="filter"][data-body="number"]) .body-op { display: none; }
 :host([data-body="number"][data-mode="advanced"]) :is(.body-range, .body-number) { display: none; }
+:host([data-body="date"][data-mode="advanced"]) .body-range { display: none; }
 
 /* READ-ONLY: the answer is shown and nothing here changes it — no footer, no
    Add condition, no Advanced button. `!important`: each is a composed

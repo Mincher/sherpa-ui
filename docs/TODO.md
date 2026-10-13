@@ -2485,7 +2485,7 @@ it.
 | | step |
 |---|---|
 | ✅ | 1. The data: On, Before, After and Between are `eq`, `lt`, `gt` and `between`; In the last and In the next are `last` / `next { n, unit }`, kept RELATIVE in the clause and in a saved View (`{ "last": 7 }`) and worked out when matched — a `RestStore` sends the `between`. A field with `time: true` takes a day alone as all of it. The words: `Before 03 Sep 2026`, `In the last 7 days` |
-| ⬜ | 2. The menu: a date filter's Advanced rows — a date box (and a time box where the field holds times), two for Between, a count and a unit for In the last and In the next; the f(x) switch beside the calendar |
+| ✅ | 2. The menu: a date filter's Advanced rows — a date box (and a time box where the field holds times), two for Between, a count and a unit for In the last and In the next; the f(x) switch beside the calendar. A date that opts in is a FILTER menu, as a number is; the calendar keeps its card; the switch carries a day over as On, two as Between; the chip's face reads the rows |
 | ⬜ | 3. Sherpa Demos: Created opts in |
 
 ### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes

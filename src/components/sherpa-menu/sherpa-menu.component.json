@@ -372,6 +372,55 @@
                       }
                     },
                     {
+                      "el": "sherpa-input-text",
+                      "class": "condition-date",
+                      "attrs": {
+                        "type": "date",
+                        "aria-label": "Date"
+                      }
+                    },
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "condition-time",
+                      "attrs": {
+                        "type": "time",
+                        "aria-label": "Time"
+                      }
+                    },
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "condition-date-to",
+                      "attrs": {
+                        "type": "date",
+                        "aria-label": "To date"
+                      }
+                    },
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "condition-time-to",
+                      "attrs": {
+                        "type": "time",
+                        "aria-label": "To time"
+                      }
+                    },
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "condition-count",
+                      "attrs": {
+                        "data-type": "number",
+                        "min": "1",
+                        "aria-label": "How many"
+                      }
+                    },
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "condition-unit",
+                      "attrs": {
+                        "data-type": "select",
+                        "aria-label": "Unit"
+                      }
+                    },
+                    {
                       "el": "sherpa-button",
                       "class": "drop-condition",
                       "attrs": {
@@ -695,6 +744,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-time",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-to",
       "type": "string",
       "observed": true,
@@ -788,6 +845,16 @@
     },
     {
       "$type": "state",
+      "name": "time",
+      "selector": ":host([data-time])"
+    },
+    {
+      "$type": "state",
+      "name": "readonly",
+      "selector": ":host([data-readonly])"
+    },
+    {
+      "$type": "state",
       "name": "drill",
       "selector": ":host([data-drill])"
     },
@@ -813,6 +880,11 @@
     },
     {
       "$type": "state",
+      "name": "date",
+      "selector": ":host([data-body=\"date\"])"
+    },
+    {
+      "$type": "state",
       "name": "no-matches",
       "selector": ":host([data-no-matches])"
     },
@@ -833,13 +905,8 @@
     },
     {
       "$type": "state",
-      "name": "date",
-      "selector": ":host([data-body=\"date\"])"
-    },
-    {
-      "$type": "state",
-      "name": "readonly",
-      "selector": ":host([data-readonly])"
+      "name": "not-time",
+      "selector": ":host(:not([data-time]))"
     },
     {
       "$type": "state",

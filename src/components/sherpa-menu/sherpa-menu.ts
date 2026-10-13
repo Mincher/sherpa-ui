@@ -17,7 +17,7 @@
  */
 import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
+  DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
   readingRows, rowAnswered, rowOffer, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
@@ -83,6 +83,10 @@ const modeOf = (raw: string | undefined): ConditionType =>
  *  takes its options through `populate()`. */
 type FieldEl = HTMLElement & { value: string; populate?: (d: unknown) => unknown };
 
+/** What a date's In the last and In the next count. */
+const DATE_UNITS = ['day', 'week', 'month'] as const;
+type DateUnit = (typeof DATE_UNITS)[number];
+
 /** Each menu's own radio group number. */
 let radioGroups = 0;
 
@@ -114,6 +118,8 @@ export class SherpaMenu extends SherpaElement {
        so one spelling and one set of rules serve every host.
        TRAP T-a-menu-owns-its-own-bodies */
     'data-body': { type: 'enum', kind: 'style', values: ['number', 'date'] },
+    /* A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
+    'data-time': { type: 'boolean', kind: 'style' },
     /* A number body's ends and step. They CLAMP the field as well as the
        slider — typing 500 into a 0..100 filter asks for a row that cannot
        exist. TRAP T-grid-slider-spans-real-values */
@@ -329,7 +335,7 @@ export class SherpaMenu extends SherpaElement {
     this.dataset['mode'] = to;
     /* A NUMBER going Advanced carries its body into the rows, whoever flipped
        it — the menu's own button, a panel's f(x). TRAP T-a-number-has-advanced-rows */
-    if (this.#numeric() && was !== 'advanced' && to === 'advanced' && this.$('.condition-rows')) {
+    if (this.#typedBody() && was !== 'advanced' && to === 'advanced' && this.$('.condition-rows')) {
       if (!this.#rowEls().length) this.#addRow();
       this.#seedFromPicks();
     }
@@ -403,6 +409,13 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#mirror && this.conditions.some(rowAnswered)) return;
     /* A NUMBER carries its body over: one value under its op, or a range as
        At least AND At most. TRAP T-a-number-has-advanced-rows */
+    // A DATE carries its calendar over: one day is On it, two are Between them. TODO 21d
+    if (this.#dated()) {
+      const [a, b] = (this.#bodyReading().picked ?? []).map(String);
+      if (a != null && b != null) this.conditions = [{ op: 'between', picked: [a, b] }];
+      else if (a != null) this.conditions = [{ op: DEFAULT_OP, picked: [a] }];
+      return;
+    }
     if (this.#numeric()) {
       const now = this.#bodyReading();
       const [a, b] = (now.picked ?? []).map(String);
@@ -439,7 +452,7 @@ export class SherpaMenu extends SherpaElement {
     const body = this.dataset['body'];
     /* A NUMBER that offers Advanced keeps BOTH answers, as a list does: its
        body is Simple's, its rows Advanced's. TRAP T-a-number-has-advanced-rows */
-    if (body === 'number' && this.#offersAdvanced()) {
+    if ((body === 'number' || body === 'date') && this.#offersAdvanced()) {
       const rows = this.#rowEls().length ? this.conditions.filter(rowAnswered) : [];
       return { ...this.#bodyReading(), ...(rows.length ? { conditions: rows } : {}), mode: this.mode };
     }
@@ -528,6 +541,12 @@ export class SherpaMenu extends SherpaElement {
     if (body === 'date') {
       if (next.op) this.#setBodyOp(next.op);
       this.values = typed ? [typed] : (next.picked ?? []).map(valueKey);
+      // …and its ROWS, where it offers them, as a number's. TODO 21d
+      if (this.#offersAdvanced()) {
+        const rows = (next.conditions ?? []).filter(rowAnswered);
+        this.#setRows(rows);
+        this.mode = next.mode ?? (rows.length ? 'advanced' : 'simple');
+      }
       return;
     }
     /* An old reading's picks under a non-default op ("is not churned") are THAT
@@ -618,8 +637,10 @@ export class SherpaMenu extends SherpaElement {
     if (join) join.value = seed?.join ?? 'or';
 
     const ops = this.#opList();
+    // A date's ops in a date's words: On, Before, After. TODO 21d
+    const dated = this.#dated();
     void cond?.populate?.(ops.map((op) => ({
-      value: op, label: OP_LABELS[op],
+      value: op, label: (dated ? DATE_OP_LABELS[op] : undefined) ?? OP_LABELS[op],
     })));
     const op = seed?.op && ops.includes(seed.op) ? seed.op : (ops[0] ?? DEFAULT_OP);
     if (cond) cond.value = op;
@@ -646,6 +667,39 @@ export class SherpaMenu extends SherpaElement {
     }
     // A NUMBER's `=` is typed too, and kept as its one pick.
     if (text) text.value = seed?.text ?? (this.#numeric() && seed?.picked?.length ? String(seed.picked[0]) : '');
+    if (dated) this.#fillDateRow(row, seed);
+  }
+
+  /** A date row's own boxes: a day (and a time), two for Between, a count and a unit. TODO 21d */
+  #fillDateRow(row: HTMLElement, seed?: FieldCondition): void {
+    const box = (name: string): FieldEl | null => row.querySelector<FieldEl>(`.condition-${name}`);
+    const set = (name: string, value: string): void => { const el = box(name); if (el) el.value = value; };
+    const unit = box('unit');
+    // Its value written AFTER its options exist. TRAP T-custom-element-upgrade
+    void Promise.resolve(unit?.populate?.(DATE_UNITS.map((u) => ({ value: u, label: `${u}s` }))))
+      .then(() => { if (unit) unit.value = seed?.unit ?? 'day'; });
+    if (seed?.op === 'last' || seed?.op === 'next') return set('count', seed.text ?? '');
+    const ends = seed?.op === 'eq' || seed?.op === 'between' ? [...(seed.picked ?? [])] : [seed?.text ?? ''];
+    ends.slice(0, 2).forEach((value, i) => {
+      const [day, time] = String(value ?? '').split('T');
+      set(i ? 'date-to' : 'date', day ?? '');
+      set(i ? 'time-to' : 'time', (time ?? '').slice(0, 5));
+    });
+  }
+
+  /** A DATE row's answer, as the row's own op needs it. */
+  #dateRowAnswer(row: HTMLElement, op: FilterOp): Omit<FieldCondition, 'op' | 'join'> {
+    const value = (name: string): string => (row.querySelector<FieldEl>(`.condition-${name}`)?.value ?? '').trim();
+    const at = (day: string, time: string): string => (value(day) && value(time) && this.hasAttribute('data-time')
+      ? `${value(day)}T${value(time)}` : value(day));
+    if (op === 'last' || op === 'next') return { text: value('count'), unit: (value('unit') || 'day') as DateUnit };
+    if (op === 'between') {
+      const ends = [at('date', 'time'), at('date-to', 'time-to')];
+      return ends.every(Boolean) ? { picked: ends } : {};
+    }
+    const day = at('date', 'time');
+    if (op === 'eq') return day ? { picked: [day] } : {};
+    return { text: day };
   }
 
   /** A NUMBER menu's rows are TYPED, whatever the op: it has no list to pick
@@ -654,8 +708,20 @@ export class SherpaMenu extends SherpaElement {
     return this.dataset['body'] === 'number';
   }
 
-  /** What a row answers with: a pick, or typing. */
-  #takes(op: FilterOp): 'list' | 'text' | 'range' {
+  /** A DATE menu's rows answer with days, a count, or two ends. TODO 21d */
+  #dated(): boolean {
+    return this.dataset['body'] === 'date';
+  }
+
+  /** A menu whose own BODY answers Simple — a number or a date — so its host
+   *  attributes are the body's, never row one's. TRAP T-a-number-has-advanced-rows */
+  #typedBody(): boolean {
+    return this.#numeric() || this.#dated();
+  }
+
+  /** What a row answers with: a pick, typing — or, on a date, a day, two, or a count. */
+  #takes(op: FilterOp): 'list' | 'text' | 'range' | 'date' | 'dates' | 'duration' {
+    if (this.#dated()) return op === 'last' || op === 'next' ? 'duration' : op === 'between' ? 'dates' : 'date';
     return this.#numeric() ? 'text' : (OP_TAKES[op] ?? 'list');
   }
 
@@ -711,6 +777,7 @@ export class SherpaMenu extends SherpaElement {
       const takes = OP_TAKES[op] ?? 'list';
       const out: FieldCondition = { op };
       if (i > 0) out.join = (row.querySelector<FieldEl>('.join')?.value ?? 'or') as 'and' | 'or';
+      if (this.#dated()) return { ...out, ...this.#dateRowAnswer(row, op) };
       /* A NUMBER's `=` is typed, and answers as the one number it picks —
          as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
       if (this.#numeric() && takes === 'list') {
@@ -758,8 +825,8 @@ export class SherpaMenu extends SherpaElement {
       region.replaceChildren();
       for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
     }
-    // A NUMBER's `data-op` is its BODY's. TRAP T-a-number-has-advanced-rows
-    if (this.#numeric()) return;
+    // A NUMBER's `data-op` is its BODY's, and a date's. TRAP T-a-number-has-advanced-rows
+    if (this.#typedBody()) return;
     // Every sync rebuilds row one from these two — from the row SHOWN, when the
     // rows were kept. TRAP T-row-one-is-data-op
     const first = keep ? this.conditions[0] : rows[0];
@@ -840,8 +907,8 @@ export class SherpaMenu extends SherpaElement {
       if (picked) row.dataset['want'] = picked;
     }
 
-    // A NUMBER's host attributes are its BODY's. TRAP T-a-number-has-advanced-rows
-    if (this.#numeric()) return this.#emitConditions();
+    // A NUMBER's host attributes are its BODY's, and a date's. TRAP T-a-number-has-advanced-rows
+    if (this.#typedBody()) return this.#emitConditions();
     // A row changed, so what each later AND row offers may have too. TODO 110.
     this.#refillPicks();
     // Row one still mirrors to the host attributes: the one-row view.
@@ -920,8 +987,8 @@ export class SherpaMenu extends SherpaElement {
        TRAP T-conditions-are-opt-in-per-field */
     if (!this.$('.condition-rows') || !this.#offersAdvanced()) return;
     if (!this.#rowEls().length) this.#addRow();
-    // A NUMBER's `data-op` is its body's, not row one's. TRAP T-a-number-has-advanced-rows
-    if (this.#numeric()) return this.#numberRows();
+    // A NUMBER's `data-op` is its body's, not row one's, and a date's. TRAP T-a-number-has-advanced-rows
+    if (this.#typedBody()) return this.#numberRows();
 
     const ops = this.#opList();
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);

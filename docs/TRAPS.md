@@ -1643,11 +1643,19 @@ A `RestStore` sends the `between`, so a server never meets `last` or `next`.
 A field that holds TIMES (`time: true`) takes a day alone as all of it:
 On is that day's span, After is after its end.
 
+**In a menu**, a date that opts in (`advanced: true`) is a FILTER menu, as an
+Advanced number is: the calendar stays its Simple body, and its rows ask On,
+Before, After, Between, In the last and In the next — a day box (and a time
+box with `data-time`), two for Between, a count and a unit. Its host
+attributes stay the calendar's, never row one's. The switch carries the
+calendar's day over as On, two days as Between.
+
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/where.ts`
 - Site: `test/unit/date-conditions.test.mjs`
+- Site: `test/e2e/reforged-date-conditions.spec.ts`
 
 ### T-a-date-reads-one-way
 

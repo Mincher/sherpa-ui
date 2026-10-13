@@ -48,6 +48,8 @@ export interface FilterMenuDef extends KindSource {
   step?: number;
   availableDates?: readonly string[];
   range?: boolean;
+  /** A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
+  time?: boolean;
   persistent?: boolean;
   commit?: boolean;
   /** `false`: no Select all — a list of filters, where "every one" is never the answer. */
@@ -146,6 +148,14 @@ export function menuFor(
       cal.setAttribute('data-available', def.availableDates.join(','));
     }
     menu.appendChild(cal);
+    /* ADVANCED, where the field opts in: a FILTER menu, its rows asking the
+       DATE questions — the calendar stays its Simple body. TODO 90 with 21d */
+    if (advancedOf(def) === true) {
+      menu.setAttribute('data-type', 'filter');
+      menu.setAttribute('data-advanced', '');
+      menu.setAttribute('data-conditions', (OPS_FOR_TYPE['date'] ?? []).join(','));
+      if (def.time) menu.setAttribute('data-time', '');
+    }
     return { menu, kind, items: [] };
   }
 

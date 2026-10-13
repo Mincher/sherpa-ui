@@ -353,6 +353,14 @@
                            aria-label="Value"></sherpa-input-text>
         <sherpa-input-text class="condition-value" placeholder="Value"
                            data-clearable aria-label="Value"></sherpa-input-text>
+        <!-- A DATE answers with a day (and a time where the field holds them),
+             two for Between, or a count and a unit. CSS shows what its op takes. TODO 21d -->
+        <sherpa-input-text class="condition-date" type="date" aria-label="Date"></sherpa-input-text>
+        <sherpa-input-text class="condition-time" type="time" aria-label="Time"></sherpa-input-text>
+        <sherpa-input-text class="condition-date-to" type="date" aria-label="To date"></sherpa-input-text>
+        <sherpa-input-text class="condition-time-to" type="time" aria-label="To time"></sherpa-input-text>
+        <sherpa-input-text class="condition-count" data-type="number" min="1" aria-label="How many"></sherpa-input-text>
+        <sherpa-input-text class="condition-unit" data-type="select" aria-label="Unit"></sherpa-input-text>
         <!-- DEFAULT look and DEFAULT size, and LAST in the group: it is one of
              the row's controls, not chrome floating beside them, so it stands
              the same height as the inputs it sits with. -->

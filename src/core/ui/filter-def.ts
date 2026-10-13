@@ -65,6 +65,8 @@ export interface FilterDef extends OffersAdvanced {
   availableDates?: string[];
   /** Start in RANGE mode. The reader may still flip it. */
   range?: boolean;
+  /** A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
+  time?: boolean;
   /** ON, with nothing picked — a preset's whole state. */
   active?: boolean;
   /** Offer Remove. OPT-IN: a host-placed chip must not delete itself. */

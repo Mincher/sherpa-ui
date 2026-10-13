@@ -911,7 +911,8 @@ export class SherpaQuickFilter extends SherpaElement {
        typed text there, not a tick.
        TRAP T-a-condition-badge-says-that-not-which · TRAP T-both-answers-are-kept */
     const body = menu?.dataset['body'];
-    const list = body === 'number' || (isFilter && body !== 'date') ? menu?.reading : undefined;
+    // A DATE that offers Advanced is a filter menu too: its rows are in its reading. TODO 21d
+    const list = body === 'number' || isFilter ? menu?.reading : undefined;
     // A menu nested in the chip's answers for itself. TRAP T-a-nested-menu-answers-for-itself
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => i.closest('sherpa-menu') === menu && !i.closest(NON_VALUE_ROWS))
