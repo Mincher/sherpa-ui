@@ -817,10 +817,13 @@ export class DataSource extends EventTarget {
       for (const field of Object.keys(was)) this.write(scope, field, undefined);
       return;
     }
+    // Its OWN before the first write compiles, so a View-held field cannot set it aside.
+    this.#defaults.set(scope, structuredClone(this.#draft.scopes[scope] ?? { holds: [], readings: {} }));
     for (const field of Object.keys(was)) if (!(field in readings)) this.write(scope, field, undefined);
     for (const [field, reading] of Object.entries(readings)) this.write(scope, field, reading, at);
     const written = this.#draft.scopes[scope];
     if (written) this.#defaults.set(scope, structuredClone(written));
+    else this.#defaults.delete(scope);
   }
 
   /** One scope's reading of one field, or undefined. A copy. */
@@ -1801,6 +1804,7 @@ export class DataSource extends EventTarget {
       field: (f) => this.#facts(f),
       preset: (id) => this.#presets.get(id),
       components: this.#componentScopes(),
+      fixed: new Set(this.#defaults.keys()),
       drop: (scope, field) => this.#setAside.get(scope)?.[field],
     };
   }

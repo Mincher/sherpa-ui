@@ -26,7 +26,7 @@ test('the starter boots: its Context loads, its metrics count the seed, and its 
     (document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelectorAll('.row, [role="row"]').length ?? 0) > 1);
   // A tile's own filter lands after its first count: wait for the counts to settle.
   await expect.poll(() => page.evaluate(() =>
-    [...document.querySelectorAll('#context-root sherpa-metric')].map((m) => (m as HTMLElement).dataset['value']))).toEqual(['6', '2', '279']);
+    [...document.querySelectorAll('#context-root sherpa-metric')].map((m) => (m as HTMLElement).dataset['value']))).toEqual(['6', '3', '279']);
   const r = await page.evaluate(() => ({
     heading: document.querySelector('sherpa-app-header')!.getAttribute('data-heading'),
     views: (document.querySelector('sherpa-outlet') as HTMLElement & { viewsOf(c: string): Record<string, unknown> }).viewsOf('records'),

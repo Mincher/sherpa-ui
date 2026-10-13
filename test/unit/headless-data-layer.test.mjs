@@ -1043,6 +1043,30 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   assert.equal(source.query.applied.scopes['own:tile'], undefined);
 });
 
+/* …and on a field the VIEW holds it still narrows: a tile's own filter is what
+   it is, not a chip the View's answer sets aside. TODO 237 */
+test('declareDefault on a field the View holds still narrows its component', async () => {
+  const rows = [{ id: 1, sev: 'critical' }, { id: 2, sev: 'info' }, { id: 3, sev: 'critical' }];
+  const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+  const seen = new Map();
+  const stub = (name) => Object.assign(new EventTarget(), {
+    id: name, setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    populate: (r) => seen.set(name, r.map((x) => x.id)),
+  });
+  const tile = stub('tile');
+  source.bind(tile, { rows: 'all', readonly: true });
+  source.hold('view', ['sev']);
+  await source.load();
+  source.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(seen.get('tile'), [1, 3]);
+  // The View's own answer narrows it too, under the tile's.
+  source.answer('view', { sev: { picked: ['info'] } });
+  await source.load();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(seen.get('tile'), []);
+});
+
 /* A PAGE GOES OUT AS JSON and comes back: a round trip gives the same rows and
    the same question — its saved filters with it. TRAP T-a-page-goes-out-as-json */
 test('export and import: a round trip through JSON gives the same rows', async () => {

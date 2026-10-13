@@ -15156,6 +15156,14 @@ DEFAULT and puts it back under any Query that does not name that scope — a
 View, or a restore from before the component joined. A View's JSON may name
 the scope to change it. When the component leaves, its default goes with it.
 
+**It holds on a field the View holds, too** (TODO 237). A field lives in one
+scope, so `compile()` sets aside a component scope's answer to a View-held
+field — right for a chip or a legend, which move UP. A component's own filter
+is not a chip: it is what the tile IS. The source names its own scopes
+`fixed`, and compile never sets one aside. The scope joins them BEFORE its
+first write compiles — after, and the first compile had already dropped it,
+with no report.
+
 Narrowing one component needs a bound `rows: 'all'` component — a summary —
 or `write` reports `component-part-on-a-page`. Bad JSON reports
 `provider-bad-readings`, and the component filters nothing of its own.
@@ -15164,6 +15172,7 @@ or `write` reports `component-part-on-a-page`. Bad JSON reports
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/core/data/query.ts`
 
 ### T-a-heading-asks-through-the-source
 

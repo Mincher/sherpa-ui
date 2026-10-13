@@ -2,8 +2,9 @@
 <sherpa-layout-grid data-rows="fit" data-row-count="2">
   <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Records"
                  data-aggregate="count"></sherpa-metric>
-  <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Big accounts"
-                 data-aggregate="count" data-where='{"seats":{"gte":50}}'></sherpa-metric>
+  <!-- data-where: the tile's OWN filter — it narrows this tile alone, under the View's. -->
+  <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Active"
+                 data-aggregate="count" data-where='{"status":{"eq":"active"}}'></sherpa-metric>
   <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Seats"
                  data-aggregate="sum" data-field="seats"></sherpa-metric>
 

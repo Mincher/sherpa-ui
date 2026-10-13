@@ -86,6 +86,9 @@ export interface CompileFacts {
    *  and trickles down with the View. Absent: every scope but the View is a
    *  component's. TRAP T-only-the-view-trickles-down */
   components?: ReadonlySet<string>;
+  /** A component's OWN scopes — its `data-where` — which are what it IS, not a
+   *  chip: a field the View holds never sets them aside. TRAP T-a-component-default-outlives-a-view */
+  fixed?: ReadonlySet<string>;
   /** The picked values a LATER answer rules out, as value keys: they stay in the
    *  reading and leave the filter. TRAP T-a-later-answer-sets-an-earlier-pick-aside */
   drop?: (scope: string, field: string) => readonly string[] | undefined;
@@ -122,7 +125,8 @@ export const VIEW = 'view';
  * filter. Pure: the same Query and facts always compile to the same thing.
  *
  * - Every reading applies, held or not — except that a field the VIEW holds
- *   is answered there alone: a component scope's reading of it applies nothing.
+ *   is answered there alone: a component scope's reading of it applies nothing,
+ *   unless the scope is a component's own (`fixed`).
  * - A SUSPENDED reading keeps its answer and applies none of it.
  * - A scope with `narrows` reaches only those components.
  *
@@ -140,7 +144,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     const clauses: Filter[] = [];
     for (const [field, reading] of Object.entries(scope.readings)) {
       // One field, one scope: the View's answer wins. TRAP T-a-view-held-heading-shows-and-refuses
-      if (id !== VIEW && viewHolds.has(field)) continue;
+      if (id !== VIEW && viewHolds.has(field) && !facts.fixed?.has(id)) continue;
       if (reading.suspended) continue;
       const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
       if (clause) clauses.push(clause);
