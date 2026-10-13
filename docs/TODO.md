@@ -30,7 +30,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ✅ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
-| 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
+| ✅ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
 | ⬜ | 6 | 112 | DEFERRED (Will, 2026-10-13) — an Equals row in Advanced will not open its value list | bug |
@@ -509,7 +509,7 @@ chips against the panel's field boxes — not a copy. `docs/FILTER-REVIEW.md`
 §Step 4 measured the same: it landed at −21. Closed as Will closed 196 stage 6
 (2026-10-13: B); say so to reopen it.
 
-### `[~]` 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
+### `[x]` ✅ 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
 
 Will, 2026-09-29, asking why a menu dropped a reading set before it had drawn:
 *"Wouldn't it make sense for all components to load, set state and conditions
@@ -649,8 +649,13 @@ is the PAGE's: `page.css` shimmers an element whose code has not loaded
 
 **✅ Panel done 2026-10-13.** `setFieldReading` before the first `populate()`
 is held by `scope:field`: `readings` reports it, and the field draws it when
-it comes. **Left of 113:** the toolbar's redundant waits, each with its own
-proof.
+it comes.
+
+**✅ Closed 2026-10-13 — the waits stay.** The proof went the other way: a
+TYPED row still fills late — one frame, and up to four on a busy page (the
+condition chip test failed 1 in 5 at a load of 30 until the chip asked for
+four frames). The bar's four `#settled()` waits and `#pendingAnswers` cover
+that gap, so none is redundant. `T-a-rebuilt-row-reads-empty-for-a-tick`.
 
 ### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
 
