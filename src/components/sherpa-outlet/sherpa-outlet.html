@@ -1,0 +1,27 @@
+<!--
+  sherpa-outlet — where the route's Context is drawn. It is the app's main
+  landmark, and its light DOM IS the Context: on each route change it loads the
+  one app.json names, runs it, and tears the last one down.
+  TRAP T-an-outlet-loads-the-context
+
+      <sherpa-outlet id="context-root"></sherpa-outlet>
+      outlet.start({ app, base, session, stores: () => ({ … }) });
+
+  JS API:
+    start(options)      read app.json, load each Context's Views, then the route's Context
+    context             the Context on screen
+    viewsOf(context)    a Context's Views: its own, then the reader's saved ones
+    firstView(context)  its first View, which the URL leaves out
+    viewsReady          settles once every Context's own Views are in
+
+  Slots:
+    (default)   the Context's markup, put there by the outlet
+
+  Fires:
+    context-change — detail: { context, view }
+    context-markup — detail: { context, root, waitUntil }
+    context-load — detail: { context, view }
+-->
+<template id="default">
+  <slot data-accepts="any"></slot>
+</template>

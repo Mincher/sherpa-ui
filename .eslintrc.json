@@ -141,14 +141,14 @@
       // it, so one button never pays for a provider, a router or saved Views.
       // check:weight proves the same over dist/. TRAP T-the-app-layer-is-opt-in
       "files": ["src/components/**/*.ts", "src/components.ts"],
-      "excludedFiles": ["src/components/sherpa-provider/**", "src/components/sherpa-router/**"],
+      "excludedFiles": ["src/components/sherpa-provider/**", "src/components/sherpa-router/**", "src/components/sherpa-outlet/**"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [{
           "group": [
             "**/core/browser/session.js", "**/core/browser/persist-view.js", "**/core/browser/route.js",
             "**/core/browser/view-files.js", "**/core/browser/view-drafts.js", "**/core/browser/view-sync.js",
             "**/core/browser/view-markup.js", "**/core/browser/saved-filters.js", "**/core/ui/bind-settings.js",
-            "**/core/data/app-definition.js", "**/sherpa-provider/*", "**/sherpa-router/*", "**/app.js"
+            "**/core/data/app-definition.js", "**/sherpa-provider/*", "**/sherpa-router/*", "**/sherpa-outlet/*", "**/app.js"
           ],
           "message": "A display component may not import the app layer: it stays opt-in. TRAP T-the-app-layer-is-opt-in"
         }] }]

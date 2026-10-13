@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" data-theme="sherpa">
+<head>
+  <meta charset="utf-8" />
+  <title>sherpa-outlet</title>
+  <link rel="stylesheet" href="/dist/styles/tokens/tokens.css" />
+  <link rel="stylesheet" href="/dist/styles/tokens/page.css" />
+  <script type="module">
+    import '/dist/index.js';
+    window.__ready = true;
+  </script>
+</head>
+<body>
+  <sherpa-router data-params="context view"></sherpa-router>
+  <sherpa-provider>
+    <sherpa-app-shell>
+      <sherpa-app-header slot="header"></sherpa-app-header>
+      <sherpa-outlet id="context-root"></sherpa-outlet>
+    </sherpa-app-shell>
+  </sherpa-provider>
+</body>
+</html>

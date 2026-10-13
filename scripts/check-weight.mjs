@@ -24,7 +24,7 @@ const DIST = 'dist';
 const BASELINE = 'scripts/weight-baseline.json';
 
 export const APP = [
-  'components/sherpa-provider/', 'components/sherpa-router/',
+  'components/sherpa-provider/', 'components/sherpa-router/', 'components/sherpa-outlet/',
   'core/browser/session.js', 'core/browser/persist-view.js', 'core/browser/route.js',
   'core/browser/view-files.js', 'core/browser/view-drafts.js', 'core/browser/view-sync.js',
   'core/browser/view-markup.js', 'core/browser/saved-filters.js', 'core/ui/bind-settings.js',
@@ -34,6 +34,7 @@ export const APP = [
  *  TRAP T-the-app-layer-is-opt-in */
 const APP_ENTRIES = new Set([
   'index.js', 'app.js', 'data.js', 'components/sherpa-provider/sherpa-provider.js', 'components/sherpa-router/sherpa-router.js',
+  'components/sherpa-outlet/sherpa-outlet.js',
 ]);
 
 // `\bfrom`, not `\sfrom`: minified code writes `}from"./x.js"`.

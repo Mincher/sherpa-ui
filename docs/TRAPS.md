@@ -16751,3 +16751,35 @@ any app, with or without the app layer.
 - Site: `src/index.ts`
 - Site: `scripts/check-weight.mjs`
 - Site: `test/unit/the-package-surface.test.mjs`
+
+### T-an-outlet-loads-the-context
+
+**`<sherpa-outlet>` is where the route's Context is drawn** (TODO 194). Put it
+in the app shell's content as `<sherpa-outlet id="context-root">` and call
+`outlet.start({ app, base, session, stores, ready, drafts, panels })` once. On
+every `route-change` that names another Context it:
+
+1. tears the last one down — its teardown, its `ctx.signal`, the provider's page;
+2. reports `context-change`, writes the header's title and icon from
+   `app.json`, sets the shell's `data-no-header` from its `chrome`;
+3. puts its template in its OWN light DOM — so `#context-root …` finds it —
+   and reports `context-markup` with a `waitUntil`, for the app to size it
+   before any data draws;
+4. imports its module, opens its page definition on the provider, runs
+   `init(root, ctx)`, binds every `data-setting`, picks the URL's View through
+   the header's chip, and reports `context-load`.
+
+A newer navigation abandons an older load at each step, and the router's
+`waitUntil` makes the navigation wait for the load. The View chip owns the
+View: a pick goes to the URL by `replace`. The outlet also sets the router's
+`context` default from `app.json`.
+
+What stays the app's: its stores (a debug switch may swap one, so they are
+asked for at each load), the session, the nav's lit row and pin, kept card
+sizes, Recents, the ★ — each on an outlet event. Settings and favourites are
+stages 2 and 3 of 194.
+
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.html`
+- Site: `src/app.ts`
+- Site: `test/e2e/reforged-outlet.spec.ts`

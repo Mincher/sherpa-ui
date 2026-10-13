@@ -1,0 +1,9 @@
+/**
+ * sherpa-outlet.css — the content area's one block: it fills the room the shell
+ * gives it, and may shrink below its content so a fit grid can measure it.
+ */
+
+:host {
+  display: block;
+  min-block-size: 0;
+}

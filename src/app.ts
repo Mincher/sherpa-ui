@@ -9,6 +9,8 @@ export { SherpaProvider, type ProvideOptions, type ProviderState } from './compo
 // The URL has ONE owner. TRAP T-the-router-owns-the-url
 export { SherpaRouter, type RouteChange } from './components/sherpa-router/sherpa-router.js';
 export type { Route } from './core/browser/route.js';
+// Where the route's Context is drawn, from app.json. TRAP T-an-outlet-loads-the-context
+export { SherpaOutlet, type OutletOptions } from './components/sherpa-outlet/sherpa-outlet.js';
 // What an app knows about itself, by pointer — and a control bound to one.
 export {
   SessionStore,

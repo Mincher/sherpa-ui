@@ -328,7 +328,7 @@ leaving Settings restores its View. The URL carries both:
 `?context=records&view=risk&settings=application`. A first View is left out.
 
 So a page is a **Context**, not a view: `../Sherpa Demos/app/app.json` names each,
-`../Sherpa Demos/app/contexts/` holds their modules, `loadContext` opens one. "View" is kept for saved views — `ViewSnapshot`,
+`../Sherpa Demos/app/contexts/` holds their modules, and `<sherpa-outlet>` opens one. "View" is kept for saved views — `ViewSnapshot`,
 `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events. Figma
 still uses the old words; that rename is queued in `docs/TODO.md`.
 
