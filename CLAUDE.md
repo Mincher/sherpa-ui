@@ -28,6 +28,7 @@ made that necessary.
 |---|---|
 | [docs/PRINCIPLES.md](docs/PRINCIPLES.md) | **First, always.** The rules, the gate that enforces each, and the open work |
 | [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways |
+| [docs/APP-GUIDE.md](docs/APP-GUIDE.md) | Building an app on Sherpa, step by step. Served to agents as `sherpa://app-guide` |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | Pointing Sherpa at a backend. Served to agents as `sherpa://data-rules` |
 | [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component from a def. Served as `sherpa://rules` |
 
@@ -662,7 +663,7 @@ button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
-**17 tools** across five modules, **6 `sherpa://` resources**, and **3 guided
+**17 tools** across five modules, **7 `sherpa://` resources**, and **3 guided
 prompts**. Run with `npm run mcp` (stdio).
 
 | Module | Tools |
@@ -685,7 +686,8 @@ no arbitrary script** — a caller names an element, a method and JSON arguments
 the page-side code lives in the repo. Nothing launches until a tool asks, and
 `browser_close` ends it.
 
-Resources (6): `sherpa://data-rules` (what Sherpa expects of your data),
+Resources (7): `sherpa://app-guide` (how to build an app, step by step),
+`sherpa://data-rules` (what Sherpa expects of your data),
 `sherpa://def/{name}`, `sherpa://rules`, and `sherpa://component/{name}/` in
 `ts`, `html` and `css`. Prompts:
 `generate_component`, `debug_component`, `review_component_usage`.

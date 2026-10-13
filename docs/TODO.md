@@ -107,7 +107,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
 | ✅ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
 | ✅ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
-| ⬜ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
+| ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
 | ⬜ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ⬜ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
 | ⬜ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
@@ -3970,11 +3970,18 @@ must move to an environment variable before that file is shared.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 2) — its own package, `sherpa-ui-mcp`.
 
-### `[ ]` 193 — One app guide, served to agents
+### `[x]` ✅ 193 — One app guide, served to agents
 
 After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of steps with no history: the page skeleton, the shell, stores, a page definition, a template that asks, a Context module, Views and the session, and the ten or so traps an app meets. Served as `sherpa://app-guide`; each TRAPS entry tagged by who meets it. `docs/CONSUMER-REVIEW.md` §3.7.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — it teaches the app layer in sherpa-ui.
+
+**✅ Done 2026-10-13.** `docs/APP-GUIDE.md`, 302 lines in twelve steps — the
+page, the shell, `app.json`, stores, a page definition, a template that asks,
+a Context module, Views, the session, questions and saved filters, starting
+the outlet, and reports — each naming the trap it rests on. Served as
+`sherpa://app-guide` (7 resources). Not done: a tag on each of the 636 TRAPS
+entries by who meets it; the guide names the ones an app meets.
 
 ### `[x]` ✅ 194 — A Context loader beside `sherpa-router`
 

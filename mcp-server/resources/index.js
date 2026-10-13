@@ -5,6 +5,7 @@
  *   sherpa://component/{name}/{kind}  — a component's shipped ts | html | css | def
  *   sherpa://rules                    — docs/DEF-TO-FIGMA-BUILD-RULES.md
  *   sherpa://data-rules               — docs/DATA-SOURCE-RULES.md
+ *   sherpa://app-guide                — docs/APP-GUIDE.md
  *
  * Map:
  * - register — register the sherpa:// resources on an MCP server
@@ -26,6 +27,7 @@ const RULES_PATH = path.join(ROOT, "docs", "DEF-TO-FIGMA-BUILD-RULES.md");
    about. */
 const STANDARD_PATH = path.join(ROOT, "schemas", "component.v1.json");
 const DATA_RULES_PATH = path.join(ROOT, "docs", "DATA-SOURCE-RULES.md");
+const APP_GUIDE_PATH = path.join(ROOT, "docs", "APP-GUIDE.md");
 
 const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)
@@ -150,6 +152,26 @@ export function register(server) {
         text: fs.existsSync(DATA_RULES_PATH)
           ? fs.readFileSync(DATA_RULES_PATH, "utf8")
           : "(DATA-SOURCE-RULES.md not found)",
+      }],
+    })
+  );
+
+  // ── sherpa://app-guide — how to build an app, step by step ─────────────
+  server.registerResource(
+    "Sherpa App Guide",
+    "sherpa://app-guide",
+    {
+      description:
+        "How to build an app on Sherpa, step by step: the page, the shell, app.json, stores, a page definition, a template that asks, a Context module, Views, the session, saved filters, and starting the outlet (APP-GUIDE.md)",
+      mimeType: "text/markdown",
+    },
+    async (uri) => ({
+      contents: [{
+        uri: uri.href ?? "sherpa://app-guide",
+        mimeType: "text/markdown",
+        text: fs.existsSync(APP_GUIDE_PATH)
+          ? fs.readFileSync(APP_GUIDE_PATH, "utf8")
+          : "(APP-GUIDE.md not found)",
       }],
     })
   );
