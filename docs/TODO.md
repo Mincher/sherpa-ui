@@ -119,9 +119,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **D — Filters: Will's features, on the foundation** | |
 | 🚧 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ✅ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
-| 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| ✅ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
-| ⬜ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
+| ✅ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
@@ -2447,7 +2447,7 @@ row offers Silver alone and greys Gold. It needs no data: every row is on the
 same field, so the menu tests the field's own values against the rows above.
 `T-an-and-row-offers-what-the-rows-before-it-leave`
 
-### `[~]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
+### `[x]` ✅ 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
 Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
 using simple switch, to build a multi condition scenario using conditional
@@ -2486,7 +2486,7 @@ it.
 |---|---|
 | ✅ | 1. The data: On, Before, After and Between are `eq`, `lt`, `gt` and `between`; In the last and In the next are `last` / `next { n, unit }`, kept RELATIVE in the clause and in a saved View (`{ "last": 7 }`) and worked out when matched — a `RestStore` sends the `between`. A field with `time: true` takes a day alone as all of it. The words: `Before 03 Sep 2026`, `In the last 7 days` |
 | ✅ | 2. The menu: a date filter's Advanced rows — a date box (and a time box where the field holds times), two for Between, a count and a unit for In the last and In the next; the f(x) switch beside the calendar. A date that opts in is a FILTER menu, as a number is; the calendar keeps its card; the switch carries a day over as On, two as Between; the chip's face reads the rows |
-| ⬜ | 3. Sherpa Demos: Created opts in |
+| ✅ | 3. Sherpa Demos: Created opts in — a Demos test answers "before 1 April 2024" and finds the header chip's rows and the records follow |
 
 ### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
 
@@ -3174,7 +3174,7 @@ calendar takes only its BOUNDS from `data-available` (the first and last days
 with records), so an empty day between can be an end. On Records: a range
 over 2024-01-02 to 2024-12-11. `T-a-range-is-bounded-by-the-data`
 
-### `[ ]` 21d — EXPLORE: conditions for a DATE field
+### `[x]` ✅ 21d — EXPLORE: conditions for a DATE field
 
 Will, 2026-09-24. **Design before code.** A date is not a string, and the text
 ops say nothing about one:
@@ -3234,6 +3234,8 @@ is needed: `sherpa-input-text` passes `type` to its `<input>`, so
   - **B: always**, and a blank time means the day's start or end.
 
 **✅ Will, 2026-10-12 — all my picks:** A and A — no weekday condition now; a time input only where the field holds a time.
+
+**✅ Built 2026-10-13, in 90** — its three steps are there. `T-a-relative-date-stays-relative`
 
 ### `[ ]` 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
 
