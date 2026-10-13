@@ -1461,6 +1461,11 @@ input's `rendered` waits for its icons, a menu's condition row lost its
 "contains" that way. It holds the value, reports it, and applies it when its
 options arrive; the reader's own pick drops it.
 
+**A panel's field before the panel is drawn** (TODO 113): `setFieldReading`
+before the first `populate()` is HELD by `scope:field` — `readings` reports
+it, and the field draws it when it comes. After a populate, a field the panel
+does not draw is not its to hold.
+
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
 - Site: `test/e2e/reforged-prompt-composer.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -1472,6 +1477,8 @@ options arrive; the reader's own pick drops it.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 

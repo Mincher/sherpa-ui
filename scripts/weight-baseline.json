@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 839043,
+    "js": 839349,
     "files": 100,
     "fetched": 214150
   },
@@ -120,7 +120,7 @@
     "fetched": 0
   },
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
-    "js": 445657,
+    "js": 445963,
     "files": 45,
     "fetched": 0
   },
@@ -350,7 +350,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 957124,
+    "js": 957430,
     "files": 130,
     "fetched": 214150
   }

@@ -905,3 +905,30 @@ test('while Limit is on, the ⋮ offers Hide unmatching filters; on, a ruled-out
   expect(r.greyed).toEqual(['EMEA', 'APAC', 'AMER']);
   expect(r.hidden).toEqual(['EMEA', 'AMER']);
 });
+
+/* STATE FIRST — TODO 113. An answer steered before the panel drew its field
+   is HELD: it reads back at once, and the field draws it when it comes.
+   TRAP T-a-value-before-the-first-render-is-held */
+test('an answer given before the field is drawn is held, read back, and drawn', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-filter-panel') as HTMLElement & {
+      rendered: Promise<void>; populate(d: unknown): void;
+      setFieldReading(id: string, r: unknown, scope?: string): void;
+      readings: Record<string, Record<string, { picked?: string[] }>>;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    el.setFieldReading('status', { picked: ['churned'] }, 'data');
+    const early = el.readings['data']?.['status']?.picked;
+    await el.rendered;
+    el.populate([{ scope: 'data', label: 'Customer records', filters: [
+      { id: 'status', label: 'Status', select: 'multiple', options: [
+        { value: 'active', label: 'active' }, { value: 'churned', label: 'churned' },
+      ] },
+    ] }]);
+    await window.__settled();
+    const on = [...el.shadowRoot!.querySelectorAll<HTMLElement>('.field[data-field="status"] .value[data-current]')]
+      .map((c) => c.dataset['value']);
+    return { early, on, read: el.readings['data']?.['status']?.picked };
+  });
+  expect(r).toEqual({ early: ['churned'], on: ['churned'], read: ['churned'] });
+});

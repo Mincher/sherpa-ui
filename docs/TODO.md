@@ -643,8 +643,12 @@ slow CPU, 797 elements on Records, NOT ONE painted a frame between its
 upgrade and its first draw — the stamp follows in microtasks. So the skeleton
 is the PAGE's: `page.css` shimmers an element whose code has not loaded
 (`:not(:defined)`), after 300 ms, and hides its bare children.
-`T-a-skeleton-is-the-pages`. **Left of 113:** the toolbar's redundant waits,
-each with its own proof, and the panel (89 is done).
+`T-a-skeleton-is-the-pages`.
+
+**✅ Panel done 2026-10-13.** `setFieldReading` before the first `populate()`
+is held by `scope:field`: `readings` reports it, and the field draws it when
+it comes. **Left of 113:** the toolbar's redundant waits, each with its own
+proof.
 
 ### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
 

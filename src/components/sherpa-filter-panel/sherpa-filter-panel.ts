@@ -282,6 +282,8 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   get readings(): Record<string, Record<string, FieldReading>> {
     const out: Record<string, Record<string, FieldReading>> = {};
+    // An answer held for a field not drawn yet is still the panel's answer.
+    for (const { id, reading, scope } of this.#early.values()) (out[scope ?? ''] ??= {})[id] = reading;
     for (const [, held] of this.#held) {
       // GROUP and SORT arrange rows; they are not part of WHICH rows.
       if (arranges(kindOf(held.def))) continue;
@@ -359,6 +361,11 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#syncAnswered(held);
       return;
     }
+    // Before the first populate: HELD, and drawn with its field. TRAP T-a-value-before-the-first-render-is-held
+    if (this.#scopes.length) return;
+    const key = `${scope ?? ''}:${id}`;
+    this.#early.delete(key);
+    this.#early.set(key, { id, reading: given, scope });
   }
 
   /**
@@ -659,7 +666,15 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [scope, results] of this.#valueCounted) this.drawValueResults(results, scope);
     for (const [scope, present] of this.#presentBy) this.drawPresent(present, scope);
     for (const [scope, offered] of this.#offeredBy) this.drawOffered(offered, scope);
+    // A field steered before it was drawn takes that answer now, in order.
+    const early = [...this.#early.values()];
+    this.#early.clear();
+    for (const { id, reading, scope } of early) this.setFieldReading(id, reading, scope);
   }
+
+  /** Answers steered before their field was drawn, by `scope:field`.
+   *  TRAP T-a-value-before-the-first-render-is-held */
+  #early = new Map<string, { id: string; reading: FieldReading; scope?: string | undefined }>();
 
   /** Each SET's fields in a scope, gathered where its first one stands, in
    *  the set's order. TODO 99 · TRAP T-a-filter-set-groups-or-chains */
