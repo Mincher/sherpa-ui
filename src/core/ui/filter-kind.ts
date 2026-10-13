@@ -19,6 +19,8 @@
  * - hasOwnBody — Its menu holds a CONTROL of its own, not a list of values to tick.
  * - arranges — It ARRANGES rows rather than choosing them.
  * - picksOne — Exactly one answer, so its rows are radios and it applies as it is picked.
+ * - EXPLODE_AT — The most values a list draws as a run of chips, one each.
+ * - oneChipList — A list too long for a run: ONE chip, its values in its menu.
  */
 
 /** Every way a filter can be answered. `number` and `date` were already here,
@@ -95,4 +97,14 @@ export function arranges(kind: FilterKind): boolean {
 /** Exactly one answer, so its rows are radios and it applies as it is picked. */
 export function picksOne(kind: FilterKind): boolean {
   return kind === 'single' || kind === 'group' || kind === 'sort';
+}
+
+/** The most values a list draws as a run of chips, one each. Will, TODO 89.
+ *  TRAP T-only-group-and-sort-stay-one-chip */
+export const EXPLODE_AT = 16;
+
+/** A list too long for a run: ONE chip, its values in its menu. */
+export function oneChipList(def: KindSource): boolean {
+  const kind = kindOf(def);
+  return (kind === 'single' || kind === 'multi') && (def.options?.length ?? 0) > EXPLODE_AT;
 }

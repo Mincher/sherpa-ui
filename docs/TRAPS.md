@@ -9855,12 +9855,20 @@ controls a toolbar already shows.
 So the split is by JOB, not by `select`. An Advanced field's rows go in the
 accordion section too, in its own `.field-body`, replacing the chips.
 
+**Except a LONG list** — Will, TODO 89: more than 16 values (`EXPLODE_AT`,
+`oneChipList()` in `filter-kind.ts`) is ONE chip with its values in its menu,
+as a date is. A run of forty chips is a wall, not a list read at a glance. Its
+picks, its answer and its Advanced switch are the chip's and its menu's, never
+the field header's: read as a run, the chip's own id was sent as the pick.
+
 ---
 
  Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/ui/filter-kind.ts`
+- Site: `test/e2e/reforged-panel-long-list.spec.ts`
 
 ### T-an-edge-resizes-its-box
 

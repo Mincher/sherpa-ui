@@ -14,7 +14,7 @@ import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import {
-  arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind,
+  arranges, advancedOf, hasOwnBody, kindOf, oneChipList, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
@@ -288,6 +288,9 @@ export class SherpaFilterPanel extends SherpaElement {
        not, and the ticked chip's own id was sent as the day — so a date set in
        the panel filtered nothing. OFF keeps the days. TRAP T-a-panel-date-answers-with-its-days */
     if (menu?.dataset['body'] === 'date') return this.#answerChip(held)?.reading ?? menu.reading;
+    // A LONG LIST too: its one chip's id is no value. TRAP T-only-group-and-sort-stay-one-chip
+    const one = this.#answerChip(held);
+    if (one) return one.reading ?? menu?.reading ?? {};
     const picked = this.#picked(held);
     return menu ? { ...menu.reading, picked } : { picked };
   }
@@ -295,7 +298,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Rows that still MIRROR the chips follow them. TRAP T-both-answers-are-kept */
   #followPicks(held: Held): void {
     const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
-    if (!menu || menu.dataset['body']) return;
+    if (!menu || menu.dataset['body'] || this.#oneChip(held)) return;
     const now = menu.reading;
     if (now.mirror) menu.reading = { ...now, picked: this.#picked(held) };
   }
@@ -319,9 +322,9 @@ export class SherpaFilterPanel extends SherpaElement {
       const chip = this.#answerChip(held);
       if (this.#oneChip(held)) {
         // Group and Sort ARRANGE: no reading draws them.
-        if (!chip || menu?.dataset['body'] !== 'date') continue;
-        /* A DATE is one chip, and a chip has an OFF: it keeps its days. The
-           chip draws it. TRAP T-a-panel-date-answers-with-its-days */
+        if (!chip) continue;
+        /* A DATE or a long list is one chip, and a chip has an OFF: it keeps
+           its answer. The chip draws it. TRAP T-a-panel-date-answers-with-its-days */
         chip.reading = given;
       } else if (menu?.dataset['body'] === 'number') {
         menu.reading = reading;
@@ -434,12 +437,20 @@ export class SherpaFilterPanel extends SherpaElement {
     const offered = this.#offeredBy.get(held.scope)?.[field] ?? null;
     const keep = left ? new Set(left) : null;
     const offers = offered ? new Set(offered) : null;
+    const out = (value: string): boolean => (!!offers && !offers.has(value)) || (!!keep && !keep.has(value));
+    const one = this.#answerChip(held);
+    if (one) {
+      // ONE chip is greyed when every pick is ruled out, as a bar chip is.
+      const picks = this.#picked(held);
+      one.toggleAttribute('data-unavailable', picks.length > 0 && picks.every(out));
+      if (held.menu) Object.assign(held.menu, { present: left, offered });
+      return;
+    }
     for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(chip) !== held) continue;
       const value = chip.dataset['value'] ?? '';
-      const chained = !!offers && !offers.has(value);
-      chip.toggleAttribute('data-not-offered', chained && !chip.hasAttribute('data-current'));
-      chip.toggleAttribute('data-unavailable', chained || (!!keep && !keep.has(value)));
+      chip.toggleAttribute('data-not-offered', !!offers && !offers.has(value) && !chip.hasAttribute('data-current'));
+      chip.toggleAttribute('data-unavailable', out(value));
     }
     if (held.menu) Object.assign(held.menu, { present: left, offered });
   }
@@ -765,6 +776,8 @@ export class SherpaFilterPanel extends SherpaElement {
        WHAT IT IS, asked once. TRAP T-a-chip-knows-what-kind-it-is */
     const kind = kindOf(def);
     const single = picksOne(kind);
+    // More than 16 values is ONE chip, its values in its menu. Will, TODO 89
+    if (!def.asChip && !isPresets && oneChipList(def)) def = { ...def, asChip: true };
 
     const box = this.clone('template.field-tpl');
     if (!box) return null;
@@ -783,7 +796,8 @@ export class SherpaFilterPanel extends SherpaElement {
     /* A switch only where there is somewhere to switch TO: a conditions-only
        field has no list behind it, as its menu says too. Will, 2026-09-26.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
-    box.toggleAttribute('data-advanced-ok', !isPresets && !organise && advancedOf(def) === true);
+    // ONE chip's switch is its menu's own. TRAP T-only-group-and-sort-stay-one-chip
+    box.toggleAttribute('data-advanced-ok', !isPresets && !organise && !def.asChip && advancedOf(def) === true);
 
     // What this field does not offer is not drawn.
     if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
@@ -1246,8 +1260,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /* ── Reading ──────────────────────────────────────────────────────── */
 
-  /** The values ticked in one field's run. */
+  /** The values ticked in one field's run — or a long list's one chip's menu. */
   #picked(held: Held): string[] {
+    if (this.#answerChip(held) && held.menu?.dataset['body'] !== 'date') return [...(held.menu as MenuApi | undefined)?.values ?? []];
     return [...held.values.querySelectorAll<HTMLElement>('.value[data-current]')]
       .map((c) => c.dataset['value'] ?? '')
       .filter(Boolean);

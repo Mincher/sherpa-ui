@@ -82,6 +82,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
 | ❓ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
 | ✅ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
+| ⬜ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -116,7 +117,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | 🚧 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
-| ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| ✅ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ⬜ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
@@ -1583,6 +1584,11 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
+### `[ ]` 238 — "Select all rows" in the data grid misses rows on other pages
+
+Will, 2026-10-13: *"Bug: 'Select all rows' in the data grid component doesn't
+select all rows, on all pages, as expected."*
+
 ### `[x]` ✅ 237 — A tile's own filter on a View-held field is lost, silently
 
 Found building the starter (222), 2026-10-13. A metric with
@@ -2265,6 +2271,13 @@ chip menu's own, as the inline body is never built for it.
 - **B: 20.**
 
 **✅ Will, 2026-10-12 — all my picks:** A — 16 values.
+
+**✅ Done 2026-10-13:** `EXPLODE_AT = 16` and `oneChipList()` in
+`src/core/ui/filter-kind.ts`. A panel field with more than 16 values is ONE
+chip with its values in its menu, as a date is. Its picks and its answer are
+the chip's, its greyed look is the chip's, and its Advanced switch is in its
+menu, not the field header. 16 or fewer is a run, and a number keeps its own
+input or range. The bar was one chip per field already. `T-only-group-and-sort-stay-one-chip`
 
 ### `[x]` ✅ 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
 
