@@ -1,4 +1,6 @@
 {
+  "src/app.ts": 60,
+  "src/components.ts": 132,
   "src/components/sherpa-accordion/sherpa-accordion.ts": 80,
   "src/components/sherpa-app-header/sherpa-app-header.ts": 182,
   "src/components/sherpa-app-shell/sherpa-app-shell.ts": 166,
@@ -336,7 +338,7 @@
   "src/core/ui/top-layer-tips.ts": 53,
   "src/core/ui/trusted-html.ts": 39,
   "src/data.ts": 322,
-  "src/index.ts": 189,
+  "src/index.ts": 10,
   "src/components/sherpa-accordion/sherpa-accordion.css": 136,
   "src/components/sherpa-app-header/sherpa-app-header.css": 247,
   "src/components/sherpa-app-shell/sherpa-app-shell.css": 265,

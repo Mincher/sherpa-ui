@@ -105,7 +105,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ✅ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ✅ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
-| ⬜ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
+| ✅ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
 | ⬜ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ⬜ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
 | ⬜ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
@@ -2026,7 +2026,7 @@ choice 2) and 184.
 
 **✅ Will, 2026-10-12 — all my picks:** A — their own packages, `sherpa-ui-react` and `sherpa-ui-angular`.
 
-### `[ ]` 221 — `sherpa-ui/app` and the app boundary
+### `[x]` ✅ 221 — `sherpa-ui/app` and the app boundary
 
 No display component imports app code today. Make it structural: a
 `sherpa-ui/app` entry (router, provider, outlet, session, View files, saved
@@ -2041,6 +2041,13 @@ on a CDN; B the root holds components and data only. My pick: A. Waits on 183
 choice 1.
 
 **✅ Will, 2026-10-12 — all my picks:** A — the root `sherpa-ui` still re-exports the app layer.
+
+**✅ Done 2026-10-13.** `src/app.ts` is `sherpa-ui/app`, `src/components.ts`
+is `sherpa-ui/components`, and `src/index.ts` is the two and the data layer,
+three lines; every name it had is still there (94 checked). A lint override
+refuses an app import from a display component, and `check:weight` lists
+four more app modules and weighs both new entries. The outlet joins
+`sherpa-ui/app` with 194. `T-the-app-layer-is-opt-in`
 
 ### `[ ]` 222 — The starter
 

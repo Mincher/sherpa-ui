@@ -18,6 +18,14 @@
       "types": "./dist/data.d.ts",
       "default": "./dist/data.js"
     },
+    "./app": {
+      "types": "./dist/app.d.ts",
+      "default": "./dist/app.js"
+    },
+    "./components": {
+      "types": "./dist/components.d.ts",
+      "default": "./dist/components.js"
+    },
     "./css": "./dist/styles/tokens/tokens.css",
     "./css/page": "./dist/styles/tokens/page.css",
     "./components/*.js": {
@@ -34,6 +42,8 @@
   },
   "sideEffects": [
     "./dist/index.js",
+    "./dist/app.js",
+    "./dist/components.js",
     "./dist/components/**/*.js",
     "./dist/core/ui/sherpa-element.js",
     "**/*.css"

@@ -1,4 +1,14 @@
 {
+  "app.js": {
+    "js": 320650,
+    "files": 39,
+    "fetched": 0
+  },
+  "components.js": {
+    "js": 823882,
+    "files": 98,
+    "fetched": 214150
+  },
   "components/sherpa-accordion/sherpa-accordion.js": {
     "js": 212840,
     "files": 9,
@@ -330,8 +340,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 925004,
-    "files": 122,
+    "js": 925468,
+    "files": 124,
     "fetched": 214150
   }
 }

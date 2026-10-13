@@ -70,3 +70,20 @@ test('sideEffects keeps every component module, the entry and the CSS', () => {
   }
   assert.ok(!kept('dist/data.js'), 'the data layer has no side effects');
 });
+
+/* THE APP LAYER IS OPT-IN (TODO 221): `sherpa-ui/components` holds no app
+   layer, `sherpa-ui/app` holds it, and `sherpa-ui` holds all three.
+   TRAP T-the-app-layer-is-opt-in */
+test('sherpa-ui/components and sherpa-ui/app resolve, and each holds its own half', async () => {
+  const components = await import('sherpa-ui/components');
+  const app = await import('sherpa-ui/app');
+  const all = await import('sherpa-ui');
+  for (const name of ['SherpaButton', 'SherpaDialog', 'SherpaAppShell', 'SherpaElement', 'settled']) {
+    assert.ok(name in components, `components lacks ${name}`);
+  }
+  for (const name of ['SherpaProvider', 'SherpaRouter', 'SessionStore', 'bindSettings', 'saveViewAs', 'checkApp']) {
+    assert.ok(name in app, `app lacks ${name}`);
+    assert.ok(!(name in components), `components carries the app layer's ${name}`);
+  }
+  for (const name of ['SherpaButton', 'SherpaProvider', 'DataSource', 'whereOf']) assert.ok(name in all, `sherpa-ui lacks ${name}`);
+});

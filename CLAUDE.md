@@ -171,20 +171,24 @@ own and says so in a note.
 
 **The golden rule:** can this be done in HTML or CSS before writing JS? If yes, do it there.
 
-### Two entry points
+### Four entry points
 
 ```js
-import { SherpaButton } from 'sherpa-ui';        // components — needs a DOM
+import { SherpaButton } from 'sherpa-ui/components';     // display components — needs a DOM
+import { SherpaProvider, SessionStore } from 'sherpa-ui/app'; // the app layer — opt-in
 import { ArrayStore, DataSource } from 'sherpa-ui/data';  // the data layer — no DOM
+import { SherpaButton, SherpaProvider } from 'sherpa-ui'; // all three, one line
 ```
 
-`sherpa-ui` exports all 65 components, and importing a component DEFINES a
-custom element — in a browser. In Node it loads and defines nothing, so a
-server-rendering framework can import it (TRAP `T-a-component-imports-anywhere`).
-`sherpa-ui/data` (`src/data.ts`) is the same stores, query, validation, live
-connections and saved views with no components and no DOM, for a server, a test
-or an MCP tool. `npm run lint` enforces the boundary; a node test proves the
-entry point stays clean.
+Importing a component DEFINES a custom element — in a browser. In Node it
+loads and defines nothing, so a server-rendering framework can import it
+(TRAP `T-a-component-imports-anywhere`). `sherpa-ui/data` (`src/data.ts`) is
+the stores, query, validation, live connections and saved views with no
+components and no DOM, for a server, a test or an MCP tool. **The app layer is
+opt-in**: no display component imports the provider, the router, the session,
+saved Views or the app definition, so one button never pays for them
+(TRAP `T-the-app-layer-is-opt-in`). `npm run lint` enforces both boundaries;
+`check:weight` and a node test prove them.
 
 **A page joins its data through `<sherpa-provider>`.** It opens a page
 definition's source and answers each component's ask

@@ -929,6 +929,7 @@ goes to its first View, because that is what its href says.
 - Site: `src/core/browser/route.ts`
 - Site: `test/unit/route.test.mjs`
 - Site: `test/e2e/reforged-router.spec.ts`
+- Site: `src/app.ts`
 
 ### T-a-menu-is-a-dialog-of-native-controls
 
@@ -5419,7 +5420,7 @@ a grid's column filter, which is the thing view definitions exist for.
 - Site: `src/core/ui/apply-state.ts`
 - Site: `src/core/ui/apply-state.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
-- Site: `src/index.ts`
+- Site: `src/components.ts`
 
 ### T-populatable-declared-four-times
 
@@ -5575,7 +5576,7 @@ from the host after the swap.
 - Site: `src/core/browser/view-markup.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `test/e2e/reforged-view-markup.spec.ts`
-- Site: `src/index.ts`
+- Site: `src/app.ts`
 
 ### T-sse-over-websocket-for-a-feed
 
@@ -14807,7 +14808,7 @@ rest from that.
 
 - Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
-- Site: `src/index.ts`
+- Site: `src/components.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 - Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 
@@ -15414,7 +15415,7 @@ actions are CONFIGURATION, not data (`T-configuration-is-not-data`).
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/context.ts`
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `src/index.ts`
+- Site: `src/components.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -16641,6 +16642,7 @@ is its Context's, named here.
 - Site: `src/core/data/app-definition.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/an-app-is-its-definition.test.mjs`
+- Site: `src/app.ts`
 
 ### T-a-dialog-answers-its-question
 
@@ -16725,3 +16727,27 @@ went too.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `test/e2e/reforged-nav.spec.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
+
+### T-the-app-layer-is-opt-in
+
+**A display component imports no app code** (TODO 221). The app layer — the
+provider, the router, the session and `bindSettings`, saved Views, their
+drafts and sync, saved filters, View files and markup, the app definition —
+is `sherpa-ui/app` (`src/app.ts`). The display components and their base are
+`sherpa-ui/components` (`src/components.ts`). `sherpa-ui` re-exports both and
+the data layer (Will, A): one line on a CDN still gets everything.
+
+Three things hold the line. `npm run lint` refuses an import of an app module
+from `src/components/**` and `src/components.ts` — the provider and the router
+are the app, so they are let through. `check:weight` lists the same modules
+and fails any entry but the app's, the package's and the data layer's that
+reaches one. A node test checks each entry holds its own half.
+
+A component FEATURE stays a component: `dialog.prompt()` is a dialog's, for
+any app, with or without the app layer.
+
+- Site: `src/app.ts`
+- Site: `src/components.ts`
+- Site: `src/index.ts`
+- Site: `scripts/check-weight.mjs`
+- Site: `test/unit/the-package-surface.test.mjs`

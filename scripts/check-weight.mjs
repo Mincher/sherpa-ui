@@ -27,9 +27,14 @@ export const APP = [
   'components/sherpa-provider/', 'components/sherpa-router/',
   'core/browser/session.js', 'core/browser/persist-view.js', 'core/browser/route.js',
   'core/browser/view-files.js', 'core/browser/view-drafts.js', 'core/browser/view-sync.js',
+  'core/browser/view-markup.js', 'core/browser/saved-filters.js', 'core/ui/bind-settings.js',
+  'core/data/app-definition.js',
 ];
-/** These may reach it: the app layer itself, the package, and the data entry, which ships saved Views and the session. */
-const APP_ENTRIES = new Set(['index.js', 'data.js', 'components/sherpa-provider/sherpa-provider.js', 'components/sherpa-router/sherpa-router.js']);
+/** These may reach it: the app layer itself, the package, and the data entry, which ships saved Views and the session.
+ *  TRAP T-the-app-layer-is-opt-in */
+const APP_ENTRIES = new Set([
+  'index.js', 'app.js', 'data.js', 'components/sherpa-provider/sherpa-provider.js', 'components/sherpa-router/sherpa-router.js',
+]);
 
 // `\bfrom`, not `\sfrom`: minified code writes `}from"./x.js"`.
 const IMPORT = /(?:^|[\s;}])(?:import|export)\s*(?:[^'"`;]*?\bfrom\s*)?['"](\.{1,2}\/[^'"]+)['"]/g;
@@ -57,7 +62,7 @@ export function graph(entry) {
 
 /** Every entry's JS and fetched bytes, and any app module it reaches. */
 export function weigh() {
-  const entries = [`${DIST}/index.js`, `${DIST}/data.js`, ...globSync(`${DIST}/components/*/sherpa-*.js`)
+  const entries = [`${DIST}/index.js`, `${DIST}/app.js`, `${DIST}/components.js`, `${DIST}/data.js`, ...globSync(`${DIST}/components/*/sherpa-*.js`)
     .filter((f) => f.endsWith(`/${f.split('/').at(-2)}.js`))].sort();
   const bytes = (files) => [...files].reduce((sum, f) => sum + statSync(f).size, 0);
   const out = {};
