@@ -27,11 +27,12 @@ import {
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
 import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
-import { loadSavedFilters } from '../../core/browser/saved-filters.js';
+import { deleteSavedFilter, loadSavedFilters, saveFilterAs } from '../../core/browser/saved-filters.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
 import type { Where } from '../../core/data/where.js';
+import type { FieldReading } from '../../core/data/filter-state.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
@@ -72,6 +73,8 @@ type Bar = HTMLElement & {
   organise?(def: { group?: unknown[]; sort?: unknown[] }): void;
   heldFields?: string[];
   report?(): void;
+  packFilter?(saved: { id: string; label: string; readings: Record<string, FieldReading> }): void;
+  deleteFilter?(id: string): void;
 };
 
 /** A subtree's whole state, as JSON — each source's question and the View on
@@ -392,6 +395,7 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('view-reset', (event) => {
       if (!event.defaultPrevented) void this.resetView();
     }, { signal: page.signal });
+    this.addEventListener('filter-delete', this.#onFilterDelete, { signal: page.signal });
     await this.provide({
       sources: { [definition.id]: source },
       ...(library ? {
@@ -467,6 +471,51 @@ export class SherpaProvider extends SherpaElement {
     return true;
   }
 
+  /**
+   * Answer a bar's or the panel's `filter-save` with the reader's name: keep the
+   * filter over the page's DATA, and show it in its bar in place of the fields
+   * it was made from. The saved filter's id, else undefined.
+   * TRAP T-a-saved-filter-lives-with-its-data · TRAP T-save-packs-the-fields-into-one-chip
+   */
+  saveFilter(label: string, request: Event): string | undefined {
+    const opened = this.#opened;
+    const name = label.trim();
+    const { readings, scope } = (request as CustomEvent<{ readings?: Record<string, FieldReading>; scope?: string }>).detail ?? {};
+    if (!opened || !name || !readings) return undefined;
+    const id = `custom:${labelId(name)}`;
+    saveFilterAs(opened.store, name, opened.source.whereOf(readings));
+    opened.source.declarePreset(id, readings, { label: name, editable: true });
+    // A View's bar is offered no saved filter, so one saved from the View stays unpacked.
+    const from = request.target instanceof Element ? request.target : null;
+    const at = scope ?? (from && this.#inherited(from, 'data-scope'));
+    if (at !== VIEW) this.#barFor(at)?.packFilter?.({ id, label: name, readings });
+    this.#offer();
+    return id;
+  }
+
+  /** A saved filter deleted from a bar is forgotten; one deleted from the
+   *  panel is its bar's to let go first. TRAP T-a-saved-filter-keeps-its-edit */
+  #onFilterDelete = (event: Event): void => {
+    const opened = this.#opened;
+    const { id, scope } = (event as CustomEvent<{ id?: string; scope?: string }>).detail ?? {};
+    if (!opened || !id) return;
+    const from = event.target;
+    if (from instanceof Element && 'drawScopes' in from) {
+      this.#barFor(scope ?? null)?.deleteFilter?.(id);
+      return;
+    }
+    // Only the reader's own: a page's saved filter lives in its definition.
+    if (!id.startsWith('custom:')) return;
+    deleteSavedFilter(opened.store, id.slice('custom:'.length));
+    opened.source.declarePreset(id, undefined);
+    this.#offer();
+  };
+
+  /** The bar over one scope. */
+  #barFor(scope: string | null): Bar | undefined {
+    return (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === scope);
+  }
+
   /** Is the View on screen the reader's own — saved, so it can be saved over or deleted? */
   get customView(): boolean {
     const opened = this.#opened;
@@ -475,7 +524,7 @@ export class SherpaProvider extends SherpaElement {
 
   /** The bar over the View's own scope. */
   #viewBar(): Bar | undefined {
-    return (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === VIEW);
+    return this.#barFor(VIEW);
   }
 
   /**

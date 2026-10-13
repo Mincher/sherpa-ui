@@ -222,7 +222,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "'remove' | 'add'",
+        "direction": "'add' | 'remove'",
         "moved": "string[]",
         "selected": "string[]"
       },

@@ -198,7 +198,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "value": "string | string[] | null"
+        "value": "null | string | string[]"
       },
       "trigger": {
         "on": "change",

@@ -66,7 +66,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (provide, open, close, saveView, deleteView, resetView, export, import). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (provide, open, close, saveView, deleteView, saveFilter, resetView, export, import). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -122,6 +122,12 @@
           "name": "deleteView",
           "args": "id = this.#view",
           "description": "Delete the reader's own View — the one on screen unless named — and go to the first. A preset is never deleted."
+        },
+        {
+          "$type": "method",
+          "name": "saveFilter",
+          "args": "label: string, request: Event",
+          "description": "Answer a bar's or the panel's `filter-save` with the reader's name: keep the filter over the page's DATA, and show it in its bar in place of the fields it was made from. The saved filter's id, else undefined."
         },
         {
           "$type": "method",

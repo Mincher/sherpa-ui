@@ -363,7 +363,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "reason": "'width' | 'page' | 'reader'"
+        "reason": "'page' | 'reader' | 'width'"
       }
     },
     {
@@ -463,7 +463,7 @@
       "composed": true,
       "detail": {
         "id": "string",
-        "mode": "'simple' | 'advanced'",
+        "mode": "'advanced' | 'simple'",
         "scope": "string"
       }
     },

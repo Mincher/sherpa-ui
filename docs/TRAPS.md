@@ -13506,12 +13506,16 @@ clear — pack.** Will, 2026-09-25, choosing *"Pack / unpack"*. Nothing filters
 twice, and no second editor is needed: Edit filter edits the saved chip's own
 field menus in place (`T-a-saved-filter-keeps-its-edit`; unpack went in 181).
 
-**The bar ASKS; the host keeps.** A host that saves filters sets
-`data-saveable` on the bar. "Save filter" then shows only where there is
-something to save — in the menu of a chip holding an Advanced filter, and in
-the Add menu once any field is on — and fires `filter-save { readings }`, each
-field as `savedReading()` gives it. The host names it, stores it
-(`saveFilterAs`), and hands it back with `packFilter({ id, label, readings })`.
+**The bar ASKS; the app names it; the provider keeps it** (TODO 191). A host
+that saves filters sets `data-saveable` on the bar. "Save filter" then shows
+only where there is something to save — in the menu of a chip holding an
+Advanced filter, and in the Add menu once any field is on — and fires
+`filter-save { readings }`, each field as `savedReading()` gives it. The app
+asks for a name and calls `provider.saveFilter(label, event)`, which stores it
+(`saveFilterAs`), declares it on the source, and hands it back to the bar for
+that scope with `packFilter({ id, label, readings })`. The panel's save names
+its scope; a save from the View's scope packs into no bar, since a View's bar
+is offered no saved filter.
 
 `packFilter` clears the fields FIRST, then rebuilds — the rebuild carries every
 other chip's answer across (`T-a-rebuild-keeps-every-answer`) — switches the
@@ -13519,8 +13523,7 @@ saved chip ON even where it was already on the bar and off, and fires ONE
 event, so the source sees the part arrive and the fields go in one report.
 
 **A saved chip cannot take a FIELD's id** — two chips with one id — so
-`packFilter` reports `id-taken`. The Records page names its own
-`custom:<id>`.
+`packFilter` reports `id-taken`. The provider names it `custom:<id>`.
 
 A ticked, DEFAULT answer is not saveable from its own chip: the ask was to turn
 a CONDITION into a chip. The Add menu packs it with the rest.
@@ -13529,6 +13532,8 @@ a CONDITION into a chip. The Add menu packs it with the rest.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-the-panel-saves-a-whole-scope
@@ -13648,7 +13653,7 @@ taken every OTHER chip's Advanced condition with it.
 *"These saved custom filter configurations won't be able to transcend data
 sources/stores."* Its readings name fields, and other records may not have them.
 
-So `saveFilterAs(data, label, readings)` takes the NAME of the records it
+So `saveFilterAs(data, label, where)` takes the NAME of the records it
 filters — the store, not the page — and every page over those records sees the
 same set, while a page over other records sees none. Otherwise it is the
 saved-view door: localStorage by default so every tab shares it, a
@@ -13663,9 +13668,14 @@ second copy of it was the first step to two ids for one name.
 and never in content, and a bar handed `{ label: 3 }` would draw a chip with no
 answer.
 
+**The provider keeps them** (TODO 191), as it keeps saved Views: it reads them
+when it opens a page, saves one with `saveFilter()`, and forgets one a bar
+deletes. The panel's delete goes to its bar first, which lets it go.
+
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 
 ### T-a-held-clause-op-is-not-a-reading-op
 

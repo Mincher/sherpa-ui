@@ -353,7 +353,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "query": "string | ''"
+        "query": "'' | string"
       },
       "trigger": {
         "on": "input",
@@ -375,7 +375,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "open": "true | false"
+        "open": "false | true"
       }
     }
   ],

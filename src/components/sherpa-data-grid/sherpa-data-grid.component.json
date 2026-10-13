@@ -482,7 +482,7 @@
       "composed": true,
       "detail": {
         "direction": "SortDirection | null",
-        "field": "string | null"
+        "field": "null | string"
       }
     },
     {
@@ -511,15 +511,15 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "clause": "unknown[] | null",
+        "clause": "null | unknown[]",
         "field": "string",
-        "from": "string | null",
+        "from": "null | string",
         "header": "string",
-        "label": "string | null",
-        "op": "string | null",
+        "label": "null | string",
+        "op": "null | string",
         "reading": "object",
-        "to": "string | null",
-        "value": "string | null"
+        "to": "null | string",
+        "value": "null | string"
       }
     },
     {

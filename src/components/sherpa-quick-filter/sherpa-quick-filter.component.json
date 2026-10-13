@@ -597,7 +597,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "string | null"
+        "field": "null | string"
       }
     },
     {
@@ -607,7 +607,7 @@
       "composed": true,
       "detail": {
         "direction": "SortDirection",
-        "field": "string | null"
+        "field": "null | string"
       }
     }
   ],

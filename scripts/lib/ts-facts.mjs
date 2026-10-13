@@ -327,6 +327,26 @@ function checked(path) {
   return program;
 }
 
+/** A union's top-level members, sorted: the checker orders them by how many
+ *  files it has read, so one component and all of them would disagree. */
+function sortUnion(text) {
+  const parts = [];
+  let depth = 0;
+  let from = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if ('{[(<'.includes(c)) depth++;
+    else if ('}])>'.includes(c)) depth--;
+    else if (depth === 0 && text.startsWith(' | ', i)) {
+      parts.push(text.slice(from, i));
+      from = i + 3;
+      i += 2;
+    }
+  }
+  parts.push(text.slice(from));
+  return parts.length > 1 ? parts.sort().join(' | ') : text;
+}
+
 /**
  * Each `this.emit()` event's detail fields, typed by TypeScript's checker. A
  * field two call sites type differently is the union of both — the payload
@@ -345,7 +365,7 @@ export function parseEventDetails(path) {
   // A long nameless object says nothing a name would not: it is an `object`.
   const say = (type) => {
     const text = checker.typeToString(type, undefined, flags);
-    return text.startsWith('{') && text.length > 60 ? 'object' : text;
+    return text.startsWith('{') && text.length > 60 ? 'object' : sortUnion(text);
   };
   const fieldsOf = (detail) => {
     if (!ts.isObjectLiteralExpression(detail)) {
@@ -367,7 +387,7 @@ export function parseEventDetails(path) {
       out.set(node.arguments[0].text, fields);
       for (const [key, type] of node.arguments[1] ? fieldsOf(node.arguments[1]) : []) {
         const was = fields.get(key);
-        fields.set(key, !was || was === type ? type : [...new Set([...was.split(' | '), ...type.split(' | ')])].join(' | '));
+        fields.set(key, !was || was === type ? type : sortUnion([...new Set([...was.split(' | '), ...type.split(' | ')])].join(' | ')));
       }
     }
     ts.forEachChild(node, visit);

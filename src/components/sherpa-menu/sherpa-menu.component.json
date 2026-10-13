@@ -902,8 +902,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "label": "'Save filter' | 'Remove' | string",
-        "value": "'save' | 'remove' | string"
+        "label": "'Remove' | 'Save filter' | string",
+        "value": "'remove' | 'save' | string"
       }
     },
     {

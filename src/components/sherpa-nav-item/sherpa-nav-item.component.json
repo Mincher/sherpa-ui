@@ -413,7 +413,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "href": "string | null",
+        "href": "null | string",
         "label": "string"
       }
     },

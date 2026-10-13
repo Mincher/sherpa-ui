@@ -971,7 +971,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "1 | -1",
+        "direction": "-1 | 1",
         "value": "string"
       }
     },

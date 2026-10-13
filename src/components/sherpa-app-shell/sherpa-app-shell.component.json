@@ -295,7 +295,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "side": "'start' | 'end'",
+        "side": "'end' | 'start'",
         "width": "number"
       }
     },

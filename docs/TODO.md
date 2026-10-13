@@ -3926,14 +3926,20 @@ Six parts, one commit each:
 | | part | |
 |---|---|---|
 | ✅ | 1. `dialog.prompt(value)` and `dialog.confirm({ … })` — the dialog asks what its own markup holds; `ask-name.js` is `reset-prompt.js`, the Reset all dialog alone | `T-a-dialog-answers-its-question` |
-| ⬜ | 2. the provider owns the reader's saved filters, as it owns saved Views | |
+| ✅ | 2. the provider owns the reader's saved filters, as it owns saved Views: `provider.saveFilter(label, event)`; it forgets one a bar deletes, and routes the panel's delete to its bar | `T-save-packs-the-fields-into-one-chip` |
 | ⬜ | 3. `data-setting="/pointer"` binds a control to the session; `persist()` takes its guard from the default | |
 | ⬜ | 4. a store takes a seed, a seed version and a fallback | |
 | ⬜ | 5. public doors for the three shadow-root reaches in `index.html` | |
 | ⬜ | 6. Sherpa Demos sorted by kind: `stores/`, `contexts/`, `views/`, `view-schemas/` | |
 
 Part 1 keeps the five dialogs' markup — HTML first, and their ids are what
-the tests press — and deletes the JS that wired each by hand.
+the tests press — and deletes the JS that wired each by hand. Part 2 moves
+Save filter to the app shell, beside Save view: one flow for every page.
+
+**Found in part 2, queued:** Sherpa Demos' `reforged-saved-filter.spec.ts:86`
+reads `window.sherpa` after a reload, when the grid has rows but
+`records.js` has not set it yet. It failed once in Chromium, passed on retry.
+The test should wait for `window.sherpa`, not for a row.
 
 ### `[ ]` 192 — Ship the agent path
 
