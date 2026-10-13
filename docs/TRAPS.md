@@ -16682,3 +16682,24 @@ first. A setting that is more than one value stays hand-wired: Drafts and
 - Site: `src/core/ui/bind-settings.ts`
 - Site: `scripts/check-usage.mjs`
 - Site: `test/e2e/reforged-bind-settings.spec.ts`
+
+### T-local-records-seed-themselves
+
+**`localRecords(options)` is the local store an app starts with** (TODO 191):
+IndexedDB where the browser has it, memory where not — a private window,
+blocked site data — and seeded on a first run and again when `seedVersion`
+moves. It hands back `{ store, ready }`; await `ready` before a component
+draws, or a grid that populates before the seed lands shows an empty table.
+
+A re-seed is `putAll`: it overwrites the seed's rows, and a row a person
+added stays. The seed version is kept in `localStorage` under
+`sherpa:seed:<database>/<name>`. Storage that cannot be read cannot say a seed
+is old, so it seeds only an EMPTY store — never on every load, which would
+erase the very edit meant to survive one. A seed that cannot be written
+reports `seed-failed` and the store starts as it is.
+
+Sherpa Demos chose the store, kept the version and seeded by hand in
+`records-data.js`; its `reforged-records-persist.spec.ts` now drives this.
+
+- Site: `src/core/browser/idb-store.ts`
+- Site: `test/unit/local-records.test.mjs`

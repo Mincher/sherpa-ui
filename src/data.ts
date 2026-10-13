@@ -86,6 +86,9 @@ export {
   IdbStore,
   IdbValidationError,
   type IdbStoreOptions,
+  // IndexedDB, or memory where there is none, seeded once per seed version.
+  localRecords,
+  type LocalRecordsOptions,
 } from './core/browser/idb-store.js';
 // A view's state kept locally for speed and pushed onward on a schedule.
 // TRAP T-local-first-then-onward.

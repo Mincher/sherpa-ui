@@ -10,6 +10,8 @@
  * Map:
  * - IdbStoreOptions — which database and store, its indexes, and the version that builds them
  * - IdbStore — Records in IndexedDB — the real local store.
+ * - LocalRecordsOptions — an IdbStore's options, and the rows a first run starts with
+ * - localRecords — Records kept in this browser: IndexedDB where it has it, memory where not, seeded once per seed version.
  */
 import {
   readField,
@@ -23,6 +25,9 @@ import {
 import { ValidationError } from '../data/validate.js';
 // Key, schema guard, totalCount, announce. TRAP T-one-class-to-catch
 import { BaseStore, type StoreOptions } from '../data/base-store.js';
+import { ArrayStore } from '../data/stores.js';
+import { report } from '../data/report.js';
+import { readText, removeKey, writeText } from './web-storage.js';
 
 /* ── Options ───────────────────────────────────────────────────────────── */
 
@@ -35,6 +40,50 @@ export interface IdbStoreOptions extends StoreOptions {
   indexes?: readonly string[];
   /** Bump when `indexes` changes: indexes are built only in an upgrade. */
   version?: number;
+}
+
+/** An IdbStore's options, and the rows a first run starts with. */
+export interface LocalRecordsOptions extends IdbStoreOptions {
+  /** The rows a first run starts with. */
+  seed?: readonly Row[];
+  /** Bump it when `seed` changes: a browser holding the old rows is given the
+   *  new ones, and a row a person added stays. */
+  seedVersion?: number;
+}
+
+/**
+ * Records kept in this browser: IndexedDB where it has it, memory where not —
+ * a private window, blocked site data — and seeded on a first run and again
+ * when `seedVersion` moves. `ready` settles once the seed is in; await it
+ * before a component draws. TRAP T-local-records-seed-themselves
+ */
+export function localRecords(options: LocalRecordsOptions): { store: IdbStore | ArrayStore; ready: Promise<void> } {
+  const { seed = [], seedVersion = 1, name, database, indexes: _indexes, version: _version, ...kept } = options;
+  if (!IdbStore.available) return { store: new ArrayStore([...seed], kept), ready: Promise.resolve() };
+  const store = new IdbStore(options);
+  const mark = `sherpa:seed:${database ?? 'sherpa'}/${name}`;
+  // Storage that cannot be read cannot say a seed is old, so it never re-seeds on every load.
+  writeText('local', `${mark}:probe`, '1');
+  const readable = readText('local', `${mark}:probe`) === '1';
+  removeKey('local', `${mark}:probe`);
+  const ready = (async () => {
+    if (!seed.length) return;
+    try {
+      const stale = readable && readText('local', mark) !== String(seedVersion);
+      if (stale || await store.totalCount() === 0) {
+        // ONE transaction and one `change`. TRAP T-idb-bulk-is-one-transaction
+        await store.putAll(seed);
+        writeText('local', mark, String(seedVersion));
+      }
+    } catch (error) {
+      report({
+        code: 'seed-failed',
+        message: 'localRecords: the seed rows could not be written, so the store starts as it is.',
+        at: { store: name, error: error instanceof Error ? error.message : String(error) },
+      });
+    }
+  })();
+  return { store, ready };
 }
 
 /* ── The store ─────────────────────────────────────────────────────────── */
