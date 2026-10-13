@@ -168,6 +168,8 @@ export const FIXTURES = {
     show: 'sherpa-notifications',
     anchor: '.opener',
   },
+  // Unstarted, it draws its light DOM: a Context's markup.
+  'sherpa-outlet': { html: '<sherpa-outlet><h1>Records</h1><p>The Context on screen.</p></sherpa-outlet>' },
   'sherpa-overlay-panel': {
     html: '<sherpa-overlay-panel data-heading="Ada Lovelace" data-icon="person" data-dismissible data-collapsible data-expandable><p>Pro plan, 12 seats.</p>'
       + '<sherpa-button slot="footer">Edit</sherpa-button></sherpa-overlay-panel>',

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * THE SKELETON IS THE PAGE'S — Will, TODO 113. A component's first draw never
