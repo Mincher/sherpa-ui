@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
 
 test('a component with NO renderData still shows bound data', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { DataSource, ArrayStore } = await import('/dist/index.js');
+    const { DataSource, bindSource, ArrayStore } = await import('/dist/index.js');
     const rows = Array.from({ length: 40 }, (_, i) => ({ id: i }));
     const src = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
 
@@ -42,11 +42,11 @@ test('a component with NO renderData still shows bound data', async ({ page }) =
     const empty = await (window as never as { make: (t: string) => Promise<HTMLElement> })
       .make('sherpa-empty-state');
 
-    src.bind(header, {
+    bindSource(src, header, {
       readonly: true, rows: 'all',
       as: (rs: unknown[]) => ({ heading: `${rs.length} records` }),
     });
-    src.bind(empty, {
+    bindSource(src, empty, {
       readonly: true, rows: 'all',
       as: (rs: unknown[]) => ({ heading: 'Nothing here', description: `searched ${rs.length}` }),
     });
@@ -72,7 +72,7 @@ test('a component with NO renderData still shows bound data', async ({ page }) =
 
 test('an UNDECLARED key is ignored, so a payload cannot spray attributes', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { DataSource, ArrayStore } = await import('/dist/index.js');
+    const { DataSource, bindSource, ArrayStore } = await import('/dist/index.js');
     const src = new DataSource({ store: new ArrayStore([{ id: 1 }], { key: 'id' }) });
     const header = await (window as never as { make: (t: string) => Promise<HTMLElement> })
       .make('sherpa-section-header');
@@ -80,7 +80,7 @@ test('an UNDECLARED key is ignored, so a payload cannot spray attributes', async
     /* A payload shaped for a GRID, handed to a header. Only what the header
        declares may land — otherwise one adapter's keys become another
        component's attributes. */
-    src.bind(header, {
+    bindSource(src, header, {
       readonly: true, rows: 'all',
       as: () => ({ heading: 'kept', totalPages: 999, columns: [], bogus: 'no' }),
     });
@@ -103,7 +103,7 @@ test('an UNDECLARED key is ignored, so a payload cannot spray attributes', async
 
 test('a component with its OWN renderData is untouched', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { DataSource, ArrayStore } = await import('/dist/index.js');
+    const { DataSource, bindSource, ArrayStore } = await import('/dist/index.js');
     const rows = [{ id: 1, tier: 'Gold' }, { id: 2, tier: 'Silver' }];
     const src = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
 
@@ -111,7 +111,7 @@ test('a component with its OWN renderData is untouched', async ({ page }) => {
     // default path must not run instead of it.
     const metric = await (window as never as { make: (t: string) => Promise<HTMLElement> })
       .make('sherpa-metric');
-    src.bind(metric, {
+    bindSource(src, metric, {
       readonly: true, rows: 'all',
       as: (rs: unknown[]) => ({ label: 'Records', value: rs.length }),
     });
@@ -130,13 +130,13 @@ test('a component with its OWN renderData is untouched', async ({ page }) => {
 
 test('ASKING was always generic: a plain button steers the query', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { DataSource, ArrayStore } = await import('/dist/index.js');
+    const { DataSource, bindSource, ArrayStore } = await import('/dist/index.js');
     const rows = Array.from({ length: 10 }, (_, i) => ({ id: i, tier: i % 2 ? 'Gold' : 'Silver' }));
     const src = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
 
     const button = await (window as never as { make: (t: string) => Promise<HTMLElement> })
       .make('sherpa-button');
-    src.bind(button);
+    bindSource(src, button);
 
     // A button is in no allow-list. It sends a steering event like anything else.
     button.dispatchEvent(new CustomEvent('sort-change', {

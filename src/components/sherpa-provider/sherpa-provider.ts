@@ -4,7 +4,7 @@
  *
  * A thin DOM door onto the DOM-free data layer. It holds the sources it is
  * given and joins each component that asks to the one its subtree provides —
- * by `bind()`, delivering through the callback the component asked with. A
+ * by `bindSource()`, delivering through the callback the component asked with. A
  * request that arrives before any source waits, and `provide()` answers it.
  * docs/PROVIDER-DESIGN.md. TRAP T-a-component-asks-its-provider
  *

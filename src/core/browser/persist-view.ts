@@ -275,7 +275,7 @@ export interface SavedView {
   /**
    * This view's OWN CONTENT AND LAYOUT — MARKUP, the same HTML an authored view
    * uses, parsed through an allow-list. ONE FORM, not two: a `ViewDefinition`
-   * object was a second wiring mechanism beside `bind()`.
+   * object was a second wiring mechanism beside `bindSource()`.
    * TRAP T-saved-markup-is-untrusted-input
    * TRAP T-attributes-are-the-state-channel
    */

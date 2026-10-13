@@ -72,12 +72,13 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
 
 test('a bound source filters by a number\'s Advanced rows, `=` included', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[], o?: unknown) => unknown;
       DataSource: new (o: { store: unknown }) => {
-        declareField(f: string, facts: unknown): void; bind(el: Element, o?: unknown): () => void;
+        declareField(f: string, facts: unknown): void;
         load(): Promise<unknown>; debugState(): { total: number };
       };
+      bindSource(source: unknown, el: Element, o?: unknown): () => void;
     };
     const source = new DataSource({ store: new ArrayStore([
       { id: 1, seats: 5 }, { id: 2, seats: 50 }, { id: 3, seats: 120 }, { id: 4, seats: 300 },
@@ -86,7 +87,7 @@ test('a bound source filters by a number\'s Advanced rows, `=` included', async 
     const bar = await window.__mount<Bar & { setChipReading(id: string, r: unknown): void; report(): void }>('sherpa-quick-filter-toolbar', [
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, advanced: true },
     ], { style: 'inline-size: 1200px' });
-    source.bind(bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true });
     await source.load();
     const total = async (reading: unknown): Promise<number> => {
       bar.setChipReading('seats', reading);

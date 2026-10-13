@@ -160,7 +160,7 @@ test('source: one sort value, two controls — the grid and the toolbar cannot d
   // THE point of the layer. Both fire `sort-change` with the same detail shape,
   // so either one steering the source moves BOTH.
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
 
@@ -171,8 +171,8 @@ test('source: one sort value, two controls — the grid and the toolbar cannot d
     await toolbar.rendered;
 
     const source = new DataSource({ store: new ArrayStore(data) });
-    source.bind(grid);
-    source.bind(toolbar);
+    bindSource(source, grid);
+    bindSource(source, toolbar);
     await source.load();
 
     // The TOOLBAR steers…
@@ -215,7 +215,7 @@ test('source: one filter fans out to every bound component', async ({ page }) =>
   // The dashboard case — one change, N visualisations re-populated, no per
   // component wiring.
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
 
@@ -228,7 +228,7 @@ test('source: one filter fans out to every bound component', async ({ page }) =>
     });
 
     const source = new DataSource({ store: new ArrayStore(data) });
-    for (const el of made) source.bind(el);
+    for (const el of made) bindSource(source, el);
     await source.load();
     const afterLoad = counts.map((c) => c.at(-1));
 
@@ -246,7 +246,7 @@ test('source: one filter fans out to every bound component', async ({ page }) =>
 
 test('source: a readonly bind receives data but never steers', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
 
@@ -256,7 +256,7 @@ test('source: a readonly bind receives data but never steers', async ({ page }) 
     root.appendChild(chart);
 
     const source = new DataSource({ store: new ArrayStore(data) });
-    source.bind(chart, { readonly: true });
+    bindSource(source, chart, { readonly: true });
     await source.load();
 
     // A readonly component's event must be IGNORED — a chart beside a steering
@@ -303,7 +303,7 @@ test('source: a narrowing change returns to page 1 rather than stranding the use
 
 test('source: a pager binds to the same source and gets its totals', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const pager = document.createElement('sherpa-pagination') as HTMLElement & {
@@ -313,7 +313,7 @@ test('source: a pager binds to the same source and gets its totals', async ({ pa
     await pager.rendered;
 
     const source = new DataSource({ store: new ArrayStore(data), pageSize: 3 });
-    source.bind(pager);
+    bindSource(source, pager);
     await source.load();
     const initial = { page: pager.page, totalPages: pager.totalPages };
 
@@ -331,7 +331,7 @@ test('source: a pager binds to the same source and gets its totals', async ({ pa
 
 test('source: a store change reloads every bound component', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const seen: number[] = [];
@@ -341,7 +341,7 @@ test('source: a store change reloads every bound component', async ({ page }) =>
 
     const store = new ArrayStore(data);
     const source = new DataSource({ store });
-    source.bind(el);
+    bindSource(source, el);
     await source.load();
 
     // An insert on the STORE must reach a component bound to the SOURCE.
@@ -355,7 +355,7 @@ test('source: a store change reloads every bound component', async ({ page }) =>
 
 test('source: unbind stops both halves', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     let populated = 0;
@@ -364,7 +364,7 @@ test('source: unbind stops both halves', async ({ page }) => {
     root.appendChild(el);
 
     const source = new DataSource({ store: new ArrayStore(data) });
-    const off = source.bind(el);
+    const off = bindSource(source, el);
     await source.load();
     off();
 
@@ -388,14 +388,14 @@ test('source: unbind stops both halves', async ({ page }) => {
 /* An empty report CLEARS. TRAP T-a-filter-report-is-the-whole-answer */
 test('source: quick-filter chips become a real filter — OR within a chip, AND across', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('div') as HTMLElement & { populate?: (d: unknown) => void };
     root.appendChild(el);
 
     const source = new DataSource({ store: new ArrayStore(data) });
-    source.bind(el);
+    bindSource(source, el);
     await source.load();
 
     // One chip, two values: OR.
@@ -553,14 +553,14 @@ test('source: a failed load is a STATE, not a throw', async ({ page }) => {
  */
 test('source: steerOnly sends events but never pushes rows', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = (await import('/dist/index.js')) as unknown as {
+    const { ArrayStore, DataSource, bindSource } = (await import('/dist/index.js')) as unknown as {
       ArrayStore: new (rows: unknown[]) => never;
       DataSource: new (o: unknown) => {
         load(): Promise<void>;
-        bind(el: unknown, o?: unknown): void;
         state: { sort: { field: string }[] };
         rows: unknown[];
       };
+      bindSource(source: unknown, el: unknown, o?: unknown): void;
     };
 
     const rows = [{ name: 'B', seats: 2 }, { name: 'A', seats: 9 }];
@@ -576,8 +576,8 @@ test('source: steerOnly sends events but never pushes rows', async ({ page }) =>
     toolbar.populate = (d) => steererFed.push(d);
 
     document.getElementById('root')!.replaceChildren(grid, toolbar);
-    source.bind(grid);
-    source.bind(toolbar, { steerOnly: true });
+    bindSource(source, grid);
+    bindSource(source, toolbar, { steerOnly: true });
     await source.load();
 
     // The steer-only component STEERS.
@@ -615,7 +615,7 @@ test('source: steerOnly sends events but never pushes rows', async ({ page }) =>
  */
 test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', async ({ page }) => {
   const r = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
     root.innerHTML = '';
 
@@ -635,7 +635,7 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
       { field: 'seats', header: 'Seats', type: 'number' },
     ];
     const source = new DataSource({ store: new ArrayStore(data) });
-    source.bind(grid, { as: (rows: unknown[]) => ({ columns, rows }) });
+    bindSource(source, grid, { as: (rows: unknown[]) => ({ columns, rows }) });
     await source.load();
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     await settle();
@@ -777,7 +777,7 @@ test('source: a view state survives a page reload, per TAB', async ({ page }) =>
  */
 test('one AbortController tears down every binding it was given', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const source = new DataSource({
       store: new ArrayStore([{ id: 1, n: 'a' }, { id: 2, n: 'b' }], { key: 'id' }),
     });
@@ -796,9 +796,9 @@ test('one AbortController tears down every binding it was given', async ({ page 
     const kept = make('kept');
 
     const ac = new AbortController();
-    source.bind(a, { readonly: true, signal: ac.signal });
-    source.bind(b, { readonly: true, signal: ac.signal });
-    source.bind(kept, { readonly: true });          // no signal — survives
+    bindSource(source, a, { readonly: true, signal: ac.signal });
+    bindSource(source, b, { readonly: true, signal: ac.signal });
+    bindSource(source, kept, { readonly: true });          // no signal — survives
     await source.load();
     const before = source.boundElements.length;
 
@@ -808,7 +808,7 @@ test('one AbortController tears down every binding it was given', async ({ page 
     // An ALREADY-ABORTED signal binds nothing — a caller who cancelled before
     // this ran should not end up with a live binding.
     const late = make('late');
-    source.bind(late, { readonly: true, signal: ac.signal });
+    bindSource(source, late, { readonly: true, signal: ac.signal });
 
     return { before, after, afterLate: source.boundElements.map((e) => (e as HTMLElement).id) };
   });
@@ -834,7 +834,7 @@ test('one AbortController tears down every binding it was given', async ({ page 
  */
 test('two sources each own a named part of one payload', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
 
     // A plain element that just records every payload it is handed.
     const seen: unknown[] = [];
@@ -845,15 +845,15 @@ test('two sources each own a named part of one payload', async ({ page }) => {
     const ours = new DataSource({ store: new ArrayStore([{ id: 1, n: 10 }], { key: 'id' }) });
     const market = new DataSource({ store: new ArrayStore([{ id: 1, n: 99 }], { key: 'id' }) });
 
-    ours.bind(el, { readonly: true, into: 'series.0', as: (rows) => rows.map((x) => x['n']) });
-    market.bind(el, { readonly: true, into: 'series.1', as: (rows) => rows.map((x) => x['n']) });
+    bindSource(ours, el, { readonly: true, into: 'series.0', as: (rows) => rows.map((x) => x['n']) });
+    bindSource(market, el, { readonly: true, into: 'series.1', as: (rows) => rows.map((x) => x['n']) });
     await ours.load();
     await market.load();
 
     // …and a NAMED part beside the indexed ones, to prove the path builds an
     // object where the segment is a name and an array where it is a number.
     const meta = new DataSource({ store: new ArrayStore([{ id: 1, n: 7 }], { key: 'id' }) });
-    meta.bind(el, { readonly: true, into: 'totals.rows', as: (rows) => rows.length });
+    bindSource(meta, el, { readonly: true, into: 'totals.rows', as: (rows) => rows.length });
     await meta.load();
 
     return { last: seen[seen.length - 1], count: seen.length };
@@ -868,7 +868,7 @@ test('two sources each own a named part of one payload', async ({ page }) => {
 
 test('WITHOUT into, the second source clobbers the first — the bug into fixes', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const seen: unknown[] = [];
     const el = document.createElement('div') as HTMLElement & { populate?: (d: unknown) => void };
     el.populate = (d: unknown) => seen.push(JSON.parse(JSON.stringify(d)));
@@ -878,8 +878,8 @@ test('WITHOUT into, the second source clobbers the first — the bug into fixes'
     const market = new DataSource({ store: new ArrayStore([{ id: 1, n: 99 }], { key: 'id' }) });
     // The same two binds as the test above, MINUS `into`.
     const as = (rows: Record<string, unknown>[]) => ({ series: [rows.map((x) => x['n'])] });
-    ours.bind(el, { readonly: true, as });
-    market.bind(el, { readonly: true, as });
+    bindSource(ours, el, { readonly: true, as });
+    bindSource(market, el, { readonly: true, as });
     await ours.load();
     await market.load();
     return seen[seen.length - 1];
@@ -893,14 +893,14 @@ test('WITHOUT into, the second source clobbers the first — the bug into fixes'
 
 test('a bind WITHOUT into still replaces the whole payload', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const seen: unknown[] = [];
     const el = document.createElement('div') as HTMLElement & { populate?: (d: unknown) => void };
     el.populate = (d: unknown) => seen.push(d);
     document.getElementById('root')!.replaceChildren(el);
 
     const src = new DataSource({ store: new ArrayStore([{ id: 1, n: 5 }], { key: 'id' }) });
-    src.bind(el, { readonly: true, as: (rows) => ({ rows: rows.length }) });
+    bindSource(src, el, { readonly: true, as: (rows) => ({ rows: rows.length }) });
     await src.load();
     return seen[seen.length - 1];
   });
@@ -919,7 +919,7 @@ test('a page change while GROUPED reaches the components, without a load', async
      Ungrouped worked throughout, which is what made this look like
      "pagination is broken" rather than "grouped pagination is broken". */
   const r = await page.evaluate(async (rows) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const store = new ArrayStore(rows, { key: 'id' });
     const source = new DataSource({ store, pageSize: 3 });
 
@@ -935,7 +935,7 @@ test('a page change while GROUPED reaches the components, without a load', async
     source.addEventListener('loading', (e) => {
       if ((e as CustomEvent).detail.loading) loads += 1;
     });
-    source.bind(el as never);
+    bindSource(source, el as never);
     await source.load();
 
     const ungrouped = { seen: [...seen], loads };

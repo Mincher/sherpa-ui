@@ -197,7 +197,7 @@ saved Views or the app definition, so one button never pays for them
 
 **A page joins its data through `<sherpa-provider>`.** It opens a page
 definition's source and answers each component's ask
-(`docs/PAGE-DEFINITION.md`, `docs/PROVIDER-DESIGN.md`); `DataSource.bind()` is
+(`docs/PAGE-DEFINITION.md`, `docs/PROVIDER-DESIGN.md`); `bindSource()` is
 the manual way, for a page with no provider.
 
 ### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
@@ -629,7 +629,7 @@ chip still emits its event; it simply stops writing its own `data-current`.
 
 Three more primitives exist for the same problem, all in use:
 
-- **`ignore: ['event']` on `bind()`** — this VIEW owns this event, so the source
+- **`ignore: ['event']` on `bindSource()`** — this VIEW owns this event, so the source
   gets no listener at all. `readonly` was too blunt: it silences everything.
 - **suspend ≠ clear.** "Off" keeps the value; "gone" deletes it. Collapsing them
   cost a user their typed filter. A sort suspends with `data-sort-field=""` and

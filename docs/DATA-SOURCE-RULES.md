@@ -195,8 +195,8 @@ are the manual way, for a page with no provider:
 
 ```js
 const source = new DataSource({ store, pageSize: 25 });
-source.bind(grid);                                  // two-way: reads and steers
-source.bind(chart, { readonly: true, as: byCategory });  // reads only
+bindSource(source, grid);                                       // two-way: reads and steers
+bindSource(source, chart, { readonly: true, as: byCategory });  // reads only
 ```
 
 - **`readonly`** — the component shows the data but never steers it.
@@ -210,7 +210,7 @@ source.bind(chart, { readonly: true, as: byCategory });  // reads only
   grid shows page one of four; a total, a chart or a legend counting the same
   query must count all of it, or a donut redraws itself every time the reader
   turns a page. (Not `scope: 'all'`: `scope` names a filter scope, so that
-  binds to a scope called "all" — and `bind()` reports it.)
+  binds to a scope called "all" — and `bindSource()` reports it.)
 - **`signal`** — an `AbortSignal`; the binding ends when it aborts.
 
 **Which lives where:** a **store** is app-level, because records outlive any one

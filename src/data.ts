@@ -104,7 +104,6 @@ export {
   DataSource,
   /* The scope above every component. TRAP T-up-is-open-down-is-closed */
   VIEW_SCOPE,
-  type BindOptions,
   type DataChangeDetail,
   type DataSourceOptions,
   type ViewState,
@@ -113,6 +112,8 @@ export {
   type FilterSet,
   type SourceState,
 } from './core/data/data-source.js';
+/* A component joined to a source by hand — the provider does it for a page. TODO 196 */
+export { bindSource, type BindOptions } from './core/ui/bind-source.js';
 /* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */
 export {
   openSource,

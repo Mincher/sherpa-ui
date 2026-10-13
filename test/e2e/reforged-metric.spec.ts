@@ -418,7 +418,7 @@ test('the tile draws its Figma fill AND its border', async ({ page }) => {
  */
 test('the trend, delta and status all follow a filter', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, seriesBy, deltaPercent } = await import(
+    const { ArrayStore, DataSource, bindSource, seriesBy, deltaPercent } = await import(
       '/dist/data.js'
     ) as typeof import('../../src/data.js');
 
@@ -443,7 +443,7 @@ test('the trend, delta and status all follow a filter', async ({ page }) => {
     await el.rendered;
 
     const MONTHS = Array.from({ length: 12 }, (_, i) => `2024-${String(i + 1).padStart(2, '0')}`);
-    src.bind(el, {
+    bindSource(src, el, {
       readonly: true,
       // A summary counts ALL the rows, never the page.
       rows: 'all',

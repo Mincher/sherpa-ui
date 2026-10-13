@@ -15,7 +15,7 @@
         { scope: 'view', label: 'View filters', filters: [...] },
         { scope: 'data', label: 'Customer records', filters: [...] },
       ]);
-      source.bind(panel, { steerOnly: true });
+      bindSource(source, panel, { steerOnly: true });
 
   Public API:
     data-at-default  the filters already ARE the View's default: "Reset all to

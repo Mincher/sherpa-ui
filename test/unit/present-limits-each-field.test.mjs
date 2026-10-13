@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, VIEW_SCOPE } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, VIEW_SCOPE } from '../../dist/data.js';
 
 /** The customers each region holds. */
 const REGION_ORGS = {
@@ -45,13 +45,13 @@ async function setup({ view = {}, data = null, limit = true } = {}) {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), limitOptions: limit });
   await source.declareFromRows(['customer', 'region', 'status']);
   const bar = new Bar(view, ['customer', 'region']);
-  source.bind(bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
   bar.report();
   let grid = null;
   if (data) {
     source.offer('data', ['status']);
     grid = new Bar(data, ['status']);
-    source.bind(grid, { steerOnly: true, scope: 'data' });
+    bindSource(source, grid, { steerOnly: true, scope: 'data' });
     grid.report();
   }
   await source.load();
@@ -125,7 +125,7 @@ test('a store that answers distinct values is asked, not read row by row', async
   const source = new DataSource({ store, limitOptions: true });
   await source.declareFromRows(['customer', 'region']);
   const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);
-  source.bind(bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
   bar.report();
   await source.load();
   assert.deepEqual(sorted(await source.present(VIEW_SCOPE)).region, ['AMER', 'LATAM']);

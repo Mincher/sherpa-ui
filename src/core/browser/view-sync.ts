@@ -44,7 +44,7 @@ export interface SyncOptions extends PersistOptions {
   interval?: number;
   /** The IndexedDB database name. Defaults to `sherpa`. */
   database?: string;
-  /** Stop syncing when this aborts — the same token `bind()` and `persistView` take. */
+  /** Stop syncing when this aborts — the same token `bindSource()` and `persistView` take. */
   signal?: AbortSignal;
   /** A failed push is REPORTED, never thrown. TRAP T-local-first-then-onward */
   onError?: (error: unknown, stage: 'pull' | 'push') => void;

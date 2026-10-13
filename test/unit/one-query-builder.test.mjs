@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, owner: 'Dana', seats: 5 },
@@ -45,7 +45,7 @@ async function source() {
 test('a control with `readings` is ASKED, so its field TYPE is honoured', async () => {
   const src = await source();
   const el = bar({ readings: { seats: { picked: ['5', '50'], range: true } } });
-  src.bind(el, { steerOnly: true });
+  bindSource(src, el, { steerOnly: true });
 
   el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} }));
   await settle();
@@ -60,7 +60,7 @@ test('a control with `readings` is ASKED, so its field TYPE is honoured', async 
 test('a control WITHOUT `readings` has its values read as parameters, not a clause', async () => {
   const src = await source();
   const el = bar();
-  src.bind(el, { steerOnly: true });
+  bindSource(src, el, { steerOnly: true });
 
   el.dispatchEvent(new CustomEvent('quick-filter-change', {
     detail: { values: { owner: ['Dana', 'Pia'] }, active: ['whatever'] },
@@ -78,7 +78,7 @@ test('a control WITHOUT `readings` has its values read as parameters, not a clau
 test('a column filter narrows, and does NOT wipe what else is applied', async () => {
   const src = await source();
   const el = bar();
-  src.bind(el, { steerOnly: true });
+  bindSource(src, el, { steerOnly: true });
 
   // A component part and a field selection are both live.
   src.contribute('legend', ['seats', 'lte', 500]);

@@ -13,6 +13,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
+const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 const { rules, oneOf, number, min, max, required } = await import(new URL('validate.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
 
@@ -145,7 +146,7 @@ test('a scope says what it narrows: the View is the view, a bound component name
   };
   assert.equal(source.describe('view').shows, 'view');
   assert.equal(source.describe('data').shows, undefined, 'nothing bound says what it shows');
-  const off = source.bind(grid, { scope: 'data', shows: 'grid' });
+  const off = bindSource(source, grid, { scope: 'data', shows: 'grid' });
   assert.equal(source.describe('data').shows, 'grid');
   off();
   assert.equal(source.describe('data').shows, undefined, 'unbound, it says nothing');
@@ -164,7 +165,7 @@ test('each PICKED value has a count of its own — and only a list answer in for
     fields: { region: { label: 'Region' }, status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } },
     scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status', 'seats'] } },
   }, store);
-  source.bind({
+  bindSource(source, {
     populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
   }, { scope: 'data' });
   await source.setQuery({ v: 1, scopes: {
@@ -200,7 +201,7 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
     scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status'] } },
   }, store);
   // Bound, `data` is a COMPONENT's scope: its answers are not the page's.
-  source.bind({
+  bindSource(source, {
     populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
   }, { scope: 'data' });
   await source.setQuery({ v: 1, scopes: {

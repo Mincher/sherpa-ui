@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, VIEW_SCOPE } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, VIEW_SCOPE } from '../../dist/data.js';
 
 /** The customers each region holds. */
 const REGION_ORGS = {
@@ -44,7 +44,7 @@ async function setup(readings, { mode = 'serial', limit = false } = {}) {
   await source.declareFromRows(['customer', 'region']);
   source.declareSets(VIEW_SCOPE, [{ id: 'account', mode, fields: ['customer', 'region', 'tier'] }]);
   const bar = new Bar(readings);
-  source.bind(bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
   bar.report();
   await source.load();
   // The set-aside pass, the load it may ask for, and the draw after it.

@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
 
 /** One source over four rows, plus a fake legend bound at the given scope. */
 const SETUP = `
-  const { ArrayStore, DataSource, bindSelection } = await import('/dist/data.js');
+  const { ArrayStore, DataSource, bindSelection, bindSource } = await import('/dist/data.js');
   const store = new ArrayStore(
     [{ id: 1, os: 'mac' }, { id: 2, os: 'win' }, { id: 3, os: 'linux' }, { id: 4, os: 'mac' }],
     { key: 'id' },
@@ -211,7 +211,7 @@ test('a component scope REFUSES a source that cannot hold a part', async ({ page
  */
 test('suspending a field keeps its values; clearing does not', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/data.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js');
     const store = new ArrayStore(
       [{ id: 1, s: 'a' }, { id: 2, s: 'b' }, { id: 3, s: 'c' }],
       { key: 'id' },
@@ -277,8 +277,8 @@ test('a legend with `only` narrows its chart, never the grid beside it', async (
       hasAttribute: () => false, getAttribute: () => null, dataset: {} });
     const chart = bound('chart');
     const grid = bound('grid');
-    src.bind(chart, { readonly: true, rows: 'all' });
-    src.bind(grid, { readonly: true });
+    bindSource(src, chart, { readonly: true, rows: 'all' });
+    bindSource(src, grid, { readonly: true });
     const legend = new EventTarget();
     legend.off = [];
     bindSelection(legend, src, {

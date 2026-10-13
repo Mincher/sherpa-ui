@@ -97,7 +97,6 @@
  * - .limitOptions — Does each list field offer only the values the other answers leave?
  * - .present — Each list field's values the rows still HOLD under the OTHER answers in its scope — a component scope's withi…
  * - .offered — What each field below the top of a SERIAL set OFFERS: the values the rows hold under the answers above it, as…
- * - .bind — Point a component at this source — `bindSource()`, kept as a bridge.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
  * - .allRows — Every row a bound component is under, UNPAGED — what "Select all rows" ticks on a grid that holds one page.
  * - .unbind — Stop steering and stop populating this component.
@@ -118,8 +117,6 @@ import {
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
-// Binding is the UI's: this layer names no component event. TODO 196
-import { bindSource, type BindOptions } from '../ui/bind-source.js';
 import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
 
 /** HOW FAR a control's reading reaches. TRAP T-a-filter-applies-down-its-scope
@@ -291,8 +288,6 @@ export interface DataSourceOptions {
    *  are drawn greyed. Default false. TRAP T-a-ruled-out-value-is-greyed */
   limitOptions?: boolean;
 }
-
-export type { BindOptions };
 
 /** What the binder tells the source about one component. `bindSource()` says it. */
 export interface AttachFacts {
@@ -2583,11 +2578,6 @@ export class DataSource extends EventTarget {
   }
 
   /* ── Binding ───────────────────────────────────────────────────────── */
-
-  /** Point a component at this source — `bindSource()`, kept here as a bridge. TODO 196 */
-  bind(el: Populatable, options: BindOptions = {}): () => void {
-    return bindSource(this, el, options);
-  }
 
   /** Take a component its binder has wired, and send it what is already
    *  loaded. `bindSource()` is the way in. TODO 196 */

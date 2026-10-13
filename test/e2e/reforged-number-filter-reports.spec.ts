@@ -116,14 +116,14 @@ test('a panel number field reports a dragged handle and a typed number', async (
 
 test('a bound source filters the ROWS by a typed number, and by a dragged range', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[]) => unknown;
       DataSource: new (o: { store: unknown }) => {
         declareField(f: string, o: Record<string, unknown>): void;
-        bind(el: HTMLElement, o?: Record<string, unknown>): void;
         load(): Promise<unknown>;
         debugState(): { total: number };
       };
+      bindSource(source: unknown, el: HTMLElement, o?: Record<string, unknown>): void;
     };
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100, range: false, active: true },
@@ -132,7 +132,7 @@ test('a bound source filters the ROWS by a typed number, and by a dragged range'
     const source = new DataSource({ store: new ArrayStore(rows) });
     source.declareField('seats', { label: 'Seats', type: 'number' });
     // STEER ONLY: the bar keeps the chips it was given.
-    source.bind(bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true });
     await source.load();
     const total = (): number => source.debugState().total;
     const menu = bar.shadowRoot!.querySelector('.chip[data-id="seats"] sherpa-menu') as Menu;
@@ -178,15 +178,15 @@ test('a bound source filters the ROWS by a typed number, and by a dragged range'
 for (const host of ['toolbar', 'panel'] as const) {
   test(`${host}: the Range switch is reported, and each shape keeps what it held`, async ({ page }) => {
     const r = await page.evaluate(async (where) => {
-      const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+      const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js') as unknown as {
         ArrayStore: new (rows: unknown[]) => unknown;
         DataSource: new (o: { store: unknown }) => {
           declareField(f: string, o: Record<string, unknown>): void;
           hold(scope: string, fields: string[]): void;
-          bind(el: HTMLElement, o?: Record<string, unknown>): void;
           load(): Promise<unknown>;
           debugState(): { total: number };
         };
+        bindSource(source: unknown, el: HTMLElement, o?: Record<string, unknown>): void;
       };
       const def = { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100, range: false, active: true };
       const el = where === 'toolbar'
@@ -200,7 +200,7 @@ for (const host of ['toolbar', 'panel'] as const) {
       // ONE value to start, as the def above: a bound panel is drawn from the SOURCE's.
       source.declareField('seats', { label: 'Seats', type: 'number', range: false });
       if (where === 'panel') source.hold('data', ['seats']);
-      source.bind(el, where === 'toolbar' ? { steerOnly: true } : { steerOnly: true, scope: ['data'] });
+      bindSource(source, el, where === 'toolbar' ? { steerOnly: true } : { steerOnly: true, scope: ['data'] });
       await source.load();
       // A bound panel is drawn its scopes once the load lands: its field is new.
       await window.__settled();

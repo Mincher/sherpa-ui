@@ -24,6 +24,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
+const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 const { applyOptions, filterRows, sortRows, filterFields } = await import(new URL('store.js', core));
 const { validate } = await import(new URL('validate.js', core));
 
@@ -99,7 +100,7 @@ test('bind() works headless — a plain object stands in for a component', async
     addEventListener() {}, removeEventListener() {},
   };
 
-  const off = source.bind(headless);
+  const off = bindSource(source, headless);
   await source.load();
   await settle();
 
@@ -192,7 +193,7 @@ test('F2: a component is not re-populated with rows it already holds', async () 
     setAttribute() {}, removeAttribute() {},
     addEventListener() {}, removeEventListener() {},
   };
-  source.bind(headless);
+  bindSource(source, headless);
   await source.load();
   await settle();
 
@@ -219,7 +220,7 @@ test('F2: a component bound AFTER a load still gets the rows', async () => {
   // `lastRows` and must not be skipped — otherwise a late-bound component
   // would sit empty until the next filter change.
   const payloads = [];
-  source.bind({
+  bindSource(source, {
     populate: (d) => payloads.push(d),
     setAttribute() {}, removeAttribute() {},
     addEventListener() {}, removeEventListener() {},
@@ -599,7 +600,7 @@ test('the data layer exports NO view renderer and no second wiring mechanism', a
      `renderView`, `$state` and `writes` were deleted 2026-09-18. `$state`
      compiled to `el.setAttribute(name, value)` — an attribute, which is what
      state already travels as — and added two things on top: re-set on change,
-     and write-on-event. That is `DataSource.bind()`, which app code used seven
+     and write-on-event. That is `bindSource()`, which app code used seven
      times while `$state` was used zero.
 
      This asserts the layer did not quietly grow the second mechanism back. */
@@ -625,7 +626,7 @@ test('the data layer exports NO view renderer and no second wiring mechanism', a
     addEventListener() {},
     removeEventListener() {},
   };
-  source.bind(el);
+  bindSource(source, el);
   source.setSort('n', 'desc');
   await source.load();
 
@@ -908,7 +909,7 @@ test('deliver: a bind hands its data to a callback instead of populate()', async
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     populate: () => { populated += 1; },
   });
-  source.bind(el, { deliver: (rows) => heard.push(rows.map((r) => r.id)) });
+  bindSource(source, el, { deliver: (rows) => heard.push(rows.map((r) => r.id)) });
   await source.load();
   assert.deepEqual(heard.at(-1), [1, 2]);
   assert.equal(populated, 0);
@@ -957,7 +958,7 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     drawScopes: (scopes) => drawn.push(scopes),
   });
-  source.bind(panel, { steerOnly: true, scope: ['view', 'grid'] });
+  bindSource(source, panel, { steerOnly: true, scope: ['view', 'grid'] });
   const ask = (type, detail) => panel.dispatchEvent(new CustomEvent(type, { detail }));
   const settle = () => new Promise((r) => setTimeout(r, 0));
 
@@ -1003,8 +1004,8 @@ test('a grid heading answers through the source, and is told what the View holds
   const barDrawn = [];
   const grid = stub({ supersedeColumns: (held, at) => columns.push([held, at]) });
   const bar = stub({ drawScope: (scope) => barDrawn.push(scope.filters.map((f) => f.id)) });
-  source.bind(grid, { scope: 'data' });
-  source.bind(bar, { steerOnly: true, scope: 'data' });
+  bindSource(source, grid, { scope: 'data' });
+  bindSource(source, bar, { steerOnly: true, scope: 'data' });
 
   grid.dispatchEvent(new CustomEvent('column-filter-change', { detail: { field: 'plan', reading: { picked: ['Pro'] } } }));
   assert.deepEqual(source.scope('data'), ['plan']);
@@ -1028,8 +1029,8 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   });
   const tile = stub('tile');
   const other = stub('other');
-  source.bind(tile, { rows: 'all', readonly: true });
-  source.bind(other, { rows: 'all', readonly: true });
+  bindSource(source, tile, { rows: 'all', readonly: true });
+  bindSource(source, other, { rows: 'all', readonly: true });
   await source.load();
   source.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
   await new Promise((r) => setTimeout(r, 0));
@@ -1054,7 +1055,7 @@ test('declareDefault on a field the View holds still narrows its component', asy
     populate: (r) => seen.set(name, r.map((x) => x.id)),
   });
   const tile = stub('tile');
-  source.bind(tile, { rows: 'all', readonly: true });
+  bindSource(source, tile, { rows: 'all', readonly: true });
   source.hold('view', ['sev']);
   await source.load();
   source.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });

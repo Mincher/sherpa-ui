@@ -11,7 +11,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-const { DataSource, ArrayStore, onReport } = await import(new URL('../../dist/data.js', import.meta.url));
+const { DataSource, bindSource, ArrayStore, onReport } = await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = Array.from({ length: 100 }, (_, i) => ({ id: i, band: i < 60 ? 'a' : 'b' }));
 
@@ -37,8 +37,8 @@ const el = (name) => {
 test('scope all sees every filtered row; the default sees one page', async () => {
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   const page = el('page'); const all = el('all');
-  s.bind(page, { readonly: true, as: (r) => r.length });
-  s.bind(all,  { readonly: true, rows: 'all', as: (r) => r.length });
+  bindSource(s, page, { readonly: true, as: (r) => r.length });
+  bindSource(s, all,  { readonly: true, rows: 'all', as: (r) => r.length });
   await s.load({ force: true });
   assert.equal(page.got.at(-1), 25, 'a paged bind draws its window');
   assert.equal(all.got.at(-1), 100, 'a summary counts everything');
@@ -47,7 +47,7 @@ test('scope all sees every filtered row; the default sees one page', async () =>
 test('a filter narrows BOTH, and the summary still ignores the page', async () => {
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   const all = el('all');
-  s.bind(all, { readonly: true, rows: 'all', as: (r) => r.length });
+  bindSource(s, all, { readonly: true, rows: 'all', as: (r) => r.length });
   await s.load({ force: true });
   assert.equal(all.got.at(-1), 100);
   s.setState({ filter: ['band', 'eq', 'a'] });
@@ -59,7 +59,7 @@ test('a summary bound AFTER the first load is not blank', async () => {
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   await s.load({ force: true });
   const all = el('late');
-  s.bind(all, { readonly: true, rows: 'all', as: (r) => r.length });
+  bindSource(s, all, { readonly: true, rows: 'all', as: (r) => r.length });
   await new Promise((r) => setTimeout(r, 50));
   assert.equal(all.got.at(-1), 100, 'the late bind triggered the unpaged fetch');
 });
@@ -71,7 +71,7 @@ test('a view with NO summary never asks the store for the unpaged set', async ()
   store.load = (o = {}) => { asked.push(o); return inner(o); };
 
   const s = new DataSource({ store, pageSize: 25 });
-  s.bind(el('page'), { readonly: true });
+  bindSource(s, el('page'), { readonly: true });
   await s.load({ force: true });
 
   // Every ask carried the page window. An unpaged one would be the cost this
@@ -86,9 +86,9 @@ test("`scope: 'all'` is a filter scope's name, so bind() says to use `rows: 'all
   const heard = [];
   const stop = onReport((issue) => heard.push(issue.code));
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
-  s.bind(el('wrong'), { readonly: true, scope: 'all', as: (r) => r.length });
-  s.bind(el('listed'), { readonly: true, scope: ['all'], as: (r) => r.length });
-  s.bind(el('right'), { readonly: true, rows: 'all', as: (r) => r.length });
+  bindSource(s, el('wrong'), { readonly: true, scope: 'all', as: (r) => r.length });
+  bindSource(s, el('listed'), { readonly: true, scope: ['all'], as: (r) => r.length });
+  bindSource(s, el('right'), { readonly: true, rows: 'all', as: (r) => r.length });
   stop();
   assert.deepEqual(heard, ['scope-all', 'scope-all']);
 });

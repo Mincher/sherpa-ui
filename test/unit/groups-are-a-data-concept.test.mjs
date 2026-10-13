@@ -19,7 +19,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, groupSummaries } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, groupSummaries } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, team: 'Blue', spend: 10 },
@@ -85,7 +85,7 @@ test('a filter in a COMPONENT scope narrows the groups, with a summary bound bes
   const chart = Object.assign(new EventTarget(), {
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });
-  src.bind(chart, { rows: 'all', readonly: true });
+  bindSource(src, chart, { rows: 'all', readonly: true });
   src.setGroup('team');
   src.hold('data', ['team']);
   src.write('data', 'team', { picked: ['Blue', 'Red'] });

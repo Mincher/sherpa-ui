@@ -113,7 +113,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
 | ✅ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ✅ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
-| 🚧 | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
+| ✅ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | 🚧 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
@@ -4174,7 +4174,7 @@ hooks in `sherpa-usage.json`. Its first run found a dead `data-label` on a bar
 chart, which meant the chart's name: the four charts now take a host
 `aria-label` (`labelTarget`), and Demos uses one. `T-markup-is-checked-against-the-spec`.
 
-### `[ ]` 196 — One filter surface and a smaller DataSource
+### `[x]` ✅ 196 — One filter surface and a smaller DataSource
 
 ❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/CONSUMER-REVIEW.md` §3.10.
 
@@ -4190,7 +4190,13 @@ chart, which meant the chart's name: the four charts now take a host
 | ✅ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill. The ⋮ menu is shared now. The saved-filter menu (`saved-filter-menu.ts`) and the drill (`MenuDrill`) were shared already; what is left of them is each host's chips or scope boxes, which is stage 5 | M |
 | ✅ | 5. One `FilterDef` type, then one scope protocol (the bar drawn as a panel scope is). `FilterDef` and `FilterOption` in `src/core/ui/filter-def.ts`; `QuickFilterDef`, `QuickFilterOption`, `PanelFilter` and `PanelValue` are gone. A bar's `drawScope` takes `describe(scope)`, as the panel's `drawScopes` does; the raw slice is gone. `describe` now lists every held field, declared or not — one left out filtered with no chip | S + L |
 | ✅ | 6. ~~The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`). Found 2026-10-13: the editor is in ONE place already — the bar, the panel, the grid and the saved cards all open `sherpa-menu`, and the shared logic is `filter-state.ts`. So this only splits a 1993-line file, behind a host interface of about 15 calls. **A:** split it anyway; **B:** drop this stage. My pick: B~~ — **✅ Will, 2026-10-13: B, dropped** | L |
-| ⬜ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **✅ Will, 2026-10-13: A, remove it** | M |
+| ✅ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **✅ Will, 2026-10-13: A, remove it.** Done: `bindSource(source, el, options)` from `sherpa-ui/data` is the one way in; 93 calls moved, in 23 test files, Sherpa Demos and the docs | M |
+
+**✅ Done 2026-10-13.** The data layer names no component event and writes no
+attribute: `bindSource()` in `src/core/ui/bind-source.ts` joins a component to
+its source, and `DataSource.attach()` takes what it is told. The bar and the
+panel share the ⋮ menu, one `FilterDef`, and one way to be drawn a scope.
+Stage 6 was dropped (Will): the editor was in one place already.
 
 ### `[x]` ✅ 197 — One way to write a filter condition
 

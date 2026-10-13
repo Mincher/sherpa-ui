@@ -81,7 +81,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
   // The test that matters. Two sources, two grids, nothing shared but a JSON
   // snapshot — which is exactly what a saved view is.
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, captureView, applyViewSnapshot } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, captureView, applyViewSnapshot } = await import('/dist/index.js');
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     const rows = Array.from({ length: 60 }, (_, i) => ({
       email: `e${i}@x`, name: `n${i % 9}`, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 400,
@@ -104,7 +104,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
       document.getElementById('root')!.replaceChildren(grid);
       await grid.rendered;
       const source = new DataSource({ store: new ArrayStore(rows, { key: 'email' }), pageSize: 10 });
-      source.bind(grid, { as: (r2: unknown[]) => ({ key: 'email', columns, rows: r2 }) });
+      bindSource(source, grid, { as: (r2: unknown[]) => ({ key: 'email', columns, rows: r2 }) });
       return { grid, source };
     };
 
@@ -231,7 +231,7 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
   // not a label — the same object a user's saved view produces, a shared link
   // carries, and an agent sends over MCP.
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, applyViewSnapshot } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, applyViewSnapshot } = await import('/dist/index.js');
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const rows = Array.from({ length: 90 }, (_, i) => ({
@@ -254,7 +254,7 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
     await grid.rendered;
 
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 25 });
-    source.bind(grid, { as: (r2: unknown[]) => ({ key: 'id', columns, rows: r2 }) });
+    bindSource(source, grid, { as: (r2: unknown[]) => ({ key: 'id', columns, rows: r2 }) });
     await source.load();
     await settle();
 

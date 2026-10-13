@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, VIEW_SCOPE } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, VIEW_SCOPE } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, region: 'EMEA', owner: 'Dana' },
@@ -36,7 +36,7 @@ class Bar extends EventTarget {
 async function counts(readings) {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   const bar = new Bar(readings);
-  source.bind(bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
   bar.report();
   await source.load();
   return { field: await source.results(VIEW_SCOPE), values: await source.valueResults(VIEW_SCOPE) };

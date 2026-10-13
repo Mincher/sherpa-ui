@@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
+const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 
 const ROWS = [
   { id: 1, sev: 'critical', os: 'mac' }, { id: 2, sev: 'info', os: 'mac' },
@@ -36,9 +37,9 @@ async function setup() {
     drawScopes: (scopes) => { drawn.scopes.push(scopes); },
     drawReading: (field, reading, scope) => { drawn.readings.push([scope, field, reading.picked ?? []]); },
   });
-  source.bind(chart, { rows: 'all', readonly: true });
-  source.bind(other, { rows: 'all', readonly: true });
-  source.bind(panel, { steerOnly: true, scope: ['view', 'data'] });
+  bindSource(source, chart, { rows: 'all', readonly: true });
+  bindSource(source, other, { rows: 'all', readonly: true });
+  bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
   await source.load();
   source.declarePart('picks:bar', { field: 'sev', only: chart, label: 'Alerts by severity' });
   await tick();

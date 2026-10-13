@@ -16,19 +16,20 @@ type Grid = HTMLElement & {
 
 test('a grid over keyless rows selects by made-up key, and a sort keeps the selection', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, isMadeUpKey, onReport } = await import('/dist/data.js') as unknown as {
+    const { ArrayStore, DataSource, bindSource, isMadeUpKey, onReport } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[]) => unknown;
       DataSource: new (o: { store: unknown }) => {
-        bind(el: HTMLElement, o?: Record<string, unknown>): void; load(): Promise<unknown>;
+        load(): Promise<unknown>;
         sort(field: string, direction: string): void;
       };
+      bindSource(source: unknown, el: HTMLElement, o?: Record<string, unknown>): void;
       isMadeUpKey(k: unknown): boolean;
       onReport(fn: (r: { code: string }) => void): () => void;
     };
     const store = new ArrayStore([{ name: 'Ada' }, { name: 'Bob' }, { name: 'Cy' }]);
     const source = new DataSource({ store });
     const grid = await window.__mount<Grid>('sherpa-data-grid', undefined, { 'data-selectable': true });
-    source.bind(grid, { as: (rows: unknown[]) => ({ columns: [{ field: 'name', header: 'Name' }], rows }) });
+    bindSource(source, grid, { as: (rows: unknown[]) => ({ columns: [{ field: 'name', header: 'Name' }], rows }) });
     await source.load();
     await window.__settled();
     const heard: string[][] = [];

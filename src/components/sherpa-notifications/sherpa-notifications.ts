@@ -10,7 +10,7 @@
  * list is right without anybody refreshing:
  *
  *   const feed = new SocketStore({ url: 'wss://…/notifications' });
- *   new DataSource({ store: feed }).bind(notifications);
+ *   bindSource(new DataSource({ store: feed }), notifications);
  *   feed.connect();
  *
  * Map:

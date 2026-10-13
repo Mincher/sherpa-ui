@@ -11,16 +11,16 @@ import { test, expect, type Bar } from './harness';
  */
 type Source = {
   declareField(f: string, facts: { type: string }): void;
-  bind(el: Element, o?: { steerOnly?: boolean }): () => void;
   load(): Promise<unknown>;
   debugState(): { total: number; parts: Record<string, unknown> };
 };
 
 test('a chip that carries its readings is an Advanced filter, and a bound source applies it', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[]) => unknown;
       DataSource: new (o: { store: unknown }) => Source;
+      bindSource(source: Source, el: Element, o?: { steerOnly?: boolean }): () => void;
     };
     const source = new DataSource({ store: new ArrayStore([
       { id: 1, health: 40, owner: 'Unassigned' },
@@ -34,7 +34,7 @@ test('a chip that carries its readings is an Advanced filter, and a bound source
         health: { op: 'lt', text: '60' }, owner: { op: 'eq', picked: ['Unassigned'] },
       } },
     ], { style: 'inline-size: 1200px' });
-    source.bind(bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true });
     await source.load();
 
     const chip = (id: string) => bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
@@ -179,9 +179,10 @@ test('"Save filter" shows where there is something to save, and asks with its re
 
 test('packFilter shows the saved chip ON and clears the fields it came from, in one event', async ({ page }) => {
   const r = await page.evaluate(async ({ OPTS, PLANS }) => {
-    const { ArrayStore, DataSource, onReport } = await import('/dist/data.js') as unknown as {
+    const { ArrayStore, DataSource, bindSource, onReport } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[]) => unknown;
       DataSource: new (o: { store: unknown }) => Source;
+      bindSource(source: Source, el: Element, o?: { steerOnly?: boolean }): () => void;
       onReport(fn: (r: { code: string }) => void): () => void;
     };
     const source = new DataSource({ store: new ArrayStore([
@@ -196,7 +197,7 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
         op: 'contains', text: 'Da', options: OPTS },
       { id: 'plan', label: 'Plan', select: 'multiple', active: true, options: PLANS },
     ], { style: 'inline-size: 1200px', 'data-saveable': true });
-    source.bind(bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true });
     bar.report();
     await window.__settled();
     await source.load();
@@ -335,9 +336,10 @@ test('a reader\'s own saved chip offers Edit and Delete; a preset does not', asy
 
 test('Edit filter edits in place, and the fields are left as they were; Delete forgets the chip', async ({ page }) => {
   const r = await page.evaluate(async ({ OPTS }) => {
-    const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[]) => unknown;
       DataSource: new (o: { store: unknown }) => Source;
+      bindSource(source: Source, el: Element, o?: { steerOnly?: boolean }): () => void;
     };
     const source = new DataSource({ store: new ArrayStore([
       { id: 1, owner: 'Dana', tier: 'gold' }, { id: 2, owner: 'Dana', tier: 'silver' },
@@ -350,7 +352,7 @@ test('Edit filter edits in place, and the fields are left as they were; Delete f
     ], { style: 'inline-size: 1200px', 'data-saveable': true });
     bar.available([{ id: 'tier', label: 'Tier', select: 'multiple',
       options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }] }]);
-    source.bind(bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true });
     bar.report();
     await window.__settled();
     await source.load();

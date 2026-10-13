@@ -1285,7 +1285,7 @@ same row count that row once.
 (`monitor`), or the content one component shows: a grid (`table-columns`), a
 chart, a form (`file-lines`), a list (`list`). Will, TODO 97; in its header,
 caret, icon, label. The kind comes from the COMPONENT: its `asks.shows`, which
-the provider passes to `source.bind()`, and `describe(scope)` reports as
+the provider passes to `bindSource()`, and `describe(scope)` reports as
 `shows` — never a tag name, so a new grid-like component says what it is
 itself. Figma has no chart glyph of its own yet, so a chart's section wears
 `reports` (three bars), and `table-columns` stands in for a table glyph.
@@ -2035,8 +2035,8 @@ remember.
 
 ```js
 const ac = new AbortController();
-source.bind(chart, { readonly: true, signal: ac.signal });
-source.bind(grid,  { signal: ac.signal });
+bindSource(source, chart, { readonly: true, signal: ac.signal });
+bindSource(source, grid,  { signal: ac.signal });
 ac.abort();   // both gone
 ```
 
@@ -2092,7 +2092,7 @@ whatever else the view had folded in. Naming the event leaves `sort-change` and
 `group-change` working as they always did.
 
 ```js
-source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'] });
+bindSource(source, qft, { steerOnly: true, ignore: ['quick-filter-change'] });
 ```
 
 An ignored event gets **no listener at all**, rather than a listener that
@@ -2111,8 +2111,8 @@ changing 21 of them, so the ADAPTER lives at the binding, where the mismatch
 actually is.
 
 ```js
-source.bind(grid,  { as: (rows) => ({ columns, rows }) });
-source.bind(chart, { as: (rows) => rows.map(toSlice) });
+bindSource(source, grid,  { as: (rows) => ({ columns, rows }) });
+bindSource(source, chart, { as: (rows) => rows.map(toSlice) });
 ```
 
 It also receives the source, so an adapter can read the total or the state — a
@@ -5411,7 +5411,7 @@ available and did not reach for it. That is the evidence, not the argument.
 
 **Three questions, three deletions, one rule.** The shell
 (`renderView` rebuilt `sherpa-app-shell`), the wiring (`$state` was an
-attribute write beside `DataSource.bind` —
+attribute write beside `bindSource` —
 `T-attributes-are-the-state-channel`), and now the builder. Each was a second
 way to do something the platform or this system already did once.
 
@@ -5522,7 +5522,7 @@ el.setAttribute(name, String(v));   // render-view.ts
 
 An attribute. On top of it, `$state` added re-set-on-change and `writes` added
 write-on-event — set a value, listen for a change, set it again. **That is
-`DataSource.bind()`**, which also knows the query behind it and has
+`bindSource()`**, which also knows the query behind it and has
 `readonly`, `steerOnly` and `ignore`, none of which `$state` had.
 
 The audit settled which one was real:
@@ -5532,7 +5532,7 @@ The audit settled which one was real:
 | `$state` construction sites | **0** | 3 |
 | `writes:` arrays | **0** | 2 |
 | `renderView()` calls | **1**, unreachable | 4 |
-| `DataSource.bind()` | **7** | 25 |
+| `bindSource()` | **7** | 25 |
 
 The one `renderView` call sat in `persist-view.ts`, reached only when
 `SavedView.content` was an OBJECT. Every `content:` in the repo is markup, so
@@ -5547,7 +5547,7 @@ What is left is one of each:
 | | |
 |---|---|
 | a view's SHAPE | markup — `T-saved-markup-is-untrusted-input` |
-| a view's STATE | `DataSource.bind()` — attributes in, events out |
+| a view's STATE | `bindSource()` — attributes in, events out |
 | a view's own API state | `applyState` — `T-state-is-the-saved-view-half` |
 | what an app knows about itself | `SessionStore`, standalone. The real app uses it for theme mode and never needed a view around it |
 
@@ -7471,7 +7471,7 @@ const off = persistView('records',
   { grid: () => ({ setColumnFilter: …, select: [grid.selectedKeys] }) });
 ```
 
-It returns a function that STOPS SAVING, the same way `bind()`'s does — a caller
+It returns a function that STOPS SAVING, the same way `bindSource()`'s does — a caller
 should not have to remember which of our functions hand back a teardown and
 which do not. `T-signal-not-a-teardown-list` is the component-side form of the
 same rule.
@@ -7510,7 +7510,7 @@ place:
 const off = onViewPicked(header, VIEWS, { source, elements: { grid } });
 ```
 
-It returns an unsubscribe, like `bind()` and `persistView`, so a view that leaves
+It returns an unsubscribe, like `bindSource()` and `persistView`, so a view that leaves
 the DOM stops listening — see `T-persist-view-returns-a-teardown` for why every
 one of these hands a teardown back.
 
@@ -12128,7 +12128,7 @@ or resuming would jump to a column the reader had moved on from.
 
 ### T-bind-locks-what-it-owns
 
-`DataSource.bind()` sets `data-locked` on the element, and `unbind()` removes it.
+`bindSource()` sets `data-locked` on the element, and `unbind()` removes it.
 
 `data-locked` is this system's own answer to "a host owns this value": a locked
 component **reports its interaction and stops writing its own state**. It
@@ -12607,7 +12607,7 @@ from Figma, are what caught it.
 
 ### T-a-summary-binds-to-all-the-rows
 
-`DataSource.bind()` hands a component `#result.rows`, which is **the page** —
+`bindSource()` hands a component `#result.rows`, which is **the page** —
 `applyOptions` slices to `skip`/`take` and reports the pre-slice count
 separately as `total`. That is right for a grid and wrong for every summary: a
 chart bound the default way on a 25-row page of 100 records counts 25, draws a
@@ -12617,12 +12617,12 @@ perfectly reasonable picture, and is silently wrong.
 unpaged:
 
 ```js
-source.bind(chart, { readonly: true, rows: 'all', as: (rows) => countBy(rows, 'status') });
+bindSource(source, chart, { readonly: true, rows: 'all', as: (rows) => countBy(rows, 'status') });
 ```
 
 NOT `scope: 'all'`, which this entry said until 2026-10-01: `scope` names a
 filter scope, so it type-checks, binds to a scope called "all", and counts one
-page — the very bug. `bind()` now reports it (`scope-all`).
+page — the very bug. `bindSource()` now reports it (`scope-all`).
 
 Three things make it safe:
 
@@ -12639,7 +12639,7 @@ Three things make it safe:
   skipped whenever the page array happened to be unchanged.
 
 A page that asks through the provider gets the whole set for its summaries on
-its own; a hand `bind()` says `rows: 'all'`, as Sherpa Demos' Records gauge
+its own; a hand `bindSource()` says `rows: 'all'`, as Sherpa Demos' Records gauge
 does.
 
 - Site: `src/core/data/data-source.ts`
@@ -13936,7 +13936,7 @@ capability should be there for any UI component."*
 
 Half of that was already true and half was not, which is the interesting part.
 
-**ASKING was always generic.** `bind()` never checked a type. Measured: a plain
+**ASKING was always generic.** `bindSource()` never checked a type. Measured: a plain
 `sherpa-button`, bound and handed a `sort-change`, steered the query, took
 `data-locked`, and received `data-sort-field="tier"` back. There is no
 allow-list anywhere — `STEERING_EVENTS` names the events, not the elements
@@ -15484,7 +15484,7 @@ never a literal.
 2026-09-27 (the Context Protocol, choice A; designed in FILTER-REVIEW §9–§12
 on 2026-09-25 and never built until P1). Before it, nothing could reach the
 data layer from a component — it is DOM-free, so it is not in the tree — and
-every page wired every component by hand with `source.bind(el, { as, … })`.
+every page wired every component by hand with `bindSource(source, el, { as, … })`.
 
 A component that declares `static asks` (`{ shape: 'rows' | 'all' | 'state',
 own? }`) dispatches a `context-request` (bubbles, composed — it crosses shadow

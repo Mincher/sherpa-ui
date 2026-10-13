@@ -13,12 +13,12 @@ type Grid = HTMLElement & { rendered?: Promise<void>; selectedKeys: string[]; po
 
 test('Select all rows ticks every matching row, on every page, and only those', async ({ page }) => {
   const r = await page.evaluate(async (data) => {
-    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
     const grid = document.createElement('sherpa-data-grid') as Grid;
     document.getElementById('root')!.replaceChildren(grid);
     await grid.rendered;
     const source = new DataSource({ store: new ArrayStore(data, { key: 'id' }), pageSize: 10 });
-    source.bind(grid, { as: (rows) => ({ columns: [{ field: 'name', header: 'Name' }], rows }) });
+    bindSource(source, grid, { as: (rows) => ({ columns: [{ field: 'name', header: 'Name' }], rows }) });
     await source.load();
     await window.__settled();
     const scenario = (value: string) => grid.shadowRoot!.querySelector('.select-all')!

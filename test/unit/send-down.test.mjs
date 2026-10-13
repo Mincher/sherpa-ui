@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
+const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 
 const ROWS = [
   { id: 1, plan: 'Pro', region: 'EMEA' }, { id: 2, plan: 'Free', region: 'EMEA' },
@@ -38,9 +39,9 @@ async function setup() {
   const grid = stub('grid');
   const chart = stub('bar');
   const panel = stub('panel', { drawScopes() {}, drawReading() {} });
-  source.bind(grid, { scope: 'data' });
-  source.bind(chart, { rows: 'all', readonly: true });
-  source.bind(panel, { steerOnly: true, scope: ['view', 'data'] });
+  bindSource(source, grid, { scope: 'data' });
+  bindSource(source, chart, { rows: 'all', readonly: true });
+  bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
   await source.load();
   const send = (scope, id, from) => panel.dispatchEvent(new CustomEvent('filter-add-request', {
     detail: { scope, ids: [id], from },

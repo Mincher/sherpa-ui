@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, fieldState, savedReading, stateClause } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fieldState, savedReading, stateClause } from '../../dist/data.js';
 import { kindOf } from '../../dist/core/ui/filter-kind.js';
 
 /** A bar with nothing but what a source asks of it. */
@@ -65,7 +65,7 @@ test('each ON saved filter is one named part, over any fields; off drops it', as
   const source = new DataSource({ store: new ArrayStore(ROWS) });
   source.declareField('health', { type: 'number' });
   const bar = new Bar();
-  source.bind(bar, { steerOnly: true });
+  bindSource(source, bar, { steerOnly: true });
 
   bar.saved = {
     'at-risk': { health: { op: 'lt', text: '60' } },

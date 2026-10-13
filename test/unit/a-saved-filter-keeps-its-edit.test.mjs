@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, onReport } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, onReport } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, health: 40, owner: 'Unassigned' },
@@ -43,7 +43,7 @@ async function setup() {
   source.declareScope('grid', { label: 'Records' });
   source.declarePreset('custom:risk', SAVED, { label: 'Risky', editable: true });
   const bar = new Bar();
-  source.bind(bar, { steerOnly: true, scope: 'grid' });
+  bindSource(source, bar, { steerOnly: true, scope: 'grid' });
   bar.report();
   await source.load();
   return { source, bar };

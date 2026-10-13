@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { compile, VIEW, DataSource, ArrayStore, filterRows, spoofRemote } =
+const { compile, VIEW, DataSource, bindSource, ArrayStore, filterRows, spoofRemote } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = [
@@ -189,7 +189,7 @@ test('a bar bound with a scope is DRAWN each answer in its scope, whoever set it
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     drawReading: (field, reading) => drawn.push([field, reading]),
   });
-  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  bindSource(src, bar, { steerOnly: true, scope: 'grid' });
   src.hold('grid', ['status']);
   // A heading, a legend or the panel — not the bar — answers Status.
   src.select('status', [], { conditions: [{ op: 'contains', text: 'tri' }] });
@@ -212,7 +212,7 @@ test('a control bound over SEVERAL scopes — the panel — is drawn each, told 
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     drawReading: (field, _reading, scope) => drawn.push([field, scope]),
   });
-  src.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW, 'grid'] });
+  bindSource(src, panel, { readonly: true, steerOnly: true, scope: [VIEW, 'grid'] });
   src.hold('grid', ['status']);
   src.select('status', ['active']);
   src.select('region', ['EMEA']);
@@ -227,7 +227,7 @@ test('a scoped bar\'s saved filters are PRESETS in the Query — on or off, read
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     readings: {}, presets,
   });
-  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  bindSource(src, bar, { steerOnly: true, scope: 'grid' });
   bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} }));
   assert.deepEqual(src.query.applied.scopes.grid.presets, { 'at-risk': true });
   assert.deepEqual(ids(src.state.filter), [1, 4, 5]);
@@ -254,7 +254,7 @@ test('setQuery restores the WHOLE Query and draws each bound scope — nothing r
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     drawScope: async (scope) => { drawn.push([scope.scope, scope.filters.map((f) => [f.id, f.state])]); },
   });
-  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  bindSource(src, bar, { steerOnly: true, scope: 'grid' });
   await src.setQuery(saved);
   assert.deepEqual(src.query.applied, saved);
   assert.deepEqual(ids(src.state.filter), [1, 4]);
@@ -327,7 +327,7 @@ test('Discard puts the applied answer back over the draft, and draws it', async 
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     drawReading: (field, reading) => drawn.push([field, reading.picked]),
   });
-  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  bindSource(src, bar, { steerOnly: true, scope: 'grid' });
   src.hold('grid', ['status']);
   src.select('status', ['active']);
   src.commit();
@@ -346,7 +346,7 @@ test('a bound control is TOLD what is pending and whether its scope is dirty', a
   const bar = Object.assign(new EventTarget(), {
     setAttribute: (n, v) => { attrs[n] = v; }, removeAttribute: (n) => { delete attrs[n]; }, hasAttribute: () => false,
   });
-  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  bindSource(src, bar, { steerOnly: true, scope: 'grid' });
   src.hold('grid', ['status', 'owner']);
   src.select('status', ['trial']);
   assert.equal(attrs['data-pending'], 'status');
@@ -361,7 +361,7 @@ test('a legend narrows its chart at once, even on a remote source — its rows a
   const chart = Object.assign(new EventTarget(), {
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });
-  src.bind(chart, { readonly: true, rows: 'all' });
+  bindSource(src, chart, { readonly: true, rows: 'all' });
   src.write('legend', 'status', { picked: ['active'] }, { only: chart });
   assert.equal(src.dirty(), false);
   assert.deepEqual(Object.keys(src.debugState().only), ['chart']);
