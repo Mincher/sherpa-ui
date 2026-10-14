@@ -24,7 +24,7 @@ interface ItemEl extends HTMLElement {
 test('title and description render from data-* attributes', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Project Alpha');
+    el.setAttribute('data-label', 'Project Alpha');
     el.setAttribute('data-description', 'Owned by design');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -41,7 +41,7 @@ test('title and description render from data-* attributes', async ({ page }) => 
 test('description hides when data-description is absent', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Only a title');
+    el.setAttribute('data-label', 'Only a title');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const desc = el.shadowRoot!.querySelector('.description')!;
@@ -53,7 +53,7 @@ test('description hides when data-description is absent', async ({ page }) => {
 test('slotted leading and trailing content reflect to data-has-* on the host', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'With slots');
+    el.setAttribute('data-label', 'With slots');
     el.innerHTML = '<span slot="leading">L</span><button slot="trailing">Go</button>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -75,7 +75,7 @@ test('slotted leading and trailing content reflect to data-has-* on the host', a
 test('trailing region stays hidden with no slotted content', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Bare');
+    el.setAttribute('data-label', 'Bare');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return {
@@ -90,7 +90,7 @@ test('trailing region stays hidden with no slotted content', async ({ page }) =>
 test('interactive item is focusable and fires item-click on click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Clickable');
+    el.setAttribute('data-label', 'Clickable');
     el.setAttribute('data-interactive', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -117,7 +117,7 @@ test('interactive item is focusable and fires item-click on click', async ({ pag
 test('non-interactive item does not fire or become active on click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Static');
+    el.setAttribute('data-label', 'Static');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -134,7 +134,7 @@ test('non-interactive item does not fire or become active on click', async ({ pa
 test('disabled interactive item does not fire on click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Off');
+    el.setAttribute('data-label', 'Off');
     el.setAttribute('data-interactive', '');
     el.setAttribute('disabled', '');
     document.getElementById('root')!.appendChild(el);
@@ -152,7 +152,7 @@ test('disabled interactive item does not fire on click', async ({ page }) => {
 test('the current setter reflects to data-current', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Prop');
+    el.setAttribute('data-label', 'Prop');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.current = true;
@@ -168,7 +168,7 @@ test('the current setter reflects to data-current', async ({ page }) => {
 test('data-icon renders the leading glyph and reveals the leading region', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Files');
+    el.setAttribute('data-label', 'Files');
     el.setAttribute('data-icon', '📁');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -185,7 +185,7 @@ test('data-icon renders the leading glyph and reveals the leading region', async
 test('data-draggable reveals the drag handle and fires item-drag', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Row');
+    el.setAttribute('data-label', 'Row');
     el.setAttribute('data-draggable', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -204,7 +204,7 @@ test('data-draggable reveals the drag handle and fires item-drag', async ({ page
 test('data-expandable toggle flips data-expanded and fires item-expand', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Group');
+    el.setAttribute('data-label', 'Group');
     el.setAttribute('data-expandable', '');
     el.setAttribute('data-interactive', '');
     document.getElementById('root')!.appendChild(el);
@@ -226,7 +226,7 @@ test('data-expandable toggle flips data-expanded and fires item-expand', async (
 test('data-selectable control toggles selection and fires item-select', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-heading', 'Pick me');
+    el.setAttribute('data-label', 'Pick me');
     el.setAttribute('data-selectable', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;

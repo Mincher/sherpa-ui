@@ -251,13 +251,12 @@ typed door (`this.set(attr, value)` — the JS→CSS write path) and a place to 
 use. **`kind: style` must stay CSS-only in behaviour** — declaring `data-status` is not
 licence to add a JS status branch.
 
-Three options exist to preserve real behaviour. Do not add a fourth without evidence of
+Two options exist to preserve real behaviour. Do not add a third without evidence of
 three or more uses:
 
 | Option | For |
 |---|---|
 | `all` | the target repeats in the template (list-item writes `.title` twice) |
-| `fallbackAttr` | a legacy alias, pointing AT the tier's own name (see below) |
 | `default` | a real default string (`'Available'`, `'Ask N-zo'`) |
 
 A `to` target never holds a `<slot>`: the write would erase it. Put the text in a
@@ -280,9 +279,8 @@ progress-bar. A CONTAINER that holds other things takes `data-heading` —
 dialog, panel, accordion, toast, menu, app-header. Measured 2026-09-23: 19
 components on one side, 14 on the other, and **zero** on the wrong one.
 
-An alias always points AT its tier's own name, never away:
-`sherpa-list-item` takes `data-label` with `data-heading` as the fallback;
-`sherpa-app-header` takes `data-heading` with `data-title` as the fallback.
+**There are no aliases.** A renamed name drops the old one in the same
+change, so each thing has one name (TRAP `T-a-rename-drops-the-old-name`).
 
 **And `data-current` vs `data-selected` are not synonyms.** `data-current` is
 one-of-many — which row you are on. `data-selected` is any-of-many — whether

@@ -3,7 +3,7 @@
  * sherpa-list-item children or by populate(). One row is current at a time.
  *
  * Public API:
- *   data-type  (default — dividers between rows) | bordered | plain (no dividers)
+ *   data-type  (default — dividers between rows) | plain (no dividers)
  *   data-empty    empty-state message (shown when no rows are present)
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';

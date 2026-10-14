@@ -94,8 +94,8 @@ test('slotted sherpa-list-item children are supported (data-has-content-slot)', 
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
     el.innerHTML =
-      '<sherpa-list-item data-heading="Slotted A" data-interactive></sherpa-list-item>' +
-      '<sherpa-list-item data-heading="Slotted B" data-interactive></sherpa-list-item>';
+      '<sherpa-list-item data-label="Slotted A" data-interactive></sherpa-list-item>' +
+      '<sherpa-list-item data-label="Slotted B" data-interactive></sherpa-list-item>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -112,8 +112,8 @@ test('single-current applies across slotted children too', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
     el.innerHTML =
-      '<sherpa-list-item data-heading="A" data-interactive data-current></sherpa-list-item>' +
-      '<sherpa-list-item data-heading="B" data-interactive></sherpa-list-item>';
+      '<sherpa-list-item data-label="A" data-interactive data-current></sherpa-list-item>' +
+      '<sherpa-list-item data-label="B" data-interactive></sherpa-list-item>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();

@@ -49,7 +49,7 @@ export class SherpaAppHeader extends SherpaElement {
     /* The mode on screen, so the theme button offers the OTHER: a moon in
        light, a sun in dark. Not `data-mode`, which would re-tint the header. */
     'data-theme-mode': { type: 'enum', kind: 'behaviour', values: ['light', 'dark'] },
-    'data-heading': { type: 'string', kind: 'content', to: '.title', fallbackAttr: 'data-title' },
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
     'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label', default: 'Ask N-zo' },
     /* The notifications panel is OPEN. The header emits the intent and the
        host owns the panel, so the host says when it opened — a button that

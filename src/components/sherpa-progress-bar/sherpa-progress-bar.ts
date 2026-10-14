@@ -15,7 +15,6 @@ export class SherpaProgressBar extends SherpaElement {
   static override css = new URL('./sherpa-progress-bar.css', import.meta.url);
   static override html = new URL('./sherpa-progress-bar.html', import.meta.url);
   static override props = {
-    'data-value': { type: 'number', kind: 'behaviour' },
     'data-indeterminate': { type: 'boolean', kind: 'style' },
     'data-label': { type: 'string', kind: 'content' },
   } as const;
@@ -38,10 +37,7 @@ export class SherpaProgressBar extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────────── */
 
   get value(): number {
-    // `value` is the public API; data-value is the legacy fallback.
-    return this.#clamp(
-      this.getAttribute('value') ?? this.#bar()?.value ?? this.dataset['value'],
-    );
+    return this.#clamp(this.getAttribute('value') ?? this.#bar()?.value);
   }
   set value(v: number) {
     this.setAttribute('value', String(this.#clamp(v)));
@@ -63,7 +59,7 @@ export class SherpaProgressBar extends SherpaElement {
     if (this.hasAttribute('data-indeterminate')) {
       bar.removeAttribute('value'); // absent value IS native indeterminate
     } else {
-      bar.value = this.#clamp(this.getAttribute('value') ?? this.dataset['value']);
+      bar.value = this.#clamp(this.getAttribute('value'));
     }
 
     const label = this.dataset['label'];

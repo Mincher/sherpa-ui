@@ -66,15 +66,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-value",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "0–100 completion percentage (determinate)"
-    },
-    {
-      "$type": "prop",
       "name": "value",
       "type": "string",
       "observed": true,

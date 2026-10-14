@@ -281,8 +281,8 @@ test('props: an EMPTY slot leaves the attribute\'s text showing', async ({ page 
   expect(r).toEqual({ says: 'from the attribute', shown: true });
 });
 
-test('props: fallbackAttr is used when the primary attribute is absent', async ({ page }) => {
-  // data-message is toast's legacy alias for data-heading.
+test('props: an old alias writes nothing — data-message was the toast\'s', async ({ page }) => {
+  // TRAP T-a-rename-drops-the-old-name
   const got = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
@@ -296,7 +296,7 @@ test('props: fallbackAttr is used when the primary attribute is absent', async (
     };
     return { alias: await read('data-message', 'legacy'), primary: await read('data-heading', 'current') };
   });
-  expect(got).toEqual({ alias: 'legacy', primary: 'current' });
+  expect(got).toEqual({ alias: '', primary: 'current' });
 });
 
 test('props: a declared prop re-syncs when the attribute changes', async ({ page }) => {

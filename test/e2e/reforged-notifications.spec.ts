@@ -12,9 +12,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 const ITEMS = [
-  { id: 'a', title: 'Renewed', description: 'Enterprise', time: '2m ago', unread: true },
-  { id: 'b', title: 'Payment failed', description: 'Declined', time: '1h ago', unread: true },
-  { id: 'c', title: 'Report ready', time: '2d ago' },
+  { id: 'a', label: 'Renewed', description: 'Enterprise', time: '2m ago', unread: true },
+  { id: 'b', label: 'Payment failed', description: 'Declined', time: '1h ago', unread: true },
+  { id: 'c', label: 'Report ready', time: '2d ago' },
 ];
 
 test('it composes real components, and marks unread rows', async ({ page }) => {

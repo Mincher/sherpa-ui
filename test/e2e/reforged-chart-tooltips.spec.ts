@@ -312,7 +312,7 @@ test('a tip ignores the status around it — it pins Style=default', async ({ pa
     const metric = document.createElement('sherpa-metric') as El;
     root.appendChild(metric);
     await metric.rendered;
-    await metric.populate({ name: 'Sessions', value: '9', deltaPercent: -6, values: [4, 6, 5, 9] });
+    await metric.populate({ label: 'Sessions', value: '9', deltaPercent: -6, values: [4, 6, 5, 9] });
     const spark = metric.shadowRoot!.querySelector('sherpa-sparkline') as El;
     await spark.rendered;
 

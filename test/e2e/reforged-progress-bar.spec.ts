@@ -25,10 +25,10 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => customElements.whenDefined('sherpa-progress-bar'));
 });
 
-test('data-value drives the native progress value + role/aria', async ({ page }) => {
+test('value drives the native progress value + role/aria', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-progress-bar') as ProgressEl;
-    el.setAttribute('data-value', '40');
+    el.setAttribute('value', '40');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -67,7 +67,7 @@ test('the value property clamps to 0–100 and reflects to the native progress',
 test('indeterminate mode drops the value (native indeterminate progress)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-progress-bar') as ProgressEl;
-    el.setAttribute('data-value', '30');
+    el.setAttribute('value', '30');
     el.setAttribute('data-indeterminate', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -83,7 +83,7 @@ test('data-status colours the fill (via the --_fill custom property)', async ({ 
   const r = await page.evaluate(async () => {
     const read = async (status?: string) => {
       const el = document.createElement('sherpa-progress-bar') as ProgressEl;
-      el.setAttribute('data-value', '50');
+      el.setAttribute('value', '50');
       if (status) el.setAttribute('data-status', status);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;

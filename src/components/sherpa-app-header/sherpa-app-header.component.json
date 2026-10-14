@@ -400,14 +400,6 @@
       "declared": true,
       "kind": "style",
       "description": "show the light/dark (moon) button"
-    },
-    {
-      "$type": "prop",
-      "name": "data-title",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "accepted as an alias for data-heading"
     }
   ],
   "slots": [

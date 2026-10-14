@@ -140,7 +140,7 @@ test('rows are composed sherpa-list-item + moves are composed sherpa-button', as
 // The heading is the row's only CONTENT, and the pane assertions counted rows
 // without reading them — so a wrong field name filled both panes with blank
 // rows and every existing test still passed.
-test('each row shows its label as the list-item heading', async ({ page }) => {
+test('each row shows its label as the list-item label', async ({ page }) => {
   const r = await page.evaluate(async (pool) => {
     const el = document.createElement('sherpa-transfer-list') as unknown as TransferEl;
     document.getElementById('root')!.appendChild(el);
@@ -149,7 +149,7 @@ test('each row shows its label as the list-item heading', async ({ page }) => {
     const headings = (pane: string): (string | null)[] =>
       Array.from(
         el.shadowRoot!.querySelectorAll(`.${pane} .pane-list sherpa-list-item`),
-      ).map((n) => n.getAttribute('data-heading'));
+      ).map((n) => n.getAttribute('data-label'));
     return { source: headings('source'), target: headings('target') };
   }, POOL);
   expect(r.source).toEqual(['Read', 'Write']);

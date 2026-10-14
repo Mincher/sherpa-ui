@@ -33,7 +33,7 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
-    el.populate!({ name: 'Revenue', value: '$1.2M', deltaPercent: 12.5 });
+    el.populate!({ label: 'Revenue', value: '$1.2M', deltaPercent: 12.5 });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const text = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
@@ -60,7 +60,7 @@ test('a down trend colours the delta critical', async ({ page }) => {
     const el = document.createElement('sherpa-metric') as MetricEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.populate!({ name: 'Churn', value: '3.1%', deltaPercent: -4 });
+    el.populate!({ label: 'Churn', value: '3.1%', deltaPercent: -4 });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       trend: el.getAttribute('data-trend'),
@@ -102,7 +102,7 @@ test('values feed and reveal the embedded sparkline', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
-    el.populate!({ name: 'Sessions', value: '9,340', deltaPercent: 6, values: [4, 6, 5, 9] });
+    el.populate!({ label: 'Sessions', value: '9,340', deltaPercent: 6, values: [4, 6, 5, 9] });
 
     // The embedded sparkline bootstraps asynchronously; wait for its first render
     // (and a tick for the deferred populate) before reading its geometry bridge.
@@ -131,7 +131,7 @@ test('no values → the sparkline region stays hidden', async ({ page }) => {
     const el = document.createElement('sherpa-metric') as MetricEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.populate!({ name: 'Flat', value: '7' });
+    el.populate!({ label: 'Flat', value: '7' });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       hasValuesAttr: el.hasAttribute('data-has-values'),
@@ -234,7 +234,7 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
 });
 
 /**
- * `label` is the word — and `name` still works.
+ * `label` is the word, and the only one.
  *
  * Surveyed across the 22 components with a `renderData`: `label` appears in 7
  * of the 13 named shapes, `value` in 4, `description` in 3. Two components
@@ -244,7 +244,7 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
  * A component's two doors, its attributes and its populate payload, should not
  * use two words for one idea.
  */
-test('populate takes label, and the old `name` still works', async ({ page }) => {
+test('populate takes label, and the old `name` labels nothing', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const read = async (payload: unknown) => {
       const el = document.createElement('sherpa-metric') as HTMLElement & {
@@ -263,14 +263,14 @@ test('populate takes label, and the old `name` still works', async ({ page }) =>
     return {
       byLabel: await read({ label: 'Open alerts', value: '37' }),
       byName: await read({ name: 'Open alerts', value: '37' }),
-      // BOTH given: `label` wins, because it is the word.
       both: await read({ label: 'Wins', name: 'Loses', value: '1' }),
     };
   });
 
   expect(r.byLabel.attr).toBe('Open alerts');
   expect(r.byLabel.text).toContain('Open alerts');
-  expect(r.byName.attr, 'the old spelling is still honoured').toBe('Open alerts');
+  // TRAP T-a-rename-drops-the-old-name
+  expect(r.byName.attr, 'the old spelling is gone').toBe(null);
   expect(r.both.attr).toBe('Wins');
 });
 

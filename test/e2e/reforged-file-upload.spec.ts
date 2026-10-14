@@ -1,6 +1,6 @@
 import { test, expect } from './harness';
 
-/** sherpa-file-upload — drop zone + file list. Adding files fires files-change; remove works. */
+/** sherpa-file-upload — drop zone + file list. Adding files fires file-add; remove works. */
 
 
 test('renders a drop zone and mirrors accept/multiple to the input', async ({ page }) => {
@@ -25,7 +25,7 @@ test('renders a drop zone and mirrors accept/multiple to the input', async ({ pa
   expect(r.multiple).toBe(true);
 });
 
-test('dropping files renders the list and fires files-change', async ({ page }) => {
+test('dropping files renders the list and fires file-add', async ({ page }) => {
   const r = await page.evaluate(async () => {
   /** Click a composed sherpa-button: await its own render, hit its inner trigger. */
   async function pressComposed(host: Element | null): Promise<void> {
@@ -40,7 +40,7 @@ test('dropping files renders the list and fires files-change', async ({ page }) 
     await el.rendered;
 
     let count = -1;
-    el.addEventListener('files-change', (e) => (count = (e as CustomEvent).detail.files.length));
+    el.addEventListener('file-add', (e) => (count = (e as CustomEvent).detail.files.length));
 
     const dt = new DataTransfer();
     dt.items.add(new File(['a'], 'a.txt', { type: 'text/plain' }));

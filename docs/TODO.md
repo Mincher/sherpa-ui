@@ -260,7 +260,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
 | ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
-| 🚧 | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
+| ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ⬜ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
@@ -6360,7 +6360,7 @@ reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
 
-### `[ ]` 🚧 269 — Phase 2: old names, data-API leftovers, component aliases
+### `[x]` ✅ 269 — Phase 2: old names, data-API leftovers, component aliases
 
 The plan's Phase 2 rows for filter names, the data API and component aliases.
 One commit per area.
@@ -6389,6 +6389,18 @@ the entry point: `MADE_UP` (now private), `isSchema`, `savedReading` and the
 allow-list's `isAllowed`, `allowKey`, `unknownEntries` and `nextState`. Their
 tests import the module. Four of those seven, and `bindGroupedGrid`, have no
 caller in `src/`: 270's dead-code pass decides them.
+
+**✅ Component aliases, 2026-10-14.** Each thing has one name: list-item
+`data-heading`, app-header `data-title`, toast `data-message` (its `show()`
+writes `data-heading` now), chat-message `data-author`/`-time`/`-content`,
+progress-bar `data-value`, list `bordered`, nav `NavItem` and its array
+`populate`, notifications `title`, metric `name`, and file-upload's
+`files-change` are gone. No alias is left, so `static props` loses its
+`fallbackAttr` option, `check:props` its alias exception, and
+`T-an-alias-is-declared-by-its-owner` its reason; `T-a-rename-drops-the-old-name`
+has the was/now table. CLAUDE.md says there are no aliases. Demos and the
+starter used none of them. 11 specs regenerated; 9 test files moved to the
+names, and two now check an old name does nothing.
 
 ### `[x]` ✅ 267 — Phase 2: the starter is its own project (Q1)
 

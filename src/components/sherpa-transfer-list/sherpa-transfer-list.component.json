@@ -144,7 +144,7 @@
                 "attrs": {
                   "data-selectable": "",
                   "data-interactive": "",
-                  "data-attr-data-heading": "label"
+                  "data-attr-data-label": "label"
                 }
               }
             ]

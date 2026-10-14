@@ -25,8 +25,8 @@
 }
 
 /* ── Default = the Figma List (49:66025): a bordered, rounded surface.
-   `bordered` is an alias; only data-type="plain" opts out. Functional
-   :host(:not(…)) form — the chained form is broken in shadow DOM. ───── */
+   Only data-type="plain" opts out. Functional :host(:not(…)) form — the
+   chained form is broken in shadow DOM. ───── */
 :host(:not([data-type="plain"])) {
   --_row-gap: 0;
 }

@@ -164,14 +164,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-message",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "the message text (or slot content)"
-    },
-    {
-      "$type": "prop",
       "name": "data-stacked",
       "type": "boolean",
       "observed": true,

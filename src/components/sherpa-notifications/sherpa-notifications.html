@@ -7,7 +7,7 @@
   unread pip. This component owns only which notifications there are and what
   happens when one is clicked.
 
-  populate([{ id, title, description?, icon?, time?, unread? }])
+  populate([{ id, label, description?, icon?, time?, unread? }])
 
   It is a real Store consumer, so a DataSource can bind it — which is the point:
   a SocketStore or an EventStore pushes, and the list is right without anyone
@@ -45,7 +45,7 @@
   <template class="notification-tpl">
     <sherpa-list-item class="notification" data-interactive
                       data-attr-data-id="id"
-                      data-attr-data-label="label??title"
+                      data-attr-data-label="label"
                       data-attr-data-description="description"
                       data-when-unread="unread">
       <i class="notification-icon" slot="leading" aria-hidden="true"></i>

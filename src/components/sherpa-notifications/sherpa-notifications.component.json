@@ -55,7 +55,7 @@
             "attrs": {
               "data-interactive": "",
               "data-attr-data-id": "id",
-              "data-attr-data-label": "label??title",
+              "data-attr-data-label": "label",
               "data-attr-data-description": "description",
               "data-when-unread": "unread"
             },
@@ -103,7 +103,7 @@
     }
   ],
   "populate": {
-    "shape": "[{ id, title, … }]",
+    "shape": "[{ id, label, … }]",
     "description": "the notifications."
   },
   "capabilities": [

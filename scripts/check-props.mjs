@@ -33,15 +33,9 @@ const CASCADES = new Set(['data-status', 'data-look', 'data-elevation', 'data-de
 
 const problems = [];
 
-/** What a component's TS DECLARES: its `static props`, the aliases they read,
- *  and its `variantAttrs`. */
+/** What a component's TS DECLARES: its `static props` and its `variantAttrs`. */
 function declaredIn(ts, path) {
   const declared = new Set(Object.keys(parsePropDecls(ts, path)));
-  const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
-  /* A `fallbackAttr` names a back-compat ALIAS, and that is a declaration:
-     the owning entry reads it and writes the same target. A second entry for
-     the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
-  if (props) for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
   const variants = /static override variantAttrs = \[([\s\S]*?)\]/.exec(ts);
   if (variants) for (const m of variants[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
   return declared;

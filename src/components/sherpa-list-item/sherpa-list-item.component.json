@@ -210,14 +210,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-heading",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "primary text"
-    },
-    {
-      "$type": "prop",
       "name": "data-icon",
       "type": "string",
       "observed": true,
@@ -242,7 +234,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "primary text (data-heading is a back-compat alias)"
+      "description": "primary text"
     },
     {
       "$type": "prop",
@@ -354,6 +346,11 @@
       "$type": "state",
       "name": "current",
       "selector": ":host([data-current])"
+    },
+    {
+      "$type": "state",
+      "name": "not-label",
+      "selector": ":host(:not([data-label]))"
     },
     {
       "$type": "state",

@@ -320,7 +320,7 @@
   ],
   "populate": {
     "shape": "config",
-    "description": "the nav content. Accepts NavConfig or a legacy NavEntry[]."
+    "description": "the nav content, a NavConfig."
   },
   "states": [
     {

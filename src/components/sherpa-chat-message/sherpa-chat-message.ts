@@ -2,8 +2,6 @@
  * sherpa-chat-message — one chat bubble in a thread.
  *
  * data-type (assistant/user/system) is CSS-only. JS writes the three texts.
- * data-author / data-time / data-content are back-compat aliases for
- * data-name / data-timestamp / data-message.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
@@ -18,9 +16,6 @@ export class SherpaChatMessage extends SherpaElement {
     'data-name': { type: 'string', kind: 'content' },
     'data-timestamp': { type: 'string', kind: 'content' },
     'data-message': { type: 'string', kind: 'content' },
-    'data-author': { type: 'string', kind: 'content' },
-    'data-time': { type: 'string', kind: 'content' },
-    'data-content': { type: 'string', kind: 'content' },
   } as const;
 
   override onRender(): void {
@@ -34,9 +29,9 @@ export class SherpaChatMessage extends SherpaElement {
 
   /** Write the author, the time and the message. */
   #sync(): void {
-    this.#text('.author', this.dataset['name'] ?? this.dataset['author']);
-    this.#text('.time', this.dataset['timestamp'] ?? this.dataset['time']);
-    this.#text('.content', this.dataset['message'] ?? this.dataset['content']);
+    this.#text('.author', this.dataset['name']);
+    this.#text('.time', this.dataset['timestamp']);
+    this.#text('.content', this.dataset['message']);
   }
 
   /** Write text into one part, or empty it. */

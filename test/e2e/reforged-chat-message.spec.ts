@@ -28,7 +28,7 @@ type WithRender = HTMLElement & { rendered?: Promise<void> };
 test('defaults to the assistant role', async ({ page }) => {
   const role = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chat-message') as WithRender;
-    el.setAttribute('data-content', 'hello');
+    el.setAttribute('data-message', 'hello');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return el.dataset.type;
@@ -36,12 +36,12 @@ test('defaults to the assistant role', async ({ page }) => {
   expect(role).toBe('assistant');
 });
 
-test('data-content, data-author and data-time write their text nodes', async ({ page }) => {
+test('data-message, data-name and data-timestamp write their text nodes', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chat-message') as WithRender;
-    el.setAttribute('data-content', 'The answer is 42.');
-    el.setAttribute('data-author', 'Sherpa');
-    el.setAttribute('data-time', '10:30');
+    el.setAttribute('data-message', 'The answer is 42.');
+    el.setAttribute('data-name', 'Sherpa');
+    el.setAttribute('data-timestamp', '10:30');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const txt = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
@@ -61,7 +61,7 @@ test('data-content, data-author and data-time write their text nodes', async ({ 
 test('meta row collapses when there is no author or time', async ({ page }) => {
   const visible = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chat-message') as WithRender;
-    el.setAttribute('data-content', 'x');
+    el.setAttribute('data-message', 'x');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return getComputedStyle(el.shadowRoot!.querySelector('.meta')!).display !== 'none';
@@ -69,10 +69,10 @@ test('meta row collapses when there is no author or time', async ({ page }) => {
   expect(visible).toBe(false);
 });
 
-test('a slotted body replaces the data-content text node', async ({ page }) => {
+test('a slotted body replaces the data-message text node', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chat-message') as WithRender;
-    el.setAttribute('data-content', 'ignored');
+    el.setAttribute('data-message', 'ignored');
     el.textContent = 'Slotted bubble body';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -90,7 +90,7 @@ test('assistant shows the avatar; user hides it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const vis = async (role?: string) => {
       const el = document.createElement('sherpa-chat-message') as WithRender;
-      el.setAttribute('data-content', 'x');
+      el.setAttribute('data-message', 'x');
       if (role) el.setAttribute('data-type', role);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
@@ -118,7 +118,7 @@ test('role drives the bubble colour: user differs from assistant, system is mute
   const r = await page.evaluate(async () => {
     const bg = async (role: string) => {
       const el = document.createElement('sherpa-chat-message') as WithRender;
-      el.setAttribute('data-content', 'x');
+      el.setAttribute('data-message', 'x');
       el.setAttribute('data-type', role);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;

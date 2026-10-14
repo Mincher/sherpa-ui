@@ -23,16 +23,8 @@ import '../sherpa-button/sherpa-button.js';
 
 export interface Notification {
   id: string;
-  /**
-   * The notification's headline.
-   *
-   * `label`, matching the `data-label` it is written into and the rest of the
-   * library. `title` is kept as the old spelling — it was translated in the one
-   * line where both met, which is the same shape sherpa-metric carried.
-   */
+  /** The notification's headline: `label`, as the `data-label` it is written into. */
   label?: string;
-  /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
-  title?: string;
   description?: string;
   /** An icon name for the leading glyph. */
   icon?: string;
@@ -65,7 +57,7 @@ export class SherpaNotifications extends SherpaElement {
     this.#render();
   }
 
-  /** populate([{ id, title, … }]) — the notifications. */
+  /** populate([{ id, label, … }]) — the notifications. */
   protected override renderData(data: unknown): void {
     this.#items = Array.isArray(data) ? (data as Notification[]) : [];
     this.#render();
@@ -149,7 +141,7 @@ export class SherpaNotifications extends SherpaElement {
     // `own-children`, not `replace`: the header slot holding "Mark all read" is a
     // fixed part of the template and lives in the same light DOM the rows are
     // stamped into. Emptying the menu took it with them.
-    // The prototype declares id, label (with its data-title alias), description,
+    // The prototype declares id, label, description,
     // the unread flag and the time. The icon is DRAWN: a class paints nothing.
     this.renderItems('.menu', 'template.notification-tpl', this.#items, {
       clear: 'own-children',

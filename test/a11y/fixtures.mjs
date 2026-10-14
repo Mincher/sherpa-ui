@@ -140,7 +140,7 @@ export const FIXTURES = {
   },
   'sherpa-metric': {
     html: '<sherpa-metric data-label="Revenue"></sherpa-metric>',
-    fill: [{ at: 'sherpa-metric', data: { name: 'Revenue', value: '$1.2M', deltaPercent: 12.5 } }],
+    fill: [{ at: 'sherpa-metric', data: { label: 'Revenue', value: '$1.2M', deltaPercent: 12.5 } }],
   },
   'sherpa-nav': {
     html: '<div style="block-size: 480px"><sherpa-nav data-current-id="home"></sherpa-nav></div>',
@@ -159,7 +159,7 @@ export const FIXTURES = {
   'sherpa-nav-section': { html: '<sherpa-nav-section data-label="Workspace"><sherpa-nav-item data-icon="home" data-label="Home" data-href="?context=home"></sherpa-nav-item></sherpa-nav-section>' },
   'sherpa-notifications': {
     html: '<sherpa-button class="opener" data-type="icon" data-icon-start="notifications" aria-label="Notifications"></sherpa-button><sherpa-notifications></sherpa-notifications>',
-    fill: [{ at: 'sherpa-notifications', data: [{ id: 'a', title: 'Renewed', description: 'Enterprise', time: '2m ago', unread: true }, { id: 'b', title: 'Report ready', time: '2d ago' }] }],
+    fill: [{ at: 'sherpa-notifications', data: [{ id: 'a', label: 'Renewed', description: 'Enterprise', time: '2m ago', unread: true }, { id: 'b', label: 'Report ready', time: '2d ago' }] }],
     show: 'sherpa-notifications',
     anchor: '.opener',
   },

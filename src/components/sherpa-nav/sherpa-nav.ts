@@ -1,13 +1,12 @@
 /**
  * sherpa-nav — the side navigation rail: a five-mode machine (Figma Navigation 32:937).
- * Fill it with populate(config) — a NavConfig, or a NavEntry[] treated as one section.
+ * Fill it with populate(config), a NavConfig.
  *
  * TRAP T-nav-state-writes-only-the-attribute
  *
  * Map:
  * - NavRowInfo — What a stamped row shows.
  * - NavEntry — An AREA when it has `children` (it toggles, never navigates); a CONTEXT when it has an `href`.
- * - NavItem — DEPRECATED — the old name for NavEntry, kept for existing imports
  * - NavSection — A SECTION: a label and divider over its entries.
  * - NavConfig — the whole nav as data: product, quick items, sections, and the Settings sections
  * - NavState — The five Figma Navigation modes.
@@ -40,9 +39,6 @@ export interface NavEntry {
   /** Parents are collapsed by default. */
   expanded?: boolean;
 }
-
-/** @deprecated Renamed to NavEntry (kept as an alias for existing imports). */
-export type NavItem = NavEntry;
 
 /** A SECTION: a label and divider over its entries. Visual only. */
 export interface NavSection {
@@ -170,7 +166,7 @@ export class SherpaNav extends SherpaElement {
     this.#setState(value ? 'pinned' : 'collapsed');
   }
 
-  /** populate(config) — the nav content. Accepts NavConfig or a legacy NavEntry[]. */
+  /** populate(config) — the nav content, a NavConfig. */
   protected override renderData(data: unknown): void {
     this.#config = this.#normalise(data);
     this.#render();
@@ -242,11 +238,9 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Content ────────────────────────────────────────────────────── */
 
-  /** Accept a bare list of entries as well as a whole NavConfig. */
+  /** A NavConfig, or nothing. */
   #normalise(data: unknown): NavConfig {
-    if (Array.isArray(data)) return { sections: [{ items: data as NavEntry[] }] };
-    if (data && typeof data === 'object') return data as NavConfig;
-    return {};
+    return data && typeof data === 'object' && !Array.isArray(data) ? data as NavConfig : {};
   }
 
   /** Is there anything configured to draw. */

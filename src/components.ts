@@ -66,7 +66,6 @@ export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-tex
 export {
   SherpaNav,
   type NavEntry,
-  type NavItem,
   type NavSection,
   type NavConfig,
 } from './components/sherpa-nav/sherpa-nav.js';

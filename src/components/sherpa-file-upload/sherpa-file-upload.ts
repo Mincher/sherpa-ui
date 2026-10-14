@@ -135,7 +135,6 @@ export class SherpaFileUpload extends SherpaElement {
     this.#files = this.hasAttribute('data-multiple') ? [...this.#files, ...added] : added;
     this.#render();
     this.emit('file-add', { added, files: this.#files });
-    this.emit('files-change', { files: this.#files });
   }
 
   /** Size is written here because it is computed; name and index are declared. */
@@ -172,7 +171,6 @@ export class SherpaFileUpload extends SherpaElement {
     const [removed] = this.#files.splice(idx, 1);
     this.#render();
     if (removed) this.emit('file-remove', { removed, files: this.#files });
-    this.emit('files-change', { files: this.#files });
   };
 
   /** Remove every file. */
@@ -181,7 +179,6 @@ export class SherpaFileUpload extends SherpaElement {
     this.#files = [];
     this.#render();
     this.emit('file-clear');
-    this.emit('files-change', { files: this.#files });
   };
 
   /** Ask the host to upload the files. */

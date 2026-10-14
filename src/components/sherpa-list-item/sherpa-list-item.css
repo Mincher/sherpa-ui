@@ -127,7 +127,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-:host(:not([data-label]):not([data-heading])) .title { display: none; }
+:host(:not([data-label])) .title { display: none; }
 
 .description {
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */

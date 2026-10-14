@@ -34,8 +34,8 @@ export class SherpaToast extends SherpaElement {
   static override props = {
     'data-stacked': { type: 'boolean', kind: 'style' },
     // Beside the slot, never in it: slotted words win by CSS.
-    // TRAP T-slot-guards-only-when-filled. data-message is the legacy alias.
-    'data-heading': { type: 'string', kind: 'content', to: '.heading-text', fallbackAttr: 'data-message' },
+    // TRAP T-slot-guards-only-when-filled
+    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
     'data-value': { type: 'string', kind: 'content', to: '.value' },
     'data-action': { type: 'string', kind: 'content', to: '.action' },
     /* Written BY the toast for the duration of its exit animation. */
@@ -95,7 +95,7 @@ export class SherpaToast extends SherpaElement {
   static show(message: string, status: ToastStatus, options: ToastOptions = {}): SherpaToast {
     const toast = document.createElement('sherpa-toast') as SherpaToast;
     toast.dataset['status'] = status;
-    toast.dataset['message'] = message;
+    toast.dataset['heading'] = message;
     if (options.duration !== undefined) toast.dataset['duration'] = String(options.duration);
     if (options.value !== undefined) toast.dataset['value'] = options.value;
     if (options.action !== undefined) toast.dataset['action'] = options.action;

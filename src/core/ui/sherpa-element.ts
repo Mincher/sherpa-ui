@@ -59,8 +59,6 @@ export interface PropDef {
   to?: string;
   /** Write EVERY match rather than the first. */
   all?: boolean;
-  /** Read this attribute when the first is absent (e.g. data-label → data-heading). */
-  fallbackAttr?: string;
   /**
    * How the value is RENDERED. Default is plain text.
    * TRAP T-icon-value-takes-two-forms — `'icon'` or an icon name prints literally.
@@ -412,12 +410,9 @@ export abstract class SherpaElement extends Base {
 
   /** Declared props + `variantAttrs` + `observed`, deduped. */
   static get observedAttributes(): string[] {
-    const defs = Object.values(this.props);
     return [
       ...new Set([
         ...Object.keys(this.props),
-        // A fallback source is observed too, or the change would not re-sync.
-        ...defs.map((d) => d.fallbackAttr).filter((a): a is string => a !== undefined),
         ...this.variantAttrs,
         ...this.observed,
         ...(this.labelTarget ? ['aria-label', 'aria-pressed'] : []),
@@ -573,10 +568,8 @@ export abstract class SherpaElement extends Base {
     // Before the first render onRender reads the attribute state itself.
     if (oldVal === newVal || !this.#hasRendered) return;
     // A declared prop re-syncs itself; onChange still fires afterwards.
-    for (const [prop, def] of Object.entries(Ctor.props)) {
-      // The prop itself, and any prop that FALLS BACK to it.
-      if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);
-    }
+    const def = Ctor.props[name];
+    if (def) this.#syncProp(name, def);
     if (name === 'aria-label' || name === 'aria-pressed') this.#syncLabel();
     if (Ctor.asks && (name in SUMMARY_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
     this.onChange(name, oldVal, newVal);
@@ -1079,7 +1072,7 @@ export abstract class SherpaElement extends Base {
   #syncProp(name: string, def: PropDef): void {
     if (def.kind !== 'content' || !def.to) return;
 
-    const raw = this.getAttribute(name) ?? (def.fallbackAttr ? this.getAttribute(def.fallbackAttr) : null);
+    const raw = this.getAttribute(name);
     const fallback = def.default === undefined ? '' : String(def.default);
     const text =
       def.type === 'number'

@@ -13,7 +13,6 @@
       settingsSections?: [{ label?, items: NavEntry[] }],  // shown in SETTINGS mode
     }
   where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier?, children? }.
-  A plain array is still accepted and treated as one unlabelled section.
 
   Terms (CLAUDE.md "Navigation terms"): a SECTION is a label and divider only.
   An entry with `children` is an AREA — it expands, never navigates. An entry

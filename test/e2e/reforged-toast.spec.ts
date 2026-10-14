@@ -18,7 +18,7 @@ test('renders the message and reflects the status', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-status', 'success');
-    el.setAttribute('data-message', 'Saved.');
+    el.setAttribute('data-heading', 'Saved.');
     el.setAttribute('data-duration', '0'); // no auto-dismiss during the assert
     document.getElementById('root')!.appendChild(el);
     await el.rendered;

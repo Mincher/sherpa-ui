@@ -86,16 +86,7 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-author",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
-      "description": "optional author name shown above the bubble"
-    },
-    {
-      "$type": "prop",
-      "name": "data-content",
+      "name": "data-message",
       "type": "string",
       "observed": true,
       "declared": true,
@@ -104,29 +95,19 @@
     },
     {
       "$type": "prop",
-      "name": "data-message",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
-      "description": "optional text body (the default slot overrides it when slotted) (alias: data-content)"
-    },
-    {
-      "$type": "prop",
       "name": "data-name",
       "type": "string",
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "optional author name shown above the bubble (alias: data-author)"
+      "description": "optional author name shown above the bubble"
     },
     {
       "$type": "prop",
       "name": "data-time",
       "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
+      "observed": false,
+      "kind": "style",
       "description": "optional timestamp shown beside the author"
     },
     {
@@ -136,7 +117,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "optional timestamp shown beside the name (alias: data-time)"
+      "description": "optional timestamp shown beside the name"
     },
     {
       "$type": "prop",
@@ -168,11 +149,11 @@
       "accepts": [
         "content"
       ],
-      "description": "bubble body content, overrides data-content"
+      "description": "bubble body content, overrides data-message"
     }
   ],
   "populate": {
-    "shape": "{ author?, content?, message?, name?, time?, timestamp?, type? }",
+    "shape": "{ message?, name?, timestamp?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -183,18 +164,8 @@
     },
     {
       "$type": "state",
-      "name": "author",
-      "selector": ":host([data-author])"
-    },
-    {
-      "$type": "state",
       "name": "timestamp",
       "selector": ":host([data-timestamp])"
-    },
-    {
-      "$type": "state",
-      "name": "time",
-      "selector": ":host([data-time])"
     },
     {
       "$type": "state",
@@ -215,6 +186,16 @@
       "$type": "state",
       "name": "system",
       "selector": ":host([data-type=\"system\"])"
+    },
+    {
+      "$type": "state",
+      "name": "not-name",
+      "selector": ":host(:not([data-name]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-timestamp",
+      "selector": ":host(:not([data-timestamp]))"
     }
   ],
   "tokens": {

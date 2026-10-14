@@ -3,13 +3,13 @@
 
   Public API:
     data-type       assistant (default, left, neutral) | user (right, accent) | system (centred, muted)
-    data-name       optional author name shown above the bubble (alias: data-author)
-    data-timestamp  optional timestamp shown beside the name (alias: data-time)
-    data-message    optional text body (the default slot overrides it when slotted) (alias: data-content)
+    data-name       optional author name shown above the bubble
+    data-timestamp  optional timestamp shown beside the name
+    data-message    optional text body (the default slot overrides it when slotted)
 
   Slots:
     avatar    — custom avatar content, replaces the default glyph (reflects data-has-avatar)
-    (default) — bubble body content, overrides data-content
+    (default) — bubble body content, overrides data-message
 
   Fires: nothing — a passive surface. Consumers wire their own controls.
 -->

@@ -13,8 +13,6 @@ import '../sherpa-data-viz-header/sherpa-data-viz-header.js';
 interface MetricData {
   /** TRAP T-populate-label-not-name */
   label?: string;
-  /** @deprecated The old spelling of `label`. Still read. */
-  name?: string;
   /** Already display-ready. */
   value?: string | number;
   /** Change text, e.g. "+12.5%". */
@@ -107,7 +105,7 @@ export class SherpaMetric extends SherpaElement {
 
     /* A TOTAL names itself. Two tiles reading "Alerts 1,284" and "Alerts 37"
        are indistinguishable without it. TRAP T-a-total-says-so-in-its-label */
-    const rawLabel = data.label ?? data.name;
+    const rawLabel = data.label;
     const total = data.show === 'total';
     const label = rawLabel != null && total && !/^total\b/i.test(String(rawLabel))
       ? `Total ${String(rawLabel).charAt(0).toLowerCase()}${String(rawLabel).slice(1)}`

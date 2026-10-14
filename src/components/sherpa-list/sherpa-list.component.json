@@ -89,7 +89,7 @@
         "plain"
       ],
       "default": "— dividers between rows",
-      "description": "| bordered | plain (no dividers)"
+      "description": "| plain (no dividers)"
     }
   ],
   "slots": [

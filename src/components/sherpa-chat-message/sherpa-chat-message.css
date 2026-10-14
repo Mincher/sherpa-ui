@@ -68,9 +68,9 @@
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
 }
 
-:host(:is([data-name], [data-author], [data-timestamp], [data-time])) .meta { display: flex; }
-:host(:not([data-name], [data-author])) .author { display: none; }
-:host(:not([data-timestamp], [data-time])) .time { display: none; }
+:host(:is([data-name], [data-timestamp])) .meta { display: flex; }
+:host(:not([data-name])) .author { display: none; }
+:host(:not([data-timestamp])) .time { display: none; }
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
 .bubble {

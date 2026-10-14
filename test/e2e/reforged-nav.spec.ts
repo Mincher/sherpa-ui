@@ -9,7 +9,7 @@ import { test, expect } from './harness';
  */
 
 
-test('legacy array populate() renders items and marks the active one', async ({ page }) => {
+test('populate() renders a section\'s items and marks the active one', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {
       rendered?: Promise<void>;
@@ -18,11 +18,11 @@ test('legacy array populate() renders items and marks the active one', async ({ 
     nav.setAttribute('data-current-id', 'reports');
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
-    nav.populate!([
+    nav.populate!({ sections: [{ items: [
       { id: 'home', label: 'Home' },
       { id: 'reports', label: 'Reports' },
       { id: 'settings', label: 'Settings' },
-    ]);
+    ] }] });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     // Scope to .content — the rail also carries the default quick items
     // (Home · Recent · Favorites) in its header, which are not section rows.
@@ -75,10 +75,10 @@ test('clicking an item fires nav-select and updates the active id', async ({ pag
     };
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
-    nav.populate!([
+    nav.populate!({ sections: [{ items: [
       { id: 'home', label: 'Home' },
       { id: 'reports', label: 'Reports' },
-    ]);
+    ] }] });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let selected: string | null = null;

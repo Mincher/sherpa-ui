@@ -4,7 +4,7 @@
  * Each leading affordance is turned on with a data-* flag and shown by CSS.
  *
  * Public API:
- *   data-label / data-description   text (data-heading is a back-compat alias for data-label)
+ *   data-label / data-description   text
  *   data-icon                       leading icon glyph
  *   data-current                    current-row visual state
  *   data-interactive                enable hover + click behaviour
@@ -20,17 +20,12 @@ export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override props = {
-    /* No `data-heading` entry: `data-label` below declares it as its
-       `fallbackAttr`, which is the back-compat alias. A second entry writing
-       the same `.title` would fight it — and without `all: true` it would
-       write only the first of the two, leaving the pair disagreeing.
-       TRAP T-an-alias-is-declared-by-its-owner */
     'data-draggable': { type: 'boolean', kind: 'style' },
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-interactive': { type: 'boolean', kind: 'style' },
     'data-selectable': { type: 'boolean', kind: 'style' },
     // `all`: title + description appear twice — in the <button> and the static span.
-    'data-label': { type: 'string', kind: 'content', to: '.title', all: true, fallbackAttr: 'data-heading' },
+    'data-label': { type: 'string', kind: 'content', to: '.title', all: true },
     'data-description': { type: 'string', kind: 'content', to: '.description', all: true },
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
     /* Current-row state. Written by the row AND set by a host. */
@@ -39,8 +34,8 @@ export class SherpaListItem extends SherpaElement {
     'data-selected': { type: 'boolean', kind: 'style' },
   } as const;
 
-  /** The event label — the same data-label → data-heading chain the prop declares. */
-  #labelText(): string { return this.dataset['label'] ?? this.dataset['heading'] ?? ''; }
+  /** The event label. */
+  #labelText(): string { return this.dataset['label'] ?? ''; }
 
   override onRender(): void {
     this.#syncSelected();
