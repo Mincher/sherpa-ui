@@ -254,7 +254,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
 | ✅ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
 | ✅ | 62.07 | 262 | Phase 7 — `dist/` stops shipping the inlined `.html` and `.css`, and the build strips `data-accepts` | package |
-| ⬜ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
+| 🚧 | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
 | ⬜ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
 | ⬜ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
 | ⬜ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
@@ -6271,6 +6271,22 @@ full run found that one, `reload()` fetching a deleted sheet, in all three
 engines, and the templater spec passes with the fix. The full browser suite
 otherwise passed (3,012). The MCP's tooling is 298.
 `T-the-text-is-in-the-js`.
+
+### `[~]` 🚧 263 — Phase 7: fewer dev tools
+
+**Measured, 2026-10-14: autoprefixer and cssnano STAY**, against the plan.
+iOS still needs prefixes (`-webkit-user-select`, `-webkit-mask-*`), and
+autoprefixer reads them from `package.json`'s browserslist, the one place the
+targets live. And esbuild's CSS minifier, tried in cssnano's place, made 666 KB
+of CSS where cssnano makes 617 KB — about 49 KB more for every consumer, to
+drop one tool a consumer never meets.
+
+**✅ prettier and husky are gone.** prettier ran in no gate; its two scripts,
+its config and its CLAUDE.md lines went with it. husky only pointed git at its
+own folder: the hook is `.githooks/pre-commit` now, and `npm install`'s
+`prepare` sets `git config core.hooksPath .githooks`. Dev dependencies: 17 → 15.
+
+Still to do: `@types/node` for the scripts only, and eslint 9.
 
 ## ✅ Done — the full record
 

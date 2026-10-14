@@ -71,10 +71,6 @@ npm run lint:css:strict
 npm run spec:check
 npm run spec:validate      # the schema half alone
 
-# Format component CSS
-npm run format
-npm run format:check
-
 # Tests — Playwright in three engines, then the node unit tests. The webServer
 # runs `npm run build`, so `npm test` builds for you.
 npm test

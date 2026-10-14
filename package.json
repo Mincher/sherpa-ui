@@ -74,7 +74,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "prepare": "husky",
+    "prepare": "git config core.hooksPath .githooks",
     "clean": "rm -rf dist",
     "build": "node scripts/build-reforged.mjs",
     "build:watch": "node scripts/build-reforged.mjs --watch",
@@ -100,8 +100,6 @@
     "check:map": "node scripts/code-map.mjs --check",
     "check:extensions": "node scripts/check-extensions.mjs",
     "check:size": "node scripts/check-size.mjs",
-    "format": "prettier --write 'src/**/*.css'",
-    "format:check": "prettier --check 'src/**/*.css'",
     "mcp": "node mcp-server/index.js",
     "check:mcp-pack": "node scripts/check-mcp-pack.mjs",
     "preview": "node bin/sherpa-ui.mjs serve . --port 4000",
@@ -126,10 +124,8 @@
     "cssnano": "^7.1.9",
     "esbuild": "^0.28.2",
     "eslint": "^8.55.0",
-    "husky": "^9.1.7",
     "js-yaml": "^4.1.1",
     "postcss": "^8.5.28",
-    "prettier": "^3.1.0",
     "typescript": "^6.0.3",
     "zod": "^3.23.8"
   },
