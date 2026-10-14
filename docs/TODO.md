@@ -2589,9 +2589,8 @@ Will, 2026-10-14: *"Don't group Customer and Region filter chips in the toolbar.
 order, as plain chips — no `sherpa-filterset` round them, so they are not
 joined. The parking of a fully folded set went with it. A set is now only an
 ORDER on screen, in the bar and the panel; the serial chain is unchanged.
-**❓ Will:** `sherpa-filterset` is used by nothing in Sherpa now. **A (my
-pick):** delete it — a refactor deletes what it replaced. **B:** keep it, for
-a page that wants a named group.
+`sherpa-filterset` was then used by nothing in Sherpa. **✅ Will,
+2026-10-14: A** — deleted: the component, its export and its a11y fixture.
 `T-a-filter-set-groups-or-chains`.
 
 ### `[x]` ✅ 240 — A filter set is drawn quietly

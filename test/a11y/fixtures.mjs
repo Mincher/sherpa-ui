@@ -102,11 +102,6 @@ export const FIXTURES = {
       }],
     }],
   },
-  'sherpa-filterset': {
-    html: '<sherpa-filterset class="sherpa-group" data-heading="Account" data-mode="serial">'
-      + '<sherpa-quick-filter data-label="Customer"></sherpa-quick-filter><sherpa-quick-filter data-label="Region"></sherpa-quick-filter>'
-      + '</sherpa-filterset>',
-  },
   'sherpa-gauge-chart': {
     html: '<sherpa-gauge-chart data-label="Mean risk" data-unit="%" data-caption="of 100"></sherpa-gauge-chart>',
     fill: [{ at: 'sherpa-gauge-chart', data: 42 }],

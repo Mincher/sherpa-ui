@@ -5,8 +5,8 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 833794,
-    "files": 100,
+    "js": 832046,
+    "files": 99,
     "fetched": 214070
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
@@ -122,11 +122,6 @@
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
     "js": 442103,
     "files": 44,
-    "fetched": 0
-  },
-  "components/sherpa-filterset/sherpa-filterset.js": {
-    "js": 210160,
-    "files": 9,
     "fetched": 0
   },
   "components/sherpa-gauge-chart/sherpa-gauge-chart.js": {
@@ -350,8 +345,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 953511,
-    "files": 130,
+    "js": 951763,
+    "files": 129,
     "fetched": 214070
   }
 }

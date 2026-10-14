@@ -1339,7 +1339,6 @@ may still add it.
 - Site: `test/unit/a-serial-set-chains-its-fields.test.mjs`
 - Site: `test/e2e/reforged-serial-set.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/components/sherpa-filterset/sherpa-filterset.ts`
 - Site: `test/e2e/reforged-filterset.spec.ts`
 
 ### T-a-view-keeps-a-draft
