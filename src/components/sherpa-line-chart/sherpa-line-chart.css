@@ -43,6 +43,7 @@
 
 .area {
   fill: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
+  /* About 7% of the series colour, on purpose: the line carries the contrast (Will, TODO 254). */
   opacity: 0.14;
   stroke: none;
 }

@@ -233,7 +233,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 59 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
 | ⬜ | 60 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | | | | **L — The code review** | |
-| ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; waits on Will's review and seven choices | explore |
+| ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; D1–D7 ruled, waits on Will's review of the update and Q1–Q3 | explore |
 | ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
 | ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
 | ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
@@ -243,9 +243,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
 | ✅ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
 | ✅ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
-| ❓ | 61j | 252 | BUG: the calendar calls `Temporal`, which Safari does not have yet — waits on D7 | bug |
+| ✅ | 61j | 252 | The calendar calls `Temporal`, which Safari does not have yet — KEPT, by Will's D7 | bug |
 | ✅ | 61k | 253 | BUG: nav-item's search highlight carries its own colour in TS, where `lint:css` cannot see it | bug |
-| ❓ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — keep it, or a stronger wash? Waits on Will | design |
+| ✅ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — KEPT, by Will | design |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -5936,7 +5936,18 @@ A delete the stored-data shims now; D5 A form and focus plumbing in
 same job; D7 A the calendar on `Date` + `Intl` until Safari has `Temporal`.
 
 **Will, 2026-10-14:** *"Let's fix those agent discovered issues and bugs before
-we come back to the plan."* So the plan's Phase 0 goes first: items 243–253.
+we come back to the plan."* So the plan's Phase 0 goes first: items 243–254.
+
+**✅ Will, 2026-10-14 — D1–D7 ruled:** D1 A, with Storybook later in a separate
+project that consumes Sherpa; D2 A, with the manifest explained; D3 A; D4 A —
+*"Sherpa is app agnostic so nothing relating to constructed applications lives
+in this project"*; D5 A — *"Anything generic gets elevated so that it's handled
+in a consistent manner. Only edge cases, or bespoke differences, are added at
+the individual component levels"*; D6 A; D7 B — *"I don't care about Safari."*
+The plan is updated with each, and with three questions their reach raised:
+**❓ Q1** the starter out of sherpa-ui (my pick A, yes); **❓ Q2** the hook's
+check of Demos moves to Demos (my pick A, yes); **❓ Q3** WebKit stays in the
+tests, for the iPhone (my pick A, keep).
 
 ### `[x]` ✅ 243 — A moved component keeps its listeners
 
@@ -6056,7 +6067,12 @@ already paints.
 them. A test checks the rule has no colour of its own.
 `T-custom-highlight-not-painted-in-shadow`.
 
-### `[ ]` ❓ 254 — The line chart's area wash
+### `[x]` ✅ 252 — The calendar keeps `Temporal`
+
+**✅ Closed by Will's D7 (B), 2026-10-14:** *"I don't care about Safari."* No
+polyfill and no rewrite; the docs say the calendar needs `Temporal`.
+
+### `[x]` ✅ 254 — The line chart's area wash
 
 `.area` fills with the series colour, which is already 50% alpha, at
 `opacity: 0.14` — so it draws about 7%. Radial and gauge refuse an opacity on
@@ -6066,6 +6082,10 @@ changes its colour. Figma was not open to read the area's value.
 
 **❓ Will:** A keep today's 7% wash as it is; B give me the Figma value and I
 bind it. My pick: B, once Figma is open — a light read.
+
+**✅ Will, 2026-10-14: A** — *"The token used already comes from Figma. The
+border colour creates enough contrast between the bar fill and background to be
+accessible."* Kept, with a one-line comment so a later review does not fix it.
 
 ## ✅ Done — the full record
 
