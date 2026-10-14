@@ -169,6 +169,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
 | ✅ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
 | ✅ | 31z4 | 240 | A filter set is drawn quietly: no heading or link icon on the bar, no nesting in the panel | quick |
+| ✅ | 31z5 | 241 | A set's chips on the bar are plain chips, side by side — not grouped | quick |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -2579,6 +2580,19 @@ Discard and Apply at the right. The row is drawn only while it holds a
 button. Send to stays in the header, alone. While any change waits, the
 footer shows Apply all and Discard all, which name no field; the binder
 commits or discards everything. `T-apply-and-discard-wait-for-a-change`
+
+### `[x]` ✅ 241 — A set's chips on the bar are not grouped
+
+Will, 2026-10-14: *"Don't group Customer and Region filter chips in the toolbar."*
+
+**✅ Done 2026-10-14.** The bar draws a set's chips together, in the set's
+order, as plain chips — no `sherpa-filterset` round them, so they are not
+joined. The parking of a fully folded set went with it. A set is now only an
+ORDER on screen, in the bar and the panel; the serial chain is unchanged.
+**❓ Will:** `sherpa-filterset` is used by nothing in Sherpa now. **A (my
+pick):** delete it — a refactor deletes what it replaced. **B:** keep it, for
+a page that wants a named group.
+`T-a-filter-set-groups-or-chains`.
 
 ### `[x]` ✅ 240 — A filter set is drawn quietly
 

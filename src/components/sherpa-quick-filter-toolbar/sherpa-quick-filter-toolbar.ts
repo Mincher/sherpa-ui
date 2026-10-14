@@ -32,7 +32,6 @@ import {
 import type { FilterSet, ScopeDescription } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
-import '../sherpa-filterset/sherpa-filterset.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-calendar/sherpa-calendar.js';
@@ -40,7 +39,7 @@ import '../sherpa-slider/sherpa-slider.js';
 import '../sherpa-switch/sherpa-switch.js';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
-const CHIP = ':is(.chips, .chips > sherpa-filterset) > .chip';
+const CHIP = '.chips > .chip';
 
 interface ChipEl extends HTMLElement {
   current: boolean;
@@ -753,8 +752,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* The allow-list applies to the chips already ON the bar, not only to what
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */
-    const sets = new Map<string, HTMLElement>();
-    for (const { def: f, set } of this.#inSets(allow(this.#filters, this.#allowedFields))) {
+    for (const f of this.#inSets(allow(this.#filters, this.#allowedFields))) {
       const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
@@ -786,7 +784,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.dataset['kind'] = kind;
         this.#addSavedMenu(chip, f);
       } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
-      (set ? this.#setBox(list, sets, set) : list).appendChild(chip);
+      list.appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
         // The chip says its own days. TRAP T-a-chip-says-its-own-answer
@@ -1249,7 +1247,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * groupSets([...]) — the scope's filter SETS: each set's chips are drawn
-   * together, in its order, as one `sherpa-filterset`. TODO 99 · TRAP T-a-filter-set-groups-or-chains
+   * together, in its order — plain chips, never grouped (Will, TODO 241).
+   * TODO 99 · TRAP T-a-filter-set-groups-or-chains
    */
   groupSets(sets: readonly FilterSet[]): void {
     if (JSON.stringify(sets) === JSON.stringify(this.#sets)) return;
@@ -1260,9 +1259,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #sets: FilterSet[] = [];
 
   /** The chips in bar order — but each set's together, where its first stands, in the set's order. */
-  #inSets(shown: readonly FilterDef[]): Array<{ def: FilterDef; set?: FilterSet }> {
+  #inSets(shown: readonly FilterDef[]): FilterDef[] {
     const setOf = new Map(this.#sets.flatMap((set) => set.fields.map((field) => [this.#idOf(field), set] as const)));
-    const out: Array<{ def: FilterDef; set?: FilterSet }> = [];
+    const out: FilterDef[] = [];
     const placed = new Set<string>();
     for (const def of shown) {
       const set = setOf.get(def.id);
@@ -1270,23 +1269,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       for (const one of run) {
         if (!one || placed.has(one.id)) continue;
         placed.add(one.id);
-        out.push(set ? { def: one, set } : { def: one });
+        out.push(one);
       }
     }
     return out;
-  }
-
-  /** A set's `sherpa-filterset` in the run, stamped when its first chip is:
-   *  its chips joined, with no heading and no chain mark. Will, TODO 240. */
-  #setBox(list: HTMLElement, sets: Map<string, HTMLElement>, set: FilterSet): HTMLElement {
-    const made = sets.get(set.id);
-    if (made) return made;
-    const box = this.clone<HTMLElement>('template.set-tpl');
-    if (!box) return list;
-    box.dataset['set'] = set.id;
-    list.appendChild(box);
-    sets.set(set.id, box);
-    return box;
   }
 
   /** The ids this bar is holding — the read-back `populate()` never had. */

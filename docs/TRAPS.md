@@ -1314,17 +1314,14 @@ Query, out of the rows, drawn inactive. A field is never ruled out by one
 BELOW it in its chain, so with Limit on the chain beats "the later answer
 wins". This runs whatever Limit says.
 
-**A set is drawn QUIETLY** — Will, TODO 240: *"I don't like the 'Account'
-and link icon before Customer and Region filters in the toolbar. I also don't
-like the nesting."* The bar stamps one `sherpa-filterset` with
-`.sherpa-group` round the set's chips, so they join as one object, with no
-heading and no chain mark; it finds a chip in the run or in a set by one
-selector (`CHIP`). A set whose chips all folded is PARKED off-screen as they
-are, never `display: none`, or their menus would open at the viewport's
-corner. The panel only ORDERS a set's fields, side by side where its first
-stands — no box round them. The source hands each its sets in `describe()`;
-the provider gives the bar them before it fills it. `sherpa-filterset` keeps
-its heading and mark for a page that asks for them.
+**A set is only an ORDER on screen** — Will, TODO 240 and 241: *"I don't
+like the 'Account' and link icon before Customer and Region filters in the
+toolbar. I also don't like the nesting"*, then *"Don't group Customer and
+Region filter chips in the toolbar."* The bar draws a set's chips together,
+in the set's order, where its first stands — plain chips, not joined, with no
+heading and no mark. The panel orders a set's fields the same way, with no
+box. The chain is the data's alone. The source hands each its sets in
+`describe()`; the provider gives the bar them before it fills it.
 
 A field is in ONE set of a scope: `declareSets` keeps the first and reports
 the second (`field-in-two-sets`). A set names fields the scope HOLDS;
@@ -1343,7 +1340,6 @@ may still add it.
 - Site: `test/e2e/reforged-serial-set.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-filterset/sherpa-filterset.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-filterset.spec.ts`
 
 ### T-a-view-keeps-a-draft

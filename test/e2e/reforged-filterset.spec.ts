@@ -1,10 +1,9 @@
 import { test, expect } from './harness';
 
 /**
- * A FILTER SET, drawn — TODO 99, quietly since TODO 240. The bar gathers a
- * set's chips into one `sherpa-filterset`, joined, in the set's order, with no
- * heading and no chain mark; the panel orders its fields, with no box. A chip
- * in a set is still the bar's.
+ * A FILTER SET, drawn — TODO 99; only an order since TODO 240 and 241. The
+ * bar puts a set's chips together in the set's order, plain and not joined;
+ * the panel orders its fields, with no box. A chip in a set is still the bar's.
  * TRAP T-a-filter-set-groups-or-chains
  */
 
@@ -12,7 +11,7 @@ const SET = { id: 'account', label: 'Account', mode: 'serial', fields: ['custome
 
 type Bar = HTMLElement & { groupSets(s: unknown[]): void; heldFields: string[] };
 
-test('the bar draws a set\'s chips as one group, in its order, with no heading and no chain mark', async ({ page }) => {
+test('the bar puts a set\'s chips together in its order, as plain chips', async ({ page }) => {
   const r = await page.evaluate(async (set) => {
     const options = (values: string[]) => values.map((v) => ({ value: v, label: v }));
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
@@ -23,47 +22,19 @@ test('the bar draws a set\'s chips as one group, in its order, with no heading a
     bar.groupSets([set]);
     await window.__settled();
     const sr = bar.shadowRoot!;
-    const box = sr.querySelector<HTMLElement>('.chips > sherpa-filterset')!;
     const chip = (id: string) => sr.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
     const corner = (id: string) => getComputedStyle(chip(id)).getPropertyValue('--sherpa-border-rounding-top-right').trim();
     return {
-      run: [...sr.querySelector('.chips')!.children].map((n) => n.localName === 'sherpa-filterset'
-        ? `set:${[...n.children].map((c) => (c as HTMLElement).dataset['id']).join('+')}` : (n as HTMLElement).dataset['id']),
-      // Nothing before the chips. Will, TODO 240.
-      head: getComputedStyle(box.shadowRoot!.querySelector('.head')!).display,
-      joined: [corner('customer'), corner('region')],
+      run: [...sr.querySelector('.chips')!.children].map((n) => (n as HTMLElement).dataset['id'] ?? n.localName),
+      // Not joined: each chip keeps its own round corners. Will, TODO 241.
+      corners: [corner('customer'), corner('region')],
       held: bar.heldFields,
     };
   }, SET);
-  expect(r.run).toEqual(['set:customer+region', 'status']);
-  expect(r.head).toBe('none');
-  // The first chip's inner corner is square; the last keeps its round end.
-  expect(r.joined[0]).toBe('0px');
-  expect(r.joined[1]).not.toBe('0px');
+  expect(r.run).toEqual(['customer', 'region', 'status']);
+  expect(r.corners).toEqual([r.corners[1], r.corners[1]]);
+  expect(r.corners[0]).not.toBe('0px');
   expect(r.held.sort()).toEqual(['customer', 'region', 'status']);
-});
-
-test('a set whose chips all fold is parked, not hidden, so their menus still open', async ({ page }) => {
-  const r = await page.evaluate(async (set) => {
-    const options = (values: string[]) => values.map((v) => ({ value: v, label: v }));
-    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
-      { id: 'status', label: 'Status', options: options(['active', 'trial']) },
-      { id: 'customer', label: 'Customer', options: options(['Contoso', 'Litware']) },
-      { id: 'region', label: 'Region', options: options(['EMEA', 'APAC']) },
-    ], { style: 'inline-size: 260px' });
-    bar.groupSets([set]);
-    await window.__settled();
-    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-    const box = bar.shadowRoot!.querySelector<HTMLElement>('.chips > sherpa-filterset')!;
-    const style = getComputedStyle(box);
-    return {
-      folded: [...box.children].every((c) => c.hasAttribute('data-folded-away')),
-      display: style.display, position: style.position,
-    };
-  }, SET);
-  expect(r.folded).toBe(true);
-  expect(r.display).not.toBe('none');
-  expect(r.position).toBe('absolute');
 });
 
 test('the panel orders a set\'s fields where its first stands, with no box round them', async ({ page }) => {

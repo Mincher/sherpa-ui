@@ -822,7 +822,7 @@
           "$type": "method",
           "name": "groupSets",
           "args": "sets: readonly FilterSet[]",
-          "description": "groupSets([...]) — the scope's filter SETS: each set's chips are drawn together, in its order, as one `sherpa-filterset`. TODO 99"
+          "description": "groupSets([...]) — the scope's filter SETS: each set's chips are drawn together, in its order — plain chips, never grouped (Will, TODO 241). TODO 99"
         },
         {
           "$type": "method",
