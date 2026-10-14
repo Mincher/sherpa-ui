@@ -2394,6 +2394,8 @@ test('row actions: a pinned trailing column, one shared menu, and a report', asy
       value: b.getAttribute('value'),
       label: b.querySelector('.action-label')?.textContent,
       danger: b.hasAttribute('data-danger'),
+      // DRAWN — a class name paints nothing.
+      drawn: !!b.querySelector('.action-icon svg path'),
     }));
 
     // Choose Delete. The grid REPORTS; it does not remove the row.
@@ -2426,8 +2428,8 @@ test('row actions: a pinned trailing column, one shared menu, and a report', asy
   // ONE menu, however many rows.
   expect(r.menus).toBe(1);
   expect(r.items).toEqual([
-    { value: 'edit', label: 'Edit', danger: false },
-    { value: 'delete', label: 'Delete', danger: true },
+    { value: 'edit', label: 'Edit', danger: false, drawn: true },
+    { value: 'delete', label: 'Delete', danger: true, drawn: true },
   ]);
 
   // It REPORTED, with the row it belongs to.

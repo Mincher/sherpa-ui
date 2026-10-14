@@ -239,7 +239,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
 | ✅ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
 | ✅ | 61e | 247 | BUG: a prop's text erased the slot beside it — container-header's icon, toast's heading, gauge's caption | bug |
-| ⬜ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
+| ✅ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
 | ⬜ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
 | ⬜ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
 | ⬜ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
@@ -6001,6 +6001,13 @@ holding only whitespace showed no heading at all.
 gauge's hand-written caption write became a declared prop. `skipWhen` had no
 user left, so it is deleted from `SherpaElement` and CLAUDE.md.
 `T-slot-guards-only-when-filled`.
+
+### `[x]` ✅ 248 — Two icons are drawn, not named as classes
+
+`sherpa-notifications` and the grid's row actions wrote an icon NAME into
+`className`, from before icons were SVG — so each drew nothing. Both now call
+`writeIcon`; the two tests that build them check for a drawn path, and failed
+on the old build.
 
 ## ✅ Done — the full record
 

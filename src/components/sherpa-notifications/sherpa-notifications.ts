@@ -150,15 +150,13 @@ export class SherpaNotifications extends SherpaElement {
     // fixed part of the template and lives in the same light DOM the rows are
     // stamped into. Emptying the menu took it with them.
     // The prototype declares id, label (with its data-title alias), description,
-    // the unread flag and the time. Only the icon is left: it replaces the whole
-    // className rather than writing an attribute, because the glyph and the
-    // element's own `.notification-icon` class share that one property.
+    // the unread flag and the time. The icon is DRAWN: a class paints nothing.
     this.renderItems('.menu', 'template.notification-tpl', this.#items, {
       clear: 'own-children',
       ownSel: '.menu > .notification, .menu > .empty',
       after: (node, item) => {
         const icon = node.querySelector<HTMLElement>('.notification-icon');
-        if (icon) icon.className = `notification-icon ${item.icon ?? 'status-info'}`;
+        if (icon) this.writeIcon(icon, item.icon ?? 'status-info');
       },
     });
   }

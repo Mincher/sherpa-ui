@@ -1298,7 +1298,8 @@ export class SherpaDataGrid extends SherpaElement {
       item.toggleAttribute('data-danger', !!action.danger);
       const icon = item.querySelector('.action-icon');
       if (icon) {
-        if (action.icon) icon.className = `action-icon ${action.icon}`;
+        // DRAWN: a class paints nothing.
+        if (action.icon) this.writeIcon(icon, action.icon);
         else icon.remove();
       }
       item.querySelector('.action-label')!.textContent = action.label;

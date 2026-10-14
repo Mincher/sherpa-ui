@@ -47,7 +47,10 @@ test('it composes real components, and marks unread rows', async ({ page }) => {
       rawInRows: rows
         .flatMap((n) => [...n.querySelectorAll('*')])
         .filter((n) => !n.tagName.startsWith('SHERPA-') && n.tagName !== 'I' && n.tagName !== 'SPAN')
+        .filter((n) => !n.closest('.notification-icon'))
         .map((n) => n.tagName),
+      // The icon is DRAWN — a class name paints nothing.
+      drawn: rows.map((n) => !!n.querySelector('.notification-icon svg path')),
     };
   }, ITEMS);
 
@@ -58,6 +61,7 @@ test('it composes real components, and marks unread rows', async ({ page }) => {
   expect(r.unreadCount).toBe(2);
   expect(r.hasReadAll).toBe(true);
   expect(r.rawInRows).toEqual([]);
+  expect(r.drawn).toEqual([true, true, true]);
 });
 
 test('mark all read clears the pips at once and reports the ids', async ({ page }) => {
