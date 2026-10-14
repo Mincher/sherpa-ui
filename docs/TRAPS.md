@@ -288,6 +288,31 @@ matches — is none of that.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `scripts/check-props.mjs`
 
+### T-nothing-downloads-to-serve
+
+**Serving a folder downloads nothing.** The starter's `npm start`, `npm run
+preview` and Playwright's web server each ran `npx --yes serve`: an unpinned
+package, fetched from npm on every run, declared nowhere — the one third-party
+thing a consumer met at run time (found 2026-10-14). A new `serve` release, or
+no network, broke all three.
+
+`sherpa-ui serve [folder] [--port N]` (in `bin/sherpa-ui.mjs`) is Node's own
+`http` and `fs`, about 40 lines:
+
+- a folder serves its `index.html`, and `/app` redirects to `/app/` so the
+  page's relative URLs resolve inside it;
+- each file goes with its type — `text/javascript` for a module, `text/css`
+  for a sheet, which the templater asks for (`T-a-bundler-can-turn-a-file-into-a-module`);
+- nothing outside the folder is served (403), only GET and HEAD are answered,
+  and it listens on `localhost`, never the network.
+
+It does what the starter, the preview and the tests need, and no more: no
+directory listing, no clean URLs, no cache headers beyond `no-cache`.
+
+- Site: `bin/sherpa-ui.mjs`
+- Site: `playwright.config.ts`
+- Site: `test/unit/nothing-downloads-to-serve.test.mjs`
+
 ### T-temporal-is-the-date-model
 
 **Sherpa's date and time model is `Temporal`** (Will, 2026-10-14). A day is a

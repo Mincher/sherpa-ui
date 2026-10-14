@@ -53,10 +53,11 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
 
-  /* The harness needs the repo served statically. The example APP and its
-     tests live in ../Sherpa Demos, with their own server (TODO 37). */
+  /* The harness needs the repo served statically — by sherpa-ui itself, so a
+     run downloads nothing (TRAP T-nothing-downloads-to-serve). The example APP
+     and its tests live in ../Sherpa Demos, with their own server (TODO 37). */
   webServer: {
-    command: 'npm run build && npx --yes serve . --listen 4173 --no-clipboard',
+    command: 'npm run build && node bin/sherpa-ui.mjs serve . --port 4173',
     url: 'http://localhost:4173/test/reforged/harness.html',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

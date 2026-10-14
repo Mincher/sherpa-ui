@@ -101,7 +101,7 @@
     "format:check": "prettier --check 'src/**/*.css'",
     "mcp": "node mcp-server/index.js",
     "check:mcp-pack": "node scripts/check-mcp-pack.mjs",
-    "preview": "npx --yes serve . --listen 4000 --no-clipboard",
+    "preview": "node bin/sherpa-ui.mjs serve . --port 4000",
     "prebuild": "npm run clean",
     "test": "playwright test && npm run test:node",
     "test:node": "node --test 'test/unit/**/*.test.mjs'",

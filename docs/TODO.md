@@ -251,7 +251,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
 | ✅ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
 | ✅ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
-| ⬜ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
+| ✅ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
 | ⬜ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
 | ⬜ | 62.07 | 262 | Phase 7 — the MCP's tooling moves into the MCP package; `dist/` stops shipping the inlined `.html` and `.css` | package |
 | ⬜ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
@@ -6203,6 +6203,31 @@ the list or table that holds the truth. PRINCIPLES' doc table gains
 `APP-GUIDE.md`, which the MCP serves. TODO's head says the open items are its
 ⬜ 🚧 ❓ rows, and that a done item keeps its row and section. A count measured
 on a date, as history, stays.
+
+### `[ ]` ⬜ 280 — Phase 5: the filter family's async root
+
+The plan's Phase 5 item. **Evidence, 2026-10-14:** Demos' `filters survive a
+reload and a trip away` (`reforged-records-persist.spec.ts:164`) sets Status,
+then calls `addFilters(['email'])` at once — and the rebuilt bar reports Status
+EMPTY, so the source clears it (`status: off`, 27 rows, not 4). Run 10 at a
+time it failed 6 of 10 on the build before today's work (`1a8936ca`) and 7 of
+10 on today's, so it is old, not new — it is
+`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`. In the full Demos run it
+failed once in Chromium and once in WebKit, then passed on retry. 280's fix (the
+menu keeps op and text as it keeps `want`) is what ends it; the test is its
+proof.
+
+### `[x]` ✅ 260 — Phase 7: `sherpa-ui serve` — nothing downloads to serve a folder
+
+The starter's `npm start`, `npm run preview` and Playwright's web server each
+ran `npx --yes serve`: an unpinned package, fetched from npm on every run and
+declared nowhere — the one third-party thing a consumer met at run time.
+
+**✅ Done 2026-10-14.** `sherpa-ui serve [folder] [--port N]` is Node's own
+`http` and `fs`: a folder serves its `index.html`, each file goes with its type,
+nothing outside the folder is served, and it listens on `localhost`. All three
+use it. A unit test holds it, and the full browser suite ran against it.
+`T-nothing-downloads-to-serve`.
 
 ## ✅ Done — the full record
 
