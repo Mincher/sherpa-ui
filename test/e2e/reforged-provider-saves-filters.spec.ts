@@ -4,8 +4,7 @@ import { test, expect } from './fixture';
  * SAVE FILTERS — Will, TODO 105. Every scope's filters under one name, kept
  * with the page beside its Views. Applied from the Filters menu's Saved
  * section, the Saved chip names it — ` *` and the warning look once changed —
- * and its cross puts the filters back as they were. An old one-scope saved
- * filter becomes a set of its scope.
+ * and its cross puts the filters back as they were.
  * TRAP T-saved-filters-are-every-scope
  */
 const PAGE = `{
@@ -118,10 +117,13 @@ test('a set applies from the Filters menu, its cross dismisses it, and a reload 
   expect(r['dismissed']).toEqual({ tier: [], plan: ['Free'], chip: { shown: false, says: 'Silver', warning: false } });
 });
 
-test('an old one-scope saved filter becomes a set of its scope; Delete forgets a set', async ({ page }) => {
+test('Delete forgets a set; an old one-scope saved filter is not adopted', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
+    // Sherpa keeps no shim for an app's old stored data (Will, D4).
     localStorage.setItem('sherpa:filters:plans', JSON.stringify({ 'pro-only': { label: 'Pro only', where: { plan: { eq: 'Pro' } } } }));
+    localStorage.setItem('sherpa:filter-sets:plans', JSON.stringify({ 'pro-only': { label: 'Pro only',
+      query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } }));
     await open();
     await settle();
     const sets = JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}');
@@ -132,8 +134,8 @@ test('an old one-scope saved filter becomes a set of its scope; Delete forgets a
     return { sets, old, deleted, left: JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}'),
       chip: chip(bar), rows: bar.savedSets };
   })()`) as Record<string, any>;
-  expect(r['sets']).toEqual({ 'pro-only': { label: 'Pro only', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } });
-  expect(r['old']).toBeNull();
+  expect(Object.keys(r['sets'])).toEqual(['pro-only']);
+  expect(r['old']).not.toBeNull();
   expect(r['deleted']).toBe(true);
   expect(r['left']).toEqual({});
   expect(r['chip'].shown).toBe(false);

@@ -282,9 +282,9 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
     const remote = {
       pull: () => Promise.resolve({
         // The server has an OLD copy of a view the user has since renamed…
-        mine: { label: 'Server copy', snapshot: { v: 1 } },
+        mine: { label: 'Server copy', ui: {} },
         // …and one this device has never seen.
-        theirs: { label: 'From another device', snapshot: { v: 1 } },
+        theirs: { label: 'From another device', ui: {} },
       }),
       push: (_page: string, views: unknown) => {
         pushes.push(views);

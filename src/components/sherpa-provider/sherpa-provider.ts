@@ -29,7 +29,7 @@ import {
 import { labelId } from '../../core/browser/web-storage.js';
 import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
 import {
-  adoptOldFilters, deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, sameFilters, saveFilterAs,
+  deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, sameFilters, saveFilterAs,
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
@@ -388,10 +388,6 @@ export class SherpaProvider extends SherpaElement {
       await this.provide({ sources: {} });
       return undefined;
     }
-    /* A reader's old saved filters — each one scope's, kept with the DATA —
-       become this page's sets, each over its first scope below the View.
-       Will, TODO 105 (A). TRAP T-saved-filters-are-every-scope */
-    adoptOldFilters(def.store, definition.id, Object.keys(def.scopes ?? {}).find((id) => id !== VIEW) ?? VIEW);
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
     // The page as DEFINED, before a kept Query: what Reset all to default starts from.
@@ -538,8 +534,7 @@ export class SherpaProvider extends SherpaElement {
     const before = this.#savedSet ? this.#savedSet.before : opened.source.query.applied;
     const now = opened.source.query.applied;
     /* Each scope it names, as saved; the rest as they are. A set that names no
-       chips — one moved from before TODO 105 — keeps the scope's own, and the
-       fields it answers. Both are a View's own forms. */
+       chips keeps the scope's own, and holds the fields it answers. */
     const scopes: Record<string, unknown> = { ...now.scopes };
     for (const [id, scope] of Object.entries(structuredClone(set.query.scopes))) {
       const named = Object.keys(scope.where ?? {});

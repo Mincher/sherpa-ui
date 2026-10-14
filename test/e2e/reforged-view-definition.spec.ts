@@ -79,7 +79,7 @@ test('applyState configures an element through its OWN API, not its attributes',
 
 test('a whole view round-trips: capture it, restore it into a FRESH one', async ({ page }) => {
   // The test that matters. Two sources, two grids, nothing shared but a JSON
-  // snapshot — which is exactly what a saved view is.
+  // snapshot — what persistView keeps.
   const r = await page.evaluate(async () => {
     const { ArrayStore, DataSource, bindSource, captureView, applyViewSnapshot } = await import('/dist/index.js');
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -378,8 +378,8 @@ test('a view library derives its own chip options', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { viewOptions } = await import('/dist/index.js');
     const VIEWS = {
-      all: { label: 'All customers', snapshot: { v: 1 } },
-      risk: { label: 'At risk', snapshot: { v: 1 } },
+      all: { label: 'All customers', ui: {} },
+      risk: { label: 'At risk', ui: {} },
     };
     return {
       // Defaults to the FIRST view: a set with nothing selected leaves the chip
@@ -401,26 +401,16 @@ test('onViewPicked applies the picked view, and only on a view pick', async ({ p
   const r = await page.evaluate(async () => {
     const { onViewPicked } = await import('/dist/index.js');
 
-    const states: unknown[] = [];
-    const source = { setState: (s: unknown) => states.push(s) };
     const el = document.createElement('sherpa-quick-filter') as HTMLElement & { values?: unknown };
     document.getElementById('root')!.replaceChildren(el);
 
-    const VIEWS = {
-      risk: {
-        label: 'At risk',
-        snapshot: {
-          v: 1,
-          source: { filter: ['health', 'lt', 60] },
-          elements: { chip: { values: ['a', 'b'] } },
-        },
-      },
-    };
+    // Its element state, by id, through the element's own API.
+    const VIEWS = { risk: { label: 'At risk', ui: { chip: { values: ['a', 'b'] } } } };
 
     const afters: unknown[] = [];
     const gaps: unknown[] = [];
     const host = document.getElementById('root')!;
-    const off = onViewPicked(host, VIEWS, { source, elements: { chip: el } }, {
+    const off = onViewPicked(host, VIEWS, { elements: { chip: el } }, {
       after: (pick) => afters.push(pick.id),
       onIncomplete: (pick) => gaps.push(pick.report),
     });
@@ -431,38 +421,35 @@ test('onViewPicked applies the picked view, and only on a view pick', async ({ p
 
     // A change naming NO view — the other chips on a view bar fire this too.
     fire({ values: { region: ['emea'] } });
-    const afterOther = { states: states.length, afters: afters.length };
+    const afterOther = { afters: afters.length };
 
     // A view that is not in the library. A saved link outlives a deleted view.
     fire({ values: { view: ['gone'] } });
-    const afterUnknown = { states: states.length, afters: afters.length };
+    const afterUnknown = { afters: afters.length };
 
     fire({ values: { view: ['risk'] } });
     // The chip has not drawn: `after` comes once it has its state.
     await (el as HTMLElement & { rendered?: Promise<void> }).rendered;
     await window.__settled();
-    const afterPick = { states: [...states], afters: [...afters] };
+    const afterPick = { afters: [...afters] };
 
     // UNSUBSCRIBES, like bind() — a view leaving the DOM stops listening.
     off();
-    fire({ values: { view: ['risk'] } });
-    const afterOff = { states: states.length };
+    fire({ values: { view: ['other'] } });
+    const afterOff = { afters: afters.length };
 
     return { afterOther, afterUnknown, afterPick, afterOff, gaps };
   });
 
   // Silence unless a VIEW was named, and named one that exists.
-  expect(r.afterOther).toEqual({ states: 0, afters: 0 });
-  expect(r.afterUnknown).toEqual({ states: 0, afters: 0 });
-
-  // The query goes first, so rows are on their way before anything reads them.
-  expect(r.afterPick.states).toEqual([{ filter: ['health', 'lt', 60] }]);
-  expect(r.afterPick.afters).toEqual(['risk']);
+  expect(r.afterOther).toEqual({ afters: 0 });
+  expect(r.afterUnknown).toEqual({ afters: 0 });
 
   // The element got its state through its own API, so nothing was skipped.
+  expect(r.afterPick.afters).toEqual(['risk']);
   expect(r.gaps).toEqual([]);
 
-  expect(r.afterOff.states).toBe(1);
+  expect(r.afterOff.afters).toBe(1);
 });
 
 test('onViewPicked REPORTS a stale definition instead of throwing', async ({ page }) => {
@@ -476,11 +463,8 @@ test('onViewPicked REPORTS a stale definition instead of throwing', async ({ pag
     onViewPicked(host, {
       old: {
         label: 'Made last year',
-        snapshot: {
-          v: 1,
-          // A component that has since been renamed, and a method that is gone.
-          elements: { chip: { noSuchMethod: [1] }, vanished: { values: ['x'] } },
-        },
+        // A component that has since been renamed, and a method that is gone.
+        ui: { chip: { noSuchMethod: [1] }, vanished: { values: ['x'] } },
       },
     }, { elements: { chip: el } }, {
       onIncomplete: (p) => gaps.push({
@@ -515,7 +499,7 @@ test('onViewPicked REPORTS a stale definition instead of throwing', async ({ pag
  *
  * `SavedView.content` is a `ViewDefinition`, the shape `renderView` already
  * builds, because "a screen described as data" is a problem this repo solved
- * once. The snapshot still applies AFTER, so a view can build its own grid and
+ * once. Its `ui` still applies AFTER, so a view can build its own grid and
  * arrive with a column already filtered.
  */
 test('a preset builds its OWN components and layout, then configures them', async ({ page }) => {
@@ -525,9 +509,6 @@ test('a preset builds its OWN components and layout, then configures them', asyn
     const into = document.createElement('div');
     host.replaceChildren(into);
 
-    const states: unknown[] = [];
-    const source = { setState: (s: unknown) => states.push(s) };
-
     const VIEWS = {
       tiles: {
         label: 'Fleet overview',
@@ -536,7 +517,6 @@ test('a preset builds its OWN components and layout, then configures them', asyn
             <sherpa-metric id="a" data-col-span="small"></sherpa-metric>
             <sherpa-metric id="b" data-col-span="small"></sherpa-metric>
           </sherpa-container>`,
-        snapshot: { v: 1, source: { filter: undefined } },
       },
       table: {
         label: 'Capacity planning',
@@ -545,29 +525,23 @@ test('a preset builds its OWN components and layout, then configures them', asyn
           <sherpa-container>
             <sherpa-data-grid id="grid" data-col-span="full"></sherpa-data-grid>
           </sherpa-container>`,
-        /* The SHAPE is markup; the DATA and the configuration come through the
-           snapshot, addressed by the id in that markup and applied through the
-           grid's OWN API. That is the split — T-attributes-are-the-state-channel
-           — and it is why markup losing `data:` and `state:` cost nothing: the
-           snapshot always carried them better. */
-        snapshot: {
-          v: 1,
-          source: { filter: ['gb', 'gt', 70] },
-          elements: {
-            grid: {
-              populate: [{
-                columns: [{ field: 'name', label: 'Name' }, { field: 'gb', label: 'GB' }],
-                rows: [{ name: 'alpha', gb: 90 }, { name: 'beta', gb: 40 }],
-              }],
-              setColumnFilter: ['name', ['name', 'contains', 'al']],
-            },
+        /* The SHAPE is markup; the DATA and the configuration come through its
+           `ui`, addressed by the id in that markup and applied through the
+           grid's OWN API. T-attributes-are-the-state-channel */
+        ui: {
+          grid: {
+            populate: [{
+              columns: [{ field: 'name', label: 'Name' }, { field: 'gb', label: 'GB' }],
+              rows: [{ name: 'alpha', gb: 90 }, { name: 'beta', gb: 40 }],
+            }],
+            setColumnFilter: ['name', ['name', 'contains', 'al']],
           },
         },
       },
     };
 
     const picks: unknown[] = [];
-    onViewPicked(host, VIEWS, { source }, { into, after: (p) => picks.push(p.id) });
+    onViewPicked(host, VIEWS, {}, { into, after: (p) => picks.push(p.id) });
 
     const fire = (v: string) => host.dispatchEvent(new CustomEvent('quick-filter-change', {
       detail: { values: { view: [v] } }, bubbles: true,
@@ -587,7 +561,7 @@ test('a preset builds its OWN components and layout, then configures them', asyn
       columnClause(f: string): unknown;
     };
 
-    return { first, second, states, picks, clause: grid?.columnClause('name') ?? null };
+    return { first, second, picks, clause: grid?.columnClause('name') ?? null };
   });
 
   // VIEW ONE: two metric tiles in a container.
@@ -597,8 +571,6 @@ test('a preset builds its OWN components and layout, then configures them', asyn
   // its predecessor's tiles on screen would be two views at once.
   expect(r.second.tags).toEqual(['sherpa-container', 'sherpa-data-grid']);
 
-  // The query moved too, so content and data are one definition.
-  expect(r.states).toEqual([{ filter: undefined }, { filter: ['gb', 'gt', 70] }]);
   expect(r.picks).toEqual(['tiles', 'table']);
 
   // AND the built grid arrived CONFIGURED — `state` reaches a method on an
@@ -618,12 +590,17 @@ test('a preset builds its OWN components and layout, then configures them', asyn
  */
 test('saveViewAs stores a named view, and the id is derived from the label', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { saveViewAs, loadSavedViews, deleteSavedView } = await import('/dist/index.js');
+    const { saveViewAs, loadSavedViews, deleteSavedView, ArrayStore, DataSource } = await import('/dist/index.js');
     localStorage.removeItem('sherpa:views:probe');
 
     const el = document.createElement('sherpa-quick-filter') as HTMLElement & { values?: unknown };
     document.getElementById('root')!.replaceChildren(el);
-    const source = { state: { filter: ['region', 'eq', 'EMEA'], page: 1 } };
+    const source = new DataSource({ store: new ArrayStore([{ id: 1, region: 'EMEA' }, { id: 2, region: 'APAC' }], { key: 'id' }) });
+    source.declareField('region', { label: 'Region' });
+    source.select('region', ['EMEA']);
+    // What a saved view says of its region, in whichever scope holds it.
+    const regionOf = (v: { query: { scopes: Record<string, { where?: Record<string, unknown> }> } }) =>
+      Object.values(v.query.scopes).map((s) => s.where?.['region']).find(Boolean);
 
     const first = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
       { chip: ['values'] });
@@ -631,7 +608,7 @@ test('saveViewAs stores a named view, and the id is derived from the label', asy
     // The SAME label again is an UPDATE, not a second row. A random id would
     // leave a reader with two "Q3 capacity" entries and no way to tell them
     // apart in the chip.
-    source.state = { filter: ['region', 'eq', 'APAC'], page: 2 };
+    source.select('region', ['APAC']);
     const second = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
       { chip: ['values'] });
 
@@ -644,26 +621,26 @@ test('saveViewAs stores a named view, and the id is derived from the label', asy
     return {
       ids: Object.keys(first),
       label: first['q3-capacity']?.label,
-      firstFilter: first['q3-capacity']?.snapshot.source?.filter,
-      secondFilter: second['q3-capacity']?.snapshot.source?.filter,
+      firstFilter: regionOf(first['q3-capacity']),
+      secondFilter: regionOf(second['q3-capacity']),
       count: Object.keys(second).length,
       trimmed,
       // It SURVIVES the call — read back from storage, not from the return.
-      reloadedFilter: reloaded['q3-capacity']?.snapshot.source?.filter,
+      reloadedFilter: regionOf(reloaded['q3-capacity']),
       afterDelete: Object.keys(afterDelete),
     };
   });
 
   expect(r.ids).toEqual(['q3-capacity']);
   expect(r.label).toBe('Q3 capacity');
-  expect(r.firstFilter).toEqual(['region', 'eq', 'EMEA']);
+  expect(r.firstFilter).toEqual({ eq: 'EMEA' });
 
   // Saved twice under one name = one view, updated.
-  expect(r.secondFilter).toEqual(['region', 'eq', 'APAC']);
+  expect(r.secondFilter).toEqual({ eq: 'APAC' });
   expect(r.count).toBe(1);
   expect(r.trimmed).toEqual(['q3-capacity']);
 
-  expect(r.reloadedFilter).toEqual(['region', 'eq', 'APAC']);
+  expect(r.reloadedFilter).toEqual({ eq: 'APAC' });
   expect(r.afterDelete).toEqual([]);
 });
 
@@ -696,29 +673,24 @@ test('onViewPicked re-reads a library that GROWS when given a function', async (
     const host = document.getElementById('root')!;
     host.replaceChildren();
 
-    const states: unknown[] = [];
-    const source = { setState: (s: unknown) => states.push(s) };
+    const picks: string[] = [];
 
     // Starts with presets only — exactly what a page wires at init.
-    const library: Record<string, { label: string; snapshot: unknown }> = {
-      fleet: { label: 'Fleet', snapshot: { v: 1, source: { filter: undefined } } },
-    };
-    onViewPicked(host, () => library, { source });
+    const library: Record<string, { label: string }> = { fleet: { label: 'Fleet' } };
+    onViewPicked(host, () => library, {}, { after: (p) => picks.push(p.id) });
 
     const fire = (v: string) => host.dispatchEvent(new CustomEvent('quick-filter-change', {
       detail: { values: { view: [v] } }, bubbles: true,
     }));
 
     fire('saved-later');
-    const beforeSave = states.length;
+    const beforeSave = picks.length;
 
     // The reader saves one AFTER the listener was wired.
-    library['saved-later'] = {
-      label: 'Saved later', snapshot: { v: 1, source: { filter: ['a', 'eq', 1] } },
-    };
+    library['saved-later'] = { label: 'Saved later' };
     fire('saved-later');
 
-    return { beforeSave, states };
+    return { beforeSave, picks };
   });
 
   // Unknown before it was saved, resolvable after — the whole point of the
@@ -726,7 +698,7 @@ test('onViewPicked re-reads a library that GROWS when given a function', async (
   // restore a view the reader made, which is what the dashboard's Save button
   // hit: it wired the presets and then could not find anything it had saved.
   expect(r.beforeSave).toBe(0);
-  expect(r.states).toEqual([{ filter: ['a', 'eq', 1] }]);
+  expect(r.picks).toEqual(['saved-later']);
 });
 
 /**
@@ -755,22 +727,19 @@ test('a view WITHOUT content gets the page its own content back, still live', as
     into.replaceChildren(ownTag);
     host.replaceChildren(into);
 
-    const states: unknown[] = [];
-    const source = { setState: (s: unknown) => states.push(s) };
+    const picks: string[] = [];
 
     const VIEWS = {
-      plain: { label: 'Plain', snapshot: { v: 1, source: { filter: undefined } } },
+      plain: { label: 'Plain' },
       own: {
         label: 'Brings its own',
-        // MARKUP now — T-attributes-are-the-state-channel. The behaviour under
-        // test (content first, then the original restored) is unchanged.
+        // MARKUP — T-attributes-are-the-state-channel. Content first, then the original restored.
         content: '<div><sherpa-data-grid id="built"></sherpa-data-grid></div>',
-        snapshot: { v: 1, source: { filter: ['a', 'eq', 1] } },
       },
-      other: { label: 'Other', snapshot: { v: 1, source: { filter: ['b', 'eq', 2] } } },
+      other: { label: 'Other' },
     };
 
-    onViewPicked(host, VIEWS, { source }, { into });
+    onViewPicked(host, VIEWS, {}, { into, after: (p) => picks.push(p.id) });
     const fire = (v: string) => host.dispatchEvent(new CustomEvent('quick-filter-change', {
       detail: { values: { view: [v] } }, bubbles: true,
     }));
@@ -797,7 +766,7 @@ test('a view WITHOUT content gets the page its own content back, still live', as
     await new Promise((res) => setTimeout(res, 100));
     out['other'] = shape();
 
-    return { out, states };
+    return { out, picks };
   });
 
   expect(r.out['start']).toEqual({ kids: ['sherpa-tag'], sameNode: true });
@@ -810,14 +779,8 @@ test('a view WITHOUT content gets the page its own content back, still live', as
   expect(r.out['plain']).toEqual({ kids: ['sherpa-tag'], sameNode: true });
   expect(r.out['other']).toEqual({ kids: ['sherpa-tag'], sameNode: true });
 
-  // The query moved on every pick regardless of who owns the content.
-  // Four picks — own, plain, own, other — in that order.
-  expect(r.states).toEqual([
-    { filter: ['a', 'eq', 1] },
-    { filter: undefined },
-    { filter: ['a', 'eq', 1] },
-    { filter: ['b', 'eq', 2] },
-  ]);
+  // Every pick applied, whoever owns the content — own, plain, own, other.
+  expect(r.picks).toEqual(['own', 'plain', 'own', 'other']);
 });
 
 /**
@@ -841,17 +804,13 @@ test('onViewPicked ignores a chip-scoped event, by shape not by luck', async ({ 
     const host = document.getElementById('root')!;
     host.replaceChildren();
 
-    const states: unknown[] = [];
-    const source = { setState: (s: unknown) => states.push(s) };
+    const picks: string[] = [];
     /* TWO views, because the same id twice is now a no-op: a persistent View
        chip reports on EVERY bar change, so `onViewPicked` re-applies only when
        the id MOVES — T-a-persistent-chip-reports-on-every-change. This test is
        about the scope marker, and two ids prove that just as well as one. */
-    const VIEWS = {
-      risk: { label: 'At risk', snapshot: { v: 1, source: { filter: ['h', 'lt', 60] } } },
-      calm: { label: 'Calm', snapshot: { v: 1, source: { filter: ['h', 'gt', 60] } } },
-    };
-    onViewPicked(host, VIEWS, { source });
+    const VIEWS = { risk: { label: 'At risk' }, calm: { label: 'Calm' } };
+    onViewPicked(host, VIEWS, {}, { after: (p) => picks.push(p.id) });
 
     const fire = (detail: unknown) => host.dispatchEvent(
       new CustomEvent('quick-filter-change', { detail, bubbles: true }),
@@ -867,16 +826,16 @@ test('onViewPicked ignores a chip-scoped event, by shape not by luck', async ({ 
     const sneaky: string[] & { view?: string[] } = ['risk'];
     sneaky.view = ['risk'];
     fire({ scope: 'chip', values: sneaky });
-    const afterChip = states.length;
+    const afterChip = picks.length;
 
     // The same payload WITHOUT the marker still works — the marker is a
     // narrowing, not a new requirement, so an older emitter is not broken.
     fire({ values: { view: ['risk'] } });
-    const afterUnmarked = states.length;
+    const afterUnmarked = picks.length;
 
     // And the bar's own event, naming a DIFFERENT view so the id moves.
     fire({ scope: 'bar', values: { view: ['calm'] } });
-    return { afterChip, afterUnmarked, total: states.length };
+    return { afterChip, afterUnmarked, total: picks.length };
   });
 
   expect(r.afterChip, 'a chip-scoped event moves nothing').toBe(0);

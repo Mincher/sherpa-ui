@@ -70,14 +70,9 @@ export class OutletNav {
     this.#host = at.host;
     this.#lastSettings = Object.keys(at.app.settings?.pages ?? {})[0] ?? null;
     /* STORED ROWS, not Contexts: a shape this release cannot read is dropped.
-       A favourite is a VIEW, keyed `context:view`; one stored with no key meant
-       the Context, so it is its first View. */
+       A favourite is a VIEW, keyed `context:view`. */
     at.session.persist('/nav/favorites', { guard: isKeptList });
     at.session.persist('/nav/recent', { guard: isKeptList });
-    const stored = at.session.get('/nav/favorites');
-    if (isKeptList(stored) && stored.some((r) => !r.key)) {
-      at.session.set('/nav/favorites', stored.map((r) => ({ ...r, key: r.key ?? r.context })));
-    }
     this.#favorites = at.session.list<Kept>('/nav/favorites', { by: 'key' });
     this.#recents = at.session.list<Kept>('/nav/recent', { by: 'context', max: 5, front: true });
     // Home never belongs in Recents.

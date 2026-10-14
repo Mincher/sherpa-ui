@@ -698,7 +698,7 @@ test('syncViews pushes to a remote, debounced, and a failed push is REPORTED not
   const pushes = [];
   let failNext = false;
   const remote = {
-    pull: () => Promise.resolve({ shared: { label: 'Shared', snapshot: { v: 1 } } }),
+    pull: () => Promise.resolve({ shared: { label: 'Shared', ui: {} } }),
     push: (page, views) => {
       pushes.push({ page, views });
       return failNext

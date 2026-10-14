@@ -1301,8 +1301,8 @@ its field CARRIES OVER** (Will, TODO 21b: *"which chips carry over should be
 CONFIGURABLE"*). `carryOver: true` in a field's declaration (the page JSON
 takes it) keeps its answer through a View that does not answer it; a View
 that does answer it wins. Two paths honour it: a JSON View (`setQuery` with
-`holds: 'keep'`, in `#definition`) and an old snapshot View (`clearAll({
-carry: true })`, then `setState`, whose `#clearReadings` keeps it). A RESTORE
+`holds: 'keep'`, in `#definition`) and a View with no Query (`clearAll({
+carry: true })`). A RESTORE
 is exact, and Reset still clears everything: only a View change carries.
 Nothing on Records carries over yet — the default is Will's.
 
@@ -13828,7 +13828,7 @@ data layer compiles it, with the field's type, as it compiles every reading.
 
 **Stored, it is the plain form** (TODO 197): `{ health: { lt: 60 } }` under
 `where` — still field by field, so it opens again the same way. The source
-reads it back into readings; one stored before 197 still opens.
+reads it back into readings. One stored before 197 is not read (Will, D4).
 `T-one-way-to-write-a-condition`
 
 **It applies as ONE named part.** A def with `readings` is a toggle of kind
@@ -13881,9 +13881,9 @@ half of a View — kept with the PAGE beside its Views (`saveFilterAs`,
 - **Dismissing**: the chip's cross asks `filters-dismiss` and puts the Query
   back as it was before the FIRST set was applied — the filters only, not the
   sort. The tab remembers the set on screen, so a reload keeps the chip.
-- **Old saved filters** — one scope's, kept per DATA before TODO 105 — move
-  into the page's sets once, each a set of the page's first scope below the
-  View (Will, A). The per-scope card's Edit filter, Save and Delete went with
+- **Old saved filters** — one scope's, kept per DATA before TODO 105 — are
+  not read: Sherpa keeps no shim for an app's old stored data (Will, D4,
+  2026-10-14). The per-scope card's Edit filter, Save and Delete went with
   them: a set is changed by saving again (Will, A; 186 closed with it).
 
 A page's own presets stay preset chips, applied one at a time.
@@ -16925,10 +16925,10 @@ It keeps the answer in force only: Simple's picks or Advanced's rows, never
 both, and nothing a control keeps for itself (`mirror`, `kept`, `present`).
 An Advanced answer of one row reads back as Simple; the filter is the same.
 
-**A reading is told apart by its keys** — `picked`, `op`, `text`,
-`conditions`… — and none is an op. So a View or a saved filter stored before
-197 still opens: each field's old reading passes as it was, and the next save
-writes the plain form. A page definition's preset with `readings` and no
+**A `where` holds conditions only.** A reading stored there before 197 — its
+keys `picked`, `op`, `text`… — is not read: each key reports `unknown-op` and
+the field filters nothing (Will, D4, 2026-10-14: no shim for old stored data).
+A page definition's preset with `readings` and no
 `where` reports `preset-without-where`. An `or` inside an `and` cannot be
 condition rows, so it reports `unreadable-condition` and filters nothing.
 

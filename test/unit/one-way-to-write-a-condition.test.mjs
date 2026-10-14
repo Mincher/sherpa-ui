@@ -67,9 +67,17 @@ test('two values on a number field are a LIST, not two ends', () => {
     { seats: { picked: [5, 9], range: true } });
 });
 
-test('a reading saved before TODO 197 passes as it was', () => {
-  const old = { owner: { op: 'eq', picked: ['Unassigned'] }, health: { op: 'lt', text: '60' } };
-  assert.deepEqual(readingsOf(old), old);
+test('a reading in the old form is not read — it is reported, and filters nothing', () => {
+  // Sherpa keeps no shim for an app's old stored data (Will, D4).
+  const seen = [];
+  const undo = onReport((r) => seen.push(r.code));
+  try {
+    const read = readingsOf({ owner: { op: 'eq', picked: ['Unassigned'] }, health: { op: 'lt', text: '60' } });
+    assert.deepEqual(read, { owner: {}, health: {} });
+  } finally {
+    undo();
+  }
+  assert.ok(seen.length && seen.every((code) => code === 'unknown-op'));
 });
 
 test('what rows cannot show, and what is not an op, reports', () => {

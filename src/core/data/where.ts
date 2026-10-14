@@ -7,7 +7,7 @@
  * - Condition — One field's condition, as a definition or a View writes it.
  * - Where — Each field's condition, by field.
  * - whereOf — Readings in the plain form: what each field filters by, nothing a control keeps for itself.
- * - readingsOf — The plain form as readings; a reading saved before TODO 197 passes as it was.
+ * - readingsOf — The plain form as readings.
  */
 import {
   clauseConditions, fieldState, isRanged, stateClause,
@@ -36,10 +36,6 @@ export type Where = Record<string, Condition>;
 
 type Facts = (field: string) => Omit<FieldFacts, 'field'>;
 
-/** A reading's own keys. None is an op, so one field's two forms never meet. */
-const READING_KEYS = new Set([
-  'picked', 'present', 'op', 'text', 'conditions', 'mode', 'mirror', 'range', 'kept', 'suspended',
-]);
 
 /** Readings in the plain form: what each field filters by, nothing a control keeps for itself. */
 export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?: Facts): Where {
@@ -52,9 +48,9 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
   return where;
 }
 
-/** The plain form as readings; a reading saved before TODO 197 passes as it was. */
+/** The plain form as readings. */
 export function readingsOf(
-  where: Readonly<Record<string, Condition | FieldReading>>, facts?: Facts,
+  where: Readonly<Record<string, Condition>>, facts?: Facts,
 ): Record<string, FieldReading> {
   const readings: Record<string, FieldReading> = {};
   for (const [field, given] of Object.entries(where)) {
@@ -64,9 +60,8 @@ export function readingsOf(
   return readings;
 }
 
-function readingOf(field: string, given: Condition | FieldReading, facts?: Omit<FieldFacts, 'field'>): FieldReading | undefined {
-  if (Object.keys(given).some((key) => READING_KEYS.has(key))) return given as FieldReading;
-  const { off, band, ...rest } = given as Condition;
+function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'field'>): FieldReading | undefined {
+  const { off, band, ...rest } = given;
   // A band NAMES its ends; the field's thresholds say them. TRAP T-a-threshold-is-a-fact-of-the-field
   const named = band == null ? {} : bandCondition(facts?.thresholds ?? [], band);
   if (!named) {

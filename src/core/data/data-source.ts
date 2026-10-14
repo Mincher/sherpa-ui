@@ -1277,7 +1277,7 @@ export class DataSource extends EventTarget {
   }
 
   /** The plain form as readings, by this source's field types. */
-  readingsOf(where: Readonly<Record<string, Condition | FieldReading>>): Record<string, FieldReading> {
+  readingsOf(where: Readonly<Record<string, Condition>>): Record<string, FieldReading> {
     return readingsOf(where, (f) => this.#facts(f));
   }
 
@@ -1868,12 +1868,9 @@ export class DataSource extends EventTarget {
     const next: Query = { v: 1, scopes: {} };
     let arrange: Arrange | null = null;
     for (const [id, scope] of Object.entries(structuredClone(given.scopes))) {
-      /* A View says `where`; a whole Query, and a View saved before TODO 197,
-         `readings`. TRAP T-one-way-to-write-a-condition */
-      /* A View saved before TODO 105 may carry a saved filter's `edits`: there is
-         no such change now, so it is dropped. */
-      const { sort, group, search, where, edits: _edits, readings, ...rest } = scope as ViewScope
-        & Partial<Pick<ScopeQuery, 'readings'>> & { edits?: unknown };
+      // A View says `where`; a whole Query, `readings`. TRAP T-one-way-to-write-a-condition
+      const { sort, group, search, where, readings, ...rest } = scope as ViewScope
+        & Partial<Pick<ScopeQuery, 'readings'>>;
       next.scopes[id] = {
         ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? this.readingsOf(where) : {}) },
       };

@@ -9,7 +9,6 @@
  * - loadSavedFilters — Read a page's saved sets. A broken entry is dropped.
  * - saveFilterAs — Keep filters under a name — over a set of that name — and hand back the whole store.
  * - deleteSavedFilter — Forget one set, and hand back what is left.
- * - adoptOldFilters — Move a reader's old one-scope saved filters over `data` into this page's sets, once.
  * - filtersOf — The filter half of a View's JSON: each scope's filters, and no arrangement.
  * - sameFilters — Do the filters on screen still say what a set says, over the scopes it names?
  * - AppliedFilters — The set on screen: which, and the filters it was applied over.
@@ -17,7 +16,6 @@
  * - keepApplied — Remember the set on screen in this tab, or that none is.
  */
 import type { Query, QueryDefaults, ViewScope } from '../data/query.js';
-import type { Where } from '../data/where.js';
 import {
   isPlainObject, labelId, readJson, removeKey, writeJson, type StorageKind,
 } from './web-storage.js';
@@ -39,8 +37,6 @@ export interface SavedFilterOptions {
 
 /** Key prefixes, so a host's own storage keys cannot collide with these. */
 const PREFIX = 'sherpa:filter-sets:';
-/** Before TODO 105: one scope's filter, kept per DATA. */
-const OLD_PREFIX = 'sherpa:filters:';
 /** The set on screen, per tab, so a reload keeps its chip. */
 const ON_PREFIX = 'sherpa:filter-set-on:';
 
@@ -73,25 +69,6 @@ export function deleteSavedFilter(page: string, id: string, options: SavedFilter
   const kept = Object.fromEntries(Object.entries(loadSavedFilters(page, options)).filter(([key]) => key !== id));
   writeJson(kindOf(options.shared ?? true), PREFIX + page, kept);
   return kept;
-}
-
-/**
- * Move a reader's old saved filters over `data` — each ONE scope's, kept with
- * the data — into this page's sets, each as a set of `scope` alone. Once: the
- * old ones go, so a set deleted later stays deleted. Will, TODO 105 (A).
- */
-export function adoptOldFilters(data: string, page: string, scope: string, options: SavedFilterOptions = {}): void {
-  const kind = kindOf(options.shared ?? true);
-  const old = readJson<Record<string, unknown>>(kind, OLD_PREFIX + data, {}, isPlainObject);
-  const entries = Object.entries(old).filter(([, v]) => isPlainObject(v) && typeof v['label'] === 'string');
-  if (!entries.length) return;
-  const sets = loadSavedFilters(page, options);
-  for (const [id, saved] of entries) {
-    const { label, where, readings } = saved as { label: string; where?: Where; readings?: Where };
-    sets[id] ??= { label, query: { v: 1, scopes: { [scope]: { where: where ?? readings ?? {} } } } };
-  }
-  writeJson(kind, PREFIX + page, sets);
-  removeKey(kind, OLD_PREFIX + data);
 }
 
 /** The filter half of a View's JSON: each scope's filters, and no arrangement. */

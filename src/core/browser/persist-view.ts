@@ -78,7 +78,7 @@ export function persistView(
      been without it. TRAP T-restore-before-first-load */
   const keepSource = options.source ?? true;
   const stored = readJson<ViewSnapshot | null>(kind, key, null, isSnapshot);
-  // One kept from before the Query owned it is dropped, not trusted.
+  // With `source: false` the Query owns the source: its stored state is dropped.
   if (stored && !keepSource) delete stored.source;
   if (stored) applyViewSnapshot(stored, targets);
 
@@ -269,9 +269,6 @@ export interface SavedView {
   /** Element state that is NOT data — a grid's selected rows — through each
    *  element's public API, by id. */
   ui?: Record<string, Record<string, unknown>>;
-  /** The OLD shape: the source's state and per-element calls. A view with a
-   *  `query` needs none; the Dashboard's still use it. */
-  snapshot?: ViewSnapshot;
   /**
    * This view's OWN CONTENT AND LAYOUT — MARKUP, the same HTML an authored view
    * uses, parsed through an allow-list. ONE FORM, not two: a `ViewDefinition`
@@ -408,7 +405,7 @@ export function onViewPicked(
     if (!into) return undefined;
     if (!originals.has(into)) originals.set(into, [...into.childNodes]);
     into.replaceChildren(fragment);
-    /* The snapshot addresses elements BY ID, so collect them — scoped to the
+    /* A View's `ui` addresses elements BY ID, so collect them — scoped to the
        host, because an id is only addressable once it is in the page. */
     const byId: Record<string, HTMLElement> = {};
     for (const el of into.querySelectorAll<HTMLElement>('[id]')) byId[el.id] = el;
@@ -460,7 +457,7 @@ export function onViewPicked(
     applied = id;
     options.before?.(id);
 
-    /* TRAP T-content-first-original-once — content before snapshot. */
+    /* TRAP T-content-first-original-once — content before its `ui`. */
     const rendered = draw(view);
     if (rendered) targets = { ...targets, elements: { ...targets.elements, ...rendered.elements } };
 
@@ -497,10 +494,10 @@ export function onViewPicked(
        TRAP T-a-view-change-resets-the-header-chips */
     // A carry-over chip keeps its answer. TRAP T-a-field-can-carry-over-views
     (event.target as { clearAll?: (o: { carry: boolean }) => void } | null)?.clearAll?.({ carry: true });
-    const { report, waiting } = applySnapshot(view.snapshot ?? { v: 1 }, targets);
-    const more = applyElements(view.ui ?? {}, targets.elements ?? {}, report);
+    const report: ApplyReport = { missingElements: [], skipped: {} };
+    const waiting = applyElements(view.ui ?? {}, targets.elements ?? {}, report);
     // Reported once every element has its state: a gap is only known then.
-    if (waiting || more) void Promise.all([waiting, more]).then(() => done(report));
+    if (waiting) void waiting.then(() => done(report));
     else done(report);
   };
 
@@ -542,10 +539,7 @@ export function loadSavedViews(page: string, options: PersistOptions = {}): Save
 export function saveViewAs(
   page: string,
   label: string,
-  targets: {
-    source?: Omit<ViewSource, 'query'> & { query?: ViewSource['query'] };
-    elements?: Record<string, HTMLElement>;
-  },
+  targets: { source?: ViewSource; elements?: Record<string, HTMLElement> },
   reads: Record<string, readonly string[]> = {},
   options: PersistOptions & { content?: string } = {},
 ): SavedViewStore {
@@ -553,15 +547,13 @@ export function saveViewAs(
   if (!trimmed) return loadSavedViews(page, options);
 
   const views = loadSavedViews(page, options);
-  /* A source with a Query saves JSON — its Query and arrangement, plus the UI
-     the host names. One with none saves the old snapshot. TRAP T-a-view-is-json */
+  // JSON: the source's Query and arrangement, and the UI the host names. TRAP T-a-view-is-json
   const { source } = targets;
   const ui = captureView({ elements: targets.elements ?? {} }, reads).elements;
   views[labelId(trimmed)] = {
     label: trimmed,
-    ...(source?.query ? { query: viewQueryOf(source as ViewSource) }
-      : { snapshot: captureView(targets, reads) }),
-    ...(source?.query && ui ? { ui } : {}),
+    ...(source ? { query: viewQueryOf(source) } : {}),
+    ...(ui ? { ui } : {}),
     // TRAP T-view-content-is-a-view-definition — a built screen is remembered.
     ...(options.content ? { content: options.content } : {}),
   };

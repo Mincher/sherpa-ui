@@ -257,7 +257,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
 | ✅ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
 | ✅ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
-| ⬜ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
+| 🚧 | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
 | ⬜ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ⬜ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ⬜ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
@@ -6338,6 +6338,24 @@ the data. The node test now checks sherpa-ui packs the data and not the code,
 and that the MCP's copy is exactly the code it imports; `npm run
 check:mcp-pack` installed both tarballs and called 19 tools, 267 resources and
 3 prompts with no failure. `T-the-mcp-reads-sherpa-ui-through-one-door`.
+
+### `[~]` 🚧 266 — Phase 2: no shim for an app's old stored data (D4)
+
+Will, D4: *"Sherpa is app agnostic so nothing relating to constructed
+applications lives in this project."* **✅ Done 2026-10-14.** Gone:
+`adoptOldFilters` and its `sherpa:filters:` key, read on every page open; the
+strip of a pre-105 View's `edits`; `readingsOf`'s pass-through for a reading
+stored in a `where` before 197 — now reported (`unknown-op`) and filtering
+nothing, and `where` is typed as conditions only, which let one of the two
+`READING_KEYS` copies go; the favourites migration for a row with no key; the
+`search-change` event's old `detail.search`; and the old saved-View shape,
+`SavedView.snapshot` — `saveViewAs` saves the source's Query, and a picked View
+with no Query applies its `ui`. `persistView`'s own snapshot is live and stays.
+Two kept on purpose: `readingRows`' single-condition form (a Simple typed
+answer is stored that way) and a whole Query's `readings`. Nine tests moved to
+the current shapes; one that tested a shim now checks it is gone.
+
+**Still to do:** the docs and comments that use Demos as THE reference.
 
 ## ✅ Done — the full record
 

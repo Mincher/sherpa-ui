@@ -321,7 +321,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       return;
     }
     case 'search-change': {
-      const term = detail['value'] ?? detail['search'];
+      const term = detail['value'];
       source.setSearch(typeof term === 'string' ? term : '');
       return;
     }

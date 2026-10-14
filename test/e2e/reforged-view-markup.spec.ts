@@ -134,8 +134,8 @@ test('the allow-list drops what a saved view has no business carrying', async ({
 });
 
 test('a saved view applies its markup, then configures it by id', async ({ page }) => {
-  /* The whole round trip: markup describes the SHAPE, the snapshot configures
-     it through each component's own API, addressing the ids in the markup. */
+  /* The whole round trip: markup describes the SHAPE, its `ui` configures it
+     through each component's own API, addressing the ids in the markup. */
   const r = await page.evaluate(async () => {
     const { onViewPicked } = await import('/dist/index.js');
     const host = document.getElementById('root')!;
@@ -155,17 +155,14 @@ test('a saved view applies its markup, then configures it by id', async ({ page 
               <sherpa-data-grid id="fullest"></sherpa-data-grid>
             </sherpa-container>
           `,
-          snapshot: {
-            v: 1,
-            elements: {
-              /* Addressed BY ID, into an element that did not exist when this
-                 listener was wired — and through the component's OWN API, not
-                 an attribute: `applyState` walks the prototype chain for a
-                 method or accessor. That is the parity rule
-                 (T-state-is-the-saved-view-half), and it is what makes a saved
-                 view and an agent's MCP call the same path. */
-              fullest: { setColumnFilter: ['storage', ['storage', 'gt', 70]] },
-            },
+          ui: {
+            /* Addressed BY ID, into an element that did not exist when this
+               listener was wired — and through the component's OWN API, not
+               an attribute: `applyState` walks the prototype chain for a
+               method or accessor. That is the parity rule
+               (T-state-is-the-saved-view-half), and it is what makes a saved
+               view and an agent's MCP call the same path. */
+            fullest: { setColumnFilter: ['storage', ['storage', 'gt', 70]] },
           },
         },
       },
@@ -190,7 +187,7 @@ test('a saved view applies its markup, then configures it by id', async ({ page 
   });
 
   expect(r.built).toBe(true);
-  /* The snapshot reached an element the MARKUP created, through its own API.
+  /* Its `ui` reached an element the MARKUP created, through its own API.
      The value reads back as a STRING because a column filter is typed input —
      the grid holds what a person would have typed, not the JSON literal. */
   expect(r.clause).toEqual(['storage', 'gt', '70']);
