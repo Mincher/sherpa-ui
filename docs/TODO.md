@@ -2,8 +2,8 @@
 
 The list of open work. One file. Add to it, tick items off, do not start a second one.
 
-Status: `[ ]` open · `[~]` in progress. A DONE item leaves the body and gets one
-line under **Done**, at the bottom — git and `docs/TRAPS.md` keep the detail.
+Status: `[ ]` open · `[~]` in progress · `[x]` done. A done item KEEPS its row
+and its section, marked ✅ — git and `docs/TRAPS.md` keep the detail.
 
 **A bug is queued like any other item.** Will, 2026-09-26: bugs do not demand
 immediate attention. Add it here, in its place in the order, and carry on.
@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**Open:** every ⬜, 🚧 and ❓ row below — never a hand-typed count. Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -250,7 +250,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
 | ✅ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
 | ✅ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
-| ⬜ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
+| ✅ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
 | ⬜ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
 | ⬜ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
 | ⬜ | 62.07 | 262 | Phase 7 — the MCP's tooling moves into the MCP package; `dist/` stops shipping the inlined `.html` and `.css` | package |
@@ -6192,6 +6192,17 @@ CLAUDE.md forbids a component's own `prefers-reduced-motion` block —
 motion block outside `sherpa-motion.css` is an error (`motion-gate`); any media
 query but `forced-colors` is the `viewport-media` warning. No sheet broke the
 new rule. `T-motion-is-owned-here`.
+
+### `[x]` ✅ 259 — Phase 1.5: no hand-typed counts in the rule docs
+
+A count typed into a rule doc goes wrong as the code moves. **✅ Done
+2026-10-14:** PRINCIPLES' "65 components" (66), CLAUDE.md's "nine core
+modules" (it named eight; the lint covers the whole `src/core/data/` folder),
+"eight stylesheets" and the MCP's tool, resource and prompt counts now point at
+the list or table that holds the truth. PRINCIPLES' doc table gains
+`APP-GUIDE.md`, which the MCP serves. TODO's head says the open items are its
+⬜ 🚧 ❓ rows, and that a done item keeps its row and section. A count measured
+on a date, as history, stays.
 
 ## ✅ Done — the full record
 

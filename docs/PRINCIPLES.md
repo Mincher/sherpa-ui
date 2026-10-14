@@ -21,7 +21,7 @@ Everything below serves one separation:
 | | |
 |---|---|
 | **Data layer** | `src/core/*.ts` minus the element. Getting, setting and transforming rows. Touches no DOM, so a server, a test or an MCP tool imports it |
-| **Presentation layer** | `SherpaElement` + the 65 components. Shows what it is given; asks for what it wants; decides nothing about the data |
+| **Presentation layer** | `SherpaElement` + every component. Shows what it is given; asks for what it wants; decides nothing about the data |
 
 The join is the SOURCE. A component ASKS for what it wants, in its own
 attributes; `sherpa-provider` opens a page's source from its page definition
@@ -179,7 +179,7 @@ filter change — all 27 of its cells.
 
 ## Where the docs are
 
-**The RULES are four markdown files, and three of them are read by code.** The
+**The RULES are the markdown files in this table, and code reads all but this one.** The
 rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 `PROVIDER-DESIGN`, `PAGE-DEFINITION`), the audits and reviews (`COMPONENT-AUDIT`,
 `COMPONENT-API-AUDIT`, `FILTER-REVIEW`, `CONSUMER-REVIEW`) and the ledger
@@ -189,6 +189,7 @@ rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 |---|---|
 | `PRINCIPLES.md` | People. This file — the rules, the doors, the open work |
 | `TRAPS.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, and that entry's `Site:` list must match who cites it |
+| `APP-GUIDE.md` | The MCP server, as `sherpa://app-guide` |
 | `DEF-TO-FIGMA-BUILD-RULES.md` | The MCP server, as `sherpa://rules` |
 | `DATA-SOURCE-RULES.md` | The MCP server, as `sherpa://data-rules` |
 

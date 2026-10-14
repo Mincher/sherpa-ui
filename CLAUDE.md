@@ -50,10 +50,10 @@ npm run build:watch:ts    # tsc --watch — TS only, no asset copy
 # Type check (no emit)
 npm run type-check
 
-# Lint TypeScript. Includes the DOM-FREE BOUNDARY: nine core modules
-# (store, stores, validate, pointer, chart-datum, format-tick, live-stores,
-# data-source) may not touch document/window/customElements/storage — they are
-# the half of the data layer a server, a test or an MCP tool imports.
+# Lint TypeScript. Includes the DOM-FREE BOUNDARY: every module in
+# src/core/data/ (and bind-source.ts) may not touch document/window/
+# customElements/storage — they are the half of the data layer a server, a
+# test or an MCP tool imports.
 npm run lint
 npm run lint:fix
 
@@ -470,9 +470,9 @@ So: **read what you need live through the figma-console MCP**, and hand-patch
 that file when a value changes. `npm run check:extensions` guards it — a
 hand-patch is exactly where one collection collapses onto its sibling.
 
-### Shared CSS lives in EIGHT sheets
+### Shared CSS lives in the shared sheets
 
-`SherpaElement.sharedStyles` holds eight stylesheets by default, and every one
+`SherpaElement.sharedStyles` holds the stylesheets below by default, and every one
 is adopted into every shadow root — so a component imported alone is styled:
 
 | sheet | holds |
@@ -669,8 +669,8 @@ button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
-**19 tools** across five modules, **7 `sherpa://` resources**, and **3 guided
-prompts**. Run with `npm run mcp` (stdio). It ships as its own package,
+Its tools are in five modules, below, beside the `sherpa://` resources and the
+guided prompts. Run with `npm run mcp` (stdio). It ships as its own package,
 `sherpa-ui-mcp` (`mcp-server/package.json`), and reads the `sherpa-ui` beside it
 through `mcp-server/lib/sherpa.js`; `npm run check:mcp-pack` installs both and
 calls everything (TRAP `T-the-mcp-reads-sherpa-ui-through-one-door`).
@@ -695,7 +695,7 @@ no arbitrary script** — a caller names an element, a method and JSON arguments
 the page-side code lives in the repo. Nothing launches until a tool asks, and
 `browser_close` ends it.
 
-Resources (7): `sherpa://app-guide` (how to build an app, step by step),
+Resources: `sherpa://app-guide` (how to build an app, step by step),
 `sherpa://data-rules` (what Sherpa expects of your data),
 `sherpa://def/{name}`, `sherpa://rules`, and `sherpa://component/{name}/` in
 `ts`, `html` and `css`. Prompts:
