@@ -231,6 +231,36 @@ that.
 
 ---
 
+### T-temporal-is-the-date-model
+
+**Sherpa's date and time model is `Temporal`** (Will, 2026-10-14). A day is a
+`PlainDate`, a month a `PlainYearMonth`, never a `Date`.
+
+**But every iOS browser is WebKit inside** — Chrome and Firefox too — and
+WebKit has no `Temporal` yet, so neither does any iPhone browser. Safari is not
+a target, but mobile browsers are (Will, TODO 255). So dates go through ONE
+module, `src/core/ui/temporal.ts`: `Temporal` where the engine has it, and a
+small stand-in over `Date` and `Intl` where it has not — never a third-party
+polyfill.
+
+- **The stand-in is only the part Sherpa uses** (`PlainDateLike`,
+  `PlainYearMonthLike`). A new date call is added to BOTH, and the parity test
+  draws the calendar with `Temporal` and again without it.
+- **It answers as `Temporal` does:** ISO text that is not a real day throws;
+  fields clamp the day to its month; a day is computed in UTC, so no time zone
+  moves it.
+- **It asks at each call**, not at load, so a test can take `Temporal` away.
+- **Our WebKit tests did not catch this.** Playwright's WebKit build is newer
+  than Safari and has `Temporal`, so a green WebKit run says nothing about an
+  iPhone.
+- The DOM-free data layer stays off `Temporal` until Node has it
+  (`docs/QUERY-DESIGN.md`).
+
+- Site: `src/core/ui/temporal.ts`
+- Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
+- Site: `test/unit/a-day-without-temporal.test.mjs`
+- Site: `test/e2e/reforged-a-calendar-without-temporal.spec.ts`
+
 ## Events and listeners
 
 ### T-capture-beats-registration-order

@@ -9,10 +9,12 @@ import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
 import { FormValue } from '../../core/ui/form-value.js';
+// Temporal, or its stand-in on an engine without it. TRAP T-temporal-is-the-date-model
+import { plainDate, plainYearMonth, today, type PlainDateLike, type PlainYearMonthLike } from '../../core/ui/temporal.js';
 
 /** A month's name in the reader's own words, as the platform says it. TODO 84. */
 const monthName = (month: number, width: 'long' | 'short' = 'long'): string =>
-  Temporal.PlainDate.from({ year: 2000, month, day: 1 }).toLocaleString(undefined, { month: width });
+  plainDate({ year: 2000, month, day: 1 }).toLocaleString(undefined, { month: width });
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}$/;
@@ -24,18 +26,15 @@ type CalType = 'single' | 'range';
 const datePart = (v: string | null | undefined): string => (v ?? '').split('T')[0] ?? '';
 
 /** A value's day, or null when it names none. */
-function parseIso(iso: string | null | undefined): Temporal.PlainDate | null {
+function parseIso(iso: string | null | undefined): PlainDateLike | null {
   const d = datePart(iso);
   if (!ISO_RE.test(d)) return null;
   try {
-    return Temporal.PlainDate.from(d);
+    return plainDate(d);
   } catch {
     return null;
   }
 }
-
-/** Today, where the reader is. */
-const today = (): Temporal.PlainDate => Temporal.Now.plainDateISO();
 
 /** What a form reset restores. */
 const CAL_RESETS = ['data-value', 'data-value-start', 'data-value-end'];
@@ -243,7 +242,7 @@ export class SherpaCalendar extends SherpaElement {
    * TRAP T-calendar-anchors-where-the-data-is — anywhere else opens on a grid
    * of disabled cells.
    */
-  #availableAnchor(): Temporal.PlainDate | null {
+  #availableAnchor(): PlainDateLike | null {
     const days = this.#availableDays();
     if (!days?.size) return null;
     let latest = '';
@@ -295,7 +294,7 @@ export class SherpaCalendar extends SherpaElement {
    * Stamp one month's cells, starting at `column` (1 or 9 in the shared
    * 15-track grid) — so every cell must state its own column and row.
    */
-  #stampMonth(grid: HTMLElement, month: Temporal.PlainYearMonth, column: number): void {
+  #stampMonth(grid: HTMLElement, month: PlainYearMonthLike, column: number): void {
     // ISO weekdays run Monday 1 to Sunday 7, so column 1 is Monday, as in Figma's header.
     const firstWeekday = month.toPlainDate({ day: 1 }).dayOfWeek - 1;
     const { min, max, days } = this.#limits();
@@ -380,7 +379,7 @@ export class SherpaCalendar extends SherpaElement {
     const { year } = this.#shown;
     grid.replaceChildren();
     for (let i = 0; i < 12; i++) {
-      const month = Temporal.PlainYearMonth.from({ year, month: i + 1 });
+      const month = plainYearMonth({ year, month: i + 1 });
       const cell = this.#cell();
       cell.textContent = monthName(i + 1, 'short');
       // 0-based, as it always was.

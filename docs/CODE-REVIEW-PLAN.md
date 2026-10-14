@@ -1,8 +1,8 @@
 # The code review: a plan for Will to review
 
 TODO 242. Written 2026-10-14, then updated the same day with Will's rulings.
-**Phase 0 is done. The rest waits on Will's review of this version, and on the
-three questions in §0.2.**
+**Ruled and under way.** Phase 0 is done, and so is 255 (§0.3); the work is
+TODO rows 256–296.
 
 Will, 2026-10-14: *"Now is the time to do a thorough code review of all of the
 components. … Plan all of this in a markdown for review before starting."*
@@ -32,13 +32,39 @@ doors stay**". So this review deletes no public door without a new yes. Where a
 job has many doors, the docs name ONE, and the others become one-line calls
 into it.
 
-### 0.2 Three new questions, from how far the rulings reach
+### 0.2 Three questions the rulings raised — ✅ answered
 
 | # | Question | A | B | My pick |
 |---|---|---|---|---|
 | Q1 | **`starter/`, `npx sherpa-ui init` and the MCP's `scaffold_app`** are an app template inside sherpa-ui. Its one Context is `records` (D4) | A: move them to their own sibling project, which the MCP's `scaffold_app` reads from | B: keep them. A template is not a constructed app | **A**. A template with app content is the nearest thing to an app inside the library |
 | Q2 | **sherpa-ui's hook runs `check:usage` on `../Sherpa Demos`.** So the library knows a consumer (D4) | A: Demos only. Demos already has its own `check:usage` script, and runs it on its own markup | B: keep it, as you ruled on 2026-10-12, so a rename in sherpa-ui that breaks Demos blocks the sherpa-ui commit | **A**. It reverses your 10-12 ruling, so I name that. A break then shows in Demos' own check, the next time it runs |
 | Q3 | **WebKit in the test matrix**, now that Safari is not a target (D7) | A: keep it. Every iPhone and iPad browser is WebKit, Chrome on iOS too, so "no Safari" would also mean "no iPhone" | B: drop it. The full suites take about one third less time | **A**. The iPhone point is the reason. If you never target an iPhone, B |
+
+**✅ Will, 2026-10-14:** Q1 **A**, Q2 **A**, Q3 **A** — *"We don't
+specifically target iPhone but I'd like Sherpa to work for mobile browsers
+(except Safari)."* So the starter leaves (Phase 2), the hook stops checking
+Demos (Phase 2), WebKit stays in the tests, and a phone check joins them
+(Phase 7).
+
+### 0.3 One small choice, from Q3 — ✅ ruled, and done (TODO 255)
+
+**On iOS every browser is WebKit inside — Chrome and Firefox too.** So what
+Safari lacks, every iPhone browser lacks: today, `Temporal`, so the calendar
+fails on all of them. Android is fine.
+
+- **A:** keep D7. The calendar waits for WebKit to ship `Temporal` (Safari's
+  preview has it behind a flag).
+- **B:** D7's other option: the calendar's date code on `Date` + `Intl`, which
+  every engine has.
+
+My pick: **A**. Only the calendar is affected, and mobile is not iPhone first.
+If an iPhone user meets the calendar before WebKit ships it, B.
+
+**✅ Will, 2026-10-14:** *"Let's support a fallback in the Calendar for iPhone
+browsers but use Temporal as the default date and time model for Sherpa."*
+Done: `src/core/ui/temporal.ts` is the one door to dates — `Temporal` where the
+engine has it, a small stand-in over `Date` and `Intl` where it has not.
+`T-temporal-is-the-date-model`.
 
 ---
 
@@ -148,7 +174,7 @@ A refactor deletes what it replaced. One commit per area.
 
 | Area | Delete |
 |---|---|
-| **Out of sherpa-ui (D4)** | The stored-data shims: `adoptOldFilters` + `OLD_PREFIX`; View `readings`/`edits` from before 197 and 105; `readingRows`' legacy branch; `readingsOf`; the favourites no-key migration; the `SavedView.snapshot` paths (`onViewPicked` carry, `saveViewAs`); `search-change`'s `detail.search`. Comments that describe Demos' data ("the Dashboard's still use it"). The docs that point at Demos as THE reference (CLAUDE.md 8 lines, TRAPS 25, APP-GUIDE 2, the MCP README): each rule is stated in Sherpa's own terms, and the example goes in the gallery. `starter/` and the hook's `check:usage` of Demos, if Q1 and Q2 are A |
+| **Out of sherpa-ui (D4)** | The stored-data shims: `adoptOldFilters` + `OLD_PREFIX`; View `readings`/`edits` from before 197 and 105; `readingRows`' legacy branch; `readingsOf`; the favourites no-key migration; the `SavedView.snapshot` paths (`onViewPicked` carry, `saveViewAs`); `search-change`'s `detail.search`. Comments that describe Demos' data ("the Dashboard's still use it"). The docs that point at Demos as THE reference (CLAUDE.md 8 lines, TRAPS 25, APP-GUIDE 2, the MCP README): each rule is stated in Sherpa's own terms, and the example goes in the gallery. `starter/`, `npx sherpa-ui init` and the MCP's `scaffold_app` move to their own sibling project (Q1). The hook stops checking Demos; `check-usage.mjs` ships as a consumer tool, `npx sherpa-ui check-usage <folder>`, which Demos runs on itself (Q2) |
 | Filter names | `custom`/`conditions` in `filter-kind.ts`, `OLD_KINDS`, `advancedOf` reading 3 keys; chip `kind === 'custom'`; menu `OLD_OPT_INS`, `OLD_MODES`, 4 old attributes in `observed`, `#enforceMode`; menu CSS for `data-conditional`/`data-conditions-only`; `kind: 'values'`; the panel's `picked` alias of `values`; the old name `T-saved-filters-are-the-custom-section` |
 | Data API | `FieldDeclaration.custom`; `persistViewState`; `IdbValidationError`; `restViewRemote`; `MADE_UP`; `VIEW_SCOPE`, the same value as `VIEW`. The 22 exports only tests call are each checked: a real consumer door stays, and the rest go internal |
 | Component aliases | list-item `data-heading`; app-header `data-title`; toast `data-message` (its own `show()` still writes it); chat-message's three alias props; progress-bar `data-value` beside native `value`; list `bordered`; nav `NavItem` and the old `NavEntry[]` form; notifications `title`; metric `name`; file-upload's extra `files-change` event |
@@ -241,7 +267,7 @@ one imported helper or one family sheet.
 | Tech | Where | Verdict |
 |---|---|---|
 | `npx --yes serve`, unpinned and downloaded on each run | the starter's `start`, `preview`, Playwright's webServer | **Replace** with about 30 lines of `node:http` as `sherpa-ui serve`, so nothing downloads at run time |
-| `Temporal` | the calendar | **Kept (D7).** README and APP-GUIDE say so: the calendar needs `Temporal`, which Safari does not have yet. No polyfill |
+| `Temporal` | dates, through `core/ui/temporal.ts` | **Sherpa's date model (255).** Where an engine has none — every iOS browser — a small stand-in of ours answers instead. No polyfill. README and APP-GUIDE say so |
 | The "Inter" font | named in `tokens.css`, loaded nowhere | My default: say it in README and APP-GUIDE (the app loads Inter if it wants it; `system-ui` is the fallback). Tell me if you want the font shipped instead |
 | Tooling shipped in `sherpa-ui` only for `sherpa-ui-mcp` | `scripts/lib/generation/`, `contract-io.mjs` (which imports `js-yaml`, a package `sherpa-ui` does not declare), the stale rules doc | **Move** it into the MCP package |
 | 66 `.html` + component `.css` in `dist/` (about 428 KB) | already inlined into the JS by the build | **Stop shipping** them, after a check that nothing reads them from `dist/` |
@@ -264,8 +290,12 @@ one imported helper or one family sheet.
 - **Limit** `@types/node` to the scripts, so Node types stop leaking into the
   browser source.
 - **Say the browser floor** in `package.json` (`engines`, and a browserslist
-  that tells the truth): Chromium and Firefox, and WebKit by Q3. Today it says
-  Safari 17.2.
+  that tells the truth): Chromium and Firefox, desktop and mobile, and WebKit
+  in the tests (Q3). Safari itself is not a target. Today it says Safari 17.2.
+- **A phone check (Q3).** Every test runs at a desktop size today. A Playwright
+  project at a phone size, with touch, on Chromium (Android), runs a small set:
+  the shell and the nav as a menu, a dialog, a menu, a filter bar, and the
+  grid's scroll. It is kept small, because you set the test time.
 
 **Platform features to adopt.** Each gets a check in every engine we test,
 with the longhand first where needed (`T-a-css-function-needs-its-longhand-first`):
@@ -421,7 +451,7 @@ records it where one exists.
 | 9 | **6** data layer | the bench first, then the split | L |
 | 10 | **8.1, 8.2, 8.4, 8.5** docs and the manifest | written last, about the code as it ends up | M |
 
-- Each item is a TODO row (255 and on) and one commit. The hook's 12 gates run
+- Each item is a TODO row (256–296) and one commit. The hook's 12 gates run
   on each commit.
 - One line of work at a time: one `dist/`, fixed test ports. Agents only plan
   and explore in parallel.
@@ -435,7 +465,7 @@ records it where one exists.
 - 170 (when you say), 223 (deferred), and 76, 77, 78 (later).
 - Framework fixtures, adapters and typings.
 - Anything about a constructed app (D4).
-- Safari support for the calendar (D7).
+- Safari as a target (D7); iOS browsers are covered by 255's stand-in.
 - Publishing and pushing.
 - The Figma-side rename (queued in TODO).
 - Any rename that is not in the approved lexicon.

@@ -233,7 +233,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 59 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
 | ⬜ | 60 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | | | | **L — The code review** | |
-| ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; D1–D7 ruled, waits on Will's review of the update and Q1–Q3 | explore |
+| ✅ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`, ruled; its work is rows 256–296 | explore |
 | ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
 | ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
 | ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
@@ -246,6 +246,48 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61j | 252 | The calendar calls `Temporal`, which Safari does not have yet — KEPT, by Will's D7 | bug |
 | ✅ | 61k | 253 | BUG: nav-item's search highlight carries its own colour in TS, where `lint:css` cannot see it | bug |
 | ✅ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — KEPT, by Will | design |
+| ✅ | 61m | 255 | The calendar on an iPhone: every iOS browser is WebKit, so none has `Temporal` — a stand-in where it is missing | bug |
+| ⬜ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
+| ⬜ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
+| ⬜ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
+| ⬜ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
+| ⬜ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
+| ⬜ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
+| ⬜ | 62.07 | 262 | Phase 7 — the MCP's tooling moves into the MCP package; `dist/` stops shipping the inlined `.html` and `.css` | package |
+| ⬜ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
+| ⬜ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
+| ⬜ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
+| ⬜ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
+| ⬜ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
+| ⬜ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
+| ⬜ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
+| ⬜ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
+| ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
+| ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
+| ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
+| ⬜ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
+| ⬜ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
+| ⬜ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
+| ⬜ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
+| ⬜ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
+| ⬜ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
+| ⬜ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
+| ⬜ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
+| ⬜ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
+| ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
+| ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
+| ⬜ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
+| ⬜ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
+| ⬜ | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| ⬜ | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
+| ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
+| ⬜ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
+| ⬜ | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ⬜ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
+| ⬜ | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
+| ⬜ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
+| ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -5948,6 +5990,34 @@ The plan is updated with each, and with three questions their reach raised:
 **❓ Q1** the starter out of sherpa-ui (my pick A, yes); **❓ Q2** the hook's
 check of Demos moves to Demos (my pick A, yes); **❓ Q3** WebKit stays in the
 tests, for the iPhone (my pick A, keep).
+
+**✅ Will, 2026-10-14: Q1 A, Q2 A, Q3 A** — *"We don't specifically target
+iPhone but I'd like Sherpa to work for mobile browsers (except Safari)."* The
+plan is ruled; its work is rows 256–296, in the plan's order. One small choice
+it raised is 255.
+
+### `[x]` ✅ 255 — The calendar on an iPhone
+
+On iOS every browser is WebKit inside — Chrome and Firefox too — so what Safari
+lacks, every iPhone browser lacks. Today that is `Temporal`, and the calendar
+fails on all of them. Android is fine. Our WebKit tests pass because
+Playwright's WebKit build is newer than Safari.
+
+**❓ Will:** A keep D7 — the calendar waits for WebKit to ship `Temporal`; B
+D7's other option, the calendar's date code on `Date` + `Intl`. My pick: A —
+only the calendar, and mobile is not iPhone first.
+
+**✅ Will, 2026-10-14:** *"Let's support a fallback in the Calendar for iPhone
+browsers but use Temporal as the default date and time model for Sherpa."*
+
+**✅ Done 2026-10-14.** `src/core/ui/temporal.ts` is the one door to dates:
+`Temporal` where the engine has it, and a stand-in over `Date` and `Intl` for
+the part Sherpa uses where it has not — it answers as `Temporal` does (bad text
+throws, fields clamp, days in UTC). The calendar uses it. A node test runs the
+stand-in (Node 24 has no `Temporal`), and a browser test draws the calendar
+with `Temporal` and again with it taken away: the days, months and years match
+in three engines. Before, the calendar threw the moment it was made. +1.5 KB
+per import that holds the calendar. `T-temporal-is-the-date-model`.
 
 ### `[x]` ✅ 243 — A moved component keeps its listeners
 
