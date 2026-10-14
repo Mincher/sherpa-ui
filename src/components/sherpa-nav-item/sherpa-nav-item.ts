@@ -187,11 +187,8 @@ export class SherpaNavItem extends SherpaElement {
     if (this.#highlightStyled || !this.shadowRoot) return;
     this.#highlightStyled = true;
     const sheet = new CSSStyleSheet();
-    // Same tint as the <mark>.
-    sheet.replaceSync(
-      `::highlight(${name}){background-color:var(--sherpa-theme-surface-active-transparent,#c046ff4d);` +
-        `color:var(--sherpa-theme-content-body-base,#0c0b11)}`,
-    );
+    // The <mark>'s tint, declared in the CSS where the lint reads it.
+    sheet.replaceSync(`::highlight(${name}){background-color:var(--_match-surface);color:var(--_match-ink)}`);
     this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
   }
 

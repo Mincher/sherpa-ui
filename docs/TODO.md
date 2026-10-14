@@ -244,7 +244,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
 | ✅ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
 | ❓ | 61j | 252 | BUG: the calendar calls `Temporal`, which Safari does not have yet — waits on D7 | bug |
-| ⬜ | 61k | 253 | BUG: two colour rules escape `lint:css` — line-chart's double alpha, nav-item's highlight sheet in TS | bug |
+| ✅ | 61k | 253 | BUG: nav-item's search highlight carries its own colour in TS, where `lint:css` cannot see it | bug |
+| ❓ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — keep it, or a stronger wash? Waits on Will | design |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6042,6 +6043,29 @@ over the `invoices` grid reloaded `customers`.
 **✅ Done 2026-10-14.** A card reloads the sources of what it holds, as its
 state is theirs; any other ask resolves as every ask does, and an unclear one
 loads nothing. The test failed on the old build.
+
+### `[x]` ✅ 253 — The search tint is declared once, in the CSS
+
+`sherpa-nav-item` builds its `::highlight()` rule in TS, because each row needs
+its own highlight name. That rule carried its own colour — a Theme read
+`lint:css` could not see, and a second token for the purple its `<mark>`
+already paints.
+
+**✅ Done 2026-10-14.** The tint is two private properties in the CSS
+(`--_match-surface`, `--_match-ink`); the `<mark>` and the TS rule both read
+them. A test checks the rule has no colour of its own.
+`T-custom-highlight-not-painted-in-shadow`.
+
+### `[ ]` ❓ 254 — The line chart's area wash
+
+`.area` fills with the series colour, which is already 50% alpha, at
+`opacity: 0.14` — so it draws about 7%. Radial and gauge refuse an opacity on
+that token for this reason. In the other themes the fill and border colours
+differ in HUE, not only alpha, so moving the area onto the border colour
+changes its colour. Figma was not open to read the area's value.
+
+**❓ Will:** A keep today's 7% wash as it is; B give me the Figma value and I
+bind it. My pick: B, once Figma is open — a light read.
 
 ## ✅ Done — the full record
 

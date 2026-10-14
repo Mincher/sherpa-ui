@@ -7875,15 +7875,17 @@ is also the semantic element for a search hit, so assistive tech announces it.
 When the engine gains shadow-DOM highlight painting, (1) lights up for free and
 (2) can be dropped without touching a caller.
 
-The `::highlight()` rule paints the TRANSPARENT ACTIVE purple
-(`--sherpa-theme-surface-active-transparent`, `#c046ff4d`) on
-`--sherpa-theme-content-body-base` (`#0c0b11`) — the same tint as the `<mark>`
-fallback in the CSS, so whichever one the engine paints, the hit looks identical.
+Both paint ONE tint, declared once in the CSS as `--_match-surface` and
+`--_match-ink`. The `::highlight()` rule, built in the TS because its name is
+per row, only reads them. It used to carry its own colour — a Theme read that
+`lint:css` could not see, and a second token for the same purple (2026-10-14).
 
 `onDisconnect` deletes the row's entry so no orphan is left in the
 document-level registry.
 
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `test/e2e/reforged-nav-item.spec.ts`
 
 ### T-hiding-a-series-rescales-the-axis
 

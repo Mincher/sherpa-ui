@@ -217,3 +217,23 @@ test('the tag renders INSIDE the row box, inset by the row padding', async ({ pa
   expect(r.link['height']).toBe(16);
   expect(r.link['radius']).toBe('16px');
 });
+
+test('a search match paints ONE tint: the mark and the row\'s ::highlight() read it from the CSS', async ({ page }) => {
+  // TRAP T-custom-highlight-not-painted-in-shadow
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-nav-item') as HTMLElement & { rendered: Promise<void>; highlight(q: string): void };
+    el.dataset['label'] = 'Home';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.highlight('Ho');
+    const sr = el.shadowRoot!;
+    const mark = sr.querySelector<HTMLElement>('.label mark.match')!;
+    const own = sr.adoptedStyleSheets.flatMap((s) => [...s.cssRules].map((c) => c.cssText)).find((t) => t.includes('::highlight('));
+    return {
+      painted: getComputedStyle(mark).backgroundColor !== 'rgba(0, 0, 0, 0)',
+      // No colour of its own: an engine without the API leaves no rule, and that is fine.
+      highlightReadsTheTint: own === undefined || (own.includes('var(--_match-surface)') && !own.includes('#')),
+    };
+  });
+  expect(r).toEqual({ painted: true, highlightReadsTheTint: true });
+});

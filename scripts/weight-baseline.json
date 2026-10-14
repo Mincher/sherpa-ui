@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 831989,
+    "js": 832002,
     "files": 99,
     "fetched": 214070
   },
@@ -185,7 +185,7 @@
     "fetched": 0
   },
   "components/sherpa-nav-item/sherpa-nav-item.js": {
-    "js": 220685,
+    "js": 220698,
     "files": 9,
     "fetched": 0
   },
@@ -195,7 +195,7 @@
     "fetched": 0
   },
   "components/sherpa-nav/sherpa-nav.js": {
-    "js": 252015,
+    "js": 252028,
     "files": 12,
     "fetched": 0
   },
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 951858,
+    "js": 951871,
     "files": 129,
     "fetched": 214070
   }
