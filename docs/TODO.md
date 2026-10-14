@@ -259,7 +259,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
 | ✅ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
 | ⬜ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
-| ⬜ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
+| ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ⬜ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ⬜ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
@@ -6359,6 +6359,17 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 268 — Phase 2: the hook stops checking Demos (Q2)
+
+Will, Q2: A. sherpa-ui's hook ran `check:usage` on `../Sherpa Demos`, so the
+library knew a consumer. **✅ Done 2026-10-14.** The hook's block and the
+`check:usage` script are gone. The checker SHIPS as a consumer tool,
+`npx sherpa-ui check-usage <folder>`, defaulting to the folder it runs in; its
+command line is one `checkUsage()`, which the bin and the script share. Demos'
+`npm test` runs it first (Demos `687869e`), so a library rename that breaks
+Demos still shows — in Demos. A unit test runs the command on a typo and on
+clean markup. `T-markup-is-checked-against-the-spec`.
 
 ## ✅ Done — the full record
 

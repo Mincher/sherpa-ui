@@ -59,6 +59,7 @@
     "docs/APP-GUIDE.md",
     "docs/DATA-SOURCE-RULES.md",
     "docs/DEF-TO-FIGMA-BUILD-RULES.md",
+    "scripts/check-usage.mjs",
     "bin/",
     "starter/"
   ],
@@ -87,7 +88,6 @@
     "check:mcp": "node scripts/check-mcp-tools.mjs",
     "check:ownership": "node scripts/check-ownership.mjs",
     "check:props": "node scripts/check-props.mjs",
-    "check:usage": "node scripts/check-usage.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:weight": "node scripts/check-weight.mjs",
     "map": "node scripts/code-map.mjs",

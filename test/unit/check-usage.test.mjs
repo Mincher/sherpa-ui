@@ -11,6 +11,8 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { usageProblems } from '../../scripts/check-usage.mjs';
 
 test('a typo, a wrong value and an unknown tag are said; the project\'s own hook and a placement are not', () => {
@@ -32,6 +34,22 @@ test('a typo, a wrong value and an unknown tag are said; the project\'s own hook
       'app/page.html:3  <sherpa-slider data-type="ranged"> — it takes "single", "range"',
       'app/page.html:4  <sherpa-buton> is no Sherpa component',
     ]);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test('an app runs it on itself: `npx sherpa-ui check-usage <folder>` fails on a typo, passes on clean markup', () => {
+  const project = mkdtempSync(join(tmpdir(), 'sherpa-usage-cli-'));
+  const run = () => spawnSync(process.execPath, [fileURLToPath(new URL('../../bin/sherpa-ui.mjs', import.meta.url)), 'check-usage', project], { encoding: 'utf8' });
+  try {
+    mkdirSync(join(project, 'app'));
+    writeFileSync(join(project, 'app', 'page.html'), '<sherpa-button data-lable="Save"></sherpa-button>');
+    const bad = run();
+    writeFileSync(join(project, 'app', 'page.html'), '<sherpa-button data-label="Save"></sherpa-button>');
+    const good = run();
+    assert.deepEqual([bad.status, /data-lable/.test(bad.stderr)], [1, true]);
+    assert.deepEqual([good.status, /1 tags .* match their specs/.test(good.stdout)], [0, true]);
   } finally {
     rmSync(project, { recursive: true, force: true });
   }

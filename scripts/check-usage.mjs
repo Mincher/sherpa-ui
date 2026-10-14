@@ -5,7 +5,7 @@
  * any component carries, and an enum takes the value written. TODO 195.
  * TRAP T-markup-is-checked-against-the-spec
  *
- *   node scripts/check-usage.mjs [project]     default ../Sherpa Demos
+ *   npx sherpa-ui check-usage [folder]     default: the folder it runs in
  *
  * The project names its own hooks in `sherpa-usage.json`:
  *   { "markup": ["app"], "own": { "sherpa-button": ["data-by"] } }
@@ -13,6 +13,7 @@
  * Map:
  * - EVERYWHERE — attributes any component may carry: set by an ancestor or a parent, or read by the base class or a helper
  * - usageProblems — every problem in one project's markup, and how many tags it checked
+ * - checkUsage — check one project and say so; the exit code it should end with
  */
 import { existsSync, globSync, readFileSync, realpathSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -77,19 +78,26 @@ export function usageProblems(project) {
   return { problems, tags };
 }
 
-// By REAL path: run through a linked node_modules/sherpa-ui, the two differ.
-if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
-  const project = resolve(process.argv[2] ?? join(UI, '..', 'Sherpa Demos'));
+/** Check one project and say so; the exit code it should end with. An app runs
+ *  it on itself — Sherpa knows no app (Will, Q2). */
+export function checkUsage(folder = '.') {
+  const project = resolve(folder);
   if (!existsSync(project)) {
-    console.log(`check-usage: no ${project} — nothing to check`);
-    process.exit(0);
+    console.error(`check-usage: no ${project}`);
+    return 1;
   }
   const { problems, tags } = usageProblems(project);
   for (const p of problems) console.error(`  ✗ ${p}`);
   if (problems.length) {
     console.error(`\ncheck-usage: ${problems.length} problem(s). A typo or a renamed attribute does nothing and says nothing.`);
     console.error('Fix the markup, or list a project\'s own hook in its sherpa-usage.json "own".');
-    process.exit(1);
+    return 1;
   }
   console.log(`check-usage: ${tags} tags in ${project.split('/').at(-1)} match their specs`);
+  return 0;
+}
+
+// By REAL path: run through a linked node_modules/sherpa-ui, the two differ.
+if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
+  process.exit(checkUsage(process.argv[2]));
 }

@@ -2,7 +2,8 @@
 /**
  * sherpa-ui — `sherpa-ui init <folder>`: a new app from the starter, one
  * folder with no build; `sherpa-ui serve [folder] [--port N]`: serve a folder,
- * so nothing is downloaded to run one. No dependencies.
+ * so nothing is downloaded to run one; `sherpa-ui check-usage [folder]`: its
+ * markup against the component specs. No dependencies.
  * TRAP T-a-starter-is-one-folder · TRAP T-nothing-downloads-to-serve
  *
  * Map:
@@ -78,7 +79,11 @@ export function serve(folder = '.', { port = 4000, host = 'localhost' } = {}) {
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const [command, ...rest] = process.argv.slice(2);
-  if (command === 'serve') {
+  if (command === 'check-usage') {
+    // TRAP T-markup-is-checked-against-the-spec
+    const { checkUsage } = await import('../scripts/check-usage.mjs');
+    process.exit(checkUsage(rest[0]));
+  } else if (command === 'serve') {
     const at = rest.indexOf('--port');
     const port = at >= 0 ? Number(rest[at + 1]) : 4000;
     const folder = rest.find((a, i) => !a.startsWith('--') && rest[i - 1] !== '--port') ?? '.';
@@ -90,7 +95,8 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     const [folder] = rest;
     if (command !== 'init' || !folder) {
       console.log('Usage:\n  npx sherpa-ui init <folder>     a new Sherpa UI app: one folder, no build\n'
-        + '  npx sherpa-ui serve [folder]    serve a folder on localhost (--port N, default 4000)');
+        + '  npx sherpa-ui serve [folder]    serve a folder on localhost (--port N, default 4000)\n'
+        + '  npx sherpa-ui check-usage [folder]   check its markup against the component specs');
       process.exit(command ? 1 : 0);
     }
     try {

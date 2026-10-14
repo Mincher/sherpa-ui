@@ -16065,10 +16065,15 @@ Allowed everywhere: the token cascades (`data-status`, `data-look`…), the
 attributes a PARENT reads from its children (`data-col-span`, `data-grow`…),
 and the base class's `data-source` and `data-scope`. A project's own hooks
 are listed in its `sherpa-usage.json` `"own"`, so each is a choice, never an
-accident. sherpa-ui's hook runs it on `../Sherpa Demos` when that folder is
-there, and Demos runs it in its node tests.
+accident.
+
+**An app runs it on itself**: `npx sherpa-ui check-usage <folder>`, which
+ships in the package. sherpa-ui's hook ran it on `../Sherpa Demos` until
+2026-10-14; Sherpa knows no app (Will, Q2), so Demos runs it first in its own
+`npm test` now.
 
 - Site: `scripts/check-usage.mjs`
+- Site: `bin/sherpa-ui.mjs`
 - Site: `test/unit/check-usage.test.mjs`
 
 ### T-a-detail-is-typed-by-the-checker
