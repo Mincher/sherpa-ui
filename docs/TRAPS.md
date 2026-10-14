@@ -15102,7 +15102,8 @@ at once and has nothing to apply.
 
 **Step 6 of the Query moves the rule into the data layer.** Apply is only for
 a REMOTE fetch (Will, 2026-09-26), and remote is a fact about the STORE
-(`store.remote`; `spoofRemote()` makes one for now). Over a remote store the
+(`store.remote`: `RestStore` says so, and `spoofRemote()` makes any store
+act remote — before 2026-10-14 only `spoofRemote()` did). Over a remote store the
 source keeps a DRAFT Query beside the applied one: every write lands in the
 draft, the rows wait, and `commit(scope?)` sends it; `discard(scope?)` puts
 the applied answers back and draws them. `pending(field)` and `dirty(scope?)`
@@ -15115,8 +15116,10 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/spoof-remote.ts`
 - Site: `src/core/data/store.ts`
+- Site: `src/core/data/stores.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/query.test.mjs`
+- Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `src/core/ui/bind-source.ts`

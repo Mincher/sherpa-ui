@@ -241,6 +241,8 @@ export interface RestStoreOptions extends StoreOptions {
  * TRAP T-rest-update-is-patch-not-put
  */
 export class RestStore extends BaseStore {
+  /** Its loads leave the data layer: its source keeps a draft. TRAP T-apply-and-discard-wait-for-a-change */
+  readonly remote = true;
   /** The endpoint, and how its query parameters are spelled. */
   #options: RestStoreOptions;
 

@@ -794,6 +794,17 @@ test('RestStore sends the query to the server and trusts the answer', async () =
   }
 });
 
+test('a RestStore is REMOTE: a source over it keeps a draft for Apply, never live', async () => {
+  // Only spoofRemote said so before 2026-10-14. TRAP T-apply-and-discard-wait-for-a-change
+  const { RestStore } = await import('../../dist/core/data/stores.js');
+  const { DataSource } = await import('../../dist/core/data/data-source.js');
+  const store = new RestStore({ url: 'https://api.test/customers', key: 'id' });
+  const source = new DataSource({ store, applyOn: 'input' });
+  assert.equal(store.remote, true);
+  assert.equal(source.remote, true);
+  assert.equal(source.applyOn, 'change');
+});
+
 test('a custom buildQuery is the seam a backend translator plugs into', async () => {
   const { RestStore } = await import('../../dist/core/data/stores.js');
 

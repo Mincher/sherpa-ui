@@ -237,7 +237,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
 | ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
 | ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
-| ⬜ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
+| ✅ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
 | ⬜ | 61e | 247 | BUG: `skipWhen` never guards an empty slot — container-header's icon, toast's heading, gauge's caption | bug |
 | ⬜ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
 | ⬜ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
@@ -5977,6 +5977,15 @@ the last look and no longer does — never a view only IndexedDB holds (from the
 server, or one Web Storage had no room for). A push waits for that write. The
 test failed on the old build in three engines. Nothing outside tests calls
 `syncViews` yet. `T-local-first-then-onward`.
+
+### `[x]` ✅ 246 — A `RestStore` is remote
+
+Only `spoofRemote()` said `remote: true`, so a source over a real HTTP store
+applied every pick live: no draft, no Apply, and a full request per move.
+
+**✅ Done 2026-10-14.** `RestStore` says `remote = true`, so its source keeps a
+draft for Apply and is never live. A unit test holds it.
+`T-apply-and-discard-wait-for-a-change`.
 
 ## ✅ Done — the full record
 
