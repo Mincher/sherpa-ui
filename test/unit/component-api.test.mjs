@@ -21,7 +21,8 @@ test('component_api names the data populate() takes and every slot', async () =>
   assert.match(button, /populate\(\{ [^}]*label\?[^}]*\}\)/);
   const dialog = (await api({ name: 'sherpa-dialog' })).content[0].text;
   assert.match(dialog, /### Slots \(3\)/);
-  assert.match(dialog, /- `\(default\)` — the dialog body/);
+  // Each slot says what it takes. TRAP T-a-slot-says-what-it-accepts
+  assert.match(dialog, /- `\(default\)` — accepts content — the dialog body/);
   const chart = (await api({ name: 'sherpa-barchart' })).content[0].text;
   assert.match(chart, /populate\(\[\{ label, value, colorIndex\? \}\]\)` — the bars/);
 });

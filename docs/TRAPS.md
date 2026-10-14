@@ -254,6 +254,7 @@ FORWARDED slot (`<slot name="icon" slot="icon">`) is a slot a page fills too,
 so it says what it takes. A new word is added to both, on purpose.
 
 - Site: `scripts/generate-component-spec.mjs`
+- Site: `test/unit/component-api.test.mjs`
 
 ### T-private-state-is-a-custom-state
 
