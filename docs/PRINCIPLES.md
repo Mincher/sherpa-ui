@@ -164,13 +164,14 @@ for 1,234 — fixed, they now show the value in full while the axis still
 compacts), **B7** (clicking an indeterminate group box selects all 24 rows and
 the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 (`def.range ?? def.kind === 'number'`), **5** (Add Customer calls
-`store.insert`).
+`store.insert`). And **2**, verified 2026-10-14: on Records, scrolled 300px
+sideways, the selection column keeps its pin and its place through a header
+filter change — all 27 of its cells.
 
 | | |
 |---|---|
 | **0** | No chart is keyboard-reachable |
 | **1** | Bundle the toolbar + pagination INTO `sherpa-data-grid` |
-| **2** | Pinned columns — an app-header filter change unpins the selection column |
 | **3** | Sparkline sub-pixel gaps |
 | **4** | App header — another design-review pass |
 
