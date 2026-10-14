@@ -811,3 +811,43 @@ test('an unpicked calendar anchors to its available days, not to today', async (
   // Without availability nothing changes: today, as it always was.
   expect(r.plainLabel).toBe(r.thisMonth);
 });
+
+/* TWO MONTHS, ONE LINE of day names. The second month's captions were shown
+   with `display: block`, which beat the shared `inline-flex` that centres each
+   in its 32px row, so they sat 6px high; and the width floor counted seven
+   tracks, not fifteen, so every caption crowded its neighbour. TODO 297 */
+test('a range calendar: both months\' day names on one line, each over its own column, 32px apart', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<button id="t">t</button><sherpa-menu id="m" data-type="calendar" data-heading="Created">'
+      + '<sherpa-calendar data-embedded data-type="range" data-value-start="2024-02-10"></sherpa-calendar></sherpa-menu>';
+    const menu = document.getElementById('m') as HTMLElement & { rendered: Promise<void>; show(t: HTMLElement): void };
+    const cal = menu.querySelector('sherpa-calendar') as HTMLElement & { rendered: Promise<void> };
+    await menu.rendered;
+    await cal.rendered;
+    menu.show(document.getElementById('t')!);
+    await window.__settled();
+    const sr = cal.shadowRoot!;
+    // The TEXT, not the span: the span's box was right; its words sat 6px high.
+    const caps = [...sr.querySelectorAll<HTMLElement>('.cal-weekdays span:not(.wd-gap)')].map((s) => {
+      const range = document.createRange();
+      range.selectNodeContents(s);
+      return range.getBoundingClientRect();
+    });
+    // The first full week: the second Monday of each month's grid, by date.
+    const cell = (iso: string) => sr.querySelector<HTMLElement>(`[data-iso="${iso}"]`)!.getBoundingClientRect();
+    const week = ['2024-02-05', '2024-02-06', '2024-02-07', '2024-02-08', '2024-02-09', '2024-02-10', '2024-02-11',
+      '2024-03-04', '2024-03-05', '2024-03-06', '2024-03-07', '2024-03-08', '2024-03-09', '2024-03-10'].map(cell);
+    const mid = (b: DOMRect) => Math.round(b.left + b.width / 2);
+    return {
+      count: caps.length,
+      tops: [...new Set(caps.map((b) => Math.round(b.top)))],
+      narrowest: Math.min(...week.map((b) => b.width)),
+      offCentre: Math.max(...caps.map((b, i) => Math.abs(mid(b) - mid(week[i]!)))),
+    };
+  });
+  expect(r.count).toBe(14);
+  expect(r.tops).toHaveLength(1);
+  expect(r.narrowest).toBeGreaterThanOrEqual(31.9);
+  expect(r.offCentre).toBeLessThanOrEqual(1);
+});

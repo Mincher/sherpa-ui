@@ -80,6 +80,10 @@
 .cal-days[data-two-up],
 .cal-weekdays[data-two-up] {
   grid-template-columns: repeat(15, 1fr);
+  /* The floor is FIFTEEN 32px tracks here, or the captions crowd. TODO 297 */
+  min-inline-size: calc(
+    15 * var(--sherpa-display-mode-size-2xl, 32px) + 2 * var(--sherpa-theme-padding-md, 8px)
+  );
 }
 
 /* The divider is drawn on the grid, not as a cell, so it spans every row
@@ -100,7 +104,7 @@
 
 /* The second month's captions, and the spacer holding the divider track open. */
 .cal-weekdays :is(.wd-2, .wd-gap) { display: none; }
-.cal-weekdays[data-two-up] :is(.wd-2, .wd-gap) { display: block; }
+.cal-weekdays[data-two-up] :is(.wd-2, .wd-gap) { display: inline-flex; } /* as every caption: centred in its row */
 .cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 

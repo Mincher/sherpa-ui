@@ -288,7 +288,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ⬜ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
-| ⬜ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
+| ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6243,10 +6243,21 @@ then drops only prefixes no target needs (`-moz-column-gap`, `-moz-fit-content`,
 `-moz-max-content`, `-moz-user-select`, most `-webkit-appearance`) and keeps
 the ones iOS still needs (`-webkit-user-select`, `-webkit-mask-*`).
 
-### `[ ]` ⬜ 297 — BUG: the calendar's header content is misaligned
+### `[x]` ✅ 297 — BUG: the calendar's header content is misaligned
 
 Will, 2026-10-14: *"Bug; The Calendar header content has become misaligned at
 some point. Address when suitable."*
+
+Measured in a menu: in a RANGE calendar the second month's day names sat 6px
+above the first month's, and all fourteen crowded together. The build from
+before 2026-10-14 drew it the same, so it was older.
+
+**✅ Done 2026-10-14.** Two CSS causes. The second month's captions were shown
+with `display: block`, which beat the shared `inline-flex` that centres every
+caption in its 32px row; now they keep `inline-flex`. And the width floor
+counted SEVEN 32px tracks, so fifteen tracks shrank to 29px; a two-month grid
+now floors at fifteen. A test reads each caption's TEXT (its box was already in
+place) and each column's width; it failed on the old CSS both ways.
 
 ## ✅ Done — the full record
 

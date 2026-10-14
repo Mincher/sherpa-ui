@@ -354,7 +354,7 @@
   "src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.css": 70,
   "src/components/sherpa-button/sherpa-button.css": 214,
   "src/components/sherpa-calendar-cell/sherpa-calendar-cell.css": 91,
-  "src/components/sherpa-calendar/sherpa-calendar.css": 214,
+  "src/components/sherpa-calendar/sherpa-calendar.css": 218,
   "src/components/sherpa-callout/sherpa-callout.css": 79,
   "src/components/sherpa-chart-legend/sherpa-chart-legend.css": 125,
   "src/components/sherpa-chat-message/sherpa-chat-message.css": 137,
