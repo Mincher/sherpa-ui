@@ -3,7 +3,6 @@
  * TRAP T-a-made-up-key-never-leaves-the-data-layer
  *
  * Map:
- * - MADE_UP — What every key the data never had starts with.
  * - rowKey — The key a row goes by, or undefined for a row nothing has keyed.
  * - keyRow — Key a row: its own value, one it carries, or one made up.
  * - carryKey — A copy of a row goes by the original's key.
@@ -14,7 +13,7 @@
 const keys = new WeakMap<object, string>();
 
 /** What every key the data never had starts with. */
-export const MADE_UP = 'sherpa:';
+const MADE_UP = 'sherpa:';
 
 // One per page load, so an old made-up key can never name a new row.
 const LOAD = `${MADE_UP}${Math.random().toString(36).slice(2, 8)}:`;

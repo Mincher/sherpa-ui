@@ -6376,6 +6376,20 @@ tests and one doc example moved to `advanced`. `T-a-renamed-attribute-keeps-its-
 is `T-a-rename-drops-the-old-name`, with a was/now table for an app;
 `T-saved-filters-are-the-custom-section` is `T-saved-filters-are-the-last-section`.
 
+**✅ Data API, 2026-10-14.** Gone: `persistViewState` (a deprecated subset of
+`persistView`), `IdbValidationError` (an alias of `ValidationError`),
+`restViewRemote` and its options (no user), and `VIEW_SCOPE` (a second name
+for `VIEW`, which is exported). `FieldDeclaration.custom` went with the filter
+names. Of the exports only tests called, the doors stay — the stores,
+`HttpError`, `syncViews`, `searchRows`, `durationSpan`, `applyViewSnapshot`,
+`captureView`, `clearViewState`, `issuesFor`, `datumValue`, the chart
+aggregates, `CONDITION_BADGE`, `conditionLines`, `checkViewMarkup`,
+`useTemplate`, `createContext` and every component class — and seven go off
+the entry point: `MADE_UP` (now private), `isSchema`, `savedReading` and the
+allow-list's `isAllowed`, `allowKey`, `unknownEntries` and `nextState`. Their
+tests import the module. Four of those seven, and `bindGroupedGrid`, have no
+caller in `src/`: 270's dead-code pass decides them.
+
 ### `[x]` ✅ 267 — Phase 2: the starter is its own project (Q1)
 
 Will, Q1: A. `starter/`, `npx sherpa-ui init` and the MCP's `scaffold_app`

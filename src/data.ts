@@ -78,7 +78,7 @@ export {
 } from './core/data/stores.js';
 // A row's key, kept beside it: its own, or one the data layer made up.
 // TRAP T-a-made-up-key-never-leaves-the-data-layer
-export { MADE_UP, carryKey, isMadeUpKey, isStaleKey, rowKey } from './core/data/row-key.js';
+export { carryKey, isMadeUpKey, isStaleKey, rowKey } from './core/data/row-key.js';
 // How a day or a range of days reads, everywhere. TRAP T-a-date-reads-one-way
 export { formatDate } from './core/data/format-date.js';
 // The REAL local store — IndexedDB. Browser-only in behaviour, headless-SAFE to
@@ -87,7 +87,6 @@ export { formatDate } from './core/data/format-date.js';
 // TRAP T-idb-is-the-only-real-local-store.
 export {
   IdbStore,
-  IdbValidationError,
   type IdbStoreOptions,
   // IndexedDB, or memory where there is none, seeded once per seed version.
   localRecords,
@@ -97,16 +96,12 @@ export {
 // TRAP T-local-first-then-onward.
 export {
   syncViews,
-  restViewRemote,
-  type RestViewRemoteOptions,
   type SyncOptions,
   type ViewRemote,
   type ViewSync,
 } from './core/browser/view-sync.js';
 export {
   DataSource,
-  /* The scope above every component. TRAP T-up-is-open-down-is-closed */
-  VIEW_SCOPE,
   type DataChangeDetail,
   type DataSourceOptions,
   type ViewState,
@@ -136,7 +131,7 @@ export {
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
 export {
-  persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
+  persistView, clearViewState, applyViewSnapshot, captureView,
   viewOptions, uniqueViewLabel, onViewPicked,
   loadSavedViews, saveViewAs, deleteSavedView,
   type PersistOptions, type ViewSnapshot, type ApplyReport,
@@ -163,7 +158,6 @@ export {
   domainsOf,
   email,
   issuesFor,
-  isSchema,
   isValid,
   max,
   min,
@@ -220,10 +214,6 @@ export {
    everything is allowed, so nothing that ignores this changes. */
 export {
   allow,
-  isAllowed,
-  allowKey,
-  unknownEntries,
-  nextState,
   type AllowEntry,
   type AllowList,
 } from './core/data/allow.js';
@@ -256,8 +246,6 @@ export {
   /* A field whose picks are ENDS, not a list to tick.
      TRAP T-the-field-type-decides-the-clause */
   isRanged,
-  // A field's answer as it can be SAVED. TRAP T-a-saved-filter-is-its-readings
-  savedReading,
   // A chained clause back as its rows. TRAP T-a-heading-holds-a-whole-reading
   clauseConditions,
   type FieldState,
@@ -278,6 +266,7 @@ export {
    TRAP T-one-query-one-owner */
 export {
   compile,
+  /* The scope above every component. TRAP T-up-is-open-down-is-closed */
   VIEW,
   type Query,
   type QueryDefaults,

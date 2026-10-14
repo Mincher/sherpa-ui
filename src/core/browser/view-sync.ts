@@ -16,8 +16,6 @@
  * - SyncOptions — the page, the remote, and how often to push
  * - ViewSync — What `syncViews` hands back.
  * - syncViews — Keep one page's saved views in three tiers.
- * - RestViewRemoteOptions — the URL and headers a REST remote talks to
- * - restViewRemote — A `ViewRemote` over HTTP — GET to pull, PUT to push.
  */
 import { IdbStore } from './idb-store.js';
 import {
@@ -193,45 +191,4 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
 
   options.signal?.addEventListener('abort', () => { void sync.stop(); }, { once: true });
   return sync;
-}
-
-/* ── A ready-made remote ───────────────────────────────────────────────── */
-
-export interface RestViewRemoteOptions {
-  /** The endpoint. `<url>/<page>` is read and written. */
-  url: string;
-  /** Extra headers — an auth token, most often. */
-  headers?: Record<string, string>;
-  /** Passed to `fetch`, for cookies on a cross-origin endpoint. */
-  credentials?: RequestCredentials;
-}
-
-/** A `ViewRemote` over HTTP — GET to pull, PUT to push. */
-export function restViewRemote(options: RestViewRemoteOptions): ViewRemote {
-  const at = (page: string): string => `${options.url.replace(/\/$/, '')}/${encodeURIComponent(page)}`;
-  const headers = { 'content-type': 'application/json', ...options.headers };
-
-  return {
-    async pull(page: string): Promise<SavedViewStore> {
-      const response = await fetch(at(page), {
-        headers,
-        ...(options.credentials ? { credentials: options.credentials } : {}),
-      });
-      // A 404 means nothing saved yet — the common first run, not an error.
-      if (response.status === 404) return {};
-      if (!response.ok) throw new Error(`view pull failed: ${response.status}`);
-      const body: unknown = await response.json();
-      return body && typeof body === 'object' ? (body as SavedViewStore) : {};
-    },
-
-    async push(page: string, views: SavedViewStore): Promise<void> {
-      const response = await fetch(at(page), {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(views),
-        ...(options.credentials ? { credentials: options.credentials } : {}),
-      });
-      if (!response.ok) throw new Error(`view push failed: ${response.status}`);
-    },
-  };
 }

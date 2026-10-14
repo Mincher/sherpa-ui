@@ -14,7 +14,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, fieldState, savedReading, stateClause } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fieldState, stateClause } from '../../dist/data.js';
+import { savedReading } from '../../dist/core/data/filter-state.js';
 import { kindOf } from '../../dist/core/ui/filter-kind.js';
 
 /** A bar with nothing but what a source hears from it. */

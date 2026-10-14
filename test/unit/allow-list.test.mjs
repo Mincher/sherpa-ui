@@ -17,13 +17,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  allow,
-  isAllowed,
-  allowKey,
-  unknownEntries,
-  nextState,
-} from '../../dist/data.js';
+import { allow } from '../../dist/data.js';
+import { isAllowed, allowKey, unknownEntries, nextState } from '../../dist/core/data/allow.js';
 
 /* ── No list allows everything ──────────────────────────────────────── */
 

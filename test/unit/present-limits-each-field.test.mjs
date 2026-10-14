@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, VIEW_SCOPE } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, VIEW } from '../../dist/data.js';
 
 /** The customers each region holds. */
 const REGION_ORGS = {
@@ -45,7 +45,7 @@ async function setup({ view = {}, data = null, limit = true } = {}) {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), limitOptions: limit });
   await source.declareFromRows(['customer', 'region', 'status']);
   const bar = new Bar(view, ['customer', 'region']);
-  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();
   let grid = null;
   if (data) {
@@ -62,22 +62,22 @@ async function setup({ view = {}, data = null, limit = true } = {}) {
 
 test('off, nothing is limited', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Adventure Works'] } }, limit: false });
-  assert.deepEqual(await source.present(VIEW_SCOPE), {});
+  assert.deepEqual(await source.present(VIEW), {});
 });
 
 test('a Customer pick limits Region; its own answer never limits Customer', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Adventure Works'] } } });
-  const p = sorted(await source.present(VIEW_SCOPE));
+  const p = sorted(await source.present(VIEW));
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA']);
   assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
 });
 
 test('both ways: Region limits Customer, and Customer limits Region', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Contoso'] }, region: { picked: ['LATAM'] } } });
-  const p = sorted(await source.present(VIEW_SCOPE));
+  const p = sorted(await source.present(VIEW));
   assert.deepEqual(p.customer, ['Contoso', 'Tailspin']);
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
-  const q = sorted((await setup({ view: { customer: { picked: ['Tailspin'] } } }).then(({ source: s }) => s.present(VIEW_SCOPE))));
+  const q = sorted((await setup({ view: { customer: { picked: ['Tailspin'] } } }).then(({ source: s }) => s.present(VIEW))));
   assert.deepEqual(q.region, ['AMER', 'LATAM']);
 });
 
@@ -85,7 +85,7 @@ test('two answers that share no rows: the later one stands, the earlier is set a
   const { source } = await setup({ view: { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } } });
   // Region is the later answer: LATAM stands, so every LATAM row shows.
   assert.equal(source.debugState().total, 2);
-  const p = sorted(await source.present(VIEW_SCOPE));
+  const p = sorted(await source.present(VIEW));
   assert.deepEqual(p.customer, ['Contoso', 'Tailspin']);
   // Adventure Works applies nothing, so Region is not limited by it.
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
@@ -96,22 +96,22 @@ test('the View limits a component scope, never the other way round', async () =>
   // Litware's rows are all trials, so the grid's Status offers trial alone.
   assert.deepEqual(sorted(await source.present('data')).status, ['trial']);
   // The grid's own answer narrows nothing the View offers.
-  assert.deepEqual(sorted(await source.present(VIEW_SCOPE)).customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
+  assert.deepEqual(sorted(await source.present(VIEW)).customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
 });
 
 test('a suspended answer limits nothing', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Litware'], suspended: true } } });
-  assert.deepEqual(sorted(await source.present(VIEW_SCOPE)).region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
+  assert.deepEqual(sorted(await source.present(VIEW)).region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
 });
 
 test('each bound bar is drawn what is left in its scope; turned off, it is told nothing is limited', async () => {
   const { source, bar } = await setup({ view: { customer: { picked: ['Litware'] } } });
   await tick(); await tick();
-  assert.deepEqual(bar.drawn.at(-1), { scope: VIEW_SCOPE, present: {
+  assert.deepEqual(bar.drawn.at(-1), { scope: VIEW, present: {
     customer: ['Adventure Works', 'Contoso', 'Litware', 'Tailspin'], region: ['APAC'] } });
   source.limitOptions = false;
   await tick(); await tick();
-  assert.deepEqual(bar.drawn.at(-1), { scope: VIEW_SCOPE, present: {} });
+  assert.deepEqual(bar.drawn.at(-1), { scope: VIEW, present: {} });
 });
 
 test('a store that answers distinct values is asked, not read row by row', async () => {
@@ -125,10 +125,10 @@ test('a store that answers distinct values is asked, not read row by row', async
   const source = new DataSource({ store, limitOptions: true });
   await source.declareFromRows(['customer', 'region']);
   const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);
-  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();
   await source.load();
-  assert.deepEqual(sorted(await source.present(VIEW_SCOPE)).region, ['AMER', 'LATAM']);
+  assert.deepEqual(sorted(await source.present(VIEW)).region, ['AMER', 'LATAM']);
   assert.ok(asked.some((f) => f.includes('region')));
 });
 
@@ -142,7 +142,7 @@ test('a later answer sets aside an earlier pick it rules out; the rows leave it 
   await tick(); await tick();
   assert.equal(source.debugState().total, 7);
   // LATAM is offered: Contoso makes it viable.
-  assert.ok((await source.present(VIEW_SCOPE)).region.includes('LATAM'));
+  assert.ok((await source.present(VIEW)).region.includes('LATAM'));
 
   bar.held = { customer: { picked: ['Adventure Works', 'Contoso'] }, region: { picked: ['LATAM'] } };
   bar.report();
@@ -153,7 +153,7 @@ test('a later answer sets aside an earlier pick it rules out; the rows leave it 
   // The reader's picks are KEPT in the Query.
   assert.deepEqual(source.query.applied.scopes.view.readings.customer.picked, ['Adventure Works', 'Contoso']);
   // And what is left says so: Adventure Works is no longer present.
-  assert.ok(!(await source.present(VIEW_SCOPE)).customer.includes('Adventure Works'));
+  assert.ok(!(await source.present(VIEW)).customer.includes('Adventure Works'));
 
   // Region let go: Adventure Works is back in force.
   bar.held = { customer: { picked: ['Adventure Works', 'Contoso'] } };

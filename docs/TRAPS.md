@@ -6714,9 +6714,8 @@ is waiting on it.
 
 `ViewRemote` is an interface rather than a `RestStore` because a host's view
 endpoint is its own, and the two calls it needs are far narrower than a Store's
-five. `restViewRemote` is a ready-made HTTP one (GET to pull, PUT to push, and a
-404 read as "nothing saved yet") so that every host does not write the same
-twenty lines.
+five. A host writes its own: a ready-made HTTP one, `restViewRemote`, had no
+user and went on 2026-10-14.
 
 - Site: `src/core/browser/view-sync.ts`
 
@@ -12441,9 +12440,8 @@ its own error class — about 43 lines, plus four constructor fields
 `BaseStore` and `StoreOptions` now live in `base-store.ts` and every store
 extends it, including `IdbStore`. `ValidationError` moved to `validate.ts`,
 which owns `Issue` and which both halves already imported.
-`IdbValidationError` is kept as a deprecated ALIAS of the real class, so
-nothing that imported it breaks and an `instanceof` on either name now answers
-true.
+`IdbValidationError` was kept as a deprecated alias of the real class until
+2026-10-14, and went with the other leftovers: catch `ValidationError`.
 
 **The general shape:** a duplicated class is worse than duplicated code,
 because the copy is `instanceof`-incompatible with the original while being
@@ -13845,7 +13843,6 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
@@ -14029,7 +14026,7 @@ this?" would forbid every first filter.
 |---|---|
 | `offer(name, fields)` | a component's own fields. The view needs none |
 | `fields(name)` | its own, or for the view the union of every component's |
-| `canHold(name, field)` | `name === VIEW_SCOPE` or the component has it |
+| `canHold(name, field)` | `name === VIEW` or the component has it |
 | `move(field, from, to)` | ONE call, ONE `scope-change` naming every scope it touched |
 
 **`move()` is one call because the removal is not optional.** Two `hold()`s
@@ -14041,8 +14038,8 @@ the field in both places, or in neither.
 not have changes NOTHING and reports `scope-refused` — see
 `T-a-broken-assumption-reports`.
 
-`VIEW_SCOPE` is `'view'`, the same word as `reach: 'view'`, exported so no
-caller spells it twice.
+`VIEW` is `'view'`, the same word as `reach: 'view'`, exported so no caller
+spells it twice. (`VIEW_SCOPE` was a second name for it, gone 2026-10-14.)
 
 **Raising carries the answer.** Before this, raising Status from the grid gave
 the header an EMPTY, off chip and greyed the grid's, while the rows stayed

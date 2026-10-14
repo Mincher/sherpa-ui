@@ -9,9 +9,9 @@
  *
  * Map:
  * - IdbStoreOptions — which database and store, its indexes, and the version that builds them
- * - IdbStore — Records in IndexedDB — the real local store.
  * - LocalRecordsOptions — an IdbStore's options, and the rows a first run starts with
  * - localRecords — Records kept in this browser: IndexedDB where it has it, memory where not, seeded once per seed version.
+ * - IdbStore — Records in IndexedDB — the real local store.
  */
 import {
   readField,
@@ -22,7 +22,6 @@ import {
   type LoadResult,
   type Row,
 } from '../data/store.js';
-import { ValidationError } from '../data/validate.js';
 // Key, schema guard, totalCount, announce. TRAP T-one-class-to-catch
 import { BaseStore, type StoreOptions } from '../data/base-store.js';
 import { ArrayStore } from '../data/stores.js';
@@ -381,14 +380,6 @@ export class IdbStore extends BaseStore {
   }
 
 }
-
-/**
- * An alias now, not a private copy — an `instanceof ValidationError` used to
- * miss every IndexedDB refusal. TRAP T-one-class-to-catch
- *
- * @deprecated Catch `ValidationError`.
- */
-export { ValidationError as IdbValidationError };
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 

@@ -19,7 +19,6 @@
  * - BoundView — What a bound component is told of the view; `undefined` is none.
  * - BindSink — Where the source sends one bound component's view, rows and pending fields.
  * - DataChangeDetail — What `change` carries, for a listener that wants the result without asking.
- * - VIEW_SCOPE — The scope ABOVE every component — the same word as `reach: 'view'`.
  * - DataSource — ONE owner of how records are viewed: the query, scopes, groups, and binds
  * - .store — the records it reads; a write goes here, a view never does
  * - .timeField — The field holding each record's TIME, or undefined when the store has none.
@@ -350,12 +349,6 @@ export interface BindSink {
 export interface DataChangeDetail extends LoadResult {
   state: ViewState;
 }
-
-/**
- * The scope ABOVE every component — the same word as `reach: 'view'`. Named
- * once, so no caller spells it twice. TRAP T-up-is-open-down-is-closed
- */
-export const VIEW_SCOPE = VIEW;
 
 
 /** Steps a number slider may take. */
@@ -1705,13 +1698,13 @@ export class DataSource extends EventTarget {
    * every component's, because any field may be raised to narrow everything.
    */
   fields(name: string): string[] {
-    if (name === VIEW_SCOPE) return [...new Set([...this.#offers.values()].flat())];
+    if (name === VIEW) return [...new Set([...this.#offers.values()].flat())];
     return [...(this.#offers.get(name) ?? [])];
   }
 
   /** May this scope hold this field? Up is open; down is closed. */
   canHold(name: string, field: string): boolean {
-    return name === VIEW_SCOPE || (this.#offers.get(name) ?? []).includes(field);
+    return name === VIEW || (this.#offers.get(name) ?? []).includes(field);
   }
 
   /**
@@ -1739,11 +1732,11 @@ export class DataSource extends EventTarget {
       scope.holds = scope.holds.filter((f) => f !== field);
       touched.add(name);
     };
-    if (to === VIEW_SCOPE) {
-      for (const name of Object.keys(this.#draft.scopes)) if (name !== VIEW_SCOPE) drop(name);
+    if (to === VIEW) {
+      for (const name of Object.keys(this.#draft.scopes)) if (name !== VIEW) drop(name);
     } else {
-      drop(VIEW_SCOPE);
-      if (from !== VIEW_SCOPE && from !== to) drop(from);
+      drop(VIEW);
+      if (from !== VIEW && from !== to) drop(from);
     }
     const into = this.#scope(to);
     if (!into.holds.includes(field)) into.holds = [...into.holds, field];

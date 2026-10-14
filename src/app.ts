@@ -21,7 +21,7 @@ export {
 export { bindSettings } from './core/ui/bind-settings.js';
 // Saved Views: the reader's own, the View chip's options, a pick applied.
 export {
-  persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
+  persistView, clearViewState, applyViewSnapshot, captureView,
   viewOptions, uniqueViewLabel, onViewPicked,
   loadSavedViews, saveViewAs, deleteSavedView,
   type PersistOptions, type ViewSnapshot, type ApplyReport,
@@ -30,8 +30,6 @@ export {
 } from './core/browser/persist-view.js';
 export {
   syncViews,
-  restViewRemote,
-  type RestViewRemoteOptions,
   type SyncOptions,
   type ViewRemote,
   type ViewSync,

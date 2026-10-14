@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, VIEW_SCOPE } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, VIEW } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, region: 'EMEA', owner: 'Dana' },
@@ -36,10 +36,10 @@ class Bar extends EventTarget {
 async function counts(readings) {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   const bar = new Bar(readings);
-  bindSource(source, bar, { steerOnly: true, scope: VIEW_SCOPE });
+  bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();
   await source.load();
-  return { field: await source.results(VIEW_SCOPE), values: await source.valueResults(VIEW_SCOPE) };
+  return { field: await source.results(VIEW), values: await source.valueResults(VIEW) };
 }
 
 test('two picked values: each counts its own rows, and the header the rows of both', async () => {

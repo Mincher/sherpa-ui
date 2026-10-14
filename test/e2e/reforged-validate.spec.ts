@@ -16,7 +16,7 @@ test('rules() builds a Standard Schema, and reports the first failure per field'
 }) => {
   const r = await page.evaluate(async () => {
     const { rules, required, email, min, number, isValid, isSchema, issuesFor } =
-      (await import('/dist/index.js')) as unknown as Record<string, never> &
+      (await import('/dist/core/data/validate.js')) as unknown as Record<string, never> &
         typeof import('../../src/core/data/validate.js');
 
     const schema = rules({

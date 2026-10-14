@@ -700,15 +700,15 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
 
 test('source: a view state survives a page reload, per TAB', async ({ page }) => {
   // An accidental refresh threw away every filter, sort and page a person set.
-  // persistViewState is a HELPER rather than a feature of DataSource, because
+  // persistView is a HELPER rather than a feature of DataSource, because
   // WHERE a view state is kept is the host's decision.
   const before = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, persistViewState } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, persistView } = await import('/dist/index.js');
     const rows = Array.from({ length: 200 }, (_, i) => ({
       id: i, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 500,
     }));
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
-    persistViewState(source, 'spec');
+    persistView('spec', { source });
     await source.load();
 
     source.setFilter(['plan', 'eq', 'Pro']);
@@ -732,12 +732,12 @@ test('source: a view state survives a page reload, per TAB', async ({ page }) =>
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 
   const after = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, persistViewState, clearViewState } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, persistView, clearViewState } = await import('/dist/index.js');
     const rows = Array.from({ length: 200 }, (_, i) => ({
       id: i, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 500,
     }));
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
-    persistViewState(source, 'spec');   // restores on the way in
+    persistView('spec', { source });   // restores on the way in
     await new Promise((r) => setTimeout(r, 80));
 
     const restored = {

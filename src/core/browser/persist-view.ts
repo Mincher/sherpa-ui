@@ -5,7 +5,6 @@
  * Map:
  * - PersistOptions — where a view is kept, and who hears what could not be restored
  * - persistView — Keep a whole view — the query AND every component's state — across a reload.
- * - persistViewState — Keep just a `DataSource`'s view state.
  * - ViewSnapshot — A whole VIEW DEFINITION — the query AND every component's state.
  * - ApplyReport — what applyViewSnapshot could not do — a gone element, a gone method
  * - applyViewSnapshot — Apply a whole view definition: the query, then each element's state.
@@ -108,19 +107,6 @@ export function persistView(
     options.signal ? { signal: options.signal } : undefined,
   );
   return () => targets.source?.removeEventListener('change', save);
-}
-
-/**
- * Keep just a `DataSource`'s view state.
- * @deprecated Use `persistView`, which keeps the components' state too — this
- * is a strict subset, a view whose only state is its query.
- */
-export function persistViewState(
-  source: DataSource,
-  name: string,
-  options: PersistOptions = {},
-): () => void {
-  return persistView(name, { source }, {}, options);
 }
 
 /**
