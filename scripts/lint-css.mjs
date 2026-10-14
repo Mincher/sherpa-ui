@@ -208,8 +208,14 @@ function lintFile(file, cssRaw) {
   root.walkAtRules('media', (at) => {
     const line = at.source?.start?.line ?? 0;
     const params = at.params;
-    const sanctioned = /forced-colors|prefers-reduced-motion|prefers-contrast|prefers-color-scheme/.test(params);
-    if (!sanctioned) {
+    /* Motion is gated ONCE, in the shared sheet; mode is the display-mode
+       layer's. Only forced-colors is a component's own. TRAP T-motion-is-owned-here */
+    if (/prefers-reduced-motion/.test(params)) {
+      if (!file.endsWith('sherpa-motion.css')) {
+        report('error', file, line, 'motion-gate',
+          '@media (prefers-reduced-motion) — sherpa-motion.css owns the one motion gate; a component never writes its own.');
+      }
+    } else if (!/forced-colors/.test(params)) {
       report('warning', file, line, 'viewport-media',
         `@media (${params}) — components use @container, not viewport media.`);
     }

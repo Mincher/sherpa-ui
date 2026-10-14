@@ -249,7 +249,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61m | 255 | The calendar on an iPhone: every iOS browser is WebKit, so none has `Temporal` — a stand-in where it is missing | bug |
 | ✅ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
 | ✅ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
-| ⬜ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
+| ✅ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
 | ⬜ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
 | ⬜ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
 | ⬜ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
@@ -6183,6 +6183,15 @@ vocabulary — HTML's content categories `text`, `icon`, `control`, `input`,
 without one or with another word, and the schema lists the same words. The
 copies in the `Slots:` comments are gone. **The words join the Phase 3 lexicon
 for Will's approval.** `T-a-slot-says-what-it-accepts`.
+
+### `[x]` ✅ 258 — Phase 1.4: one motion gate, held by `lint:css`
+
+CLAUDE.md forbids a component's own `prefers-reduced-motion` block —
+`sherpa-motion.css` owns the one gate — but `lint:css` sanctioned it, and
+`prefers-contrast` and `prefers-color-scheme` too. **✅ Done 2026-10-14:** a
+motion block outside `sherpa-motion.css` is an error (`motion-gate`); any media
+query but `forced-colors` is the `viewport-media` warning. No sheet broke the
+new rule. `T-motion-is-owned-here`.
 
 ## ✅ Done — the full record
 

@@ -12656,7 +12656,13 @@ Two other things live there for the same reason:
 A toast's slide and a progress bar's sweep stay local: both are specific to
 their component's geometry.
 
+**`lint:css` holds it (2026-10-14).** It allowed a `prefers-reduced-motion`
+block anywhere, against the rule. Now one in any sheet but
+`sherpa-motion.css` is an error (`motion-gate`), and a component's only
+sanctioned `@media` is `forced-colors`.
+
 - Site: `src/core/sherpa-motion.css`
+- Site: `scripts/lint-css.mjs`
 - Site: `src/components/sherpa-loader/sherpa-loader.css`
 
 ### T-anchoring-is-generic
