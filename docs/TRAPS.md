@@ -1202,9 +1202,16 @@ that goes nowhere. An Area only opens; a Context row closes it as it goes;
 Escape closes it. One element in two presentations, so the rail and the menu
 cannot disagree about the current row or an open Area.
 
+**A page with no `<meta name="viewport" content="width=device-width">` is
+drawn 980px wide on a phone**, so none of this ever shows — the test harness
+had none, which the phone project found (2026-10-14). The starter and APP-GUIDE
+carry it. `test/e2e/phone.spec.ts`, run by the `phone` project alone, checks
+the menu, a dialog, a button's menu, the filter bar and a grid with a thumb.
+
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
 - Site: `src/components/sherpa-nav/sherpa-nav.html`
 - Site: `src/components/sherpa-nav/sherpa-nav.css`
+- Site: `test/e2e/phone.spec.ts`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`

@@ -44,13 +44,16 @@ export default defineConfig({
   },
 
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /phone\.spec\.ts/ },
     /* ALL THREE ENGINES, in the default run: engine differences have cost
        real bugs (WebKit's container matching, Firefox's @function). One engine
        alone: `npx playwright test --project=chromium`.
        TRAP T-a-css-function-needs-its-longhand-first */
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: /phone\.spec\.ts/ },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: /phone\.spec\.ts/ },
+    /* A PHONE — 412 wide, touch — runs the small phone set alone (Will, Q3:
+       mobile browsers, not Safari). An Android phone is Chromium. */
+    { name: 'phone', use: { ...devices['Pixel 7'] }, testMatch: /phone\.spec\.ts/ },
   ],
 
   /* The harness needs the repo served statically — by sherpa-ui itself, so a

@@ -27,6 +27,7 @@ Plus the app's stores, and its Views as JSON.
 <!doctype html>
 <html lang="en" data-theme="sherpa" data-mode="auto">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script type="importmap">
     { "imports": { "sherpa-ui": "/node_modules/sherpa-ui/dist/index.js" } }
   </script>
@@ -38,6 +39,9 @@ Plus the app's stores, and its Views as JSON.
 - `tokens.css` gives every component its variables. `page.css` styles the
   page itself — margins, the body font. Leave `page.css` out when the
   components go into someone else's page. `T-tokens-are-safe-to-embed`
+- The `viewport` meta is what makes a phone draw the page at its own width;
+  without it a phone draws it 980px wide, and every component's phone layout
+  stays off.
 - `data-mode="auto"` follows the OS. No `data-mode` is light.
 - Sherpa loads no font. The tokens ask for Inter, then `system-ui`: link Inter
   in this `<head>` to use it. Nothing else is fetched — no polyfill, no CDN.

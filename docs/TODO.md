@@ -255,7 +255,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
 | ✅ | 62.07 | 262 | Phase 7 — `dist/` stops shipping the inlined `.html` and `.css`, and the build strips `data-accepts` | package |
 | ✅ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
-| ⬜ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
+| ✅ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
 | ⬜ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
 | ⬜ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
 | ⬜ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
@@ -6295,6 +6295,22 @@ the DOM-free data layer and the opt-in app layer. Each was proved by a breach:
 `document` in `where.ts`, and an app-layer import in a badge, each an error.
 Three overrides matched no file that `npm run lint` reads, and went. It adds
 `@eslint/js` (eslint:recommended now ships apart). Dev dependencies end at 16.
+
+### `[x]` ✅ 264 — Phase 7: a phone check
+
+Will, Q3: *"I'd like Sherpa to work for mobile browsers (except Safari)."*
+Every test ran at a desktop size. **✅ Done 2026-10-14.** A `phone` project — a
+Pixel 7, 412 wide, with touch, which is Chromium as Android is — runs
+`test/e2e/phone.spec.ts` alone, and the desktop projects skip it. Five checks,
+each a thumb's: the shell's nav opens from the header's menu button over the
+screen and a row shuts it; a dialog fits and a tap answers it; a button's menu
+opens and stays on screen; the filter bar folds into its ⋮, which opens; a wide
+grid scrolls inside itself, never the page.
+
+It found one gap at once: **the test harness had no viewport `<meta>`**, so a
+phone drew it 980px wide and no phone layout showed. APP-GUIDE's page example
+had none either; both have it now (the starter and Demos already did).
+`T-the-nav-is-a-menu-on-a-phone`.
 
 ## ✅ Done — the full record
 
