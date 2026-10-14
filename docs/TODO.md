@@ -236,7 +236,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; waits on Will's review and seven choices | explore |
 | ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
 | ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
-| ⬜ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
+| ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
 | ⬜ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
 | ⬜ | 61e | 247 | BUG: `skipWhen` never guards an empty slot — container-header's icon, toast's heading, gauge's caption | bug |
 | ⬜ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
@@ -5965,6 +5965,18 @@ and an `as const` table are read. A name that types as `string` fails the
 generator; the panel's `` `${id}-change` `` and the app-header's table were the
 two, now literals. Only `this.dispatchEvent(new …)` counts as the component's.
 A unit test holds it. `T-an-event-name-is-not-always-a-literal`.
+
+### `[x]` ✅ 245 — A deleted saved View stays deleted
+
+`syncViews`' `touch()` wrote Web Storage's views into IndexedDB but never removed
+one, so a View deleted from Web Storage was merged back by `all()` and
+`restore()`, and published by the next push.
+
+**✅ Done 2026-10-14.** `touch()` removes from IndexedDB what Web Storage held at
+the last look and no longer does — never a view only IndexedDB holds (from the
+server, or one Web Storage had no room for). A push waits for that write. The
+test failed on the old build in three engines. Nothing outside tests calls
+`syncViews` yet. `T-local-first-then-onward`.
 
 ## ✅ Done — the full record
 

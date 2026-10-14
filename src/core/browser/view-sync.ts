@@ -54,11 +54,11 @@ export interface SyncOptions extends PersistOptions {
 
 /** What `syncViews` hands back. Every method works with no remote and no IndexedDB. */
 export interface ViewSync {
-  /** Merge the remote under the local set into both local tiers. LOCAL WINS. */
+  /** Merge the remote under the local set, into IndexedDB. LOCAL WINS. */
   restore(): Promise<SavedViewStore>;
   /** Every view this page knows, local first, IndexedDB behind it. */
   all(): Promise<SavedViewStore>;
-  /** Note that the views changed. Schedules a push; does not wait for one. */
+  /** Note that the views changed — after a save AND a delete. Schedules a push; does not wait for one. */
   touch(): void;
   /** Push NOW rather than on the next tick of the interval. */
   flush(): Promise<void>;
@@ -84,6 +84,11 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pending = false;
   let stopped = false;
+  /* The ids Web Storage held at the last look. One gone since is DELETED, and
+     goes from IndexedDB too; a view only IndexedDB holds is not. */
+  let seen = new Set(Object.keys(loadSavedViews(page, options)));
+  /** The last write, which a push waits for: it must not publish a deleted view. */
+  let written: Promise<void> = Promise.resolve();
 
   /** IndexedDB's rows for this page, as a SavedViewStore. */
   const fromIdb = async (): Promise<SavedViewStore> => {
@@ -105,11 +110,12 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
     }
   };
 
-  /** Write a whole set into IndexedDB, replacing this page's rows. */
-  const toIdb = async (views: SavedViewStore): Promise<void> => {
+  /** Write a set into IndexedDB, and remove the views deleted since the last look. */
+  const toIdb = async (views: SavedViewStore, deleted: readonly string[] = []): Promise<void> => {
     if (!idb) return;
     try {
       // Keyed `<page>:<id>`, so two pages cannot collide on an id like `default`.
+      for (const id of deleted) await idb.remove(`${page}:${id}`);
       await idb.putAll(
         Object.entries(views).map(([id, view]) => ({ id: `${page}:${id}`, page, view })),
       );
@@ -121,6 +127,7 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
   const push = async (): Promise<void> => {
     pending = false;
     if (!options.remote) return;
+    await written;
     // The LOCAL set is what gets published.
     const views = { ...(await fromIdb()), ...loadSavedViews(page, options) };
     try {
@@ -163,7 +170,10 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
       if (stopped) return;
       pending = true;
       // Only the WIRE is debounced; the durable copy is written NOW.
-      void toIdb(loadSavedViews(page, options));
+      const local = loadSavedViews(page, options);
+      const deleted = [...seen].filter((id) => !(id in local));
+      seen = new Set(Object.keys(local));
+      written = toIdb(local, deleted);
       schedule();
     },
 

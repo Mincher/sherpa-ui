@@ -79,7 +79,7 @@
   "src/core/browser/view-drafts.ts": 88,
   "src/core/browser/view-files.ts": 35,
   "src/core/browser/view-markup.ts": 148,
-  "src/core/browser/view-sync.ts": 228,
+  "src/core/browser/view-sync.ts": 238,
   "src/core/browser/web-storage.ts": 118,
   "src/core/data/aggregate.ts": 341,
   "src/core/data/allow.ts": 125,

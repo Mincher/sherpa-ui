@@ -328,6 +328,32 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
   expect(r.fromIdbOnly).toEqual(['mine', 'theirs']);
 });
 
+test('a view deleted from Web Storage stays deleted: not merged back, not pushed, not in IndexedDB', async ({ page }) => {
+  const r = await page.evaluate(async (database) => {
+    const { syncViews, saveViewAs, deleteSavedView } = await import('/dist/index.js');
+    sessionStorage.clear();
+    localStorage.clear();
+    const pushes: Record<string, unknown>[] = [];
+    const remote = { pull: () => Promise.resolve({}), push: (_p: string, v: Record<string, unknown>) => { pushes.push(v); return Promise.resolve(); } };
+    saveViewAs('records', 'Keep', {}, {});
+    saveViewAs('records', 'Gone', {}, {});
+    const sync = syncViews('records', { remote, interval: 20, database });
+    sync.touch();
+    await sync.flush();
+    deleteSavedView('records', 'gone');
+    sync.touch();
+    await sync.flush();
+    const all = Object.keys(await sync.all()).sort();
+    await sync.stop();
+    localStorage.clear();
+    const second = syncViews('records', { database });
+    const fromIdbOnly = Object.keys(await second.all()).sort();
+    await second.stop();
+    return { all, pushed: Object.keys(pushes.at(-1) ?? {}).sort(), fromIdbOnly };
+  }, freshDb());
+  expect(r).toEqual({ all: ['keep'], pushed: ['keep'], fromIdbOnly: ['keep'] });
+});
+
 /** ONE contract, every store: a changed key MOVES the row, and a key another
  *  row holds is refused. TRAP T-a-changed-key-moves-the-row */
 test('every store: a changed key moves the row; a key another row holds is refused', async ({ page }) => {

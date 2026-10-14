@@ -6519,6 +6519,12 @@ carries the same snapshot anyway.
 An absent tier is not an error. With no IndexedDB, no storage and no remote —
 which is Node — every method still answers, with `{}`.
 
+**A DELETE must reach IndexedDB too**, or the merge brings it back and the next
+push publishes it (found 2026-10-14). But "in IndexedDB and not in Web Storage"
+can also mean a view from the server, or one Web Storage had no room for. So
+`touch()` removes only what Web Storage held at the LAST look and no longer
+does, and a push waits for that write.
+
 - Site: `src/core/browser/view-sync.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
