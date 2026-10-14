@@ -261,7 +261,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
-| ⬜ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
+| 🚧 | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
@@ -6359,6 +6359,28 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[ ]` 🚧 270 — Phase 2: dead code, icon leftovers, repo strays
+
+The plan's Phase 2 rows for dead code, icons and the repo. One commit per area.
+
+**✅ Repo, 2026-10-14.** Gone: the four root scratch pages (`leak.html`,
+`prop.html`, `risk.html`, `sz.html`); ten `.gitignore` lines that matched
+nothing any script writes (`figma-tokens/`, `.git-commit-msg.tmp`,
+`.build-metrics.json`, `COMPONENT-AUDIT-REPORT.json`, `coverage/`,
+`test/visual/report/`). `docs/Some things to address.md` goes: each of its 12
+notes was done already — the 2026-09-26 list (the field header's caps and
+buttons, `fullscreen-exit`, Customer and Region in the View, Apply and Discard
+that wait, the higher-scope words), 41 (conditions do filter), 43 (the ⋮
+menu), 44c (a heading shows a held answer), 49 and 50 (a preset's and a saved
+filter's menu), and 126.
+
+**❓ Kept, for Will:** the plan named three unused scripts —
+`check-tokens.mjs`, `figma-harvest-colours.mjs` and
+`figma-extract-component.js`. No npm script runs them, but they are MANUAL
+Figma tools, run through the figma-console MCP, and `figma-harvest-colours`
+is the check that compares Figma's bound colour with the component's
+(2026-09-11). Kept until Will says.
 
 ### `[x]` ✅ 269 — Phase 2: old names, data-API leftovers, component aliases
 
