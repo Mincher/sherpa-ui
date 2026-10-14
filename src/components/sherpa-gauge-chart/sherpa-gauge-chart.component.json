@@ -112,7 +112,15 @@
                     "el": "figcaption",
                     "class": "caption",
                     "part": "caption",
-                    "slot": "caption"
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "caption-text"
+                      },
+                      {
+                        "slot": "caption"
+                      }
+                    ]
                   },
                   {
                     "el": "span",

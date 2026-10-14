@@ -66,7 +66,8 @@ export class SherpaGaugeChart extends SherpaElement {
     /* It reads its value from the TOP — risk as 100 − health — and turns its
        field's bands round with it. Will, TODO 150 */
     'data-invert': { type: 'boolean', kind: 'behaviour' },
-    'data-caption': { type: 'string', kind: 'content' },
+    // Beside the caption slot, never in it. TRAP T-slot-guards-only-when-filled
+    'data-caption': { type: 'string', kind: 'content', to: '.caption-text' },
     'data-unit': { type: 'string', kind: 'content' },
   } as const;
 
@@ -125,13 +126,6 @@ export class SherpaGaugeChart extends SherpaElement {
     const maxEl = this.$('.max');
     if (maxEl) maxEl.textContent = tick(max);
 
-    // A filled caption slot wins via light-DOM content.
-    const caption = this.$('.caption');
-    if (caption && !this.dataset['hasCaption']) {
-      const slot = caption.querySelector('slot');
-      const slotFilled = slot instanceof HTMLSlotElement && slot.assignedNodes().length > 0;
-      if (!slotFilled) caption.textContent = this.dataset['caption'] ?? '';
-    }
   }
 
   /**

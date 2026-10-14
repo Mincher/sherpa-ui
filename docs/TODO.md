@@ -238,7 +238,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
 | ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
 | ✅ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
-| ⬜ | 61e | 247 | BUG: `skipWhen` never guards an empty slot — container-header's icon, toast's heading, gauge's caption | bug |
+| ✅ | 61e | 247 | BUG: a prop's text erased the slot beside it — container-header's icon, toast's heading, gauge's caption | bug |
 | ⬜ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
 | ⬜ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
 | ⬜ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
@@ -5986,6 +5986,21 @@ applied every pick live: no draft, no Apply, and a full request per move.
 **✅ Done 2026-10-14.** `RestStore` says `remote = true`, so its source keeps a
 draft for Apply and is never live. A unit test holds it.
 `T-apply-and-discard-wait-for-a-change`.
+
+### `[x]` ✅ 247 — A prop's text never erases a slot
+
+A declared prop wrote into a box that held a `<slot>`, so the write erased the
+slot. `skipWhen` skipped it only while the slot was filled. Measured in a
+browser, all five cases failed: container-header's guard was `[slot]`, which
+no `<slot>` matches, so a slotted icon NEVER showed; a toast's heading and a
+gauge's caption slotted after the first render had nowhere to go; and a toast
+holding only whitespace showed no heading at all.
+
+**✅ Done 2026-10-14.** The text goes in a span BESIDE the slot (`.glyph`,
+`.heading-text`, `.caption-text`), and CSS hides it on `data-has-<slot>`. The
+gauge's hand-written caption write became a declared prop. `skipWhen` had no
+user left, so it is deleted from `SherpaElement` and CLAUDE.md.
+`T-slot-guards-only-when-filled`.
 
 ## ✅ Done — the full record
 

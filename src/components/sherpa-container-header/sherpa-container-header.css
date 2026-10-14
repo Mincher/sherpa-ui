@@ -76,6 +76,7 @@
 }
 :host([data-icon]) .icon,
 :host([data-has-icon]) .icon { display: inline-flex; }
+:host([data-has-icon]) .glyph { display: none; }
 
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {

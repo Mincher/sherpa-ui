@@ -52,10 +52,18 @@
               "el": "span",
               "class": "icon",
               "part": "icon",
-              "slot": "icon",
               "attrs": {
                 "aria-hidden": "true"
-              }
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "glyph"
+                },
+                {
+                  "slot": "icon"
+                }
+              ]
             }
           ]
         },

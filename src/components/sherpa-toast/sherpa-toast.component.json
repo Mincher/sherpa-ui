@@ -83,7 +83,15 @@
               "el": "span",
               "class": "heading",
               "part": "heading",
-              "slot": ""
+              "children": [
+                {
+                  "el": "span",
+                  "class": "heading-text"
+                },
+                {
+                  "slot": ""
+                }
+              ]
             },
             {
               "el": "span",
@@ -213,6 +221,11 @@
       "$type": "state",
       "name": "leaving",
       "selector": ":host([data-leaving])"
+    },
+    {
+      "$type": "state",
+      "name": "has-content-slot",
+      "selector": ":host([data-has-content-slot])"
     },
     {
       "$type": "state",

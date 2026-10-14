@@ -244,6 +244,7 @@
 }
 :host([data-caption]) .caption,
 :host([data-has-caption]) .caption { display: block; }
+:host([data-has-caption]) .caption-text { display: none; }
 
 /* ── Tooltip anchors ─────────────────────────────────────────────────
  * NO VISIBLE MARKERS: the reader hovers the BAND itself. JS supplies each zone's

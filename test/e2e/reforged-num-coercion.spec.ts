@@ -248,10 +248,10 @@ test('coerceNum: absent, empty and unparseable all mean ABSENT; a real 0 survive
 
 /* ── Declared props: the guards that keep real behaviour ──────────────────── */
 
-test('props: a FILLED slot inside the target wins over the attribute', async ({ page }) => {
-  // sherpa-toast's .heading contains a <slot>. Writing the attribute text into it
-  // would destroy whatever the consumer slotted, so skipWhen guards it.
-  const text = await page.evaluate(async () => {
+test('props: a FILLED slot beside the target wins over the attribute, by CSS', async ({ page }) => {
+  // sherpa-toast writes its heading BESIDE its slot, never into it, so the
+  // slot survives and CSS hides the text. TRAP T-slot-guards-only-when-filled
+  const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
@@ -260,17 +260,14 @@ test('props: a FILLED slot inside the target wins over the attribute', async ({ 
     root.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    return el.shadowRoot!.querySelector('.heading')!.textContent;
+    const text = el.shadowRoot!.querySelector<HTMLElement>('.heading-text')!;
+    return { slotted: !!el.firstChild && !!(el.firstChild as Text).assignedSlot, textShown: text.getClientRects().length > 0 };
   });
-  // The slot's assigned node is what shows; the attribute must not have overwritten it.
-  expect(text).not.toContain('from the attribute');
+  expect(r).toEqual({ slotted: true, textShown: false });
 });
 
-test('props: an EMPTY slot is NOT a guard — the attribute still writes', async ({ page }) => {
-  // The mirror case, and the reason the guard tests assignedNodes() rather than
-  // just the presence of a <slot>: a slot in the template is the NORMAL state, so
-  // treating it as a guard would stop data-heading working at all.
-  const text = await page.evaluate(async () => {
+test('props: an EMPTY slot leaves the attribute\'s text showing', async ({ page }) => {
+  const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
@@ -278,9 +275,10 @@ test('props: an EMPTY slot is NOT a guard — the attribute still writes', async
     root.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    return el.shadowRoot!.querySelector('.heading')!.textContent;
+    const text = el.shadowRoot!.querySelector<HTMLElement>('.heading-text')!;
+    return { says: text.textContent, shown: text.getClientRects().length > 0 };
   });
-  expect(text).toBe('from the attribute');
+  expect(r).toEqual({ says: 'from the attribute', shown: true });
 });
 
 test('props: fallbackAttr is used when the primary attribute is absent', async ({ page }) => {
@@ -350,7 +348,7 @@ for (const [tag, sel] of [
   ['sherpa-chip', '.glyph'],
   ['sherpa-tag', '.glyph'],
   ['sherpa-list-item', '.icon'],
-  ['sherpa-container-header', '.icon'],
+  ['sherpa-container-header', '.glyph'],
 ] as const) {
   test(`${tag}: an icon value becomes a DRAWING, never literal text`, async ({ page }) => {
     const got = await page.evaluate(

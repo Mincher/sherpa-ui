@@ -59,11 +59,6 @@ export interface PropDef {
   to?: string;
   /** Write EVERY match rather than the first. */
   all?: boolean;
-  /**
-   * Skip the write when this selector matches inside the target.
-   * TRAP T-slot-guards-only-when-filled
-   */
-  skipWhen?: string;
   /** Read this attribute when the first is absent (e.g. data-label → data-heading). */
   fallbackAttr?: string;
   /**
@@ -1054,9 +1049,9 @@ export abstract class SherpaElement extends Base {
         ? String(coerceNum(raw, typeof def.default === 'number' ? def.default : NaN))
         : (raw ?? fallback);
 
+    // Never a box that holds a <slot>: the text would erase it. TRAP T-slot-guards-only-when-filled
     for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
-      // TRAP T-slot-guards-only-when-filled
-      if (!el || this.#guarded(el, def)) continue;
+      if (!el) continue;
       if (def.as === 'icon') this.writeIcon(el, text);
       else el.textContent = text === 'NaN' ? '' : text;
     }
@@ -1066,18 +1061,6 @@ export abstract class SherpaElement extends Base {
   #syncAllProps(): void {
     const Ctor = this.constructor as typeof SherpaElement;
     for (const [name, def] of Object.entries(Ctor.props)) this.#syncProp(name, def);
-  }
-
-  /**
-   * Is this target guarded against a write?
-   * TRAP T-slot-guards-only-when-filled — a `<slot>` guards only once FILLED.
-   */
-  #guarded(el: Element, def: PropDef): boolean {
-    if (!def.skipWhen) return false;
-    const found = el.querySelector(def.skipWhen);
-    if (!found) return false;
-    if (found instanceof HTMLSlotElement) return found.assignedNodes().length > 0;
-    return true;
   }
 
   /**

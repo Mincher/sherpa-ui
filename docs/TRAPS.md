@@ -4013,15 +4013,20 @@ Matching a TAG rather than an inner class also matters — see
 
 ### T-slot-guards-only-when-filled
 
-`skipWhen` names a selector INSIDE a declared prop's target, guarding content
-the component owns — a `<mark>` a search highlight left, or a projected
-`[slot]` attribute — that a `textContent` write would erase.
+**A prop's text never goes INTO a box that holds a `<slot>`.** A `textContent`
+or icon write replaces the box's children, the slot with them. It was guarded
+by `skipWhen`, which skipped the write only while the slot was FILLED — so it
+failed every other way (all found 2026-10-14):
 
-Two cases, and the difference matters: a PLAIN element guards by merely
-existing, but a `<slot>` guards only when a consumer has actually FILLED it. A
-`<slot>` in the template is the NORMAL state, not an override — treating its
-presence as a guard would stop the attribute working at all. Hence
-`assignedNodes()` is checked rather than the tag alone.
+- container-header's guard was `[slot]`, which a `<slot>` never matches: its
+  icon slot was erased on the first render, so a slotted icon NEVER showed.
+- toast and gauge: content slotted AFTER the first render had no slot to go to.
+- a slot holding only whitespace counts as filled, so the toast's own heading
+  was skipped and showed nothing.
+
+So the text goes in a span BESIDE the slot (`.glyph`, `.heading-text`,
+`.caption-text`), and CSS hides it on `data-has-<slot>`. Slotted content wins
+whenever it arrives, and `skipWhen` is gone.
 
 The same distinction governs `#reflectSlot`: `assignedNodes()` WITHOUT
 `flatten` returns only what the light DOM actually assigned, never the slot's
@@ -4035,6 +4040,10 @@ panel drew an empty metadata strip under every heading.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-toast/sherpa-toast.ts`
+- Site: `src/components/sherpa-container-header/sherpa-container-header.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `test/e2e/reforged-num-coercion.spec.ts`
+- Site: `test/e2e/reforged-a-slot-survives-its-text.spec.ts`
 
 ### T-clone-returns-null-never-asserts
 

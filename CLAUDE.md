@@ -256,18 +256,18 @@ typed door (`this.set(attr, value)` — the JS→CSS write path) and a place to 
 use. **`kind: style` must stay CSS-only in behaviour** — declaring `data-status` is not
 licence to add a JS status branch.
 
-Four options exist to preserve real behaviour. Do not add a fifth without evidence of
+Three options exist to preserve real behaviour. Do not add a fourth without evidence of
 three or more uses:
 
 | Option | For |
 |---|---|
 | `all` | the target repeats in the template (list-item writes `.title` twice) |
-| `skipWhen` | content the component owns — a filled `<slot>`, a search `<mark>` |
 | `fallbackAttr` | a legacy alias, pointing AT the tier's own name (see below) |
 | `default` | a real default string (`'Available'`, `'Ask N-zo'`) |
 
-`skipWhen` on a `<slot>` guards only when the slot is **filled** — a `<slot>` in the
-template is the normal state, not an override.
+A `to` target never holds a `<slot>`: the write would erase it. Put the text in a
+span BESIDE the slot, and let CSS hide it on `data-has-<slot>` — slotted content wins,
+whenever it arrives (TRAP `T-slot-guards-only-when-filled`).
 
 Keep it hand-written when the write is not a plain attribute→text mapping: a runtime
 selector choice (`nav-item`), a text template (`file-upload`'s `"Maximum file size: …"`),
