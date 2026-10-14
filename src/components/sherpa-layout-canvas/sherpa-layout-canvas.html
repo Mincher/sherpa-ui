@@ -21,7 +21,7 @@
   <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
   <div class="viewport" part="viewport" tabindex="0" role="group"
        aria-roledescription="canvas" aria-label="Canvas">
-    <div class="plane" part="plane"><slot></slot></div>
+    <div class="plane" part="plane"><slot data-accepts="content"></slot></div>
   </div>
 
   <!-- The WHOLE canvas small, and where the view sits on it. A drag moves the view. -->

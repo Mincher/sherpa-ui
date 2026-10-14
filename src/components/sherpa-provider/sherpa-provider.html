@@ -24,7 +24,7 @@
     view-change — a View was picked, opened or saved. detail: { id, elements? }
 -->
 <template id="default">
-  <slot data-accepts="any"></slot>
+  <slot data-accepts="content"></slot>
   <!-- THE MODE'S OWN BUTTON, cloned into each bar's and panel's `actions`
        slot — the page's switch, not a component's. TRAP T-the-mode-switch-is-the-pages-own -->
   <template class="mode-toggle-tpl">

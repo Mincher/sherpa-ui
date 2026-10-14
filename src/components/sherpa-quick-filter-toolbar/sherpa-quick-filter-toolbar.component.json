@@ -31,7 +31,14 @@
             "el": "div",
             "class": "view-zone",
             "part": "view-zone",
-            "slot": "view"
+            "children": [
+              {
+                "slot": "view",
+                "attrs": {
+                  "data-accepts": "control"
+                }
+              }
+            ]
           },
           {
             "el": "div",
@@ -66,7 +73,10 @@
             "part": "actions",
             "children": [
               {
-                "slot": "actions"
+                "slot": "actions",
+                "attrs": {
+                  "data-accepts": "control"
+                }
               },
               {
                 "el": "sherpa-button",
@@ -482,11 +492,17 @@
     {
       "$type": "slot",
       "name": "view",
+      "accepts": [
+        "control"
+      ],
       "description": "leading view chip (view type)"
     },
     {
       "$type": "slot",
       "name": "actions",
+      "accepts": [
+        "control"
+      ],
       "description": "host extras, placed BEFORE the built-in cluster"
     }
   ],

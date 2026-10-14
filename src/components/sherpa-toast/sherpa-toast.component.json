@@ -89,7 +89,10 @@
                   "class": "heading-text"
                 },
                 {
-                  "slot": ""
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "text"
+                  }
                 }
               ]
             },
@@ -204,6 +207,9 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "text"
+      ],
       "description": "the heading content (overrides data-heading)"
     }
   ],

@@ -231,6 +231,30 @@ that.
 
 ---
 
+### T-a-slot-says-what-it-accepts
+
+**Every slot says what it takes, in `data-accepts`, from ONE vocabulary.** The
+spec carries it, and the MCP tells an agent "accepts control" — so it is a
+contract, not a comment. On 2026-10-14 only 23 of 121 slots had one, and their
+values mixed categories (`control`) with tag names (`filter-panel`,
+`app-header`) and `any`.
+
+The vocabulary, in two parts:
+
+- **HTML's own content categories:** `text` (words: a label, a heading, a
+  count), `icon` (one glyph or mark), `control` (a thing to operate: a button,
+  a link, a chip), `input` (a form field), `content` (anything).
+- **Sherpa roles,** for a slot that takes ONE kind of component: `item` (a row
+  of a list, menu or nav), `menu`, `legend`, `header`, `footer`, `nav`, `panel`,
+  `dialog`, `toolbar`, `badge`.
+
+`generate-component-spec.mjs` fails a slot with no `data-accepts`, or a word
+outside the set, and `schemas/component.v1.json` lists the same words. A
+FORWARDED slot (`<slot name="icon" slot="icon">`) is a slot a page fills too,
+so it says what it takes. A new word is added to both, on purpose.
+
+- Site: `scripts/generate-component-spec.mjs`
+
 ### T-private-state-is-a-custom-state
 
 **A component's PRIVATE host state is a custom state — `:host(:state(name))` —

@@ -302,9 +302,11 @@ Applies to **all** components, existing and new:
 - **Attributes:** `data-*` for the public API; native attributes (`disabled`, `name`, `value`, `hidden`, `required`, `readonly`) stay un-prefixed. Reuse the standard-name enums above verbatim — don't invent a synonym for an existing concept. Component-private state is `--_*` CSS custom properties, and private HOST state is a custom state — `this.toggleState(name)`, read as `:host(:state(name))` — never a public `data-*` (TRAP `T-private-state-is-a-custom-state`).
 - **Events:** **unprefixed `noun-verb`** names (`button-click`, `page-change`, `tree-select`, `quick-filter-change`). Do **not** prefix event strings with `sherpa-`. Standard shared events: `change`/`input` (re-dispatched native), `*-click`, `*-change`, `*-select`, `*-open`/`*-close`.
 - **Standard data attrs for data components:** `data-sort-field`/`data-sort-direction` (`asc|desc`), `data-segment-field`/`data-segment-mode` — reuse across all chart/grid components.
-- **Slots:** every content-bearing slot declares a `data-accepts` category allowlist. There is no separate slot-contracts doc — read the `data-accepts` values in the component `.html` templates. **12 of the 44
-  slot-bearing components carry them** — the rule is every content-bearing slot, so
-  the other 32 are a real gap, not a licence to skip it.
+- **Slots:** every slot declares what it takes, in `data-accepts`, from one vocabulary:
+  HTML's content categories `text`, `icon`, `control`, `input`, `content`, then the Sherpa
+  roles `item`, `menu`, `legend`, `header`, `footer`, `nav`, `panel`, `dialog`, `toolbar`,
+  `badge`. The spec generator fails a slot without it, or with another word
+  (TRAP `T-a-slot-says-what-it-accepts`).
 
 ### Navigation terms
 

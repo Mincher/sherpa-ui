@@ -39,8 +39,8 @@
     <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
          The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header" part="header">
-      <slot name="icon" slot="icon"></slot>
-      <slot name="description" slot="metadata" data-accepts="content,control"></slot>
+      <slot name="icon" slot="icon" data-accepts="icon"></slot>
+      <slot name="description" slot="metadata" data-accepts="content"></slot>
 
       <!-- Figma Container Header `Variant=Panel`: the host's controls, then the
            view-mode pair, each divided from the next. -->
@@ -59,7 +59,7 @@
     </sherpa-container-header>
 
     <div class="body" part="body">
-      <slot></slot>
+      <slot data-accepts="content"></slot>
     </div>
 
     <!-- stretch: a panel footer usually holds ONE full-width control. -->

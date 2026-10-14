@@ -75,7 +75,14 @@
                   "el": "div",
                   "class": "extras",
                   "part": "extras",
-                  "slot": "extras"
+                  "children": [
+                    {
+                      "slot": "extras",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -129,6 +136,9 @@
     {
       "$type": "slot",
       "name": "extras",
+      "accepts": [
+        "control"
+      ],
       "description": "extra controls after the default leading buttons (reflects data-has-extras)"
     }
   ],

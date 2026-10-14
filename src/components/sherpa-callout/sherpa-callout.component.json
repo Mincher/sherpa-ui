@@ -82,7 +82,14 @@
               "el": "div",
               "class": "message",
               "part": "message",
-              "slot": ""
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "content"
+                  }
+                }
+              ]
             }
           ]
         },
@@ -140,6 +147,9 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the message body"
     }
   ],

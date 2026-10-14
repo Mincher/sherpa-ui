@@ -68,6 +68,9 @@
               "children": [
                 {
                   "slot": "control",
+                  "attrs": {
+                    "data-accepts": "input"
+                  },
                   "children": [
                     {
                       "el": "input",
@@ -95,7 +98,10 @@
                   "part": "icon"
                 },
                 {
-                  "slot": "leading"
+                  "slot": "leading",
+                  "attrs": {
+                    "data-accepts": "icon"
+                  }
                 }
               ]
             }
@@ -142,7 +148,14 @@
           "el": "span",
           "class": "trailing",
           "part": "trailing",
-          "slot": "trailing"
+          "children": [
+            {
+              "slot": "trailing",
+              "attrs": {
+                "data-accepts": "control,badge"
+              }
+            }
+          ]
         }
       ]
     }
@@ -264,16 +277,26 @@
     {
       "$type": "slot",
       "name": "control",
+      "accepts": [
+        "input"
+      ],
       "description": "a custom selection control (else the built-in native checkbox)"
     },
     {
       "$type": "slot",
       "name": "leading",
+      "accepts": [
+        "icon"
+      ],
       "description": "a custom icon / avatar (in addition to the data-icon glyph)"
     },
     {
       "$type": "slot",
       "name": "trailing",
+      "accepts": [
+        "control",
+        "badge"
+      ],
       "description": "actions / badges"
     }
   ],

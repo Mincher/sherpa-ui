@@ -45,7 +45,7 @@
     <div class="header" part="header">
       <div class="brand" part="brand">
         <span class="brand-icon" part="brand-icon" aria-hidden="true">
-          <slot name="brand-icon"><i class="sherpa-icon-box" data-icon="group"></i></slot>
+          <slot name="brand-icon" data-accepts="icon"><i class="sherpa-icon-box" data-icon="group"></i></slot>
         </span>
         <span class="product sherpa-truncate" part="product"></span>
         <!-- ACTIONS: Settings then Pin, one DEFAULT group, as Figma's Navigation
@@ -57,7 +57,7 @@
           <sherpa-button class="pin" part="pin" data-type="icon" data-size="sm"
                          data-group="end" data-icon-start="thumbtack-angle"
                          aria-label="Pin navigation" aria-pressed="false"></sherpa-button>
-          <slot name="actions"></slot>
+          <slot name="actions" data-accepts="control"></slot>
         </span>
       </div>
 
@@ -77,11 +77,11 @@
     </div>
 
     <div class="content" part="content">
-      <slot></slot>
+      <slot data-accepts="item"></slot>
     </div>
 
     <div class="footer" part="footer">
-      <slot name="footer"></slot>
+      <slot name="footer" data-accepts="content"></slot>
     </div>
 
     <!-- The PHONE's menu only: Settings at the bottom, then Cancel, which goes

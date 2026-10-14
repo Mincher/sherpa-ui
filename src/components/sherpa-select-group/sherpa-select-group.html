@@ -14,7 +14,7 @@
     value             property: string[] when multiple, else string | null
 
   Slots:
-    options           (data-accepts: control) checkbox/radio option rows
+    options checkbox/radio option rows
 
   Fires:
     change — the selection changed. detail: { value }
@@ -27,7 +27,7 @@
     </legend>
     <hr class="divider" part="divider" aria-hidden="true" />
     <div class="options" part="options" role="group">
-      <slot name="options" data-accepts="control"></slot>
+      <slot name="options" data-accepts="input"></slot>
     </div>
     <p class="validation" part="validation" role="alert"></p>
   </fieldset>

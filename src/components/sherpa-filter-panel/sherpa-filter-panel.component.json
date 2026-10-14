@@ -166,7 +166,8 @@
               {
                 "slot": "actions",
                 "attrs": {
-                  "slot": "actions"
+                  "slot": "actions",
+                  "data-accepts": "control"
                 }
               },
               {
@@ -215,7 +216,10 @@
             "part": "scopes"
           },
           {
-            "slot": ""
+            "slot": "",
+            "attrs": {
+              "data-accepts": "content"
+            }
           },
           {
             "el": "sherpa-container-footer",
@@ -434,11 +438,17 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "actions"
+      "name": "actions",
+      "accepts": [
+        "control"
+      ]
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "extra content under the scopes"
     }
   ],

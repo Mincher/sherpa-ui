@@ -64,7 +64,10 @@
             ]
           },
           {
-            "slot": "legend"
+            "slot": "legend",
+            "attrs": {
+              "data-accepts": "legend"
+            }
           }
         ]
       },
@@ -220,7 +223,10 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "legend"
+      "name": "legend",
+      "accepts": [
+        "legend"
+      ]
     }
   ],
   "populate": {

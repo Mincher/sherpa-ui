@@ -52,11 +52,11 @@
           <sherpa-button class="back" part="back" data-type="icon" data-size="xs"
                          data-look="transparent" data-icon-start="arrow-left"
                          aria-label="Back"></sherpa-button>
-          <slot name="breadcrumbs"></slot>
+          <slot name="breadcrumbs" data-accepts="nav"></slot>
         </div>
 
         <div class="actions" part="actions">
-          <slot name="actions"></slot>
+          <slot name="actions" data-accepts="control"></slot>
 
           <!-- The one action that is not transparent — the default border sets
                it apart from the icon run beside it. -->
@@ -106,7 +106,7 @@
         <div class="title-row" part="title-row">
           <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
           <h1 class="title sherpa-truncate" part="title"></h1>
-          <slot name="title"></slot>
+          <slot name="title" data-accepts="text"></slot>
           <!-- Where the SHELL says its rail is gone. TRAP T-the-nav-is-a-menu-on-a-phone -->
           <sherpa-button class="nav-menu" part="nav-menu" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="menu"
@@ -116,7 +116,7 @@
         </div>
 
         <div class="filters" part="filters">
-          <slot name="filters"></slot>
+          <slot name="filters" data-accepts="toolbar"></slot>
         </div>
       </div>
     </div>

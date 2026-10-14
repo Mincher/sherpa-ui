@@ -27,7 +27,14 @@
               {
                 "el": "span",
                 "class": "title",
-                "slot": "title"
+                "children": [
+                  {
+                    "slot": "title",
+                    "attrs": {
+                      "data-accepts": "text"
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -118,7 +125,10 @@
                         "class": "caption-text"
                       },
                       {
-                        "slot": "caption"
+                        "slot": "caption",
+                        "attrs": {
+                          "data-accepts": "content"
+                        }
                       }
                     ]
                   },
@@ -131,7 +141,10 @@
             ]
           },
           {
-            "slot": "legend"
+            "slot": "legend",
+            "attrs": {
+              "data-accepts": "legend"
+            }
           }
         ]
       },
@@ -337,16 +350,25 @@
     {
       "$type": "slot",
       "name": "title",
+      "accepts": [
+        "text"
+      ],
       "description": "heading above the gauge"
     },
     {
       "$type": "slot",
       "name": "caption",
+      "accepts": [
+        "content"
+      ],
       "description": "rich caption below the gauge; overrides data-caption"
     },
     {
       "$type": "slot",
       "name": "legend",
+      "accepts": [
+        "legend"
+      ],
       "description": "a <sherpa-chart-legend> naming the zones; the gauge fills it from zones that are named."
     }
   ],

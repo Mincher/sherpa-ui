@@ -28,13 +28,27 @@
           "el": "div",
           "class": "zone leading",
           "part": "leading",
-          "slot": "leading"
+          "children": [
+            {
+              "slot": "leading",
+              "attrs": {
+                "data-accepts": "control"
+              }
+            }
+          ]
         },
         {
           "el": "div",
           "class": "zone trailing",
           "part": "trailing",
-          "slot": "trailing"
+          "children": [
+            {
+              "slot": "trailing",
+              "attrs": {
+                "data-accepts": "content"
+              }
+            }
+          ]
         }
       ]
     }
@@ -70,11 +84,17 @@
     {
       "$type": "slot",
       "name": "leading",
+      "accepts": [
+        "control"
+      ],
       "description": "the primary action / actions cluster (hugs, sits at the start)"
     },
     {
       "$type": "slot",
       "name": "trailing",
+      "accepts": [
+        "content"
+      ],
       "description": "item count, search, overflow (grows; content pushed to the end)"
     }
   ],

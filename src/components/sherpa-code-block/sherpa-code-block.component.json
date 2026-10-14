@@ -75,7 +75,14 @@
                 "el": "span",
                 "class": "code-text",
                 "part": "code-text",
-                "slot": ""
+                "children": [
+                  {
+                    "slot": "",
+                    "attrs": {
+                      "data-accepts": "text"
+                    }
+                  }
+                ]
               }
             ]
           }
@@ -115,7 +122,10 @@
   "slots": [
     {
       "$type": "slot",
-      "name": ""
+      "name": "",
+      "accepts": [
+        "text"
+      ]
     }
   ],
   "populate": {

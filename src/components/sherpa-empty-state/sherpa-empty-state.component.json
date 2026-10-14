@@ -28,6 +28,9 @@
           "children": [
             {
               "slot": "icon",
+              "attrs": {
+                "data-accepts": "icon"
+              },
               "children": [
                 {
                   "el": "span",
@@ -54,6 +57,9 @@
               "children": [
                 {
                   "slot": "",
+                  "attrs": {
+                    "data-accepts": "content"
+                  },
                   "children": [
                     {
                       "el": "p",
@@ -166,11 +172,17 @@
     {
       "$type": "slot",
       "name": "icon",
+      "accepts": [
+        "icon"
+      ],
       "description": "custom illustration (reflects data-has-icon; replaces the glyph)"
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "custom message body (reflects data-has-content-slot; replaces data-description)"
     },
     {

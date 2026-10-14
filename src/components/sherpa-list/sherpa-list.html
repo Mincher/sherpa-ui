@@ -13,7 +13,7 @@
   <!-- A role, not a <ul>: a slotted row is a custom element, and a <ul> may
        hold only <li>. The list names each slotted row a listitem. -->
   <div class="body" part="body" role="list">
-    <slot></slot>
+    <slot data-accepts="item"></slot>
   </div>
   <div class="empty" part="empty" role="status" aria-live="polite"></div>
 

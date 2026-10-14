@@ -26,18 +26,18 @@
 <template id="default">
   <div class="card" part="card">
     <div class="header" part="header">
-      <slot name="header">
+      <slot name="header" data-accepts="content">
         <span class="label" part="label"></span>
         <span class="description" part="description"></span>
       </slot>
     </div>
 
     <div class="body" part="body">
-      <slot></slot>
+      <slot data-accepts="content"></slot>
     </div>
 
     <div class="footer" part="footer">
-      <slot name="footer">
+      <slot name="footer" data-accepts="content">
         <!-- INERT: the CARD is the control. These only show its state, and a
              press on one falls through to the card. -->
         <sherpa-select-radio class="footer-control control-radio" part="footer-control" inert></sherpa-select-radio>

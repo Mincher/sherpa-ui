@@ -18,7 +18,14 @@
         "el": "span",
         "class": "anchor",
         "part": "anchor",
-        "slot": ""
+        "children": [
+          {
+            "slot": "",
+            "attrs": {
+              "data-accepts": "content"
+            }
+          }
+        ]
       },
       {
         "el": "span",
@@ -34,7 +41,10 @@
             "class": "tip-text"
           },
           {
-            "slot": "tip"
+            "slot": "tip",
+            "attrs": {
+              "data-accepts": "content"
+            }
           },
           {
             "el": "span",
@@ -103,11 +113,17 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the trigger element the tooltip describes"
     },
     {
       "$type": "slot",
       "name": "tip",
+      "accepts": [
+        "content"
+      ],
       "description": "rich tip content (reflects data-has-tip; overrides data-text)"
     }
   ],

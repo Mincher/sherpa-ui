@@ -24,6 +24,9 @@
           "children": [
             {
               "slot": "nav",
+              "attrs": {
+                "data-accepts": "nav"
+              },
               "children": [
                 {
                   "el": "sherpa-nav"
@@ -49,6 +52,9 @@
                   "children": [
                     {
                       "slot": "header",
+                      "attrs": {
+                        "data-accepts": "header,toolbar"
+                      },
                       "children": [
                         {
                           "el": "sherpa-app-header"
@@ -70,7 +76,7 @@
                         {
                           "slot": "panel-start",
                           "attrs": {
-                            "data-accepts": "filter-panel, panel"
+                            "data-accepts": "panel"
                           }
                         },
                         {
@@ -89,7 +95,14 @@
                     {
                       "el": "div",
                       "class": "context-frame",
-                      "slot": ""
+                      "children": [
+                        {
+                          "slot": "",
+                          "attrs": {
+                            "data-accepts": "content"
+                          }
+                        }
+                      ]
                     },
                     {
                       "el": "aside",
@@ -110,7 +123,7 @@
                         {
                           "slot": "panel-end",
                           "attrs": {
-                            "data-accepts": "panel, overlay-panel"
+                            "data-accepts": "panel"
                           }
                         }
                       ]
@@ -221,32 +234,40 @@
     {
       "$type": "slot",
       "name": "nav",
+      "accepts": [
+        "nav"
+      ],
       "description": "replace the default <sherpa-nav>"
     },
     {
       "$type": "slot",
       "name": "header",
+      "accepts": [
+        "header",
+        "toolbar"
+      ],
       "description": "replace the default <sherpa-app-header>"
     },
     {
       "$type": "slot",
       "name": "panel-start",
       "accepts": [
-        "filter-panel",
         "panel"
       ]
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the Context content"
     },
     {
       "$type": "slot",
       "name": "panel-end",
       "accepts": [
-        "panel",
-        "overlay-panel"
+        "panel"
       ]
     },
     {

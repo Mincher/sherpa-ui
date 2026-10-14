@@ -83,7 +83,7 @@
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
     <div class="view-zone" part="view-zone">
-      <slot name="view"></slot>
+      <slot name="view" data-accepts="control"></slot>
     </div>
 
     <!-- ORGANISE ZONE — Group and Sort chips. They change how the grid is
@@ -106,7 +106,7 @@
     -->
     <div class="actions-zone" part="actions">
       <!-- Host extras first, before the standard cluster. -->
-      <slot name="actions"></slot>
+      <slot name="actions" data-accepts="control"></slot>
 
       <!--
         FILTERS — ONE button for every filter: the chips folded away for want

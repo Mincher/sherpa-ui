@@ -12,7 +12,7 @@
       {
         "slot": "",
         "attrs": {
-          "data-accepts": "any"
+          "data-accepts": "content"
         }
       },
       {
@@ -48,7 +48,7 @@
       "$type": "slot",
       "name": "",
       "accepts": [
-        "any"
+        "content"
       ],
       "description": "the subtree — every component in it can ask"
     }

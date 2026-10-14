@@ -35,7 +35,14 @@
             "el": "div",
             "class": "plane",
             "part": "plane",
-            "slot": ""
+            "children": [
+              {
+                "slot": "",
+                "attrs": {
+                  "data-accepts": "content"
+                }
+              }
+            ]
           }
         ]
       },
@@ -130,6 +137,9 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the content, placed on the canvas at its `--x` and `--y` (px)"
     }
   ],

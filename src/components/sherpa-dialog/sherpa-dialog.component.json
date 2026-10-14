@@ -42,7 +42,10 @@
               "class": "heading-text"
             },
             {
-              "slot": "header"
+              "slot": "header",
+              "attrs": {
+                "data-accepts": "header"
+              }
             }
           ]
         },
@@ -50,13 +53,27 @@
           "el": "div",
           "class": "body",
           "part": "body",
-          "slot": ""
+          "children": [
+            {
+              "slot": "",
+              "attrs": {
+                "data-accepts": "content"
+              }
+            }
+          ]
         },
         {
           "el": "div",
           "class": "footer",
           "part": "footer",
-          "slot": "footer"
+          "children": [
+            {
+              "slot": "footer",
+              "attrs": {
+                "data-accepts": "footer"
+              }
+            }
+          ]
         }
       ]
     }
@@ -106,16 +123,25 @@
     {
       "$type": "slot",
       "name": "header",
+      "accepts": [
+        "header"
+      ],
       "description": "header region (reflects data-has-header)."
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the dialog body"
     },
     {
       "$type": "slot",
       "name": "footer",
+      "accepts": [
+        "footer"
+      ],
       "description": "footer region (reflects data-has-footer)"
     }
   ],

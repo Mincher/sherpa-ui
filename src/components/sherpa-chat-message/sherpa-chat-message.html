@@ -16,7 +16,7 @@
 <template id="default">
   <article class="message" part="message">
     <span class="avatar sherpa-icon-box" part="avatar" aria-hidden="true">
-      <slot name="avatar"><span class="avatar-glyph"></span></slot>
+      <slot name="avatar" data-accepts="icon"><span class="avatar-glyph"></span></slot>
     </span>
     <div class="stack">
       <div class="bubble" part="bubble">
@@ -26,7 +26,7 @@
           <time class="time" part="time"></time>
         </div>
         <span class="content"></span>
-        <slot></slot>
+        <slot data-accepts="content"></slot>
       </div>
     </div>
   </article>

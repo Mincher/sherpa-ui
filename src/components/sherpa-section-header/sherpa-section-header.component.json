@@ -26,6 +26,9 @@
             "children": [
               {
                 "slot": "heading",
+                "attrs": {
+                  "data-accepts": "text"
+                },
                 "children": [
                   {
                     "el": "h2",
@@ -38,7 +41,14 @@
                 "el": "div",
                 "class": "description",
                 "part": "description",
-                "slot": "description"
+                "children": [
+                  {
+                    "slot": "description",
+                    "attrs": {
+                      "data-accepts": "text"
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -106,11 +116,17 @@
     {
       "$type": "slot",
       "name": "heading",
+      "accepts": [
+        "text"
+      ],
       "description": "custom heading element (replaces the default .title)"
     },
     {
       "$type": "slot",
       "name": "description",
+      "accepts": [
+        "text"
+      ],
       "description": "description text below the heading (reflects data-has-description)"
     },
     {

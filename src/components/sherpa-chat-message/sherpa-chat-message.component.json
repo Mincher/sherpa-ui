@@ -28,6 +28,9 @@
           "children": [
             {
               "slot": "avatar",
+              "attrs": {
+                "data-accepts": "icon"
+              },
               "children": [
                 {
                   "el": "span",
@@ -68,7 +71,10 @@
                   "class": "content"
                 },
                 {
-                  "slot": ""
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "content"
+                  }
                 }
               ]
             }
@@ -151,11 +157,17 @@
     {
       "$type": "slot",
       "name": "avatar",
+      "accepts": [
+        "icon"
+      ],
       "description": "custom avatar content, replaces the default glyph (reflects data-has-avatar)"
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "bubble body content, overrides data-content"
     }
   ],

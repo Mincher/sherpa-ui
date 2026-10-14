@@ -34,7 +34,7 @@
       "accepts": [
         "text"
       ],
-      "description": "the count — data-accepts: text"
+      "description": "the count"
     }
   ],
   "tokens": {

@@ -53,7 +53,10 @@
                       "class": "heading-text"
                     },
                     {
-                      "slot": "heading"
+                      "slot": "heading",
+                      "attrs": {
+                        "data-accepts": "text"
+                      }
                     }
                   ]
                 },
@@ -67,7 +70,10 @@
                       "class": "description-text"
                     },
                     {
-                      "slot": "description"
+                      "slot": "description",
+                      "attrs": {
+                        "data-accepts": "text"
+                      }
                     }
                   ]
                 }
@@ -77,7 +83,14 @@
               "el": "span",
               "class": "actions",
               "part": "actions",
-              "slot": "actions"
+              "children": [
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                }
+              ]
             },
             {
               "el": "i",
@@ -93,7 +106,14 @@
           "el": "div",
           "class": "body",
           "part": "body",
-          "slot": ""
+          "children": [
+            {
+              "slot": "",
+              "attrs": {
+                "data-accepts": "content"
+              }
+            }
+          ]
         }
       ]
     }
@@ -148,21 +168,33 @@
     {
       "$type": "slot",
       "name": "heading",
+      "accepts": [
+        "text"
+      ],
       "description": "rich summary title (overrides data-heading)"
     },
     {
       "$type": "slot",
       "name": "description",
+      "accepts": [
+        "text"
+      ],
       "description": "rich secondary line under the title (overrides data-description)"
     },
     {
       "$type": "slot",
       "name": "actions",
+      "accepts": [
+        "control"
+      ],
       "description": "trailing controls in the summary row, before the chevron."
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the disclosure body"
     }
   ],

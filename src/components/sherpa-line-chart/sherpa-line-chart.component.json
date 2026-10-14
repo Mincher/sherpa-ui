@@ -27,7 +27,14 @@
               {
                 "el": "span",
                 "class": "title",
-                "slot": "title"
+                "children": [
+                  {
+                    "slot": "title",
+                    "attrs": {
+                      "data-accepts": "text"
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -97,7 +104,10 @@
             ]
           },
           {
-            "slot": "legend"
+            "slot": "legend",
+            "attrs": {
+              "data-accepts": "legend"
+            }
           }
         ]
       },
@@ -270,11 +280,17 @@
     {
       "$type": "slot",
       "name": "title",
+      "accepts": [
+        "text"
+      ],
       "description": "heading above the chart"
     },
     {
       "$type": "slot",
       "name": "legend",
+      "accepts": [
+        "legend"
+      ],
       "description": "a <sherpa-chart-legend> for the series."
     }
   ],

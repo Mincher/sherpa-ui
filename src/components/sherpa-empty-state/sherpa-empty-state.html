@@ -26,7 +26,7 @@
 <template id="default">
   <div class="empty" part="empty">
     <div class="icon" part="icon" aria-hidden="true">
-      <slot name="icon">
+      <slot name="icon" data-accepts="icon">
         <span class="glyph"></span>
       </slot>
     </div>
@@ -34,7 +34,7 @@
     <div class="heading" part="heading">
       <h2 class="title" part="title"></h2>
       <div class="message" part="message">
-        <slot>
+        <slot data-accepts="content">
           <p class="message-text" part="message-text"></p>
         </slot>
       </div>

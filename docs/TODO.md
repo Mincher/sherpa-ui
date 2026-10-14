@@ -248,7 +248,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — KEPT, by Will | design |
 | ✅ | 61m | 255 | The calendar on an iPhone: every iOS browser is WebKit, so none has `Temporal` — a stand-in where it is missing | bug |
 | ✅ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
-| ⬜ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
+| ✅ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
 | ⬜ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
 | ⬜ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
 | ⬜ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
@@ -6172,6 +6172,17 @@ and 13 are private, so they are custom states (D3): `SherpaElement` owns one
 collapse step is cumulative states. The specs no longer list the private ones.
 948 specs of the changed components, the a11y gate and the node tests pass.
 `T-private-state-is-a-custom-state`.
+
+### `[x]` ✅ 257 — Phase 1.3: every slot says what it accepts
+
+23 of 121 slots had a `data-accepts`, in words that mixed categories with tag
+names. **✅ Done 2026-10-14:** all 121, and the 3 forwarded ones, from one
+vocabulary — HTML's content categories `text`, `icon`, `control`, `input`,
+`content`, then the Sherpa roles `item`, `menu`, `legend`, `header`, `footer`,
+`nav`, `panel`, `dialog`, `toolbar`, `badge`. The spec generator fails a slot
+without one or with another word, and the schema lists the same words. The
+copies in the `Slots:` comments are gone. **The words join the Phase 3 lexicon
+for Will's approval.** `T-a-slot-says-what-it-accepts`.
 
 ## ✅ Done — the full record
 

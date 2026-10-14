@@ -21,7 +21,7 @@
         {
           "slot": "",
           "attrs": {
-            "data-accepts": "any"
+            "data-accepts": "content"
           }
         }
       ]
@@ -141,7 +141,7 @@
       "$type": "slot",
       "name": "",
       "accepts": [
-        "any"
+        "content"
       ],
       "description": "the items"
     }

@@ -18,7 +18,14 @@
         "el": "header",
         "class": "header",
         "part": "header",
-        "slot": "header"
+        "children": [
+          {
+            "slot": "header",
+            "attrs": {
+              "data-accepts": "header"
+            }
+          }
+        ]
       },
       {
         "el": "div",
@@ -121,7 +128,10 @@
             }
           },
           {
-            "slot": ""
+            "slot": "",
+            "attrs": {
+              "data-accepts": "content"
+            }
           }
         ]
       },
@@ -129,7 +139,14 @@
         "el": "footer",
         "class": "footer",
         "part": "footer",
-        "slot": "footer"
+        "children": [
+          {
+            "slot": "footer",
+            "attrs": {
+              "data-accepts": "footer"
+            }
+          }
+        ]
       },
       {
         "el": "div",
@@ -143,7 +160,8 @@
           {
             "slot": "loading",
             "attrs": {
-              "class": "state-loading"
+              "class": "state-loading",
+              "data-accepts": "content"
             },
             "children": [
               {
@@ -165,7 +183,8 @@
           {
             "slot": "empty",
             "attrs": {
-              "class": "state-empty"
+              "class": "state-empty",
+              "data-accepts": "content"
             },
             "children": [
               {
@@ -204,7 +223,8 @@
           {
             "slot": "error",
             "attrs": {
-              "class": "state-error"
+              "class": "state-error",
+              "data-accepts": "content"
             },
             "children": [
               {
@@ -366,31 +386,49 @@
     {
       "$type": "slot",
       "name": "header",
+      "accepts": [
+        "header"
+      ],
       "description": "header region (reflects data-has-header)"
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the card body"
     },
     {
       "$type": "slot",
       "name": "footer",
+      "accepts": [
+        "footer"
+      ],
       "description": "footer region (reflects data-has-footer)"
     },
     {
       "$type": "slot",
       "name": "loading",
+      "accepts": [
+        "content"
+      ],
       "description": "loading content (has a default spinner); shown by data-loading"
     },
     {
       "$type": "slot",
       "name": "empty",
+      "accepts": [
+        "content"
+      ],
       "description": "empty-state content; slotting it shows the empty overlay (data-has-empty)"
     },
     {
       "$type": "slot",
       "name": "error",
+      "accepts": [
+        "content"
+      ],
       "description": "error-state content; slotting it shows the error overlay (data-has-error)"
     }
   ],

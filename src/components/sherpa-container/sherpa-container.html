@@ -40,7 +40,7 @@
 -->
 <template id="default">
   <header class="header" part="header">
-    <slot name="header"></slot>
+    <slot name="header" data-accepts="header"></slot>
   </header>
 
   <!-- KEEP THE CONTENT: each state as a banner, the body still shown. TODO 59 -->
@@ -65,20 +65,20 @@
 
   <div class="body" part="body">
     <sherpa-progress-bar class="loading-bar" part="loading-bar" data-indeterminate aria-label="Loading"></sherpa-progress-bar>
-    <slot></slot>
+    <slot data-accepts="content"></slot>
   </div>
 
   <footer class="footer" part="footer">
-    <slot name="footer"></slot>
+    <slot name="footer" data-accepts="footer"></slot>
   </footer>
 
   <div class="state" role="status" aria-live="polite" part="state">
     <!-- Each state's DEFAULT content, composed; a slotted one replaces it.
          TRAP T-a-container-shows-its-datas-state -->
-    <slot name="loading" class="state-loading">
+    <slot name="loading" class="state-loading" data-accepts="content">
       <sherpa-loader data-orientation="vertical"><span slot="label">Loading…</span></sherpa-loader>
     </slot>
-    <slot name="empty" class="state-empty">
+    <slot name="empty" class="state-empty" data-accepts="content">
       <sherpa-empty-state class="empty-default" data-illustration="data" data-size="sm"
                           data-heading="No data yet" data-description="There is nothing here yet."></sherpa-empty-state>
       <!-- The words as CONTENT: any child, whitespace too, replaces data-description. -->
@@ -88,7 +88,7 @@
         <sherpa-button slot="action" class="clear-filters">Clear filters</sherpa-button>
       </sherpa-empty-state>
     </slot>
-    <slot name="error" class="state-error">
+    <slot name="error" class="state-error" data-accepts="content">
       <sherpa-empty-state class="error-default" data-illustration="error" data-size="sm"
                           data-heading="The data could not load">
         <span class="error-message"></span>

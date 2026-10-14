@@ -16,30 +16,30 @@
     panel-room-change — the body gained or lost room for a panel area. detail: { room }
 
   Slots:
-    nav       replace the default <sherpa-nav>          (data-accepts: nav)
-    header    replace the default <sherpa-app-header>   (data-accepts: app-header, toolbar)
-    (default) the Context content                       (data-accepts: any)
+    nav       replace the default <sherpa-nav>
+    header    replace the default <sherpa-app-header>
+    (default) the Context content
     Set `--sherpa-panel-area-width` to change how wide a panel area is
     (default 360px). The AREA owns it, not the panel inside.
 
     panel-start  a panel BESIDE the Context, on the leading side — a filter
-              panel. Empty it takes no room.      (data-accepts: filter-panel, panel)
+              panel. Empty it takes no room.
     panel-end a panel on the trailing side — details, or Ask. Empty it takes
-              no room.                            (data-accepts: panel, overlay-panel)
+              no room.
     overlay   covers the header and content, beside the rail — a
-              <sherpa-dialog data-type="overlay">             (data-accepts: dialog)
+              <sherpa-dialog data-type="overlay">
 -->
 <template id="default">
   <div class="shell">
     <div class="nav" part="nav">
-      <slot name="nav"><sherpa-nav></sherpa-nav></slot>
+      <slot name="nav" data-accepts="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
     <!-- ONLY THE CONTEXT SCROLLS: the header and both panel areas stay put.
          TRAP T-only-the-context-scrolls -->
     <div class="frame" part="frame">
       <main class="content" part="content">
         <header class="header" part="header">
-          <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
+          <slot name="header" data-accepts="header,toolbar"><sherpa-app-header></sherpa-app-header></slot>
         </header>
         <!-- PANEL AREAS beside the Context: a filter panel on the left, and a
              details or Ask panel on the right. Empty they take no room, so a
@@ -47,17 +47,17 @@
              TRAP T-the-shell-owns-the-panel-areas -->
         <div class="body" part="body">
           <aside class="panel-start" part="panel-start">
-            <slot name="panel-start" data-accepts="filter-panel, panel"></slot>
+            <slot name="panel-start" data-accepts="panel"></slot>
             <!-- The area's INNER edge resizes it: drag it, or the arrow keys.
                  TRAP T-an-edge-resizes-its-box -->
             <div class="edge edge-start" part="panel-start-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
           </aside>
-          <div class="context-frame"><slot></slot></div>
+          <div class="context-frame"><slot data-accepts="content"></slot></div>
           <aside class="panel-end" part="panel-end">
             <div class="edge edge-end" part="panel-end-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
-            <slot name="panel-end" data-accepts="panel, overlay-panel"></slot>
+            <slot name="panel-end" data-accepts="panel"></slot>
           </aside>
         </div>
       </main>

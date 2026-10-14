@@ -299,6 +299,13 @@ function dispatchedEvents(ts) {
   return out;
 }
 
+/** What a slot may take: HTML's own content categories, then one word per
+ *  Sherpa role a slot takes ONE kind of component for. TRAP T-a-slot-says-what-it-accepts */
+const SLOT_ACCEPTS = new Set([
+  'text', 'icon', 'control', 'input', 'content',
+  'item', 'menu', 'legend', 'header', 'footer', 'nav', 'panel', 'dialog', 'toolbar', 'badge',
+]);
+
 function collectEventNames(text, set) {
   const cleaned = text.replace(/\(detail[^)]*\)/gi, '').replace(/\(re-dispatched[^)]*\)/gi, '');
   for (const frag of cleaned.split(/[,\n]/)) {
@@ -387,6 +394,12 @@ function parseSlots(html, comment, notes) {
     const name = /\bname="([^"]*)"/.exec(m[1])?.[1] ?? '';
     if (out.has(name)) continue;
     const accepts = /\bdata-accepts="([^"]*)"/.exec(m[1])?.[1];
+    const words = (accepts ?? '').split(/[\s,]+/).filter(Boolean);
+    const odd = words.filter((w) => !SLOT_ACCEPTS.has(w));
+    if (!words.length || odd.length) {
+      throw new Error(`a <slot name="${name}"> must say what it accepts, in data-accepts="…", from: ${[...SLOT_ACCEPTS].join(', ')}${
+        odd.length ? ` — not ${odd.join(', ')}` : ''}. TRAP T-a-slot-says-what-it-accepts`);
+    }
     out.set(name, {
       $type: 'slot', name,
       ...(accepts ? { accepts: accepts.split(/[\s,]+/).filter(Boolean) } : {}),

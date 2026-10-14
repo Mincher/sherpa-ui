@@ -11,7 +11,7 @@
     "root": {
       "slot": "",
       "attrs": {
-        "data-accepts": "any"
+        "data-accepts": "content"
       }
     }
   },
@@ -40,7 +40,7 @@
       "$type": "slot",
       "name": "",
       "accepts": [
-        "any"
+        "content"
       ],
       "description": "whatever it is wrapped round, drawn as if it were not there"
     }

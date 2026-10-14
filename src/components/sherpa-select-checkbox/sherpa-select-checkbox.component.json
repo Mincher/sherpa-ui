@@ -56,7 +56,10 @@
                         "part": "description"
                       },
                       {
-                        "slot": ""
+                        "slot": "",
+                        "attrs": {
+                          "data-accepts": "text"
+                        }
                       }
                     ]
                   }
@@ -81,7 +84,10 @@
         ]
       },
       {
-        "slot": "menu"
+        "slot": "menu",
+        "attrs": {
+          "data-accepts": "menu"
+        }
       }
     ]
   },
@@ -160,11 +166,17 @@
   "slots": [
     {
       "$type": "slot",
-      "name": ""
+      "name": "",
+      "accepts": [
+        "text"
+      ]
     },
     {
       "$type": "slot",
-      "name": "menu"
+      "name": "menu",
+      "accepts": [
+        "menu"
+      ]
     }
   ],
   "populate": {

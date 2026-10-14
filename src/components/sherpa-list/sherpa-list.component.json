@@ -21,10 +21,17 @@
         "el": "div",
         "class": "body",
         "part": "body",
-        "slot": "",
         "attrs": {
           "role": "list"
-        }
+        },
+        "children": [
+          {
+            "slot": "",
+            "attrs": {
+              "data-accepts": "item"
+            }
+          }
+        ]
       },
       {
         "el": "div",
@@ -88,7 +95,10 @@
   "slots": [
     {
       "$type": "slot",
-      "name": ""
+      "name": "",
+      "accepts": [
+        "item"
+      ]
     }
   ],
   "populate": {

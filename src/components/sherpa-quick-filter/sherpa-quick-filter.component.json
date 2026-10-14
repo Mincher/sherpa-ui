@@ -70,7 +70,14 @@
               "el": "span",
               "class": "label",
               "part": "label",
-              "slot": ""
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "text"
+                  }
+                }
+              ]
             }
           ]
         },
@@ -127,7 +134,14 @@
         {
           "el": "span",
           "class": "menu-slot",
-          "slot": "menu"
+          "children": [
+            {
+              "slot": "menu",
+              "attrs": {
+                "data-accepts": "menu"
+              }
+            }
+          ]
         },
         {
           "el": "template",
@@ -459,11 +473,17 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "text"
+      ],
       "description": "the chip label"
     },
     {
       "$type": "slot",
       "name": "menu",
+      "accepts": [
+        "menu"
+      ],
       "description": "a <sherpa-menu> of values for this field"
     }
   ],

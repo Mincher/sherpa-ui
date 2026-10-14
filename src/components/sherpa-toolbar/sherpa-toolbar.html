@@ -13,7 +13,7 @@
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar">
-    <div class="zone leading" part="leading"><slot name="leading"></slot></div>
-    <div class="zone trailing" part="trailing"><slot name="trailing"></slot></div>
+    <div class="zone leading" part="leading"><slot name="leading" data-accepts="control"></slot></div>
+    <div class="zone trailing" part="trailing"><slot name="trailing" data-accepts="content"></slot></div>
   </div>
 </template>

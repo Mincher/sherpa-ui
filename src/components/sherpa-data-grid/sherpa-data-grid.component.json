@@ -147,19 +147,33 @@
         "el": "div",
         "class": "empty",
         "part": "empty",
-        "slot": "empty",
         "attrs": {
           "role": "status"
-        }
+        },
+        "children": [
+          {
+            "slot": "empty",
+            "attrs": {
+              "data-accepts": "content"
+            }
+          }
+        ]
       },
       {
         "el": "div",
         "class": "no-matches",
         "part": "no-matches",
-        "slot": "no-matches",
         "attrs": {
           "role": "status"
-        }
+        },
+        "children": [
+          {
+            "slot": "no-matches",
+            "attrs": {
+              "data-accepts": "content"
+            }
+          }
+        ]
       },
       {
         "el": "template",
@@ -393,11 +407,17 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "empty"
+      "name": "empty",
+      "accepts": [
+        "content"
+      ]
     },
     {
       "$type": "slot",
-      "name": "no-matches"
+      "name": "no-matches",
+      "accepts": [
+        "content"
+      ]
     }
   ],
   "populate": {

@@ -27,7 +27,8 @@
       {
         "slot": "label",
         "attrs": {
-          "class": "label"
+          "class": "label",
+          "data-accepts": "text"
         }
       }
     ]
@@ -76,6 +77,9 @@
     {
       "$type": "slot",
       "name": "label",
+      "accepts": [
+        "text"
+      ],
       "description": "loading text shown beside (or below) the spinner"
     }
   ],

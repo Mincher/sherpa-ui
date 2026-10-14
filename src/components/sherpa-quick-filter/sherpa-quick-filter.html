@@ -110,7 +110,7 @@
       <span class="count" part="count" role="img"></span>
       <span class="swatch" part="swatch" aria-hidden="true"></span>
       <span class="icon sherpa-icon-box" part="icon" aria-hidden="true"></span>
-      <span class="label" part="label"><slot></slot></span>
+      <span class="label" part="label"><slot data-accepts="text"></slot></span>
     </button>
 
     <button class="caret" part="caret" type="button" aria-haspopup="dialog" aria-expanded="false"
@@ -129,7 +129,7 @@
       <span class="caret-icon sherpa-icon-box" part="caret-icon" aria-hidden="true"></span>
     </button>
 
-    <span class="menu-slot"><slot name="menu"></slot></span>
+    <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
 
     <!-- A jump row, cloned into the slotted menu. No `slot`: rows go in the
          menu's DEFAULT slot, and a row carrying one is never projected. -->

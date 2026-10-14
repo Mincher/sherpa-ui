@@ -79,7 +79,10 @@
             "part": "actions",
             "children": [
               {
-                "slot": "actions"
+                "slot": "actions",
+                "attrs": {
+                  "data-accepts": "control"
+                }
               },
               {
                 "el": "sherpa-button",
@@ -256,6 +259,9 @@
     {
       "$type": "slot",
       "name": "actions",
+      "accepts": [
+        "control"
+      ],
       "description": "extra controls in the actions row (before clear/upload)"
     }
   ],

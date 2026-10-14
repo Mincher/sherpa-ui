@@ -45,14 +45,15 @@
             {
               "slot": "icon",
               "attrs": {
-                "slot": "icon"
+                "slot": "icon",
+                "data-accepts": "icon"
               }
             },
             {
               "slot": "description",
               "attrs": {
                 "slot": "metadata",
-                "data-accepts": "content,control"
+                "data-accepts": "content"
               }
             },
             {
@@ -120,7 +121,14 @@
           "el": "div",
           "class": "body",
           "part": "body",
-          "slot": ""
+          "children": [
+            {
+              "slot": "",
+              "attrs": {
+                "data-accepts": "content"
+              }
+            }
+          ]
         },
         {
           "el": "sherpa-container-footer",
@@ -227,14 +235,16 @@
     {
       "$type": "slot",
       "name": "icon",
+      "accepts": [
+        "icon"
+      ],
       "description": "custom lead icon (else the data-icon glyph)"
     },
     {
       "$type": "slot",
       "name": "description",
       "accepts": [
-        "content",
-        "control"
+        "content"
       ],
       "description": "the metadata / description row under the title (reflects data-has-description)"
     },
@@ -249,6 +259,9 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the panel body"
     },
     {

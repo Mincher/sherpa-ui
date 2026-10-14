@@ -25,6 +25,9 @@
           "children": [
             {
               "slot": "header",
+              "attrs": {
+                "data-accepts": "content"
+              },
               "children": [
                 {
                   "el": "span",
@@ -44,7 +47,14 @@
           "el": "div",
           "class": "body",
           "part": "body",
-          "slot": ""
+          "children": [
+            {
+              "slot": "",
+              "attrs": {
+                "data-accepts": "content"
+              }
+            }
+          ]
         },
         {
           "el": "div",
@@ -53,6 +63,9 @@
           "children": [
             {
               "slot": "footer",
+              "attrs": {
+                "data-accepts": "content"
+              },
               "children": [
                 {
                   "el": "sherpa-select-radio",
@@ -176,16 +189,25 @@
     {
       "$type": "slot",
       "name": "header",
+      "accepts": [
+        "content"
+      ],
       "description": "header region (falls back to data-label / data-description)"
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the card body / content"
     },
     {
       "$type": "slot",
       "name": "footer",
+      "accepts": [
+        "content"
+      ],
       "description": "footer region (falls back to the select controls)"
     }
   ],

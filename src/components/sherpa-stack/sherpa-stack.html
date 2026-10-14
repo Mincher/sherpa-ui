@@ -31,12 +31,12 @@
                     matches every host.
 
   Slots:
-    (default) — the items (data-accepts: any)
+    (default) — the items
 
   Fires: nothing — it is a layout surface; slotted controls emit their own events.
 -->
 <template id="default">
   <div class="run" part="run">
-    <slot data-accepts="any"></slot>
+    <slot data-accepts="content"></slot>
   </div>
 </template>

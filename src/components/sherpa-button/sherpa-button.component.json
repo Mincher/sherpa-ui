@@ -42,7 +42,14 @@
             {
               "el": "span",
               "class": "label",
-              "slot": ""
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "text,icon"
+                  }
+                }
+              ]
             },
             {
               "el": "i",
@@ -274,6 +281,10 @@
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "text",
+        "icon"
+      ],
       "description": "label content"
     },
     {
@@ -282,7 +293,7 @@
       "accepts": [
         "badge"
       ],
-      "description": "trailing badge — data-accepts: badge"
+      "description": "trailing badge"
     },
     {
       "$type": "slot",
@@ -290,7 +301,7 @@
       "accepts": [
         "menu"
       ],
-      "description": "a sherpa-menu this button opens — data-accepts: menu"
+      "description": "a sherpa-menu this button opens"
     }
   ],
   "populate": {

@@ -11,7 +11,7 @@
     "root": {
       "slot": "",
       "attrs": {
-        "data-accepts": "any"
+        "data-accepts": "content"
       }
     }
   },
@@ -20,7 +20,7 @@
       "$type": "slot",
       "name": "",
       "accepts": [
-        "any"
+        "content"
       ],
       "description": "the Context's markup, put there by the outlet"
     }

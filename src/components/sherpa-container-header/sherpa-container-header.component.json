@@ -61,7 +61,10 @@
                   "class": "glyph"
                 },
                 {
-                  "slot": "icon"
+                  "slot": "icon",
+                  "attrs": {
+                    "data-accepts": "icon"
+                  }
                 }
               ]
             }
@@ -74,6 +77,9 @@
           "children": [
             {
               "slot": "heading",
+              "attrs": {
+                "data-accepts": "text"
+              },
               "children": [
                 {
                   "el": "span",
@@ -122,7 +128,7 @@
             {
               "slot": "metadata",
               "attrs": {
-                "data-accepts": "content,control"
+                "data-accepts": "content"
               }
             }
           ]
@@ -214,11 +220,17 @@
     {
       "$type": "slot",
       "name": "icon",
+      "accepts": [
+        "icon"
+      ],
       "description": "custom icon element (else data-icon glyph)"
     },
     {
       "$type": "slot",
       "name": "heading",
+      "accepts": [
+        "text"
+      ],
       "description": "custom heading element (replaces the default .title)"
     },
     {
@@ -234,8 +246,7 @@
       "$type": "slot",
       "name": "metadata",
       "accepts": [
-        "content",
-        "control"
+        "content"
       ],
       "description": "bottom metadata strip (Panel) / secondary content (Default)"
     }

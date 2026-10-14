@@ -33,7 +33,14 @@
             "el": "span",
             "class": "detail",
             "part": "detail",
-            "slot": "detail"
+            "children": [
+              {
+                "slot": "detail",
+                "attrs": {
+                  "data-accepts": "control,badge"
+                }
+              }
+            ]
           }
         ]
       },
@@ -41,7 +48,14 @@
         "el": "div",
         "class": "panels",
         "part": "panels",
-        "slot": ""
+        "children": [
+          {
+            "slot": "",
+            "attrs": {
+              "data-accepts": "content"
+            }
+          }
+        ]
       },
       {
         "el": "template",
@@ -87,11 +101,18 @@
     {
       "$type": "slot",
       "name": "detail",
+      "accepts": [
+        "control",
+        "badge"
+      ],
       "description": "trailing content beside the tab strip (badges, actions)"
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "content"
+      ],
       "description": "the tab panels; each child should have data-tab=\"<id>\""
     }
   ],

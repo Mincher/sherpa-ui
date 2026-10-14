@@ -268,14 +268,15 @@
     "slot": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": ["name", "accepts"],
       "properties": {
         "$type": { "const": "slot" },
         "name": { "type": "string" },
         "accepts": {
-          "description": "The data-accepts category allowlist.",
+          "description": "What the slot takes, from its data-accepts: HTML's content categories (text, icon, control, input, content), then the Sherpa roles a slot takes one kind of component for.",
           "type": "array",
-          "items": { "type": "string" }
+          "minItems": 1,
+          "items": { "enum": ["text", "icon", "control", "input", "content", "item", "menu", "legend", "header", "footer", "nav", "panel", "dialog", "toolbar", "badge"] }
         },
         "description": { "type": "string" }
       }

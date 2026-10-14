@@ -35,7 +35,7 @@
   <!-- The gutter handles: positioned, so never a grid item. BEFORE the slot, so
        they come first in tab order, as one group, not after every card. -->
   <div class="handles" part="handles"></div>
-  <slot></slot>
+  <slot data-accepts="content"></slot>
   <!-- A SIBLING of .handles: a re-stamp empties that container. -->
   <template class="handle-tpl">
     <div class="handle" part="handle" role="separator" tabindex="0"

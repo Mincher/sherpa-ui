@@ -11,16 +11,16 @@
     data-bands          a number segment-field cut at these edges, "0,20,40" — a histogram
 
   Slots:
-    title   — heading above the chart (data-accepts: text, inline)
+    title   — heading above the chart
     legend  — a <sherpa-chart-legend> for the series. Horizontal → below the plot;
-              vertical → beside it. (data-accepts: chart-legend)
+              vertical → beside it.
 
   Fires: bar-click — detail: { index, label, value }
 -->
 <template id="default">
   <figure class="chart-figure" part="figure">
     <figcaption class="chart-header" part="header">
-      <span class="title"><slot name="title"></slot></span>
+      <span class="title"><slot name="title" data-accepts="text"></slot></span>
     </figcaption>
     <div class="chart-body">
       <span class="axis-label axis-label-y" part="axis-label"></span>
@@ -39,7 +39,7 @@
       <div class="x-axis-row" part="x-axis" aria-hidden="true"></div>
     </div>
 
-    <slot name="legend"></slot>
+    <slot name="legend" data-accepts="legend"></slot>
   </figure>
 
   <template class="ytick-tpl">

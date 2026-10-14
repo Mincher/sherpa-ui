@@ -90,7 +90,14 @@
                   "el": "span",
                   "class": "actions",
                   "part": "actions",
-                  "slot": "actions"
+                  "children": [
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -171,7 +178,14 @@
                   "el": "span",
                   "class": "actions",
                   "part": "actions",
-                  "slot": "actions"
+                  "children": [
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -249,7 +263,14 @@
                   "el": "span",
                   "class": "actions",
                   "part": "actions",
-                  "slot": "actions"
+                  "children": [
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -336,7 +357,14 @@
                   "el": "span",
                   "class": "actions",
                   "part": "actions",
-                  "slot": "actions"
+                  "children": [
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -456,7 +484,14 @@
                   "el": "span",
                   "class": "actions",
                   "part": "actions",
-                  "slot": "actions"
+                  "children": [
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -880,6 +915,9 @@
     {
       "$type": "slot",
       "name": "actions",
+      "accepts": [
+        "control"
+      ],
       "description": "trailing controls in the field row (steppers, buttons); CSS-gated"
     }
   ],

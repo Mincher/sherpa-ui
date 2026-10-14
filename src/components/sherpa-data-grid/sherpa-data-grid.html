@@ -132,13 +132,13 @@
   </table>
   </div>
   <div class="empty" part="empty" role="status">
-    <slot name="empty">No rows to display.</slot>
+    <slot name="empty" data-accepts="content">No rows to display.</slot>
   </div>
 
   <!-- Shown when a column filter matches nothing. Distinct from `empty`, which
        hides the whole table. -->
   <div class="no-matches" part="no-matches" role="status">
-    <slot name="no-matches">No rows match the current filters.</slot>
+    <slot name="no-matches" data-accepts="content">No rows match the current filters.</slot>
   </div>
 
   <template class="head-cell-tpl">

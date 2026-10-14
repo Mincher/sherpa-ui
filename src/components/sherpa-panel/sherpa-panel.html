@@ -20,13 +20,13 @@
   <section class="root" part="root">
     <div class="header" part="header">
       <span class="heading-text"></span>
-      <slot name="header"></slot>
+      <slot name="header" data-accepts="header"></slot>
     </div>
     <div class="body" part="body">
-      <slot></slot>
+      <slot data-accepts="content"></slot>
     </div>
     <div class="footer" part="footer">
-      <slot name="footer"></slot>
+      <slot name="footer" data-accepts="footer"></slot>
     </div>
   </section>
 </template>

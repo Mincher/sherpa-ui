@@ -46,7 +46,10 @@
                       }
                     },
                     {
-                      "slot": "breadcrumbs"
+                      "slot": "breadcrumbs",
+                      "attrs": {
+                        "data-accepts": "nav"
+                      }
                     }
                   ]
                 },
@@ -56,7 +59,10 @@
                   "part": "actions",
                   "children": [
                     {
-                      "slot": "actions"
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
                     },
                     {
                       "el": "sherpa-button",
@@ -209,7 +215,10 @@
                       "part": "title"
                     },
                     {
-                      "slot": "title"
+                      "slot": "title",
+                      "attrs": {
+                        "data-accepts": "text"
+                      }
                     },
                     {
                       "el": "sherpa-button",
@@ -230,7 +239,14 @@
                   "el": "div",
                   "class": "filters",
                   "part": "filters",
-                  "slot": "filters"
+                  "children": [
+                    {
+                      "slot": "filters",
+                      "attrs": {
+                        "data-accepts": "toolbar"
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -398,21 +414,33 @@
     {
       "$type": "slot",
       "name": "breadcrumbs",
+      "accepts": [
+        "nav"
+      ],
       "description": "the breadcrumb trail (row 1, left)"
     },
     {
       "$type": "slot",
       "name": "actions",
+      "accepts": [
+        "control"
+      ],
       "description": "extra buttons before the standard action set"
     },
     {
       "$type": "slot",
       "name": "title",
+      "accepts": [
+        "text"
+      ],
       "description": "rich Context title (overrides data-heading)"
     },
     {
       "$type": "slot",
       "name": "filters",
+      "accepts": [
+        "toolbar"
+      ],
       "description": "the quick-filter toolbar (row 2)"
     }
   ],

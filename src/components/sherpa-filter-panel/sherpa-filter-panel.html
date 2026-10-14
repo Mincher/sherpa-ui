@@ -115,7 +115,7 @@
       </span>
       <!-- The HOST's buttons — the page's switch back to the toolbars is one.
            TRAP T-the-mode-switch-is-the-pages-own -->
-      <slot name="actions" slot="actions"></slot>
+      <slot name="actions" slot="actions" data-accepts="control"></slot>
       <!-- ⋮ — what folded away for want of room, then the host's own option.
            Will, TODO 178. TRAP T-the-more-menu-holds-what-folded -->
       <sherpa-button slot="actions" class="more-btn" part="more" data-type="icon" data-size="sm"
@@ -134,7 +134,7 @@
     </sherpa-container-header>
 
     <div class="scopes" part="scopes"></div>
-    <slot></slot>
+    <slot data-accepts="content"></slot>
 
     <!-- REMOTE only, while a change waits: every field's Apply or Discard at once.
          Will, TODO 98. TRAP T-apply-and-discard-wait-for-a-change -->

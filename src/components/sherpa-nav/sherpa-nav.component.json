@@ -45,6 +45,9 @@
                     "children": [
                       {
                         "slot": "brand-icon",
+                        "attrs": {
+                          "data-accepts": "icon"
+                        },
                         "children": [
                           {
                             "el": "i",
@@ -94,7 +97,10 @@
                         }
                       },
                       {
-                        "slot": "actions"
+                        "slot": "actions",
+                        "attrs": {
+                          "data-accepts": "control"
+                        }
                       }
                     ]
                   }
@@ -165,13 +171,27 @@
             "el": "div",
             "class": "content",
             "part": "content",
-            "slot": ""
+            "children": [
+              {
+                "slot": "",
+                "attrs": {
+                  "data-accepts": "item"
+                }
+              }
+            ]
           },
           {
             "el": "div",
             "class": "footer",
             "part": "footer",
-            "slot": "footer"
+            "children": [
+              {
+                "slot": "footer",
+                "attrs": {
+                  "data-accepts": "content"
+                }
+              }
+            ]
           },
           {
             "el": "div",
@@ -269,20 +289,32 @@
     {
       "$type": "slot",
       "name": "brand-icon",
+      "accepts": [
+        "icon"
+      ],
       "description": "the product mark inside the 40×40 branding tile"
     },
     {
       "$type": "slot",
       "name": "actions",
+      "accepts": [
+        "control"
+      ],
       "description": "more header buttons, after Settings and Pin"
     },
     {
       "$type": "slot",
-      "name": ""
+      "name": "",
+      "accepts": [
+        "item"
+      ]
     },
     {
       "$type": "slot",
       "name": "footer",
+      "accepts": [
+        "content"
+      ],
       "description": "pinned footer content (account / user)"
     }
   ],

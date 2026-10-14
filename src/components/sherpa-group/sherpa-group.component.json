@@ -9,7 +9,10 @@
   ],
   "anatomy": {
     "root": {
-      "slot": ""
+      "slot": "",
+      "attrs": {
+        "data-accepts": "control,input"
+      }
     }
   },
   "props": [
@@ -50,7 +53,11 @@
   "slots": [
     {
       "$type": "slot",
-      "name": ""
+      "name": "",
+      "accepts": [
+        "control",
+        "input"
+      ]
     }
   ],
   "populate": {

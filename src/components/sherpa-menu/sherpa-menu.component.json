@@ -64,7 +64,10 @@
                   "part": "heading"
                 },
                 {
-                  "slot": "header"
+                  "slot": "header",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
                 },
                 {
                   "el": "sherpa-input-text",
@@ -142,7 +145,14 @@
               "el": "div",
               "class": "rows",
               "part": "rows",
-              "slot": ""
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "item"
+                  }
+                }
+              ]
             },
             {
               "el": "template",
@@ -214,7 +224,10 @@
                   "part": "heading"
                 },
                 {
-                  "slot": "header"
+                  "slot": "header",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
                 },
                 {
                   "el": "div",
@@ -327,7 +340,14 @@
               "el": "div",
               "class": "rows",
               "part": "rows",
-              "slot": ""
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "item"
+                  }
+                }
+              ]
             },
             {
               "el": "template",
@@ -806,16 +826,25 @@
     {
       "$type": "slot",
       "name": "header",
+      "accepts": [
+        "control"
+      ],
       "description": "controls ABOVE the heading (a calendar's month stepper)."
     },
     {
       "$type": "slot",
       "name": "",
+      "accepts": [
+        "item"
+      ],
       "description": "the rows (labels with inputs, or buttons)."
     },
     {
       "$type": "slot",
       "name": "footer",
+      "accepts": [
+        "control"
+      ],
       "description": "the host's own footer buttons, leading the footer row; the row shows once it is filled (a Find's Replace, Previous and Next)"
     }
   ],

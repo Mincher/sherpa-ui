@@ -20,7 +20,7 @@
 -->
 <template id="default">
   <span class="anchor" part="anchor">
-    <slot></slot>
+    <slot data-accepts="content"></slot>
   </span>
   <!--
     `popover=manual` lifts the bubble past any clipping ancestor; `auto` would
@@ -29,7 +29,7 @@
   -->
   <span class="bubble" part="bubble" role="tooltip" popover="manual">
     <span class="tip-text"></span>
-    <slot name="tip"></slot>
+    <slot name="tip" data-accepts="content"></slot>
     <span class="arrow" part="arrow" aria-hidden="true"></span>
   </span>
 </template>

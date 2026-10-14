@@ -38,7 +38,14 @@
               "el": "span",
               "class": "label",
               "part": "label",
-              "slot": ""
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "text"
+                  }
+                }
+              ]
             }
           ]
         }
@@ -103,7 +110,10 @@
   "slots": [
     {
       "$type": "slot",
-      "name": ""
+      "name": "",
+      "accepts": [
+        "text"
+      ]
     }
   ],
   "populate": {

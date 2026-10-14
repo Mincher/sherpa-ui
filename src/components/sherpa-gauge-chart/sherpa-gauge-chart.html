@@ -28,19 +28,18 @@
     data-field      the number that aggregate reads
 
   Slots:
-    title    — heading above the gauge (data-accepts: text, inline)
+    title    — heading above the gauge
     legend   — a <sherpa-chart-legend> naming the zones; the gauge fills it
                from zones that are named. Horizontal → below the gauge;
-               vertical → beside it. (data-accepts: chart-legend)
+               vertical → beside it.
     caption  — rich caption below the gauge; overrides data-caption
-               (data-accepts: text, inline)
 
   Fires: nothing — display only.
 -->
 <template id="default">
   <figure class="chart-figure" part="figure">
   <div class="chart-header" part="header">
-    <span class="title"><slot name="title"></slot></span>
+    <span class="title"><slot name="title" data-accepts="text"></slot></span>
   </div>
 
   <!-- Wraps ring + scale + caption as ONE grid item, so a vertical legend can sit
@@ -79,14 +78,14 @@
        and left dead space beneath it. -->
   <div class="scale" part="scale">
     <span class="min"></span>
-    <figcaption class="caption" part="caption"><span class="caption-text"></span><slot name="caption"></slot></figcaption>
+    <figcaption class="caption" part="caption"><span class="caption-text"></span><slot name="caption" data-accepts="content"></slot></figcaption>
     <span class="max"></span>
   </div>
   </div>
 
   <!-- The legend belongs to the CHART, not the card around it. Horizontal sits
        below the gauge here; vertical is switched to a two-column grid by CSS. -->
-  <slot name="legend"></slot>
+  <slot name="legend" data-accepts="legend"></slot>
   </figure>
 
   <!--

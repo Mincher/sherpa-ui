@@ -16,15 +16,15 @@
 -->
 <template id="default">
   <span class="pill sherpa-border-edges" part="pill">
-    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
-    <span><slot></slot></span>
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon" data-accepts="icon"><i class="glyph"></i></slot></span>
+    <span><slot data-accepts="text"></slot></span>
   </span>
 </template>
 
 <template id="dismissible">
   <span class="pill sherpa-border-edges" part="pill">
-    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
-    <span><slot></slot></span>
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon" data-accepts="icon"><i class="glyph"></i></slot></span>
+    <span><slot data-accepts="text"></slot></span>
     <sherpa-button class="close" part="close" data-type="icon" data-size="xs"
                    data-look="transparent" data-icon-start="cross"
                    aria-label="Remove"></sherpa-button>

@@ -56,7 +56,7 @@
             {
               "slot": "options",
               "attrs": {
-                "data-accepts": "control"
+                "data-accepts": "input"
               }
             }
           ]
@@ -148,7 +148,7 @@
       "$type": "slot",
       "name": "options",
       "accepts": [
-        "control"
+        "input"
       ],
       "description": "checkbox/radio option rows"
     }

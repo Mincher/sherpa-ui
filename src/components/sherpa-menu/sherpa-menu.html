@@ -131,7 +131,7 @@
         <sherpa-breadcrumbs class="drill-crumbs" part="drill-crumbs"></sherpa-breadcrumbs>
       </span>
       <p class="heading" part="heading"></p>
-      <slot name="header"></slot>
+      <slot name="header" data-accepts="control"></slot>
       <!--
         SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
         is nothing here to restyle. It filters the rows the menu already has, so a
@@ -183,7 +183,7 @@
          TRAP T-projected-slot-content-crosses-two-shadow-boundaries -->
 
     <div class="rows" part="rows">
-      <slot></slot>
+      <slot data-accepts="item"></slot>
     </div>
 
     <!-- ITEM PROTOTYPES — the menu stamps into its own rows slot from the DATA
@@ -238,7 +238,7 @@
     -->
     <sherpa-container-footer class="footer" part="footer" data-align="end">
       <!-- The HOST's own buttons, leading the row. The footer shows when it is filled. -->
-      <slot name="footer"></slot>
+      <slot name="footer" data-accepts="control"></slot>
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
@@ -273,7 +273,7 @@
         <sherpa-breadcrumbs class="drill-crumbs" part="drill-crumbs"></sherpa-breadcrumbs>
       </span>
       <p class="heading" part="heading"></p>
-      <slot name="header"></slot>
+      <slot name="header" data-accepts="control"></slot>
       <!-- ONE OBJECT: the condition and whatever answers it are SNAPPED, with
            no gap, by `.sherpa-group` — the system's own grouping class, which
            squares the inner corners and halves the shared edge by POSITION.
@@ -324,7 +324,7 @@
     </div>
 
     <div class="rows" part="rows">
-      <slot></slot>
+      <slot data-accepts="item"></slot>
     </div>
 
     <!-- ITEM PROTOTYPES — the menu stamps into its own rows slot from the DATA

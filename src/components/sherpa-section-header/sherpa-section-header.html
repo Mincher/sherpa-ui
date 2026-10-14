@@ -19,11 +19,11 @@
 <template id="default">
   <header class="row" part="row">
     <div class="lead" part="lead">
-      <slot name="heading">
+      <slot name="heading" data-accepts="text">
         <h2 class="title" part="title"></h2>
       </slot>
       <div class="description" part="description">
-        <slot name="description"></slot>
+        <slot name="description" data-accepts="text"></slot>
       </div>
     </div>
     <div class="actions" part="actions">

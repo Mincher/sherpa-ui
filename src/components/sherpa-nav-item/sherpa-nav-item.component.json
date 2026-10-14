@@ -54,7 +54,14 @@
                   "el": "span",
                   "class": "badge",
                   "part": "badge",
-                  "slot": "trailing"
+                  "children": [
+                    {
+                      "slot": "trailing",
+                      "attrs": {
+                        "data-accepts": "control,badge"
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -87,7 +94,14 @@
                   "el": "span",
                   "class": "badge",
                   "part": "badge",
-                  "slot": "trailing"
+                  "children": [
+                    {
+                      "slot": "trailing",
+                      "attrs": {
+                        "data-accepts": "control,badge"
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -325,7 +339,11 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "trailing"
+      "name": "trailing",
+      "accepts": [
+        "control",
+        "badge"
+      ]
     }
   ],
   "populate": {
