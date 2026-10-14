@@ -235,7 +235,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **L — The code review** | |
 | ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; waits on Will's review and seven choices | explore |
 | ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
-| ⬜ | 61b | 244 | BUG: three events are missing from the specs, and two phantom events are in them | bug |
+| ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
 | ⬜ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
 | ⬜ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
 | ⬜ | 61e | 247 | BUG: `skipWhen` never guards an empty slot — container-header's icon, toast's heading, gauge's caption | bug |
@@ -5950,6 +5950,21 @@ components to read the signal in `onRender`.
 the tooltip's anchor is wired in `onConnect`. A sweep moves every a11y fixture
 and fills each slot; it failed on the old build (the slots, and all four
 behaviours) and passes in three engines. `T-abort-controller-per-connect`.
+
+### `[x]` ✅ 244 — Every emitted event is in its spec
+
+The generator read event names with regex, so `this.emit(act)` hid the
+toolbar's `filters-save` and `filters-save-as`, the panel's `filters-save-as`
+and the prompt-composer's `composer-attach` and `composer-lab`. And it counted
+a `new CustomEvent` dispatched on a CHILD as the component's own: phantom
+`button-click` on the toolbar and the panel, and `menu-change` on the panel.
+
+**✅ Done 2026-10-14.** TypeScript's checker names each `emit()` from the type
+of its first argument (`parseEmits`), so a `case`-narrowed variable, a ternary
+and an `as const` table are read. A name that types as `string` fails the
+generator; the panel's `` `${id}-change` `` and the app-header's table were the
+two, now literals. Only `this.dispatchEvent(new …)` counts as the component's.
+A unit test holds it. `T-an-event-name-is-not-always-a-literal`.
 
 ## ✅ Done — the full record
 

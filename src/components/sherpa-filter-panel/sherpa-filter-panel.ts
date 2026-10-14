@@ -1390,9 +1390,8 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!held) return;
     event.stopImmediatePropagation();
     const detail = ((event as CustomEvent).detail ?? {}) as Record<string, unknown>;
-    /* BY NAME, not `event.type`: the contract is read from literals at the
-       emit, and a bare variable made both events vanish from the spec.
-       TRAP T-an-event-name-is-not-always-a-literal */
+    // BY NAME: `event.type` types as `string`, which the spec cannot list.
+    // TRAP T-an-event-name-is-not-always-a-literal
     this.emit(event.type === 'sort-change' ? 'sort-change' : 'group-change',
       { ...detail, scope: held.scope });
     this.#syncAnswered(held);
@@ -1635,7 +1634,7 @@ export class SherpaFilterPanel extends SherpaElement {
         chip.toggleAttribute('data-current', picked.length > 0);
         this.#syncAnswered(held);
         if (held.def.id === 'group' || held.def.id === 'sort') {
-          this.emit(`${held.def.id}-change`, {
+          this.emit(held.def.id === 'sort' ? 'sort-change' : 'group-change', {
             scope: held.scope, field: picked[0] ?? null,
           });
         }

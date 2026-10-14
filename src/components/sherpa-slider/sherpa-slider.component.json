@@ -259,6 +259,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
+        "end": "number",
+        "start": "number",
         "value": "number"
       }
     },
@@ -268,6 +270,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
+        "end": "number",
+        "start": "number",
         "value": "number"
       }
     }

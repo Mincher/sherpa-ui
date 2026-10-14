@@ -24,7 +24,7 @@
  */
 import { readFileSync, existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { join, dirname } from 'node:path';
+import { join, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import yaml from 'js-yaml';
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -32,7 +32,7 @@ import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
-import { parseClassApi, parseEventDetails, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
+import { parseClassApi, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -281,49 +281,20 @@ function uncomposedEvents(ts) {
   return plain;
 }
 
-function emittedEvents(ts) {
+/** The events dispatched on THIS element by hand. `emit()` is read by the
+ *  checker (`parseEmits`); an event dispatched on another element is that
+ *  element's. TRAP T-an-event-name-is-not-always-a-literal */
+function dispatchedEvents(ts) {
   const out = new Set();
   if (!ts) return out;
   const patterns = [
-    /\bemit\(\s*['"`]([a-z][\w-]*)['"`]/g,
-    /* `bubbles: true` is what makes a CustomEvent PUBLIC. sherpa-data-grid
-       constructs `new CustomEvent('menu-clear', { bubbles: false })` and passes
-       it straight to a handler as an argument — never dispatched — and a bare
-       `new CustomEvent` scan wrote it into the contract as a tenth event.
-       TRAP T-a-constructed-event-is-not-a-dispatched-one */
-    /new CustomEvent\(\s*['"`]([a-z][\w-]*)['"`][^)]*bubbles:\s*true/g,
-    /new Event\(\s*['"`]([a-z][\w-]*)['"`]/g,
+    /* `bubbles: true` is what makes a CustomEvent PUBLIC: one built and handed
+       to a handler is never dispatched. TRAP T-a-constructed-event-is-not-a-dispatched-one */
+    /this\.dispatchEvent\(\s*new CustomEvent\(\s*['"`]([a-z][\w-]*)['"`][^)]*bubbles:\s*true/g,
+    /this\.dispatchEvent\(\s*new Event\(\s*['"`]([a-z][\w-]*)['"`]/g,
   ];
   for (const re of patterns) {
     for (const m of ts.matchAll(re)) out.add(m[1]);
-  }
-
-  /* A NAME IS NOT ALWAYS A LITERAL AT THE CALL. Two components emit through an
-     expression, and a literal-only scan read them as silent:
-
-       emit(open ? 'menu-open' : 'menu-close', {})   a ternary
-       emit(event, {})                               a name from a table
-
-     sherpa-app-header published ONE of its nine events that way. So read the
-     literals inside the emit() ARGUMENT too — narrowly, because scanning every
-     string in the file swept up `data-anchor` and `aria-describedby` and
-     invented events across all 58 components.
-     TRAP T-an-event-name-is-not-always-a-literal */
-  for (const m of ts.matchAll(/\bemit\(([^,)]*)/g)) {
-    for (const lit of m[1].matchAll(/['"`]([a-z][\w]*(?:-[a-z][\w]*)+)['"`]/g)) {
-      out.add(lit[1]);
-    }
-  }
-
-  /* …AND THE NAME MAY LIVE IN A TABLE. sherpa-app-header pairs a selector with
-     an event name and emits in a loop, so `emit(event, {})` carries no literal
-     at all and eight public events read as silent. Read the second column of a
-     `['.selector', 'noun-verb']` pair: the selector half anchors it, so an
-     ordinary array of strings cannot match. */
-  for (const m of ts.matchAll(
-    /\[\s*['"`][.#][^'"`]*['"`]\s*,\s*['"`]([a-z][\w]*(?:-[a-z][\w]*)+)['"`]\s*\]/g,
-  )) {
-    out.add(m[1]);
   }
   return out;
 }
@@ -654,13 +625,17 @@ function generateSpec(name) {
   /* THE CODE DECIDES, the comment only describes. Intersecting with what the TS
      dispatches lets the comment choose WHICH emitted events are public, and
      never invent one. A component that emits nothing gets no `events:` key. */
-  const emitted = emittedEvents(ts);
+  // Named and typed by TypeScript's checker. TRAP T-a-detail-is-typed-by-the-checker
+  const { details, unread } = ts ? parseEmits(join(dir, `${name}.ts`)) : { details: new Map(), unread: [] };
+  if (unread.length) {
+    throw new Error(`${name}: an emit() whose name types as string — the spec cannot list it. Narrow it to literals:\n  ${
+      unread.map((u) => relative(process.cwd(), u)).join('\n  ')}`);
+  }
+  const emitted = new Set([...details.keys(), ...dispatchedEvents(ts)]);
   const firesNames = comment ? parseFires(comment) : [];
   const eventNames = new Set(firesNames.filter((n) => emitted.has(n)));
   // an emitted event the comment forgot is still part of the contract
   for (const n of emitted) eventNames.add(n);
-  // Typed by TypeScript's checker. TRAP T-a-detail-is-typed-by-the-checker
-  const details = ts ? parseEventDetails(join(dir, `${name}.ts`)) : new Map();
   const uncomposed = uncomposedEvents(ts);
   const events = [];
   for (const en of eventNames) {

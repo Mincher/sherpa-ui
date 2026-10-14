@@ -183,6 +183,18 @@
         "on": "submit",
         "node": ".form"
       }
+    },
+    {
+      "$type": "event",
+      "name": "composer-attach",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "composer-lab",
+      "bubbles": true,
+      "composed": true
     }
   ],
   "tokens": {

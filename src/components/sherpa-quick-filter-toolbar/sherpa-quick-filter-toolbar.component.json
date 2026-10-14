@@ -662,6 +662,18 @@
     },
     {
       "$type": "event",
+      "name": "filters-save",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "filters-save-as",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
       "name": "filters-delete",
       "bubbles": true,
       "composed": true,
@@ -725,12 +737,6 @@
       "detail": {
         "on": "boolean"
       }
-    },
-    {
-      "$type": "event",
-      "name": "button-click",
-      "bubbles": true,
-      "composed": true
     }
   ],
   "tokens": {

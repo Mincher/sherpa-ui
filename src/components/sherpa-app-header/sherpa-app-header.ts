@@ -20,8 +20,8 @@ interface AppHeaderConfig {
 }
 
 
-/** Each plain action button: its class → the event it fires. */
-const ACTIONS: ReadonlyArray<readonly [string, string]> = [
+/** Each plain action button: its class → the event it fires. `as const`, so the spec reads each name. */
+const ACTIONS = [
   ['.back', 'back-click'],
   ['.ai', 'ai-click'],
   ['.labs', 'labs-click'],
@@ -32,7 +32,7 @@ const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.menu', 'menu-click'],
   // A phone's nav menu — the SHELL opens it. TRAP T-the-nav-is-a-menu-on-a-phone
   ['.nav-menu', 'nav-menu-request'],
-];
+] as const;
 
 export class SherpaAppHeader extends SherpaElement {
   static override css = new URL('./sherpa-app-header.css', import.meta.url);

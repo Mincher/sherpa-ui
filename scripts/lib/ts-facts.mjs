@@ -15,7 +15,7 @@
  * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and default.
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
- * - parseEventDetails — Each `this.emit()` event's detail fields, typed by TypeScript's checker.
+ * - parseEmits — Each `this.emit()` event, NAMED and its detail typed by TypeScript's checker, and every call it cannot name.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -348,19 +348,28 @@ function sortUnion(text) {
 }
 
 /**
- * Each `this.emit()` event's detail fields, typed by TypeScript's checker. A
- * field two call sites type differently is the union of both — the payload
- * really does vary. An event emitted with no detail has no fields.
+ * Each `this.emit()` event, and its detail fields, typed by TypeScript's
+ * checker. The NAME is the type of the first argument, so a variable narrowed by
+ * a `case`, a ternary or an `as const` table is read. A call whose name types as
+ * `string` is UNREAD — the caller fails on it. A field two call sites type
+ * differently is the union of both.
  * TRAP T-a-detail-is-typed-by-the-checker
+ * TRAP T-an-event-name-is-not-always-a-literal
  *
- * @returns {Map<string, Map<string, string>>} event → field → type
+ * @returns {{ details: Map<string, Map<string, string>>, unread: string[] }} event → field → type
  */
-export function parseEventDetails(path) {
+export function parseEmits(path) {
   const prog = checked(path);
   const sf = prog.getSourceFile(path);
   const checker = prog.getTypeChecker();
   const out = new Map();
-  if (!sf) return out;
+  const unread = [];
+  if (!sf) return { details: out, unread };
+  const namesOf = (arg) => {
+    const type = checker.getTypeAtLocation(arg);
+    const parts = type.isUnion() ? type.types : [type];
+    return parts.every((p) => p.isStringLiteral()) ? parts.map((p) => p.value) : null;
+  };
   const flags = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType;
   // A long nameless object says nothing a name would not: it is an `object`.
   const say = (type) => {
@@ -382,16 +391,23 @@ export function parseEventDetails(path) {
   const visit = (node) => {
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
       && node.expression.name.text === 'emit' && node.expression.expression.kind === ts.SyntaxKind.ThisKeyword
-      && node.arguments[0] && ts.isStringLiteralLike(node.arguments[0])) {
-      const fields = out.get(node.arguments[0].text) ?? new Map();
-      out.set(node.arguments[0].text, fields);
-      for (const [key, type] of node.arguments[1] ? fieldsOf(node.arguments[1]) : []) {
-        const was = fields.get(key);
-        fields.set(key, !was || was === type ? type : sortUnion([...new Set([...was.split(' | '), ...type.split(' | ')])].join(' | ')));
+      && node.arguments[0]) {
+      const names = namesOf(node.arguments[0]);
+      if (!names) {
+        const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+        unread.push(`${path}:${line + 1}  emit(${node.arguments[0].getText(sf)})`);
+      }
+      for (const name of names ?? []) {
+        const fields = out.get(name) ?? new Map();
+        out.set(name, fields);
+        for (const [key, type] of node.arguments[1] ? fieldsOf(node.arguments[1]) : []) {
+          const was = fields.get(key);
+          fields.set(key, !was || was === type ? type : sortUnion([...new Set([...was.split(' | '), ...type.split(' | ')])].join(' | ')));
+        }
       }
     }
     ts.forEachChild(node, visit);
   };
   visit(sf);
-  return out;
+  return { details: out, unread };
 }

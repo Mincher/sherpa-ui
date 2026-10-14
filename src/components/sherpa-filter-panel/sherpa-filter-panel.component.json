@@ -507,13 +507,23 @@
       "$type": "event",
       "name": "filter-apply",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "field": "string",
+        "id": "string",
+        "scope": "string"
+      }
     },
     {
       "$type": "event",
       "name": "filter-discard",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "field": "string",
+        "id": "string",
+        "scope": "string"
+      }
     },
     {
       "$type": "event",
@@ -551,7 +561,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "null",
+        "field": "null | string",
         "scope": "string"
       }
     },
@@ -562,7 +572,7 @@
       "composed": true,
       "detail": {
         "direction": "'asc'",
-        "field": "null",
+        "field": "null | string",
         "scope": "string"
       }
     },
@@ -584,6 +594,12 @@
     {
       "$type": "event",
       "name": "filters-save",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "filters-save-as",
       "bubbles": true,
       "composed": true
     },
@@ -619,18 +635,6 @@
       "detail": {
         "on": "boolean"
       }
-    },
-    {
-      "$type": "event",
-      "name": "menu-change",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "button-click",
-      "bubbles": true,
-      "composed": true
     }
   ],
   "tokens": {

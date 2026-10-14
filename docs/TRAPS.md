@@ -11796,36 +11796,36 @@ T-shared-sheets-settle-independently). The markup leg never got one.
 
 ### T-an-event-name-is-not-always-a-literal
 
-`generate-component-spec.mjs` learns what a component fires by scanning its TS
-for `emit('name')`. Two components do not write the name at the call, and a
-literal-only scan read them as silent:
+A component does not always write the event's name at the call:
 
 ```ts
 emit(open ? 'menu-open' : 'menu-close', {})   // a ternary
 emit(event, {})                               // a name from a table
+emit(act)                                     // a variable, narrowed by `case`
 ```
 
-`sherpa-app-header` published **one of its nine events** that way. The other
-eight were invisible to the spec, to the MCP, and to any agent reading either —
-while the `Fires:` comment named eight further events that existed nowhere, so
-the intersection that guards against invented events came out empty.
+Regex scans missed these names, twice. `sherpa-app-header` published one of
+its nine events. On 2026-10-14, `emit(act)` hid `filters-save` and
+`filters-save-as` from the toolbar's and the panel's specs, and the
+prompt-composer's two. Widening the regex to every string in the file was
+worse: it invented 2401 lines of phantom events across 58 components.
 
-The scan now also reads the literals inside an `emit()` ARGUMENT, and the second
-column of a `['.selector', 'noun-verb']` pair. The selector half anchors the
-table rule, so an ordinary array of strings cannot match it.
+**So the NAME is read by TypeScript's checker** (`parseEmits` in
+`lib/ts-facts.mjs`), as the detail is. The name is the type of `emit()`'s first
+argument: a literal, a union, a variable narrowed by a `case`, or an `as const`
+table. A name that types as `string` — `` `${id}-change` ``, `event.type`, an
+untyped table — **fails the generator**: write it as literals.
 
-DO NOT widen this to every string in the file. That was the first attempt: it
-swept up `data-anchor` and `aria-describedby` and invented events across all 58
-components — the exact bug the intersection exists to prevent. 2401 lines of
-phantom contract, from one over-broad regex.
+**An event dispatched on ANOTHER element is not the component's own.** Only
+`this.dispatchEvent(new …)` counts. The toolbar's and the panel's specs listed a
+phantom `button-click` and `menu-change` that they dispatch on a child.
 
-Two smaller cases of the same family, both fixed in the comment rather than the
-scanner: a `Fires:` line reading `menu-open / menu-close` is one name, not two,
-and an event missing from the comment is dropped however clearly the code emits
-it.
+A `Fires:` line reading `menu-open / menu-close` is one name, not two.
 
 - Site: `scripts/generate-component-spec.mjs`
+- Site: `scripts/lib/ts-facts.mjs`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/every-emitted-event-is-in-its-spec.test.mjs`
 
 ### T-a-metric-condenses-by-wrapping
 
