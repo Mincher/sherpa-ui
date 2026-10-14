@@ -2666,7 +2666,8 @@ export class DataSource extends EventTarget {
   /* ── What a control asks, by name — what the steering calls ─────────── */
 
   /** A scoped bar's whole answer: what it holds, each field's reading, and its
-   *  saved filters on or off, whose readings go to the library. It is its Apply.
+   *  saved filters on or off. It is its Apply. The library is the SOURCE's: a
+   *  report only teaches it a saved filter it has never heard of.
    *  TRAP T-a-bar-reports-its-holds · TRAP T-one-query-one-owner */
   answerScope(scope: string, answer: {
     holds?: readonly string[];
@@ -2675,7 +2676,7 @@ export class DataSource extends EventTarget {
   }): void {
     if (answer.holds) this.hold(scope, [...answer.holds]);
     const presets = answer.presets ?? {};
-    for (const [id, p] of Object.entries(presets)) this.#presets.set(id, p.readings);
+    for (const [id, p] of Object.entries(presets)) if (!this.#presets.has(id)) this.declarePreset(id, p.readings);
     this.answer(scope, answer.readings, Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
     // A bar's report IS its Apply: its menus waited for it, remote.
     this.commit();

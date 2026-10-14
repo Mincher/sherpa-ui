@@ -240,7 +240,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
 | ✅ | 61e | 247 | BUG: a prop's text erased the slot beside it — container-header's icon, toast's heading, gauge's caption | bug |
 | ✅ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
-| ⬜ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
+| ✅ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
 | ⬜ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
 | ⬜ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
 | ❓ | 61j | 252 | BUG: the calendar calls `Temporal`, which Safari does not have yet — waits on D7 | bug |
@@ -6008,6 +6008,19 @@ user left, so it is deleted from `SherpaElement` and CLAUDE.md.
 `className`, from before icons were SVG — so each drew nothing. Both now call
 `writeIcon`; the two tests that build them check for a drawn path, and failed
 on the old build.
+
+### `[x]` ✅ 249 — A bar's report never rewrites a saved filter
+
+`answerScope` copied each reported saved filter's readings into the source's
+library, past `declarePreset`: a bar's stale echo rewrote what the source had
+declared, with no facts and no redraw — a component writing state the source
+owns.
+
+**✅ Done 2026-10-14.** A report says which are ON; the readings stay the
+source's. It teaches the source only a saved filter it has never heard of, and
+then through `declarePreset`. A unit test failed on the old build. The weight
+baseline records the bytes 245, 246 and 249 added (`data.js` +220 B).
+`T-one-query-one-owner`.
 
 ## ✅ Done — the full record
 
