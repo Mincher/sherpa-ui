@@ -36,7 +36,6 @@ import { VIEW } from '../../core/data/query.js';
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-accordion/sherpa-accordion.js';
-import '../sherpa-filterset/sherpa-filterset.js';
 import '../sherpa-section-header/sherpa-section-header.js';
 import '../sherpa-stack/sherpa-stack.js';
 import '../sherpa-button/sherpa-button.js';
@@ -679,20 +678,15 @@ export class SherpaFilterPanel extends SherpaElement {
   #early = new Map<string, { id: string; reading: FieldReading; scope?: string | undefined }>();
 
   /** Each SET's fields in a scope, gathered where its first one stands, in
-   *  the set's order. TODO 99 · TRAP T-a-filter-set-groups-or-chains */
+   *  the set's order — side by side, never nested. Will, TODO 240.
+   *  TRAP T-a-filter-set-groups-or-chains */
   #groupSets(box: HTMLElement, sets: readonly FilterSet[]): void {
     for (const set of sets) {
       const fields = set.fields
         .map((f) => box.querySelector<HTMLElement>(`:scope > .field[data-field="${CSS.escape(f)}"]`))
         .filter((f): f is HTMLElement => !!f);
-      const group = fields.length ? this.clone<HTMLElement>('template.set-tpl') : null;
-      if (!group) continue;
-      group.dataset['set'] = set.id;
-      if (set.label) group.setAttribute('data-heading', set.label);
-      if (set.mode === 'serial') group.setAttribute('data-mode', 'serial');
-      // Where its first field stands in the scope, as the bar's set is.
-      [...box.children].find((c) => fields.includes(c as HTMLElement))!.before(group);
-      group.append(...fields);
+      const first = [...box.children].find((c) => fields.includes(c as HTMLElement));
+      first?.before(...fields);
     }
   }
 

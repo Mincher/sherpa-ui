@@ -1276,15 +1276,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return out;
   }
 
-  /** A set's `sherpa-filterset` in the run, stamped when its first chip is. */
+  /** A set's `sherpa-filterset` in the run, stamped when its first chip is:
+   *  its chips joined, with no heading and no chain mark. Will, TODO 240. */
   #setBox(list: HTMLElement, sets: Map<string, HTMLElement>, set: FilterSet): HTMLElement {
     const made = sets.get(set.id);
     if (made) return made;
     const box = this.clone<HTMLElement>('template.set-tpl');
     if (!box) return list;
     box.dataset['set'] = set.id;
-    if (set.label) box.setAttribute('data-heading', set.label);
-    if (set.mode === 'serial') box.setAttribute('data-mode', 'serial');
     list.appendChild(box);
     sets.set(set.id, box);
     return box;

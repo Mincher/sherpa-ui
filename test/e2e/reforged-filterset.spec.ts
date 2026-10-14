@@ -1,9 +1,10 @@
 import { test, expect } from './harness';
 
 /**
- * A FILTER SET, drawn — TODO 99. The bar gathers a set's chips into one
- * `sherpa-filterset`, joined, in the set's order, with a chain mark when
- * serial; the panel gathers its fields. A chip in a set is still the bar's.
+ * A FILTER SET, drawn — TODO 99, quietly since TODO 240. The bar gathers a
+ * set's chips into one `sherpa-filterset`, joined, in the set's order, with no
+ * heading and no chain mark; the panel orders its fields, with no box. A chip
+ * in a set is still the bar's.
  * TRAP T-a-filter-set-groups-or-chains
  */
 
@@ -11,7 +12,7 @@ const SET = { id: 'account', label: 'Account', mode: 'serial', fields: ['custome
 
 type Bar = HTMLElement & { groupSets(s: unknown[]): void; heldFields: string[] };
 
-test('the bar draws a set\'s chips as one group, in its order, with a chain mark', async ({ page }) => {
+test('the bar draws a set\'s chips as one group, in its order, with no heading and no chain mark', async ({ page }) => {
   const r = await page.evaluate(async (set) => {
     const options = (values: string[]) => values.map((v) => ({ value: v, label: v }));
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
@@ -28,15 +29,14 @@ test('the bar draws a set\'s chips as one group, in its order, with a chain mark
     return {
       run: [...sr.querySelector('.chips')!.children].map((n) => n.localName === 'sherpa-filterset'
         ? `set:${[...n.children].map((c) => (c as HTMLElement).dataset['id']).join('+')}` : (n as HTMLElement).dataset['id']),
-      heading: box.shadowRoot!.querySelector('.heading')!.textContent,
-      chain: getComputedStyle(box.shadowRoot!.querySelector('.chain')!).display,
+      // Nothing before the chips. Will, TODO 240.
+      head: getComputedStyle(box.shadowRoot!.querySelector('.head')!).display,
       joined: [corner('customer'), corner('region')],
       held: bar.heldFields,
     };
   }, SET);
   expect(r.run).toEqual(['set:customer+region', 'status']);
-  expect(r.heading).toBe('Account');
-  expect(r.chain).not.toBe('none');
+  expect(r.head).toBe('none');
   // The first chip's inner corner is square; the last keeps its round end.
   expect(r.joined[0]).toBe('0px');
   expect(r.joined[1]).not.toBe('0px');
@@ -66,7 +66,7 @@ test('a set whose chips all fold is parked, not hidden, so their menus still ope
   expect(r.position).toBe('absolute');
 });
 
-test('the panel draws a set\'s fields as one vertical group, in its order', async ({ page }) => {
+test('the panel orders a set\'s fields where its first stands, with no box round them', async ({ page }) => {
   const r = await page.evaluate(async (set) => {
     const options = (values: string[]) => values.map((v) => ({ value: v, label: v }));
     const panel = await window.__mount<HTMLElement & { populate(s: unknown): Promise<void>; show(): void }>('sherpa-filter-panel');
@@ -78,15 +78,11 @@ test('the panel draws a set\'s fields as one vertical group, in its order', asyn
     panel.show();
     await window.__settled();
     const scope = panel.shadowRoot!.querySelector<HTMLElement>('.scope[data-scope="view"]')!;
-    const box = scope.querySelector<HTMLElement>(':scope > sherpa-filterset')!;
     return {
-      run: [...scope.children].filter((n) => n.matches('.field, sherpa-filterset')).map((n) => n.localName === 'sherpa-filterset'
-        ? `set:${[...n.children].map((c) => (c as HTMLElement).dataset['field']).join('+')}` : (n as HTMLElement).dataset['field']),
-      orientation: box.dataset['orientation'],
-      heading: box.shadowRoot!.querySelector('.heading')!.textContent,
+      run: [...scope.children].filter((n) => n.matches('.field')).map((n) => (n as HTMLElement).dataset['field']),
+      boxes: panel.shadowRoot!.querySelectorAll('sherpa-filterset').length,
     };
   }, SET);
-  expect(r.run).toEqual(['set:customer+region', 'status']);
-  expect(r.orientation).toBe('vertical');
-  expect(r.heading).toBe('Account');
+  expect(r.run).toEqual(['customer', 'region', 'status']);
+  expect(r.boxes).toBe(0);
 });

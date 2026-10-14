@@ -111,8 +111,15 @@
                     "attrs": {
                       "data-size": "sm",
                       "data-group": "start",
-                      "data-icon-start": "upload"
-                    }
+                      "data-icon-start": "upload",
+                      "aria-label": "Save filters"
+                    },
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "save-word"
+                      }
+                    ]
                   },
                   {
                     "el": "sherpa-button",

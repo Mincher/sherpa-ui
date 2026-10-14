@@ -168,6 +168,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
 | ✅ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
 | ✅ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
+| ✅ | 31z4 | 240 | A filter set is drawn quietly: no heading or link icon on the bar, no nesting in the panel | quick |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -2578,6 +2579,21 @@ Discard and Apply at the right. The row is drawn only while it holds a
 button. Send to stays in the header, alone. While any change waits, the
 footer shows Apply all and Discard all, which name no field; the binder
 commits or discards everything. `T-apply-and-discard-wait-for-a-change`
+
+### `[x]` ✅ 240 — A filter set is drawn quietly
+
+Will, 2026-10-14: *"I don't like the 'Account' and link icon before Customer
+and Region filters in the toolbar. I also don't like the nesting of Customer
+and Region filter sections in the filter panel."*
+
+**✅ Done 2026-10-14.** The bar still joins a set's chips, in the set's
+order, but stamps its `sherpa-filterset` with no heading and no chain mark.
+The panel only orders a set's fields where its first stands — no box. The
+serial chain is unchanged: Region still offers only the picked Customers'
+regions. `sherpa-filterset` keeps its heading and mark for a page that asks.
+Found while checking it: 105's "Save filters" pushed the panel's own title
+off its header; narrow, the button now reads "Save" (its name stays "Save
+filters"). `T-a-filter-set-groups-or-chains`.
 
 ### `[x]` ✅ 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
 

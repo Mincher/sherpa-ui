@@ -32,6 +32,10 @@
 @container sherpa-filter-panel (max-width: 380px) {
   :host([data-saveable]) .head .save-group { display: none; }
 }
+/* Narrow, it says "Save": the panel's own title keeps its room. */
+@container sherpa-filter-panel (max-width: 520px) {
+  .save-word { display: none; }
+}
 :host(:not([data-saved])) .save-delete { display: none; }
 .saved-chip { display: none; }
 :host([data-saved]) .saved-chip { display: inline-flex; }
@@ -136,9 +140,7 @@
 
 /* ── Fields ──────────────────────────────────────────────────────────── */
 
-.field + .field,
-:is(.field, sherpa-filterset) + sherpa-filterset,
-sherpa-filterset + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
+.field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
 
 /* A FIELD: its header, then its chips or its body across the whole column —
    a condition row needs it all. The header's label, count and buttons share its
