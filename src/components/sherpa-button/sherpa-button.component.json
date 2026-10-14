@@ -145,6 +145,20 @@
   "props": [
     {
       "$type": "prop",
+      "name": "command",
+      "type": "string",
+      "observed": false,
+      "description": "native: what it is told — `--show`, `--hide`"
+    },
+    {
+      "$type": "prop",
+      "name": "commandfor",
+      "type": "string",
+      "observed": false,
+      "description": "native: the id of the element a press commands (a dialog, a panel)"
+    },
+    {
+      "$type": "prop",
       "name": "data-badge",
       "type": "string",
       "observed": true,

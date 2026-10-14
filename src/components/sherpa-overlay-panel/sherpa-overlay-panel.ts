@@ -18,6 +18,8 @@ import '../sherpa-group/sherpa-group.js';
 export class SherpaOverlayPanel extends SherpaElement {
   static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);
   static override html = new URL('./sherpa-overlay-panel.html', import.meta.url);
+  // Opened and shut from markup: `<sherpa-button commandfor="id" command="--show">`.
+  static override commands = { '--show': 'show', '--hide': 'hide' };
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */

@@ -374,6 +374,11 @@ export abstract class SherpaElement extends Base {
    */
   static labelTarget?: string;
 
+  /** The COMMANDS this element answers — `--name` → the method it calls — as a
+   *  button's `commandfor` / `command` name them: markup opens it, no script.
+   *  TRAP T-a-button-commands-by-markup */
+  static commands: Readonly<Record<string, string>> = {};
+
   /**
    * What this component ASKS its provider for — the shape of its data. Asked
    * on connect and answered by the nearest `sherpa-provider`; with none above
@@ -458,7 +463,16 @@ export abstract class SherpaElement extends Base {
     const Ctor = new.target as typeof SherpaElement;
     SherpaElement.#defineConfig(Ctor);
     this.#settings = { ...Ctor.config };
+    // On the host, so it never needs removing. TRAP T-abort-controller-per-connect
+    if (Object.keys(Ctor.commands).length) this.addEventListener('command', this.#onCommand as EventListener);
   }
+
+  /** A command a button sent: call the method it names. */
+  #onCommand = (event: CommandEvent): void => {
+    const method = (this.constructor as typeof SherpaElement).commands[event.command];
+    const call = method ? (this as unknown as Record<string, unknown>)[method] : undefined;
+    if (typeof call === 'function') call.call(this);
+  };
 
   /** What the page configured, by `config` name. */
   #settings: Record<string, unknown> = {};

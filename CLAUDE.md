@@ -656,9 +656,11 @@ Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed
 
 Flows are composed from existing components — there is no dedicated flow component,
 and no flow-manager utility module on this branch. A flow is wired by hand in the
-app: open a `sherpa-dialog` with `.show()` (NOT the native `showModal()` — the
-component owns modality and the `open` attribute), read the fields, then append a
-`sherpa-toast` for feedback.
+app: open a `sherpa-dialog` — from markup, `<sherpa-button commandfor="id"
+command="--show">`, or with `.show()` (NOT the native `showModal()` — the
+component owns modality and the `open` attribute) — read the fields, then append a
+`sherpa-toast` for feedback. A component answers a command through `static commands`
+(TRAP `T-a-button-commands-by-markup`).
 
 `../Sherpa Demos/app/contexts/records.js` is the working reference — the add-customer
 button → dialog → save → toast path.

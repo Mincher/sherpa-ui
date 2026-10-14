@@ -313,6 +313,30 @@ directory listing, no clean URLs, no cache headers beyond `no-cache`.
 - Site: `playwright.config.ts`
 - Site: `test/unit/nothing-downloads-to-serve.test.mjs`
 
+### T-a-button-commands-by-markup
+
+**A page opens a dialog with no script**: `<sherpa-button commandfor="edit"
+command="--show">` — the platform's invoker commands, in Chrome, Firefox and
+Safari since 2025. Measured in all three engines (2026-10-14).
+
+- **An id cannot cross a shadow root.** `sherpa-button`'s real `<button>` is
+  in its shadow tree, so `commandfor="edit"` there finds nothing in the page.
+  The button carries the ELEMENT instead — `commandForElement`, which may point
+  out into the page — set in the click, before the button acts, so a target
+  parsed after the button is still found.
+- **A custom element answers only a custom command** — one starting `--`. The
+  built-in ones (`show-modal`, `close`) act on a native `<dialog>` alone.
+- **`static commands` is the generic door** in `SherpaElement`: `--name` → the
+  method it calls. `sherpa-dialog` and `sherpa-overlay-panel` declare `--show`
+  and `--hide`. The base listens on the host, once, only when a component
+  declares any.
+- The spec generator does not read `static commands` yet; the HTML's
+  `Commands:` line says them, and the methods they call are in the spec.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `test/e2e/reforged-a-button-commands-by-markup.spec.ts`
+
 ### T-temporal-is-the-date-model
 
 **Sherpa's date and time model is `Temporal`** (Will, 2026-10-14). A day is a

@@ -171,8 +171,18 @@ export class SherpaButton extends SherpaElement {
       if (wasOpen) menu.hide();
       else menu.show(this);
     }
+    this.#carryCommand(event.currentTarget as HTMLButtonElement);
     this.emit('button-click');
   };
+
+  /** The host's `commandfor` / `command`, onto the native button it wraps — set
+   *  in the click, before the button acts, so a target parsed later is found.
+   *  An id cannot cross the shadow root; the element can. TRAP T-a-button-commands-by-markup */
+  #carryCommand(button: HTMLButtonElement): void {
+    const id = this.getAttribute('commandfor');
+    button.command = this.getAttribute('command') ?? '';
+    button.commandForElement = id ? (this.getRootNode() as Document | ShadowRoot).getElementById(id) : null;
+  }
 
   /** Mirror the menu's open state; focus is inside it, so CSS reads this. */
   #onMenuToggle = (event: Event): void => {

@@ -12,6 +12,8 @@ import { DialogSurface } from '../../core/ui/disclosure.js';
 export class SherpaDialog extends SherpaElement {
   static override css = new URL('./sherpa-dialog.css', import.meta.url);
   static override html = new URL('./sherpa-dialog.html', import.meta.url);
+  // Opened and shut from markup: `<sherpa-button commandfor="id" command="--show">`.
+  static override commands = { '--show': 'show', '--hide': 'hide' };
   static override props = {
     'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
     'data-type': { type: 'enum', kind: 'style', values: ['modal', 'overlay'] },

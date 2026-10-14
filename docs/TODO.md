@@ -256,7 +256,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.07 | 262 | Phase 7 — `dist/` stops shipping the inlined `.html` and `.css`, and the build strips `data-accepts` | package |
 | ✅ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
 | ✅ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
-| ⬜ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
+| ✅ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
 | ⬜ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
 | ⬜ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ⬜ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
@@ -6311,6 +6311,19 @@ It found one gap at once: **the test harness had no viewport `<meta>`**, so a
 phone drew it 980px wide and no phone layout showed. APP-GUIDE's page example
 had none either; both have it now (the starter and Demos already did).
 `T-the-nav-is-a-menu-on-a-phone`.
+
+### `[x]` ✅ 265 — Phase 7: a dialog opens from markup, by invoker commands
+
+The spike, measured first in all three engines: a plain `commandfor` button,
+and a button inside a shadow root carrying `commandForElement`, both deliver a
+custom `--show` to the element they name. **✅ Done 2026-10-14.**
+`SherpaElement` gains `static commands` (`--name` → a method), answered on the
+host; `sherpa-dialog` and `sherpa-overlay-panel` declare `--show` and `--hide`;
+`sherpa-button` carries `commandfor` / `command` onto its inner `<button>` in
+the click. A test opens a dialog and a panel and shuts the dialog from a button
+inside it, with no script, in three engines. CLAUDE.md's CRUD flow and
+APP-GUIDE say so. **Not done:** the spec generator does not list `static
+commands` yet. `T-a-button-commands-by-markup`.
 
 ## ✅ Done — the full record
 

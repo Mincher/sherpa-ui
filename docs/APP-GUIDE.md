@@ -280,6 +280,9 @@ provider.addEventListener('filters-delete', () => provider.deleteFilters());
 
 - `dialog.prompt(value)` and `dialog.confirm({ heading, words, action })` ask
   the question the dialog's own markup holds. `T-a-dialog-answers-its-question`
+- A dialog or an overlay panel that only opens and shuts needs no script:
+  `<sherpa-button commandfor="edit" command="--show">Edit</sherpa-button>`, and
+  `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
 - **Save filters** keeps EVERY scope's filters under one name, with the page
   beside its Views. The Filters menu's Saved section applies one; the Saved
   chip names it, and its cross puts the filters back. Ask before you save over
