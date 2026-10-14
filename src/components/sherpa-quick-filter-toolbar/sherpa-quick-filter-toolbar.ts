@@ -1674,9 +1674,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // TRAP T-tokens-css-never-reaches-shadow
     if (on) btn.setAttribute('data-status', 'active');
     else btn.removeAttribute('data-status');
-    /* NAMED, not `fa-solid`/`fa-regular`: the resolver strips the weight token,
-       so both FA spellings resolved to the SAME outline drawing and the star
-       never filled. TRAP T-favourite-star-swaps-its-glyph */
+    // Two drawings, so the star fills. TRAP T-favourite-star-swaps-its-glyph
     btn.setAttribute('data-icon-start', on ? 'star-filled' : 'star');
     btn.setAttribute('aria-pressed', String(on));
     // The name and its tip say what a press DOES. Will, 2026-09-26.
@@ -1800,8 +1798,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       list.map((c) => ({ value: c.field, label: c.label, selected: c.field === field }));
 
     if (group.length) {
-      // fa-SOLID: the free set has no regular weight here; `fa-regular` renders
-      // the missing-glyph box.
       zone.appendChild(this.#organiseChip('group', 'Group',
         SherpaQuickFilterToolbar.#icons.group, cols(group, on.group), on.group));
     }

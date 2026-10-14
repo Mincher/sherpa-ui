@@ -2,7 +2,7 @@
  * Stamp an icon into a wrapper as a fitted SVG.
  *
  * The viewBox is the drawing's own INK bbox — which the `.svg` FILES do not
- * carry: all 214 say `viewBox="0 0 14 14"`, and 206 have a tighter real box.
+ * carry: every file says `viewBox="0 0 14 14"`, and most drawings have a tighter real box.
  * That is why this module is generated rather than the files being loaded.
  * `preserveAspectRatio` then puts the
  * art's LONGEST axis at exactly 100% of the square wrapper, keeps it 1:1, and
@@ -62,8 +62,8 @@ export function iconsLoading(): Promise<unknown> {
 /**
  * Replace `el`'s contents with the icon's SVG: now, or once its module has
  * loaded. An unknown name leaves the wrapper EMPTY rather than drawing the
- * wrong thing — a blank box is at least visible to a test, where
- * TRAP T-fa-pro-renders-nothing was not — and cancels a draw still loading.
+ * wrong thing — a blank box is at least visible to a test — and cancels a
+ * draw still loading.
  */
 export function renderIcon(el: Element, value: string): void {
   const name = iconName(value);

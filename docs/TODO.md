@@ -290,6 +290,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
+| ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -771,6 +772,16 @@ Will, 2026-09-25:
 ---
 
 ## C — Contained bugs
+
+### `[ ]` ⬜ 299 — BUG: two glyphs still come from Font Awesome
+
+Found in 270's icon pass, 2026-10-14. `sherpa-breadcrumbs` draws its
+separator as `content: "\f054"` and `sherpa-chat-message` its avatar as
+`"\f544"`, each in `font-family: "Font Awesome 6 Free"`. Nothing loads that
+font since the icons became SVGs (`installIcons()` was a no-op), so each draws
+a private-use character in the fallback font: a box, or nothing. Draw each
+from the icon set (`chevron-right`, a robot or person glyph) the way every
+other icon is drawn, and test the pixels.
 
 ### `[x]` ✅ 64 — A collapsed accordion section fills with the down (+2) surface
 
@@ -6381,6 +6392,13 @@ filter's menu), and 126.
 Figma tools, run through the figma-console MCP, and `figma-harvest-colours`
 is the check that compares Figma's bound colour with the component's
 (2026-09-11). Kept until Will says.
+
+**✅ Icons, 2026-10-14.** Gone: `installIcons()`, a public no-op;
+`T-fa-pro-renders-nothing`, about a webfont nothing loads; and six comments
+that explained a choice by Font Awesome's weights or its resolver. The icon
+count in `render-icon.ts` ("all 214" — 216 today) is words now, not a number.
+The pass found a real bug, filed as 299: two glyphs still come from the
+Font Awesome font.
 
 ### `[x]` ✅ 269 — Phase 2: old names, data-API leftovers, component aliases
 

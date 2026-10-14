@@ -17,8 +17,8 @@
  * them am I looking at" — stores, the query, validation, live connections, and
  * saved views.
  *
- * WHAT IS NOT: every component, `SherpaElement`, `installIcons`,
- * `installTokens` and `renderElement`. Those need a DOM by definition;
+ * WHAT IS NOT: every component, `SherpaElement`, `installTokens` and
+ * `renderElement`. Those need a DOM by definition;
  * `sherpa-ui` is their door — and so is a view's CONTENT, which is markup
  * (`parseViewMarkup`) and therefore needs a parser.
  *

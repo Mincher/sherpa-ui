@@ -12,8 +12,8 @@ changing anything here:
 npm run icons
 ```
 
-**To re-export from Figma** — or to swap in Font Awesome Pro once the licence
-lands — replace the files here and re-run the generator. Nothing else changes:
+**To re-export from Figma**, or to swap in another icon set, replace the
+files here and re-run the generator. Nothing else changes:
 components name an icon, and `.sherpa-icon-box` sizes it.
 
 Each file is a plain single-path SVG on a 14x14 viewBox, with no `fill`

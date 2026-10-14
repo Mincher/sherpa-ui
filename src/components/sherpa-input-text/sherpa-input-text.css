@@ -231,8 +231,7 @@ textarea.control {
   --_icon-size: var(--sherpa-theme-size-icon-xs, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
-/* Raw glyph only. A Font Awesome class draws via the webfont's own ::before;
-   without the [data-glyph] guard the empty attr() empties the FA glyph. */
+/* A raw character, only when one is given: a drawn icon has no ::before. */
 .icon[data-glyph]::before {
   content: attr(data-glyph);
   font-family: inherit;

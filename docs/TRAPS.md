@@ -541,21 +541,6 @@ cannot pin one.
 
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 
-### T-fa-pro-renders-nothing
-
-Font Awesome **Pro** glyphs render nothing at all in this webfont — no width, no
-warning, no error. `fa-light` is Pro; `fa-regular` and `fa-solid` are free.
-
-Probe in a SHADOW ROOT and test the resolved `content` for `none`; a working
-glyph never resolves to `none`.
-
-`sort-none` was `fa-bars`, which IS the hamburger-menu glyph — three equal rules,
-reading as a menu affordance rather than "this column can be sorted". `fa-sort`
-is the neutral pair the state actually means.
-
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/core/ui/render-icon.ts`
-
 ### T-actions-were-a-slot
 
 The action cluster is BUILT IN, not slotted (Figma Filter Toolbar 150:3688):
@@ -3333,8 +3318,8 @@ The chip is LOCKED, so the grid sets its on-state — on for the two live
 directions, off for "not the sort column", which is what the toolbar's own Sort
 chip does for its suspended step.
 
-See `T-fa-pro-renders-nothing` for why `sort-none` is `fa-sort` and not
-`fa-bars`.
+`sort-none` is the neutral sort pair, not three bars: three equal rules read
+as a menu, not as "this column can be sorted".
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 

@@ -5,21 +5,10 @@
  * no display component imports. TRAP T-the-app-layer-is-opt-in
  *
  * Map:
- * - installIcons — DEPRECATED — a no-op since the icons became SVGs, one module each in core/ui/icons/
  * - installTokens — add tokens.css to the page once, so a component has its variables
  */
 // What every shadow root adopts is SherpaElement's own default, so a
 // single-component import draws right too (TODO 189).
-
-/**
- * @deprecated A NO-OP since the icons became Figma SVGs baked into
- * `core/ui/icons/`. It loaded a 103KB Font Awesome sheet whose 1,935 `.fa-*`
- * rules were adopted into every shadow root and matched nothing.
- * Kept so an existing call does not throw; delete the call.
- */
-export function installIcons(): void {
-  /* nothing to install */
-}
 
 /**
  * Inject the light-DOM token layer (primitives → aliases → themes) into the

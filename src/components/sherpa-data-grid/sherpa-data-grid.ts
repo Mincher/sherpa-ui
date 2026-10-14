@@ -357,7 +357,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /**
    * Shared with the quick-filter toolbar, so a header and a chip cannot disagree
-   * about "descending". TRAP T-fa-pro-renders-nothing — `sort-none` is fa-sort.
+   * about "descending". `sort-none` is the neutral pair: three bars read as a menu.
    */
   static readonly icons = ORGANISE_ICONS;
 
