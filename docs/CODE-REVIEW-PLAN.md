@@ -271,6 +271,7 @@ one imported helper or one family sheet.
 | The "Inter" font | named in `tokens.css`, loaded nowhere | My default: say it in README and APP-GUIDE (the app loads Inter if it wants it; `system-ui` is the fallback). Tell me if you want the font shipped instead |
 | Tooling shipped in `sherpa-ui` only for `sherpa-ui-mcp` | `scripts/lib/generation/`, `contract-io.mjs` (which imports `js-yaml`, a package `sherpa-ui` does not declare), the stale rules doc | **Move** it into the MCP package |
 | 66 `.html` + component `.css` in `dist/` (about 428 KB) | already inlined into the JS by the build | **Stop shipping** them, after a check that nothing reads them from `dist/` |
+| `data-accepts` in every shipped template (about 2 KB, since 257) | read by the spec generator, never at run time | **Strip** it in the build; the specs keep it |
 
 **Dev tools:**
 
@@ -441,7 +442,7 @@ records it where one exists.
 | Step | Phase | Why here | Size |
 |---|---|---|---|
 | ✅ 1 | **0** bugs | they were wrong | S each |
-| 2 | **1** gates | so no later phase can slide back | S |
+| ✅ 2 | **1** gates (256–259) | so no later phase can slide back | S |
 | 3 | **7** third-party | small and separate; removes downloads early | S |
 | 4 | **2** legacy, and D4 | fewer names to move in Phase 3 | M |
 | 5 | **8.3** the gallery project, seeded from the examples | every later phase needs each component on its own, with its states | M |
