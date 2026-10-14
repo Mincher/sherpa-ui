@@ -113,6 +113,7 @@
     "test:report": "playwright show-report"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
@@ -123,7 +124,7 @@
     "axe-core": "^4.13.0",
     "cssnano": "^7.1.9",
     "esbuild": "^0.28.2",
-    "eslint": "^8.55.0",
+    "eslint": "^9.39.5",
     "js-yaml": "^4.1.1",
     "postcss": "^8.5.28",
     "typescript": "^6.0.3",

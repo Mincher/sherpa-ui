@@ -3,7 +3,7 @@
      type-check` and `build:watch:ts` run, and therefore what "does this
      compile" means in this repo.
 
-     This file exists for ONE consumer: `.eslintrc.json`'s
+     This file exists for ONE consumer: `eslint.config.js`'s
      `parserOptions.project`, which needs a tsconfig to resolve types for the
      type-aware rules. It used to be a full second copy of the compiler
      options, and the copy had drifted: `lib: ES2022` against the real

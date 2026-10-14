@@ -11,7 +11,7 @@
  * Verified module by module: store, stores, validate, data-source, live-stores,
  * persist-view, pointer, session, idb-store, view-sync, chart-datum and
  * format-tick all import cleanly in Node today. `npm run lint` keeps them that way — see the
- * no-restricted-globals override in .eslintrc.json.
+ * no-restricted-globals override in eslint.config.js.
  *
  * WHAT IS HERE: everything that answers "what are the records, and which of
  * them am I looking at" — stores, the query, validation, live connections, and

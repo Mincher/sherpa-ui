@@ -6780,7 +6780,7 @@ row with a caret (`T-a-row-opens-its-child-menu`).
 **DO NOT MERGE `pointer.ts` INTO `session.ts`**, though `session.ts` is its only
 internal importer and an audit will suggest it.
 
-`pointer.ts` is on the DOM-FREE list in `.eslintrc.json` — a server, a test or an
+`pointer.ts` is on the DOM-FREE list in `eslint.config.js` — a server, a test or an
 MCP tool imports it — while `session.ts` reaches for `localStorage` directly and is
 browser-only by design. Folding one into the other would move guarded code into an
 unguarded file and quietly lose the guarantee. **One file per boundary is the
