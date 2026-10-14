@@ -37,6 +37,7 @@ const SOURCES = [
   // The MCP: its own package, but its citations are this doc's.
   'mcp-server/*.js',
   'mcp-server/*/*.js',
+  'mcp-server/scripts/*.mjs',
   'bin/*.mjs',
 ];
 

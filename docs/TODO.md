@@ -289,7 +289,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
-| ⬜ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
+| ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6324,6 +6324,20 @@ the click. A test opens a dialog and a panel and shuts the dialog from a button
 inside it, with no script, in three engines. CLAUDE.md's CRUD flow and
 APP-GUIDE say so. **Not done:** the spec generator does not list `static
 commands` yet. `T-a-button-commands-by-markup`.
+
+### `[x]` ✅ 298 — Phase 7: sherpa-ui ships no tooling
+
+sherpa-ui shipped eight files of generation code only so the MCP could run
+them, and one, `contract-io.mjs`, imported `js-yaml`, which only the MCP
+declares. **✅ Done 2026-10-14.** The code keeps its one home in `scripts/`,
+where the spec gate runs it. The MCP package copies it into its own `vendor/`
+as it is packed (`mcp-server/scripts/vendor.mjs`, prepack; postpack cleans it),
+and the copy reads sherpa-ui's data through `SHERPA_UI_ROOT`, which
+`lib/sherpa.js` sets. sherpa-ui's `files` lose the five code entries and keep
+the data. The node test now checks sherpa-ui packs the data and not the code,
+and that the MCP's copy is exactly the code it imports; `npm run
+check:mcp-pack` installed both tarballs and called 19 tools, 267 resources and
+3 prompts with no failure. `T-the-mcp-reads-sherpa-ui-through-one-door`.
 
 ## ✅ Done — the full record
 

@@ -25,7 +25,9 @@ import { fileURLToPath } from 'node:url';
 import { loadContract } from '../contract-io.mjs';
 import { specToDef } from '../component-to-def.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+/* sherpa-ui's root. The MCP package carries a COPY of this file in its vendor/,
+   and says where sherpa-ui is. TRAP T-the-mcp-reads-sherpa-ui-through-one-door */
+const ROOT = process.env.SHERPA_UI_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const P = {
   // authored files — YAML preferred, resolved via loadContract (JSON fallback)
   nameMap: join(ROOT, 'scripts', 'figma-data', 'name-map'),

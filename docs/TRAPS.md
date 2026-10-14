@@ -17158,20 +17158,27 @@ sits in. It loads sherpa-ui's generation lib by PATH — a dynamic import, so
 the specs, the def compiler and the token resolver stay sherpa-ui's own — and
 every resource, prompt and data tool reads its files through it.
 
-So **sherpa-ui ships what the MCP reads**: the component specs, the six
-`scripts/` files the generation lib needs, the Figma name map, the three
-served docs, `schemas/` and `dist/`. `sherpa-ui-mcp` depends on the SDK, zod,
-ajv, js-yaml (which sherpa-ui's shipped `contract-io.mjs` imports, hoisted
-beside it) and `sherpa-ui`; Playwright is an optional peer, for the two tools
-that drive a page.
+So **sherpa-ui ships the DATA the MCP reads** — the component specs, the Figma
+name map, the three served docs, `schemas/` and `dist/` — **and none of its
+code** (TODO 298). The generation code keeps its one home in sherpa-ui's
+`scripts/`, where the spec gate runs it; the MCP package COPIES it into its
+own `vendor/` as it is packed (`mcp-server/scripts/vendor.mjs`, its prepack),
+and the copy finds sherpa-ui's data through `SHERPA_UI_ROOT`, which the door
+sets. Before, sherpa-ui shipped the code too, and its `contract-io.mjs`
+imported `js-yaml`, which only the MCP declares. In a checkout there is no
+`vendor/`, and the door loads the code where it is. `sherpa-ui-mcp` depends
+on the SDK, zod, ajv, js-yaml and `sherpa-ui`; Playwright is an optional peer,
+for the two tools that drive a page.
 
 Two checks hold it. A node test reads `npm pack --dry-run` for both packages:
-sherpa-ui packs every file the MCP imports or reads, and the MCP depends on
-every package it imports. `npm run check:mcp-pack` packs both, installs them
+sherpa-ui packs the data and not the code, the MCP packs a copy of exactly the
+code it imports, and the MCP depends on every package it imports. `npm run check:mcp-pack` packs both, installs them
 into an empty folder and calls every tool, resource and prompt — it uses the
 npm cache, and the network for a file the cache lacks.
 
 - Site: `mcp-server/lib/sherpa.js`
+- Site: `mcp-server/scripts/vendor.mjs`
+- Site: `scripts/lib/generation/data.mjs`
 - Site: `scripts/check-mcp-pack.mjs`
 - Site: `test/unit/the-mcp-package.test.mjs`
 

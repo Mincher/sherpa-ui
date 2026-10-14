@@ -13,8 +13,13 @@
     "tools/",
     "prompts/",
     "resources/",
+    "vendor/",
     "README.md"
   ],
+  "scripts": {
+    "prepack": "node scripts/vendor.mjs",
+    "postpack": "node scripts/vendor.mjs --clean"
+  },
   "engines": {
     "node": ">=20"
   },

@@ -15,6 +15,7 @@
  * - validateDef — a def checked against the rules
  * - tokenForValue — the token a raw value is
  */
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -34,7 +35,12 @@ export const SHERPA_ROOT = installed() ?? path.resolve(here, "..", "..");
 /** A path inside sherpa-ui. */
 export const at = (...parts) => path.join(SHERPA_ROOT, ...parts);
 
-const lib = (file) => import(pathToFileURL(at("scripts", "lib", "generation", file)).href);
+/* The generation code: this package's own copy once packed (`vendor/`), else
+   the checkout's. It reads sherpa-ui's data from SHERPA_UI_ROOT. */
+process.env.SHERPA_UI_ROOT ??= SHERPA_ROOT;
+const VENDOR = path.resolve(here, "..", "vendor");
+const CODE_ROOT = existsSync(VENDOR) ? VENDOR : SHERPA_ROOT;
+const lib = (file) => import(pathToFileURL(path.join(CODE_ROOT, "scripts", "lib", "generation", file)).href);
 const data = await lib("data.mjs");
 export const loadComponentNames = data.loadComponentNames;
 export const loadDef = data.loadDef;

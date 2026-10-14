@@ -670,7 +670,8 @@ button → dialog → save → toast path.
 Its tools are in five modules, below, beside the `sherpa://` resources and the
 guided prompts. Run with `npm run mcp` (stdio). It ships as its own package,
 `sherpa-ui-mcp` (`mcp-server/package.json`), and reads the `sherpa-ui` beside it
-through `mcp-server/lib/sherpa.js`; `npm run check:mcp-pack` installs both and
+through `mcp-server/lib/sherpa.js`; it carries its own copy of the generation code,
+made as it is packed; `npm run check:mcp-pack` installs both and
 calls everything (TRAP `T-the-mcp-reads-sherpa-ui-through-one-door`).
 
 | Module | Tools |

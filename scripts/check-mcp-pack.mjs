@@ -66,9 +66,10 @@ async function smoke() {
   if (!existsSync(join(ROOT, 'dist', 'data.js'))) throw new Error('no dist/ — run npm run build first');
   const work = mkdtempSync(join(tmpdir(), 'sherpa-mcp-pack-'));
   try {
-    const pack = (cwd) => execFileSync('npm', ['pack', '--ignore-scripts', '--pack-destination', work], { cwd, encoding: 'utf8' })
+    // The MCP's own prepack makes its vendor/ copy; sherpa-ui's scripts stay off.
+    const pack = (cwd, scripts = false) => execFileSync('npm', ['pack', ...(scripts ? [] : ['--ignore-scripts']), '--pack-destination', work], { cwd, encoding: 'utf8' })
       .trim().split('\n').at(-1);
-    const tarballs = [pack(ROOT), pack(join(ROOT, 'mcp-server'))].map((t) => join(work, t));
+    const tarballs = [pack(ROOT), pack(join(ROOT, 'mcp-server'), true)].map((t) => join(work, t));
     writeFileSync(join(work, 'package.json'), JSON.stringify({ name: 'probe', version: '1.0.0', private: true }));
     execFileSync('npm', ['install', '--prefer-offline', '--no-audit', '--no-fund', ...tarballs], { cwd: work, stdio: 'pipe' });
     const at = (p) => pathToFileURL(join(work, 'node_modules', p)).href;
