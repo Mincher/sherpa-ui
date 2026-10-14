@@ -1,15 +1,17 @@
 /**
  * `sherpa-ui serve` — a folder over HTTP with Node alone, so running a page
  * downloads nothing (it was an unpinned `npx --yes serve`).
- * TRAP T-nothing-downloads-to-serve
+ * TRAP T-nothing-downloads-to-serve · TRAP T-a-cli-is-run-through-a-link
  *
  *   node --test test/unit/nothing-downloads-to-serve.test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { serve } from '../../bin/sherpa-ui.mjs';
 
@@ -44,4 +46,12 @@ test('nothing outside the folder, nothing missing, and only reads', async (t) =>
   assert.equal((await fetch(`${at}/`, { method: 'POST' })).status, 405);
   const head = await fetch(`${at}/app/page.js`, { method: 'HEAD' });
   assert.deepEqual([head.status, head.headers.get('content-length')], [200, '19']);
+});
+
+test('the CLI runs through a link, as npx and node_modules/.bin run it', () => {
+  const link = join(mkdtempSync(join(tmpdir(), 'sherpa-bin-')), 'sherpa-ui');
+  symlinkSync(fileURLToPath(new URL('../../bin/sherpa-ui.mjs', import.meta.url)), link);
+  const run = spawnSync(process.execPath, [link], { encoding: 'utf8' });
+  assert.equal(run.status, 0);
+  assert.match(run.stdout, /npx sherpa-ui serve/);
 });

@@ -104,8 +104,8 @@ npm run map:write <file>  # add missing names, drop stale ones — then edit the
 npm run check:map         # the gate; the hook runs it --staged
 node scripts/code-map.mjs --privates [path]  # the #private members still without a line
 
-# A new app from the starter — one folder, no build (starter/, TRAP T-a-starter-is-one-folder)
-node bin/sherpa-ui.mjs init ../my-app   # what `npx sherpa-ui init my-app` runs
+# A new app — its own package, create-sherpa-ui, in ../Sherpa Starter (TRAP T-a-starter-is-one-folder)
+npm create sherpa-ui ../my-app
 
 # MCP server — its own package, sherpa-ui-mcp
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor

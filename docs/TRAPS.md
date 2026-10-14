@@ -313,6 +313,22 @@ directory listing, no clean URLs, no cache headers beyond `no-cache`.
 - Site: `playwright.config.ts`
 - Site: `test/unit/nothing-downloads-to-serve.test.mjs`
 
+### T-a-cli-is-run-through-a-link
+
+**A CLI is run through a link**, so a main-file check must compare REAL paths.
+`npx sherpa-ui`, `node_modules/.bin/sherpa-ui` and a `file:` dependency each
+reach `bin/sherpa-ui.mjs` through a symlink. Node loads the module by its real
+path, so `import.meta.url` is the real file, while `process.argv[1]` is the
+link. The check `import.meta.url === pathToFileURL(process.argv[1]).href` was
+false, and the CLI exited 0 with no output: `sherpa-ui serve` served nothing
+and said nothing (found 2026-10-14, when the starter's tests ran it from their
+own `node_modules`). `realpathSync` on both sides is the check;
+`check-usage.mjs` had it already.
+
+- Site: `bin/sherpa-ui.mjs`
+- Site: `scripts/check-usage.mjs`
+- Site: `test/unit/nothing-downloads-to-serve.test.mjs`
+
 ### T-a-button-commands-by-markup
 
 **A page opens a dialog with no script**: `<sherpa-button commandfor="edit"
@@ -17189,24 +17205,25 @@ npm cache, and the network for a file the cache lacks.
 
 ### T-a-starter-is-one-folder
 
-**A new app starts from `starter/`** (TODO 222; Will, A): one folder with no
-build and no server of its own — `index.html` (the shell and
+**A new app starts from create-sherpa-ui** (TODO 222; Will, A): one folder
+with no build and no server of its own — `index.html` (the shell and
 `outlet.start()`), `app.json`, one Context's template, page definition and
 Views, its store with seed rows, an optional module, `package.json`,
-`.mcp.json` and an `AGENTS.md` that says where each kind of file goes. Three
-doors, one source: `npx sherpa-ui init <folder>` (`bin/sherpa-ui.mjs`, no
-dependencies), the MCP's `scaffold_app`, and a copy by hand.
+`.mcp.json` and an `AGENTS.md` that says where each kind of file goes.
 
-npm drops a package's `.gitignore`, and this repo ignores `.mcp.json`, so the
-starter keeps both WITHOUT the dot and each door adds it. The app imports
+**It is not in sherpa-ui.** It was `starter/` until 2026-10-14: an app
+template, with app content, inside an app-agnostic library (Will, D4 and Q1).
+It is the package `create-sherpa-ui` now, in the sibling project
+`../Sherpa Starter`. Two doors, one source: `npm create sherpa-ui <folder>`,
+and the MCP's `scaffold_app`, which reads the installed package's
+`template/` — or, in a checkout, the sibling's. `check:mcp-pack` packs all
+three packages, so `scaffold_app` is called as a user gets it.
+
+npm drops a package's `.gitignore`, so the template keeps it, and
+`.mcp.json`, WITHOUT the dot, and each door adds it. The app imports
 `sherpa-ui` from `./node_modules`, so it is served from its own folder: a
-server that rewrites `/starter/index.html` to `/starter` resolves every
-relative path against `/`.
+server that rewrites `/app/index.html` to `/app` resolves every relative path
+against `/`. Its tests are in its own project.
 
-A node test makes an app and checks it against the app and page schemas,
-`checkApp` and the usage gate; an e2e test boots it in all three engines.
-
-- Site: `bin/sherpa-ui.mjs`
 - Site: `mcp-server/tools/generate.js`
-- Site: `test/unit/the-starter.test.mjs`
-- Site: `test/e2e/reforged-starter.spec.ts`
+- Site: `scripts/check-mcp-pack.mjs`

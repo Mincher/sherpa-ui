@@ -60,8 +60,7 @@
     "docs/DATA-SOURCE-RULES.md",
     "docs/DEF-TO-FIGMA-BUILD-RULES.md",
     "scripts/check-usage.mjs",
-    "bin/",
-    "starter/"
+    "bin/"
   ],
   "bin": {
     "sherpa-ui": "./bin/sherpa-ui.mjs"

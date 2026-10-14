@@ -5,23 +5,32 @@
  *   validate_def  — run every design-system rule; returns errors + warnings
  *   compile_def   — def → { ts, html, css }
  *   token_for     — which Core token to bind for a hardcoded property=value (the meticulous rule)
- *   scaffold_app  — the starter app, one folder with no build, as files
+ *   scaffold_app  — a new app, one folder with no build, as files: create-sherpa-ui's template
  *
  * Map:
  * - register — register scaffold_def, validate_def, compile_def, token_for and scaffold_app
  */
 import fs from "fs";
+import { createRequire } from "node:module";
 import path from "path";
 import { z } from "zod/v3";
 import { validateDef, compileDef, tokenForValue, at } from "../lib/sherpa.js";
 
-/* npm drops a package's `.gitignore`: the starter keeps it, and `.mcp.json`,
-   without their dot. TRAP T-a-starter-is-one-folder */
+/* The template is create-sherpa-ui's: installed beside this package, or the
+   checkout's sibling. npm drops a package's `.gitignore`, so it keeps that, and
+   `.mcp.json`, without their dot. TRAP T-a-starter-is-one-folder */
 const DOTTED = new Set(["gitignore", "mcp.json"]);
+const template = () => {
+  try {
+    return path.join(path.dirname(createRequire(import.meta.url).resolve("create-sherpa-ui/package.json")), "template");
+  } catch {
+    return path.resolve(at(), "..", "Sherpa Starter", "template");
+  }
+};
 
-/** Every file in the starter, as the app gets it: its path and its text. */
+/** Every file in the template, as the app gets it: its path and its text. */
 function starterFiles(name) {
-  const root = at("starter");
+  const root = template();
   const files = [];
   const walk = (dir) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
@@ -307,13 +316,13 @@ export function register(server) {
     }
   );
 
-  // ── scaffold_app — the starter, as files ──
+  // ── scaffold_app — a new app, as files ──
   server.registerTool(
     "scaffold_app",
     {
       title: "Scaffold a Sherpa App",
       description:
-        "The starter app, as files: one folder with no build — index.html (the shell and outlet.start()), app.json, one Context's template, page definition and Views, its store with seed rows, an optional Context module, package.json, .mcp.json, and an AGENTS.md that says where each kind of file goes. Write them into an EMPTY folder, then `npm install && npm start`. They are the files `npx sherpa-ui init <folder>` writes. Read sherpa://app-guide before you change them, and check app.json and each page definition with validate_page.",
+        "A new app, as files: one folder with no build — index.html (the shell and outlet.start()), app.json, one Context's template, page definition and Views, its store with seed rows, an optional Context module, package.json, .mcp.json, and an AGENTS.md that says where each kind of file goes. Write them into an EMPTY folder, then `npm install && npm start`. They are the files `npm create sherpa-ui <folder>` writes. Read sherpa://app-guide before you change them, and check app.json and each page definition with validate_page.",
       inputSchema: {
         name: z.string().optional().describe("The app's package name, lower case with hyphens (default \"sherpa-app\")."),
       },
@@ -321,8 +330,8 @@ export function register(server) {
     async ({ name }) => {
       const pkg = (name ?? "sherpa-app").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "sherpa-app";
       const files = starterFiles(pkg);
-      if (!files.length) return err("the starter is not here — this sherpa-ui has no starter/ folder.");
-      let out = `## The starter — ${files.length} files\n\nWrite each into an empty folder, then \`npm install && npm start\`.\n\n`;
+      if (!files.length) return err("the template is not here — install create-sherpa-ui beside this package.");
+      let out = `## A new app — ${files.length} files\n\nWrite each into an empty folder, then \`npm install && npm start\`.\n\n`;
       for (const f of files) out += `### \`${f.path}\`\n\n\`\`\`\`\n${f.text.replace(/\n$/, "")}\n\`\`\`\`\n\n`;
       return ok(out);
     }

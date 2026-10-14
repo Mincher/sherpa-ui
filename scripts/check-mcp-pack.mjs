@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-mcp-pack.mjs — the MCP as a user gets it: both packages packed,
+ * check-mcp-pack.mjs — the MCP as a user gets it: its three packages packed,
  * installed into an empty folder, and every tool, resource and prompt called.
  * TRAP T-the-mcp-reads-sherpa-ui-through-one-door
  *
@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const STARTER = resolve(ROOT, '..', 'Sherpa Starter');
 
 /** The sherpa-ui files the MCP reads from disk, beside the code it imports. */
 export const READS = [
@@ -28,7 +29,6 @@ export const READS = [
   'src/styles/tokens/tokens.css',
   'src/components/sherpa-button/sherpa-button.component.json',
   'src/components/sherpa-button/sherpa-button.ts',
-  'starter/index.html', 'starter/app.json',
 ];
 
 const IMPORT = /(?:import|export)\s*(?:[^'"`;]*?\bfrom\s*)?['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)/g;
@@ -69,7 +69,9 @@ async function smoke() {
     // The MCP's own prepack makes its vendor/ copy; sherpa-ui's scripts stay off.
     const pack = (cwd, scripts = false) => execFileSync('npm', ['pack', ...(scripts ? [] : ['--ignore-scripts']), '--pack-destination', work], { cwd, encoding: 'utf8' })
       .trim().split('\n').at(-1);
-    const tarballs = [pack(ROOT), pack(join(ROOT, 'mcp-server'), true)].map((t) => join(work, t));
+    // scaffold_app's template is create-sherpa-ui's, the sibling project. TRAP T-a-starter-is-one-folder
+    if (!existsSync(STARTER)) throw new Error(`no ${STARTER} — scaffold_app reads create-sherpa-ui from there`);
+    const tarballs = [pack(ROOT), pack(join(ROOT, 'mcp-server'), true), pack(STARTER)].map((t) => join(work, t));
     writeFileSync(join(work, 'package.json'), JSON.stringify({ name: 'probe', version: '1.0.0', private: true }));
     execFileSync('npm', ['install', '--prefer-offline', '--no-audit', '--no-fund', ...tarballs], { cwd: work, stdio: 'pipe' });
     const at = (p) => pathToFileURL(join(work, 'node_modules', p)).href;
@@ -89,6 +91,7 @@ async function smoke() {
       try {
         const r = await client.callTool({ name: tool.name, arguments: args });
         if (!r.content?.length) failures.push(`${tool.name}: no answer`);
+        else if (tool.name === 'scaffold_app' && !r.content[0].text.includes('### `index.html`')) failures.push(`scaffold_app: ${r.content[0].text.slice(0, 80)}`);
       } catch (error) {
         failures.push(`${tool.name}: ${error.message}`);
       }

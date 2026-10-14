@@ -76,7 +76,7 @@ source — does this name exist — from the generated `tokens.css`.
 | `validate_def` | `def` | Every design-system rule, checked |
 | `compile_def` | `def` | Spec → TS + HTML + CSS |
 | `token_for` | `property`, `value` | Which token resolves to this pixel value |
-| `scaffold_app` | `name?` | The starter app as files — one folder, no build; what `npx sherpa-ui init` writes |
+| `scaffold_app` | `name?` | A new app as files — one folder, no build; what `npm create sherpa-ui` writes |
 
 ### Verify — check a built one · `tools/verify.js`
 

@@ -42,7 +42,7 @@ built.
   `system-ui`. Sherpa loads no font: link Inter in your page to use it.
 - **Dates are `Temporal`** — `PlainDate`, never a `Date` — where the browser
   has it, and the stand-in where it has not.
-- **Node 22 or later** only for the tooling: `npx sherpa-ui init`,
+- **Node 22 or later** only for the tooling: `npm create sherpa-ui`,
   `npx sherpa-ui serve` and the MCP server.
 
 ## Develop

@@ -97,7 +97,7 @@ export function checkUsage(folder = '.') {
   return 0;
 }
 
-// By REAL path: run through a linked node_modules/sherpa-ui, the two differ.
+// By REAL path: run through a linked node_modules/sherpa-ui, the two differ. TRAP T-a-cli-is-run-through-a-link
 if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   process.exit(checkUsage(process.argv[2]));
 }

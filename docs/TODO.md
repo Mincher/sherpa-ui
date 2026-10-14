@@ -258,7 +258,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
 | ✅ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
 | ✅ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
-| ⬜ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
+| ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ⬜ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ⬜ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
@@ -6359,6 +6359,26 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 267 — Phase 2: the starter is its own project (Q1)
+
+Will, Q1: A. `starter/`, `npx sherpa-ui init` and the MCP's `scaffold_app`
+were an app template, with app content, inside the library. **✅ Done
+2026-10-14.** The template is the package `create-sherpa-ui` in
+`../Sherpa Starter` (its `34415f2`): `npm create sherpa-ui <folder>` runs its
+`init`, and its own tests check an app it makes against sherpa-ui's schemas,
+`checkApp` and the usage check, and boot it in three engines. sherpa-ui loses
+`starter/`, `init` and the two starter tests. The MCP depends on
+`create-sherpa-ui` and `scaffold_app` reads its `template/` — the checkout's
+sibling when run from here; `check:mcp-pack` packs all three and checks
+`scaffold_app` gives `index.html` (19 tools, 267 resources, 3 prompts, no
+failure). `T-a-starter-is-one-folder`.
+
+**✅ And a bug it found.** `sherpa-ui serve` did nothing when run through a
+link — `npx`, `node_modules/.bin`, a `file:` dependency — and said nothing: its
+main-file check compared the link to the real path. It compares real paths
+now, as `check-usage.mjs` did, and so does `create-sherpa-ui`'s; a unit test
+runs the CLI through a link. `T-a-cli-is-run-through-a-link`.
 
 ### `[x]` ✅ 268 — Phase 2: the hook stops checking Demos (Q2)
 
