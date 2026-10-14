@@ -25,9 +25,10 @@ alone is `import 'sherpa-ui/components/button'`. Any import is safe on a server:
 there it defines nothing.
 `sherpa-ui/data` is the data layer alone, with no DOM, for a server or a test.
 
-The example app, [Sherpa Demos](https://github.com/Mincher/sherpa-demos), is
-the working reference: a router, a provider, the app shell, page definitions
-and Views.
+[Sherpa Demos](https://github.com/Mincher/sherpa-demos) is one app built on
+it — a router, a provider, the app shell, page definitions and Views. Sherpa
+itself knows no app: [docs/APP-GUIDE.md](docs/APP-GUIDE.md) says how one is
+built.
 
 ## What it needs
 

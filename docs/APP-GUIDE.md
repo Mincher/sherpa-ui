@@ -1,8 +1,9 @@
 # Building an app on Sherpa
 
 How to build an app on sherpa-ui, in order. Each step is the one way to do it
-today. Served to agents as `sherpa://app-guide`. Sherpa Demos
-(`../Sherpa Demos/app/`) is a working app built this way.
+today. Served to agents as `sherpa://app-guide`.
+[Sherpa Demos](https://github.com/Mincher/sherpa-demos) is one app built this
+way.
 
 **Start from the starter:** `npx sherpa-ui init my-app`, or the MCP's
 `scaffold_app`. It is every step below, in one folder with no build.

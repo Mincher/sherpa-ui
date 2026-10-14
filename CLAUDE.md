@@ -122,7 +122,7 @@ npm run check:mcp-pack    # pack both packages, install them, call every tool, r
 - **Web Components** — Custom Elements + Shadow DOM + HTML Templates. No framework, no virtual DOM, zero runtime dependencies.
 - **TypeScript** strict mode, compiled to ES2022 ES modules (`dist/components/`).
 - **CSS** with design tokens sourced from Figma Variables.
-- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the data layer and the build rules. (There is no `patterns/` directory on this branch — the example app in `../Sherpa Demos` is the working reference instead.)
+- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the data layer and the build rules.
 
 ### Component anatomy (three source files + one generated def)
 
@@ -323,15 +323,15 @@ never disagree. Add an Area only when one is asked for.
 **A Settings Context is ONE page, with no Views**: a section header before each
 set of settings, and a Jump to chip (`sherpa-quick-filter data-type="jump"`) in
 its header that scrolls to each. A footer only where typed values need Save.
-`../Sherpa Demos/app/templates/application.html` is the reference.
+(Sherpa Demos' `templates/application.html` is one built this way.)
 
 **Settings opens ON TOP of the Context**, in `<sherpa-dialog data-type="overlay">`
 in the app shell's `overlay` slot. The Context under it is never reloaded, so
 leaving Settings restores its View. The URL carries both:
 `?context=records&view=risk&settings=application`. A first View is left out.
 
-So a page is a **Context**, not a view: `../Sherpa Demos/app/app.json` names each,
-`../Sherpa Demos/app/contexts/` holds their modules, and `<sherpa-outlet>` opens one. "View" is kept for saved views — `ViewSnapshot`,
+So a page is a **Context**, not a view: an app's `app.json` names each, its
+`contexts/` holds their modules, and `<sherpa-outlet>` opens one. "View" is kept for saved views — `ViewSnapshot`,
 `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events. Figma
 still uses the old words; that rename is queued in `docs/TODO.md`.
 
@@ -451,8 +451,7 @@ re-export, re-project — never hand-edit `tokens.css`. Activate a theme via
 `<html data-theme="sherpa">`. Mode via `<html data-mode="auto|light|dark|hc">`
 — none is LIGHT; `auto` follows the OS. `tokens.css` styles no page: an app
 links `page.css` (`sherpa-ui/css/page`) beside it (TRAP `T-tokens-are-safe-to-embed`).
-The APP keeps the reader's choice — Sherpa Demos keeps it in its `SessionStore`
-(`/theme/mode`). There is no `light-dark()` in component CSS — the
+The APP keeps the reader's choice, in its `SessionStore` (`/theme/mode`). There is no `light-dark()` in component CSS — the
 display-mode layer owns mode handling.
 
 **Ten override collections come from a HAND-MAINTAINED file**, not the export:
@@ -662,8 +661,8 @@ component owns modality and the `open` attribute) — read the fields, then appe
 `sherpa-toast` for feedback. A component answers a command through `static commands`
 (TRAP `T-a-button-commands-by-markup`).
 
-`../Sherpa Demos/app/contexts/records.js` is the working reference — the add-customer
-button → dialog → save → toast path.
+A Context's own module wires it; Sherpa Demos' `contexts/records.js` is one — the
+add-customer button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
