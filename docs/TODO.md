@@ -232,6 +232,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 58 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
 | ⬜ | 59 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
 | ⬜ | 60 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
+| | | | **L — The code review** | |
+| ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; waits on Will's review and seven choices | explore |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -5900,6 +5902,26 @@ logic in sherpa. So that is what we'll have to do here. Again, large piece of
 work to do later."* So the Sherpa work is the NODE components and their
 logic, beside `sherpa-layout-canvas`; the creator itself is an app built on
 them.
+
+## L — The code review
+
+### `[ ]` ❓ 242 — The code review of every component
+
+Will, 2026-10-14: *"Now is the time to do a thorough code review of all of the
+components. … Plan all of this in a markdown for review before starting."*
+
+**The plan is [CODE-REVIEW-PLAN.md](CODE-REVIEW-PLAN.md).** Four read-only
+reviews and the web research made it. It has eleven bugs found while reading
+(four confirmed in the code), then eight phases: gates, legacy, the lexicon,
+`SherpaElement`, shared helpers, the data layer, third-party technology, and
+docs with a gallery. Once Will rules, each phase's items become rows 243 and on.
+
+**❓ Will — seven choices, in the plan's §0.** My picks: D1 A a native gallery
+(stories in CSF, so Storybook can read them later); D2 A `custom-elements.json`
+from our own specs, plain HTML only; D3 A private host state as `:state()`; D4
+A delete the stored-data shims now; D5 A form and focus plumbing in
+`SherpaElement`, opt-in; D6 A native names where a native element does the
+same job; D7 A the calendar on `Date` + `Intl` until Safari has `Temporal`.
 
 ## ✅ Done — the full record
 
