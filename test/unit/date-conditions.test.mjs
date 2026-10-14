@@ -50,7 +50,18 @@ test('each date row is the clause it says; one with no count says nothing', () =
   assert.deepEqual(clause({ op: 'eq', picked: ['2026-09-03'] }, true),
     ['created', 'between', ['2026-09-03', '2026-09-03T23:59:59.999']]);
   assert.deepEqual(clause({ op: 'gt', text: '2026-09-03' }, true), ['created', 'gt', '2026-09-03T23:59:59.999']);
-  assert.deepEqual(clause({ op: 'gt', text: '2026-09-03T14:00' }, true), ['created', 'gt', '2026-09-03T14:00']);
+  // …and a MINUTE is all of that minute, as a day is all of that day. TODO 112
+  assert.deepEqual(clause({ op: 'gt', text: '2026-09-03T14:00' }, true), ['created', 'gt', '2026-09-03T14:00:59.999']);
+  assert.deepEqual(clause({ op: 'eq', picked: ['2026-09-03T14:00'] }, true),
+    ['created', 'between', ['2026-09-03T14:00', '2026-09-03T14:00:59.999']]);
+  assert.deepEqual(clause({ op: 'lt', text: '2026-09-03T14:00' }, true), ['created', 'lt', '2026-09-03T14:00']);
+  // Between reaches the END of its last day, or its last minute.
+  assert.deepEqual(clause({ op: 'between', picked: ['2026-09-30', '2026-09-01'] }, true),
+    ['created', 'between', ['2026-09-01', '2026-09-30T23:59:59.999']]);
+  assert.deepEqual(clause({ op: 'between', picked: ['2026-09-01T09:00', '2026-09-30T18:00'] }, true),
+    ['created', 'between', ['2026-09-01T09:00', '2026-09-30T18:00:59.999']]);
+  // A value with its seconds is exact.
+  assert.deepEqual(clause({ op: 'gt', text: '2026-09-03T14:00:30' }, true), ['created', 'gt', '2026-09-03T14:00:30']);
 });
 
 test('a saved View keeps "in the last 7 days" relative, and reads it back as a row', () => {

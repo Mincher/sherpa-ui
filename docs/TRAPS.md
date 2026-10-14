@@ -1707,7 +1707,9 @@ reads, with the last day's end so a value with a time still falls inside.
 A `RestStore` sends the `between`, so a server never meets `last` or `next`.
 
 A field that holds TIMES (`time: true`) takes a day alone as all of it:
-On is that day's span, After is after its end.
+On is that day's span, After is after its end — and a MINUTE as all of that
+minute, and the end of Between as the end of its last day or minute (TODO
+112). Before is before the start; a value with its seconds is exact.
 
 **In a menu**, a date that opts in (`advanced: true`) is a FILTER menu, as an
 Advanced number is: the calendar stays its Simple body, and its rows ask On,
@@ -1846,8 +1848,17 @@ and the panel: `{ picked: ['100'], op: 'eq', range: false }` under `=`, and
 then `picked`, so both shapes round-trip. The test binds a real source and
 counts ROWS, because the event alone was not enough to prove it.
 
+**And any field with NO list to pick from** — Will, TODO 112: *"This bug
+applies to any advanced filter's condition input that has a dropdown (select)
+for an 'equals' condition. The list isn't populated."* A field that answers by
+conditions only (`advanced: 'only'`) lists no values, so its Equals select was
+empty — WebKit would not even open it. Its Equals and Not equals are TYPED
+now, as a number's are, and answer as the one value they pick
+(`#typesItsPicks()`). Rows ask again whenever the values come or go.
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
+- Site: `test/e2e/reforged-advanced-rows.spec.ts`
 
 ### T-a-menu-owns-its-own-bodies
 

@@ -672,8 +672,8 @@ export class SherpaMenu extends SherpaElement {
         if (want) pick.value = want;
       });
     }
-    // A NUMBER's `=` is typed too, and kept as its one pick.
-    if (text) text.value = seed?.text ?? (this.#numeric() && seed?.picked?.length ? String(seed.picked[0]) : '');
+    // A NUMBER's `=` is typed too, and kept as its one pick — and so is one with no list.
+    if (text) text.value = seed?.text ?? (this.#typesItsPicks() && seed?.picked?.length ? String(seed.picked[0]) : '');
     if (dated) this.#fillDateRow(row, seed);
   }
 
@@ -729,7 +729,14 @@ export class SherpaMenu extends SherpaElement {
   /** What a row answers with: a pick, typing — or, on a date, a day, two, or a count. */
   #takes(op: FilterOp): 'list' | 'text' | 'range' | 'date' | 'dates' | 'duration' {
     if (this.#dated()) return op === 'last' || op === 'next' ? 'duration' : op === 'between' ? 'dates' : 'date';
-    return this.#numeric() ? 'text' : (OP_TAKES[op] ?? 'list');
+    return this.#typesItsPicks() ? 'text' : (OP_TAKES[op] ?? 'list');
+  }
+
+  /** A row with NO list to pick from types its Equals — a number, or a field
+   *  whose values are not listed (Advanced only). It answers as the one value
+   *  it picks. Will, TODO 112. TRAP T-one-number-is-a-pick-under-equals */
+  #typesItsPicks(): boolean {
+    return this.#numeric() || !this.#fieldValues().length;
   }
 
   /** The ops this menu offers, from `data-conditions` or the text set. */
@@ -787,7 +794,7 @@ export class SherpaMenu extends SherpaElement {
       if (this.#dated()) return { ...out, ...this.#dateRowAnswer(row, op) };
       /* A NUMBER's `=` is typed, and answers as the one number it picks —
          as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
-      if (this.#numeric() && takes === 'list') {
+      if (this.#typesItsPicks() && takes === 'list') {
         const typed = (row.querySelector<FieldEl>('.condition-value')?.value ?? '').trim();
         if (typed) out.picked = [typed];
       } else if (takes === 'list') {
@@ -921,7 +928,7 @@ export class SherpaMenu extends SherpaElement {
     // Row one still mirrors to the host attributes: the one-row view.
     const op = (this.#conditionField()?.value ?? DEFAULT_OP) as FilterOp;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
-    this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+    this.setAttribute('data-takes', this.#takes(op));
     this.dataset['value'] = this.#valueField()?.value ?? '';
 
     this.#emitConditions();
@@ -1002,8 +1009,8 @@ export class SherpaMenu extends SherpaElement {
     const select = this.#conditionField();
     if (select && select.value !== op) select.value = op;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
-    this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
-    this.#rowEls()[0]?.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+    this.setAttribute('data-takes', this.#takes(op));
+    this.#rowEls()[0]?.setAttribute('data-takes', this.#takes(op));
 
     // Put back what was typed — a re-stamp blanked the box, not the state.
     const box = this.#valueField();
@@ -1820,6 +1827,13 @@ export class SherpaMenu extends SherpaElement {
   /** Re-send the field's values to every row's value select, keeping each
    *  row's own pick where it still names a value. */
   #refillPicks(): void {
+    // Values came or went: each row asks again whether it picks or types — and
+    // so does the host's mirror of row one, where its body is not a number's or a date's.
+    for (const row of this.#rowEls()) {
+      const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
+      row.dataset['takes'] = this.#takes(op);
+    }
+    if (!this.#typedBody() && this.hasAttribute('data-takes')) this.setAttribute('data-takes', this.#takes(this.op));
     const options = this.#valueOptions();
     if (!options.length) return;
     const rows = this.conditions;

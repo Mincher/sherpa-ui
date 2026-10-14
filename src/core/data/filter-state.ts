@@ -418,14 +418,15 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
     const n = Number((row.text ?? '').trim());
     return n > 0 ? [state.field, row.op, { n, unit: row.unit ?? 'day' }] : undefined;
   }
-  // A day alone, on a field with times, is ALL of that day.
+  /* On a field with times, a day alone is ALL of that day, and a minute all of
+     that minute: "On", "After" and the end of "Between" reach its last moment.
+     Will, TODO 112. TRAP T-a-relative-date-stays-relative */
   if (state.time) {
-    const day = (v: unknown): boolean => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
     const one = row.op === 'gt' ? row.text : row.op === 'eq' && row.picked?.length === 1 ? row.picked[0] : undefined;
-    if (day(one)) {
-      return row.op === 'gt' ? [state.field, 'gt', `${one}${END_OF_DAY}`]
-        : [state.field, 'between', [one, `${one}${END_OF_DAY}`]];
-    }
+    const end = endOf(one);
+    if (end) return row.op === 'gt' ? [state.field, 'gt', end] : [state.field, 'between', [one, end]];
+    const [from, to] = [...(row.picked ?? [])].map(String).sort();
+    if (row.op === 'between' && from && to) return [state.field, 'between', [from, endOf(to) ?? to]];
   }
   const takes = OP_TAKES[row.op] ?? 'list';
   if (takes === 'text') {
@@ -435,6 +436,15 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
   const picked = [...(row.picked ?? [])];
   if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
   return picksClause(state.field, cast(picked, state.type), row.op);
+}
+
+/** The last moment of a day (`2026-09-03`) or a minute (`2026-09-03T14:00`);
+ *  `undefined` for a value that names its seconds, which is exact. */
+function endOf(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}${END_OF_DAY}`;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:59.999`;
+  return undefined;
 }
 
 /** A held CLAUSE op as a reader's ROW op: several `eq` picks are `in`. */

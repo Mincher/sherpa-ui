@@ -33,7 +33,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
-| ⬜ | 6 | 112 | DEFERRED (Will, 2026-10-13) — an Equals row in Advanced will not open its value list | bug |
+| ✅ | 6 | 112 | An Equals row in Advanced will not open its value list — and every Advanced row kind is checked | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -229,9 +229,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ✅ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
-| ⬜ | 58 | 76 | DEFERRED (Will, 2026-09-30) — WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| ⬜ | 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| ⬜ | 60 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| ⬜ | 58 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
+| ⬜ | 59 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
+| ⬜ | 60 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -811,7 +811,7 @@ two more gaps, now closed: a draft set from code (`values`, `conditions`,
 Advanced was not a change to the draft. Eight tests pressed Apply on a menu
 they never opened; they open it first, as a reader must.
 
-### `[ ]` 112 — BUG: an Equals row in Advanced will not open its value list
+### `[x]` ✅ 112 — BUG: an Equals row in Advanced will not open its value list
 
 Will, 2026-09-29: *"Equals conditions in advanced filters don't allow a
 selection from value. Dropdown doesn't show a menu on click."*
@@ -827,6 +827,31 @@ WebKit); the menu stays open and the select keeps focus. Firefox reports
 surface (bar, panel or grid heading), which browser, and the steps.
 
 **DEFERRED — Will, 2026-10-13.** Not in the churn until he brings it back.
+
+**Back, Will 2026-10-14:** *"This bug applies to any advanced filter's
+condition input that has a dropdown (select) for an 'equals' condition. The
+list isn't populated or shown when interacting with the dropdown. As part of
+fixing this we should check that all input row permutations are working
+correctly for advanced filters."*
+
+**✅ Done 2026-10-14.** Reproduced on Records: **Name** answers by conditions
+only (`advanced: 'only'`), so its values are never listed — its Equals select
+was EMPTY, not even "Select…", and WebKit would not open it. Owner and Email
+opened on the bar, the panel and a grid heading in Chromium and WebKit
+(Firefox reports no select as open, so it cannot be read). Now a row with NO
+list to pick from types its Equals and Not equals, as a number does, and
+answers as the one value it picks; rows, and the host's mirror, ask again
+when the values come or go.
+
+**Every permutation checked** (`reforged-advanced-rows.spec.ts`, three
+engines): 30 single rows — a list, a list with none, a number, a date, a date
+with time, each condition each offers — show the inputs that condition takes,
+and answer the clause it says; two rows join by Or and by And, and the cross
+takes one away. One more was wrong and is fixed: on a field with TIMES a
+minute was exact, so "On 3 Sep at 14:00" missed 14:00:23 — now a minute is
+all of that minute, as a day is all of that day, and Between reaches the end
+of its last day or minute. Demos checks Owner and Name on all three surfaces.
+`T-one-number-is-a-pick-under-equals` · `T-a-relative-date-stays-relative`.
 
 ### `[x]` ✅ 114 — BUG: about 1 time in 20, a folded Advanced-only filter's row opens nothing
 
@@ -5827,6 +5852,8 @@ feature of one app.
 
 **DEFERRED.** Will, 2026-09-30: *"we can defer the WebMCP aspect for now."*
 Not to be started in the churn; it waits for his word.
+**Will, 2026-10-14:** *"WebMCP can be a future feature. Not critical for
+sherpa at this time."*
 
 Agentic UI components: a component exposes what an agent may do with it, and
 an agent does it for the reader. Will's examples — *"generating data viz and
@@ -5843,7 +5870,15 @@ like any other, never a clause it writes itself.
 ### `[ ]` 77 — CONTRACTED UX patterns, so a generated experience is consistent
 
 *"We will also need well defined, contracted, UX patterns so that any
-generated experiences by agents are consistent and useful."* A pattern is
+generated experiences by agents are consistent and useful."*
+
+**Will, 2026-10-14:** *"UX patterns will come later, too, but will be
+important. These must not be baked into sherpa but rather be definable, in
+some sort of contract, so that consumers of sherpa can add their own patterns
+and use them."* So Sherpa ships the CONTRACT for a pattern, and a consumer's
+patterns are data under it — Sherpa's own are examples, not the only ones.
+
+A pattern is
 data with a contract, as a component is: what it is for, which components it
 composes, which states it has, what an agent may change. An agent composes
 patterns; it never invents a layout. The CRUD flow, Settings pages as forms,
@@ -5858,6 +5893,13 @@ experiences and outcomes."* It draws on the canvas — 25,
 `sherpa-layout-canvas`, which is why Will asked for one. Nodes are patterns
 and steps; edges are what flows between them; a generated workflow is shown
 and edited the same way as a designed one.
+
+**Will, 2026-10-14:** *"The node based workflow creator is an app using the
+canvas and node components. We haven't created the node components or their
+logic in sherpa. So that is what we'll have to do here. Again, large piece of
+work to do later."* So the Sherpa work is the NODE components and their
+logic, beside `sherpa-layout-canvas`; the creator itself is an app built on
+them.
 
 ## ✅ Done — the full record
 
