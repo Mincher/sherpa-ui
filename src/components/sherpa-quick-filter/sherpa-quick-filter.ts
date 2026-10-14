@@ -857,14 +857,6 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /**
-   * The menu's condition changed — the caret says which, and a TYPED answer
-   * switches the chip on by itself.
-   *
-   * Ticked rows are not the only way a filter chip holds a value: "Starts with
-   * Go" narrows just as much, and a chip that stays off while its menu filters
-   * is a chip that lies. TRAP T-an-operator-decides-pick-or-type
-   */
-  /**
    * The menu just stamped its rows — read this chip's FACE off them.
    *
    * The LABEL and the badge only. A chip's on/off is the host's to set — a

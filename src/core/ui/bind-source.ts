@@ -7,7 +7,6 @@
  * Map:
  * - BindOptions — What a component may do with the source it is bound to.
  * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
- * - STEERING_EVENTS — The events a bound component may send UP.
  * - SteeringEvent — One of them.
  * - SteerBind — What steering needs of one binding: its scope, and what its bar answered last.
  * - steer — Turn one component's event into its source's call.
@@ -150,7 +149,7 @@ function mergeInto(el: Populatable, path: string, value: unknown): unknown {
 }
 
 /** The events a bound component may send UP. TRAP T-steering-events-are-a-closed-list */
-export const STEERING_EVENTS = [
+const STEERING_EVENTS = [
   'sort-change',
   'group-change',
   'quick-filter-change',

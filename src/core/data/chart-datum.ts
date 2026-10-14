@@ -5,7 +5,6 @@
  *
  * Map:
  * - ChartDatum — One category with its measurement — a bar, a slice, a legend row.
- * - STATUSES — The statuses a band or a legend row may name — one list.
  * - Status — One of `STATUSES`.
  * - isStatus — Is this name a status?
  * - LegendDatum — `ChartDatum` plus the two things only a legend has.
@@ -28,7 +27,7 @@ export interface ChartDatum {
 }
 
 /** The statuses a band or a legend row may name — one list, in the gauge's order. */
-export const STATUSES = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
+const STATUSES = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
 /** One of `STATUSES`. */
 export type Status = (typeof STATUSES)[number];

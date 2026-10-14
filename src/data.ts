@@ -23,7 +23,7 @@
  * (`parseViewMarkup`) and therefore needs a parser.
  *
  * FOUR THINGS HERE TOUCH STORAGE — `persistView`, `SessionStore`, `IdbStore`
- * and `syncViews` — and that is deliberate. Both wrap every access in `try/catch → null`, so in Node
+ * and `syncViews` — and that is deliberate. Each wraps every access in `try/catch → null`, so in Node
  * they degrade to "nothing was kept" rather than throwing. A server restoring a
  * saved view from a database needs the SHAPE (`ViewSnapshot`, `applyViewSnapshot`)
  * far more than it needs the browser's storage.
@@ -138,7 +138,7 @@ export {
   type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
   type SavedViewStore,
 } from './core/browser/persist-view.js';
-// A data source's saved custom filters — kept per DATA, not per page.
+// A data source's saved filters — kept per DATA, not per page.
 export {
   loadSavedFilters, saveFilterAs, deleteSavedFilter,
   type SavedFilter, type SavedFilterSet, type SavedFilterOptions,
@@ -198,9 +198,6 @@ export {
   type LegendDatum,
 } from './core/data/chart-datum.js';
 
-/* ROWS → the shape a chart draws. Aggregation lives HERE and not in a view,
-   so a server can pre-compute it, an MCP tool can answer "count by category",
-   and two views cannot disagree about what a mean is. */
 /* The enumerated states a control steps through — stated once, so two views of
    one value cannot disagree about what their shared third state keeps. */
 export {
@@ -218,6 +215,9 @@ export {
   type AllowList,
 } from './core/data/allow.js';
 
+/* ROWS → the shape a chart draws. Aggregation lives HERE and not in a view,
+   so a server can pre-compute it, an MCP tool can answer "count by category",
+   and two views cannot disagree about what a mean is. */
 export {
   aggregateBy,
   countBy,

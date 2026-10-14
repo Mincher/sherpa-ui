@@ -820,7 +820,6 @@ export class SherpaFilterPanel extends SherpaElement {
        opening anything. TRAP T-only-group-and-sort-stay-one-chip
        WHAT IT IS, asked once. TRAP T-a-chip-knows-what-kind-it-is */
     const kind = kindOf(def);
-    const single = picksOne(kind);
     // More than 16 values is ONE chip, its values in its menu. Will, TODO 89
     if (!def.asChip && !isPresets && oneChipList(def)) def = { ...def, asChip: true };
 
@@ -832,12 +831,10 @@ export class SherpaFilterPanel extends SherpaElement {
     // A PRESETS section has no field to clear or remove.
     const organise = arranges(kind);
     // Set BEFORE the chip path returns, or it never lands.
-    box.toggleAttribute('data-single', single && !isPresets);
     box.toggleAttribute('data-chip', organise || !!def.asChip);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
     // Below the View, a field can be sent up to it. TRAP T-send-to-view-filters
     box.toggleAttribute('data-raisable', !isPresets && !organise && scope !== VIEW);
-    box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
     /* A switch only where there is somewhere to switch TO: a conditions-only
        field has no list behind it, as its menu says too. Will, 2026-09-26.
        TRAP T-a-filter-answers-by-values-conditions-or-both */

@@ -116,6 +116,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-sort-field': DATA_PROPS['data-sort-field'],
     'data-sort-direction': DATA_PROPS['data-sort-direction'],
     'data-group-field': DATA_PROPS['data-group-field'],
+    // A host that owns the favourites paints the star. TRAP T-the-star-reports-it-does-not-decide
     'data-favourite': { type: 'boolean', kind: 'behaviour' },
     // The host saves filters: its ⋮ offers Save filters. TRAP T-saved-filters-are-every-scope
     'data-saveable': { type: 'boolean', kind: 'style' },
@@ -127,10 +128,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
     'data-pending': { type: 'string', kind: 'behaviour' },
   } as const;
-
-  /** Sort and group written from outside — unobserved, a grid header click says nothing here. */
-  /** `data-favourite` is observed so a host that owns the favourites list can
-   *  paint the star. TRAP T-the-star-reports-it-does-not-decide */
 
   /** The filter defs this bar holds, in order. */
   #filters: FilterDef[] = [];
@@ -876,15 +873,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#markPresent(chip);
   }
 
-  /**
-   * The condition dropdown, plus the text box its typing conditions use.
-   *
-   * BOTH bodies are stamped: CSS reveals one off the menu's `data-takes`, so a
-   * reader flipping between Equals and Contains keeps their ticks AND their
-   * typing. Rebuilding would throw one of them away every flip.
-   * TRAP T-an-operator-decides-pick-or-type
-   * TRAP T-range-switch-swaps-not-rebuilds
-   */
   /** A chip's condition or typed value changed — the bar's filter did too. */
   #onConditionChanged = (): void => {
     this.#emitChange();
@@ -1391,7 +1379,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
     ];
     this.#told = new Map(added.flatMap((f) => (f.on === undefined ? [] : [[f.id, f.on] as const])));
-    this.toggleAttribute('data-can-add', any);
     add.toggleAttribute('disabled', !any);
     if (folded.length) add.dataset['badge'] = String(folded.length);
     else add.removeAttribute('data-badge');

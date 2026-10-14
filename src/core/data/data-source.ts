@@ -243,7 +243,6 @@ export interface ScopeDescription {
   sortDirection?: SortDirection;
 }
 
-/** The view state a source owns. */
 /** How a definition arranges the rows — only what it names. */
 type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string; scope?: string };
 
@@ -541,16 +540,6 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * Restore a whole Query — a reload, a trip away and back, a View's own
-   * defaults. Each bound control over a scope is DRAWN its slice; nothing
-   * replays a control. The named parts are left alone. Resolves once every
-   * control has drawn.
-   *
-   * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
-   * the chips it has, and every answer is a clean slate.
-   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
-   */
-  /**
    * Would a Reset to default change nothing? What filters NOW, which filters
    * each scope holds, and how the rows are arranged, against `base` as defined
    * with a View's own Query over it. Applies nothing. TODO 231
@@ -592,6 +581,16 @@ export class DataSource extends EventTarget {
     });
   }
 
+  /**
+   * Restore a whole Query — a reload, a trip away and back, a View's own
+   * defaults. Each bound control over a scope is DRAWN its slice; nothing
+   * replays a control. The named parts are left alone. Resolves once every
+   * control has drawn.
+   *
+   * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
+   * the chips it has, and every answer is a clean slate.
+   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
+   */
   async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep' } = {}): Promise<void> {
     if (query?.v !== 1 || typeof query.scopes !== 'object') {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });

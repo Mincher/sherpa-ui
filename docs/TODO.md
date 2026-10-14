@@ -261,7 +261,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
-| 🚧 | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
+| ❓ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
@@ -6371,7 +6371,7 @@ reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
 
-### `[ ]` 🚧 270 — Phase 2: dead code, icon leftovers, repo strays
+### `[ ]` ❓ 270 — Phase 2: dead code, icon leftovers, repo strays
 
 The plan's Phase 2 rows for dead code, icons and the repo. One commit per area.
 
@@ -6399,6 +6399,21 @@ that explained a choice by Font Awesome's weights or its resolver. The icon
 count in `render-icon.ts` ("all 214" — 216 today) is words now, not a number.
 The pass found a real bug, filed as 299: two glyphs still come from the
 Font Awesome font.
+
+**✅ Dead code, 2026-10-14.** Gone: three attributes written and read by
+nothing (the toolbar's `data-can-add`, a panel field's `data-single` and
+`data-removable` — the MENU's `data-removable` is real and stays);
+`SHARED_PROPS['data-group']`, which no component spread; the sparkline's
+`.point` rule marked "BUG, left as found", which never won its specificity
+fight, so nothing renders differently; and seven doc blocks over code that had
+gone (two now sit over the code they describe again: `setQuery`'s, and the
+chart aggregates' note in `data.ts`). Nine exports only their own file used
+lose `export`: `STEERING_EVENTS`, `EXPLODE_AT`, five filters-button names,
+`RADIAL_BOX`, `STATUSES`. Kept: `bindGroupedGrid`, a door for a plain
+`.sherpa-grid`; and the five test-only helpers 269 made internal — the plan
+says internal, not gone.
+
+The ❓ above, the three Figma scripts, is all that is open here.
 
 ### `[x]` ✅ 269 — Phase 2: old names, data-API leftovers, component aliases
 

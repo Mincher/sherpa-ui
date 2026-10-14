@@ -154,11 +154,6 @@
   display: block;
 }
 
-/* BUG, left as found: this loses to the data-len rule above on specificity
-   (0,2,1 vs 0,3,1), so bar dots still render. They only look hidden because of
-   `opacity: 0`. Fixing it changes rendering, so it is not a refactor. */
-:host([data-type="bar"]) .point { display: none; }
-
 :host(:hover) .point { opacity: 1; }
 
 /* ── Hover dots + tooltip anchors ────────────────────────────────────────────

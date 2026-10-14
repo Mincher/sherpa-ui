@@ -8,13 +8,8 @@
  *
  * Map:
  * - FILTERS_LABEL — The button's name, and its menu's heading.
- * - ADDED_SECTION — The heading over the filters the view holds.
- * - AVAILABLE_SECTION — The heading over the filters it may add.
- * - SAVED_SECTION — The heading over the saved filters it may add, at the bottom.
- * - DRILL_FLAGS — Menu attributes owned by the FILTER, not by the Filters menu.
  * - ListedFilter — One filter the menu lists.
  * - SavedSet — One saved set of filters, as the menu and the Saved chip draw it.
- * - SET_ROW — A saved set's row value: this, then its id.
  * - AddedFilter — One filter the view holds.
  * - filtersMenuItems — The menu's list: added, available, then saved.
  * - setPick — A Filters menu's ticks, as a saved-set request: apply one, or dismiss the one on.
@@ -28,12 +23,12 @@
 import type { FilterMenuItem } from './filter-menu.js';
 
 export const FILTERS_LABEL = 'Filters';
-export const ADDED_SECTION = 'Added filters';
-export const AVAILABLE_SECTION = 'Available filters';
-export const SAVED_SECTION = 'Saved filters';
+const ADDED_SECTION = 'Added filters';
+const AVAILABLE_SECTION = 'Available filters';
+const SAVED_SECTION = 'Saved filters';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
-export const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
+const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
 
 /** One filter the menu lists. */
 export interface ListedFilter {
@@ -55,7 +50,7 @@ export interface SavedSet {
 }
 
 /** A saved set's row value: this, then its id. Its tick APPLIES it. */
-export const SET_ROW = 'set:';
+const SET_ROW = 'set:';
 
 /** One filter the view holds. */
 export interface AddedFilter extends ListedFilter {

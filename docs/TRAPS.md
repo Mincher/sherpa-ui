@@ -2105,7 +2105,6 @@ why this reaches the toolbar where a bare checkbox's would not.
 `time` joins this list later — the same calendar with `data-has-time`, not a new
 template.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -12945,7 +12944,6 @@ selector in a test, and nothing outside the component reads it.
 - Site: `src/core/sherpa-grouping.css`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-group/sherpa-group.css`
 
 ### T-a-shared-edge-is-halved-on-both-sides

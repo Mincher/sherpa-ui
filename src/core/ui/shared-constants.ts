@@ -13,7 +13,6 @@
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
  * - MIRRORED_CONTROL_ATTRS — Native attributes a select control mirrors onto its inner `<input>`.
- * - RADIAL_BOX — A radial chart's geometry, in viewBox units of a 100×100 box.
  * - RADIAL_CENTRE — Centre of that box.
  * - RADIAL_CORNER — Segment corner radius.
  * - RADIAL_OUTLINE — Outline thickness, aligned INSIDE as in Figma.
@@ -79,7 +78,7 @@ export const MIRRORED_CONTROL_ATTRS = ['name', 'value', 'required', 'disabled'] 
  * all three, so a value that moved in one and not the other would draw two
  * different rings from one function.
  */
-export const RADIAL_BOX = 100;
+const RADIAL_BOX = 100;
 /** Centre of that box. A gauge shows only its TOP half. */
 export const RADIAL_CENTRE = RADIAL_BOX / 2;
 /** Segment corner radius. */
