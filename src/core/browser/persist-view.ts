@@ -25,7 +25,7 @@
  * - deleteSavedView — Forget one saved view.
  */
 import type { DataSource, ViewState } from '../data/data-source.js';
-import { VIEW, type Query, type QueryDefaults } from '../data/query.js';
+import type { Query, QueryDefaults } from '../data/query.js';
 import type { FieldReading } from '../data/filter-state.js';
 import { whereOf, type Where } from '../data/where.js';
 import { applyState } from '../ui/apply-state.js';
@@ -570,25 +570,25 @@ export function saveViewAs(
   return views;
 }
 
-/** What is on screen as a View's JSON: the applied Query, with the rows'
- *  arrangement on the View scope. TRAP T-a-view-is-json */
+/** What is on screen as a View's JSON: the source's own `export()`, each
+ *  reading in the plain form — so the arrangement stays in the scope that
+ *  arranged it. TRAP T-a-view-is-json · TRAP T-group-and-sort-are-component-scope */
 export function viewQueryOf(source: ViewSource): QueryDefaults {
   // In the plain form, by the source's field types. TRAP T-one-way-to-write-a-condition
   const plain = (readings: Record<string, FieldReading>): Where => source.whereOf?.(readings) ?? whereOf(readings);
   const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, { readings, ...rest }] of Object.entries(structuredClone(source.query.applied.scopes))) {
+  for (const [id, { readings, ...rest }] of Object.entries(source.export().query.scopes)) {
     const where = plain(readings);
     scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}) };
   }
-  const { sort, group, search } = source.state;
-  scopes[VIEW] = { ...(scopes[VIEW] ?? { holds: [] }), sort, group, search };
   return { v: 1, scopes };
 }
 
-/** A source as a View is saved from: its state, its Query, and its field types. */
+/** A source as a View is saved from: its state, its Query, its export and its field types. */
 type ViewSource = {
   state: ViewState;
   query: { applied: Query };
+  export(): { query: Query };
   whereOf?(readings: Record<string, FieldReading>): Where;
 };
 

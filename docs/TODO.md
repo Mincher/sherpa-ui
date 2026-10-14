@@ -241,7 +241,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61e | 247 | BUG: a prop's text erased the slot beside it — container-header's icon, toast's heading, gauge's caption | bug |
 | ✅ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
 | ✅ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
-| ⬜ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
+| ✅ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
 | ⬜ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
 | ❓ | 61j | 252 | BUG: the calendar calls `Temporal`, which Safari does not have yet — waits on D7 | bug |
 | ⬜ | 61k | 253 | BUG: two colour rules escape `lint:css` — line-chart's double alpha, nav-item's highlight sheet in TS | bug |
@@ -6021,6 +6021,17 @@ source's. It teaches the source only a saved filter it has never heard of, and
 then through `declarePreset`. A unit test failed on the old build. The weight
 baseline records the bytes 245, 246 and 249 added (`data.js` +220 B).
 `T-one-query-one-owner`.
+
+### `[x]` ✅ 250 — A saved View keeps the sort in the scope that set it
+
+`export()` put sort and group in the scope that arranged the rows (TODO 99);
+`viewQueryOf` — what a saved View, a draft and Save filters are made from —
+always put them on the View. So a View saved over a grid's sort said the View
+arranged it, and a restore left the source thinking so.
+
+**✅ Done 2026-10-14.** `viewQueryOf` is the source's own `export()`, each
+reading in the plain form: one serialiser, not two. A unit test failed on the
+old build. `T-group-and-sort-are-component-scope`.
 
 ## ✅ Done — the full record
 

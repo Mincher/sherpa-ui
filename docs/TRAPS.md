@@ -6764,6 +6764,7 @@ load each — not built until a page has two.
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-scope-arranges-its-own-rows.test.mjs`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
