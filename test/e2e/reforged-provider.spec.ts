@@ -118,6 +118,37 @@ test('a grid inside a provider fills with no bind; one outside waits', async ({ 
   expect(r['reports']).toEqual([]);
 });
 
+test('two sources: a card\'s Retry reloads the source it shows; an unnamed one reloads nothing', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const card = document.createElement('sherpa-container');
+    card.append(grid({ 'data-source': 'invoices' }));
+    const loose = document.createElement('div');
+    provider.append(card, loose);
+    root.append(provider);
+    await settle();
+    const customers = source(2, 'c');
+    const invoices = source(5, 'i');
+    provider.provide({ sources: { customers, invoices } });
+    await Promise.all([customers.load(), invoices.load()]);
+    await settle();
+    const loads = [];
+    for (const [name, s] of Object.entries({ customers, invoices })) {
+      const real = s.load.bind(s);
+      s.load = (o) => { loads.push(name); return real(o); };
+    }
+    card.dispatchEvent(new CustomEvent('data-refresh', { bubbles: true, composed: true }));
+    const byCard = [...loads];
+    reports.length = 0;
+    loose.dispatchEvent(new CustomEvent('data-refresh', { bubbles: true, composed: true }));
+    return { byCard, byLoose: loads.slice(byCard.length), reports: [...new Set(reports)] };
+  })()`) as Record<string, unknown>;
+  expect(r['byCard']).toEqual(['invoices']);
+  expect(r['byLoose']).toEqual([]);
+  expect(r['reports']).toEqual(['provider-ambiguous']);
+});
+
 test('two sources: an unnamed ask is refused loudly, a named one is answered', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

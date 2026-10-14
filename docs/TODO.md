@@ -242,7 +242,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
 | ✅ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
 | ✅ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
-| ⬜ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
+| ✅ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
 | ❓ | 61j | 252 | BUG: the calendar calls `Temporal`, which Safari does not have yet — waits on D7 | bug |
 | ⬜ | 61k | 253 | BUG: two colour rules escape `lint:css` — line-chart's double alpha, nav-item's highlight sheet in TS | bug |
 | | | | **✅ Done — newest first** | |
@@ -6032,6 +6032,16 @@ arranged it, and a restore left the source thinking so.
 **✅ Done 2026-10-14.** `viewQueryOf` is the source's own `export()`, each
 reading in the plain form: one serialiser, not two. A unit test failed on the
 old build. `T-group-and-sort-are-component-scope`.
+
+### `[x]` ✅ 251 — `data-refresh` never guesses a source
+
+With two sources, a container's Retry or a bar's Refresh that named none got
+`#resolve`'s loud refusal — and then the FIRST source anyway. Measured: a card
+over the `invoices` grid reloaded `customers`.
+
+**✅ Done 2026-10-14.** A card reloads the sources of what it holds, as its
+state is theirs; any other ask resolves as every ask does, and an unclear one
+loads nothing. The test failed on the old build.
 
 ## ✅ Done — the full record
 

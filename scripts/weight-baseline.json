@@ -1,6 +1,6 @@
 {
   "app.js": {
-    "js": 340409,
+    "js": 340341,
     "files": 43,
     "fetched": 0
   },
@@ -205,8 +205,8 @@
     "fetched": 0
   },
   "components/sherpa-outlet/sherpa-outlet.js": {
-    "js": 243311,
-    "files": 22,
+    "js": 241634,
+    "files": 21,
     "fetched": 0
   },
   "components/sherpa-overlay-panel/sherpa-overlay-panel.js": {
@@ -240,7 +240,7 @@
     "fetched": 0
   },
   "components/sherpa-provider/sherpa-provider.js": {
-    "js": 302710,
+    "js": 302642,
     "files": 27,
     "fetched": 0
   },
@@ -340,12 +340,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 105217,
+    "js": 105068,
     "files": 34,
     "fetched": 0
   },
   "index.js": {
-    "js": 951926,
+    "js": 951858,
     "files": 129,
     "fetched": 214070
   }

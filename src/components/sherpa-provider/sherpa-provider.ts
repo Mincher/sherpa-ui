@@ -164,8 +164,11 @@ export class SherpaProvider extends SherpaElement {
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
     this.addEventListener('data-refresh', (event) => {
-      const source = this.#resolve(event.target as Element) ?? Object.values(this.#sources)[0];
-      void source?.load({ force: true });
+      // A card reloads the sources of what it holds, as its state is theirs;
+      // an unclear ask loads nothing — #resolve says so.
+      const from = event.target as Element;
+      const held = [...this.#asked.keys()].filter((el) => containerOf(el) === from).map((el) => this.#resolve(el));
+      for (const source of new Set(held.length ? held : [this.#resolve(from)])) void source?.load({ force: true });
     });
     this.addEventListener('filters-clear', () => {
       for (const bar of this.#bars() as Array<Bar & { clearAll?: () => void }>) bar.clearAll?.();
