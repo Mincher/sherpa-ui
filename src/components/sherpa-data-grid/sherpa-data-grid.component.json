@@ -229,14 +229,6 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-actions",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "set BY populate() when `actions` is non-empty; reveals the pinned trailing column. A host does not write it."
-    },
-    {
-      "$type": "prop",
       "name": "data-apply-on",
       "type": "enum",
       "observed": true,
@@ -415,18 +407,8 @@
   "states": [
     {
       "$type": "state",
-      "name": "empty",
-      "selector": ":host([data-empty])"
-    },
-    {
-      "$type": "state",
       "name": "selectable",
       "selector": ":host([data-selectable])"
-    },
-    {
-      "$type": "state",
-      "name": "advanced-select",
-      "selector": ":host([data-advanced-select])"
     },
     {
       "$type": "state",
@@ -440,23 +422,8 @@
     },
     {
       "$type": "state",
-      "name": "no-matches",
-      "selector": ":host([data-no-matches])"
-    },
-    {
-      "$type": "state",
       "name": "column-filters",
       "selector": ":host([data-column-filters])"
-    },
-    {
-      "$type": "state",
-      "name": "resizing",
-      "selector": ":host([data-resizing])"
-    },
-    {
-      "$type": "state",
-      "name": "actions",
-      "selector": ":host([data-actions])"
     },
     {
       "$type": "state",

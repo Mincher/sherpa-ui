@@ -84,7 +84,7 @@ export class SherpaList extends SherpaElement {
   // The text is a declared prop; only the flag needs JS — it counts rows.
   #syncEmpty = (): void => {
     const empty = this.#rowCount() === 0 && !!this.dataset['empty'];
-    this.toggleAttribute('data-empty-visible', empty);
+    this.toggleState('empty', empty);
   };
 
   /** Clear every row but the one just clicked. */

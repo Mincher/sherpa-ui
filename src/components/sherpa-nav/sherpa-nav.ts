@@ -80,6 +80,8 @@ export class SherpaNav extends SherpaElement {
     /* The PHONE's menu — written by openMenu() / closeMenu(). TRAP T-the-nav-is-a-menu-on-a-phone */
     'data-menu': { type: 'boolean', kind: 'visibility' },
     'data-current-id': { type: 'string', kind: 'behaviour' },
+    // A host may set it; a product turns it on.
+    'data-searchable': { type: 'boolean', kind: 'visibility' },
     'data-nav-state': { type: 'enum', kind: 'style', values: ['collapsed', 'hover', 'default', 'pinned', 'settings'] },
   } as const;
 
@@ -510,7 +512,7 @@ export class SherpaNav extends SherpaElement {
       section.toggleAttribute('data-filtered-out', rows.length > 0 && !anyVisible);
     }
 
-    this.toggleAttribute('data-searching', !!query);
+    this.toggleState('searching', !!query);
   }
 
 }

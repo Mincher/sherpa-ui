@@ -25,7 +25,7 @@ export class SherpaFileUpload extends SherpaElement {
   /** It submits its files in a form. TODO 214 */
   static readonly formAssociated = true;
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
 
   /** The hidden native file input. */
   #input: HTMLInputElement | null = null;
@@ -92,7 +92,7 @@ export class SherpaFileUpload extends SherpaElement {
     event.preventDefault();
     if (this.matches(':disabled')) return;
     this.#dragDepth++;
-    this.toggleAttribute('data-dragover', true);
+    this.toggleState('dragover', true);
   };
 
   /** Say a drop here copies. */
@@ -107,7 +107,7 @@ export class SherpaFileUpload extends SherpaElement {
     event.preventDefault();
     if (--this.#dragDepth <= 0) {
       this.#dragDepth = 0;
-      this.removeAttribute('data-dragover');
+      this.toggleState('dragover', false);
     }
   };
 
@@ -115,7 +115,7 @@ export class SherpaFileUpload extends SherpaElement {
   #onDrop = (event: Event): void => {
     event.preventDefault();
     this.#dragDepth = 0;
-    this.removeAttribute('data-dragover');
+    this.toggleState('dragover', false);
     if (this.matches(':disabled')) return;
     this.#add(Array.from((event as DragEvent).dataTransfer?.files ?? []));
   };

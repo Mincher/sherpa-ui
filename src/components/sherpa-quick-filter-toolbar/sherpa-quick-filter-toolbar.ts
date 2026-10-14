@@ -160,14 +160,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!bar || !chips) return;
     const was = { collapse: this.#collapse, folded: this.#folded };
 
-    this.removeAttribute('data-collapse');
+    // Cumulative: step 2 sets collapse-1 and collapse-2. TRAP T-private-state-is-a-custom-state
+    for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) this.toggleState(`collapse-${step}`, false);
     this.#collapse = 0;
     this.removeAttribute('data-folded');
     this.#showAllChips();
 
     for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) {
       if (!this.#overflowing()) break;
-      this.setAttribute('data-collapse', String(step));
+      this.toggleState(`collapse-${step}`, true);
       this.#collapse = step;
     }
 

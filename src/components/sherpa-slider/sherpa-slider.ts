@@ -48,7 +48,7 @@ export class SherpaSlider extends SherpaElement {
   /** It submits its value — or a range's two ends — in a form. TODO 214 */
   static readonly formAssociated = true;
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
   /** Its first values: what a form reset puts back. */
   #resetTo: Record<string, string | null> = {};
 

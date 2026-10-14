@@ -231,6 +231,38 @@ that.
 
 ---
 
+### T-private-state-is-a-custom-state
+
+**A component's PRIVATE host state is a custom state — `:host(:state(name))` —
+never a `data-*` attribute** (Will, D3, 2026-10-14). An attribute is public API:
+a host may set it, the spec lists it, and an agent reads the spec. A state a
+component writes about ITSELF — copied, dragging over, resizing, empty, no
+matches — is none of that.
+
+- **Write it with `this.toggleState(name, on)`**, read it with
+  `this.hasState(name)`, as `toggleAttribute` and `hasAttribute`. CSS selects
+  `:host(:state(name))`. A page or a test still can, from outside:
+  `el.matches(':state(empty)')`, `sherpa-file-upload:state(dragover)`.
+- **One `ElementInternals`.** A page may call `attachInternals()` ONCE per
+  element, and a form control needs it too (`FormValue`). So `SherpaElement`
+  owns it, as `this.internals`, attached on first use; `FormValue` takes it.
+  A second `attachInternals()` throws.
+- **A valued state is several states.** The toolbar's collapse step 2 sets
+  `collapse-1` AND `collapse-2`, so each CSS rule names one state, as the steps
+  add up.
+- **`check:props` closes the door.** A `:host([data-x])` rule must be DECLARED
+  in `static props`. It used to pass when any quoted `'data-x'` sat anywhere in
+  the TS, so 15 private flags looked declared (2026-10-14): 13 became states,
+  and 2 were public and are declared (the provider sets a container's
+  `data-loading`; a host may set the nav's `data-searchable`).
+- `data-has-*`, which the base writes for every slot, is still an attribute;
+  it moves last (TODO 275).
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/form-value.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `scripts/check-props.mjs`
+
 ### T-temporal-is-the-date-model
 
 **Sherpa's date and time model is `Temporal`** (Will, 2026-10-14). A day is a
@@ -14517,10 +14549,12 @@ component did not put it there, so the attribute is public API and belongs in
 the spec — the same event as reading `this.dataset`, which the gate already
 caught.
 
-`this.setAttribute('data-copied', '')` is not. 25 components toggle their own
+`this.setAttribute('data-copied', '')` is not. 25 components toggled their own
 transient state this way — `data-resizing`, `data-leaving`, `data-dragover` —
 and a gate that flagged those would be asking a component to declare its own
-private flags as API.
+private flags as API. **Since 2026-10-14 such state is a `:state()`**, not an
+attribute (`T-private-state-is-a-custom-state`); the ones CSS selects moved
+first, and the rest move with TODO 275.
 
 So the read half of `*Attribute()` is gated and the write half is not.
 Measured when the rule was written: 43 undeclared attributes in total, splitting

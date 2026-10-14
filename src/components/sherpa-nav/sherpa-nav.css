@@ -411,7 +411,7 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-:host(:not([data-searching])) .content::after { content: none; }
+:host(:not(:state(searching))) .content::after { content: none; }
 
 /* ── Footer (pinned) — collapses when empty ────────────────────────────── */
 .footer {

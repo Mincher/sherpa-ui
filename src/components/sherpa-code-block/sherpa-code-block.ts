@@ -73,9 +73,9 @@ export class SherpaCodeBlock extends SherpaElement {
     if (!text) return;
     void navigator.clipboard?.writeText(text).then(() => {
       this.emit('code-copy', { code: text });
-      this.setAttribute('data-copied', '');
+      this.toggleState('copied', true);
       if (this.#resetTimer) clearTimeout(this.#resetTimer);
-      this.#resetTimer = window.setTimeout(() => this.removeAttribute('data-copied'), 1600);
+      this.#resetTimer = window.setTimeout(() => this.toggleState('copied', false), 1600);
     });
   };
 }

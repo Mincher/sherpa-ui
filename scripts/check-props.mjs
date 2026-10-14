@@ -33,6 +33,22 @@ const CASCADES = new Set(['data-status', 'data-look', 'data-elevation', 'data-de
 
 const problems = [];
 
+/** What a component's TS DECLARES: its `static props`, the aliases they read,
+ *  a renamed attribute's old name, and its `variantAttrs`. */
+function declaredIn(ts, path) {
+  const declared = new Set(Object.keys(parsePropDecls(ts, path)));
+  const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
+  /* A `fallbackAttr` names a back-compat ALIAS, and that is a declaration:
+     the owning entry reads it and writes the same target. A second entry for
+     the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
+  if (props) for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
+  // A renamed attribute's OLD name. TRAP T-a-renamed-attribute-keeps-its-old-name
+  for (const m of ts.matchAll(/\[\s*'(data-[\w-]+)'\s*,\s*'data-[\w-]+'\s*\]/g)) declared.add(m[1]);
+  const variants = /static override variantAttrs = \[([\s\S]*?)\]/.exec(ts);
+  if (variants) for (const m of variants[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
+  return declared;
+}
+
 for (const file of globSync('src/components/*/*.css', { cwd: ROOT })) {
   const comp = file.split('/')[2];
   const css = readFileSync(join(ROOT, file), 'utf8');
@@ -55,10 +71,13 @@ for (const file of globSync('src/components/*/*.css', { cwd: ROOT })) {
     for (const a of m[1].matchAll(/\[(data-[\w-]+)/g)) hostAttrs.add(a[1]);
   }
 
+  /* DECLARED, not merely named. Any quoted 'data-x' in the TS once passed, so a
+     component that WROTE its own private state as an attribute looked
+     declared. Private state is a `:state()`. TRAP T-private-state-is-a-custom-state */
+  const declared = declaredIn(ts, join(ROOT, file.replace(/\.css$/, '.ts')));
   for (const attr of [...hostAttrs].sort()) {
-    if (attr.startsWith('data-has-') || CASCADES.has(attr)) continue;
-    if (ts.includes(`'${attr}'`)) continue;
-    problems.push(`${relative(ROOT, file)}  :host([${attr}]) is not declared by ${comp}`);
+    if (attr.startsWith('data-has-') || CASCADES.has(attr) || declared.has(attr)) continue;
+    problems.push(`${relative(ROOT, file)}  :host([${attr}]) is not declared by ${comp} — declare it, or make private state a :state()`);
   }
 }
 
@@ -70,16 +89,7 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   const comp = file.split('/')[2];
   const ts = readFileSync(join(ROOT, file), 'utf8');
 
-  const declared = new Set(Object.keys(parsePropDecls(ts, join(ROOT, file))));
-  const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
-  /* A `fallbackAttr` names a back-compat ALIAS, and that is a declaration:
-     the owning entry reads it and writes the same target. A second entry for
-     the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
-  if (props) for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
-  // A renamed attribute's OLD name. TRAP T-a-renamed-attribute-keeps-its-old-name
-  for (const m of ts.matchAll(/\[\s*'(data-[\w-]+)'\s*,\s*'data-[\w-]+'\s*\]/g)) declared.add(m[1]);
-  const variants = /static override variantAttrs = \[([\s\S]*?)\]/.exec(ts);
-  if (variants) for (const m of variants[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
+  const declared = declaredIn(ts, join(ROOT, file));
 
   for (const attr of parseObserved(ts).filter((a) => a.startsWith('data-') && !declared.has(a))) {
     problems.push(`${relative(ROOT, file)}  observes ${attr} but does not declare it in static props`);

@@ -125,11 +125,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "copied",
-      "selector": ":host([data-copied])"
-    },
-    {
-      "$type": "state",
       "name": "line-numbers",
       "selector": ":host([data-line-numbers])"
     },

@@ -67,7 +67,7 @@ test('data-language shows a language label', async ({ page }) => {
   expect(label).toBe('ts');
 });
 
-test('the copy button fires code-copy with the code and flips data-copied', async ({ page }) => {
+test('the copy button fires code-copy with the code and flips its copied state', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-code-block') as WithRender;
     el.setAttribute('data-code', 'copy me');
@@ -84,7 +84,7 @@ test('the copy button fires code-copy with the code and flips data-copied', asyn
 
     return {
       code: (detail as { code?: string } | null)?.code,
-      copiedAttr: el.hasAttribute('data-copied'),
+      copiedAttr: el.matches(':state(copied)'),
       clipboard: (navigator.clipboard as unknown as { _text: string })._text,
     };
   });

@@ -62,5 +62,5 @@
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
-:host([data-empty-visible]) .empty { display: block; }
-:host([data-empty-visible]) .body { display: none; }
+:host(:state(empty)) .empty { display: block; }
+:host(:state(empty)) .body { display: none; }

@@ -109,7 +109,7 @@ test('an empty rows array shows the empty state', async ({ page }) => {
     el.populate!({ columns: [{ field: 'x' }], rows: [] });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
-      empty: el.hasAttribute('data-empty'),
+      empty: el.matches(':state(empty)'),
       visible: getComputedStyle(el.shadowRoot!.querySelector('.empty')!).display !== 'none',
     };
   });
@@ -500,8 +500,8 @@ test('a filter matching nothing keeps the filter row usable', async ({ page }) =
     return {
       rows: sr.querySelectorAll('.body .row').length,
       // data-empty would hide the whole <table> and take the input with it.
-      hostEmpty: el.hasAttribute('data-empty'),
-      hostNoMatches: el.hasAttribute('data-no-matches'),
+      hostEmpty: el.matches(':state(empty)'),
+      hostNoMatches: el.matches(':state(no-matches)'),
       tableShown: shown('.grid'),
       filterRowShown: shown('.filter-row'),
       noMatchesShown: shown('.no-matches'),
@@ -2406,7 +2406,7 @@ test('row actions: a pinned trailing column, one shared menu, and a report', asy
     return {
       // The actions cell is LAST, after the data cells.
       cells,
-      revealed: el.hasAttribute('data-actions'),
+      revealed: el.matches(':state(actions)'),
       pinned: getComputedStyle(firstRow.querySelector('.actions-cell')!).position,
       menus,
       items,
@@ -2463,7 +2463,7 @@ test('no actions declared: no column, no menu, no attribute', async ({ page }) =
 
     const sr = el.shadowRoot!;
     return {
-      attr: el.hasAttribute('data-actions'),
+      attr: el.matches(':state(actions)'),
       // Present in the DOM — the template always holds it — but not drawn.
       display: getComputedStyle(sr.querySelector('.actions-cell')!).display,
       colDisplay: getComputedStyle(sr.querySelector('.actions-col')!).display,
@@ -2510,7 +2510,7 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
 
     // The VARIANT is on because there are rows, and the column widened for it.
     const advanced = box.hasAttribute('data-advanced');
-    const hostFlag = el.hasAttribute('data-advanced-select');
+    const hostFlag = el.matches(':state(advanced-select)');
 
     /* THE SNAPPED PAIR (Figma `Wrapper - Checkbox` + Button): rounded on the
        outer edges, square where they meet, gap 0.
@@ -2624,7 +2624,7 @@ test('an EMPTY grid shows a plain checkbox, not the advanced one', async ({ page
     const box = sr.querySelector('.select-all')!;
     return {
       advanced: box.hasAttribute('data-advanced'),
-      hostFlag: el.hasAttribute('data-advanced-select'),
+      hostFlag: el.matches(':state(advanced-select)'),
       caret: getComputedStyle(box.shadowRoot!.querySelector('.caret')!).display,
       /* The DECLARED width. An empty grid paints a 0px cell in every engine —
          no body rows, so the table has no width to give it — and this test is

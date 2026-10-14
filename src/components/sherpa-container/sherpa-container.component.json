@@ -288,8 +288,9 @@
     {
       "$type": "prop",
       "name": "data-loading",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "show the loading overlay (ratified boolean-verb state)"

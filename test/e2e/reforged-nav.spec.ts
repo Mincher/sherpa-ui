@@ -314,7 +314,7 @@ test('typing in search filters the rows and marks the matched text', async ({ pa
       const emptySections = Array.from(s.querySelectorAll('.section'))
         .filter((sec) => (sec as HTMLElement).hasAttribute('data-filtered-out'))
         .map((sec) => sec.querySelector('.section-label')!.textContent);
-      return { visible, marks, emptySections, searching: nav.hasAttribute('data-searching') };
+      return { visible, marks, emptySections, searching: nav.matches(':state(searching)') };
     };
 
     const matched = await type('set');

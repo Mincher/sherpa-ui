@@ -891,11 +891,6 @@
     },
     {
       "$type": "state",
-      "name": "no-matches",
-      "selector": ":host([data-no-matches])"
-    },
-    {
-      "$type": "state",
       "name": "commit",
       "selector": ":host([data-commit])"
     },

@@ -36,7 +36,7 @@ export class SherpaSwitch extends SherpaElement {
   }
 
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
 
   /** On, it submits its value; off, nothing — as a native checkbox.
    *  TRAP T-a-form-value-follows-every-write */

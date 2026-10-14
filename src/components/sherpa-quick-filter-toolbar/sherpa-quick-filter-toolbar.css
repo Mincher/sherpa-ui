@@ -106,8 +106,8 @@
 /* ── Collapsing the action cluster ───────────────────────────────────
  * Right-most folds first, so items return in the same order. The container
  * query gives a collapsed first paint with no JS; #reflow() may then collapse
- * FURTHER via `data-collapse`, as these breakpoints are guesses. Each step
- * subsumes the ones before it.
+ * FURTHER via the `collapse-<step>` states, as these breakpoints are guesses.
+ * Each step subsumes the ones before it, and so do its states.
  */
 /* ── The view-scope group ────────────────────────────────────────────
  * ★ · Save · ▾ sit flush as one control. A margin, not `gap`, because the
@@ -140,19 +140,15 @@
 @container qf-bar (max-width: 900px) {
   :host([data-type="view"]) .view-group { display: none; }
 }
-:host([data-collapse="1"]) .view-group,
-:host([data-collapse="2"]) .view-group,
-:host([data-collapse="3"]) .view-group { display: none; }
+:host(:state(collapse-1)) .view-group { display: none; }
 
 /* Step 2 — refresh, and the host's own buttons. */
 @container qf-bar (max-width: 760px) {
   .act[data-act="refresh"],
   slot[name="actions"]::slotted(*) { display: none; }
 }
-:host([data-collapse="2"]) .act[data-act="refresh"],
-:host([data-collapse="3"]) .act[data-act="refresh"],
-:host([data-collapse="2"]) slot[name="actions"]::slotted(*),
-:host([data-collapse="3"]) slot[name="actions"]::slotted(*) {
+:host(:state(collapse-2)) .act[data-act="refresh"],
+:host(:state(collapse-2)) slot[name="actions"]::slotted(*) {
   display: none;
 }
 
@@ -162,7 +158,7 @@
   .reset-group,
   .act:not([data-act="add"], [data-act="overflow"]) { display: none; }
 }
-:host([data-collapse="3"]) :is(.act-divider, .reset-group, .act:not([data-act="add"], [data-act="overflow"])) {
+:host(:state(collapse-3)) :is(.act-divider, .reset-group, .act:not([data-act="add"], [data-act="overflow"])) {
   display: none;
 }
 
@@ -171,7 +167,7 @@
 @container qf-bar (max-width: 900px) {
   .act[data-act="overflow"] { display: inline-flex; }
 }
-:host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
+:host(:state(collapse-1)) .act[data-act="overflow"] { display: inline-flex; }
 /* …and always while it holds the host's own option. Will, TODO 178. */
 :host([data-limit-options]) .act[data-act="overflow"] { display: inline-flex; }
 /* …and while it saves filters. TODO 105 */

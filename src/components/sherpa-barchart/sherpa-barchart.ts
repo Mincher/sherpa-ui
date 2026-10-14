@@ -79,7 +79,7 @@ export class SherpaBarchart extends SherpaElement {
        draws exactly as before; one that goes negative lifts the line and lets
        a bar hang beneath it. TRAP T-a-bar-hangs-from-the-zero-line */
     const zero = scale.percent(0);
-    this.toggleAttribute('data-below-zero', scale.min < 0);
+    this.toggleState('below-zero', scale.min < 0);
     this.style.setProperty('--_zero', `${zero}%`);
 
     this.#renderYAxis(scale, shown.length);

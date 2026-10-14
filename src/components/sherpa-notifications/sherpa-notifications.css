@@ -83,4 +83,4 @@
 }
 
 /* Nothing to mark when there is nothing there. */
-:host([data-empty]) .read-all { display: none; }
+:host(:state(empty)) .read-all { display: none; }

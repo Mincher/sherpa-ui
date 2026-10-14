@@ -639,6 +639,29 @@ export abstract class SherpaElement extends Base {
     return this.#ac.signal;
   }
 
+  /** This element's `ElementInternals`, attached ONCE on first use: a form
+   *  control and a custom state share it. TRAP T-private-state-is-a-custom-state */
+  protected get internals(): ElementInternals {
+    return (this.#internals ??= this.attachInternals());
+  }
+  /** Attached on the first ask, never twice. */
+  #internals: ElementInternals | undefined;
+
+  /** Set or clear a CUSTOM STATE, read as `:host(:state(name))` — private state
+   *  is never a public `data-*`. As `toggleAttribute`. TRAP T-private-state-is-a-custom-state */
+  protected toggleState(name: string, on?: boolean): boolean {
+    const { states } = this.internals;
+    const want = on ?? !states.has(name);
+    if (want) states.add(name);
+    else states.delete(name);
+    return want;
+  }
+
+  /** Is this custom state set? */
+  protected hasState(name: string): boolean {
+    return this.#internals?.states.has(name) ?? false;
+  }
+
   /* ── Events ──────────────────────────────────────────────────────────── */
 
   /** Dispatch a bubbling, composed CustomEvent — its detail `{}` when none is given, never null. */

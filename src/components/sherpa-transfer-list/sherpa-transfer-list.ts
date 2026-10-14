@@ -34,7 +34,7 @@ export class SherpaTransferList extends SherpaElement {
   /** It submits the values in its selected pane in a form. TODO 214 */
   static readonly formAssociated = true;
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
   /** Its first selection: what a form reset puts back. */
   #resetTo: string[] | null = null;
 

@@ -133,7 +133,7 @@ export class SherpaNotifications extends SherpaElement {
 
     // EMPTY is its own state, not an empty list. A menu with nothing in it reads
     // as broken rather than as "you are up to date".
-    this.toggleAttribute('data-empty', this.#items.length === 0);
+    this.toggleState('empty', this.#items.length === 0);
     if (!this.#items.length) {
       // Clear only the ROWS, for the same reason — replaceChildren would take
       // the header slot with them.

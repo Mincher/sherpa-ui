@@ -23,7 +23,7 @@ export class SherpaSelectRadio extends SherpaElement {
   /** The native radio. */
   #control: HTMLInputElement | null = null;
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
 
   override onRender(): void {
     this.#resetTo = this.hasAttribute('checked');

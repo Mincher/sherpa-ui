@@ -92,7 +92,7 @@
 }
 
 /* ── Drag-over state ─────────────────────────────────────────────────── */
-:host([data-dragover]) .drop-zone {
+:host(:state(dragover)) .drop-zone {
   border-color: var(--_accent);
   /* Figma paints #FFFFFF00 here — fully clear. Not a missing token. */
   background: transparent;

@@ -65,11 +65,11 @@
   }
 }
 
-/* Confirmation swap — CSS owns the state, JS only flips data-copied. Its
+/* Confirmation swap — CSS owns the state, JS only flips :state(copied). Its
    colour is a PIN (success). */
 .copied-label { display: none; color: var(--sherpa-style-content-base, #00ad62); }
-:host([data-copied]) .copy-label { display: none; }
-:host([data-copied]) .copied-label { display: inline-block; }
+:host(:state(copied)) .copy-label { display: none; }
+:host(:state(copied)) .copied-label { display: inline-block; }
 
 /* ── Code ───────────────────────────────────────────────────────────── */
 .pre {

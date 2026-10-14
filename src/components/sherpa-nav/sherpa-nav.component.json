@@ -258,9 +258,10 @@
     {
       "$type": "prop",
       "name": "data-searchable",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility",
       "description": "show the search field (auto-set when a product is given)"
     }
   ],
@@ -309,11 +310,6 @@
       "$type": "state",
       "name": "not-searchable",
       "selector": ":host(:not([data-searchable]))"
-    },
-    {
-      "$type": "state",
-      "name": "not-searching",
-      "selector": ":host(:not([data-searching]))"
     },
     {
       "$type": "state",

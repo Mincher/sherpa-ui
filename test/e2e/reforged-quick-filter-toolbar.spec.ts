@@ -353,7 +353,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     })));
     const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
     await settle();
-    for (let i = 0; i < 20 && el.getAttribute('data-collapse') !== '3'; i++) await new Promise((res) => setTimeout(res, 50));
+    for (let i = 0; i < 20 && !el.matches(':state(collapse-3)'); i++) await new Promise((res) => setTimeout(res, 50));
     const sr = el.shadowRoot!;
     const more = sr.querySelector('[data-act="overflow"]') as HTMLElement & { shadowRoot: ShadowRoot };
     const open = async (): Promise<void> => {
@@ -374,10 +374,10 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     await pick('Refresh view');
     await pick('Save view');
     await pick('View as filter panel');
-    return { collapse: el.getAttribute('data-collapse'), rows, heard };
+    return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard };
   });
 
-  expect(r.collapse).toBe('3');
+  expect(r.collapse).toBe(3);
   expect(r.rows).toEqual([
     'Suggest filters', 'Reset filters', 'Reset all to default', 'View as filter panel', '---',
     'Favorite', 'Save view', 'Save view as', 'Refresh view',
@@ -1511,7 +1511,7 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
         return !!n && getComputedStyle(n).display !== 'none';
       };
       return {
-        collapse: el.getAttribute('data-collapse'),
+        collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length,
         folded: el.getAttribute('data-folded'),
         chipsOnBar: on.length,
         // ONE LINE, at every width. Wrapping pushed the bar to two rows and the
@@ -1532,14 +1532,14 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
 
   // WIDE: nothing folded, and the ⋮ is absent — an empty overflow button is one
   // that opens nothing.
-  expect(r.wide.collapse).toBeNull();
+  expect(r.wide.collapse).toBe(0);
   expect(r.wide.folded).toBeNull();
   expect(r.wide.ellipsis).toBe(false);
   expect(r.wide.badge).toBeNull();
   expect(r.wide.rows).toBe(1);
 
   // MID: the ACTIONS have folded and the ⋮ has appeared to hold them.
-  expect(r.mid.collapse).not.toBeNull();
+  expect(r.mid.collapse).toBeGreaterThan(0);
   expect(r.mid.ellipsis).toBe(true);
   expect(r.mid.rows).toBe(1);
 

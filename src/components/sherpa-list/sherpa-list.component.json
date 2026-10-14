@@ -98,11 +98,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "empty-visible",
-      "selector": ":host([data-empty-visible])"
-    },
-    {
-      "$type": "state",
       "name": "not-plain",
       "selector": ":host(:not([data-type=\"plain\"]))"
     }

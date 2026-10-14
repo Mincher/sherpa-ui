@@ -93,7 +93,7 @@ export class SherpaInputText extends SherpaElement {
 
   #control: Control | null = null;
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
 
   /** Both pick the tree, so a change to either must re-stamp. */
   static override variantAttrs = ['data-type', 'data-multiline'];

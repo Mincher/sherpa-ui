@@ -254,11 +254,6 @@
     },
     {
       "$type": "state",
-      "name": "below-zero",
-      "selector": ":host([data-below-zero])"
-    },
-    {
-      "$type": "state",
       "name": "not-has-y-axis",
       "selector": ":host(:not([data-has-y-axis]))"
     },

@@ -106,13 +106,6 @@
     "shape": "[{ id, title, … }]",
     "description": "the notifications."
   },
-  "states": [
-    {
-      "$type": "state",
-      "name": "empty",
-      "selector": ":host([data-empty])"
-    }
-  ],
   "capabilities": [
     {
       "$type": "capability",

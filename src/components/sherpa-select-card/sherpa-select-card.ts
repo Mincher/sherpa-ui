@@ -38,7 +38,7 @@ export class SherpaSelectCard extends SherpaElement {
    *  join none. TODO 214 */
   static readonly formAssociated = true;
   /** Its link to its form. */
-  #form = new FormValue(this);
+  #form = new FormValue(this, this.internals);
   /** Its first `data-selected`: what a form reset puts back. */
   #resetTo = false;
 

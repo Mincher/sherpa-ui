@@ -49,7 +49,7 @@
 .bars-zero {
   display: none;
 }
-:host([data-below-zero]) .bars-zero {
+:host(:state(below-zero)) .bars-zero {
   display: block;
   position: absolute;
   inset-inline: 0;
@@ -58,7 +58,7 @@
     var(--sherpa-style-border-base, #b3b3c3);
 }
 /* The baseline moves ONTO that line, so the axis is not drawn twice. */
-:host([data-below-zero]) .bars {
+:host(:state(below-zero)) .bars {
   position: relative;
   border-block-end: none;
 }
@@ -96,8 +96,8 @@
    bar is positioned against the column instead. Only in this mode — a chart of
    positive values keeps the flex layout untouched.
    TRAP T-a-bar-hangs-from-the-zero-line */
-:host([data-below-zero]) .bar-col { position: relative; }
-:host([data-below-zero]) .bar {
+:host(:state(below-zero)) .bar-col { position: relative; }
+:host(:state(below-zero)) .bar {
   position: absolute;
   inset-inline: 0;
   margin: 0 auto;
@@ -106,7 +106,7 @@
 }
 /* A NEGATIVE bar hangs BELOW the line: its top edge is the line, so it is
    placed from the top instead, and its rounded corners are at the bottom. */
-:host([data-below-zero]) .bar-col[data-sign="-"] .bar {
+:host(:state(below-zero)) .bar-col[data-sign="-"] .bar {
   inset-block-end: auto;
   inset-block-start: calc(100% - var(--_base, 0%));
   border-radius: 0 0 var(--sherpa-display-mode-border-rounding-sm, 2px)

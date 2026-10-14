@@ -469,7 +469,7 @@
 /* Only when a search is active AND nothing matched — an empty menu with no
    search still reads as empty rather than as a failed search. */
 .no-matches { display: none; }
-:host([data-no-matches]) .no-matches {
+:host(:state(no-matches)) .no-matches {
   display: block;
   margin: 0;
   padding: var(--sherpa-theme-padding-md, 8px);

@@ -191,14 +191,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-dragover",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "set automatically while a drag is over the zone (CSS hook)"
-    },
-    {
-      "$type": "prop",
       "name": "data-helper",
       "type": "string",
       "observed": true,
@@ -272,11 +264,6 @@
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "dragover",
-      "selector": ":host([data-dragover])"
-    },
     {
       "$type": "state",
       "name": "has-files",

@@ -44,9 +44,6 @@
                     a page is data-page-size ROWS, and a shut group is one slot.
                     Written by SherpaDataSource; the grid reports back the page
                     count it arrives at and never writes data-page itself.
-    data-actions                             set BY populate() when `actions` is
-                    non-empty; reveals the pinned trailing column. A host does not
-                    write it.
     data-total-pages                         how many pages the host believes there
                     are. READ ONLY, and only to avoid re-reporting a count that has
                     not changed — the grid never writes it. Not observed: a change

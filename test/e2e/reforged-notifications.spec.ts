@@ -122,7 +122,7 @@ test('an empty list says so rather than showing an empty card', async ({ page })
     const menu = el.shadowRoot.querySelector('.menu')!;
     const readAll = menu.querySelector('.read-all')!;
     return {
-      empty: el.hasAttribute('data-empty'),
+      empty: el.matches(':state(empty)'),
       text: menu.querySelector('.empty')?.textContent,
       rows: menu.querySelectorAll('.notification').length,
       // Nothing to mark when there is nothing there.

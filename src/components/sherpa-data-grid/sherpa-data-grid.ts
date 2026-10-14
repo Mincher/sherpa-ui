@@ -271,7 +271,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncColumnValues();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.#groups = Array.isArray(cfg.groups) ? cfg.groups : null;
-    this.toggleAttribute('data-actions', this.#actions.length > 0);
+    this.toggleState('actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — header-row filters clear,
     // column filters drop only where the COLUMN went, selection re-resolves by KEY.
     this.#filters.clear();
@@ -287,13 +287,13 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Draw the head and the body. */
   #render(): void {
-    this.toggleAttribute('data-empty', this.#rows.length === 0);
+    this.toggleState('empty', this.#rows.length === 0);
     // "Select all" of nothing is a control that does nothing.
     const advanced = this.#rows.length > 0;
     this.$('.select-all')?.toggleAttribute('data-advanced', advanced);
     // …and on the HOST, so the column widens for the caret:
     // `:host(:has(.select-all[data-advanced]))` does not PARSE.
-    this.toggleAttribute('data-advanced-select', advanced);
+    this.toggleState('advanced-select', advanced);
     this.#renderHead();
     this.#renderBody();
     // TRAP T-grid-select-all-is-derived — never reset here, or a sort throws
@@ -1554,7 +1554,7 @@ export class SherpaDataGrid extends SherpaElement {
 
     const startWidth = th!.getBoundingClientRect().width;
     this.#drag = { field, startX: event.clientX, startWidth };
-    this.toggleAttribute('data-resizing', true);
+    this.toggleState('resizing', true);
 
     (grip as HTMLElement).setPointerCapture(event.pointerId);
     grip.addEventListener('pointermove', this.#onGripMove as EventListener);
@@ -1581,7 +1581,7 @@ export class SherpaDataGrid extends SherpaElement {
   #onGripUp = (event: PointerEvent): void => {
     const drag = this.#drag;
     this.#drag = null;
-    this.toggleAttribute('data-resizing', false);
+    this.toggleState('resizing', false);
 
     // Swallow the click the browser is about to synthesise on this pointerup.
     // TRAP T-swallow-flag-not-listener — a FLAG, never a rival listener.
@@ -1963,7 +1963,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#renderBody();
     // TRAP T-grid-no-matches-is-not-empty — data-empty hides the input being typed in.
     const visible = this.#visibleRows().length;
-    this.toggleAttribute('data-no-matches', visible === 0 && this.#rows.length > 0);
+    this.toggleState('no-matches', visible === 0 && this.#rows.length > 0);
     // DERIVE the select-all: a filter changes what is VISIBLE, not what is chosen.
     this.#syncSelected();
     this.#syncGroupSelects();

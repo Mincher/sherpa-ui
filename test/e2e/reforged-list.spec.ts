@@ -136,7 +136,7 @@ test('empty-state message shows when there are no rows', async ({ page }) => {
     return {
       visible: getComputedStyle(empty).display !== 'none',
       text: empty.textContent,
-      hostFlag: el.hasAttribute('data-empty-visible'),
+      hostFlag: el.matches(':state(empty)'),
     };
   });
   expect(r.visible).toBe(true);
@@ -155,7 +155,7 @@ test('empty-state hides once rows are populated', async ({ page }) => {
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const empty = el.shadowRoot!.querySelector('.empty')!;
     return {
-      hostFlag: el.hasAttribute('data-empty-visible'),
+      hostFlag: el.matches(':state(empty)'),
       emptyDisplay: getComputedStyle(empty).display,
     };
   });

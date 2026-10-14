@@ -364,7 +364,7 @@ test('data-search filters the rows without disturbing what is ticked', async ({ 
     await type('win');
     const matched = rows();
     await type('zzz');
-    const none = { rows: rows(), flag: menu.hasAttribute('data-no-matches') };
+    const none = { rows: rows(), flag: menu.matches(':state(no-matches)') };
     await type('');
     const cleared = rows();
 

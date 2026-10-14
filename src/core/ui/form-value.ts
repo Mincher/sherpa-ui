@@ -18,17 +18,18 @@ type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 /**
  * A form-associated control's link to its form. The component declares
- * `static formAssociated = true` and makes this in a field initialiser, so
- * `attachInternals()` runs in its constructor.
+ * `static formAssociated = true` and makes this in a field initialiser, with
+ * its own `this.internals`.
  * TRAP T-shadow-input-needs-element-internals
  */
 export class FormValue {
   /** The platform's link between the host and its form. */
   readonly #internals: ElementInternals;
 
-  constructor(host: HTMLElement) {
+  /** `internals` is the host's own, from `SherpaElement`: attached once. TRAP T-private-state-is-a-custom-state */
+  constructor(host: HTMLElement, internals: ElementInternals) {
     this.#host = host;
-    this.#internals = host.attachInternals();
+    this.#internals = internals;
   }
 
   /** The control it speaks for. */

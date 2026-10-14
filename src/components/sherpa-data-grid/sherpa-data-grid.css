@@ -81,7 +81,7 @@
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 /* NO per-row offset — both rows pin at the <thead>'s own sticky position. */
-:host([data-empty]) .grid { display: none; }
+:host(:state(empty)) .grid { display: none; }
 
 /* Neutralise the UA's bold, centred <th> defaults once at the source: it leaked
    into the header button and the filter input (via `font: inherit`). */
@@ -110,7 +110,7 @@
 :host {
   --_select-w: var(--sherpa-display-mode-space-2xl, 32px);
 }
-:host([data-advanced-select]) {
+:host(:state(advanced-select)) {
   /* 48 + the cell's 4px padding each side. Written as a sum because no token is
      56, and inventing one to fit a layout breaks the scale. */
   --_select-w: calc(
@@ -271,7 +271,7 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-:host([data-no-matches]) .no-matches { display: block; }
+:host(:state(no-matches)) .no-matches { display: block; }
 /* Focus lights the whole FIELD. `:focus-within` so it also fires for the clear
    button inside it, rather than drawing a second ring around it. */
 .filter-field:focus-within {
@@ -399,11 +399,11 @@
 
 /* While a drag is live the whole grid takes the resize cursor, so the pointer
    does not flicker back to a text caret outside the 8px strip. */
-:host([data-resizing]) {
+:host(:state(resizing)) {
   cursor: col-resize;
   user-select: none;
 }
-:host([data-resizing]) .head-btn { cursor: col-resize; }
+:host(:state(resizing)) .head-btn { cursor: col-resize; }
 
 .head-btn {
   display: flex;
@@ -467,7 +467,7 @@
      `inline-size` — see `.select-col`. */
   width: 76px;   /* off-grid-ok: the measured width of "Actions" + its padding */
 }
-:host([data-actions]) .actions-col { display: table-column; }
+:host(:state(actions)) .actions-col { display: table-column; }
 
 /* THE SCROLL EDGE, mirrored: the rule appears while there is content still to
    the trailing side and vanishes at the end of the scroll.
@@ -477,7 +477,7 @@
   border-inline-start: var(--sherpa-border-left, 0.5px) solid transparent;
   transition: border-inline-start-color 120ms ease;
 }
-:host([data-actions]) .actions-cell {
+:host(:state(actions)) .actions-cell {
   display: table-cell;
   inline-size: 76px;   /* off-grid-ok: matches .actions-col above */
   padding: var(--sherpa-display-mode-space-2xs, 4px);
@@ -489,7 +489,7 @@
   /* NO rule here, as on `.select-cell` — restated below so it follows the
      last-row exception. TRAP T-the-last-row-draws-no-rule. */
 }
-:host([data-actions]) .row:not(:last-child) > .actions-cell {
+:host(:state(actions)) .row:not(:last-child) > .actions-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 }
@@ -497,18 +497,18 @@
 /* A pinned head cell must clear its row's scrolling siblings AND the pinned
    body cells beneath it — same `z-index: 4` as the leading pinned headers.
    Without it the "Actions" label scrolled away under the data columns. */
-:host([data-actions]) :is(.actions-head, .filter-row > .actions-cell) {
+:host(:state(actions)) :is(.actions-head, .filter-row > .actions-cell) {
   z-index: 4;
 }
 
 /* A pinned cell paints its own background, so it restates the head row's
    surface and rule. TRAP T-the-last-row-draws-no-rule. */
-:host([data-actions]) .actions-head {
+:host(:state(actions)) .actions-head {
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 }
-:host([data-actions]) .filter-row > .actions-cell {
+:host(:state(actions)) .filter-row > .actions-cell {
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 
@@ -778,7 +778,7 @@
   text-align: center;
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
-:host([data-empty]) .empty { display: block; }
+:host(:state(empty)) .empty { display: block; }
 
 /* No "select all" where only one row can be chosen. The CELL stays, holding the
    column open so the rows' radios line up under it. */

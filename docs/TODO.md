@@ -247,7 +247,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 61k | 253 | BUG: nav-item's search highlight carries its own colour in TS, where `lint:css` cannot see it | bug |
 | ✅ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — KEPT, by Will | design |
 | ✅ | 61m | 255 | The calendar on an iPhone: every iOS browser is WebKit, so none has `Temporal` — a stand-in where it is missing | bug |
-| ⬜ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
+| ✅ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
 | ⬜ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
 | ⬜ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
 | ⬜ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
@@ -6156,6 +6156,22 @@ bind it. My pick: B, once Figma is open — a light read.
 **✅ Will, 2026-10-14: A** — *"The token used already comes from Figma. The
 border colour creates enough contrast between the bar fill and background to be
 accessible."* Kept, with a one-line comment so a later review does not fix it.
+
+### `[x]` ✅ 256 — Phase 1.1: `check:props` closes its loophole
+
+A `:host([data-x])` rule passed the gate when any quoted `'data-x'` sat
+anywhere in the TS — so a component that WROTE its own private state as an
+attribute looked declared. Fifteen did.
+
+**✅ Done 2026-10-14.** The CSS half now asks what `static props` DECLARES, as
+the read half did. Of the 15, 2 are public and declared — the provider sets a
+container's `data-loading`, and a host may set the nav's `data-searchable` —
+and 13 are private, so they are custom states (D3): `SherpaElement` owns one
+`ElementInternals` (`this.internals`, which `FormValue` now takes) and gives
+`toggleState()` / `hasState()`; CSS reads `:host(:state(name))`. The toolbar's
+collapse step is cumulative states. The specs no longer list the private ones.
+948 specs of the changed components, the a11y gate and the node tests pass.
+`T-private-state-is-a-custom-state`.
 
 ## ✅ Done — the full record
 

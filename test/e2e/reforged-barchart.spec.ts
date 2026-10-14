@@ -318,7 +318,7 @@ test('a NEGATIVE value hangs below a lifted zero line', async ({ page }) => {
     const up = (n: number): number => Math.round(plot.bottom - n);
 
     return {
-      flagged: el.hasAttribute('data-below-zero'),
+      flagged: el.matches(':state(below-zero)'),
       lineShown: getComputedStyle(line).display,
       // The scale runs -5..20, so zero sits a fifth of the way up.
       lineAt: up(line.getBoundingClientRect().bottom),
@@ -361,7 +361,7 @@ test('a chart of POSITIVE values is untouched — no line, bars on the floor', a
     const plot = el.shadowRoot!.querySelector('.bars')!.getBoundingClientRect();
     const line = el.shadowRoot!.querySelector('.bars-zero')!;
     return {
-      flagged: el.hasAttribute('data-below-zero'),
+      flagged: el.matches(':state(below-zero)'),
       lineShown: getComputedStyle(line).display,
       // Bars sit on the plot floor, within the 1px baseline border.
       feet: [...el.shadowRoot!.querySelectorAll('.bar')]

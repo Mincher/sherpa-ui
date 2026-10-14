@@ -1048,7 +1048,7 @@ export class SherpaMenu extends SherpaElement {
       }
     }
     close();
-    this.toggleAttribute('data-no-matches', !!q && shown === 0);
+    this.toggleState('no-matches', !!q && shown === 0);
   };
 
   /** A CHILD MENU's door on a row: its pick count, then its caret.
