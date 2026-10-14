@@ -29,6 +29,21 @@ The example app, [Sherpa Demos](https://github.com/Mincher/sherpa-demos), is
 the working reference: a router, a provider, the app shell, page definitions
 and Views.
 
+## What it needs
+
+- **A current browser.** Chrome, Edge and Firefox, on a desktop and on
+  Android, are the targets. Safari is not. Every iOS browser runs on WebKit, and
+  Sherpa is tested in WebKit too: where WebKit lacks something Sherpa uses —
+  today `Temporal` — Sherpa carries a small stand-in of its own.
+- **Nothing else at run time.** No dependency, no polyfill, no CDN. Icons are
+  SVG inside the package, and nothing is fetched from anywhere else.
+- **Your own font, if you want it.** The tokens ask for Inter, then
+  `system-ui`. Sherpa loads no font: link Inter in your page to use it.
+- **Dates are `Temporal`** — `PlainDate`, never a `Date` — where the browser
+  has it, and the stand-in where it has not.
+- **Node 22 or later** only for the tooling: `npx sherpa-ui init`,
+  `npx sherpa-ui serve` and the MCP server.
+
 ## Develop
 
 ```bash

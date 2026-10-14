@@ -39,6 +39,12 @@ Plus the app's stores, and its Views as JSON.
   page itself — margins, the body font. Leave `page.css` out when the
   components go into someone else's page. `T-tokens-are-safe-to-embed`
 - `data-mode="auto"` follows the OS. No `data-mode` is light.
+- Sherpa loads no font. The tokens ask for Inter, then `system-ui`: link Inter
+  in this `<head>` to use it. Nothing else is fetched — no polyfill, no CDN.
+- The targets are current Chrome, Edge and Firefox, desktop and Android.
+  Safari is not one; every iOS browser is WebKit, and Sherpa brings its own
+  stand-in where WebKit lacks something (today `Temporal`).
+  `T-temporal-is-the-date-model`
 - `sherpa-ui` is everything. `sherpa-ui/components` is the components alone,
   `sherpa-ui/app` the app layer, `sherpa-ui/data` the data layer with no DOM.
   `T-the-app-layer-is-opt-in`

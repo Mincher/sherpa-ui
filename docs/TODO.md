@@ -252,7 +252,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
 | ✅ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
 | ✅ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
-| ⬜ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
+| ✅ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
 | ⬜ | 62.07 | 262 | Phase 7 — the MCP's tooling moves into the MCP package; `dist/` stops shipping the inlined `.html` and `.css` | package |
 | ⬜ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
 | ⬜ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
@@ -288,6 +288,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ⬜ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
+| ⬜ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6228,6 +6229,24 @@ declared nowhere — the one third-party thing a consumer met at run time.
 nothing outside the folder is served, and it listens on `localhost`. All three
 use it. A unit test holds it, and the full browser suite ran against it.
 `T-nothing-downloads-to-serve`.
+
+### `[x]` ✅ 261 — Phase 7: the docs and the package say what Sherpa needs
+
+**✅ Done 2026-10-14.** README gains *What it needs*, and APP-GUIDE's first
+section says the same: current Chrome, Edge and Firefox, desktop and Android,
+are the targets and Safari is not; every iOS browser is WebKit, and Sherpa
+brings its own stand-in where WebKit lacks something (`Temporal`); nothing is
+fetched at run time; Sherpa loads no font — the tokens ask for Inter, then
+`system-ui`; Node 22 for the tooling only. `package.json` gains `engines` and a
+browserslist of those targets in place of `>= 0.5%` and Safari 17.2. The build
+then drops only prefixes no target needs (`-moz-column-gap`, `-moz-fit-content`,
+`-moz-max-content`, `-moz-user-select`, most `-webkit-appearance`) and keeps
+the ones iOS still needs (`-webkit-user-select`, `-webkit-mask-*`).
+
+### `[ ]` ⬜ 297 — BUG: the calendar's header content is misaligned
+
+Will, 2026-10-14: *"Bug; The Calendar header content has become misaligned at
+some point. Address when suitable."*
 
 ## ✅ Done — the full record
 

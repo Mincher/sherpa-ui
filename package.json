@@ -70,6 +70,9 @@
   "bin": {
     "sherpa-ui": "./bin/sherpa-ui.mjs"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "prepare": "husky",
     "clean": "rm -rf dist",
@@ -138,10 +141,12 @@
   ],
   "license": "MIT",
   "browserslist": [
-    ">= 0.5%",
-    "last 2 versions",
+    "last 2 Chrome versions",
+    "last 2 Edge versions",
+    "last 2 Firefox versions",
     "Firefox ESR",
-    "not dead",
-    "Safari >= 17.2"
+    "last 2 ChromeAndroid versions",
+    "last 2 FirefoxAndroid versions",
+    "last 2 iOS versions"
   ]
 }
