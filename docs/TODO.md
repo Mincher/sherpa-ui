@@ -253,7 +253,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
 | ✅ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
 | ✅ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
-| ⬜ | 62.07 | 262 | Phase 7 — the MCP's tooling moves into the MCP package; `dist/` stops shipping the inlined `.html` and `.css` | package |
+| ✅ | 62.07 | 262 | Phase 7 — `dist/` stops shipping the inlined `.html` and `.css`, and the build strips `data-accepts` | package |
 | ⬜ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
 | ⬜ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
 | ⬜ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
@@ -289,6 +289,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
+| ⬜ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6258,6 +6259,18 @@ caption in its 32px row; now they keep `inline-flex`. And the width floor
 counted SEVEN 32px tracks, so fifteen tracks shrank to 29px; a two-month grid
 now floors at fifteen. A test reads each caption's TEXT (its box was already in
 place) and each column's width; it failed on the old CSS both ways.
+
+### `[x]` ✅ 262 — Phase 7: `dist/` ships each file once
+
+The build puts every template and sheet in its JS (TODO 208), and then shipped
+the 142 files a second time beside it. **✅ Done 2026-10-14.** The build deletes
+each file it inlined; only the page `<link>` sheets (`tokens.css`, `page.css`)
+stay. Inlined templates drop `data-accepts` — the spec carries it. A reload now
+SKIPS a file the JS carries, since it cannot change without a new build; the
+full run found that one, `reload()` fetching a deleted sheet, in all three
+engines, and the templater spec passes with the fix. The full browser suite
+otherwise passed (3,012). The MCP's tooling is 298.
+`T-the-text-is-in-the-js`.
 
 ## ✅ Done — the full record
 

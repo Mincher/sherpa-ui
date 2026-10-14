@@ -15931,9 +15931,13 @@ first draw reads it — no request, no wait, and no bundler, CDN or CSP
 `connect-src` in the way. A template goes in without its comments and indent.
 
 A DEV build (`npm run build:watch`, `npm run build:dev`) skips the step and
-fetches, so a live reload sees each change. A reload fetches FRESH in any
-build — the files still ship in `dist/`. A URL that ends in `.href` is a page
-`<link>` (`tokens.css`), not the templater's, and stays a URL.
+fetches, so a live reload sees each change. **Since 2026-10-14 an inlined file
+does not ship in `dist/` too** — 142 files the JS already carried — and a reload
+SKIPS it: it cannot change without a new build. A consumer's own files are
+still fetched fresh. A URL that ends in `.href` is a page `<link>`
+(`tokens.css`), not the templater's, and stays a URL. Inlined templates go in
+without their `data-accepts`: the spec carries it, nothing reads it at run time
+(`T-a-slot-says-what-it-accepts`).
 `check:weight` counts an inlined file as JS, not as fetched.
 
 - Site: `src/core/ui/templater.ts`

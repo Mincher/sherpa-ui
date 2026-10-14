@@ -39,8 +39,8 @@ const listeners = new Set<(changed: ReadonlySet<string>) => void>();
 /** Files whose text the build put in the JS, by URL. */
 const inline = new Map<string, string>();
 
-/** A file's text, carried in the JS by the build, so it is never fetched — a
- *  reload still fetches it fresh. TRAP T-the-text-is-in-the-js */
+/** A file's text, carried in the JS by the build, so it is never fetched — nor
+ *  reloaded: it cannot change without a new build. TRAP T-the-text-is-in-the-js */
 export function inlined(url: URL, text: string): URL {
   inline.set(url.href, text);
   return url;
@@ -181,8 +181,9 @@ export async function loadSheets(urls: readonly string[]): Promise<CSSStyleSheet
  */
 export async function reloadFiles(files: { html?: readonly string[]; css?: readonly string[] }): Promise<void> {
   const changed = new Set<string>();
+  const live = (urls: readonly string[] = []): string[] => urls.filter((url) => !inline.has(url));
   await Promise.all([
-    ...(files.css ?? []).map(async (url) => {
+    ...live(files.css).map(async (url) => {
       const was = sheetCache.get(url);
       if (!was) {
         await loadSheet(url).then(() => changed.add(url), () => sheetCache.delete(url));
@@ -191,7 +192,7 @@ export async function reloadFiles(files: { html?: readonly string[]; css?: reado
       const [sheet, css] = await Promise.all([was, fetchText(url, true)]);
       sheet.replaceSync(css);
     }),
-    ...(files.html ?? []).map(async (url) => {
+    ...live(files.html).map(async (url) => {
       const pending = fetchText(url, true);
       htmlCache.set(url, pending);
       const html = await pending;

@@ -12,7 +12,7 @@
  *   node scripts/build-reforged.mjs [--watch | --dev]
  */
 import { execSync, spawn } from 'node:child_process';
-import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync } from 'node:fs';
+import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
@@ -89,12 +89,14 @@ console.log('› css transform (autoprefixer + cssnano)');
 const cssCount = await copyAssets(SRC);
 console.log(`✓ assets copied into dist/ (${cssCount} css transformed)`);
 
-/** A template's text with no comments and no indent — what the templater parses. */
-const lean = (html) => html.replace(/<!--[\s\S]*?-->/g, '').replace(/\n[ \t]+/g, '\n').trim();
+/** A template's text with no comments, no indent and no `data-accepts` — the
+ *  spec carries that; nothing reads it at run time. */
+const lean = (html) => html.replace(/<!--[\s\S]*?-->/g, '').replace(/ data-accepts="[^"]*"/g, '')
+  .replace(/\n[ \t]+/g, '\n').trim();
 
 /** Wrap each `new URL('./x.css' | './x.html', import.meta.url)` in `inlined(…, text)`.
  *  One ending in `.href` is a page's <link>, not the templater's, and stays a URL. */
-function inlineFiles(dir) {
+function inlineFiles(dir, inlinedAssets) {
   let count = 0;
   for (const file of globSync('**/*.js', { cwd: dir })) {
     const path = join(dir, file);
@@ -107,6 +109,7 @@ function inlineFiles(dir) {
         const text = readFileSync(asset, 'utf8');
         used = true;
         count++;
+        inlinedAssets.add(asset);
         return `inlined(${call}, ${JSON.stringify(kind === 'html' ? lean(text) : text)})`;
       });
     if (!used) continue;
@@ -133,7 +136,11 @@ async function minifyFiles(dir) {
 
 if (!DEV) {
   console.log('› inline the templates and sheets into the JS');
-  console.log(`✓ ${inlineFiles(OUT)} files inlined`);
+  const inlinedAssets = new Set();
+  console.log(`✓ ${inlineFiles(OUT, inlinedAssets)} files inlined`);
+  // Each now lives in its JS: the copy in dist/ would ship twice. TRAP T-the-text-is-in-the-js
+  for (const asset of inlinedAssets) unlinkSync(asset);
+  console.log(`✓ ${inlinedAssets.size} inlined files not shipped`);
   console.log('› minify the JS (esbuild)');
   console.log(`✓ ${await minifyFiles(OUT)}`);
 }
