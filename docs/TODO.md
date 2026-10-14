@@ -234,6 +234,17 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 60 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | | | | **L — The code review** | |
 | ❓ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`; waits on Will's review and seven choices | explore |
+| ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
+| ⬜ | 61b | 244 | BUG: three events are missing from the specs, and two phantom events are in them | bug |
+| ⬜ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
+| ⬜ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
+| ⬜ | 61e | 247 | BUG: `skipWhen` never guards an empty slot — container-header's icon, toast's heading, gauge's caption | bug |
+| ⬜ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
+| ⬜ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
+| ⬜ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
+| ⬜ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
+| ❓ | 61j | 252 | BUG: the calendar calls `Temporal`, which Safari does not have yet — waits on D7 | bug |
+| ⬜ | 61k | 253 | BUG: two colour rules escape `lint:css` — line-chart's double alpha, nav-item's highlight sheet in TS | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -5922,6 +5933,23 @@ from our own specs, plain HTML only; D3 A private host state as `:state()`; D4
 A delete the stored-data shims now; D5 A form and focus plumbing in
 `SherpaElement`, opt-in; D6 A native names where a native element does the
 same job; D7 A the calendar on `Date` + `Intl` until Safari has `Temporal`.
+
+**Will, 2026-10-14:** *"Let's fix those agent discovered issues and bugs before
+we come back to the plan."* So the plan's Phase 0 goes first: items 243–253.
+
+### `[x]` ✅ 243 — A moved component keeps its listeners
+
+A move is a disconnect and a connect. The disconnect aborts `this.signal`, and
+`onRender` runs only once — so everything wired there with the signal stayed
+dead. Every slot's `slotchange` (so `data-has-*` froze on 66 components), the
+slider's 8 inputs and the tooltip's anchor; nav and dialog removed their host
+listeners in `onDisconnect` and never added them back. The trap's own text told
+components to read the signal in `onRender`.
+
+**✅ Done 2026-10-14.** A listener on the element's own nodes takes no signal;
+the tooltip's anchor is wired in `onConnect`. A sweep moves every a11y fixture
+and fills each slot; it failed on the old build (the slots, and all four
+behaviours) and passes in three engines. `T-abort-controller-per-connect`.
 
 ## ✅ Done — the full record
 

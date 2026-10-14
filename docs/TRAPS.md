@@ -268,14 +268,26 @@ swallowing listener could run. Registration order decides capture order.
 in the DOM does exactly that — so ONE controller for the element's whole life
 would leave a re-attached component wired to nothing, **silently**.
 
-Read `this.signal` inside `onRender`/`onConnect`; never cache it in a field.
+**Read `this.signal` in `onConnect`, never in `onRender`.** `onRender` runs
+ONCE, so a signal read there is aborted by the first move and never replaced.
+That froze `data-has-*` on every moved component, and killed the slider's
+inputs and the tooltip's anchor (2026-10-14). Never cache it in a field.
+
+**A listener on the element's OWN nodes — its host, or its shadow tree — takes
+no signal and is never removed.** It cannot leak: it goes with the node. nav
+and dialog removed their host listeners in `onDisconnect` and never added them
+back. Only a listener on something ELSE — the document, the window, another
+element — needs the signal, so it is wired in `onConnect`.
 
 Related: a variant re-stamp does NOT abort it. See `T-restamp-does-not-abort`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
+- Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
+- Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `test/e2e/reforged-a-moved-element-keeps-its-listeners.spec.ts`
 
 ### T-restamp-does-not-abort
 

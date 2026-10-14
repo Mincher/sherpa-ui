@@ -67,16 +67,15 @@ export class SherpaSlider extends SherpaElement {
     this.#endInput = this.$<HTMLInputElement>('.range-end');
     this.#valueField = this.$<Field>('.value-end');
     this.#startField = this.$<Field>('.value-start');
-    // TRAP T-abort-controller-per-connect
-    const signal = this.signal;
-    this.#input?.addEventListener('input', this.#onInput, { signal });
-    this.#input?.addEventListener('change', this.#onChange, { signal });
-    this.#endInput?.addEventListener('input', this.#onEndInput, { signal });
-    this.#endInput?.addEventListener('change', this.#onEndChange, { signal });
-    this.#valueField?.addEventListener('input', this.#own(this.#onFieldInput), { signal });
-    this.#valueField?.addEventListener('change', this.#own(this.#onFieldChange), { signal });
-    this.#startField?.addEventListener('input', this.#own(this.#onStartFieldInput), { signal });
-    this.#startField?.addEventListener('change', this.#own(this.#onStartFieldChange), { signal });
+    // Its own shadow nodes: no signal. TRAP T-abort-controller-per-connect
+    this.#input?.addEventListener('input', this.#onInput);
+    this.#input?.addEventListener('change', this.#onChange);
+    this.#endInput?.addEventListener('input', this.#onEndInput);
+    this.#endInput?.addEventListener('change', this.#onEndChange);
+    this.#valueField?.addEventListener('input', this.#own(this.#onFieldInput));
+    this.#valueField?.addEventListener('change', this.#own(this.#onFieldChange));
+    this.#startField?.addEventListener('input', this.#own(this.#onStartFieldInput));
+    this.#startField?.addEventListener('change', this.#own(this.#onStartFieldChange));
     this.#resetTo = Object.fromEntries(RESETS.map((a) => [a, this.getAttribute(a)]));
     this.#syncInputAttrs();
     this.#sync();

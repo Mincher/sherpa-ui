@@ -1013,11 +1013,10 @@ export abstract class SherpaElement extends Base {
   #wireSlots(): void {
     for (const slot of this.root.querySelectorAll('slot')) {
       const update = (): void => this.#reflectSlot(slot);
-      /* CARRY THE SIGNAL. A variant re-stamp replaces every slot node, so each
-         stamp wired a FRESH closure to a FRESH element — nothing for
-         addEventListener's repeat-discard to dedupe, unlike the host listeners
-         T-restamp-does-not-abort reasons about. */
-      slot.addEventListener('slotchange', update, { signal: this.signal });
+      /* NO SIGNAL: the slot lives as long as this stamp, and a re-stamp drops
+         it with its listener. The disconnect signal froze `data-has-*` on a
+         moved element. TRAP T-abort-controller-per-connect */
+      slot.addEventListener('slotchange', update);
       update();
     }
   }

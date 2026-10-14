@@ -26,10 +26,11 @@ export class SherpaTooltip extends SherpaElement {
     const bubble = this.$('.bubble');
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
     if (bubble) this.setAttribute('aria-describedby', bubble.id);
+  }
 
-    /* On the ANCHOR, so a tooltip can describe a box it does not wrap — which
-       is why these need removing and a listener on `this` would not. `on()`
-       carries the disconnect signal, so there is nothing to undo. */
+  /** On the ANCHOR, so a tooltip can describe a box it does not wrap. Wired on
+   *  EVERY connect: `on()` carries the disconnect signal. TRAP T-abort-controller-per-connect */
+  override onConnect(): void {
     const anchor = this.#anchor();
     this.on(anchor, 'pointerenter', this.#onShow);
     this.on(anchor, 'pointerleave', this.#onHide);
@@ -54,9 +55,7 @@ export class SherpaTooltip extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    /* Only the POPOVER needs undoing by hand: one left open in the top layer
-       outlives the element it belongs to. Every listener above carries the
-       disconnect signal. */
+    // Only the POPOVER is undone by hand: left open, it outlives the element.
     this.#hide();
   }
 

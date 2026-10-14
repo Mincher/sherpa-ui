@@ -33,12 +33,9 @@ export class SherpaDialog extends SherpaElement {
   override onRender(): void {
     if (this.hasAttribute('open')) this.#surface.show();
     this.#surface.listen();
-    // A non-modal <dialog> gets no ESC from the browser.
+    // A non-modal <dialog> gets no ESC from the browser. On the host, so it
+    // stays through a move: never removed. TRAP T-abort-controller-per-connect
     this.addEventListener('keydown', this.#onKeydown);
-  }
-
-  override onDisconnect(): void {
-    this.removeEventListener('keydown', this.#onKeydown);
   }
 
   override onChange(name: string): void {

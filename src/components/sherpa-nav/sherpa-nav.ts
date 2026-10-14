@@ -112,13 +112,6 @@ export class SherpaNav extends SherpaElement {
     if (this.#hasContent()) this.#render();
   }
 
-  override onDisconnect(): void {
-    this.removeEventListener('pointerenter', this.#onEnter);
-    this.removeEventListener('pointerleave', this.#onLeave);
-    this.removeEventListener('focusin', this.#onEnter);
-    this.removeEventListener('focusout', this.#onFocusOut);
-  }
-
   override onChange(name: string, oldValue: string | null, newValue: string | null): void {
     if (name === 'data-current-id') this.#applyActive();
     if (name === 'data-nav-state') {
