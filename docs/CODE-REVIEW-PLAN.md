@@ -443,7 +443,7 @@ records it where one exists.
 |---|---|---|---|
 | ✅ 1 | **0** bugs | they were wrong | S each |
 | ✅ 2 | **1** gates (256–259) | so no later phase can slide back | S |
-| 3 | **7** third-party | small and separate; removes downloads early | S |
+| ✅ 3 | **7** third-party (260–265, 298) | small and separate; removes downloads early | S |
 | 4 | **2** legacy, and D4 | fewer names to move in Phase 3 | M |
 | 5 | **8.3** the gallery project, seeded from the examples | every later phase needs each component on its own, with its states | M |
 | 6 | **4** `SherpaElement` | Phase 5 uses what it elevates | M |
