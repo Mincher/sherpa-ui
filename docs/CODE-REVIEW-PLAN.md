@@ -98,6 +98,11 @@ writes `display`/`hidden`/`visibility` on internals 0 times, uses chained
 
 Fix these first. Each one is a TODO row.
 
+**Done 2026-10-14: TODO 243–253**, one commit each, every fix proved by a test that
+failed on the old build. Not done: 0.10 waits on D7 (252), and 0.11's line-chart
+half is a design value (254). 0.2 was five missing events, not three; 0.5 was worse
+than read: a slotted icon in container-header never showed at all.
+
 | # | Bug | Status | Fix |
 |---|---|---|---|
 | 0.1 | **A moved element loses its listeners.** On a reconnect, `connectedCallback` makes a new signal (`sherpa-element.ts:511`). But `#wireSlots` (:1020) ran once, with the old signal, so `data-has-*` stops following the slots. Slider (8 listeners), tooltip, nav and dialog wire listeners in `onRender`, which also runs only once. The cause is the trap's own text: `T-abort-controller-per-connect` says to read `this.signal` "inside `onRender`/`onConnect`" | **confirmed** | The base wires slots again on each connect. Those four components move their listeners to `onConnect`. The trap text becomes "`onConnect` only". Gate: a sweep test that mounts each a11y fixture, moves it, and checks that slots and listeners still work |
