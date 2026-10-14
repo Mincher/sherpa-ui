@@ -10,11 +10,11 @@ import { test, expect, type Bar } from './harness';
  * any menu had drawn — said the rows were gone, so the source dropped them.
  * TRAP T-a-rebuild-keeps-every-answer
  */
-test('adding a filter keeps another chip\'s custom rows, and says so at once', async ({ page }) => {
+test('adding a filter keeps another chip\'s Advanced rows, and says so at once', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const opts = [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
-      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, active: true, options: opts },
+      { id: 'owner', label: 'Owner', select: 'multiple', advanced: true, active: true, options: opts },
     ], { style: 'inline-size: 1200px' });
     bar.available([{ id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] }]);
     await window.__settled();

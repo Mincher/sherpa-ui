@@ -142,8 +142,6 @@ export interface FieldDeclaration {
   select?: 'single' | 'multiple';
   /** Advanced conditions beside its values (`true`), or instead of them (`'only'`). */
   advanced?: boolean | 'only';
-  /** @deprecated The name before 2026-09-29 (TODO 75), still read. */
-  custom?: boolean | 'only';
   /** The condition its filter opens on. */
   op?: FilterOp;
   /** A DATE that holds a time of day: its Advanced rows offer a time too. TODO 21d */
@@ -947,7 +945,7 @@ export class DataSource extends EventTarget {
     if (part) {
       /* ONE Simple filter: a chip per value, each with the series it is drawn
          in. No Advanced — Will, TODO 52. TRAP T-a-chart-scope-is-its-legend-field */
-      const { advanced: _a, custom: _c, kind: _k, options, ...def } = this.filterDef(part.field);
+      const { advanced: _a, kind: _k, options, ...def } = this.filterDef(part.field);
       const reading = q.readings[part.field];
       return {
         scope, label: part.label ?? def.label, shows: 'chart', part: true, available: [],
@@ -1233,7 +1231,7 @@ export class DataSource extends EventTarget {
     const open = fields.filter((f) => {
       const facts = this.#fields.get(f) ?? {};
       if (facts.type === 'number') return facts.min == null || facts.max == null;
-      return (facts.advanced ?? facts.custom) !== 'only' && !this.#domains.has(f);
+      return facts.advanced !== 'only' && !this.#domains.has(f);
     });
     let rows: Row[] = [];
     try {
@@ -1288,7 +1286,7 @@ export class DataSource extends EventTarget {
   filterDef(field: string): FieldFilter {
     const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
     const body = type === 'number' || type === 'date' ? type : undefined;
-    const values = body || (rest.advanced ?? rest.custom) === 'only' ? [] : this.valuesFor(field).map(valueKey);
+    const values = body || rest.advanced === 'only' ? [] : this.valuesFor(field).map(valueKey);
     // A date's declared values are the days a calendar may pick. TRAP T-a-date-chip-names-its-field
     const days = type === 'date' ? this.valuesFor(field).map(String) : [];
     return {
@@ -2337,7 +2335,7 @@ export class DataSource extends EventTarget {
   #isListField(field: string): boolean {
     const facts = this.#fields.get(field) ?? {};
     return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
-      && (facts.advanced ?? facts.custom) !== 'only';
+      && facts.advanced !== 'only';
   }
 
   /** What limits one field: the applied Query compiled WITHOUT that field's own answer in its scope. */

@@ -13184,9 +13184,8 @@ them and their specs could not type them — the review's
 point at `DATA_PROPS`. A boolean among them is typed `boolean` only where
 nothing writes it `"false"`, since a declared boolean set to `"false"` is
 removed (`T-false-is-off`). The gate now fails an observed `data-*` that is
-not declared — except a renamed attribute's old name, the first of an
-`['data-old', 'data-new']` pair (`T-a-renamed-attribute-keeps-its-old-name`),
-still heard but never public: the menu's four.
+not declared. (A renamed attribute's old name was the one exception until
+2026-10-14, when the old names went: `T-a-rename-drops-the-old-name`.)
 
 The gate checks only `this.dataset`. A local `cal.dataset['value']` is another
 element's business, and counting it reported five phantom gaps.
@@ -13704,8 +13703,8 @@ column's condition, so a heading's `fx` and green follow the same rule as a
 toolbar chip — "Is not" is Advanced there too.
 TRAP T-a-held-clause-op-is-not-a-reading-op
 
-The public attributes speak these words since 2026-09-25, and still hear the old
-ones. TRAP T-a-renamed-attribute-keeps-its-old-name
+The public attributes speak these words since 2026-09-25; the old ones went on
+2026-10-14 (`T-a-rename-drops-the-old-name`).
 
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/filter-face.ts`
@@ -13716,54 +13715,33 @@ ones. TRAP T-a-renamed-attribute-keeps-its-old-name
 - Site: `test/unit/one-condition-system.test.mjs`
 - Site: `test/e2e/reforged-one-condition-system.spec.ts`
 
-### T-a-renamed-attribute-keeps-its-old-name
+### T-a-rename-drops-the-old-name
 
-**A public attribute that is renamed still hears its old name.** The filter
-modes were renamed twice: to Default and Custom Condition Filter (Will,
-2026-09-25), then to Simple and Advanced (Will, 2026-09-27, TODO 75).
+**A public name that is renamed drops the old one in the same change** (Will,
+D4; code review Phase 2, 2026-10-14: a refactor deletes what it replaced). The
+filter modes were renamed twice — to Default and Custom Condition Filter
+(2026-09-25), then to Simple and Advanced (2026-09-27, TODO 75) — and each old
+name was kept: `OLD_OPT_INS` and `OLD_MODES` in the menu, `OLD_KINDS` and two
+def keys in `filter-kind.ts`, a chip's `data-kind="custom"`. They are gone, and
+an old name does nothing. For an app that still writes one:
 
-| first | 2026-09-25 | now, on `sherpa-menu` |
-|---|---|---|
-| `data-conditional` | `data-custom` | `data-advanced` |
-| `data-conditions-only` | `data-custom-only` | `data-advanced-only` |
-| `data-mode="select"` | `data-mode="default"` | `data-mode="simple"` |
-| `data-mode="condition"` | `data-mode="custom"` | `data-mode="advanced"` |
+| was | now |
+|---|---|
+| `data-conditional`, `data-custom` | `data-advanced` |
+| `data-conditions-only`, `data-custom-only` | `data-advanced-only` |
+| `data-mode="select"`, `"default"` | `data-mode="simple"` |
+| `data-mode="condition"`, `"custom"` | `data-mode="advanced"` |
+| a def's `conditions`, `custom` | `advanced` |
+| a def's kind `conditional`, `custom` | `advanced` |
 
-Two kinds of alias, and they take two different doors:
+One spelling in the DOM gives the CSS and every reader one value to match.
+`OffersAdvanced` declares the def key ONCE — four def types each declared
+`conditions` for themselves. The chip's `data-condition` and the menu's
+`condition-mode-change` detail are reports, and their readers follow the new
+words.
 
-- **An old NAME is kept, and the new one written beside it.** `#enforceMode()`
-  adds `data-advanced` beside any old opt-in (`OLD_OPT_INS`), so
-  `#offersAdvanced()`, `#advancedOnly()` and the CSS read one name, and a host
-  that set `data-conditional` still reads it back. The old names are
-  `observed`, so a late write is heard too.
-- **A VALUE is rewritten.** `#enforceMode()` turns any old mode into `simple`
-  / `advanced` (`OLD_MODES`), and the `mode` setter takes any of them. The
-  menu already rewrote `data-mode` — advanced-only forces it, an un-offered
-  Advanced is removed — and ONE spelling in the DOM gives the CSS and every
-  reader one value to match.
-
-**No alias for what a component WRITES.** An alias protects a host's writes.
-The chip's `data-condition` (it was a boolean, `data-conditioned`) and the
-menu's `condition-mode-change` detail (`mode`, was `conditional: boolean`; the
-event was `filter-mode-change`, the provider's name for another job) are
-reports, and their readers follow the new words.
-
-**And the def.** A filter def says `advanced: true | 'only'`, the same word as
-the menu, and that kind is `'advanced'`. Both are a host's writes, so both keep
-their old spellings: `advancedOf()` reads `advanced`, then `custom`, then
-`conditions`, and `kindOf()` believes `kind: 'custom'` and `'conditional'`
-(`OLD_KINDS`). A chip's `data-kind="custom"` is still a saved filter. The new
-key wins where a def names both. `OffersAdvanced` declares the key ONCE — four
-def types each declared `conditions` for themselves.
-
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/core/ui/filter-kind.ts`
 - Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `scripts/check-props.mjs`
 
 ### T-a-view-keeps-the-saved-filter-chips
 
@@ -13913,11 +13891,12 @@ A page's own presets stay preset chips, applied one at a time.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 
-### T-saved-filters-are-the-custom-section
+### T-saved-filters-are-the-last-section
 
 **Saved filters are offered LAST in the Filters menu, under "Saved filters".**
 Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
-at the bottom"*; renamed "Saved filters" on 2026-09-29 (TODO 105). Only the ones not added: a held saved filter is under Added
+at the bottom"*; renamed "Saved filters" on 2026-09-29 (TODO 105), and this
+trap, `T-saved-filters-are-the-custom-section` until then, on 2026-10-14. Only the ones not added: a held saved filter is under Added
 filters, with every other filter the bar holds (`T-one-filters-button`).
 
 A def with `readings` IS a saved filter, so the bar needs no second list: the

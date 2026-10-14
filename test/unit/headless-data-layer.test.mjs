@@ -934,7 +934,7 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
   source.declareField('plan', { label: 'Plan', select: 'multiple' });
   source.declareValues('plan', ['Free', 'Pro']);
   source.declareField('seats', { label: 'Seats', type: 'number', min: 0, max: 50, step: 1 });
-  source.declareField('email', { label: 'Email', custom: 'only', op: 'contains' });
+  source.declareField('email', { label: 'Email', advanced: 'only', op: 'contains' });
   source.declareValues('email', ['a@x', 'b@x']);
   assert.deepEqual(source.filterDef('plan'), {
     id: 'plan', label: 'Plan', select: 'multiple',

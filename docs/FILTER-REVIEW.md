@@ -2085,7 +2085,7 @@ at all. And Default and Custom stay two MODES of one menu, over one data shape.
 ### 21.5 The words — done 2026-09-25
 
 Will: *"rename"*. The public surface speaks Default and Custom now, and the old
-names still work. See `T-a-renamed-attribute-keeps-its-old-name`.
+names still worked until 2026-10-14. See `T-a-rename-drops-the-old-name`.
 
 | was | is | old name |
 |---|---|---|

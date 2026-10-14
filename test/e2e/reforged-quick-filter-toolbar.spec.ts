@@ -2465,7 +2465,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
 
 /**
  * A chip with no `options` is a TOGGLE — right for "At risk", wrong for a text
- * column nobody ticks. `custom: true` names a field and answers it by
+ * column nobody ticks. `advanced: true` names a field and answers it by
  * TYPING, so it needs a menu; it was falling through to the toggle branch and
  * getting none, which is why a 240-value column could not be filtered at all.
  *
@@ -2476,7 +2476,7 @@ test('an ADVANCED field with no options gets a menu, not a toggle', async ({ pag
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
       // No options, no kind — only the opt-in to conditions.
-      { id: 'email', label: 'Email', custom: true },
+      { id: 'email', label: 'Email', advanced: true },
       // The control: a real toggle, which must stay one.
       { id: 'at-risk', label: 'At risk' },
     ]);
@@ -2515,7 +2515,7 @@ test('a FOLDED advanced-only filter opens its own menu, not a blank drill', asyn
     el.populate([
       { id: 'status', label: 'Status', select: 'multiple',
         options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }] },
-      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ]);
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     await settle();
@@ -2568,7 +2568,7 @@ test('a resize that folds nothing new keeps the open Filters menu; a real unfold
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
     el.populate([
       { id: 'status', label: 'Status', select: 'multiple', options: [{ value: 'a', label: 'a' }] },
-      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ]);
     await window.__settled();
     for (let i = 0; i < 20 && !el.getAttribute('data-folded'); i++) await new Promise((res) => setTimeout(res, 80));
@@ -2656,9 +2656,9 @@ test('the Add menu lists held AND offered, and an untick removes', async ({ page
 test('a chip steered with conditions redraws its value and tip', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
-      { id: 'owner', label: 'Owner', select: 'multiple', custom: true,
+      { id: 'owner', label: 'Owner', select: 'multiple', advanced: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] },
-      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
     const steer = el as Bar & { setChipReading(id: string, r: unknown): void };
@@ -2690,10 +2690,10 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
 test('adding a second Advanced filter keeps the first one\'s rows in every report', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
-      { id: 'owner', label: 'Owner', select: 'multiple', custom: true,
+      { id: 'owner', label: 'Owner', select: 'multiple', advanced: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] },
     ], { style: 'inline-size: 1200px' });
-    el.available([{ id: 'email', label: 'Email', custom: 'only', op: 'contains' }]);
+    el.available([{ id: 'email', label: 'Email', advanced: 'only', op: 'contains' }]);
     await window.__settled();
     const bar = el as Bar & { setChipReading(id: string, r: unknown): void;
       readings: Record<string, { conditions?: unknown[] }> };

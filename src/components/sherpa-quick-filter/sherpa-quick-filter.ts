@@ -794,9 +794,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** An ADVANCED chip with no filter menu holds a GIVEN answer — a saved filter.
    *  TRAP T-a-saved-filter-is-its-readings */
   #given(): boolean {
-    // The old word still heard. TRAP T-a-renamed-attribute-keeps-its-old-name
-    const kind = this.dataset['kind'];
-    return (kind === 'advanced' || kind === 'custom') && this.menu?.getAttribute('data-type') !== 'filter';
+    return this.dataset['kind'] === 'advanced' && this.menu?.getAttribute('data-type') !== 'filter';
   }
 
   /** Drop a warning the menu answers once it has stamped. Never raises one. */

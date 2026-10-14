@@ -1737,12 +1737,7 @@ export class SherpaFilterPanel extends SherpaElement {
       readings = { [held.scope]: { [held.def.id]: reading } };
     }
     /* `values` rides along for a host that only wants the ticks. */
-    this.emit('quick-filter-change', {
-      scope: 'panel',
-      readings,
-      values: this.values,
-      picked: this.values,
-    });
+    this.emit('quick-filter-change', { scope: 'panel', readings, values: this.values });
   }
 
   /**

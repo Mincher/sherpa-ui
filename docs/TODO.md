@@ -260,7 +260,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
 | ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
-| ⬜ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
+| 🚧 | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ⬜ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
@@ -6359,6 +6359,22 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[ ]` 🚧 269 — Phase 2: old names, data-API leftovers, component aliases
+
+The plan's Phase 2 rows for filter names, the data API and component aliases.
+One commit per area.
+
+**✅ Filter names, 2026-10-14.** The filter modes' old names are gone: the
+menu's `OLD_OPT_INS`, `OLD_MODES`, its four old attributes in `observed` and
+the CSS for two of them; `OLD_KINDS` and the def keys `custom` and
+`conditions`; a chip's `data-kind="custom"`; the grid column's two old keys; a
+field declaration's `custom` (in the page schema too); `kind: 'values'`; and
+the panel's `picked` copy of `values` in its event. `check:props` loses its
+old-name exception. An old word does nothing now, and two tests check that. 24
+tests and one doc example moved to `advanced`. `T-a-renamed-attribute-keeps-its-old-name`
+is `T-a-rename-drops-the-old-name`, with a was/now table for an app;
+`T-saved-filters-are-the-custom-section` is `T-saved-filters-are-the-last-section`.
 
 ### `[x]` ✅ 267 — Phase 2: the starter is its own project (Q1)
 

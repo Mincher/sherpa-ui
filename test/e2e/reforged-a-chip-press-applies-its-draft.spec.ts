@@ -12,7 +12,7 @@ import { test, expect, type Bar } from './harness';
  * TRAP T-a-chip-press-applies-its-menus-draft
  */
 const OWNER = {
-  id: 'owner', label: 'Owner', select: 'multiple', custom: true, commit: true,
+  id: 'owner', label: 'Owner', select: 'multiple', advanced: true, commit: true,
   options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
 };
 

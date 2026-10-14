@@ -1433,7 +1433,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          done nothing wrong. They add the chip, then answer it.
          TRAP T-a-new-chip-opens-in-default-not-warning
          A SAVED filter is answered already, so it comes ON.
-         TRAP T-saved-filters-are-the-custom-section */
+         TRAP T-saved-filters-are-the-last-section */
       added.push({ ...def!, active: !!def!.readings, removable: true });
     }
     if (!added.length) return;

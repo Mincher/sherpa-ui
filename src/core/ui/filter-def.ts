@@ -46,7 +46,7 @@ export interface FilterDef extends OffersAdvanced {
    *  out has it worked out from `select`, `advanced` and whether there are
    *  options, in ONE place. TRAP T-a-chip-knows-what-kind-it-is
    *  TRAP T-number-and-date-lead-with-a-range-switch */
-  kind?: FilterKind | 'values';
+  kind?: FilterKind;
   /** Values it filters by — a menu of checkbox or radio rows. */
   options?: FilterOption[];
   select?: 'single' | 'multiple';

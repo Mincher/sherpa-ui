@@ -558,44 +558,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-conditional",
-      "type": "string",
-      "observed": true,
-      "kind": "style",
-      "description": "the name before that, still read."
-    },
-    {
-      "$type": "prop",
       "name": "data-conditions",
       "type": "string",
       "observed": true,
       "declared": true,
       "kind": "style",
       "description": "FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set."
-    },
-    {
-      "$type": "prop",
-      "name": "data-conditions-only",
-      "type": "string",
-      "observed": true,
-      "kind": "style",
-      "description": "the name before that, still read."
-    },
-    {
-      "$type": "prop",
-      "name": "data-custom",
-      "type": "string",
-      "observed": true,
-      "kind": "style",
-      "description": "the old name of data-advanced, still read. TRAP T-a-renamed-attribute-keeps-its-old-name"
-    },
-    {
-      "$type": "prop",
-      "name": "data-custom-only",
-      "type": "string",
-      "observed": true,
-      "kind": "style",
-      "description": "the old name of data-advanced-only, still read."
     },
     {
       "$type": "prop",
@@ -684,7 +652,7 @@
         "simple",
         "advanced"
       ],
-      "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. The old values default | custom | select | condition are read, and rewritten to the new ones. TRAP T-a-filter-menu-has-two-modes"
+      "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes"
     },
     {
       "$type": "prop",

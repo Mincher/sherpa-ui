@@ -75,7 +75,7 @@ export interface AddedFilter extends ListedFilter {
  * caret, not a second section. Will, 2026-09-25. A filter is in ONE section —
  * a held saved filter is Added, never Custom too.
  * TRAP T-the-add-menu-is-the-whole-list
- * TRAP T-saved-filters-are-the-custom-section
+ * TRAP T-saved-filters-are-the-last-section
  */
 export function filtersMenuItems(
   added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [],

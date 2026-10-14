@@ -6,7 +6,7 @@ import { test, expect, type Bar } from './harness';
  * A chip decided its condition colour from its MENU's mode — condition mode, and
  * answered — while its fx badge came from the STATE: a named op or any rows.
  * So a chip answered by a typed condition in LIST mode wore the fx badge and
- * NOT the green: the same filter read as custom and as default at once. Both
+ * NOT the green: the same filter read as Advanced and as Simple at once. Both
  * read `state.condition` now.
  * TRAP T-one-condition-system
  */
@@ -31,7 +31,7 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
 
 test('a TYPED condition in list mode is Advanced — and wears the active edge, as a Simple chip does', async ({ page }) => {
   const r = await chip(page, {
-    id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
+    id: 'owner', label: 'Owner', select: 'multiple', active: true, advanced: true,
     op: 'contains', text: 'Da',
     options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
   });

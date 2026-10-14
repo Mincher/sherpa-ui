@@ -507,7 +507,6 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "picked": "Record<string, Record<string, string[]>>",
         "readings": "Record<string, Record<string, FieldReading>>",
         "scope": "'panel'",
         "values": "Record<string, Record<string, string[]>>"

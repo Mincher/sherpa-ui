@@ -40,8 +40,8 @@ One JSON document per page. The same rule as a View: **a definition is data**
     "search": ["name", "email", "owner"],
     "fields": {
       "status": { "label": "Status", "select": "multiple" },
-      "owner":  { "label": "Owner", "select": "multiple", "custom": true },
-      "email":  { "label": "Email", "custom": "only", "op": "contains" },
+      "owner":  { "label": "Owner", "select": "multiple", "advanced": true },
+      "email":  { "label": "Email", "advanced": "only", "op": "contains" },
       "seats":  { "label": "Seats", "type": "number" },
       "created": { "label": "Date", "type": "date" }
     },

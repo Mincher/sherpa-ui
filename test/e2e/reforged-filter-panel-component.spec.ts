@@ -26,7 +26,7 @@ const SETUP = `
             { value: 'active', label: 'active', selected: true },
             { value: 'churned', label: 'churned' },
           ] },
-        { id: 'owner', label: 'Owner', select: 'single', custom: true,
+        { id: 'owner', label: 'Owner', select: 'single', advanced: true,
           options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] },
         // NO OPTIONS — a date has nothing honest to draw as a run of chips.
         { id: 'created', label: 'Created date' },
@@ -709,7 +709,7 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate([{ scope: 'data', label: 'Data', filters: [
-      { id: 'owner', label: 'Owner', select: 'multiple', custom: true,
+      { id: 'owner', label: 'Owner', select: 'multiple', advanced: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
         state: { picked: [], conditions: [{ op: 'contains', text: 'Da' }] } },
     ] }]);
@@ -718,12 +718,12 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
     for (let i = 0; i < 4; i++) await new Promise((res) => requestAnimationFrame(res));
     const box = el.shadowRoot!.querySelector('.field[data-field="owner"]')!;
     return {
-      custom: box.hasAttribute('data-advanced'),
+      advanced: box.hasAttribute('data-advanced'),
       switchOn: box.querySelector('.field-advanced')?.getAttribute('aria-pressed') === 'true',
       reading: el.readings['data']?.['owner']?.conditions,
     };
   });
-  expect(r).toEqual({ custom: true, switchOn: true, reading: [{ op: 'contains', text: 'Da' }] });
+  expect(r).toEqual({ advanced: true, switchOn: true, reading: [{ op: 'contains', text: 'Da' }] });
 });
 
 /**

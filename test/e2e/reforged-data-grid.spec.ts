@@ -2758,7 +2758,7 @@ test('a number column with BLANKS bounds its slider on the real values', async (
  * A column answered by a CONDITION reads as SUCCESS, not the plain active purple.
  *
  * The glyph already said so — `fx` in place of the funnel — but nothing wrote
- * `data-condition`, and the colour rule is `:host([data-condition="custom"][data-current])`.
+ * `data-condition`, and the colour rule is `:host([data-condition="advanced"][data-current])`.
  * So the mark and the colour disagreed. Will: "The Column filter button doesn't
  * become an Info blue Condition style button when a conditional filter is applied."
  *
@@ -2809,7 +2809,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
 
   // Mark and colour come from the same answer, so they cannot disagree.
   expect(r.on.name).toEqual({ current: true, condition: 'advanced', icon: 'function' });
-  // A range is filtered but NOT custom — it keeps the plain active look.
+  // A range is filtered but NOT Advanced — it keeps the plain active look.
   expect(r.on.spend).toEqual({ current: true, condition: 'simple', icon: null });
   // And clearing takes both off.
   expect(r.off).toEqual({ current: false, condition: null, icon: null });
@@ -2820,7 +2820,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
  * menu's search box only FINDS in that wall — it never filters the rows — so a
  * reader typing an address saw nothing happen.
  *
- * `custom: 'only'` drops the list and leaves the condition rows, opening
+ * `advanced: 'only'` drops the list and leaves the condition rows, opening
  * on the `op` the column names. The HOST sets it: how many values is too many
  * is a question about the data.
  *
@@ -2840,7 +2840,7 @@ test('an advanced-only column drops its list and opens on its own op', async ({ 
     el.populate({
       columns: [
         // Free text nobody picks from.
-        { field: 'email', header: 'Email', custom: 'only', op: 'contains' },
+        { field: 'email', header: 'Email', advanced: 'only', op: 'contains' },
         // A short set — a list AND a condition, as every text column was.
         { field: 'status', header: 'Status' },
       ],

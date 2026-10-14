@@ -55,7 +55,6 @@
         "label": { "type": "string" },
         "select": { "enum": ["single", "multiple"] },
         "advanced": { "description": "Advanced conditions beside its values (true), or instead of them (\"only\").", "enum": [true, false, "only"] },
-        "custom": { "description": "The old name of advanced, still read.", "enum": [true, false, "only"] },
         "op": { "description": "The condition its filter opens on.", "type": "string" },
         "min": { "type": "number" },
         "max": { "type": "number" },

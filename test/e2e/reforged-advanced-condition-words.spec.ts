@@ -1,14 +1,13 @@
 import { test, expect, type Bar } from './harness';
 
 /**
- * THE NEW WORDS, AND THE OLD ONES STILL HEARD.
+ * THE NEW WORDS, AND ONLY THOSE.
  *
  * A filter is Simple or Advanced — Will, 2026-09-27 (TODO 75). It was a
  * Default or a Custom Condition Filter, and before that Conditional. The menu's
- * attributes say so now: `data-advanced`, `data-advanced-only`, and
- * `data-mode="simple" | "advanced"`. A host that still
- * writes `data-conditional`, `data-conditions-only` or `select | condition`
- * gets the same menu. TRAP T-a-renamed-attribute-keeps-its-old-name
+ * attributes say so: `data-advanced`, `data-advanced-only`, and
+ * `data-mode="simple" | "advanced"`. An old word does nothing.
+ * TRAP T-a-rename-drops-the-old-name
  */
 type Menu = HTMLElement & { mode: string };
 
@@ -54,35 +53,21 @@ test('a menu speaks the new words', async ({ page }) => {
   expect(r.only).toEqual({ mode: 'advanced', attr: 'advanced', btn: 'none' });
 });
 
-test('a menu still hears the old words', async ({ page }) => {
+test('a menu hears no old word', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-conditional': true });
     const sr = menu.shadowRoot!;
     const shown = getComputedStyle(sr.querySelector('.use-condition')!).display !== 'none';
-
-    // The old VALUE is read, and rewritten to the new one.
     menu.setAttribute('data-mode', 'condition');
     await window.__settled();
-    const written = {
-      mode: menu.mode,
-      attr: menu.getAttribute('data-mode'),
-      rows: getComputedStyle(sr.querySelector('.condition-rows')!).display !== 'none',
-    };
-    (menu as unknown as { mode: string }).mode = 'select';
-    await window.__settled();
-    const back = { mode: menu.mode, attr: menu.getAttribute('data-mode') };
-
+    const rows = getComputedStyle(sr.querySelector('.condition-rows')!).display !== 'none';
     const only = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-conditions-only': true });
-    const onlyBtn = only.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
-    return { shown, written, back, only: { mode: only.mode, btn: getComputedStyle(onlyBtn).display } };
+    return { shown, mode: menu.mode, rows, only: only.mode };
   });
 
-  expect(r.shown).toBe(true);
-  expect(r.written).toEqual({ mode: 'advanced', attr: 'advanced', rows: true });
-  expect(r.back).toEqual({ mode: 'simple', attr: 'simple' });
-  expect(r.only).toEqual({ mode: 'advanced', btn: 'none' });
+  expect(r).toEqual({ shown: false, mode: 'simple', rows: false, only: 'simple' });
 });
 
 /** `data-condition` is `state.condition`, written by the chip. */
@@ -195,9 +180,9 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
 
 /**
  * THE DEF SPEAKS THEM TOO. `advanced: true | 'only'` on a chip, a column and a
- * panel field; the old `custom` and `conditions` keys still work.
+ * panel field; the old `custom` and `conditions` keys offer nothing.
  */
-test('a def says advanced — and the old custom and conditions keys still work', async ({ page }) => {
+test('a def says advanced — and the old custom and conditions keys offer nothing', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const opts = [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
@@ -251,8 +236,9 @@ test('a def says advanced — and the old custom and conditions keys still work'
 
   expect(r.chips.owner).toEqual({ advanced: true, only: false, mode: 'simple' });
   expect(r.chips.email).toEqual({ advanced: true, only: true, mode: 'advanced' });
-  expect(r.chips.old).toEqual({ advanced: true, only: true, mode: 'advanced' });
-  expect(r.chips.was).toEqual({ advanced: true, only: true, mode: 'advanced' });
+  // No options and no `advanced`: a yes/no chip, with no menu at all.
+  expect(r.chips.old).toBe(null);
+  expect(r.chips.was).toBe(null);
   expect(r.column).toEqual({ only: true, rows: 0 });
   expect(r.field).toBe(true);
   expect(r.onlyField).toEqual({ switch: false, rows: true });

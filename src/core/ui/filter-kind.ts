@@ -14,7 +14,7 @@
  * - FilterKind — boolean, single, multi, advanced, number, date, group or sort
  * - OffersAdvanced — whether a field offers Advanced conditions: beside its values, or instead
  * - KindSource — Enough of a filter definition to say what it is.
- * - advancedOf — a field's Advanced offer — the new key wins, the old ones still count
+ * - advancedOf — a field's Advanced offer: beside its values, instead of them, or none
  * - kindOf — what a filter IS, from its def — worked out here and nowhere else
  * - hasOwnBody — Its menu holds a CONTROL of its own, not a list of values to tick.
  * - arranges — It ARRANGES rows rather than choosing them.
@@ -38,10 +38,6 @@ export type FilterKind = (typeof FILTER_KINDS)[number];
 export interface OffersAdvanced {
   /** Beside its values (`true`), or instead of them (`'only'`) — pair it with `op`. */
   advanced?: boolean | 'only';
-  /** @deprecated The name before 2026-09-29 (TODO 75), still read. */
-  custom?: boolean | 'only';
-  /** @deprecated The name before that, still read. */
-  conditions?: boolean | 'only';
 }
 
 /** Enough of a filter definition to say what it is. */
@@ -56,23 +52,17 @@ export interface KindSource extends OffersAdvanced {
 
 const KNOWN = new Set<string>(FILTER_KINDS);
 
-/** The kinds' spellings before 2026-09-25, still believed.
- *  TRAP T-a-renamed-attribute-keeps-its-old-name */
-const OLD_KINDS: Readonly<Record<string, FilterKind>> = { conditional: 'advanced', custom: 'advanced' };
-
-/** A field's Advanced offer — the new key wins, the old ones still count.
- *  TRAP T-a-renamed-attribute-keeps-its-old-name */
+/** A field's Advanced offer: beside its values, instead of them, or none. */
 export function advancedOf(def: OffersAdvanced): boolean | 'only' {
-  return def.advanced ?? def.custom ?? def.conditions ?? false;
+  return def.advanced ?? false;
 }
 
 /**
  * THE ONE DERIVATION. A definition that names its `kind` is believed; one that
- * uses the older spelling has it worked out HERE, and nowhere else.
+ * does not has it worked out HERE, and nowhere else.
  */
 export function kindOf(def: KindSource): FilterKind {
-  const named = def.kind ? (OLD_KINDS[def.kind] ?? def.kind) : undefined;
-  if (named && KNOWN.has(named)) return named as FilterKind;
+  if (def.kind && KNOWN.has(def.kind)) return def.kind as FilterKind;
   // `group` and `sort` are named for their job; their id IS the kind.
   if (def.id === 'group' || def.id === 'sort') return def.id;
   // Its answer is GIVEN, over any fields: a saved Advanced filter.

@@ -512,9 +512,9 @@ export class SherpaDataGrid extends SherpaElement {
     const given = this.#givenFilters[col.field];
     const values = this.#columnValues.get(col.field) ?? this.#presentValues(col.field).sort();
     const own: FilterMenuDef = given ? { ...given } : {
-      // Any of the three spellings of the offer; none is Advanced too, for a text column.
+      // No offer is Advanced too, for a text column.
       ...(kind === 'text'
-        ? { advanced: col.advanced ?? col.custom ?? col.conditions ?? true, ...(col.op ? { op: col.op } : {}) }
+        ? { advanced: col.advanced ?? true, ...(col.op ? { op: col.op } : {}) }
         : { kind: kind as 'number' | 'date', ...(col.advanced != null ? { advanced: col.advanced } : {}) }),
       ...(kind === 'text' && kindOf(col) !== 'advanced' ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
     };

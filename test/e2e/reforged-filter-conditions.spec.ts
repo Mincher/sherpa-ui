@@ -26,7 +26,7 @@ async function bar(page: import('@playwright/test').Page): Promise<void> {
       {
         // OPT IN: conditions are off by default, so a chip that wants the
         // And/Or rows asks for them. TRAP T-conditions-are-opt-in-per-field
-        id: 'tier', label: 'Tier', select: 'multiple', removable: true, custom: true,
+        id: 'tier', label: 'Tier', select: 'multiple', removable: true, advanced: true,
         options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }],
       },
       // A SELECTOR, not a field question — "which saved view" has no Contains.
@@ -342,7 +342,7 @@ test('a chip that did not opt in has NO Advanced mode at all', async ({ page }) 
       };
     const sr = menu.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.use-condition')!;
-    const before = { custom: menu.hasAttribute('data-advanced'), btn: getComputedStyle(btn).display };
+    const before = { advanced: menu.hasAttribute('data-advanced'), btn: getComputedStyle(btn).display };
 
     // Press it anyway. Nothing happens — the mode does not exist for this field.
     btn.querySelector('sherpa-button')!.shadowRoot!.querySelector('button')!.click();
@@ -359,7 +359,7 @@ test('a chip that did not opt in has NO Advanced mode at all', async ({ page }) 
     return { before, afterClick, afterWrite };
   });
 
-  expect(r.before.custom).toBe(false);
+  expect(r.before.advanced).toBe(false);
   expect(r.before.btn).toBe('none');
   expect(r.afterClick).toEqual({ mode: 'simple', rows: 0 });
   /* The ATTRIBUTE is not the door. A hidden button and a live mode would be a
@@ -473,7 +473,7 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     el.populate([{
       // OPT IN. TRAP T-conditions-are-opt-in-per-field
       id: 'owner', label: 'Owner', select: 'single', removable: true, commit: true,
-      custom: true,
+      advanced: true,
       options: [{ value: 'ravi', label: 'Ravi' }, { value: 'dana', label: 'Dana' }],
     }]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -804,7 +804,7 @@ test('a chip in SIMPLE mode reports picks AND a clause, and is not Advanced',
     expect(JSON.parse(r.values).tier).toEqual(['gold']);
     expect(JSON.parse(r.clauses).tier).toEqual(['tier', 'eq', 'gold']);
     expect(r.on).toBe(true);
-    /* DEFAULT, not custom. Both shapes describe the same ticks, and a host uses
+    /* SIMPLE, not Advanced. Both shapes describe the same ticks, and a host uses
        `values`; only a chip in ADVANCED mode answers with its clause alone. */
     expect(r.condition).toBe('simple');
   });
@@ -833,9 +833,9 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       // DEFAULT — a closed set, ticked.
       { id: 'status', label: 'Status', select: 'multiple', options: opts },
       // BOTH — a short list, and a condition over it.
-      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, options: opts },
+      { id: 'owner', label: 'Owner', select: 'multiple', advanced: true, options: opts },
       // ONLY — a wall. No list at all, opening on Contains.
-      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -847,7 +847,7 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       const sw = menu.shadowRoot.querySelector('.use-condition');
       return {
         menu: true,
-        custom: menu.hasAttribute('data-advanced'),
+        advanced: menu.hasAttribute('data-advanced'),
         only: menu.hasAttribute('data-advanced-only'),
         mode: menu.getAttribute('data-mode'),
         op: menu.getAttribute('data-op'),
@@ -868,17 +868,17 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
   });
 
   // VALUES only — no condition offered at all.
-  expect(r.status.custom).toBe(false);
+  expect(r.status.advanced).toBe(false);
   expect(r.status.switchShown).toBe(false);
 
   // BOTH — the switch is there, and it opens on the list.
-  expect(r.owner.custom).toBe(true);
+  expect(r.owner.advanced).toBe(true);
   expect(r.owner.only).toBe(false);
   expect(r.owner.switchShown).toBe(true);
 
   // ONLY — opens in Advanced mode, on its own op, with nowhere to switch to.
   expect(r.email).toEqual({
-    menu: true, custom: true, only: true,
+    menu: true, advanced: true, only: true,
     mode: 'advanced', op: 'contains', switchShown: false,
   });
   // The attribute is not a second door back either.

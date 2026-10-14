@@ -42,7 +42,7 @@ export interface MenuItem {
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
   note?: string;
   /** The section it is in. A heading is drawn where the section changes.
-   *  TRAP T-saved-filters-are-the-custom-section */
+   *  TRAP T-saved-filters-are-the-last-section */
   section?: string;
   /** It opens a CHILD MENU: a caret at its end, which reports `menu-drill`.
    *  TRAP T-a-row-opens-its-child-menu */
@@ -56,28 +56,14 @@ export interface MenuItem {
   remove?: boolean;
 }
 
-/** The opt-ins' older names, still heard. TRAP T-a-renamed-attribute-keeps-its-old-name */
-const OLD_OPT_INS = [
-  ['data-custom', 'data-advanced'], ['data-conditional', 'data-advanced'],
-  ['data-custom-only', 'data-advanced-only'], ['data-conditions-only', 'data-advanced-only'],
-] as const;
-
-/** The mode's older spellings, still heard — select and condition before
- *  2026-09-25, default and custom before 2026-09-29 (TODO 75).
- *  TRAP T-a-renamed-attribute-keeps-its-old-name */
-const OLD_MODES: Readonly<Record<string, ConditionType>> = {
-  select: 'simple', condition: 'advanced', default: 'simple', custom: 'advanced',
-};
-
 /** How long a pointer RESTS on a row before its child menu opens. */
 const HOVER_OPENS_AFTER = 500;
 
 /** What does its own job with a click. Anything else in the card is a gap. */
 const CONTROL = 'a[href], button, input, select, textarea, label, summary, [contenteditable]';
 
-/** A mode in either spelling, as the one it means. */
-const modeOf = (raw: string | undefined): ConditionType =>
-  (OLD_MODES[raw ?? ''] ?? raw) === 'advanced' ? 'advanced' : 'simple';
+/** A mode as written, as the one it means: anything but `advanced` is `simple`. */
+const modeOf = (raw: string | undefined): ConditionType => (raw === 'advanced' ? 'advanced' : 'simple');
 
 /** A composed `sherpa-input-text`: it carries a value, and a select variant
  *  takes its options through `populate()`. */
@@ -162,11 +148,7 @@ export class SherpaMenu extends SherpaElement {
     'data-value': { type: 'string', kind: 'behaviour' },
   } as const;
 
-  static override observed = [
-    // The opt-ins' old names, heard and written in the new words.
-    'data-custom', 'data-custom-only', 'data-conditional', 'data-conditions-only',
-    'open',
-  ];
+  static override observed = ['open'];
 
   /* `data-type` picks the TEMPLATE, so a change must re-stamp the shadow DOM.
      Without this the attribute is read once, at birth, and a menu that becomes
@@ -290,13 +272,6 @@ export class SherpaMenu extends SherpaElement {
    *  refused, the same as a click. The attribute is not a second door.
    *  TRAP T-conditions-are-opt-in-per-field */
   #enforceMode(): void {
-    // An OLD opt-in is heard, and written in the new words beside it.
-    for (const [was, now] of OLD_OPT_INS) {
-      if (this.hasAttribute(was) && !this.hasAttribute(now)) this.toggleAttribute(now, true);
-    }
-    // An OLD spelling is heard, and written back in the new words.
-    const old = OLD_MODES[this.dataset['mode'] ?? ''];
-    if (old) this.dataset['mode'] = old;
     /* ADVANCED ONLY has no other mode to be in, so it opens in one and
        cannot leave. TRAP T-a-filter-answers-by-values-conditions-or-both */
     if (this.#advancedOnly()) {
@@ -308,8 +283,7 @@ export class SherpaMenu extends SherpaElement {
     }
   }
 
-  /** This field offers Advanced conditions. `only` implies it.
-   *  The old name still counts. TRAP T-a-renamed-attribute-keeps-its-old-name */
+  /** This field offers Advanced conditions. `only` implies it. */
   #offersAdvanced(): boolean {
     return this.hasAttribute('data-advanced') || this.#advancedOnly();
   }
@@ -324,7 +298,7 @@ export class SherpaMenu extends SherpaElement {
     this.$('.use-advanced')?.setAttribute('aria-pressed', String(this.mode === 'advanced'));
   }
 
-  set mode(next: ConditionType | 'select' | 'condition' | 'default' | 'custom') {
+  set mode(next: ConditionType) {
     const to = modeOf(next);
     /* A field that did not opt in has no Advanced mode to be in — the button
        is hidden, and a host writing the attribute must not get one either.

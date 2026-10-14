@@ -147,9 +147,7 @@
    the field opted in. TRAP T-conditions-are-opt-in-per-field */
 .use-condition { display: none; }
 
-/* The old name still counts. TRAP T-a-renamed-attribute-keeps-its-old-name */
-:host([data-type="filter"][data-advanced]) .use-condition,
-:host([data-type="filter"][data-conditional]) .use-condition {
+:host([data-type="filter"][data-advanced]) .use-condition {
   display: inline-flex;
   align-items: center;
   grid-area: mode;
@@ -158,8 +156,7 @@
 /* NOWHERE TO SWITCH TO. An advanced-only field has no list behind the button.
    AFTER the rule that shows it, and as specific, so it wins.
    TRAP T-a-filter-answers-by-values-conditions-or-both */
-:host([data-type="filter"][data-advanced-only]) .use-condition,
-:host([data-type="filter"][data-conditions-only]) .use-condition { display: none; }
+:host([data-type="filter"][data-advanced-only]) .use-condition { display: none; }
 
 /* SIMPLE mode shows the search; ADVANCED mode shows the condition rows.
    One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */
@@ -404,7 +401,7 @@
 }
 
 /* A SECTION heading inside the list, set as the menu's own heading is, with a
-   rule above it. TRAP T-saved-filters-are-the-custom-section */
+   rule above it. TRAP T-saved-filters-are-the-last-section */
 .rows ::slotted(.menu-section) {
   margin: 0;
   padding-block-start: var(--sherpa-display-mode-space-xs, 8px);

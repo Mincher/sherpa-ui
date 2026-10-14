@@ -34,7 +34,7 @@ const CASCADES = new Set(['data-status', 'data-look', 'data-elevation', 'data-de
 const problems = [];
 
 /** What a component's TS DECLARES: its `static props`, the aliases they read,
- *  a renamed attribute's old name, and its `variantAttrs`. */
+ *  and its `variantAttrs`. */
 function declaredIn(ts, path) {
   const declared = new Set(Object.keys(parsePropDecls(ts, path)));
   const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
@@ -42,8 +42,6 @@ function declaredIn(ts, path) {
      the owning entry reads it and writes the same target. A second entry for
      the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
   if (props) for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
-  // A renamed attribute's OLD name. TRAP T-a-renamed-attribute-keeps-its-old-name
-  for (const m of ts.matchAll(/\[\s*'(data-[\w-]+)'\s*,\s*'data-[\w-]+'\s*\]/g)) declared.add(m[1]);
   const variants = /static override variantAttrs = \[([\s\S]*?)\]/.exec(ts);
   if (variants) for (const m of variants[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
   return declared;
