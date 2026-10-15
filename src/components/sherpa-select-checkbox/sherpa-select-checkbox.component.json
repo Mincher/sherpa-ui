@@ -220,6 +220,7 @@
     {
       "$type": "event",
       "name": "change",
+      "description": "Re-dispatched from the inner control.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -231,6 +232,7 @@
     {
       "$type": "event",
       "name": "selection-scenario",
+      "description": "A menu row was chosen.",
       "bubbles": true,
       "composed": true,
       "detail": {

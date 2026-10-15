@@ -209,6 +209,7 @@
     {
       "$type": "event",
       "name": "layout-change",
+      "description": "A child was resized from a gutter, dragged or by the keys.",
       "bubbles": true,
       "composed": true,
       "detail": {

@@ -433,6 +433,7 @@
     {
       "$type": "event",
       "name": "item-expand",
+      "description": "The chevron was clicked",
       "bubbles": true,
       "composed": true,
       "detail": {

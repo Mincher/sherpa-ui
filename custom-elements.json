@@ -331,6 +331,7 @@
             },
             {
               "name": "nav-menu-request",
+              "description": "The mobile nav menu, right of the title.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -514,12 +515,14 @@
           "events": [
             {
               "name": "panel-area-resize",
+              "description": "An area's inner edge was dragged, or moved by the keys.",
               "type": {
                 "text": "CustomEvent<{ side: 'end' | 'start'; width: number }>"
               }
             },
             {
               "name": "panel-room-change",
+              "description": "The body gained or lost room for a panel area.",
               "type": {
                 "text": "CustomEvent<{ room: boolean }>"
               }
@@ -1090,6 +1093,7 @@
           "events": [
             {
               "name": "cell-click",
+              "description": "The cell was pressed.",
               "type": {
                 "text": "CustomEvent<{ value: string }>"
               }
@@ -1808,6 +1812,7 @@
           "events": [
             {
               "name": "code-copy",
+              "description": "On a successful clipboard write.",
               "type": {
                 "text": "CustomEvent<{ code: string }>"
               }
@@ -2165,18 +2170,21 @@
           "events": [
             {
               "name": "data-refresh",
+              "description": "Retry, on an error",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "state-dismiss",
+              "description": "Dismiss, on an error: the overlay goes, the last data stays",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-clear",
+              "description": "Clear filters, on no matches",
               "type": {
                 "text": "CustomEvent"
               }
@@ -2732,24 +2740,28 @@
             },
             {
               "name": "row-action",
+              "description": "An action was chosen, from the row menu or a host's bulk bar.",
               "type": {
                 "text": "CustomEvent<{ id: string; records: GridRow[] }>"
               }
             },
             {
               "name": "page-change",
+              "description": "A Find stepped past this page's first or last match: a REQUEST for the page it goes on to",
               "type": {
                 "text": "CustomEvent<{ page: number }>"
               }
             },
             {
               "name": "grid-pages-change",
+              "description": "How many pages the CURRENT fold state makes, while grouped.",
               "type": {
                 "text": "CustomEvent<{ page: number; pages: number }>"
               }
             },
             {
               "name": "select-all-request",
+              "description": "\"Select all rows\" while its source pages: a REQUEST for every matching row, answered through answer(rows).",
               "type": {
                 "text": "CustomEvent<{ answer: (rows: readonly GridRow[]) => void }>"
               }
@@ -3732,96 +3744,112 @@
           "events": [
             {
               "name": "quick-filter-change",
+              "description": "One field changed, or Reset all.",
               "type": {
                 "text": "CustomEvent<{ readings: Record<string, Record<string, FieldReading>>; scope: 'panel'; values: Record<string, Record<string, string[]>> }>"
               }
             },
             {
               "name": "filter-apply",
+              "description": "A changed field's Apply, remote only; with no field, Apply all.",
               "type": {
                 "text": "CustomEvent<{ field: string; id: string; scope: string }>"
               }
             },
             {
               "name": "filter-discard",
+              "description": "A changed field's Discard, remote only; with no field, Discard all.",
               "type": {
                 "text": "CustomEvent<{ field: string; id: string; scope: string }>"
               }
             },
             {
               "name": "filter-panel-close",
+              "description": "It closed.",
               "type": {
                 "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
               }
             },
             {
               "name": "filter-add",
+              "description": "A REQUEST: the Filters menu committed, or a field sent up or down.",
               "type": {
                 "text": "CustomEvent<{ from: string; ids: string[]; scope: 'view' | string }>"
               }
             },
             {
               "name": "filter-remove",
+              "description": "A field's Remove.",
               "type": {
                 "text": "CustomEvent<{ id: string; scope: string }>"
               }
             },
             {
               "name": "group-change",
+              "description": "A Group chip or Reset all, with its scope.",
               "type": {
                 "text": "CustomEvent<{ field: null | string; scope: string }>"
               }
             },
             {
               "name": "sort-change",
+              "description": "A Sort chip or Reset all, with its scope.",
               "type": {
                 "text": "CustomEvent<{ direction: 'asc'; field: null | string; scope: string }>"
               }
             },
             {
               "name": "filters-apply",
+              "description": "A saved set's row was ticked: apply it.",
               "type": {
                 "text": "CustomEvent<{ id: string }>"
               }
             },
             {
               "name": "filters-dismiss",
+              "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save",
+              "description": "Save filters: over the set on, else as a new one.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save-as",
+              "description": "Save filters as: a new set, by name.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-delete",
+              "description": "Delete filters: forget the set on.",
               "type": {
                 "text": "CustomEvent<{ id: string | undefined }>"
               }
             },
             {
               "name": "view-reset",
+              "description": "Reset all to default: put back the View's own filters, in every scope.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "limit-options-change",
+              "description": "The ⋮ menu's \"Limit to matching filters\".",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }
             },
             {
               "name": "hide-unmatched-change",
+              "description": "The ⋮ menu's \"Hide unmatching filters\", while Limit is on.",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }
@@ -4454,12 +4482,14 @@
             },
             {
               "name": "find-step",
+              "description": "A Find's Previous or Next.",
               "type": {
                 "text": "CustomEvent<{ direction: -1 | 1; value: string }>"
               }
             },
             {
               "name": "find-replace",
+              "description": "A Find's Replace, or Replace all once confirmed.",
               "type": {
                 "text": "CustomEvent<{ all: boolean; replacement: string; value: string }>"
               }
@@ -4705,6 +4735,7 @@
           "events": [
             {
               "name": "canvas-change",
+              "description": "The view moved: panned or zoomed.",
               "type": {
                 "text": "CustomEvent<{ x: number; y: number; zoom: number }>"
               }
@@ -4851,6 +4882,7 @@
           "events": [
             {
               "name": "layout-change",
+              "description": "A child was resized from a gutter, dragged or by the keys.",
               "type": {
                 "text": "CustomEvent<{ layout: GridLayout }>"
               }
@@ -5176,6 +5208,7 @@
           "events": [
             {
               "name": "item-select",
+              "description": "The row was picked.",
               "type": {
                 "text": "CustomEvent<{ label: string }>"
               }
@@ -5188,6 +5221,7 @@
             },
             {
               "name": "selection-change",
+              "description": "The row's tick changed.",
               "type": {
                 "text": "CustomEvent<{ selected: boolean }>"
               }
@@ -5799,42 +5833,49 @@
           "events": [
             {
               "name": "menu-change",
+              "description": "The selection was COMMITTED.",
               "type": {
                 "text": "CustomEvent<{ values: string[] }>"
               }
             },
             {
               "name": "change",
+              "description": "The number body's field or slider changed.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "menu-apply",
+              "description": "Apply was clicked.",
               "type": {
                 "text": "CustomEvent<{ values: string[] }>"
               }
             },
             {
               "name": "menu-cancel",
+              "description": "Cancel was clicked; the values are already restored.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "menu-clear",
+              "description": "Clear was clicked; the selection is already empty.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "menu-select",
+              "description": "An action row was clicked.",
               "type": {
                 "text": "CustomEvent<{ label: 'Remove' | string; value: 'remove' | string }>"
               }
             },
             {
               "name": "menu-drill",
+              "description": "A row's child-menu caret.",
               "type": {
                 "text": "CustomEvent<{ value: string }>"
               }
@@ -5853,36 +5894,42 @@
             },
             {
               "name": "condition-change",
+              "description": "The condition or its typed value changed.",
               "type": {
                 "text": "CustomEvent<{ conditions: FieldCondition[]; op: FilterOp; value: string }>"
               }
             },
             {
               "name": "condition-mode-change",
+              "description": "The mode button was pressed.",
               "type": {
                 "text": "CustomEvent<{ mode: ConditionType }>"
               }
             },
             {
               "name": "menu-row-remove",
+              "description": "A row's × was pressed.",
               "type": {
                 "text": "CustomEvent<{ value: string }>"
               }
             },
             {
               "name": "menu-range-change",
+              "description": "A number or date body's Range switch flipped.",
               "type": {
                 "text": "CustomEvent<{ range: boolean }>"
               }
             },
             {
               "name": "menu-items",
+              "description": "Its items were stamped, so a host can read its face.",
               "type": {
                 "text": "CustomEvent<{ values: string[] }>"
               }
             },
             {
               "name": "menu-back",
+              "description": "A drilled menu's back arrow or crumb.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -6293,6 +6340,7 @@
             },
             {
               "name": "item-expand",
+              "description": "The chevron was clicked",
               "type": {
                 "text": "CustomEvent<{ expanded: boolean }>"
               }
@@ -6538,6 +6586,7 @@
             },
             {
               "name": "nav-menu-change",
+              "description": "The phone's menu opened or closed",
               "type": {
                 "text": "CustomEvent<{ open: false | true }>"
               }
@@ -6706,24 +6755,28 @@
           "events": [
             {
               "name": "notification-select",
+              "description": "A row was picked.",
               "type": {
                 "text": "CustomEvent<{ id: string | undefined; notification: Notification }>"
               }
             },
             {
               "name": "notification-read",
+              "description": "\"Mark all read\" was pressed.",
               "type": {
                 "text": "CustomEvent<{ ids: string[] }>"
               }
             },
             {
               "name": "notifications-open",
+              "description": "The list opened.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "notifications-close",
+              "description": "The list closed.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -7036,6 +7089,7 @@
             },
             {
               "name": "panel-resize",
+              "description": "Its left edge was dragged, or moved by the keys",
               "type": {
                 "text": "CustomEvent<{ width: number }>"
               }
@@ -7567,18 +7621,21 @@
           "events": [
             {
               "name": "prompt-submit",
+              "description": "On a non-empty submit (then clears).",
               "type": {
                 "text": "CustomEvent<{ text: string }>"
               }
             },
             {
               "name": "composer-attach",
+              "description": "The attach (paperclip) button is pressed.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "composer-lab",
+              "description": "The lab (flask) button is pressed.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -7859,12 +7916,14 @@
           "events": [
             {
               "name": "filter-mode-change",
+              "description": "The filters moved between the toolbars and the panel.",
               "type": {
                 "text": "CustomEvent<{ mode: 'panel' | 'toolbars' }>"
               }
             },
             {
               "name": "view-change",
+              "description": "A View was picked, opened or saved.",
               "type": {
                 "text": "CustomEvent<{ elements: Record<string, HTMLElement> | undefined; id: string | undefined }>"
               }
@@ -8373,6 +8432,7 @@
           "events": [
             {
               "name": "quick-filter-change",
+              "description": "Its whole answer.",
               "type": {
                 "text": "CustomEvent<{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; scope: 'bar'; values: Record<string, string[]> }>"
               }
@@ -8391,96 +8451,112 @@
             },
             {
               "name": "filter-remove",
+              "description": "A chip was removed.",
               "type": {
                 "text": "CustomEvent<{ filter: object; holds: string[]; id: string }>"
               }
             },
             {
               "name": "filter-add",
+              "description": "Chips were added.",
               "type": {
                 "text": "CustomEvent<{ filters: FilterDef[]; holds: string[]; ids: string[] }>"
               }
             },
             {
               "name": "view-reset",
+              "description": "Reset all to default: put back the View's own filters, in every scope.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-apply",
+              "description": "A saved set's row was ticked: apply it.",
               "type": {
                 "text": "CustomEvent<{ id: string }>"
               }
             },
             {
               "name": "filters-dismiss",
+              "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save",
+              "description": "Save filters: over the set on, else as a new one.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save-as",
+              "description": "Save filters as: a new set, by name.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-delete",
+              "description": "Delete filters: forget the set on.",
               "type": {
                 "text": "CustomEvent<{ id: string | undefined }>"
               }
             },
             {
               "name": "ai-filter-request",
+              "description": "The AI button",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "data-refresh",
+              "description": "The refresh button",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "view-save",
+              "description": "Save (view type)",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "view-favorite",
+              "description": "The ★ toggled.",
               "type": {
                 "text": "CustomEvent<{ favourite: boolean }>"
               }
             },
             {
               "name": "view-save-as",
+              "description": "Save view as, from the Save group's ▾ (view type)",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "view-delete",
+              "description": "Delete view, the reader's own View (view type)",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "limit-options-change",
+              "description": "The ⋮ menu's \"Limit to matching filters\".",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }
             },
             {
               "name": "hide-unmatched-change",
+              "description": "The ⋮ menu's \"Hide unmatching filters\", while Limit is on.",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }
@@ -8886,36 +8962,42 @@
           "events": [
             {
               "name": "quick-filter-click",
+              "description": "The chip body is toggled.",
               "type": {
                 "text": "CustomEvent<{ active: boolean }>"
               }
             },
             {
               "name": "quick-filter-change",
+              "description": "The menu selection changed.",
               "type": {
                 "text": "CustomEvent<{ scope: 'chip'; values: string[] }>"
               }
             },
             {
               "name": "quick-filter-dismiss",
+              "description": "A data-dismiss chip's right button was pressed.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "jump-select",
+              "description": "A jump row was picked, and its target scrolled into view.",
               "type": {
                 "text": "CustomEvent<{ label: string; value: string }>"
               }
             },
             {
               "name": "group-change",
+              "description": "A GROUP chip picked or cleared its column.",
               "type": {
                 "text": "CustomEvent<{ field: null | string }>"
               }
             },
             {
               "name": "sort-change",
+              "description": "A SORT chip picked its column or way.",
               "type": {
                 "text": "CustomEvent<{ direction: SortDirection; field: null | string }>"
               }
@@ -9106,6 +9188,7 @@
           "events": [
             {
               "name": "slice-click",
+              "description": "A slice is clicked.",
               "type": {
                 "text": "CustomEvent<{ index: number; label: string; value: number }>"
               }
@@ -9705,12 +9788,14 @@
           "events": [
             {
               "name": "change",
+              "description": "Re-dispatched from the inner control.",
               "type": {
                 "text": "CustomEvent<{ checked: boolean; indeterminate: false; value: string }>"
               }
             },
             {
               "name": "selection-scenario",
+              "description": "A menu row was chosen.",
               "type": {
                 "text": "CustomEvent<{ value: string }>"
               }
@@ -9855,6 +9940,7 @@
           "events": [
             {
               "name": "change",
+              "description": "The selection changed.",
               "type": {
                 "text": "CustomEvent<{ value: null | string | string[] }>"
               }
@@ -10231,12 +10317,14 @@
           "events": [
             {
               "name": "input",
+              "description": "While dragging / typing.",
               "type": {
                 "text": "CustomEvent<{ end: number; start: number; value: number }>"
               }
             },
             {
               "name": "change",
+              "description": "On commit.",
               "type": {
                 "text": "CustomEvent<{ end: number; start: number; value: number }>"
               }
@@ -10885,12 +10973,14 @@
           "events": [
             {
               "name": "toast-dismiss",
+              "description": "On auto or manual dismiss.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "toast-action",
+              "description": "The action link is clicked.",
               "type": {
                 "text": "CustomEvent"
               }

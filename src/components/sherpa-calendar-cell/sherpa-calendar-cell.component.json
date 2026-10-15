@@ -168,6 +168,7 @@
     {
       "$type": "event",
       "name": "cell-click",
+      "description": "The cell was pressed.",
       "bubbles": true,
       "composed": true,
       "detail": {

@@ -197,6 +197,7 @@
     {
       "$type": "event",
       "name": "change",
+      "description": "The selection changed.",
       "bubbles": true,
       "composed": true,
       "detail": {

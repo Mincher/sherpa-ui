@@ -590,18 +590,21 @@
     {
       "$type": "event",
       "name": "data-refresh",
+      "description": "Retry, on an error",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "state-dismiss",
+      "description": "Dismiss, on an error: the overlay goes, the last data stays",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-clear",
+      "description": "Clear filters, on no matches",
       "bubbles": true,
       "composed": true
     }

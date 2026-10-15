@@ -334,6 +334,7 @@
     {
       "$type": "event",
       "name": "slice-click",
+      "description": "A slice is clicked.",
       "bubbles": true,
       "composed": true,
       "detail": {

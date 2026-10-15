@@ -229,6 +229,7 @@
     {
       "$type": "event",
       "name": "toast-dismiss",
+      "description": "On auto or manual dismiss.",
       "bubbles": true,
       "composed": true,
       "trigger": {
@@ -239,6 +240,7 @@
     {
       "$type": "event",
       "name": "toast-action",
+      "description": "The action link is clicked.",
       "bubbles": true,
       "composed": true
     }

@@ -560,6 +560,7 @@
     {
       "$type": "event",
       "name": "nav-menu-request",
+      "description": "The mobile nav menu, right of the title.",
       "bubbles": true,
       "composed": true
     }

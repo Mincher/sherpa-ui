@@ -314,6 +314,7 @@
     {
       "$type": "event",
       "name": "panel-area-resize",
+      "description": "An area's inner edge was dragged, or moved by the keys.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -324,6 +325,7 @@
     {
       "$type": "event",
       "name": "panel-room-change",
+      "description": "The body gained or lost room for a panel area.",
       "bubbles": true,
       "composed": true,
       "detail": {

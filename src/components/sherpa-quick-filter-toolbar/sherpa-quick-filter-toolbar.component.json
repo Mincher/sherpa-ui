@@ -652,6 +652,7 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
+      "description": "Its whole answer.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -685,6 +686,7 @@
     {
       "$type": "event",
       "name": "filter-remove",
+      "description": "A chip was removed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -696,6 +698,7 @@
     {
       "$type": "event",
       "name": "filter-add",
+      "description": "Chips were added.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -707,12 +710,15 @@
     {
       "$type": "event",
       "name": "view-reset",
+      "description": "Reset all to default: put back the View's own filters, in every scope.",
       "bubbles": true,
+      "cancelable": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-apply",
+      "description": "A saved set's row was ticked: apply it.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -722,24 +728,28 @@
     {
       "$type": "event",
       "name": "filters-dismiss",
+      "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-save",
+      "description": "Save filters: over the set on, else as a new one.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-save-as",
+      "description": "Save filters as: a new set, by name.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-delete",
+      "description": "Delete filters: forget the set on.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -749,24 +759,28 @@
     {
       "$type": "event",
       "name": "ai-filter-request",
+      "description": "The AI button",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "data-refresh",
+      "description": "The refresh button",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "view-save",
+      "description": "Save (view type)",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "view-favorite",
+      "description": "The ★ toggled.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -776,18 +790,21 @@
     {
       "$type": "event",
       "name": "view-save-as",
+      "description": "Save view as, from the Save group's ▾ (view type)",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "view-delete",
+      "description": "Delete view, the reader's own View (view type)",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "limit-options-change",
+      "description": "The ⋮ menu's \"Limit to matching filters\".",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -797,6 +814,7 @@
     {
       "$type": "event",
       "name": "hide-unmatched-change",
+      "description": "The ⋮ menu's \"Hide unmatching filters\", while Limit is on.",
       "bubbles": true,
       "composed": true,
       "detail": {

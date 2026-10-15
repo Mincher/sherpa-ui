@@ -482,6 +482,51 @@ function slotLines(comment) {
   return out;
 }
 
+/** The `Fires:` block: each entry's event name → its first sentence, without its detail shape. */
+function firesLines(comment) {
+  const out = new Map();
+  const lines = (comment ?? '').split('\n');
+  const at = lines.findIndex((l) => /^\s*Fires\s*:/i.test(l));
+  if (at < 0) return out;
+  const head = lines[at].replace(/^\s*Fires\s*:\s*/i, '');
+  const body = head.trim() ? [head, ...lines.slice(at + 1)] : lines.slice(at + 1);
+  let indent = -1;
+  let entry = null;
+  const close = () => {
+    if (!entry) return;
+    let text = entry.text.join(' ')
+      .replace(/\(detail[^)]*\)/gi, '')
+      .replace(/\bdetail:?\s*(?:none|\{[^}]*\}(?:\s*\|\s*\{[^}]*\})*)/gi, '')
+      .replace(/TRAP\s+T-[\w-]+/g, '')
+      .replace(/\s+/g, ' ').trim()
+      .replace(/^[—–\-.:\s]+/, '');
+    // A parenthesis that is all that is left speaks of the detail, not the event.
+    if (/^\([^()]*\)[\s—–-]*$/.test(text)) text = '';
+    const sentence = /^(.*?[.!?])(?:\s|$)/.exec(text)?.[1] ?? text;
+    const clean = sentence.replace(/[\s·—–-]+$/, '').replace(/^[—–\-\s]+/, '');
+    if (clean) out.set(entry.name, clean[0].toUpperCase() + clean.slice(1));
+    entry = null;
+  };
+  for (const [k, raw] of body.entries()) {
+    if (!raw.trim() || /-->/.test(raw)) break;
+    // A second `Fires:` line is one more entry, as the first one's head is.
+    const again = /^\s*Fires\s*:\s*/i.test(raw);
+    const line = again ? raw.replace(/^\s*Fires\s*:\s*/i, '') : raw;
+    const lead = again || (k === 0 && head.trim()) ? Infinity : line.length - line.trimStart().length;
+    if (indent < 0 && lead !== Infinity) indent = lead;
+    if (lead !== Infinity && lead < indent) break;
+    const m = lead === Infinity || lead === indent ? /^\s*([a-z][\w-]*)\b\s*(.*)$/.exec(line) : null;
+    if (m) {
+      close();
+      entry = { name: m[1], text: [m[2]] };
+    } else if (entry) {
+      entry.text.push(line.trim());
+    }
+  }
+  close();
+  return out;
+}
+
 /** Public methods — the vocabulary a saved view, a preset or an agent may use on this component. */
 function parseTsMethods(ts) {
   return parseClassApi(ts).methods;
@@ -691,11 +736,13 @@ function generateSpec(name) {
   // renamed or removed event lingers for ever.
   const priorEvents = {};
   for (const e of (existing.events ?? [])) if (e && e.name) priorEvents[e.name] = e;
-  /* THE CODE DECIDES, the comment only describes. Intersecting with what the TS
-     dispatches lets the comment choose WHICH emitted events are public, and
-     never invent one. A component that emits nothing gets no `events:` key. */
+  /* THE CODE DECIDES the names: every event the TS dispatches is in the
+     contract, and the comment can never invent one. Each `Fires:` entry's first
+     sentence is that event's meaning. A component that emits nothing gets no
+     `events:` key. */
   // Named and typed by TypeScript's checker. TRAP T-a-detail-is-typed-by-the-checker
-  const { details, unread } = ts ? parseEmits(join(dir, `${name}.ts`)) : { details: new Map(), unread: [] };
+  const { details, unread, cancelable } = ts
+    ? parseEmits(join(dir, `${name}.ts`)) : { details: new Map(), unread: [], cancelable: new Set() };
   if (unread.length) {
     throw new Error(`${name}: an emit() whose name types as string — the spec cannot list it. Narrow it to literals:\n  ${
       unread.map((u) => relative(process.cwd(), u)).join('\n  ')}`);
@@ -706,9 +753,14 @@ function generateSpec(name) {
   // an emitted event the comment forgot is still part of the contract
   for (const n of emitted) eventNames.add(n);
   const uncomposed = uncomposedEvents(ts);
+  const meanings = firesLines(comment);
   const events = [];
   for (const en of eventNames) {
-    const ev = { $type: 'event', name: en, bubbles: true, composed: !uncomposed.has(en) };
+    const ev = { $type: 'event', name: en };
+    if (meanings.get(en)) ev.description = meanings.get(en);
+    ev.bubbles = true;
+    if (cancelable.has(en)) ev.cancelable = true;
+    ev.composed = !uncomposed.has(en);
     const keys = details.get(en);
     if (keys?.size) {
       ev.detail = Object.fromEntries([...keys].sort(([a], [b]) => a.localeCompare(b)));

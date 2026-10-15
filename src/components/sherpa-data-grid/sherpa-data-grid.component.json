@@ -759,6 +759,7 @@
     {
       "$type": "event",
       "name": "row-action",
+      "description": "An action was chosen, from the row menu or a host's bulk bar.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -769,6 +770,7 @@
     {
       "$type": "event",
       "name": "page-change",
+      "description": "A Find stepped past this page's first or last match: a REQUEST for the page it goes on to",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -778,6 +780,7 @@
     {
       "$type": "event",
       "name": "grid-pages-change",
+      "description": "How many pages the CURRENT fold state makes, while grouped.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -788,7 +791,9 @@
     {
       "$type": "event",
       "name": "select-all-request",
+      "description": "\"Select all rows\" while its source pages: a REQUEST for every matching row, answered through answer(rows).",
       "bubbles": true,
+      "cancelable": true,
       "composed": true,
       "detail": {
         "answer": "(rows: readonly GridRow[]) => void"

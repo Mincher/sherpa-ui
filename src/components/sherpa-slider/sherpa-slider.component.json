@@ -253,6 +253,7 @@
     {
       "$type": "event",
       "name": "input",
+      "description": "While dragging / typing.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -264,6 +265,7 @@
     {
       "$type": "event",
       "name": "change",
+      "description": "On commit.",
       "bubbles": true,
       "composed": true,
       "detail": {

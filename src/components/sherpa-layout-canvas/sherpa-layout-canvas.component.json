@@ -243,6 +243,7 @@
     {
       "$type": "event",
       "name": "canvas-change",
+      "description": "The view moved: panned or zoomed.",
       "bubbles": true,
       "composed": true,
       "detail": {

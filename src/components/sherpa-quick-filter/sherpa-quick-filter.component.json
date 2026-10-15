@@ -595,6 +595,7 @@
     {
       "$type": "event",
       "name": "quick-filter-click",
+      "description": "The chip body is toggled.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -608,6 +609,7 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
+      "description": "The menu selection changed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -618,12 +620,14 @@
     {
       "$type": "event",
       "name": "quick-filter-dismiss",
+      "description": "A data-dismiss chip's right button was pressed.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "jump-select",
+      "description": "A jump row was picked, and its target scrolled into view.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -634,6 +638,7 @@
     {
       "$type": "event",
       "name": "group-change",
+      "description": "A GROUP chip picked or cleared its column.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -643,6 +648,7 @@
     {
       "$type": "event",
       "name": "sort-change",
+      "description": "A SORT chip picked its column or way.",
       "bubbles": true,
       "composed": true,
       "detail": {

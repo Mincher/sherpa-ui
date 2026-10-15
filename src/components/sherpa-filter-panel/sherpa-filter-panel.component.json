@@ -798,6 +798,7 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
+      "description": "One field changed, or Reset all.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -809,6 +810,7 @@
     {
       "$type": "event",
       "name": "filter-apply",
+      "description": "A changed field's Apply, remote only; with no field, Apply all.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -820,6 +822,7 @@
     {
       "$type": "event",
       "name": "filter-discard",
+      "description": "A changed field's Discard, remote only; with no field, Discard all.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -831,6 +834,7 @@
     {
       "$type": "event",
       "name": "filter-panel-close",
+      "description": "It closed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -840,6 +844,7 @@
     {
       "$type": "event",
       "name": "filter-add",
+      "description": "A REQUEST: the Filters menu committed, or a field sent up or down.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -851,6 +856,7 @@
     {
       "$type": "event",
       "name": "filter-remove",
+      "description": "A field's Remove.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -861,6 +867,7 @@
     {
       "$type": "event",
       "name": "group-change",
+      "description": "A Group chip or Reset all, with its scope.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -871,6 +878,7 @@
     {
       "$type": "event",
       "name": "sort-change",
+      "description": "A Sort chip or Reset all, with its scope.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -882,6 +890,7 @@
     {
       "$type": "event",
       "name": "filters-apply",
+      "description": "A saved set's row was ticked: apply it.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -891,24 +900,28 @@
     {
       "$type": "event",
       "name": "filters-dismiss",
+      "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-save",
+      "description": "Save filters: over the set on, else as a new one.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-save-as",
+      "description": "Save filters as: a new set, by name.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-delete",
+      "description": "Delete filters: forget the set on.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -918,12 +931,15 @@
     {
       "$type": "event",
       "name": "view-reset",
+      "description": "Reset all to default: put back the View's own filters, in every scope.",
       "bubbles": true,
+      "cancelable": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "limit-options-change",
+      "description": "The ⋮ menu's \"Limit to matching filters\".",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -933,6 +949,7 @@
     {
       "$type": "event",
       "name": "hide-unmatched-change",
+      "description": "The ⋮ menu's \"Hide unmatching filters\", while Limit is on.",
       "bubbles": true,
       "composed": true,
       "detail": {

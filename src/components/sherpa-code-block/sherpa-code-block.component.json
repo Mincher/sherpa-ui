@@ -155,6 +155,7 @@
     {
       "$type": "event",
       "name": "code-copy",
+      "description": "On a successful clipboard write.",
       "bubbles": true,
       "composed": true,
       "detail": {

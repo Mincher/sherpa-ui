@@ -73,6 +73,7 @@
     {
       "$type": "event",
       "name": "filter-mode-change",
+      "description": "The filters moved between the toolbars and the panel.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -82,6 +83,7 @@
     {
       "$type": "event",
       "name": "view-change",
+      "description": "A View was picked, opened or saved.",
       "bubbles": true,
       "composed": true,
       "detail": {

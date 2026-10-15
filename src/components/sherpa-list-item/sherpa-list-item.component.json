@@ -369,6 +369,7 @@
     {
       "$type": "event",
       "name": "item-select",
+      "description": "The row was picked.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -395,6 +396,7 @@
     {
       "$type": "event",
       "name": "selection-change",
+      "description": "The row's tick changed.",
       "bubbles": true,
       "composed": true,
       "detail": {

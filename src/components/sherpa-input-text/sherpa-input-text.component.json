@@ -998,6 +998,7 @@
     {
       "$type": "event",
       "name": "find-step",
+      "description": "A Find's Previous or Next.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1008,6 +1009,7 @@
     {
       "$type": "event",
       "name": "find-replace",
+      "description": "A Find's Replace, or Replace all once confirmed.",
       "bubbles": true,
       "composed": true,
       "detail": {

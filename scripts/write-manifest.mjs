@@ -97,6 +97,7 @@ export function manifest(all = specs()) {
         ],
         events: (s.events ?? []).map((e) => ({
           name: e.name,
+          ...described(e.description),
           type: { text: e.detail && Object.keys(e.detail).length
             ? `CustomEvent<{ ${Object.entries(e.detail).map(([k, t]) => `${k}: ${t}`).join('; ')} }>`
             : 'CustomEvent' },

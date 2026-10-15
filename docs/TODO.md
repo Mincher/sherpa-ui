@@ -6494,12 +6494,19 @@ lands; the CSS table shows the tokens each class's base rule reads.
   reads it where the header marks it — `md (default)`, `(default md)` or
   `(default: md)` — and keeps it only if it is a value of the attribute's type
   (an enum's value, true/false, a number, or a quoted string). 51 defaults
-  changed in 43 specs: 35 gained one (for example `sherpa-dialog data-type`
+  changed in 43 specs: 34 gained one (for example `sherpa-dialog data-type`
   modal, `sherpa-tooltip data-placement` top), 3 lost stray quotes, 1 stale one
-  was replaced, and 12 that were prose ("omitted = base size", "style",
+  was replaced, and 13 that were prose ("omitted = base size", "style",
   "0 / 100") were dropped. A rejected `(default …)` keeps its words in the
   description. 52 descriptions lost a leading dash. Nothing else in any spec
   moved (proved against HEAD).
+- **✅ Step 2, 2026-10-15:** each event says what it means, and whether a host
+  may cancel it. The first sentence of each `Fires:` entry, without its detail
+  shape, is the event's meaning: 90 of 156 events in 25 specs have one now. An
+  `emit(…, { cancelable: true })` marks the event `cancelable` (3: the grid's
+  `select-all-request`, and the bar's and the panel's `view-reset`). The
+  manifest carries the meanings. CLAUDE.md said an event missing from `Fires:`
+  is dropped from the contract; the code has kept it for weeks, and now says so.
 ### `[ ]` ⬜ 328 — GAP: 5 token names no stylesheet defines
 
 `--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),

@@ -427,6 +427,7 @@
     {
       "$type": "event",
       "name": "nav-menu-change",
+      "description": "The phone's menu opened or closed",
       "bubbles": true,
       "composed": true,
       "detail": {

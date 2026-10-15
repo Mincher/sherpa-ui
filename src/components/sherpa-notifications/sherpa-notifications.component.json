@@ -135,6 +135,7 @@
     {
       "$type": "event",
       "name": "notification-select",
+      "description": "A row was picked.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -145,6 +146,7 @@
     {
       "$type": "event",
       "name": "notification-read",
+      "description": "\"Mark all read\" was pressed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -154,12 +156,14 @@
     {
       "$type": "event",
       "name": "notifications-open",
+      "description": "The list opened.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "notifications-close",
+      "description": "The list closed.",
       "bubbles": true,
       "composed": true
     }

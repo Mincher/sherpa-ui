@@ -15,7 +15,7 @@
  * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and default.
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
- * - parseEmits — Each `this.emit()` event, NAMED and its detail typed by TypeScript's checker, and every call it cannot name.
+ * - parseEmits — Each `this.emit()` event, named and typed by the checker; which are cancelable; and what it cannot name.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -392,7 +392,7 @@ function sortUnion(text) {
  * TRAP T-a-detail-is-typed-by-the-checker
  * TRAP T-an-event-name-is-not-always-a-literal
  *
- * @returns {{ details: Map<string, Map<string, string>>, unread: string[] }} event → field → type
+ * @returns {{ details: Map<string, Map<string, string>>, unread: string[], cancelable: Set<string> }} event → field → type
  */
 export function parseEmits(path) {
   const prog = checked(path);
@@ -400,7 +400,8 @@ export function parseEmits(path) {
   const checker = prog.getTypeChecker();
   const out = new Map();
   const unread = [];
-  if (!sf) return { details: out, unread };
+  const cancelable = new Set();
+  if (!sf) return { details: out, unread, cancelable };
   const namesOf = (arg) => {
     const type = checker.getTypeAtLocation(arg);
     const parts = type.isUnion() ? type.types : [type];
@@ -433,7 +434,12 @@ export function parseEmits(path) {
         const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
         unread.push(`${path}:${line + 1}  emit(${node.arguments[0].getText(sf)})`);
       }
+      // `emit(name, detail, { cancelable: true })`: a host may take it over.
+      const opts = node.arguments[2];
+      const cancels = !!opts && ts.isObjectLiteralExpression(opts) && opts.properties.some((p) => ts.isPropertyAssignment(p)
+        && p.name.getText(sf) === 'cancelable' && p.initializer.kind === ts.SyntaxKind.TrueKeyword);
       for (const name of names ?? []) {
+        if (cancels) cancelable.add(name);
         const fields = out.get(name) ?? new Map();
         out.set(name, fields);
         for (const [key, type] of node.arguments[1] ? fieldsOf(node.arguments[1]) : []) {
@@ -445,5 +451,5 @@ export function parseEmits(path) {
     ts.forEachChild(node, visit);
   };
   visit(sf);
-  return { details: out, unread };
+  return { details: out, unread, cancelable };
 }

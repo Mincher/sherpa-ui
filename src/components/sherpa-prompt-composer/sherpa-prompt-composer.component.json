@@ -180,6 +180,7 @@
     {
       "$type": "event",
       "name": "prompt-submit",
+      "description": "On a non-empty submit (then clears).",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -193,12 +194,14 @@
     {
       "$type": "event",
       "name": "composer-attach",
+      "description": "The attach (paperclip) button is pressed.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "composer-lab",
+      "description": "The lab (flask) button is pressed.",
       "bubbles": true,
       "composed": true
     }

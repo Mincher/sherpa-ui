@@ -158,8 +158,9 @@ comment is prose, and reading it for identifiers put phantom events into 31 of t
 58 specs — one component declared an event literally called `nothing`, another had
 scraped sixteen words out of sentences about its filters. The generator now
 intersects the comment with what the TypeScript actually dispatches (`emit()`,
-`new CustomEvent`, `new Event`), so a comment can choose which emitted events are
-public but can never invent one. `scripts/resync-figma.mjs --check`
+`new CustomEvent`, `new Event`), so a comment can never invent one: an emitted
+event it forgets is still in the contract, and each entry's first sentence is that
+event's meaning in the spec. `scripts/resync-figma.mjs --check`
 reports drift between a spec and Figma. (`scripts/generate-defs.mjs` was deleted
 2026-09-16 — it had been a stub that only printed an error.)
 
@@ -666,7 +667,7 @@ Always `bubbles: true`. Add `composed: true` for events that must cross shadow D
 ```ts
 this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true, detail: {} }));
 ```
-Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed`). Event **names** follow the ratified naming contract above: unprefixed `noun-verb`, no `sherpa-` prefix. Every dispatched event must appear in the component HTML's `Fires:` block, one event per line — that comment is what the spec generator intersects with the code, so an event missing from it is dropped from the contract, and two events sharing a line are read as one name. (An `@fires` JSDoc tag does nothing: the MCP does not read it, and exactly one exists in the whole repo.) Document-level broadcasts via `document.dispatchEvent` are the one case where `bubbles` is moot.
+Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed`). Event **names** follow the ratified naming contract above: unprefixed `noun-verb`, no `sherpa-` prefix. Every dispatched event must appear in the component HTML's `Fires:` block, one event per line — its first sentence is the event's meaning in the spec. The NAMES come from the code: an event the block forgets is still in the contract. (An `@fires` JSDoc tag does nothing: the MCP does not read it, and exactly one exists in the whole repo.) Document-level broadcasts via `document.dispatchEvent` are the one case where `bubbles` is moot.
 
 ### CRUD flows
 

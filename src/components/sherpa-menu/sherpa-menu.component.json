@@ -1279,6 +1279,7 @@
     {
       "$type": "event",
       "name": "menu-change",
+      "description": "The selection was COMMITTED.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1288,12 +1289,14 @@
     {
       "$type": "event",
       "name": "change",
+      "description": "The number body's field or slider changed.",
       "bubbles": true,
       "composed": false
     },
     {
       "$type": "event",
       "name": "menu-apply",
+      "description": "Apply was clicked.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1303,18 +1306,21 @@
     {
       "$type": "event",
       "name": "menu-cancel",
+      "description": "Cancel was clicked; the values are already restored.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "menu-clear",
+      "description": "Clear was clicked; the selection is already empty.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "menu-select",
+      "description": "An action row was clicked.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1325,6 +1331,7 @@
     {
       "$type": "event",
       "name": "menu-drill",
+      "description": "A row's child-menu caret.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1346,6 +1353,7 @@
     {
       "$type": "event",
       "name": "condition-change",
+      "description": "The condition or its typed value changed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1357,6 +1365,7 @@
     {
       "$type": "event",
       "name": "condition-mode-change",
+      "description": "The mode button was pressed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1366,6 +1375,7 @@
     {
       "$type": "event",
       "name": "menu-row-remove",
+      "description": "A row's × was pressed.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1375,6 +1385,7 @@
     {
       "$type": "event",
       "name": "menu-range-change",
+      "description": "A number or date body's Range switch flipped.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1384,6 +1395,7 @@
     {
       "$type": "event",
       "name": "menu-items",
+      "description": "Its items were stamped, so a host can read its face.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -1393,6 +1405,7 @@
     {
       "$type": "event",
       "name": "menu-back",
+      "description": "A drilled menu's back arrow or crumb.",
       "bubbles": true,
       "composed": true
     }

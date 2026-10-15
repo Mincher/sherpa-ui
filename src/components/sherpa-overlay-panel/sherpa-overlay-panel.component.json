@@ -386,6 +386,7 @@
     {
       "$type": "event",
       "name": "panel-resize",
+      "description": "Its left edge was dragged, or moved by the keys",
       "bubbles": true,
       "composed": true,
       "detail": {
