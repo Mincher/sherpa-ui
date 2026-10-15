@@ -17,7 +17,7 @@
  */
 import type { Query, QueryDefaults, ViewScope } from '../data/query.js';
 import {
-  isPlainObject, labelId, readJson, removeKey, writeJson, type StorageKind,
+  isPlainObject, labelId, readJson, removeKey, storageKind, writeJson,
 } from './web-storage.js';
 
 /** One saved set: its name, and each scope's filters as a View writes them. */
@@ -40,15 +40,13 @@ const PREFIX = 'sherpa:filter-sets:';
 /** The set on screen, per tab, so a reload keeps its chip. */
 const ON_PREFIX = 'sherpa:filter-set-on:';
 
-const kindOf = (shared: boolean): StorageKind => (shared ? 'local' : 'session');
-
 const isSaved = (v: unknown): v is SavedFilter =>
   isPlainObject(v) && typeof v['label'] === 'string' && isPlainObject(v['query'])
   && (v['query'] as { v?: unknown }).v === 1 && isPlainObject((v['query'] as { scopes?: unknown }).scopes);
 
 /** Read a page's saved sets. A broken entry is dropped, never handed on. TRAP T-storage-access-throws */
 export function loadSavedFilters(page: string, options: SavedFilterOptions = {}): SavedFilterSet {
-  const stored = readJson<Record<string, unknown>>(kindOf(options.shared ?? true), PREFIX + page, {}, isPlainObject);
+  const stored = readJson<Record<string, unknown>>(storageKind(options.shared ?? true), PREFIX + page, {}, isPlainObject);
   return Object.fromEntries(Object.entries(stored).filter((entry): entry is [string, SavedFilter] => isSaved(entry[1])));
 }
 
@@ -60,14 +58,14 @@ export function saveFilterAs(
   const trimmed = label.trim();
   if (!trimmed) return loadSavedFilters(page, options);
   const sets = { ...loadSavedFilters(page, options), [labelId(trimmed)]: { label: trimmed, query } };
-  writeJson(kindOf(options.shared ?? true), PREFIX + page, sets);
+  writeJson(storageKind(options.shared ?? true), PREFIX + page, sets);
   return sets;
 }
 
 /** Forget one set, and hand back what is left. */
 export function deleteSavedFilter(page: string, id: string, options: SavedFilterOptions = {}): SavedFilterSet {
   const kept = Object.fromEntries(Object.entries(loadSavedFilters(page, options)).filter(([key]) => key !== id));
-  writeJson(kindOf(options.shared ?? true), PREFIX + page, kept);
+  writeJson(storageKind(options.shared ?? true), PREFIX + page, kept);
   return kept;
 }
 

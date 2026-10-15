@@ -13,6 +13,7 @@
  *
  * Map:
  * - StorageKind — `local` outlives the tab; `session` dies with it.
+ * - storageKind — `shared` picks the store: `local` or `session`.
  * - readText — Read a raw string.
  * - writeText — Write a raw string.
  * - removeKey — delete one key, without throwing when storage is blocked
@@ -24,6 +25,11 @@
 
 /** `local` outlives the tab; `session` dies with it. */
 export type StorageKind = 'local' | 'session';
+
+/** `shared` picks the store: `local` outlives the tab, `session` dies with it. */
+export function storageKind(shared: boolean): StorageKind {
+  return shared ? 'local' : 'session';
+}
 
 /** The store, or `null` when the platform refuses. */
 function store(kind: StorageKind): Storage | null {

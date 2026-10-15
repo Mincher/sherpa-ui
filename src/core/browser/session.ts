@@ -29,7 +29,7 @@
  * - .subscribe — Watch the list.
  */
 import { getPointer, setPointer, pointersOverlap } from '../data/pointer.js';
-import { readJson, readText, removeKey, writeJson } from './web-storage.js';
+import { readJson, readText, removeKey, storageKind, writeJson } from './web-storage.js';
 
 const PREFIX = 'sherpa:session:';
 
@@ -114,7 +114,7 @@ export class SessionStore {
     // A stored shape this version cannot read is DROPPED, not half-applied —
     // readJson forgets the key too, so the next write starts clean.
     // TRAP T-session-persist-defaults-shared
-    const kind = shared ? 'local' : 'session';
+    const kind = storageKind(shared);
     if (readText(kind, key) == null) return false;
     // MISSING is a private symbol, so a stored `null` is still a real value.
     // No guard given: the default's own type is the shape.
@@ -141,12 +141,12 @@ export class SessionStore {
     const where = this.#persisted.get(pointer);
     this.#persisted.delete(pointer);
     if (!where) return;
-    removeKey(where.shared ? 'local' : 'session', where.key);
+    removeKey(storageKind(where.shared), where.key);
   }
 
   /** Save one persisted pointer to local or session storage. */
   #write(pointer: string, where: { key: string; shared: boolean }): void {
-    const kind = where.shared ? 'local' : 'session';
+    const kind = storageKind(where.shared);
     const value = this.get(pointer);
     // Neither call can throw — TRAP T-storage-access-throws.
     if (value === undefined) removeKey(kind, where.key);

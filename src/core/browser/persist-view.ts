@@ -31,7 +31,7 @@ import { applyState } from '../ui/apply-state.js';
 import { report } from '../data/report.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
-  isPlainObject, labelId, readJson, removeKey, writeJson, type StorageKind,
+  isPlainObject, labelId, readJson, removeKey, storageKind, writeJson,
 } from './web-storage.js';
 
 export interface PersistOptions {
@@ -47,9 +47,6 @@ export interface PersistOptions {
 
 /** Key prefix, so a host's own storage keys cannot collide with these. */
 const PREFIX = 'sherpa:view:';
-
-/** `shared` picks the store — TRAP T-persist-defaults-per-tab. */
-const kindOf = (shared: boolean): StorageKind => (shared ? 'local' : 'session');
 
 /** A snapshot is a plain object with a version. Anything else is not ours. */
 const isSnapshot = (v: unknown): v is ViewSnapshot => isPlainObject(v) && 'v' in v;
@@ -68,7 +65,7 @@ export function persistView(
   contributors: Record<string, () => Record<string, unknown>> = {},
   options: PersistOptions = {},
 ): () => void {
-  const kind = kindOf(options.shared ?? false);
+  const kind = storageKind(options.shared ?? false);
   const key = PREFIX + name;
 
   /* Restore BEFORE wiring, so the source loads once.
@@ -232,11 +229,7 @@ export function captureView(
 
 /** Forget a saved view state — what a "reset this view" action does. */
 export function clearViewState(name: string, options: PersistOptions = {}): void {
-  try {
-    removeKey(kindOf(options.shared ?? false), PREFIX + name);
-  } catch {
-    /* storage unavailable */
-  }
+  removeKey(storageKind(options.shared ?? false), PREFIX + name);
 }
 
 /* ── Saved views as a LIBRARY — TRAP T-view-library-is-one-vocabulary ── */
@@ -511,7 +504,7 @@ export type SavedViewStore = Record<string, SavedView>;
 export function loadSavedViews(page: string, options: PersistOptions = {}): SavedViewStore {
   // Trustworthy in SHAPE, never in content — TRAP T-storage-access-throws.
   return readJson<SavedViewStore>(
-    kindOf(options.shared ?? true), SAVED_PREFIX + page, {},
+    storageKind(options.shared ?? true), SAVED_PREFIX + page, {},
     (v): v is SavedViewStore => isPlainObject(v),
   );
 }
@@ -590,5 +583,5 @@ function writeSavedViews(
 ): void {
   // Cannot throw — the view is not kept; nothing breaks.
   // TRAP T-storage-access-throws
-  writeJson(kindOf(options.shared ?? true), SAVED_PREFIX + page, views);
+  writeJson(storageKind(options.shared ?? true), SAVED_PREFIX + page, views);
 }
