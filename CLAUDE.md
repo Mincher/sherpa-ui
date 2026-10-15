@@ -236,7 +236,7 @@ export class SherpaFoo extends SherpaElement {
   static override observed = ['disabled'];
 
   override onRender()  { /* shadow DOM ready — cache refs, set defaults, wire host listeners */ }
-  override onConnect() { /* fires once after first render — for one-time setup needing DOM */ }
+  override onConnect() { /* each time it is connected, after the first render; pair it with onDisconnect */ }
   override onDisconnect() { /* clean up timers / observers */ }
   override onChange(name: string, oldVal: string | null, newVal: string | null) { /* react to attribute changes */ }
 

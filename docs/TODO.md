@@ -324,6 +324,11 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
+| ⬜ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
+| ⬜ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
+| ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
+| ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
+| ⬜ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6669,6 +6674,51 @@ part; a second checked each plan against the files.
   Figma names are as exported 2026-09-09, not read live. Five MCP strings that
   named collections no longer in the export (`Button::`, `Container::`, "Core",
   "Typography") now say Structure, Display Mode and Theme.
+- **Fixed on the way:** `onConnect`'s doc (and CLAUDE.md's class example) said it
+  fires once; it fires on every connect after the first render.
+- **❓ Part B step 3 — cut CLAUDE.md to pointers.** Every rule it states now has a
+  home in PRINCIPLES or the rules doc. The cut changes what every session reads
+  first, so it waits for Will. **For Will:** A — cut it to about 180 lines: the
+  commands verbatim, the stack, a "where each thing is stated" table, and an
+  `@docs/PRINCIPLES.md` import so each session still loads the rules; B — keep
+  it as it is, and let PRINCIPLES be the statement. My pick: A.
+- **Waits:** step 4 (the MCP's def-named tools renamed to today's spec names —
+  needs a test run), and step 5 (the stale generate-sherpa-component skill —
+  **for Will:** A — remove it; B — cut it to a 10-line pointer. My pick: A).
+  Found reading: 332–336.
+
+### `[ ]` ⬜ 332 — TOOLING: the MCP server's version
+
+`mcp-server/server.js` reports `{ name: "sherpa-ui", version: "3.0.0" }`; its
+package is `2.1.0-beta.0`.
+
+### `[ ]` ⬜ 333 — TOOLING: `validateDef`'s false token warnings
+
+On real specs its token check gives 12 warnings, and 10 are false: the motion
+scale (`--sherpa-motion-*`, declared in `sherpa-motion.css`: container-header,
+switch ×3, tooltip) and host-set properties (app-shell ×4, app-header ×1). The
+other 2 are 328's.
+
+### `[ ]` ❓ 334 — GAP: `--shade()` and `--tint()` have no users
+
+`sherpa-base.css` defines `--shade()`, `--tint()` and `--sherpa-shade-hover|active`,
+but no component's CSS calls them; only `test/e2e/reforged-css-functions.spec.ts`
+probes support. Style `+1`/`+2` replaced them for hover and down. **For Will:** A
+— delete them, and keep `T-a-css-function-needs-its-longhand-first` as the rule
+for any future function; B — keep them as a door. My pick: A.
+
+### `[ ]` ❓ 335 — GAP: the `.chart-*` class aliases
+
+`.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of the
+`.sherpa-*` names (`T-anchoring-is-generic`, `sherpa-anchor.css`), against
+`T-a-rename-drops-the-old-name`. `.chart-tip` is in 5 templates and `.sherpa-tip`
+in 1. **For Will:** A — rename the five to `.sherpa-*` and drop the aliases (a
+rename: your yes); B — keep both names. My pick: A.
+
+### `[ ]` ⬜ 336 — DOCS: the build-figma-component skill's collection table
+
+Its table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match
+the export's collections (display-mode, theme, structure, style, …).
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
