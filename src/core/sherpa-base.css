@@ -161,9 +161,13 @@
 
    Zeroed so a token decides. sherpa-button sets `padding-inline` and never
    `padding-block`, which is how the UA value was reaching the trigger. */
-:where(input, button, option, select) {
+:where(input, button, option, select):not(:where(sherpa-menu > button)) {
   padding: 0;
 }
+/* A menu's own `<button>` rows are exempt: a rule in the tree a slotted
+   element lives in beats the menu's `::slotted` padding, even at no
+   specificity, so this zeroed every menu row a toolbar or panel slotted.
+   TRAP T-a-tree-rule-beats-slotted */
 
 /* An `<option>` also carries a UA `gap` — 7px in Chromium, which is neither
    on the 8px grid nor on the 4px text sub-grid. */

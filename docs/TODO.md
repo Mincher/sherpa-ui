@@ -292,7 +292,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
-| ⬜ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
+| ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -775,12 +775,24 @@ Will, 2026-09-25:
 
 ## C — Contained bugs
 
-### `[ ]` ⬜ 301 — BUG: two small menu-item faults
+### `[x]` ✅ 301 — BUG: two small menu-item faults
 
 Will, 2026-10-15: *"The horizontal padding on menu items that don't have check
 boxes is non-existent. The hover colour of a menu item seems to be mixing the
 active colour and a grey colour. Grey for hover/focus. Active for selected.
 Only a mix when hover/focus on an active item."*
+
+**✅ Done 2026-10-15.** Both were real, and neither showed on a bare page — a
+scan of all 57 menus in Demos found them. **Padding:** the base sheet's
+`:where(button) { padding: 0 }`, adopted into the toolbar's and panel's shadow
+roots, beat the menu's `::slotted` padding (an outer-tree rule wins, even at no
+specificity), so "Save view as", "Delete view", "Reset all to default" and
+"Replace all" had none. The reset skips a menu's own buttons. **Hover:** rows
+shaded a `--_surface` the host had set, and their own ink; the menu pins its
+own surface and a row mixes it with the neutral body ink (a red row's hover
+had been red-tinted). After the fix no menu row in Demos has a tinted hover. A
+selected row has no fill of its own in a menu, so "only a mix on an active
+item" holds. `T-a-tree-rule-beats-slotted`.
 
 ### `[x]` ✅ 300 — BUG: not every tooltip is in the top layer
 

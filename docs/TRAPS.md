@@ -802,6 +802,31 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-a-tree-rule-beats-slotted
+
+**A rule in the tree a slotted element lives in beats the component's own
+`::slotted` rule — whatever its specificity** (Will, 2026-10-15, TODO 301). A
+menu's `<button>` rows are light DOM of whoever slots them: the toolbar's or the
+panel's shadow root. The base sheet, adopted into every shadow root, said
+`:where(input, button, option, select) { padding: 0 }` — specificity ZERO — and
+it won over the menu's `padding: 8px` on `::slotted(button)`: the outer tree's
+context wins. So "Save view as" and "Delete view" had no horizontal padding in
+an app, and a bare page showed nothing wrong. The reset now skips a menu's
+direct `<button>`.
+
+**Hover is grey.** The rows shaded a `--_surface` the toolbar's own buttons had
+set, and the row's own `currentColor`, so some hovers were tinted by the host
+and a red row's by its red. The menu pins its own `--_surface`, and a row
+mixes it with the neutral body ink.
+
+**How it was found:** a probe on a plain menu said all was well. A scan of every
+menu in the running app, listing rows with no inline padding and rows whose
+hover was not neutral, found both.
+
+- Site: `src/core/sherpa-base.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `test/e2e/reforged-a-menu-row-in-a-toolbar.spec.ts`
+
 ### T-a-menu-takes-no-grouping
 
 **A menu opened from a GROUPED button wore that button's grouping** — TODO
