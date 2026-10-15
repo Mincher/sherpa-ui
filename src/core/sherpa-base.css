@@ -132,6 +132,12 @@
   white-space: nowrap;
 }
 
+/* A trailing × (callout, chip, tag, toast): never squeezed, one step off its neighbour. */
+.sherpa-dismiss {
+  flex-shrink: 0;
+  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
+}
+
 /* ── Disabled ────────────────────────────────────────────────────────────
    The two INTERACTION declarations only. Colour is per-component, because
    each picks a different inactive token — and never `opacity`, which

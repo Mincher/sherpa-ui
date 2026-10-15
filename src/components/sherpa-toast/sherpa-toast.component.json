@@ -113,7 +113,7 @@
         },
         {
           "el": "sherpa-button",
-          "class": "close",
+          "class": "close sherpa-dismiss",
           "part": "close",
           "attrs": {
             "data-type": "icon",
@@ -252,8 +252,7 @@
     "heading.color": "{sherpa.style-content-secondary}",
     "heading.font-size": "{sherpa.font-size-body-base}",
     "heading.font-weight": "{sherpa.font-weight-semibold}",
-    "heading.line-height": "{sherpa.theme-content-line-height-base}",
-    "close.margin-inline-start": "{sherpa.display-mode-space-2xs}"
+    "heading.line-height": "{sherpa.theme-content-line-height-base}"
   },
   "$extensions": {
     "sherpa": {

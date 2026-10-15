@@ -478,7 +478,7 @@ is adopted into every shadow root — so a component imported alone is styled:
 
 | sheet | holds |
 |---|---|
-| `sherpa-base.css` | `:host` defaults, `--shade()` / `--tint()`, `.sherpa-truncate`, `.sherpa-inert` |
+| `sherpa-base.css` | `:host` defaults, `--shade()` / `--tint()`, `.sherpa-truncate`, `.sherpa-dismiss`, `.sherpa-inert` |
 | `sherpa-typography.css` | **generated** — the type scale |
 | `sherpa-grouping.css` | `.sherpa-group*`, `.sherpa-border-edges`, `.sherpa-border-corners` |
 | `sherpa-icon.css` | `.sherpa-icon-box` |

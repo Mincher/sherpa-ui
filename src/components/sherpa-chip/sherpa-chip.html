@@ -7,14 +7,10 @@
   the chip itself. Distinct from sherpa-tag (a full-radius passive marker) — the
   chip is a squarer, interactive selection/filter token.
 
-  Templates (via data-dismissible):
-    default     — leading icon + label
-    dismissible — leading icon + label + a close button (fires chip-dismiss)
-
   Public API:
     data-status       info | success | warning | critical | urgent (via the cascade)
     data-icon         leading icon glyph value (shown when present; or slot "icon")
-    data-dismissible  show the close button (selects the dismissible template)
+    data-dismissible  show the close button (fires chip-dismiss)
 
   Slots:
     icon      — a leading glyph (overrides data-icon; shown when data-icon is set)
@@ -26,14 +22,7 @@
   <span class="chip" part="chip">
     <span class="icon" part="icon" aria-hidden="true"><slot name="icon" data-accepts="icon"><i class="glyph"></i></slot></span>
     <span><slot data-accepts="text"></slot></span>
-  </span>
-</template>
-
-<template id="dismissible">
-  <span class="chip" part="chip">
-    <span class="icon" part="icon" aria-hidden="true"><slot name="icon" data-accepts="icon"><i class="glyph"></i></slot></span>
-    <span><slot data-accepts="text"></slot></span>
-    <sherpa-button class="close" part="close" data-type="icon" data-size="xs"
+    <sherpa-button class="close sherpa-dismiss" part="close" data-type="icon" data-size="xs"
                    data-look="transparent" data-icon-start="cross"
                    aria-label="Remove"></sherpa-button>
   </span>

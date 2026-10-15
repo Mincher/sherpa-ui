@@ -69,10 +69,4 @@
 }
 :host(:not(:state(has-content-slot))) .message { display: none; }
 
-/* ── Dismiss button ──────────────────────────────────────────────────── */
-.close {
-  flex-shrink: 0;
-  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
-}
-
 :host(:not([data-dismissible])) .close { display: none; }

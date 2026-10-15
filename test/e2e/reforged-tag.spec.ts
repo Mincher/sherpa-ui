@@ -53,7 +53,7 @@ test('an ancestor [data-status] colours the pill via the cascade', async ({ page
   expect(r.critical.text).not.toBe(r.neutral.text); // the text carries the status hue (--_status-text)
 });
 
-test('dismissible template adds a close button that fires tag-dismiss', async ({ page }) => {
+test('data-dismissible shows a close button that fires tag-dismiss', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-dismissible', '');
@@ -75,15 +75,16 @@ test('dismissible template adds a close button that fires tag-dismiss', async ({
   expect(r.removed).toBe(1);
 });
 
-test('default template has no close button', async ({ page }) => {
-  const hasClose = await page.evaluate(async () => {
+test('a plain tag hides its close button', async ({ page }) => {
+  const display = await page.evaluate(async () => {
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
     el.textContent = 'plain';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    return !!el.shadowRoot?.querySelector('.close');
+    // One template: CSS hides the × until the host is dismissible, as a callout does.
+    return getComputedStyle(el.shadowRoot!.querySelector('.close')!).display;
   });
-  expect(hasClose).toBe(false);
+  expect(display).toBe('none');
 });
 
 test('dot type renders a small square indicator (no text metrics)', async ({ page }) => {

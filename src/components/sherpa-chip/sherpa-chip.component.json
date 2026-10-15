@@ -10,8 +10,7 @@
     "provides": []
   },
   "templates": [
-    "default",
-    "dismissible"
+    "default"
   ],
   "anatomy": {
     "root": {
@@ -54,7 +53,7 @@
         },
         {
           "el": "sherpa-button",
-          "class": "close",
+          "class": "close sherpa-dismiss",
           "part": "close",
           "attrs": {
             "data-type": "icon",
@@ -62,8 +61,7 @@
             "data-look": "transparent",
             "data-icon-start": "cross",
             "aria-label": "Remove"
-          },
-          "showWhen": "dismissible"
+          }
         }
       ]
     }
@@ -76,7 +74,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the close button (selects the dismissible template)"
+      "description": "show the close button (fires chip-dismiss)"
     },
     {
       "$type": "prop",
@@ -133,6 +131,11 @@
     },
     {
       "$type": "state",
+      "name": "not-dismissible",
+      "selector": ":host(:not([data-dismissible]))"
+    },
+    {
+      "$type": "state",
       "name": "disabled",
       "selector": ":host([disabled])"
     }
@@ -157,8 +160,7 @@
     "chip.font-weight": "{sherpa.font-weight-regular}",
     "chip.line-height": "{sherpa.theme-content-line-height-small}",
     "icon.inline-size": "{sherpa.theme-size-icon-2xs}",
-    "icon.block-size": "{sherpa.theme-size-icon-2xs}",
-    "close.margin-inline-start": "{sherpa.display-mode-space-2xs}"
+    "icon.block-size": "{sherpa.theme-size-icon-2xs}"
   },
   "$extensions": {
     "sherpa": {

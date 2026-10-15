@@ -38,11 +38,8 @@
 }
 :host(:not([data-icon])) .icon { display: none; }
 
-/* ── Removable close button ────────────────────────────────────────── */
-.close {
-  flex-shrink: 0;
-  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
-}
+/* The close button shows only when the host is dismissible. */
+:host(:not([data-dismissible])) .close { display: none; }
 
 :host([disabled]) .chip { cursor: not-allowed; }
 :host([disabled]) .close { pointer-events: none; }

@@ -95,7 +95,7 @@
         },
         {
           "el": "sherpa-button",
-          "class": "close",
+          "class": "close sherpa-dismiss",
           "part": "close",
           "attrs": {
             "data-type": "icon",
@@ -201,8 +201,7 @@
     "title.font-size": "{sherpa.font-size-body-base}",
     "title.line-height": "{sherpa.theme-content-line-height-base}",
     "message.font-size": "{sherpa.font-size-body-small}",
-    "message.line-height": "{sherpa.theme-content-line-height-small}",
-    "close.margin-inline-start": "{sherpa.display-mode-space-2xs}"
+    "message.line-height": "{sherpa.theme-content-line-height-small}"
   },
   "$extensions": {
     "sherpa": {

@@ -111,8 +111,3 @@
   cursor: pointer;
 }
 
-/* ── Close button ──────────────────────────────────────────────────── */
-.close {
-  flex-shrink: 0;
-  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
-}

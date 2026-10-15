@@ -16,8 +16,7 @@ const TAG = `<template id="default">
     <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
     <span><slot></slot></span><b class="mine">WORDS</b>
   </span>
-</template>
-<template id="dismissible"><span class="pill" part="pill"><slot></slot></span></template>`;
+</template>`;
 
 test('your own markup and sheets: yours drawn, yours last, and what it lacks is reported', async ({ page }) => {
   let css = ':host { outline: 3px solid rgb(1, 2, 3); }';
@@ -59,10 +58,10 @@ test('your own markup and sheets: yours drawn, yours last, and what it lacks is 
   expect(first.words).toBe('one');
   expect(first.outline).toBe('rgb(1, 2, 3)');
   expect(first.last).toContain('outline');
-  // Its dismissible template lost its icon and its close button: reported, not thrown.
+  // Its template lost the close button: reported, not thrown.
   expect(r.reports.map((x) => x.code)).toEqual(['template-missing']);
-  expect(r.reports[0]!.at!['missing']).toContain('dismissible: part=icon');
-  expect(r.reports[0]!.at!['missing']).toContain('dismissible: .close');
+  expect(r.reports[0]!.at!['missing']).toContain('default: .close');
+  expect(r.reports[0]!.at!['missing']).toContain('default: part=close');
 
   // A RELOAD: the sheet changes in place; the markup is stamped again.
   css = ':host { outline: 3px solid rgb(4, 5, 6); }';

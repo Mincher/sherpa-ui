@@ -1680,7 +1680,7 @@
           "attributes": [
             {
               "name": "data-dismissible",
-              "description": "show the close button (selects the dismissible template)",
+              "description": "show the close button (fires chip-dismiss)",
               "type": {
                 "text": "boolean"
               }
@@ -10659,7 +10659,7 @@
           "attributes": [
             {
               "name": "data-dismissible",
-              "description": "show the close button (selects the dismissible template)",
+              "description": "show the close button (fires tag-dismiss)",
               "type": {
                 "text": "boolean"
               },

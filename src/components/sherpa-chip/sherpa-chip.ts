@@ -21,20 +21,12 @@ export class SherpaChip extends SherpaElement {
     'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
 
-  /** `data-dismissible` picks the tree, so a change to it has to re-stamp. */
-  static override variantAttrs = ['data-dismissible'];
-
-  /** The dismissible template adds the close button; default is a plain chip. */
-  protected override get templateId(): string | null {
-    return this.hasAttribute('data-dismissible') ? 'dismissible' : 'default';
-  }
-
   override onRender(): void {
-    this.$('.close')?.addEventListener('button-click', this.#onRemove);
+    this.$('.close')?.addEventListener('button-click', this.#onDismiss);
   }
 
-  /** The remove button: say so, without clicking the chip. */
-  #onRemove = (event: Event): void => {
+  /** The close button: say so. CSS shows it with `data-dismissible`. */
+  #onDismiss = (event: Event): void => {
     event.stopPropagation();
     this.emit('chip-dismiss');
   };

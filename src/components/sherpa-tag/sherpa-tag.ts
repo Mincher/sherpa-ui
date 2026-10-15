@@ -1,4 +1,6 @@
-/** sherpa-tag — a small pill with a label. CSS owns the look; JS only fires tag-dismiss. */
+/**
+ * sherpa-tag — a small pill with a label. CSS owns the look; JS only fires tag-dismiss.
+ */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
@@ -12,19 +14,12 @@ export class SherpaTag extends SherpaElement {
     'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
 
-  /** Picks the template, so a change must re-stamp. */
-  static override variantAttrs = ['data-dismissible'];
-
-  protected override get templateId(): string | null {
-    return this.hasAttribute('data-dismissible') ? 'dismissible' : 'default';
-  }
-
   override onRender(): void {
-    this.$('.close')?.addEventListener('button-click', this.#onRemove);
+    this.$('.close')?.addEventListener('button-click', this.#onDismiss);
   }
 
-  /** The remove button: say so, without clicking the tag. */
-  #onRemove = (event: Event): void => {
+  /** The close button: say so. CSS shows it with `data-dismissible`. */
+  #onDismiss = (event: Event): void => {
     event.stopPropagation();
     this.emit('tag-dismiss');
   };
