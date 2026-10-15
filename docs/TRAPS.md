@@ -576,8 +576,6 @@ Writes are always checked in full.
 
 - Site: `src/core/data/base-store.ts`
 
----
-
 ### T-the-bench-counts-and-never-times
 
 **`check:bench` gates COUNTS per reader's act — loads, counts, distinct reads,
@@ -594,14 +592,19 @@ counts.
 
 The page is `test/unit/fixtures/records.page.json` over 10,000 seeded rows,
 bound as the provider binds it. Each fake control has the methods its spec lists
-and no more, because the source checks for them. An act ends when nothing has
-moved for three timer turns; a `report()` fails the run. The records page holds
-a chart over every row, so a page change loads nothing — that is the page, not
-a fault. A change to the fixture, the rows or an act moves the baseline: record
-it on purpose. Will, 2026-10-15: it runs in the hook on data-layer commits.
+and no more, because the source checks for them, and each bar reports every chip
+it holds, answered or not, as the toolbar's `readings` does. The first baseline
+had fake bars that sent only answered chips, and so under-counted each report.
+An act ends when nothing has moved for three timer turns; a `report()` fails the
+run. The page act runs while the rows fill many pages: after the report they fit
+on one, and a page change clamps and loads nothing. A change to the fixture, the
+rows, an act or a fake's spec moves the baseline: record it on purpose. Will,
+2026-10-15: it runs in the hook on data-layer commits.
 
 - Site: `scripts/check-bench.mjs`
 - Site: `test/unit/bench.test.mjs`
+
+---
 
 ## Design system
 

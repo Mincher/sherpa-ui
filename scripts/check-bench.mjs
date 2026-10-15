@@ -26,7 +26,10 @@ const N = 10_000;
 const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
 export const GATED = ['loads', 'counts', 'distinct', 'rows', 'compiles', 'clones'];
-const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE];
+// The fakes are read from these specs, so a change to one changes the bench.
+const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
+  .map((tag) => `src/components/${tag}/${tag}.component.json`);
+const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, ...SPECS];
 const counters = { loads: 0, counts: 0, distinct: 0, rows: 0, compiles: 0, clones: 0, draws: 0 };
 
 /* ── The data layer, bundled from src/ with compile() counted ─────────── */
@@ -83,7 +86,7 @@ const ROWS = (() => {
   }));
 })();
 
-/** The inner store's reads, counted. A totalCount is a load too, as BaseStore makes it. */
+/** The inner store's reads, counted: loads, counts and distinct reads. */
 function counted(store) {
   const load = store.load.bind(store);
   const total = store.totalCount.bind(store);
@@ -111,18 +114,32 @@ function control(tag, id, holds = []) {
     if (!(m in el)) el[m] = () => { counters.draws++; };
   }
   const has = (m) => (spec.$extensions?.sherpa?.methods ?? []).some((x) => x.name === m);
-  if (has('drawReading')) el.drawReading = (field, reading) => { counters.draws++; el.readings[field] = reading; };
-  if (has('supersede')) el.supersede = (fields) => { counters.draws++; el.superseded = [...(fields ?? [])]; };
+  if (has('drawReading')) {
+    el.drawReading = (field, r) => {
+      counters.draws++;
+      if ((r?.picked ?? []).length || (r?.text ?? '').trim() || (r?.conditions ?? []).length) el.readings[field] = r;
+      else delete el.readings[field];
+    };
+  }
+  // A bar supersedes only its own chips.
+  if (has('supersede')) el.supersede = (fields) => { counters.draws++; el.superseded = (fields ?? []).filter((f) => el.holds.includes(f)); };
+  // As the toolbar draws a scope: a filter with `readings` is a saved filter, the rest are fields.
   if (has('drawScope')) {
     el.drawScope = (d) => {
       counters.draws++;
-      el.holds = (d?.filters ?? []).filter((f) => !f.active).map((f) => f.id);
-      el.readings = Object.fromEntries((d?.filters ?? []).filter((f) => f.state).map((f) => [f.id, f.state]));
+      const filters = d?.filters ?? [];
+      el.holds = filters.filter((f) => !f.readings).map((f) => f.id);
+      el.presets = Object.fromEntries(filters.filter((f) => f.readings).map((f) => [f.id, { on: !!f.active, readings: f.readings }]));
+      el.readings = Object.fromEntries(filters.filter((f) => !f.readings && f.state).map((f) => [f.id, f.state]));
     };
   }
+  // EVERY chip it holds, answered or not, as the toolbar's `readings` does.
   if (has('report')) {
     el.report = () => {
-      const readings = Object.fromEntries(Object.entries(el.readings).filter(([f]) => !el.superseded.includes(f)));
+      const readings = Object.fromEntries(el.holds.filter((f) => !el.superseded.includes(f)).map((f) => {
+        const r = el.readings[f];
+        return [f, r ? { ...r, suspended: !!r.suspended } : { picked: [], suspended: true }];
+      }));
       el.send('quick-filter-change', { readings, presets: el.presets, holds: el.holds });
     };
   }
@@ -135,7 +152,8 @@ async function open(L, remote) {
   const store = counted(new L.ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id', time: 'created' }));
   const source = await L.openSource(def, remote ? L.spoofRemote(store, { delay: 0 }) : store);
   source.limitOptions = true;
-  const initial = source.query.applied;
+  // As the provider keeps it.
+  const initial = structuredClone(source.query.applied);
   const view = control('sherpa-quick-filter-toolbar', 'view-bar', def.scopes.view.holds);
   const data = control('sherpa-quick-filter-toolbar', 'data-bar', def.scopes.data.holds);
   data.presets = Object.fromEntries((def.scopes.data.presets ?? []).map((p) => [p, { on: false, readings: {} }]));
@@ -157,14 +175,15 @@ const AT_RISK = { 'has-tickets': { on: false, readings: {} }, 'at-risk': { on: t
 const ACTS = {
   pick: (p) => p.view.answer({ region: { picked: ['EMEA'] } }),
   repick: (p) => p.view.answer({ region: { picked: ['EMEA'] } }),
+  // While the rows still fill many pages: after the report they fit on one.
+  page: (p) => p.grid.send('page-change', { page: 2 }),
   report: (p) => p.data.answer(REPORT, AT_RISK),
   sort: (p) => p.grid.send('sort-change', { field: 'customer', direction: 'asc' }),
-  page: (p) => p.grid.send('page-change', { page: 2 }),
   heading: (p) => p.grid.send('column-filter-change', { field: 'tier', reading: { picked: ['gold'] } }),
   search: (p) => p.data.send('search-change', { value: 'owner 1' }),
   raise: (p) => p.panel.send('filter-add', { scope: 'view', ids: ['status'], from: 'data' }),
   clear: (p) => p.view.answer({}),
-  reset: (p) => p.source.setQuery(p.initial),
+  reset: (p) => p.source.setQuery(structuredClone(p.initial)),
 };
 const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: ['pick', 'report'] } };
 

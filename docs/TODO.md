@@ -282,7 +282,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
 | ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
-| ⬜ | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ⬜ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
 | ⬜ | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
@@ -6459,6 +6459,32 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
 
+### `[ ]` 🚧 291 — Phase 6: faster
+
+**🚧 Steps 1–3 done 2026-10-15**, each safe by reading and measured by the bench.
+1. An `ArrayStore` count copies no rows: it counts in place.
+2. `Store.distinct`: `ArrayStore` and the live stores read a field's values in
+   place, and a `spoofRemote` store forwards it. `declareFromRows` asks it too.
+3. Fewer `structuredClone` copies: one for `source.query`, none for the first
+   `#defaults` entry, none in the provider's change listener.
+
+The bench, re-recorded after the fakes were fixed (286):
+
+| act | before 291 — loads (counts) · rows | now — loads (counts) · distinct · rows |
+|---|---:|---:|
+| pick a value | 10 (3) · 45,223 | 2 (4) · 5 · 2,558 |
+| the same pick again | 1 (0) · 10,000 | 0 (0) · 1 · 0 |
+| a bar's whole report | 22 (10) · 38,337 | 2 (15) · 14 · 2,543 |
+| sort | 16 (10) · 25,508 | 2 (10) · 4 · 2,543 |
+| search | 19 (12) · 25,602 | 2 (12) · 5 · 898 |
+| clear | 23 (11) · 64,161 | 2 (12) · 10 · 3,520 |
+
+(The "now" column also counts every chip a bar reports, which the old fakes did
+not, so its counts are higher.) **Next, safe by reading:** 4 (recency as
+numbers) and 5 (present()'s limits without a clone), then 6. **Waits for a
+test:** 7 (one test per filter) and 8 (one compile per act). **Not run yet:**
+present-limits-each-field, page-definition and the stores' unit tests.
+
 ### `[x]` ✅ 290 — Phase 6: honest entry points
 
 **✅ Done 2026-10-15** (Q1, my pick A, as CODE-REVIEW-PLAN 6.4 says). 32
@@ -6533,6 +6559,14 @@ hook runs it with `--staged` on data-layer commits, `npm test` always.
 
 A pick that changes nothing still reads all 10,000 rows; a sort or a search
 costs 10–12 chip counts, each a full load. These are 291's targets.
+
+**Fakes fixed, 2026-10-15** (the plan's check). The first baseline under-counted
+each bar report: its fake bars sent only answered chips, and an OFF saved filter
+leaked into a bar's holds. Now each bar reports every chip it holds, as the
+toolbar does; a bar supersedes only its own chips; the page act runs while the
+rows fill many pages; and a change to one of the four specs the fakes read runs
+it in the hook. `distinct` stays gated: after 291 it is a cost like a load. The
+re-recorded numbers are in 291's section.
 
 ### `[x]` ✅ 284 — Phase 5: a roving-focus helper
 
