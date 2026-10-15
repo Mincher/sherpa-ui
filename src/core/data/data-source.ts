@@ -98,6 +98,7 @@ import {
 import { readingClause, stateClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
+import { belowIn, clauseOf, limitFor, presentUnder, serialChains } from './source-counts.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
   answerOf, compile, eachScope, emptyScope, filterKey, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
@@ -1736,37 +1737,14 @@ export class DataSource extends EventTarget {
     const passes = new Map<string, { filter: Filter | undefined; fields: string[] }>();
     const facts = this.#compileFacts();
     for (const f of fields) {
-      const filter = this.#limitFor(scope, f, facts);
+      const filter = limitFor(this.#applied, facts, scope, f);
       const key = JSON.stringify(filter ?? null);
       if (!passes.has(key)) passes.set(key, { filter, fields: [] });
       passes.get(key)!.fields.push(f);
     }
     const out: Record<string, string[]> = {};
-    for (const { filter, fields: some } of passes.values()) Object.assign(out, await this.#presentUnder(some, filter));
+    for (const { filter, fields: some } of passes.values()) Object.assign(out, await presentUnder(this.store, some, filter));
     return out;
-  }
-
-  /** What limits one field: the applied Query compiled WITHOUT that field's own answer in its scope. */
-  #limitFor(scope: string, field: string, facts: CompileFacts): Filter | undefined {
-    // Never edit `own`: on a local source the applied Query IS the draft.
-    const own = this.#applied.scopes[scope];
-    const { [field]: _own, ...readings } = own?.readings ?? {};
-    const query: Query = own ? { ...this.#applied, scopes: { ...this.#applied.scopes, [scope]: { ...own, readings } } } : this.#applied;
-    const { view, scoped } = compile(query, facts);
-    return andFilter([view, scope === VIEW ? undefined : scoped[scope]].filter((f): f is Filter => !!f));
-  }
-
-  /** Each field's distinct values, as value keys, among the rows a filter matches. */
-  async #presentUnder(fields: readonly string[], filter: Filter | undefined): Promise<Record<string, string[]>> {
-    const options = filter ? { filter } : {};
-    const keys = (values: readonly unknown[]): string[] => [...new Set(values
-      .filter((v) => v != null && v !== '').map(valueKey))];
-    if (this.store.distinct) {
-      const found = await this.store.distinct(fields, options);
-      return Object.fromEntries(fields.map((f) => [f, keys(found[f] ?? [])]));
-    }
-    const { rows } = await this.store.load(options);
-    return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
   }
 
   /**
@@ -1783,7 +1761,7 @@ export class DataSource extends EventTarget {
     if (!this.#limitOptions) return out;
     const facts = (f: string): Omit<FieldFacts, 'field'> => this.#catalogue.facts(f);
     const viewHolds = heldInView(this.#applied);
-    const below = this.#below();
+    const below = belowIn(serialChains(this.#applied, this.#sets));
     type Part = { field?: string; clause: Filter };
     const run = async (scope: string, base: readonly Part[]): Promise<Part[]> => {
       const q = this.#applied.scopes[scope];
@@ -1808,7 +1786,7 @@ export class DataSource extends EventTarget {
         }
         const under = below.get(`${scope}:${f}`);
         const ruling = parts.filter((p) => !p.field || !under?.has(p.field)).map((p) => p.clause);
-        const held = new Set((await this.#presentUnder([f], andFilter(ruling)))[f]);
+        const held = new Set((await presentUnder(this.store, [f], andFilter(ruling)))[f]);
         const aside = [...new Set([...(chained[f] ?? []), ...picks.map(valueKey).filter((k) => !held.has(k))])];
         if (aside.length) {
           if (!out.has(scope)) out.set(scope, {});
@@ -1824,53 +1802,21 @@ export class DataSource extends EventTarget {
     return out;
   }
 
-  /** Each SERIAL set's chain, by scope: the fields it holds, in the set's order.
-   *  A field the View holds is answered there, so it is out of a component's chain. */
-  #chains(): Array<[scope: string, chain: string[]]> {
-    const viewHolds = heldInView(this.#applied);
-    const out: Array<[string, string[]]> = [];
-    for (const [scope, sets] of this.#sets) {
-      const holds = new Set(this.#applied.scopes[scope]?.holds ?? []);
-      for (const set of sets) {
-        if (set.mode !== 'serial') continue;
-        const chain = set.fields.filter((f) => holds.has(f) && (scope === VIEW || !viewHolds.has(f)));
-        if (chain.length > 1) out.push([scope, chain]);
-      }
-    }
-    return out;
-  }
-
-  /** The fields BELOW each chained field, by `scope:field`. */
-  #below(): Map<string, Set<string>> {
-    const out = new Map<string, Set<string>>();
-    for (const [scope, chain] of this.#chains()) {
-      chain.forEach((f, i) => out.set(`${scope}:${f}`, new Set(chain.slice(i + 1))));
-    }
-    return out;
-  }
-
-  /** One field's answer as a clause, less the picks set aside. */
-  #clauseOf(scope: string, field: string, aside: readonly string[] | undefined): Filter | undefined {
-    const reading = this.#applied.scopes[scope]?.readings[field];
-    if (!reading || reading.suspended) return undefined;
-    return readingClause({ field, ...this.#catalogue.facts(field) }, withoutDropped(reading, aside));
-  }
-
   /** Down each serial chain: a list field keeps the picks the rows hold under
    *  the answers ABOVE it, and the rest are set aside. TRAP T-a-filter-set-groups-or-chains */
   async #chainAside(): Promise<Map<string, Record<string, string[]>>> {
     const out = new Map<string, Record<string, string[]>>();
-    for (const [scope, chain] of this.#chains()) {
+    for (const [scope, chain] of serialChains(this.#applied, this.#sets)) {
       const above: Filter[] = [];
       for (const f of chain) {
         const picks = this.#applied.scopes[scope]?.readings[f]?.picked ?? [];
         let aside: string[] = [];
         if (above.length && picks.length && this.#catalogue.isList(f)) {
-          const held = new Set((await this.#presentUnder([f], andFilter(above)))[f]);
+          const held = new Set((await presentUnder(this.store, [f], andFilter(above)))[f]);
           aside = picks.map(valueKey).filter((k) => !held.has(k));
           if (aside.length) out.set(scope, { ...out.get(scope), [f]: aside });
         }
-        const clause = this.#clauseOf(scope, f, aside);
+        const clause = clauseOf(this.#applied, this.#catalogue, scope, f, aside);
         if (clause) above.push(clause);
       }
     }
@@ -1886,12 +1832,12 @@ export class DataSource extends EventTarget {
   async offered(scope: string): Promise<Record<string, string[]>> {
     const out: Record<string, string[]> = {};
     const aside = this.#setAside.get(scope) ?? {};
-    for (const [s, chain] of this.#chains()) {
+    for (const [s, chain] of serialChains(this.#applied, this.#sets)) {
       if (s !== scope) continue;
       const above: Filter[] = [];
       for (const f of chain) {
-        if (above.length && this.#catalogue.isList(f)) Object.assign(out, await this.#presentUnder([f], andFilter(above)));
-        const clause = this.#clauseOf(scope, f, aside[f]);
+        if (above.length && this.#catalogue.isList(f)) Object.assign(out, await presentUnder(this.store, [f], andFilter(above)));
+        const clause = clauseOf(this.#applied, this.#catalogue, scope, f, aside[f]);
         if (clause) above.push(clause);
       }
     }
