@@ -276,7 +276,8 @@
         "md",
         "lg"
       ],
-      "description": "none  | sm | md | lg"
+      "default": "none",
+      "description": "none | sm | md | lg"
     },
     {
       "$type": "prop",

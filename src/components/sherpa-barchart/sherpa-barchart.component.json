@@ -194,7 +194,8 @@
         "max",
         "distinct"
       ],
-      "description": "count  | sum | mean | min | max | distinct, per value"
+      "default": "count",
+      "description": "count | sum | mean | min | max | distinct, per value"
     },
     {
       "$type": "prop",

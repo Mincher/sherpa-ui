@@ -107,7 +107,7 @@
       "values": [
         "bar"
       ],
-      "description": "— line  | bar (flat-topped columns)"
+      "description": "line (default, area + stroke) | bar (flat-topped columns)"
     },
     {
       "$type": "prop",
@@ -116,7 +116,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "— comma-separated or JSON array (e.g. \"10,25,15,30\")"
+      "description": "comma-separated or JSON array (e.g. \"10,25,15,30\")"
     }
   ],
   "populate": {

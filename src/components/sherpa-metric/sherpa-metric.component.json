@@ -96,7 +96,7 @@
         "max",
         "distinct"
       ],
-      "description": "— ASKED of its provider: count | sum | mean | min | max | distinct"
+      "description": "ASKED of its provider: count | sum | mean | min | max | distinct"
     },
     {
       "$type": "prop",
@@ -118,7 +118,7 @@
         "month",
         "year"
       ],
-      "description": "— a date over-field, cut to day | month | year"
+      "description": "a date over-field, cut to day | month | year"
     },
     {
       "$type": "prop",
@@ -127,7 +127,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— the change text (e.g. \"+12.5%\")"
+      "description": "the change text (e.g. \"+12.5%\")"
     },
     {
       "$type": "prop",
@@ -136,7 +136,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— the number that aggregate reads"
+      "description": "the number that aggregate reads"
     },
     {
       "$type": "prop",
@@ -145,7 +145,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— the value's Intl.NumberFormatOptions, as JSON"
+      "description": "the value's Intl.NumberFormatOptions, as JSON"
     },
     {
       "$type": "prop",
@@ -162,7 +162,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— a glyph before the name"
+      "description": "a glyph before the name"
     },
     {
       "$type": "prop",
@@ -171,7 +171,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— the metric name, in its header above the value"
+      "description": "the metric name, in its header above the value"
     },
     {
       "$type": "prop",
@@ -180,7 +180,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— the sparkline runs over this field"
+      "description": "the sparkline runs over this field"
     },
     {
       "$type": "prop",
@@ -214,7 +214,7 @@
         "down",
         "flat"
       ],
-      "description": "— up | down | flat  (colours the delta + shows the arrow)"
+      "description": "up | down | flat  (colours the delta + shows the arrow)"
     },
     {
       "$type": "prop",
@@ -223,7 +223,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— the formatted value string (big number)"
+      "description": "the formatted value string (big number)"
     },
     {
       "$type": "prop",
@@ -232,7 +232,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— its OWN default filter, a condition by field as JSON; narrows this tile alone"
+      "description": "its OWN default filter, a condition by field as JSON; narrows this tile alone"
     }
   ],
   "populate": {

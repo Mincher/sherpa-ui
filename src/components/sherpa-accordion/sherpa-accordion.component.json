@@ -126,7 +126,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— optional secondary line under the title (fallback to slotted [slot=description])"
+      "description": "optional secondary line under the title (fallback to slotted [slot=description])"
     },
     {
       "$type": "prop",
@@ -135,7 +135,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— the summary title (fallback to slotted [slot=heading])"
+      "description": "the summary title (fallback to slotted [slot=heading])"
     },
     {
       "$type": "prop",
@@ -144,7 +144,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— a glyph before the title: what the section holds"
+      "description": "a glyph before the title: what the section holds"
     },
     {
       "$type": "prop",
@@ -152,7 +152,7 @@
       "type": "string",
       "observed": false,
       "kind": "style",
-      "description": "— status colour cascade (critical | warning | success | info | urgent)"
+      "description": "status colour cascade (critical | warning | success | info | urgent)"
     },
     {
       "$type": "prop",
@@ -161,7 +161,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— native boolean (current disclosure state; drives [open] visuals)"
+      "description": "native boolean (current disclosure state; drives [open] visuals)"
     }
   ],
   "slots": [

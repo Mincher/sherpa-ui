@@ -142,7 +142,8 @@
         "search",
         "success"
       ],
-      "description": "built-in glyph: empty  | search | folder | data | error | success"
+      "default": "empty",
+      "description": "built-in glyph: empty | search | folder | data | error | success"
     },
     {
       "$type": "prop",
@@ -156,7 +157,8 @@
         "md",
         "lg"
       ],
-      "description": "sm | md  | lg"
+      "default": "md",
+      "description": "sm | md | lg"
     },
     {
       "$type": "prop",

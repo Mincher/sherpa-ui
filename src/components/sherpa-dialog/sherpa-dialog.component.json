@@ -87,7 +87,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
+      "description": "the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
     },
     {
       "$type": "prop",
@@ -95,7 +95,7 @@
       "type": "string",
       "observed": false,
       "kind": "style",
-      "description": "— status colour cascade (critical | warning | success | info | urgent)"
+      "description": "status colour cascade (critical | warning | success | info | urgent)"
     },
     {
       "$type": "prop",
@@ -108,7 +108,8 @@
         "modal",
         "overlay"
       ],
-      "description": "— modal  | overlay — overlay fills its container and opens NON-modal, so the page beside it stays live"
+      "default": "modal",
+      "description": "modal | overlay — overlay fills its container and opens NON-modal, so the page beside it stays live"
     },
     {
       "$type": "prop",
@@ -117,7 +118,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— native boolean (read reflects dialog.open; set → show()/close())"
+      "description": "native boolean (read reflects dialog.open; set → show()/close())"
     }
   ],
   "slots": [

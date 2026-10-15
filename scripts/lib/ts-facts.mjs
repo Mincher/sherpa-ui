@@ -218,6 +218,7 @@ function summaryOf(node, sf) {
   return text.split(/\n\s*\n/)[0]
     .replace(/TRAP\s+T-[\w-]+/g, '')
     .replace(/\s+/g, ' ')
+    .replace(/^[\s·—–-]+/, '')
     .replace(/[\s·—-]+$/, '')
     .trim();
 }

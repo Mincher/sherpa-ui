@@ -348,8 +348,7 @@
       "declared": true,
       "native": true,
       "kind": "content",
-      "default": "0 / 100",
-      "description": "scale bounds shown beneath"
+      "description": "scale bounds shown beneath (default 0 / 100)"
     },
     {
       "$type": "prop",
@@ -359,8 +358,7 @@
       "declared": true,
       "native": true,
       "kind": "content",
-      "default": "0 / 100",
-      "description": "scale bounds shown beneath"
+      "description": "scale bounds shown beneath (default 0 / 100)"
     },
     {
       "$type": "prop",

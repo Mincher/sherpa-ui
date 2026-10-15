@@ -175,8 +175,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "default": "footer",
-      "description": "radio group name"
+      "description": "radio group name (default footer)"
     },
     {
       "$type": "prop",

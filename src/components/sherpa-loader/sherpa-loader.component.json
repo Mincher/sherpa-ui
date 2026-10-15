@@ -45,7 +45,8 @@
         "horizontal",
         "vertical"
       ],
-      "description": "horizontal  | vertical"
+      "default": "horizontal",
+      "description": "horizontal | vertical"
     },
     {
       "$type": "prop",

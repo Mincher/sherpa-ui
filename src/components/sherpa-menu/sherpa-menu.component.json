@@ -846,7 +846,8 @@
         "start",
         "end"
       ],
-      "description": "start  | end   which trigger edge the card lines up with"
+      "default": "start",
+      "description": "start | end which trigger edge the card lines up with"
     },
     {
       "$type": "prop",
@@ -1076,7 +1077,8 @@
         "single",
         "multiple"
       ],
-      "description": "multiple  | single (radio rows)"
+      "default": "multiple",
+      "description": "multiple | single (radio rows)"
     },
     {
       "$type": "prop",
@@ -1127,7 +1129,8 @@
         "calendar",
         "filter"
       ],
-      "description": "list  | calendar | filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu."
+      "default": "list",
+      "description": "list | calendar | filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu."
     },
     {
       "$type": "prop",

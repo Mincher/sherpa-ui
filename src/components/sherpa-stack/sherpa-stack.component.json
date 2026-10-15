@@ -42,7 +42,8 @@
         "start",
         "stretch"
       ],
-      "description": "start | center | end | stretch  | between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it"
+      "default": "stretch",
+      "description": "start | center | end | stretch | between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it"
     },
     {
       "$type": "prop",
@@ -55,7 +56,8 @@
         "block",
         "inline"
       ],
-      "description": "block  | inline (a row)"
+      "default": "block",
+      "description": "block | inline (a row)"
     },
     {
       "$type": "prop",
@@ -81,6 +83,7 @@
         "sm",
         "xl"
       ],
+      "default": "lg",
       "description": "sm (4) | md (8) | lg (12, default) | xl (16) | 2xl (24)"
     },
     {
@@ -114,7 +117,7 @@
         "lg",
         "xl"
       ],
-      "default": "200px",
+      "default": "md",
       "description": "with data-wrap: hug — each item at its OWN width (a run of chips); else the floor an item may shrink to while it STRETCHES to share the line — sm (120) | md (200, default) | lg (280) | xl (360)"
     },
     {

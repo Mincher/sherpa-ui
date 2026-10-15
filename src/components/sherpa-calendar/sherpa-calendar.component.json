@@ -324,7 +324,7 @@
         "range"
       ],
       "default": "single",
-      "description": "single | range  — one day, or a two-click start→end range"
+      "description": "single | range — one day, or a two-click start→end range"
     },
     {
       "$type": "prop",
@@ -357,7 +357,7 @@
         "year"
       ],
       "default": "day",
-      "description": "day | month | year  — the active picker (the Grid-collection swap)"
+      "description": "day | month | year — the active picker (the Grid-collection swap)"
     },
     {
       "$type": "prop",

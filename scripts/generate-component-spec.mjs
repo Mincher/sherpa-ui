@@ -215,20 +215,50 @@ function parsePublicApi(comment) {
         const values = parseEnumValues(rest);
         if (values && values.length > 1) { p.type = 'enum'; p.values = values; }
       }
-      const defM = /\(default\s+([^)]+)\)/i.exec(rest);
-      if (defM) {
-        const d = defM[1].trim();
-        if (d !== 'omitted' && d !== 'none' && d !== 'unset') p.default = d;
-      }
-      if (p.type === 'boolean' && p.default === undefined) p.default = false;
+      const mark = defaultMark(rest);
+      if (mark) p.defaultMark = mark;
+      if (p.type === 'boolean' && !mark) p.default = false;
       if (!p.type) p.type = 'string';
 
-      const desc = rest.replace(/\((?:boolean|default[^)]*)\)/gi, '').trim();
+      // A `(default …)` paren is the merge's to keep or strip: it knows the type.
+      const desc = rest.replace(/\(boolean\)/gi, '').trim();
       if (desc) p.description = desc;
       props[nm] = p;
     }
   }
   return props;
+}
+
+/** Where the header marks a default: `md (default)` marks the value before the
+ *  paren, `(default md)` or `(default: md)` names it; `omitted`, `none` and
+ *  `unset` name none. The first mark wins, with its paren's exact text. */
+function defaultMark(rest) {
+  for (const m of rest.matchAll(/\(([^)]*)\)/g)) {
+    for (const item of m[1].split(/[,;]/).map((s) => s.trim())) {
+      // `none (default)` marks the value none; `(default none)` names no default.
+      if (/^default$/i.test(item)) {
+        const value = /([\w.-]+|"[^"]*")\s*$/.exec(rest.slice(0, m.index))?.[1];
+        if (value !== undefined) return { value, paren: m[0] };
+        continue;
+      }
+      const value = /^default:?\s+(.+)$/i.exec(item)?.[1]?.trim();
+      if (value === undefined) continue;
+      if (/^(omitted|none|unset)$/i.test(value)) return { none: true, paren: m[0] };
+      return { value, paren: m[0] };
+    }
+  }
+  return null;
+}
+
+/** A candidate default as a value of the prop's type, or undefined. A string
+ *  is a value only when quoted: a bare word in a header is prose. */
+function defaultValue(candidate, p) {
+  if (candidate === undefined || candidate === null) return undefined;
+  const text = String(candidate);
+  if (p.type === 'enum') return (p.values ?? []).includes(text) ? text : undefined;
+  if (p.type === 'boolean') return text === 'true' || text === 'false' ? text === 'true' : undefined;
+  if (p.type === 'number') return /^-?\d+(\.\d+)?$/.test(text) ? text : undefined;
+  return /^"[^"]*"$/.test(text) ? text.slice(1, -1) : undefined;
 }
 
 /** Enum values from a leading pipe list, tolerating inline `(…)` descriptions
@@ -629,10 +659,24 @@ function generateSpec(name) {
       else if (fromPrior.values && fromPrior.values.length) p.values = fromPrior.values;
       else { p.values = []; notes.push(`prop ${nm}: enum with NO parseable values (Public API comment lacks them) — NEEDS HAND-FINISHING`); }
     }
-    const def = decl.default !== undefined ? decl.default : fromApi.default !== undefined ? fromApi.default : fromPrior.default;
+    /* A default is a VALUE: the declaration's stands; otherwise the header's
+       mark, then the comment's boolean false, then the prior spec's — each kept
+       only if it is a value of the merged type. */
+    const mark = fromApi.defaultMark;
+    let def = decl.default;
+    if (def === undefined && !mark?.none) {
+      for (const c of [mark?.value, fromApi.default, fromPrior.default]) {
+        def = defaultValue(c, p);
+        if (def !== undefined) break;
+      }
+    }
     if (def !== undefined && def !== null) p.default = def;
     else if (native && p.type === 'boolean') p.default = false;
-    const desc = fromApi.description || fromPrior.description;
+    let desc = (fromApi.description || fromPrior.description || '').replace(/^[—–-]\s*/, '');
+    // The paren is said once the default is: an accepted mark, or one naming none.
+    const marked = mark && !mark.none ? defaultValue(mark.value, p) : undefined;
+    const said = mark && /^\(default/i.test(mark.paren) && (mark.none || (marked !== undefined && p.default === marked));
+    if (said) desc = desc.replace(mark.paren, '').replace(/\s{2,}/g, ' ').trim();
     if (desc) p.description = desc;
     props.push(p);
   }

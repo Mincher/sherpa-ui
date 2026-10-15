@@ -142,8 +142,7 @@
       "type": "string",
       "observed": false,
       "kind": "style",
-      "default": "5000; 0 disables",
-      "description": "auto-dismiss delay in ms"
+      "description": "auto-dismiss delay in ms (default 5000; 0 disables)"
     },
     {
       "$type": "prop",
@@ -175,7 +174,8 @@
         "critical",
         "urgent"
       ],
-      "description": "info  | success | warning | critical | urgent"
+      "default": "info",
+      "description": "info | success | warning | critical | urgent"
     },
     {
       "$type": "prop",

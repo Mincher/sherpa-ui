@@ -682,8 +682,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "default": "style",
-      "description": "helper text under the label"
+      "description": "helper text under the label (default style)"
     },
     {
       "$type": "prop",
@@ -692,8 +691,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "default": "style",
-      "description": "validation message — shown as a filled critical bar"
+      "description": "validation message — shown as a filled critical bar (default style)"
     },
     {
       "$type": "prop",
@@ -737,8 +735,7 @@
       "type": "string",
       "observed": false,
       "kind": "style",
-      "default": "style only",
-      "description": "auto-growing <textarea>"
+      "description": "auto-growing <textarea> (default style only)"
     },
     {
       "$type": "prop",
@@ -793,8 +790,7 @@
         "number",
         "find"
       ],
-      "default": "is the full molecule",
-      "description": "\"minimal\" for the bare inline field ; \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter"
+      "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter"
     },
     {
       "$type": "prop",

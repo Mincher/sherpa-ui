@@ -47,7 +47,8 @@
         "column",
         "grid"
       ],
-      "description": "row  | column | grid"
+      "default": "row",
+      "description": "row | column | grid"
     }
   ],
   "slots": [

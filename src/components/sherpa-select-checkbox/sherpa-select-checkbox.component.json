@@ -168,7 +168,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "default": "\"on\"",
+      "default": "on",
       "description": "submitted value when checked"
     }
   ],

@@ -88,8 +88,7 @@
       "values": [
         "plain"
       ],
-      "default": "— dividers between rows",
-      "description": "| plain (no dividers)"
+      "description": "(default — dividers between rows) | plain (no dividers)"
     }
   ],
   "slots": [

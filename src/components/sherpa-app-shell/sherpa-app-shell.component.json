@@ -165,7 +165,8 @@
         "pinned",
         "settings"
       ],
-      "description": "collapsed  | hover | default | pinned | settings — mirrored from the rail; drives the content inset"
+      "default": "collapsed",
+      "description": "collapsed | hover | default | pinned | settings — mirrored from the rail; drives the content inset"
     },
     {
       "$type": "prop",

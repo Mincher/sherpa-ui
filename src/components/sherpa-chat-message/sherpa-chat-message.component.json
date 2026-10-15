@@ -126,7 +126,8 @@
         "system",
         "user"
       ],
-      "description": "assistant  | user (right, accent) | system (centred, muted)"
+      "default": "assistant",
+      "description": "assistant | user (right, accent) | system (centred, muted)"
     }
   ],
   "slots": [

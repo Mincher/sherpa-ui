@@ -99,7 +99,7 @@
         "default",
         "simple"
       ],
-      "description": "— default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)"
+      "description": "default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)"
     },
     {
       "$type": "prop",
@@ -108,7 +108,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— native boolean       (current value; drives :checked visuals)"
+      "description": "native boolean       (current value; drives :checked visuals)"
     },
     {
       "$type": "prop",
@@ -117,7 +117,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— native boolean       (reflected onto the inner input)"
+      "description": "native boolean       (reflected onto the inner input)"
     },
     {
       "$type": "prop",
@@ -125,7 +125,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— native string        (what a form submits it under)"
+      "description": "native string        (what a form submits it under)"
     },
     {
       "$type": "prop",
@@ -134,7 +134,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— native boolean       (a form refuses it while off)"
+      "description": "native boolean       (a form refuses it while off)"
     },
     {
       "$type": "prop",
@@ -142,7 +142,8 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— native string        (what it stands for when on; default \"on\")"
+      "default": "on",
+      "description": "native string        (what it stands for when on; default \"on\")"
     }
   ],
   "populate": {

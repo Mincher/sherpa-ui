@@ -81,7 +81,8 @@
         "left",
         "right"
       ],
-      "description": "top  | bottom | left | right"
+      "default": "top",
+      "description": "top | bottom | left | right"
     },
     {
       "$type": "prop",

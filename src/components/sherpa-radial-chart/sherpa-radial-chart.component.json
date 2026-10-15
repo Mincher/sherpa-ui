@@ -157,7 +157,8 @@
         "max",
         "distinct"
       ],
-      "description": "count  | sum | mean | min | max | distinct, per value"
+      "default": "count",
+      "description": "count | sum | mean | min | max | distinct, per value"
     },
     {
       "$type": "prop",
@@ -218,7 +219,7 @@
         "horizontal",
         "vertical"
       ],
-      "description": "horizontal  | vertical (beside it)"
+      "description": "horizontal (default: below the ring) | vertical (beside it)"
     },
     {
       "$type": "prop",
@@ -253,7 +254,8 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "how far it runs, in degrees. 360  is a full ring; a gauge is this ring stopped short — start 270, sweep 180."
+      "default": "360",
+      "description": "how far it runs, in degrees. 360 is a full ring; a gauge is this ring stopped short — start 270, sweep 180."
     },
     {
       "$type": "prop",
@@ -275,7 +277,8 @@
         "donut",
         "pie"
       ],
-      "description": "donut  | pie   (pie fills to the centre, no hole)"
+      "default": "donut",
+      "description": "donut | pie (pie fills to the centre, no hole)"
     },
     {
       "$type": "prop",

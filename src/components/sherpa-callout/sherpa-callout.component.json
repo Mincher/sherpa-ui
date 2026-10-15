@@ -140,7 +140,7 @@
         "critical",
         "urgent"
       ],
-      "description": "info | success | warning | critical | urgent"
+      "description": "info | success | warning | critical | urgent (default: neutral/info)"
     }
   ],
   "slots": [

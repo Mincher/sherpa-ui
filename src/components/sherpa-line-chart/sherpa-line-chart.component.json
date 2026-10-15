@@ -236,7 +236,8 @@
         "max",
         "distinct"
       ],
-      "description": "count  | sum | mean | min | max | distinct, per point"
+      "default": "count",
+      "description": "count | sum | mean | min | max | distinct, per point"
     },
     {
       "$type": "prop",
@@ -347,7 +348,8 @@
         "line",
         "area"
       ],
-      "description": "line  | area"
+      "default": "line",
+      "description": "line | area"
     },
     {
       "$type": "prop",

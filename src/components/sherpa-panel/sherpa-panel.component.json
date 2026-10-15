@@ -73,7 +73,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— boolean; hides the body/footer, leaving the header"
+      "description": "boolean; hides the body/footer, leaving the header"
     },
     {
       "$type": "prop",
@@ -82,7 +82,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
+      "description": "the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
     },
     {
       "$type": "prop",
@@ -90,7 +90,7 @@
       "type": "string",
       "observed": false,
       "kind": "style",
-      "description": "— status colour cascade (critical | warning | success | info | urgent)"
+      "description": "status colour cascade (critical | warning | success | info | urgent)"
     }
   ],
   "slots": [

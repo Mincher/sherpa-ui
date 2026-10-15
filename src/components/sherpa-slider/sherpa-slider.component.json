@@ -98,7 +98,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— label text above the slider (shown when set)"
+      "description": "label text above the slider (shown when set)"
     },
     {
       "$type": "prop",
@@ -108,7 +108,7 @@
       "declared": true,
       "kind": "style",
       "default": false,
-      "description": "— show the editable value field under the track ; a range's two fields share that row, half each"
+      "description": "show the editable value field under the track ; a range's two fields share that row, half each"
     },
     {
       "$type": "prop",
@@ -121,7 +121,8 @@
         "single",
         "range"
       ],
-      "description": "— single  | range — two thumbs and two value fields"
+      "default": "single",
+      "description": "single | range — two thumbs and two value fields"
     },
     {
       "$type": "prop",
@@ -130,7 +131,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "— the range ends (data-type=\"range\" only)"
+      "description": "the range ends (data-type=\"range\" only)"
     },
     {
       "$type": "prop",
@@ -139,7 +140,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— make the value display read-only (no typing)"
+      "description": "make the value display read-only (no typing)"
     },
     {
       "$type": "prop",
@@ -148,7 +149,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "— the range ends (data-type=\"range\" only)"
+      "description": "the range ends (data-type=\"range\" only)"
     },
     {
       "$type": "prop",
@@ -157,7 +158,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— disabled state"
+      "description": "disabled state"
     },
     {
       "$type": "prop",
@@ -165,7 +166,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— maximum value (native, default 100)"
+      "description": "maximum value (native, default 100)"
     },
     {
       "$type": "prop",
@@ -173,7 +174,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— minimum value (native, default 0)"
+      "description": "minimum value (native, default 0)"
     },
     {
       "$type": "prop",
@@ -181,7 +182,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— the form field its value, or a range's two ends, are submitted under"
+      "description": "the form field its value, or a range's two ends, are submitted under"
     },
     {
       "$type": "prop",
@@ -189,7 +190,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— step increment (native, default 1)"
+      "description": "step increment (native, default 1)"
     },
     {
       "$type": "prop",
@@ -197,7 +198,7 @@
       "type": "string",
       "observed": true,
       "native": true,
-      "description": "— current value (native)"
+      "description": "current value (native)"
     }
   ],
   "populate": {

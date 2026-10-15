@@ -6490,6 +6490,16 @@ batches. Picks (each A): the "when to use it" line lives in each
 script is its own, with its own gate; Will reads each batch's diff after it
 lands; the CSS table shows the tokens each class's base rule reads.
 
+- **✅ Step 1, 2026-10-15:** an attribute's default is a VALUE. The generator
+  reads it where the header marks it — `md (default)`, `(default md)` or
+  `(default: md)` — and keeps it only if it is a value of the attribute's type
+  (an enum's value, true/false, a number, or a quoted string). 51 defaults
+  changed in 43 specs: 35 gained one (for example `sherpa-dialog data-type`
+  modal, `sherpa-tooltip data-placement` top), 3 lost stray quotes, 1 stale one
+  was replaced, and 12 that were prose ("omitted = base size", "style",
+  "0 / 100") were dropped. A rejected `(default …)` keeps its words in the
+  description. 52 descriptions lost a leading dash. Nothing else in any spec
+  moved (proved against HEAD).
 ### `[ ]` ⬜ 328 — GAP: 5 token names no stylesheet defines
 
 `--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),

@@ -426,7 +426,6 @@
         "jump",
         "key"
       ],
-      "default": false,
       "description": "default | ai | jump | key `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view. `key` is a chart legend's row: no border, mono 12px, 16 tall. Its ON is SHOWN, so at rest every key is on. TODO 149"
     },
     {

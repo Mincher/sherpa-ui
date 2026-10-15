@@ -572,7 +572,8 @@
         "single",
         "multiple"
       ],
-      "description": "multiple  | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen"
+      "default": "multiple",
+      "description": "multiple | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen"
     },
     {
       "$type": "prop",

@@ -614,7 +614,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "default": "\"Filters\"",
+      "default": "Filters",
       "description": "the panel's own title"
     },
     {

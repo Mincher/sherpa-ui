@@ -111,7 +111,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "default": "\"No notifications\"",
+      "default": "No notifications",
       "description": "what to say when there is nothing"
     }
   ],

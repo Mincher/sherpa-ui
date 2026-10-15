@@ -85,7 +85,6 @@
       "values": [
         "none"
       ],
-      "default": false,
       "description": "bottom divider; shown by DEFAULT — set data-divider=\"none\" to hide it"
     },
     {
@@ -109,7 +108,8 @@
         "md",
         "lg"
       ],
-      "description": "sm | md  | lg"
+      "default": "md",
+      "description": "sm | md | lg"
     }
   ],
   "slots": [

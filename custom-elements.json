@@ -15,35 +15,35 @@
           "attributes": [
             {
               "name": "data-description",
-              "description": "— optional secondary line under the title (fallback to slotted [slot=description])",
+              "description": "optional secondary line under the title (fallback to slotted [slot=description])",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-heading",
-              "description": "— the summary title (fallback to slotted [slot=heading])",
+              "description": "the summary title (fallback to slotted [slot=heading])",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-icon",
-              "description": "— a glyph before the title: what the section holds",
+              "description": "a glyph before the title: what the section holds",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-status",
-              "description": "— status colour cascade (critical | warning | success | info | urgent)",
+              "description": "status colour cascade (critical | warning | success | info | urgent)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "open",
-              "description": "— native boolean (current disclosure state; drives [open] visuals)",
+              "description": "native boolean (current disclosure state; drives [open] visuals)",
               "type": {
                 "text": "boolean"
               },
@@ -456,10 +456,11 @@
           "attributes": [
             {
               "name": "data-nav-state",
-              "description": "collapsed  | hover | default | pinned | settings — mirrored from the rail; drives the content inset",
+              "description": "collapsed | hover | default | pinned | settings — mirrored from the rail; drives the content inset",
               "type": {
                 "text": "'collapsed' | 'hover' | 'default' | 'pinned' | 'settings'"
-              }
+              },
+              "default": "\"collapsed\""
             },
             {
               "name": "data-no-header",
@@ -658,10 +659,11 @@
           "attributes": [
             {
               "name": "data-aggregate",
-              "description": "count  | sum | mean | min | max | distinct, per value",
+              "description": "count | sum | mean | min | max | distinct, per value",
               "type": {
                 "text": "'count' | 'sum' | 'mean' | 'min' | 'max' | 'distinct'"
-              }
+              },
+              "default": "\"count\""
             },
             {
               "name": "data-axis-label",
@@ -941,11 +943,10 @@
             },
             {
               "name": "data-size",
-              "description": "2xs | xs | sm | lg | xl",
+              "description": "2xs | xs | sm | lg | xl   (default omitted = base size)",
               "type": {
                 "text": "'2xs' | 'xs' | 'sm' | 'lg' | 'xl'"
-              },
-              "default": "\"omitted = base size\""
+              }
             },
             {
               "name": "data-status",
@@ -1168,7 +1169,7 @@
             },
             {
               "name": "data-type",
-              "description": "single | range  — one day, or a two-click start→end range",
+              "description": "single | range — one day, or a two-click start→end range",
               "type": {
                 "text": "'single' | 'range'"
               },
@@ -1190,7 +1191,7 @@
             },
             {
               "name": "data-view",
-              "description": "day | month | year  — the active picker (the Grid-collection swap)",
+              "description": "day | month | year — the active picker (the Grid-collection swap)",
               "type": {
                 "text": "'day' | 'month' | 'year'"
               },
@@ -1384,7 +1385,7 @@
             },
             {
               "name": "data-status",
-              "description": "info | success | warning | critical | urgent",
+              "description": "info | success | warning | critical | urgent (default: neutral/info)",
               "type": {
                 "text": "'info' | 'success' | 'warning' | 'critical' | 'urgent'"
               }
@@ -1490,10 +1491,11 @@
             },
             {
               "name": "data-orientation",
-              "description": "vertical  | horizontal",
+              "description": "vertical | horizontal",
               "type": {
                 "text": "'horizontal' | 'vertical'"
-              }
+              },
+              "default": "\"vertical\""
             },
             {
               "name": "data-over-field",
@@ -1619,10 +1621,11 @@
             },
             {
               "name": "data-type",
-              "description": "assistant  | user (right, accent) | system (centred, muted)",
+              "description": "assistant | user (right, accent) | system (centred, muted)",
               "type": {
                 "text": "'assistant' | 'system' | 'user'"
-              }
+              },
+              "default": "\"assistant\""
             }
           ],
           "slots": [
@@ -1873,10 +1876,11 @@
           "attributes": [
             {
               "name": "data-align",
-              "description": "start | end  | between | stretch At \"stretch\" ONE wide control fills the row (a chat composer, a search field), rather than buttons clustered at one end.",
+              "description": "start | end | between | stretch At \"stretch\" ONE wide control fills the row (a chat composer, a search field), rather than buttons clustered at one end.",
               "type": {
                 "text": "'between' | 'end' | 'start' | 'stretch'"
-              }
+              },
+              "default": "\"end\""
             },
             {
               "name": "data-dirty",
@@ -2095,10 +2099,11 @@
           "attributes": [
             {
               "name": "data-elevation",
-              "description": "none  | sm | md | lg",
+              "description": "none | sm | md | lg",
               "type": {
                 "text": "'none' | 'sm' | 'md' | 'lg'"
-              }
+              },
+              "default": "\"none\""
             },
             {
               "name": "data-error",
@@ -2338,10 +2343,11 @@
             },
             {
               "name": "data-select",
-              "description": "multiple  | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen",
+              "description": "multiple | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen",
               "type": {
                 "text": "'single' | 'multiple'"
-              }
+              },
+              "default": "\"multiple\""
             },
             {
               "name": "data-selectable",
@@ -2917,28 +2923,29 @@
           "attributes": [
             {
               "name": "data-heading",
-              "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it",
+              "description": "the title of a composed sherpa-container-header; a slotted [slot=header] replaces it",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-status",
-              "description": "— status colour cascade (critical | warning | success | info | urgent)",
+              "description": "status colour cascade (critical | warning | success | info | urgent)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-type",
-              "description": "— modal  | overlay — overlay fills its container and opens NON-modal, so the page beside it stays live",
+              "description": "modal | overlay — overlay fills its container and opens NON-modal, so the page beside it stays live",
               "type": {
                 "text": "'modal' | 'overlay'"
-              }
+              },
+              "default": "\"modal\""
             },
             {
               "name": "open",
-              "description": "— native boolean (read reflects dialog.open; set → show()/close())",
+              "description": "native boolean (read reflects dialog.open; set → show()/close())",
               "type": {
                 "text": "boolean"
               },
@@ -3085,17 +3092,19 @@
             },
             {
               "name": "data-illustration",
-              "description": "built-in glyph: empty  | search | folder | data | error | success",
+              "description": "built-in glyph: empty | search | folder | data | error | success",
               "type": {
                 "text": "'data' | 'empty' | 'error' | 'folder' | 'search' | 'success'"
-              }
+              },
+              "default": "\"empty\""
             },
             {
               "name": "data-size",
-              "description": "sm | md  | lg",
+              "description": "sm | md | lg",
               "type": {
                 "text": "'sm' | 'md' | 'lg'"
-              }
+              },
+              "default": "\"md\""
             },
             {
               "name": "data-small-print",
@@ -3428,7 +3437,7 @@
               "type": {
                 "text": "string"
               },
-              "default": "\"\\\"Filters\\\"\""
+              "default": "\"Filters\""
             },
             {
               "name": "data-hide-unmatched",
@@ -3998,19 +4007,17 @@
             },
             {
               "name": "max",
-              "description": "scale bounds shown beneath",
+              "description": "scale bounds shown beneath (default 0 / 100)",
               "type": {
                 "text": "number"
-              },
-              "default": "\"0 / 100\""
+              }
             },
             {
               "name": "min",
-              "description": "scale bounds shown beneath",
+              "description": "scale bounds shown beneath (default 0 / 100)",
               "type": {
                 "text": "number"
-              },
-              "default": "\"0 / 100\""
+              }
             },
             {
               "name": "value",
@@ -4116,10 +4123,11 @@
             },
             {
               "name": "data-direction",
-              "description": "row  | column | grid",
+              "description": "row | column | grid",
               "type": {
                 "text": "'row' | 'column' | 'grid'"
-              }
+              },
+              "default": "\"row\""
             }
           ],
           "slots": [
@@ -4176,19 +4184,17 @@
             },
             {
               "name": "data-description",
-              "description": "helper text under the label",
+              "description": "helper text under the label (default style)",
               "type": {
                 "text": "string"
-              },
-              "default": "\"style\""
+              }
             },
             {
               "name": "data-error",
-              "description": "validation message — shown as a filled critical bar",
+              "description": "validation message — shown as a filled critical bar (default style)",
               "type": {
                 "text": "string"
-              },
-              "default": "\"style\""
+              }
             },
             {
               "name": "data-icon-end",
@@ -4220,11 +4226,10 @@
             },
             {
               "name": "data-multiline",
-              "description": "auto-growing <textarea>",
+              "description": "auto-growing <textarea> (default style only)",
               "type": {
                 "text": "string"
-              },
-              "default": "\"style only\""
+              }
             },
             {
               "name": "data-no-clear",
@@ -4255,11 +4260,10 @@
             },
             {
               "name": "data-type",
-              "description": "\"minimal\" for the bare inline field ; \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter",
+              "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter",
               "type": {
                 "text": "'minimal' | 'select' | 'number' | 'find'"
-              },
-              "default": "\"is the full molecule\""
+              }
             },
             {
               "name": "autocomplete",
@@ -4542,10 +4546,11 @@
           "attributes": [
             {
               "name": "data-orientation",
-              "description": "horizontal | vertical  No events — display only.",
+              "description": "horizontal | vertical No events — display only.",
               "type": {
                 "text": "'horizontal' | 'vertical'"
-              }
+              },
+              "default": "\"horizontal\""
             }
           ],
           "cssParts": [
@@ -4899,10 +4904,11 @@
           "attributes": [
             {
               "name": "data-aggregate",
-              "description": "count  | sum | mean | min | max | distinct, per point",
+              "description": "count | sum | mean | min | max | distinct, per point",
               "type": {
                 "text": "'count' | 'sum' | 'mean' | 'min' | 'max' | 'distinct'"
-              }
+              },
+              "default": "\"count\""
             },
             {
               "name": "data-axis-label",
@@ -4975,10 +4981,11 @@
             },
             {
               "name": "data-type",
-              "description": "line  | area",
+              "description": "line | area",
               "type": {
                 "text": "'line' | 'area'"
-              }
+              },
+              "default": "\"line\""
             },
             {
               "name": "data-where",
@@ -5282,11 +5289,10 @@
             },
             {
               "name": "data-type",
-              "description": "| plain (no dividers)",
+              "description": "(default — dividers between rows) | plain (no dividers)",
               "type": {
                 "text": "'plain'"
-              },
-              "default": "\"— dividers between rows\""
+              }
             }
           ],
           "slots": [
@@ -5337,10 +5343,11 @@
           "attributes": [
             {
               "name": "data-orientation",
-              "description": "horizontal  | vertical",
+              "description": "horizontal | vertical",
               "type": {
                 "text": "'horizontal' | 'vertical'"
-              }
+              },
+              "default": "\"horizontal\""
             },
             {
               "name": "data-panel",
@@ -5413,10 +5420,11 @@
             },
             {
               "name": "data-align",
-              "description": "start  | end   which trigger edge the card lines up with",
+              "description": "start | end which trigger edge the card lines up with",
               "type": {
                 "text": "'start' | 'end'"
-              }
+              },
+              "default": "\"start\""
             },
             {
               "name": "data-apply-on",
@@ -5578,10 +5586,11 @@
             },
             {
               "name": "data-select",
-              "description": "multiple  | single (radio rows)",
+              "description": "multiple | single (radio rows)",
               "type": {
                 "text": "'single' | 'multiple'"
-              }
+              },
+              "default": "\"multiple\""
             },
             {
               "name": "data-step",
@@ -5610,10 +5619,11 @@
             },
             {
               "name": "data-type",
-              "description": "list  | calendar | filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu.",
+              "description": "list | calendar | filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu.",
               "type": {
                 "text": "'list' | 'calendar' | 'filter'"
-              }
+              },
+              "default": "\"list\""
             },
             {
               "name": "data-value",
@@ -5991,7 +6001,7 @@
           "attributes": [
             {
               "name": "data-aggregate",
-              "description": "— ASKED of its provider: count | sum | mean | min | max | distinct",
+              "description": "ASKED of its provider: count | sum | mean | min | max | distinct",
               "type": {
                 "text": "'count' | 'sum' | 'mean' | 'min' | 'max' | 'distinct'"
               }
@@ -6004,28 +6014,28 @@
             },
             {
               "name": "data-bucket",
-              "description": "— a date over-field, cut to day | month | year",
+              "description": "a date over-field, cut to day | month | year",
               "type": {
                 "text": "'day' | 'month' | 'year'"
               }
             },
             {
               "name": "data-delta",
-              "description": "— the change text (e.g. \"+12.5%\")",
+              "description": "the change text (e.g. \"+12.5%\")",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-field",
-              "description": "— the number that aggregate reads",
+              "description": "the number that aggregate reads",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-format",
-              "description": "— the value's Intl.NumberFormatOptions, as JSON",
+              "description": "the value's Intl.NumberFormatOptions, as JSON",
               "type": {
                 "text": "string"
               }
@@ -6038,21 +6048,21 @@
             },
             {
               "name": "data-icon",
-              "description": "— a glyph before the name",
+              "description": "a glyph before the name",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-label",
-              "description": "— the metric name, in its header above the value",
+              "description": "the metric name, in its header above the value",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-over-field",
-              "description": "— the sparkline runs over this field",
+              "description": "the sparkline runs over this field",
               "type": {
                 "text": "string"
               }
@@ -6071,21 +6081,21 @@
             },
             {
               "name": "data-trend",
-              "description": "— up | down | flat  (colours the delta + shows the arrow)",
+              "description": "up | down | flat  (colours the delta + shows the arrow)",
               "type": {
                 "text": "'up' | 'down' | 'flat'"
               }
             },
             {
               "name": "data-value",
-              "description": "— the formatted value string (big number)",
+              "description": "the formatted value string (big number)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-where",
-              "description": "— its OWN default filter, a condition by field as JSON; narrows this tile alone",
+              "description": "its OWN default filter, a condition by field as JSON; narrows this tile alone",
               "type": {
                 "text": "string"
               }
@@ -6429,10 +6439,11 @@
             },
             {
               "name": "data-nav-state",
-              "description": "collapsed  | hover | default | pinned | settings",
+              "description": "collapsed | hover | default | pinned | settings",
               "type": {
                 "text": "'collapsed' | 'hover' | 'default' | 'pinned' | 'settings'"
-              }
+              },
+              "default": "\"collapsed\""
             },
             {
               "name": "data-searchable",
@@ -6641,7 +6652,7 @@
               "type": {
                 "text": "string"
               },
-              "default": "\"\\\"No notifications\\\"\""
+              "default": "\"No notifications\""
             }
           ],
           "members": [
@@ -7128,7 +7139,7 @@
             },
             {
               "name": "data-page",
-              "description": "— current 1-based page",
+              "description": "current 1-based page",
               "type": {
                 "text": "number"
               },
@@ -7136,22 +7147,21 @@
             },
             {
               "name": "data-page-size",
-              "description": "— active rows-per-page value",
+              "description": "active rows-per-page value (default first option)",
               "type": {
                 "text": "number"
-              },
-              "default": "\"first option\""
+              }
             },
             {
               "name": "data-rows-options",
-              "description": "— comma list of rows-per-page choices, e.g. \"10,25,50\"",
+              "description": "comma list of rows-per-page choices, e.g. \"10,25,50\"",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-total-pages",
-              "description": "— total page count",
+              "description": "total page count",
               "type": {
                 "text": "number"
               },
@@ -7265,21 +7275,21 @@
           "attributes": [
             {
               "name": "data-collapsed",
-              "description": "— boolean; hides the body/footer, leaving the header",
+              "description": "boolean; hides the body/footer, leaving the header",
               "type": {
                 "text": "boolean"
               }
             },
             {
               "name": "data-heading",
-              "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it",
+              "description": "the title of a composed sherpa-container-header; a slotted [slot=header] replaces it",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-status",
-              "description": "— status colour cascade (critical | warning | success | info | urgent)",
+              "description": "status colour cascade (critical | warning | success | info | urgent)",
               "type": {
                 "text": "string"
               }
@@ -7430,7 +7440,7 @@
           "attributes": [
             {
               "name": "data-current-step",
-              "description": "— 0-based index of the active step",
+              "description": "0-based index of the active step",
               "type": {
                 "text": "number"
               }
@@ -7505,14 +7515,14 @@
           "attributes": [
             {
               "name": "data-no-leading-actions",
-              "description": "— hide the two default leading buttons (attach + lab)",
+              "description": "hide the two default leading buttons (attach + lab)",
               "type": {
                 "text": "boolean"
               }
             },
             {
               "name": "disabled",
-              "description": "— disables the input, leading buttons + send button",
+              "description": "disables the input, leading buttons + send button",
               "type": {
                 "text": "boolean"
               },
@@ -7520,7 +7530,7 @@
             },
             {
               "name": "placeholder",
-              "description": "— textarea placeholder",
+              "description": "textarea placeholder",
               "type": {
                 "text": "string"
               }
@@ -8023,10 +8033,11 @@
             },
             {
               "name": "data-sort-direction",
-              "description": "asc  | desc",
+              "description": "asc | desc",
               "type": {
                 "text": "'asc' | 'desc' | ''"
-              }
+              },
+              "default": "\"asc\""
             },
             {
               "name": "data-sort-field",
@@ -8037,10 +8048,11 @@
             },
             {
               "name": "data-type",
-              "description": "data  | view   (view adds the ★/Save/▾ group)",
+              "description": "data | view (view adds the ★/Save/▾ group)",
               "type": {
                 "text": "'view' | 'data'"
-              }
+              },
+              "default": "\"data\""
             }
           ],
           "members": [
@@ -8342,7 +8354,7 @@
                   "optional": true
                 }
               ],
-              "description": "— organise chips included; three events afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets itself; `{ carry: true }` keeps a carry-over chip, as a View change does. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn, so an off chip never still names what it held."
+              "description": "organise chips included; three events afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets itself; `{ carry: true }` keeps a carry-over chip, as a View change does. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn, so an off chip never still names what it held."
             },
             {
               "kind": "method",
@@ -8724,8 +8736,7 @@
               "description": "default | ai | jump | key `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view. `key` is a chart legend's row: no border, mono 12px, 16 tall. Its ON is SHOWN, so at rest every key is on. TODO 149",
               "type": {
                 "text": "'default' | 'ai' | 'jump' | 'key'"
-              },
-              "default": "false"
+              }
             },
             {
               "name": "data-unavailable",
@@ -8986,10 +8997,11 @@
           "attributes": [
             {
               "name": "data-aggregate",
-              "description": "count  | sum | mean | min | max | distinct, per value",
+              "description": "count | sum | mean | min | max | distinct, per value",
               "type": {
                 "text": "'count' | 'sum' | 'mean' | 'min' | 'max' | 'distinct'"
-              }
+              },
+              "default": "\"count\""
             },
             {
               "name": "data-bands",
@@ -9026,7 +9038,7 @@
             },
             {
               "name": "data-legend",
-              "description": "horizontal  | vertical (beside it)",
+              "description": "horizontal (default: below the ring) | vertical (beside it)",
               "type": {
                 "text": "'horizontal' | 'vertical'"
               }
@@ -9053,10 +9065,11 @@
             },
             {
               "name": "data-sweep",
-              "description": "how far it runs, in degrees. 360  is a full ring; a gauge is this ring stopped short — start 270, sweep 180.",
+              "description": "how far it runs, in degrees. 360 is a full ring; a gauge is this ring stopped short — start 270, sweep 180.",
               "type": {
                 "text": "number"
-              }
+              },
+              "default": "\"360\""
             },
             {
               "name": "data-sweep-start",
@@ -9067,10 +9080,11 @@
             },
             {
               "name": "data-type",
-              "description": "donut  | pie   (pie fills to the centre, no hole)",
+              "description": "donut | pie (pie fills to the centre, no hole)",
               "type": {
                 "text": "'donut' | 'pie'"
-              }
+              },
+              "default": "\"donut\""
             },
             {
               "name": "data-where",
@@ -9268,8 +9282,7 @@
               "description": "bottom divider; shown by DEFAULT — set data-divider=\"none\" to hide it",
               "type": {
                 "text": "'none'"
-              },
-              "default": "false"
+              }
             },
             {
               "name": "data-heading",
@@ -9280,10 +9293,11 @@
             },
             {
               "name": "data-size",
-              "description": "sm | md  | lg",
+              "description": "sm | md | lg",
               "type": {
                 "text": "'sm' | 'md' | 'lg'"
-              }
+              },
+              "default": "\"md\""
             }
           ],
           "slots": [
@@ -9407,11 +9421,10 @@
             },
             {
               "name": "name",
-              "description": "radio group name",
+              "description": "radio group name (default footer)",
               "type": {
                 "text": "string"
-              },
-              "default": "\"footer\""
+              }
             },
             {
               "name": "value",
@@ -9618,7 +9631,7 @@
               "type": {
                 "text": "string"
               },
-              "default": "\"\\\"on\\\"\""
+              "default": "\"on\""
             }
           ],
           "members": [
@@ -10087,14 +10100,14 @@
           "attributes": [
             {
               "name": "data-label",
-              "description": "— label text above the slider (shown when set)",
+              "description": "label text above the slider (shown when set)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-show-value",
-              "description": "— show the editable value field under the track ; a range's two fields share that row, half each",
+              "description": "show the editable value field under the track ; a range's two fields share that row, half each",
               "type": {
                 "text": "boolean"
               },
@@ -10102,35 +10115,36 @@
             },
             {
               "name": "data-type",
-              "description": "— single  | range — two thumbs and two value fields",
+              "description": "single | range — two thumbs and two value fields",
               "type": {
                 "text": "'single' | 'range'"
-              }
+              },
+              "default": "\"single\""
             },
             {
               "name": "data-value-end",
-              "description": "— the range ends (data-type=\"range\" only)",
+              "description": "the range ends (data-type=\"range\" only)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "data-value-readonly",
-              "description": "— make the value display read-only (no typing)",
+              "description": "make the value display read-only (no typing)",
               "type": {
                 "text": "boolean"
               }
             },
             {
               "name": "data-value-start",
-              "description": "— the range ends (data-type=\"range\" only)",
+              "description": "the range ends (data-type=\"range\" only)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "disabled",
-              "description": "— disabled state",
+              "description": "disabled state",
               "type": {
                 "text": "boolean"
               },
@@ -10138,35 +10152,35 @@
             },
             {
               "name": "max",
-              "description": "— maximum value (native, default 100)",
+              "description": "maximum value (native, default 100)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "min",
-              "description": "— minimum value (native, default 0)",
+              "description": "minimum value (native, default 0)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "name",
-              "description": "— the form field its value, or a range's two ends, are submitted under",
+              "description": "the form field its value, or a range's two ends, are submitted under",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "step",
-              "description": "— step increment (native, default 1)",
+              "description": "step increment (native, default 1)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "value",
-              "description": "— current value (native)",
+              "description": "current value (native)",
               "type": {
                 "text": "string"
               }
@@ -10285,14 +10299,14 @@
           "attributes": [
             {
               "name": "data-type",
-              "description": "— line  | bar (flat-topped columns)",
+              "description": "line (default, area + stroke) | bar (flat-topped columns)",
               "type": {
                 "text": "'bar'"
               }
             },
             {
               "name": "data-values",
-              "description": "— comma-separated or JSON array (e.g. \"10,25,15,30\")",
+              "description": "comma-separated or JSON array (e.g. \"10,25,15,30\")",
               "type": {
                 "text": "string"
               }
@@ -10340,17 +10354,19 @@
           "attributes": [
             {
               "name": "data-align",
-              "description": "start | center | end | stretch  | between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it",
+              "description": "start | center | end | stretch | between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it",
               "type": {
                 "text": "'between' | 'center' | 'end' | 'start' | 'stretch'"
-              }
+              },
+              "default": "\"stretch\""
             },
             {
               "name": "data-direction",
-              "description": "block  | inline (a row)",
+              "description": "block | inline (a row)",
               "type": {
                 "text": "'block' | 'inline'"
-              }
+              },
+              "default": "\"block\""
             },
             {
               "name": "data-fill",
@@ -10364,7 +10380,8 @@
               "description": "sm (4) | md (8) | lg (12, default) | xl (16) | 2xl (24)",
               "type": {
                 "text": "'2xl' | 'lg' | 'md' | 'none' | 'sm' | 'xl'"
-              }
+              },
+              "default": "\"lg\""
             },
             {
               "name": "data-grow",
@@ -10386,7 +10403,7 @@
               "type": {
                 "text": "'hug' | 'sm' | 'md' | 'lg' | 'xl'"
               },
-              "default": "\"200px\""
+              "default": "\"md\""
             },
             {
               "name": "data-scroll",
@@ -10462,14 +10479,14 @@
             },
             {
               "name": "data-type",
-              "description": "— default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)",
+              "description": "default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)",
               "type": {
                 "text": "'default' | 'simple'"
               }
             },
             {
               "name": "checked",
-              "description": "— native boolean       (current value; drives :checked visuals)",
+              "description": "native boolean       (current value; drives :checked visuals)",
               "type": {
                 "text": "boolean"
               },
@@ -10477,7 +10494,7 @@
             },
             {
               "name": "disabled",
-              "description": "— native boolean       (reflected onto the inner input)",
+              "description": "native boolean       (reflected onto the inner input)",
               "type": {
                 "text": "boolean"
               },
@@ -10485,14 +10502,14 @@
             },
             {
               "name": "name",
-              "description": "— native string        (what a form submits it under)",
+              "description": "native string        (what a form submits it under)",
               "type": {
                 "text": "string"
               }
             },
             {
               "name": "required",
-              "description": "— native boolean       (a form refuses it while off)",
+              "description": "native boolean       (a form refuses it while off)",
               "type": {
                 "text": "boolean"
               },
@@ -10500,10 +10517,11 @@
             },
             {
               "name": "value",
-              "description": "— native string        (what it stands for when on; default \"on\")",
+              "description": "native string        (what it stands for when on; default \"on\")",
               "type": {
                 "text": "string"
-              }
+              },
+              "default": "\"on\""
             }
           ],
           "members": [
@@ -10629,7 +10647,7 @@
           "attributes": [
             {
               "name": "data-current-id",
-              "description": "— id of the currently active tab / panel",
+              "description": "id of the currently active tab / panel",
               "type": {
                 "text": "string"
               }
@@ -10822,11 +10840,10 @@
             },
             {
               "name": "data-duration",
-              "description": "auto-dismiss delay in ms",
+              "description": "auto-dismiss delay in ms (default 5000; 0 disables)",
               "type": {
                 "text": "string"
-              },
-              "default": "\"5000; 0 disables\""
+              }
             },
             {
               "name": "data-heading",
@@ -10843,10 +10860,11 @@
             },
             {
               "name": "data-status",
-              "description": "info  | success | warning | critical | urgent",
+              "description": "info | success | warning | critical | urgent",
               "type": {
                 "text": "'info' | 'success' | 'warning' | 'critical' | 'urgent'"
-              }
+              },
+              "default": "\"info\""
             },
             {
               "name": "data-value",
@@ -10941,17 +10959,19 @@
           "attributes": [
             {
               "name": "data-density",
-              "description": "comfortable  | compact (tighter block padding)",
+              "description": "comfortable | compact (tighter block padding)",
               "type": {
                 "text": "'comfortable' | 'compact'"
-              }
+              },
+              "default": "\"comfortable\""
             },
             {
               "name": "data-type",
-              "description": "plain  | bordered (adds a bottom rule)",
+              "description": "plain | bordered (adds a bottom rule)",
               "type": {
                 "text": "'plain' | 'bordered'"
-              }
+              },
+              "default": "\"plain\""
             }
           ],
           "slots": [
@@ -11016,10 +11036,11 @@
             },
             {
               "name": "data-placement",
-              "description": "top  | bottom | left | right",
+              "description": "top | bottom | left | right",
               "type": {
                 "text": "'top' | 'bottom' | 'left' | 'right'"
-              }
+              },
+              "default": "\"top\""
             },
             {
               "name": "data-text",

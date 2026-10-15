@@ -545,7 +545,8 @@
         "desc",
         ""
       ],
-      "description": "asc  | desc"
+      "default": "asc",
+      "description": "asc | desc"
     },
     {
       "$type": "prop",
@@ -567,7 +568,8 @@
         "view",
         "data"
       ],
-      "description": "data  | view   (view adds the ★/Save/▾ group)"
+      "default": "data",
+      "description": "data | view (view adds the ★/Save/▾ group)"
     }
   ],
   "slots": [
@@ -909,7 +911,7 @@
           "$type": "method",
           "name": "clearAll",
           "args": "options: { organise?: boolean; carry?: boolean } = {}",
-          "description": "— organise chips included; three events afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets itself; `{ carry: true }` keeps a carry-over chip, as a View change does. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn, so an off chip never still names what it held."
+          "description": "organise chips included; three events afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets itself; `{ carry: true }` keeps a carry-over chip, as a View change does. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn, so an off chip never still names what it held."
         },
         {
           "$type": "method",

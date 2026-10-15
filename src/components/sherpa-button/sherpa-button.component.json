@@ -246,8 +246,7 @@
         "lg",
         "xl"
       ],
-      "default": "omitted = base size",
-      "description": "2xs | xs | sm | lg | xl"
+      "description": "2xs | xs | sm | lg | xl   (default omitted = base size)"
     },
     {
       "$type": "prop",

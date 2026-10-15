@@ -55,7 +55,8 @@
         "horizontal",
         "vertical"
       ],
-      "description": "horizontal | vertical  No events — display only."
+      "default": "horizontal",
+      "description": "horizontal | vertical No events — display only."
     }
   ],
   "populate": {

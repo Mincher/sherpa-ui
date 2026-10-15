@@ -111,7 +111,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "— hide the two default leading buttons (attach + lab)"
+      "description": "hide the two default leading buttons (attach + lab)"
     },
     {
       "$type": "prop",
@@ -120,7 +120,7 @@
       "observed": true,
       "native": true,
       "default": false,
-      "description": "— disables the input, leading buttons + send button"
+      "description": "disables the input, leading buttons + send button"
     },
     {
       "$type": "prop",
@@ -130,7 +130,7 @@
       "declared": true,
       "native": true,
       "kind": "content",
-      "description": "— textarea placeholder"
+      "description": "textarea placeholder"
     }
   ],
   "slots": [
