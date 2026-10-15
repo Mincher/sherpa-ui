@@ -2063,8 +2063,9 @@ export class DataSource extends EventTarget {
       .filter((f) => !above.has(f) && this.#isListField(f));
     // Fields limited by the same filter share one pass over the rows.
     const passes = new Map<string, { filter: Filter | undefined; fields: string[] }>();
+    const facts = this.#compileFacts();
     for (const f of fields) {
-      const filter = this.#limitFor(scope, f);
+      const filter = this.#limitFor(scope, f, facts);
       const key = JSON.stringify(filter ?? null);
       if (!passes.has(key)) passes.set(key, { filter, fields: [] });
       passes.get(key)!.fields.push(f);
@@ -2082,11 +2083,12 @@ export class DataSource extends EventTarget {
   }
 
   /** What limits one field: the applied Query compiled WITHOUT that field's own answer in its scope. */
-  #limitFor(scope: string, field: string): Filter | undefined {
-    const query = structuredClone(this.#applied);
-    const own = query.scopes[scope];
-    if (own) Reflect.deleteProperty(own.readings, field);
-    const { view, scoped } = compile(query, this.#compileFacts());
+  #limitFor(scope: string, field: string, facts: CompileFacts): Filter | undefined {
+    // Never edit `own`: on a local source the applied Query IS the draft.
+    const own = this.#applied.scopes[scope];
+    const { [field]: _own, ...readings } = own?.readings ?? {};
+    const query: Query = own ? { ...this.#applied, scopes: { ...this.#applied.scopes, [scope]: { ...own, readings } } } : this.#applied;
+    const { view, scoped } = compile(query, facts);
     return andFilter([view, scope === VIEW ? undefined : scoped[scope]].filter((f): f is Filter => !!f));
   }
 
@@ -2129,7 +2131,7 @@ export class DataSource extends EventTarget {
       }
       const chained = out.get(scope) ?? {};
       const newest = Object.keys(q.readings)
-        .sort((a, b) => this.#recency.indexOf(`${scope}:${b}`) - this.#recency.indexOf(`${scope}:${a}`));
+        .sort((a, b) => (this.#recency.get(`${scope}:${b}`) ?? -1) - (this.#recency.get(`${scope}:${a}`) ?? -1));
       for (const f of newest) {
         const reading = q.readings[f]!;
         if (reading.suspended || (scope !== VIEW && viewHolds.has(f))) continue;
@@ -2250,8 +2252,10 @@ export class DataSource extends EventTarget {
   /** The picks set aside, by scope then field, as value keys. */
   #setAside = new Map<string, Record<string, string[]>>();
 
-  /** Each answered field, oldest change first — `scope:field`. */
-  #recency: string[] = [];
+  /** Each answered field's last change as a number — `scope:field`; higher is newer. */
+  #recency = new Map<string, number>();
+  /** How many changes have been noted; each takes the next number. */
+  #noted = 0;
   /** Each reading as last seen, so a CHANGE moves its field to the end. */
   #lastSeen = new Map<string, string>();
 
@@ -2265,13 +2269,13 @@ export class DataSource extends EventTarget {
         const now = JSON.stringify(reading.picked ?? []) + JSON.stringify(reading.suspended ?? false);
         if (this.#lastSeen.get(id) === now) continue;
         this.#lastSeen.set(id, now);
-        this.#recency = [...this.#recency.filter((x) => x !== id), id];
+        this.#recency.set(id, ++this.#noted);
       }
     }
     for (const id of [...this.#lastSeen.keys()]) {
       if (seen.has(id)) continue;
       this.#lastSeen.delete(id);
-      this.#recency = this.#recency.filter((x) => x !== id);
+      this.#recency.delete(id);
     }
   }
 
