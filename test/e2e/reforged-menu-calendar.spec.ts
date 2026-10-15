@@ -152,7 +152,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
     ) as (HTMLElement & { shadowRoot: ShadowRoot }) | undefined;
     cell?.shadowRoot.querySelector('button')?.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const afterPick = cal.dataset['value'] ?? null;
+    const afterPick = cal.getAttribute('value');
 
     // TODAY is the left footer button on a calendar (Figma puts it in that
     // slot), and it re-picks rather than empties — so the date after it is
@@ -170,7 +170,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
       menuType: menu.getAttribute('data-type'),
       projected: !!menu.querySelector(':scope > .cal-header-projected'),
       picked, afterPick, todayReachable,
-      afterToday: cal.dataset['value'] ?? null,
+      afterToday: cal.getAttribute('value'),
       todayIso: `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`,
     };
   });
@@ -306,7 +306,7 @@ test('a cell fills its grid track in every view — nothing clips it', async ({ 
     // at that figure rather than being fixed to it — in a wider box the seven
     // 1fr tracks share the extra instead.
     root.innerHTML =
-      '<div style="inline-size:240px"><sherpa-calendar data-value="2026-08-15"></sherpa-calendar></div>';
+      '<div style="inline-size:240px"><sherpa-calendar value="2026-08-15"></sherpa-calendar></div>';
     const cal = root.querySelector('sherpa-calendar') as HTMLElement & {
       rendered?: Promise<void>; shadowRoot: ShadowRoot; dataset: DOMStringMap;
     };
@@ -456,12 +456,12 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
 
     // Drive it from somewhere far away — a year view with no date picked.
     cal.cal!.dataset['view'] = 'year';
-    delete cal.cal!.dataset['value'];
+    cal.cal!.removeAttribute('value');
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const before = { view: cal.cal!.dataset['view'], value: cal.cal!.dataset['value'] ?? null };
+    const before = { view: cal.cal!.dataset['view'], value: cal.cal!.getAttribute('value') };
     (cal.m.shadowRoot.querySelector('.today') as HTMLElement).click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const after = { view: cal.cal!.dataset['view'], value: cal.cal!.dataset['value'] ?? null };
+    const after = { view: cal.cal!.dataset['view'], value: cal.cal!.getAttribute('value') };
     const stillOpen = !!cal.m.shadowRoot.querySelector('.menu:popover-open');
     cal.m.hide();
 
@@ -734,13 +734,13 @@ test('a calendar menu reports its picked day as the menu value', async ({ page }
     const empty = menu.values;
 
     // ONE DAY.
-    cal.dataset['value'] = '2026-03-04';
+    cal.setAttribute('value', '2026-03-04');
     await settle();
     const single = menu.values;
 
     // A RANGE reports BOTH ends — and only once both are picked. Half a span is
     // not a span, and reporting one end alone would read as a single-day filter.
-    delete cal.dataset['value'];
+    cal.removeAttribute('value');
     cal.dataset['valueStart'] = '2026-03-01';
     await settle();
     const halfRange = menu.values;

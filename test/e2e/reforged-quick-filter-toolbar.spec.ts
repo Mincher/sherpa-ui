@@ -1060,7 +1060,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const steppedTo = projected.querySelector('.cal-label')!.textContent;
 
-    cal.setAttribute('data-value', '2024-06-15');
+    cal.setAttribute('value', '2024-06-15');
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 200));
@@ -1084,7 +1084,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
     const p2 = (n: number) => String(n).padStart(2, '0');
     return {
       before, steppedTo, after,
-      afterToday: cal.dataset['value'] ?? null,
+      afterToday: cal.getAttribute('value'),
       todayIso: `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`,
     };
   });
@@ -1703,7 +1703,7 @@ test('a DATE chip names its whole range, day first, without truncating', async (
       } else {
         delete cal.dataset['valueStart'];
         delete cal.dataset['valueEnd'];
-        cal.dataset['value'] = start;
+        cal.setAttribute('value', start);
         cal.dispatchEvent(
           new CustomEvent('datetime-change', { bubbles: true, composed: true, detail: start }),
         );

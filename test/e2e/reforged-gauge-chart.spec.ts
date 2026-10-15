@@ -1,7 +1,7 @@
 import { test, expect } from './harness';
 
 /**
- * sherpa-gauge-chart — data-value drives the band's sweep + the needle angle.
+ * sherpa-gauge-chart — value drives the band's sweep + the needle angle.
  *
  * The ring is closed SVG ring-segment paths (half a donut with a needle), so
  * "how full is it" is the ANGLE the band's path sweeps — not a stroke-dasharray,
@@ -39,12 +39,12 @@ const FRAC_FN = `(el) => {
 }`;
 
 
-test('data-value sets the band sweep and needle angle', async ({ page }) => {
+test('value sets the band sweep and needle angle', async ({ page }) => {
   const r = await page.evaluate(async (fracSrc) => {
     const sweep = eval(fracSrc) as (el: SVGPathElement) => number;
     const read = async (value: string) => {
       const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void> };
-      el.setAttribute('data-value', value);
+      el.setAttribute('value', value);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       // With no zones there is ONE value band, plus a grey remainder band when
@@ -80,7 +80,7 @@ test('data-value sets the band sweep and needle angle', async ({ page }) => {
   // "value% (top), 0% / caption / 100% (bottom row)", so the three labels are one
   // axis: 0 at the left, the midpoint above, the max at the right. All three are
   // the same 10px Regular. On a 0-100 scale the midpoint is 50 whatever the
-  // needle reads, which is why this assertion does not move with data-value.
+  // needle reads, which is why this assertion does not move with value.
   expect(r.full.value).toBe('50');
 });
 
@@ -88,9 +88,9 @@ test('data-status re-points the fill colour and a custom min/max scales', async 
   const r = await page.evaluate(async (fracSrc) => {
     const sweep = eval(fracSrc) as (el: SVGPathElement) => number;
     const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-value', '10');
-    el.setAttribute('data-min', '0');
-    el.setAttribute('data-max', '20'); // 10/20 = 50%
+    el.setAttribute('value', '10');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '20'); // 10/20 = 50%
     el.setAttribute('data-status', 'critical');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -111,7 +111,7 @@ test('data-status re-points the fill colour and a custom min/max scales', async 
 test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers none', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-value', '70');
+    el.setAttribute('value', '70');
     el.setAttribute('data-zones', '0-60:success,60-85:warning,85-100:critical');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -186,14 +186,14 @@ test('grey fills only the scale the bands leave uncovered', async ({ page }) => 
     };
     return {
       // Zones covering the whole scale — nothing to fill, at ANY value.
-      fullLow: await read({ 'data-value': '10', 'data-zones': '0-60:success,60-85:warning,85-100:critical' }),
-      fullHigh: await read({ 'data-value': '95', 'data-zones': '0-60:success,60-85:warning,85-100:critical' }),
+      fullLow: await read({ 'value': '10', 'data-zones': '0-60:success,60-85:warning,85-100:critical' }),
+      fullHigh: await read({ 'value': '95', 'data-zones': '0-60:success,60-85:warning,85-100:critical' }),
       // Zones stopping short — grey covers 80–100 whatever the value.
-      short: await read({ 'data-value': '30', 'data-zones': '0-50:success,50-80:warning' }),
+      short: await read({ 'value': '30', 'data-zones': '0-50:success,50-80:warning' }),
       // No zones at all: the single band IS the reading, so it stops at the
       // value and grey pads the rest.
-      bare: await read({ 'data-value': '25' }),
-      bareFull: await read({ 'data-value': '100' }),
+      bare: await read({ 'value': '25' }),
+      bareFull: await read({ 'value': '100' }),
     };
   }, FRAC_FN);
 
@@ -225,7 +225,7 @@ test('a named zone is called the same in its tooltip and in the legend', async (
     const build = async (zones: string, unit?: string) => {
       const root = document.getElementById('root')!;
       const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void> };
-      el.setAttribute('data-value', '30');
+      el.setAttribute('value', '30');
       el.setAttribute('data-zones', zones);
       if (unit) el.setAttribute('data-unit', unit);
       const legend = document.createElement('sherpa-chart-legend') as HTMLElement & { populate(d: unknown): Promise<void> };
@@ -251,7 +251,7 @@ test('a named zone is called the same in its tooltip and in the legend', async (
     // No names: the legend is its host's to fill, and stays as the host left it.
     const plain = await build('0-60:success,60-100:critical');
     await plain.legend.populate([{ label: 'Mine', status: 'success' }]);
-    plain.el.setAttribute('data-value', '80');
+    plain.el.setAttribute('value', '80');
     await window.__settled();
     return { named, json, plain: plain.read() };
   });
@@ -272,7 +272,7 @@ test('a named zone is called the same in its tooltip and in the legend', async (
 test('an inverted gauge reads its value from the top, and turns its field\'s bands round', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>(
-      'sherpa-gauge-chart', undefined, { 'data-invert': '', 'data-min': '0', 'data-max': '100' });
+      'sherpa-gauge-chart', undefined, { 'data-invert': '', 'min': '0', 'max': '100' });
     el.innerHTML = '<sherpa-chart-legend slot="legend" data-readonly></sherpa-chart-legend>';
     await el.populate({ value: 30, zones: [
       { to: 60, label: 'At risk', status: 'critical' },

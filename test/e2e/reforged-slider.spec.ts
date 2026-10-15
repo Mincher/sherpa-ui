@@ -212,8 +212,8 @@ test('data-type="range" draws two thumbs, two fields, and a fill between them', 
     el.setAttribute('data-show-value', '');
     el.setAttribute('min', '0');
     el.setAttribute('max', '100');
-    el.setAttribute('value-start', '20');
-    el.setAttribute('value-end', '70');
+    el.setAttribute('data-value-start', '20');
+    el.setAttribute('data-value-end', '70');
     el.style.inlineSize = '400px';
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
@@ -258,8 +258,8 @@ test('the range ends clamp against each other and always read low-first', async 
     el.setAttribute('data-type', 'range');
     el.setAttribute('min', '0');
     el.setAttribute('max', '100');
-    el.setAttribute('value-start', '20');
-    el.setAttribute('value-end', '70');
+    el.setAttribute('data-value-start', '20');
+    el.setAttribute('data-value-end', '70');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -316,8 +316,8 @@ test('a value field is a Sherpa number field; its event stops at the slider, whi
     el.setAttribute('min', '0');
     el.setAttribute('max', '100');
     el.setAttribute('step', '10');
-    el.setAttribute('value-start', '20');
-    el.setAttribute('value-end', '60');
+    el.setAttribute('data-value-start', '20');
+    el.setAttribute('data-value-end', '60');
     el.setAttribute('data-show-value', '');
     document.getElementById('root')!.appendChild(el);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -330,7 +330,7 @@ test('a value field is a Sherpa number field; its event stops at the slider, whi
     return {
       fields: fields.map((f) => `${f.localName}[${f.getAttribute('data-type')}]`),
       bare: el.shadowRoot!.querySelectorAll('input[type="number"]').length,
-      end: el.getAttribute('value-end'),
+      end: el.getAttribute('data-value-end'),
       seen,
     };
   });
@@ -344,7 +344,7 @@ test('the value fields sit UNDER the track, in one row, at any width', async ({ 
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = [200, 640].map((w) => `<div style="inline-size: ${w}px"><sherpa-slider data-type="range" min="0" max="100000"`
-      + ' value-start="0" value-end="100000" data-show-value></sherpa-slider></div>').join('');
+      + ' data-value-start="0" data-value-end="100000" data-show-value></sherpa-slider></div>').join('');
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return [...root.querySelectorAll('sherpa-slider')].map((el) => {
       const box = (sel: string) => el.shadowRoot!.querySelector(sel)!.getBoundingClientRect();

@@ -30,10 +30,9 @@ A range's two ends have no native name → `data-value-start`/`data-value-end`
 on every component that has them. A chart's axis bound is not a `<meter>`'s
 → it keeps `data-min`/`data-max` (bar, line).
 
-**Moves (10).** gauge `data-value|min|max` → `value|min|max`; metric
-`data-value` → `value`; calendar `data-value|min|max` → `value|min|max`;
+**Moves (9).** gauge `data-value|min|max` → `value|min|max`; calendar `data-value|min|max` → `value|min|max`;
 slider `value-start|value-end` → `data-value-start|data-value-end`.
-**Stays:** toast `data-value` (it is text, not a number), calendar-cell
+**Stays:** metric and toast `data-value` (each is the formatted TEXT shown; the metric's numeric `value` is a property already), calendar-cell
 `data-value` (a date key), the menu's number body `data-min|max|step` (it hands
 them to its slider, from the data) and chart axes.
 **Cost.** Highest of the table: `data-value` is also what a provider writes onto

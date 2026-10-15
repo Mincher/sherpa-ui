@@ -21,7 +21,7 @@ interface SliderData {
 }
 
 /** What a form reset restores. */
-const RESETS = ['value', 'value-start', 'value-end', 'data-touched'];
+const RESETS = ['value', 'data-value-start', 'data-value-end', 'data-touched'];
 
 export class SherpaSlider extends SherpaElement {
   static override css = new URL('./sherpa-slider.css', import.meta.url);
@@ -31,6 +31,9 @@ export class SherpaSlider extends SherpaElement {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-type': { type: 'enum', kind: 'style', values: ['single', 'range'] },
     'data-value-readonly': { type: 'boolean', kind: 'style' },
+    // A range's two ends have no native name. TRAP T-a-native-name-where-a-native-element-does-the-job
+    'data-value-start': { type: 'string', kind: 'behaviour' },
+    'data-value-end': { type: 'string', kind: 'behaviour' },
   } as const;
 
   static override observed = [
@@ -38,8 +41,6 @@ export class SherpaSlider extends SherpaElement {
     'max',
     'step',
     'value',
-    'value-start',
-    'value-end',
     'disabled',
     'name',
   ];
@@ -106,7 +107,7 @@ export class SherpaSlider extends SherpaElement {
   override onChange(name: string): void {
     // A set of either end AFTER upgrade is a real change — the toolbar seeds
     // the bounds before this element exists. TRAP T-a-full-range-is-still-a-range
-    if (name === 'value-start' || name === 'value-end' || name === 'value') {
+    if (name === 'data-value-start' || name === 'data-value-end' || name === 'value') {
       this.set('data-touched', '');
     }
     if (
@@ -147,15 +148,15 @@ export class SherpaSlider extends SherpaElement {
 
   /** The two ends, LOW first. TRAP T-range-reads-ordered-but-drags-clamped — reading ORDERS the pair. */
   get range(): [number, number] {
-    const lo = this.#clamp(this.getAttribute('value-start') ?? String(this.#min));
-    const hi = this.#clamp(this.getAttribute('value-end') ?? String(this.#max));
+    const lo = this.#clamp(this.getAttribute('data-value-start') ?? String(this.#min));
+    const hi = this.#clamp(this.getAttribute('data-value-end') ?? String(this.#max));
     return lo <= hi ? [lo, hi] : [hi, lo];
   }
   set range(next: [number, number]) {
     const [lo, hi] = [this.#clamp(next[0]), this.#clamp(next[1])];
     const [start, end] = lo <= hi ? [lo, hi] : [hi, lo];
-    this.setAttribute('value-start', String(start));
-    this.setAttribute('value-end', String(end));
+    this.setAttribute('data-value-start', String(start));
+    this.setAttribute('data-value-end', String(end));
   }
 
   /* ── Bounds ──────────────────────────────────────────────────────────── */
@@ -243,8 +244,8 @@ export class SherpaSlider extends SherpaElement {
     const value = this.#clamp(raw);
     const next: [number, number] =
       which === 'start' ? [Math.min(value, end), end] : [start, Math.max(value, start)];
-    this.setAttribute('value-start', String(next[0]));
-    this.setAttribute('value-end', String(next[1]));
+    this.setAttribute('data-value-start', String(next[0]));
+    this.setAttribute('data-value-end', String(next[1]));
     this.emit(event, { start: next[0], end: next[1] });
   }
 

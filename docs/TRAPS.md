@@ -16173,6 +16173,29 @@ the event is heard, so a check made at once left every tip open.
 - Site: `test/e2e/reforged-button-tip.spec.ts`
 
 
+### T-a-native-name-where-a-native-element-does-the-job
+
+**Where a native element does the same job, a component takes its name,
+unprefixed** (Will, D6; the lexicon, `docs/LEXICON.md`; TODO 279). `value`,
+`min`, `max`, `step` on gauge, calendar and slider, as `<meter>`,
+`<input type=date>` and `<input type=range>` have them; `checked` on a ticked
+control; `accept`, `multiple` and `placeholder` where a file or text control
+wraps the native one. What no native element names keeps `data-`: a range's two
+ends are `data-value-start` and `data-value-end` on the slider and the calendar
+alike, and a chart's axis bound stays `data-min`/`data-max`.
+
+**The type-checker cannot see the rename.** `this.dataset['accept']` still
+compiles after `accept` stops being a `data-*` attribute, and reads
+`undefined` for ever. `check:props` catches a `this.dataset` read of a name no
+prop declares; it found five in the first pass. A native name is read with
+`getAttribute`.
+
+**What stays text.** The metric's and the toast's `data-value` are the
+formatted string shown, not a number on a scale: the metric's number is its
+`value` property already.
+
+- Site: `src/components/sherpa-slider/sherpa-slider.ts`
+
 ### T-focus-is-delegated-by-the-platform
 
 **A control whose one control is inside its shadow root sets `static

@@ -57,9 +57,9 @@ test('the slider, select card, calendar, file upload and transfer list submit th
     const root = document.getElementById('root')!;
     root.innerHTML = `<form><fieldset>
       <sherpa-slider name="seats" value="30"></sherpa-slider>
-      <sherpa-slider name="band" data-type="range" value-start="10" value-end="90"></sherpa-slider>
+      <sherpa-slider name="band" data-type="range" data-value-start="10" data-value-end="90"></sherpa-slider>
       <sherpa-select-card name="plan" value="pro" checked></sherpa-select-card>
-      <sherpa-calendar name="due" data-value="2026-10-12"></sherpa-calendar>
+      <sherpa-calendar name="due" value="2026-10-12"></sherpa-calendar>
       <sherpa-calendar name="span" data-type="range" data-value-start="2026-10-01" data-value-end="2026-10-05"></sherpa-calendar>
       <sherpa-file-upload name="docs" multiple></sherpa-file-upload>
       <sherpa-transfer-list name="regions"></sherpa-transfer-list>
@@ -74,7 +74,7 @@ test('the slider, select card, calendar, file upload and transfer list submit th
 
     (root.querySelector('sherpa-slider') as HTMLElement & { value: number }).value = 55;
     (root.querySelector('sherpa-select-card') as HTMLElement & { checked: boolean }).checked = false;
-    root.querySelector('sherpa-calendar')!.setAttribute('data-value', '2026-11-01');
+    root.querySelector('sherpa-calendar')!.setAttribute('value', '2026-11-01');
     const drop = new DataTransfer();
     drop.items.add(new File(['a'], 'a.txt'));
     drop.items.add(new File(['b'], 'b.txt'));

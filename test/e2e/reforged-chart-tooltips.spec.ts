@@ -185,7 +185,7 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
     const el = document.createElement('sherpa-gauge-chart') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-value', '70');
+    el.setAttribute('value', '70');
     el.setAttribute('data-zones', '0-60:success,60-85:warning,85-100:critical');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;

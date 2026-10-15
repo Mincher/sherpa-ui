@@ -4,7 +4,7 @@
   band itself is the hover target and the hollow centre is not hittable.
 
   Public API:
-    data-value    number on the scale (drives the fill sweep + needle angle)
+    value         number on the scale (drives the fill sweep + needle angle)
     data-label    the MIDPOINT tick above the arc. Defaults to the middle of the
                   scale — it is a TICK, like min and max, not the reading. It sits
                   at the top centre of the arc, which is the halfway point; the
@@ -23,7 +23,7 @@
                   TRAP T-a-threshold-is-a-fact-of-the-field
     data-caption  caption text shown below the arc (e.g. "30GB of 60GB used")
     data-status   critical | warning | success | info  (single-colour fill)
-    data-min / data-max   scale bounds shown beneath (default 0 / 100)
+    min / max             scale bounds shown beneath (default 0 / 100)
     data-aggregate  ASKED of its provider: count | sum | mean | min | max | distinct
     data-field      the number that aggregate reads
 

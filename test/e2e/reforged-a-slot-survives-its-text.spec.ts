@@ -14,7 +14,7 @@ test('a slotted icon, heading or caption shows, whenever it arrives; the text sh
       + '<sherpa-container-header data-heading="B" data-icon="home" id="late"></sherpa-container-header>'
       + '<sherpa-toast id="t1"></sherpa-toast>'
       + '<sherpa-toast id="t2" data-heading="Saved">\n  </sherpa-toast>'
-      + '<sherpa-gauge-chart id="g" data-value="5" data-caption="Plain"></sherpa-gauge-chart>';
+      + '<sherpa-gauge-chart id="g" value="5" data-caption="Plain"></sherpa-gauge-chart>';
     const els = [...root.children] as (HTMLElement & { rendered: Promise<void> })[];
     await Promise.all(els.map((e) => e.rendered));
     // Content that arrives after the first render.

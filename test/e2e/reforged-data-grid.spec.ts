@@ -1640,8 +1640,8 @@ test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, a
     // The slider keeps its ends in its own attributes, which is where the grid
     // reads them from.
     const slider = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!;
-    slider.setAttribute('value-start', '5');
-    slider.setAttribute('value-end', '50');
+    slider.setAttribute('data-value-start', '5');
+    slider.setAttribute('data-value-end', '50');
     /* A DRAG marks it TOUCHED, and an UNtouched span is not a filter — a range
        nobody moved excludes nothing. TRAP T-a-full-range-is-still-a-range */
     slider.setAttribute('data-touched', '');
@@ -1725,7 +1725,7 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
 
     // ONE DAY. The calendar holds its pick in its own attributes rather than an
     // input, so the grid reads it from there.
-    cal().dataset['value'] = '2026-01-05';
+    cal().setAttribute('value', '2026-01-05');
     await apply();
 
     // RANGE. The switch re-points the CALENDAR — it already owns both shapes,

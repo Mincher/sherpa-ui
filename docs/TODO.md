@@ -6395,6 +6395,14 @@ Will approved `docs/LEXICON.md` whole, with my two picks (the calendar cell
 keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
 2026-10-15. One commit per row.
 
+- **Row 1, value, range, bounds ✅ (D6):** gauge `data-value|min|max` →
+  `value|min|max`; calendar `data-value|min|max` → `value|min|max`; the slider's
+  range ends `value-start|value-end` → `data-value-start|data-value-end`, as the
+  calendar's. **Metric and toast stay `data-value`:** each is the formatted text
+  shown, and the metric's number is its `value` property already. The menu's
+  `data-min|max|step` stay (they hand the slider the data's bounds). The props
+  gate found two reads and an observed list that the type-checker could not.
+  Demos' gauge templates and the gallery's seed moved with it.
 - **Row 2, dismiss ✅:** `chip-remove` → `chip-dismiss`, `tag-remove` →
   `tag-dismiss`; `data-dismissible` is a declared boolean on both.
 - **Row 3, selection ✅:** select-card is `checked` (attribute, property, and

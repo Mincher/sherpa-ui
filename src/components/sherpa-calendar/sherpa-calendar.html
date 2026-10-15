@@ -5,11 +5,11 @@
   Public API:
     data-type       single | range (default single) — one day, or a two-click start→end range
     data-view       day | month | year (default day) — the active picker (the Grid-collection swap)
-    data-value      selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set
+    value           selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set
     data-value-start  range start, ISO YYYY-MM-DD (range mode)
     data-value-end    range end, ISO YYYY-MM-DD (range mode)
-    data-min        earliest selectable day (ISO); earlier days are disabled
-    data-max        latest selectable day (ISO); later days are disabled
+    min             earliest selectable day (ISO); earlier days are disabled
+    max             latest selectable day (ISO); later days are disabled
     data-available  comma-separated ISO days that EXIST in the data; every other
                     day is disabled. A SET, not a span — a column of dates is a
                     scatter, and min/max would leave the empty days between them

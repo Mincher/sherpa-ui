@@ -133,6 +133,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-value-end",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "— the range ends (data-type=\"range\" only)"
+    },
+    {
+      "$type": "prop",
       "name": "data-value-readonly",
       "type": "boolean",
       "observed": true,
@@ -142,17 +151,12 @@
     },
     {
       "$type": "prop",
-      "name": "value-end",
+      "name": "data-value-start",
       "type": "string",
       "observed": true,
-      "description": "the range ends (data-type=\"range\" only)"
-    },
-    {
-      "$type": "prop",
-      "name": "value-start",
-      "type": "string",
-      "observed": true,
-      "description": "the range ends (data-type=\"range\" only)"
+      "declared": true,
+      "kind": "behaviour",
+      "description": "— the range ends (data-type=\"range\" only)"
     },
     {
       "$type": "prop",

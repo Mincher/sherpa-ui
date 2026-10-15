@@ -59,7 +59,7 @@ test('declared summaries fill with no bind; an undeclared chart waits', async ({
       value: $('#spend').dataset.value,
       want: new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(6500.5),
       spark: $('#spend').hasAttribute('data-has-values'),
-      gauge: Number($('#gauge').dataset.value),
+      gauge: Number($('#gauge').getAttribute('value')),
       bound: source.boundElements.map((el) => el.id).sort(),
       reports,
     };
@@ -193,7 +193,7 @@ test('a gauge draws its field\'s thresholds, and a bar chart cuts at them', asyn
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
-      <sherpa-gauge-chart id="gauge" data-aggregate="mean" data-field="spend" data-min="0" data-max="6000">
+      <sherpa-gauge-chart id="gauge" data-aggregate="mean" data-field="spend" min="0" max="6000">
         <sherpa-chart-legend slot="legend" id="key" data-readonly></sherpa-chart-legend>
       </sherpa-gauge-chart>
       <sherpa-barchart id="bars" data-segment-field="spend"></sherpa-barchart>\`;

@@ -57,10 +57,10 @@ export class SherpaGaugeChart extends SherpaElement {
   static override props = {
     ...SUMMARY_PROPS,
     'data-legend': SHARED_PROPS['data-legend'],
-    'data-value': { type: 'number', kind: 'behaviour' },
+    'value': { type: 'number', kind: 'behaviour' },
     'data-label': { type: 'string', kind: 'content' },
-    'data-min': { type: 'number', kind: 'content' },
-    'data-max': { type: 'number', kind: 'content' },
+    'min': { type: 'number', kind: 'content' },
+    'max': { type: 'number', kind: 'content' },
     'data-zones': { type: 'string', kind: 'behaviour' },
     /* It reads its value from the TOP — risk as 100 − health — and turns its
        field's bands round with it. Will, TODO 150 */
@@ -94,17 +94,17 @@ export class SherpaGaugeChart extends SherpaElement {
   #given: readonly Threshold[] = [];
 
   get value(): number {
-    return this.num('data-value', 0);
+    return this.num('value', 0);
   }
   set value(v: number) {
-    this.set('data-value', String(v));
+    this.set('value', String(v));
   }
 
   /** Redraw everything from the current attributes. */
   #sync(): void {
-    const min = this.num('data-min', 0);
-    const max = this.num('data-max', 100);
-    const read = this.num('data-value', 0);
+    const min = this.num('min', 0);
+    const max = this.num('max', 100);
+    const read = this.num('value', 0);
     const raw = this.hasAttribute('data-invert') ? min + max - read : read;
     const frac = max > min ? Math.min(1, Math.max(0, (raw - min) / (max - min))) : 0;
 

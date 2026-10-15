@@ -11,7 +11,7 @@ test('with Temporal taken away, the calendar draws exactly what it drew with it'
     const draw = async (): Promise<Record<string, unknown>> => {
       const el = document.createElement('sherpa-calendar') as HTMLElement & { rendered: Promise<void> };
       el.setAttribute('data-embedded', '');
-      el.setAttribute('data-value', '2024-02-10');
+      el.setAttribute('value', '2024-02-10');
       root.replaceChildren(el);
       await el.rendered;
       await window.__settled();

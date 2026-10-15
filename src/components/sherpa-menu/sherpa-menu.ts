@@ -1186,13 +1186,13 @@ export class SherpaMenu extends SherpaElement {
     if (body === 'date') {
       const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
       if (!cal) return true;
-      for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
+      for (const a of ['value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
       cal.setAttribute('data-type', range ? 'range' : 'single');
       // A range kept with NO ends holds none: `undefined` was written as a day.
       if (range && next.length > 1) {
         cal.setAttribute('data-value-start', next[0]!);
         cal.setAttribute('data-value-end', next[1]!);
-      } else if (!range && next[0]) cal.setAttribute('data-value', next[0]);
+      } else if (!range && next[0]) cal.setAttribute('value', next[0]);
     }
     this.#syncBody();
     return true;
@@ -1212,8 +1212,8 @@ export class SherpaMenu extends SherpaElement {
     if (field && field.value !== one) field.value = one;
     const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
     if (slider && ends.length > 1) {
-      slider.setAttribute('value-start', ends[0]!);
-      slider.setAttribute('value-end', ends[1]!);
+      slider.setAttribute('data-value-start', ends[0]!);
+      slider.setAttribute('data-value-end', ends[1]!);
       slider.setAttribute('data-touched', '');
     } else if (slider?.hasAttribute('data-touched')) {
       // The reset writes both ends, which re-flags it, so the flag comes off LAST.
@@ -1231,7 +1231,7 @@ export class SherpaMenu extends SherpaElement {
     const start = cal.dataset['valueStart'];
     const end = cal.dataset['valueEnd'];
     if (start && end) return [start, end];
-    const single = cal.dataset['value'];
+    const single = cal.getAttribute('value') ?? undefined;
     return single ? [single] : [];
   }
 
@@ -1534,12 +1534,12 @@ export class SherpaMenu extends SherpaElement {
     const from = this.dataset['from'];
     const to = this.dataset['to'];
     if (slider && from && to && !slider.hasAttribute('data-touched')) {
-      slider.setAttribute('value-start', from);
-      slider.setAttribute('value-end', to);
+      slider.setAttribute('data-value-start', from);
+      slider.setAttribute('data-value-end', to);
       slider.setAttribute('data-touched', '');
     } else if (slider && !slider.hasAttribute('data-touched')) {
-      slider.setAttribute('value-start', min);
-      slider.setAttribute('value-end', max);
+      slider.setAttribute('data-value-start', min);
+      slider.setAttribute('data-value-end', max);
     }
     // A single held value goes in the field.
     const one = this.dataset['value'];
@@ -1981,7 +1981,7 @@ export class SherpaMenu extends SherpaElement {
        that was still filtering. TRAP T-clear-empties-both-modes */
     if (this.#rowEls().length) this.conditions = [];
     for (const cal of this.#own<HTMLElement>('sherpa-calendar')) {
-      for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
+      for (const a of ['value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
     }
     // A cleared range is untouched again. The reset writes both ends, which
     // re-flags it, so the flag comes off LAST.

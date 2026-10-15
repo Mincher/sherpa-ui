@@ -38,30 +38,30 @@ async function build(page: import('@playwright/test').Page, tag: string, attrs: 
   );
 }
 
-/* ── The gauge: data-max="" must read 100, not 0 ──────────────────────────── */
+/* ── The gauge: max="" must read 100, not 0 ──────────────────────────── */
 
-test('gauge: an EMPTY data-max falls back to 100, not 0', async ({ page }) => {
+test('gauge: an EMPTY max falls back to 100, not 0', async ({ page }) => {
   // Half of 0..100 must put the needle straight up (0deg). Before the fix,
   // `Number('' ?? 100)` gave max=0, the fraction collapsed, and the needle
   // pinned hard left at -90deg.
-  await build(page, 'sherpa-gauge-chart', { 'data-value': '50', 'data-max': '' });
+  await build(page, 'sherpa-gauge-chart', { 'value': '50', 'max': '' });
   const angle = await page.evaluate(() =>
     getComputedStyle(document.querySelector('sherpa-gauge-chart')!).getPropertyValue('--_angle').trim(),
   );
   expect(angle).toBe('0deg');
 });
 
-test('gauge: an absent data-max behaves the same as an empty one', async ({ page }) => {
-  await build(page, 'sherpa-gauge-chart', { 'data-value': '50' });
+test('gauge: an absent max behaves the same as an empty one', async ({ page }) => {
+  await build(page, 'sherpa-gauge-chart', { 'value': '50' });
   const angle = await page.evaluate(() =>
     getComputedStyle(document.querySelector('sherpa-gauge-chart')!).getPropertyValue('--_angle').trim(),
   );
   expect(angle).toBe('0deg');
 });
 
-test('gauge: a REAL data-max is still honoured', async ({ page }) => {
+test('gauge: a REAL max is still honoured', async ({ page }) => {
   // 50 of 0..200 is a quarter turn: -90 + 0.25*180 = -45deg.
-  await build(page, 'sherpa-gauge-chart', { 'data-value': '50', 'data-max': '200' });
+  await build(page, 'sherpa-gauge-chart', { 'value': '50', 'max': '200' });
   const angle = await page.evaluate(() =>
     getComputedStyle(document.querySelector('sherpa-gauge-chart')!).getPropertyValue('--_angle').trim(),
   );
@@ -471,7 +471,7 @@ test('clone: a renamed template fails with a NAMED error, not a null crash', asy
     // Remove the prototype the cell builder depends on, then force a re-render.
     el.shadowRoot!.querySelector('template.cal-cell-tpl')?.remove();
     try {
-      el.setAttribute('data-value', '2026-09-15');
+      el.setAttribute('value', '2026-09-15');
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return 'no error';
     } catch (e) {
@@ -490,7 +490,7 @@ test('clone: the calendar still stamps its day cells', async ({ page }) => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-calendar') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-value', '2026-09-15');
+    el.setAttribute('value', '2026-09-15');
     root.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();

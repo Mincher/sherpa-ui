@@ -288,24 +288,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-max",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "latest selectable day (ISO); later days are disabled"
-    },
-    {
-      "$type": "prop",
-      "name": "data-min",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "earliest selectable day (ISO); earlier days are disabled"
-    },
-    {
-      "$type": "prop",
       "name": "data-type",
       "type": "enum",
       "observed": true,
@@ -322,8 +304,7 @@
       "$type": "prop",
       "name": "data-value",
       "type": "string",
-      "observed": true,
-      "declared": true,
+      "observed": false,
       "kind": "behaviour",
       "description": "selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set"
     },
@@ -359,10 +340,40 @@
       ],
       "default": "day",
       "description": "day | month | year  — the active picker (the Grid-collection swap)"
+    },
+    {
+      "$type": "prop",
+      "name": "max",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "description": "latest selectable day (ISO); later days are disabled"
+    },
+    {
+      "$type": "prop",
+      "name": "min",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "description": "earliest selectable day (ISO); earlier days are disabled"
+    },
+    {
+      "$type": "prop",
+      "name": "value",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "description": "selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set"
     }
   ],
   "populate": {
-    "shape": "{ available?, embedded?, hasTime?, max?, min?, type?, value?, valueEnd?, valueStart?, view? }",
+    "shape": "{ available?, embedded?, hasTime?, type?, valueEnd?, valueStart?, view? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

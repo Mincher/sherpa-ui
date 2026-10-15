@@ -254,26 +254,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-max",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
-      "default": "0 / 100",
-      "description": "scale bounds shown beneath"
-    },
-    {
-      "$type": "prop",
-      "name": "data-min",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
-      "default": "0 / 100",
-      "description": "scale bounds shown beneath"
-    },
-    {
-      "$type": "prop",
       "name": "data-over-field",
       "type": "string",
       "observed": true,
@@ -313,15 +293,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-value",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "number on the scale (drives the fill sweep + needle angle)"
-    },
-    {
-      "$type": "prop",
       "name": "data-where",
       "type": "string",
       "observed": true,
@@ -336,6 +307,38 @@
       "declared": true,
       "kind": "behaviour",
       "description": "threshold bands — \"0-50:success,50-80:warning,80-100:critical\" (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info) or any CSS colour. Left out, its provider draws its field's thresholds (TODO 150); with none, the single-colour sweep. TRAP T-a-threshold-is-a-fact-of-the-field A band may be NAMED — \"0-50:success:Low\", or `label` in the JSON — and the name is its tooltip's and its legend row's."
+    },
+    {
+      "$type": "prop",
+      "name": "max",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "content",
+      "default": "0 / 100",
+      "description": "scale bounds shown beneath"
+    },
+    {
+      "$type": "prop",
+      "name": "min",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "content",
+      "default": "0 / 100",
+      "description": "scale bounds shown beneath"
+    },
+    {
+      "$type": "prop",
+      "name": "value",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "description": "number on the scale (drives the fill sweep + needle angle)"
     }
   ],
   "slots": [

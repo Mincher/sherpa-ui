@@ -25,7 +25,7 @@ test.beforeEach(async ({ page }) => {
 test('renders a 7-column weekday header and the month label', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13'); // August 2026
+    el.setAttribute('value', '2026-08-13'); // August 2026
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -47,7 +47,7 @@ test('renders a 7-column weekday header and the month label', async ({ page }) =
 test('renders one day button per day of the viewed month (August 2026 = 31)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     // Real day cells carry data-iso; blank spacers do not.
@@ -60,7 +60,7 @@ test('renders one day button per day of the viewed month (August 2026 = 31)', as
 test('highlights the selected day from data-value', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const selected = el.shadowRoot!.querySelectorAll('.cal-cell[data-selected]');
@@ -83,7 +83,7 @@ test('highlights the selected day from data-value', async ({ page }) => {
 test('next-month nav re-renders the grid to the following month', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -101,7 +101,7 @@ test('next-month nav re-renders the grid to the following month', async ({ page 
 test('prev-month nav crosses the year boundary (Jan → prior Dec)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-01-15');
+    el.setAttribute('value', '2026-01-15');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -114,7 +114,7 @@ test('prev-month nav crosses the year boundary (Jan → prior Dec)', async ({ pa
 test('clicking a day emits datetime-change with the ISO value and updates data-value', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-01');
+    el.setAttribute('value', '2026-08-01');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -124,19 +124,19 @@ test('clicking a day emits datetime-change with the ISO value and updates data-v
     const target = el.shadowRoot!.querySelector<HTMLButtonElement>('.cal-cell[data-iso="2026-08-20"]')!;
     target.click();
 
-    return { emitted, dataValue: el.getAttribute('data-value'), value: el.value };
+    return { emitted, dataValue: el.getAttribute('value'), value: el.value };
   });
   expect(r.emitted).toBe('2026-08-20');
   expect(r.dataValue).toBe('2026-08-20');
   expect(r.value).toBe('2026-08-20');
 });
 
-test('days outside data-min / data-max are disabled and do not emit', async ({ page }) => {
+test('days outside min / max are disabled and do not emit', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-15');
-    el.setAttribute('data-min', '2026-08-10');
-    el.setAttribute('data-max', '2026-08-20');
+    el.setAttribute('value', '2026-08-15');
+    el.setAttribute('min', '2026-08-10');
+    el.setAttribute('max', '2026-08-20');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -165,7 +165,7 @@ test('days outside data-min / data-max are disabled and do not emit', async ({ p
 test('clicking the label zooms out to the month picker, then the year picker', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -197,7 +197,7 @@ test('clicking the label zooms out to the month picker, then the year picker', a
 test('picking a month zooms back into that month\'s days', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     el.setAttribute('data-view', 'month');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -220,7 +220,7 @@ test('picking a month zooms back into that month\'s days', async ({ page }) => {
 test('picking a year zooms into that year\'s months', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     el.setAttribute('data-view', 'year');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -240,7 +240,7 @@ test('range: two-click sets start then end, bands the days between, emits range-
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
     el.setAttribute('data-type', 'range');
-    el.setAttribute('data-value', '2026-08-01'); // anchors the view to August 2026 (no range yet)
+    el.setAttribute('value', '2026-08-01'); // anchors the view to August 2026 (no range yet)
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -287,7 +287,7 @@ test('range: end before start swaps the two ends', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
     el.setAttribute('data-type', 'range');
-    el.setAttribute('data-value', '2026-08-01');
+    el.setAttribute('value', '2026-08-01');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -309,7 +309,7 @@ test('range: a third click starts a fresh range (clears the old end)', async ({ 
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
     el.setAttribute('data-type', 'range');
-    el.setAttribute('data-value', '2026-08-01');
+    el.setAttribute('value', '2026-08-01');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -328,10 +328,10 @@ test('range: a third click starts a fresh range (clears the old end)', async ({ 
 test('hasTime: the time input shows only when data-has-time is set', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const withTime = document.createElement('sherpa-calendar') as CalEl;
-    withTime.setAttribute('data-value', '2026-08-13');
+    withTime.setAttribute('value', '2026-08-13');
     withTime.setAttribute('data-has-time', '');
     const without = document.createElement('sherpa-calendar') as CalEl;
-    without.setAttribute('data-value', '2026-08-13');
+    without.setAttribute('value', '2026-08-13');
     document.getElementById('root')!.append(withTime, without);
     await withTime.rendered; await without.rendered;
     const rowDisplay = (el: CalEl) => getComputedStyle(el.shadowRoot!.querySelector('.cal-time-row')!).display;
@@ -349,7 +349,7 @@ test('hasTime: the time input shows only when data-has-time is set', async ({ pa
 test('hasTime: picking a day folds the time into data-value (YYYY-MM-DDThh:mm) and emits it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-01');
+    el.setAttribute('value', '2026-08-01');
     el.setAttribute('data-has-time', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -363,12 +363,12 @@ test('hasTime: picking a day folds the time into data-value (YYYY-MM-DDThh:mm) a
     el.addEventListener('datetime-change', (e) => { emitted = (e as CustomEvent).detail.value; });
 
     s.querySelector<HTMLButtonElement>('.cal-cell[data-iso="2026-08-20"]')!.click();
-    const afterDay = { value: el.getAttribute('data-value'), emitted };
+    const afterDay = { value: el.getAttribute('value'), emitted };
 
     // now change the time — it should re-combine with the chosen date and re-emit
     input.value = '14:45';
     input.dispatchEvent(new Event('input', { bubbles: true }));
-    const afterTime = { value: el.getAttribute('data-value'), emitted };
+    const afterTime = { value: el.getAttribute('value'), emitted };
     return { afterDay, afterTime };
   });
   expect(r.afterDay.value).toBe('2026-08-20T09:30');
@@ -380,7 +380,7 @@ test('hasTime: picking a day folds the time into data-value (YYYY-MM-DDThh:mm) a
 test('single mode (default) selection is unchanged by the new features', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2026-08-13');
+    el.setAttribute('value', '2026-08-13');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -504,7 +504,7 @@ test('data-available disables every day the data does not carry', async ({ page 
   const r = await page.evaluate(async () => {
     const read = async (available?: string): Promise<{ enabled: string[]; disabled: number }> => {
       const el = document.createElement('sherpa-calendar') as CalEl;
-      el.setAttribute('data-value', '2026-09-15');
+      el.setAttribute('value', '2026-09-15');
       if (available != null) el.setAttribute('data-available', available);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
@@ -585,7 +585,7 @@ test('the current month and year cells take the today state', async ({ page }) =
 
     const build = async (value: string): Promise<HTMLElement & { shadowRoot: ShadowRoot; dataset: DOMStringMap }> => {
       const el = document.createElement('sherpa-calendar') as CalEl;
-      el.setAttribute('data-value', value);
+      el.setAttribute('value', value);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -762,7 +762,7 @@ test('the Month and Year views disable what holds no day to pick, and a press on
     const settle = (): Promise<void> => (window as unknown as { __settled: () => Promise<void> }).__settled();
     const read = async (attrs: Record<string, string>, view: 'month' | 'year'): Promise<{ on: string[]; off: number }> => {
       const el = document.createElement('sherpa-calendar') as CalEl;
-      el.setAttribute('data-value', '2024-03-05');
+      el.setAttribute('value', '2024-03-05');
       for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
       el.setAttribute('data-view', view);
       document.getElementById('root')!.replaceChildren(el);
@@ -779,7 +779,7 @@ test('the Month and Year views disable what holds no day to pick, and a press on
       free: await read({}, 'month'),
       months: await read({ 'data-available': days }, 'month'),
       years: await read({ 'data-available': days }, 'year'),
-      span: await read({ 'data-min': '2024-02-10', 'data-max': '2024-04-01' }, 'month'),
+      span: await read({ 'min': '2024-02-10', 'max': '2024-04-01' }, 'month'),
       // A RANGE is bounded by the data, not dotted by it: every month between is an end.
       range: await read({ 'data-type': 'range', 'data-value-start': '2024-03-05', 'data-available': '2024-03-05,2024-06-20' }, 'month'),
       none: await read({ 'data-available': '' }, 'month'),
@@ -787,7 +787,7 @@ test('the Month and Year views disable what holds no day to pick, and a press on
 
     // A press on an inactive month stays in the month view.
     const el = document.createElement('sherpa-calendar') as CalEl;
-    el.setAttribute('data-value', '2024-03-05');
+    el.setAttribute('value', '2024-03-05');
     el.setAttribute('data-available', days);
     el.setAttribute('data-view', 'month');
     document.getElementById('root')!.replaceChildren(el);
