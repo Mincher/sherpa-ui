@@ -79,10 +79,10 @@
   flex-shrink: 0;
 }
 
-/* Container Footer binds padding/none inline, so the HOLDER supplies the
-   gutter — the same --_pad the content region uses. */
+/* The footer row brings its own inset: the panel only says how wide, so its
+   divider runs the full width. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
 .footer {
-  padding-inline: var(--_pad);
+  --_pad-inline: var(--_pad);
 }
 
 /* A grid row of 1fr is bounded by the track, where a flex child is bounded by

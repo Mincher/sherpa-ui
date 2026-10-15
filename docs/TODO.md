@@ -304,7 +304,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
-| ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
+| ✅ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
 | ✅ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
 | ⬜ | 62.60 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
@@ -6617,7 +6617,7 @@ still showed the icon cell on `:state(has-left)`, a state nothing sets any more.
 and part stay `left` (a part is public). **Not run yet.** No other renamed slot
 left a stale state (checked: `has-title`, `has-brand-icon`, `has-action`).
 
-### `[ ]` ⬜ 313 — BUG: the overlay panel's footer is inset twice
+### `[x]` ✅ 313 — BUG: the overlay panel's footer is inset twice
 
 Found by 285b's checker, by reading. `sherpa-overlay-panel.css` gives the
 `sherpa-container-footer` host `padding-inline: var(--_pad)` (16px), and the
@@ -6625,6 +6625,11 @@ footer row adds its own 16px: 32px against the body's 16px, and the divider is
 inset too, where 8ef4f2a1 asked for a full-width one. Its comment ("Container
 Footer binds padding/none inline") is stale. The likely fix deletes those
 lines. Needs a look at the pixels first.
+
+**✅ Fixed 2026-10-15**, by reading: the panel passes its gutter to the footer as
+`--_pad-inline` instead of padding the footer's box, so the row has ONE inset and
+its divider runs the full width. **Will, to check by eye:** a footer in an
+overlay panel in Demos.
 
 ### `[x]` ✅ 314 — Will: a composed header for dialog and panel?
 

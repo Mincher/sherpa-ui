@@ -10135,6 +10135,7 @@ value belongs.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
 - Site: `test/e2e/reforged-container-footer.spec.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 
 ### T-a-panel-chrome-row-never-shrinks
 
