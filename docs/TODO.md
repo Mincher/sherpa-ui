@@ -288,7 +288,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
-| ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
+| ✅ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | ✅ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
@@ -317,6 +317,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | ⬜ | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ⬜ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
+| ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
+| ⬜ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
+| ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6469,6 +6472,85 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 296 — Phase 8.4: a README front door
+
+**✅ Done 2026-10-15.** The README is the front door for a developer who meets
+Sherpa for the first time: what it is, its status, how to get it, a first
+page, the four entry points, the data layer alone, a whole app, the editor,
+what it needs, the MCP server, and how to work on it. A read-only agent planned
+it; a second checked the plan against the code and the npm registry.
+
+The old README, measured first:
+- It said `npm install sherpa-ui`. On the registry that name is another
+  project, an Electron app whose `postinstall` runs `npm install` (325).
+- It named two of the four entries, and not `page.css`.
+- Its import map used root paths (`/dist/…`).
+- It said `dist/` needs no build, but a clone has no `dist/`.
+- It linked Sherpa Demos, whose repository a reader cannot open.
+- Its CLAUDE.md link carried an anchor that 293's cut can break.
+
+The new one installs Sherpa by path and links no CLAUDE.md anchor. It gives
+an MCP client `node` and a path, never `npx`, and it does not link the MCP
+README, which still says `npx sherpa-mcp` (325).
+
+`check:docs` now reads the README too. In each doc a reader is given (the
+README, CLAUDE.md, and each doc in `package.json`'s `files`) it checks every
+`npm run`, also in a code block; each `npx sherpa-ui` command; each
+`sherpa-*` tag and attribute in an example, against its spec; each name
+imported from `sherpa-ui`, against its entry; and each relative link outside
+a code block. A record doc keeps the old check. All of them pass, and seven
+planted faults each fail it. Not run yet: a fresh clone and its build, and the
+first page in a browser.
+
+For 293: CLAUDE.md says `data-mode="auto|light|dark|hc"`, but tokens.css
+selects only `auto` and `dark`; no `data-mode` is light, and `hc` selects
+nothing. APP-GUIDE links Sherpa Demos, which a reader cannot open. For 294: the
+README links the reference when the reference lands.
+
+### `[ ]` ❓ 325 — HAZARD: our package names on npm are other people's
+
+Measured 2026-10-15 with `npm view`: `sherpa-ui` is 1.8.0, by three other
+maintainers, last changed 2022-06-26. It is an Electron app with no bin, and
+its `postinstall` is `cd reactVR && npm install`. `sherpa-mcp` is 0.1.4,
+another author's Claude Code plugin, with a `sherpa-mcp` bin.
+`create-sherpa-ui` and `sherpa-ui-mcp` are 404. npm says that `npx` with no
+terminal, which is how an MCP client runs it, installs a missing package
+without asking (read, not run).
+
+Safe today, whatever the names: the client runs `node` with the path to
+`mcp-server/index.js`, as the README says.
+
+The sites in sherpa-ui: `mcp-server/README.md` (Setup, the client configs and
+the `scaffold_app` row); `mcp-server/package.json` (the `sherpa-mcp` bin, and
+`sherpa-ui` and `create-sherpa-ui` deps the registry does not have);
+`mcp-server/tools/generate.js` (the `scaffold_app` text); `bin/sherpa-ui.mjs`
+(its header and usage text — `test/unit/nothing-downloads-to-serve.test.mjs`
+expects `npx sherpa-ui serve` in it, so it changes with it); the header of
+`scripts/check-usage.mjs`; CLAUDE.md's commands; and APP-GUIDE's "Start from
+the starter". In `../Sherpa Starter`: `template/mcp.json`,
+`template/package.json`, and `npm create sherpa-ui` in its README,
+`package.json`, `index.mjs` and CLAUDE.md.
+
+**For Will:** A — publish under names that are free, such as a scope you own
+(`@<scope>/sherpa-ui`), and move every site above in one change (a bulk rename:
+your yes); B — keep the names until you publish, and change the docs only to
+say "from the clone". My pick: A.
+
+### `[ ]` ⬜ 326 — TOOLING: check-usage reads `app/` unless told otherwise
+
+`usageProblems` reads `config.markup ?? ['app']` (`scripts/check-usage.mjs`),
+but the header says the default is the folder it runs in. A project with no
+`app/` checks 0 tags and passes. `app/` is Demos' layout (D4). Demos names it
+in its own `sherpa-usage.json`, so a default of the project itself does not
+change Demos. That default must skip `node_modules`, because the package ships
+its own `src/**/*.html`. The README leaves `check-usage` out until this lands.
+
+### `[ ]` ❓ 327 — GAP: no LICENSE file
+
+Both `package.json` files and the README say MIT, but the repo has no LICENSE
+file, and the MIT licence asks for its notice in each copy. **For Will:** the
+copyright holder and the year.
 
 ### `[~]` 🚧 293 — Phase 8.1: the doc set
 
