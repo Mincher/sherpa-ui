@@ -13,7 +13,7 @@
  * - applyState — Apply a `state` block through an element's own public API.
  */
 import type { FieldReading } from '../data/filter-state.js';
-import type { ScopeDescription } from '../data/data-source.js';
+import type { ScopeDescription } from '../data/data-source-types.js';
 
 /** An element that takes a data payload. TRAP T-populatable-declared-four-times */
 export interface Populatable extends HTMLElement {

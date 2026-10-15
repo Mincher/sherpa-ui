@@ -1420,9 +1420,9 @@ with records — and any day between, records or not, can start or end it. An
 empty list is still "nothing has records".
 
 - Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-calendar.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-field-can-carry-over-views
 
@@ -1442,6 +1442,7 @@ Nothing on Records carries over yet — the default is Will's.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-carry-over.spec.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-send-to-view-filters
 
@@ -1490,6 +1491,7 @@ forgotten.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -1576,10 +1578,10 @@ the provider passes to `bindSource()`, and `describe(scope)` reports as
 itself. Figma has no chart glyph of its own yet, so a chart's section wears
 `reports` (three bars), and `table-columns` stands in for a table glyph.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/context.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/page-definition.test.mjs`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-filter-set-groups-or-chains
 
@@ -1625,6 +1627,7 @@ may still add it.
 - Site: `test/e2e/reforged-serial-set.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-filterset.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-view-keeps-a-draft
 
@@ -1966,7 +1969,6 @@ The Query still never summarises (`T-aggregation-is-data`): a band is a
 condition when a filter names it, and a cut when a chart asks.
 
 - Site: `src/core/data/threshold.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/where.ts`
 - Site: `src/core/ui/context.ts`
@@ -1976,6 +1978,7 @@ condition when a filter names it, and a cut when a chart asks.
 - Site: `test/unit/a-threshold-is-a-fact-of-the-field.test.mjs`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/e2e/reforged-gauge-chart.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-relative-date-stays-relative
 
@@ -2483,6 +2486,7 @@ toolbar's Sort chip and the grid's header arrow stay two views of one value.
 steer-only bind.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-ignore-is-the-scalpel
 
@@ -2684,6 +2688,7 @@ microtask. A remote source is never live: it already waits for Apply.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-live-filter-waits-for-the-moves-to-stop.test.mjs`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-push-writes-state-as-attributes
 
@@ -2705,6 +2710,7 @@ matching.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-error-is-a-state-not-a-throw
 
@@ -3838,6 +3844,7 @@ needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-mark-match-is-one-shape
 
@@ -7096,6 +7103,7 @@ went on filtering. Will, TODO 167.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-ruled-out-value-is-greyed
 
@@ -7156,6 +7164,7 @@ go.
 - Site: `src/core/ui/filter-def.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
@@ -9339,6 +9348,7 @@ exists to prevent.
 - Site: `src/core/data/bind-selection.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-one-filters-button
 
@@ -9595,8 +9605,8 @@ byte-identical files — the same drawing exported twice — and the toolbar fix
 the view selector's glyph itself rather than taking it from the chip def. There
 is no `office`; `buildings` is the set's word for it.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-native-select-keeps-its-own-shape
 
@@ -10741,9 +10751,9 @@ This is the same disease as `kind`, which meant the value type in one place and
 the filter's kind in another until `kindOf()` settled it. A word that names two
 axes will be read as the wrong one, and the reader will not know they did.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/unit/scope-registry.test.mjs`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-chip-knows-what-kind-it-is
 
@@ -12640,6 +12650,7 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `test/unit/cycle.test.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-bind-locks-what-it-owns
 
@@ -13165,6 +13176,7 @@ does.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
@@ -13968,6 +13980,7 @@ actions and no words.
 - Site: `test/unit/filter-face.test.mjs`
 - Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-saved-filter-is-its-readings
 
@@ -15416,6 +15429,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-view-is-json
 
@@ -15544,6 +15558,7 @@ browser (TODO 76).
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-provider-keeps-the-views
 
@@ -15657,6 +15672,7 @@ reaching into the bar's shadow root.
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-bar-reports-its-holds
 
@@ -15752,6 +15768,7 @@ not a fact about the field.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-configuration-is-not-data
 
@@ -16731,6 +16748,7 @@ it knows, so declaring a part declares its field.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/unit/chart-scope.test.mjs`
+- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-legend-follows-the-view-when-it-holds-the-field
 
