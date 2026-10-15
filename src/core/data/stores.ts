@@ -67,6 +67,12 @@ export class ArrayStore extends BaseStore {
     return { ...result, rows: result.rows.map((r) => this.keyed({ ...r }, r)) };
   }
 
+  /** A count hands out no rows, so it copies none. TRAP T-array-store-copies-both-ways */
+  override async totalCount(options: LoadOptions = {}): Promise<number> {
+    const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
+    return (await this.page(this.#rows, rest)).total;
+  }
+
   /** Where a row is, by its key field — or by the key made up for it. */
   #at(key: unknown): number {
     // TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false.

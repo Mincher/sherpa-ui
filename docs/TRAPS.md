@@ -588,8 +588,9 @@ passes on a fast laptop (TODO 286).
 It bundles the data layer from `src/` with esbuild, never `dist/`: the hook
 builds nothing, and a stale `dist/` benches the last build. The bundle renames
 `compile` in `query.ts` and counts each call, and the bench fails if it cannot
-find it; `structuredClone` is wrapped for the run. A `totalCount` is a load as
-well, as `BaseStore` makes it, so a counts cache will show as fewer loads.
+find it; `structuredClone` is wrapped for the run. `BaseStore` makes a `totalCount`
+a load, but an `ArrayStore` counts in place, so a counts cache shows as fewer
+counts.
 
 The page is `test/unit/fixtures/records.page.json` over 10,000 seeded rows,
 bound as the provider binds it. Each fake control has the methods its spec lists
@@ -6547,7 +6548,8 @@ is going to be applied anywhere on a read, it is there.
 
 ### T-array-store-copies-both-ways
 
-`ArrayStore` COPIES the array in, and every row it hands out is a copy too.
+`ArrayStore` COPIES the array in, and every row it hands out is a copy too. A
+count hands out no rows, so it copies none.
 
 A consumer mutating a row it was given must not silently rewrite the store's own
 record — that is the bug where a grid's edit appears to work and then vanishes on

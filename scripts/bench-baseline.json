@@ -8,11 +8,11 @@
     "clones": 12
   },
   "records/pick": {
-    "loads": 10,
-    "counts": 3,
+    "loads": 7,
+    "counts": 4,
     "distinct": 0,
-    "rows": 45223,
-    "compiles": 14,
+    "rows": 37624,
+    "compiles": 15,
     "clones": 7
   },
   "records/repick": {
@@ -24,18 +24,18 @@
     "clones": 0
   },
   "records/report": {
-    "loads": 22,
+    "loads": 12,
     "counts": 10,
     "distinct": 0,
-    "rows": 38337,
+    "rows": 27376,
     "compiles": 14,
     "clones": 13
   },
   "records/sort": {
-    "loads": 16,
+    "loads": 6,
     "counts": 10,
     "distinct": 0,
-    "rows": 25508,
+    "rows": 14547,
     "compiles": 4,
     "clones": 1
   },
@@ -48,35 +48,35 @@
     "clones": 0
   },
   "records/heading": {
-    "loads": 25,
+    "loads": 13,
     "counts": 12,
     "distinct": 0,
-    "rows": 39875,
+    "rows": 27292,
     "compiles": 11,
     "clones": 7
   },
   "records/search": {
-    "loads": 19,
+    "loads": 7,
     "counts": 12,
     "distinct": 0,
-    "rows": 25602,
+    "rows": 13019,
     "compiles": 4,
     "clones": 1
   },
   "records/raise": {
-    "loads": 23,
+    "loads": 11,
     "counts": 12,
     "distinct": 0,
-    "rows": 42389,
+    "rows": 24891,
     "compiles": 14,
     "clones": 16
   },
   "records/clear": {
-    "loads": 23,
+    "loads": 12,
     "counts": 11,
     "distinct": 0,
-    "rows": 64161,
-    "compiles": 15,
+    "rows": 31422,
+    "compiles": 16,
     "clones": 7
   },
   "records/reset": {
@@ -96,18 +96,18 @@
     "clones": 12
   },
   "remote/pick": {
-    "loads": 9,
+    "loads": 7,
     "counts": 2,
     "distinct": 0,
-    "rows": 42690,
+    "rows": 37624,
     "compiles": 13,
     "clones": 8
   },
   "remote/report": {
-    "loads": 16,
+    "loads": 10,
     "counts": 6,
     "distinct": 0,
-    "rows": 49371,
+    "rows": 40308,
     "compiles": 16,
     "clones": 12
   }

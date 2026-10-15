@@ -102,7 +102,7 @@
   "src/core/data/row-key.ts": 50,
   "src/core/data/spoof-remote.ts": 52,
   "src/core/data/store.ts": 563,
-  "src/core/data/stores.ts": 474,
+  "src/core/data/stores.ts": 480,
   "src/core/data/threshold.ts": 35,
   "src/core/data/timing.ts": 55,
   "src/core/data/validate.ts": 331,
