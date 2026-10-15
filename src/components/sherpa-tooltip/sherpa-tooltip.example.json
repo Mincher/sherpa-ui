@@ -1,0 +1,7 @@
+{
+  "html": [
+    "<sherpa-tooltip data-text=\"Delete this item\">",
+    "<sherpa-button data-type=\"icon\" data-icon-start=\"trash\" aria-label=\"Delete\"></sherpa-button>",
+    "</sherpa-tooltip>"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "html": "<sherpa-gauge-chart data-label=\"Mean risk\" data-unit=\"%\" data-caption=\"of 100\"></sherpa-gauge-chart>",
+  "fill": [
+    {
+      "at": "sherpa-gauge-chart",
+      "data": 42
+    }
+  ]
+}

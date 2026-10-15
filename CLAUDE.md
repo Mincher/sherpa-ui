@@ -138,6 +138,10 @@ A fourth file, `sherpa-<name>.component.json`, is **generated** — by
 the component's single contract (a DTCG-dialect spec), consumed by the MCP and the
 validate tooling. Never hand-edit it; regenerate it.
 
+A fifth, `sherpa-<name>.example.json`, is hand-written and shipped: ONE example of
+the component as a page writes it, and the data it is given. The a11y gate, the
+MCP's `get_component` and a gallery read it (TRAP `T-a-component-ships-its-example`).
+
 **An event's DETAIL is read from its `emit()` call sites**, and each field is
 typed by TypeScript's own checker — so a type in the contract is the type the
 code has (TRAP `T-a-detail-is-typed-by-the-checker`).

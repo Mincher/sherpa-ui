@@ -1,0 +1,7 @@
+{
+  "html": [
+    "<sherpa-switch name=\"contrast\" aria-label=\"Increase contrast\">",
+    "</sherpa-switch> <sherpa-switch data-type=\"simple\" name=\"motion\" aria-label=\"Reduce motion\" checked>",
+    "</sherpa-switch>"
+  ]
+}

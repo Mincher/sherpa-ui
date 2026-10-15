@@ -1,0 +1,8 @@
+{
+  "html": [
+    "<sherpa-list>",
+    "<sherpa-list-item data-label=\"Increase contrast\" data-description=\"Stronger borders and text.\">",
+    "<sherpa-switch slot=\"trailing\" name=\"contrast\" aria-label=\"Increase contrast\"></sherpa-switch>",
+    "</sherpa-list-item><sherpa-list-item data-label=\"Reduce motion\"></sherpa-list-item></sherpa-list>"
+  ]
+}

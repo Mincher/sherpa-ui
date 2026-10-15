@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-select-card data-label=\"Pro\" data-description=\"For growing teams\" name=\"plan\" value=\"pro\" data-selected>12 seats</sherpa-select-card>",
+    "<sherpa-select-card data-label=\"Free\" data-description=\"To try it\" name=\"plan\" value=\"free\">3 seats</sherpa-select-card>"
+  ]
+}

@@ -55,6 +55,7 @@
     "src/**/*.html",
     "src/**/*.css",
     "src/components/*/*.component.json",
+    "src/components/*/*.example.json",
     "scripts/figma-data/name-map.yaml",
     "docs/APP-GUIDE.md",
     "docs/DATA-SOURCE-RULES.md",

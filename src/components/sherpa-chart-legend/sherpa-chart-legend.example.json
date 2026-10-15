@@ -1,0 +1,25 @@
+{
+  "html": "<sherpa-chart-legend data-orientation=\"horizontal\"></sherpa-chart-legend>",
+  "fill": [
+    {
+      "at": "sherpa-chart-legend",
+      "data": [
+        {
+          "label": "Pro",
+          "value": 12,
+          "colorIndex": 1
+        },
+        {
+          "label": "Team",
+          "value": 8,
+          "colorIndex": 2
+        },
+        {
+          "label": "Free",
+          "value": 3,
+          "colorIndex": 3
+        }
+      ]
+    }
+  ]
+}

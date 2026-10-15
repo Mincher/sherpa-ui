@@ -1,0 +1,10 @@
+{
+  "html": [
+    "<sherpa-button class=\"opener\">Region</sherpa-button>",
+    "<sherpa-menu data-heading=\"Region\" data-select=\"multiple\"><label>",
+    "<input type=\"checkbox\" value=\"emea\" /> EMEA</label><label>",
+    "<input type=\"checkbox\" value=\"apac\" checked /> APAC</label></sherpa-menu>"
+  ],
+  "show": "sherpa-menu",
+  "anchor": ".opener"
+}

@@ -1,0 +1,17 @@
+{
+  "html": "<sherpa-sparkline aria-label=\"Revenue, last 7 days\"></sherpa-sparkline>",
+  "fill": [
+    {
+      "at": "sherpa-sparkline",
+      "data": [
+        3,
+        5,
+        2,
+        6,
+        8,
+        4,
+        7
+      ]
+    }
+  ]
+}

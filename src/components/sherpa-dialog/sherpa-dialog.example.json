@@ -1,0 +1,9 @@
+{
+  "html": [
+    "<sherpa-dialog data-heading=\"Delete customer?\"><p>Ada Lovelace will be permanently deleted.</p>",
+    "<sherpa-container-footer slot=\"footer\"><sherpa-button>Cancel</sherpa-button>",
+    "<sherpa-button data-look=\"saturated\" data-status=\"critical\">Delete</sherpa-button>",
+    "</sherpa-container-footer></sherpa-dialog>"
+  ],
+  "show": "sherpa-dialog"
+}

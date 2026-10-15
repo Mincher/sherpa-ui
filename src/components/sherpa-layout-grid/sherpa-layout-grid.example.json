@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-layout-grid><div data-col-span=\"medium\">One</div><div data-col-span=\"medium\">Two</div>",
+    "</sherpa-layout-grid>"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-empty-state data-heading=\"No results\" data-description=\"Try a different search.\">",
+    "<sherpa-button>Clear filters</sherpa-button></sherpa-empty-state>"
+  ]
+}

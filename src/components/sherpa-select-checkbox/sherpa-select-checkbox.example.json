@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-select-checkbox data-label=\"Accept terms\" data-description=\"Required to continue.\" name=\"terms\">",
+    "</sherpa-select-checkbox>"
+  ]
+}

@@ -1,5 +1,5 @@
 import { test, expect } from './harness';
-import { FIXTURES } from '../a11y/fixtures.mjs';
+import { EXAMPLES } from '../a11y/examples.mjs';
 
 /**
  * A MOVED element is disconnected and connected again. Its slots must still
@@ -7,7 +7,7 @@ import { FIXTURES } from '../a11y/fixtures.mjs';
  * once, so nothing it wired may hang on the disconnect signal.
  * TRAP T-abort-controller-per-connect
  */
-const TAGS = Object.keys(FIXTURES);
+const TAGS = Object.keys(EXAMPLES);
 
 test('every component, once moved, still marks what is slotted into it', async ({ page }) => {
   const dead = await page.evaluate(async ({ tags, fixtures }) => {
@@ -41,7 +41,7 @@ test('every component, once moved, still marks what is slotted into it', async (
       }
     }
     return out;
-  }, { tags: TAGS, fixtures: FIXTURES });
+  }, { tags: TAGS, fixtures: EXAMPLES });
   expect(dead).toEqual([]);
 });
 

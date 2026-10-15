@@ -1,0 +1,18 @@
+{
+  "html": "<sherpa-key-value-list data-orientation=\"vertical\"></sherpa-key-value-list>",
+  "fill": [
+    {
+      "at": "sherpa-key-value-list",
+      "data": [
+        {
+          "key": "Plan",
+          "value": "Pro"
+        },
+        {
+          "key": "Seats",
+          "value": "12"
+        }
+      ]
+    }
+  ]
+}

@@ -28,6 +28,7 @@ export const READS = [
   'scripts/figma-data/name-map.yaml',
   'src/styles/tokens/tokens.css',
   'src/components/sherpa-button/sherpa-button.component.json',
+  'src/components/sherpa-button/sherpa-button.example.json',
   'src/components/sherpa-button/sherpa-button.ts',
 ];
 

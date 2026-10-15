@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-group><sherpa-button>Day</sherpa-button><sherpa-button>Week</sherpa-button>",
+    "<sherpa-button>Month</sherpa-button></sherpa-group>"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "html": [
+    "<sherpa-overlay-panel data-heading=\"Ada Lovelace\" data-icon=\"person\" data-dismissible data-collapsible data-expandable>",
+    "<p>Pro plan, 12 seats.</p><sherpa-button slot=\"footer\">Edit</sherpa-button></sherpa-overlay-panel>"
+  ],
+  "show": "sherpa-overlay-panel"
+}

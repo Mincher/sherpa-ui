@@ -1,0 +1,13 @@
+{
+  "html": "<sherpa-metric data-label=\"Revenue\"></sherpa-metric>",
+  "fill": [
+    {
+      "at": "sherpa-metric",
+      "data": {
+        "label": "Revenue",
+        "value": "$1.2M",
+        "deltaPercent": 12.5
+      }
+    }
+  ]
+}

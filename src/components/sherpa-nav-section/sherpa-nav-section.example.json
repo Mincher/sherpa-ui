@@ -1,0 +1,7 @@
+{
+  "html": [
+    "<sherpa-nav-section data-label=\"Workspace\">",
+    "<sherpa-nav-item data-icon=\"home\" data-label=\"Home\" data-href=\"?context=home\"></sherpa-nav-item>",
+    "</sherpa-nav-section>"
+  ]
+}

@@ -14,8 +14,9 @@
  * - compileDef — a def compiled to the component's source
  * - validateDef — a def checked against the rules
  * - tokenForValue — the token a raw value is
+ * - loadExample — a component's shipped example, its markup joined; null if it has none
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -50,3 +51,12 @@ export const loadCssTokenNames = data.loadCssTokenNames;
 export const compileDef = (await lib("compile-def.mjs")).compileDef;
 export const validateDef = (await lib("validate-def.mjs")).validateDef;
 export const tokenForValue = (await lib("resolve.mjs")).tokenForValue;
+
+/** A component's shipped example, its markup joined; null if it has none.
+ *  TRAP T-a-component-ships-its-example */
+export function loadExample(name) {
+  const file = at("src", "components", name, `${name}.example.json`);
+  if (!existsSync(file)) return null;
+  const example = JSON.parse(readFileSync(file, "utf8"));
+  return { ...example, html: [example.html].flat().join("") };
+}

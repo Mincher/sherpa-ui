@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-toast data-status=\"success\" data-heading=\"Saved\" data-value=\"The record was saved.\" data-duration=\"0\">",
+    "</sherpa-toast>"
+  ]
+}

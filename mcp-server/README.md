@@ -60,7 +60,7 @@ Demos does: `command: node`, `args: [../sherpa-ui/mcp-server/index.js]`.
 | Tool | Arguments | Answers |
 |---|---|---|
 | `list_components` | `category?` | Every component, grouped, with its Figma binding |
-| `get_component` | `name`, `include?` | One component in full: spec, compiled TS/HTML/CSS, Figma shape |
+| `get_component` | `name`, `include?` | One component in full: spec, a working example, compiled TS/HTML/CSS, Figma shape |
 | `find_token` | `query` | Which token NAMES exist, by fragment. Synonym-aware |
 
 There is no "what is this token FOR" tool. The ontology that carried purpose,

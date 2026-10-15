@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-router data-params=\"context=home view\" data-overlay=\"settings\"></sherpa-router>",
+    "<a href=\"?context=records\">Records</a>"
+  ]
+}

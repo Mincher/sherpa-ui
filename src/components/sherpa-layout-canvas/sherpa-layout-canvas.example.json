@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-layout-canvas style=\"inline-size: 640px; block-size: 360px\">",
+    "<div style=\"--x: 40px; --y: 40px\">A card on the canvas</div></sherpa-layout-canvas>"
+  ]
+}

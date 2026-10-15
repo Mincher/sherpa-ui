@@ -1,0 +1,29 @@
+{
+  "html": [
+    "<sherpa-container><sherpa-data-viz-header slot=\"header\" data-heading=\"Customers by plan\">",
+    "</sherpa-data-viz-header><sherpa-radial-chart data-sublabel=\"customers\"></sherpa-radial-chart>",
+    "</sherpa-container>"
+  ],
+  "fill": [
+    {
+      "at": "sherpa-radial-chart",
+      "data": [
+        {
+          "label": "Pro",
+          "value": 12,
+          "colorIndex": 1
+        },
+        {
+          "label": "Team",
+          "value": 8,
+          "colorIndex": 2
+        },
+        {
+          "label": "Free",
+          "value": 3,
+          "colorIndex": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "html": [
+    "<sherpa-quick-filter data-label=\"Unassigned\">",
+    "</sherpa-quick-filter> <sherpa-quick-filter data-label=\"Region\" data-menu>",
+    "<sherpa-menu slot=\"menu\" data-heading=\"Region\" data-select=\"multiple\"><label>",
+    "<input type=\"checkbox\" value=\"emea\" /> EMEA</label><label>",
+    "<input type=\"checkbox\" value=\"apac\" /> APAC</label></sherpa-menu></sherpa-quick-filter>"
+  ]
+}

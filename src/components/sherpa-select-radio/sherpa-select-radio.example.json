@@ -1,0 +1,7 @@
+{
+  "html": [
+    "<sherpa-select-radio data-label=\"Standard shipping\" data-description=\"3–5 business days.\" name=\"ship\" value=\"standard\">",
+    "</sherpa-select-radio><sherpa-select-radio data-label=\"Express\" name=\"ship\" value=\"express\">",
+    "</sherpa-select-radio>"
+  ]
+}

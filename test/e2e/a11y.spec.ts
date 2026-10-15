@@ -1,12 +1,12 @@
 import { test, expect, type Page } from './fixture';
 import { createRequire } from 'node:module';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { FIXTURES } from '../a11y/fixtures.mjs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { EXAMPLES } from '../a11y/examples.mjs';
 
 /**
  * THE ACCESSIBILITY GATE — every component, WCAG 2.1 level AA. TODO 24.
  *
- * axe-core reads each component's fixture, and writes a REPORT per component
+ * axe-core reads each component's shipped example, and writes a REPORT per component
  * to `test/a11y/reports/`: what is wrong, the criterion it breaks, and how to
  * correct it. `test/a11y/baseline.json` holds the failures known today; a
  * count may only fall. `UPDATE_A11Y_BASELINE=1` records a new one.
@@ -120,12 +120,8 @@ test('a host label reaches its control — read by ROLE, never the attribute', a
   await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(1);
 });
 
-test('every component has a fixture', () => {
-  const components = readdirSync('src/components').filter((d) => d.startsWith('sherpa-')).sort();
-  expect(Object.keys(FIXTURES).sort()).toEqual(components);
-});
-
-for (const [name, fixture] of Object.entries(FIXTURES as Record<string, Fixture>)) {
+// Every component has one: test/unit/every-component-ships-an-example.test.mjs
+for (const [name, fixture] of Object.entries(EXAMPLES as Record<string, Fixture>)) {
   test(`${name} meets WCAG 2.1 AA, or fails no more than its baseline`, async ({ page }) => {
     await mount(page, fixture);
     const failures = await audit(page);

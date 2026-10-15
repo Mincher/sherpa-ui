@@ -1,0 +1,39 @@
+{
+  "html": [
+    "<sherpa-container><sherpa-data-viz-header slot=\"header\" data-heading=\"Alerts over time\">",
+    "</sherpa-data-viz-header><sherpa-line-chart data-type=\"area\"></sherpa-line-chart></sherpa-container>"
+  ],
+  "fill": [
+    {
+      "at": "sherpa-line-chart",
+      "data": {
+        "labels": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "series": [
+          {
+            "name": "Critical",
+            "values": [
+              3,
+              5,
+              2,
+              6
+            ]
+          },
+          {
+            "name": "Warning",
+            "values": [
+              8,
+              6,
+              9,
+              4
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

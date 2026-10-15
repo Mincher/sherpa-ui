@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-slider data-label=\"Volume\" min=\"0\" max=\"100\" step=\"5\" value=\"40\" data-show-value>",
+    "</sherpa-slider>"
+  ]
+}

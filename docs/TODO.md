@@ -262,7 +262,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ✅ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
-| ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
+| ✅ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ⬜ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
@@ -6370,6 +6370,24 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 271 — Phase 8.3: each component ships its example
+
+The plan's 8.3: ONE example per component, shipped beside its spec, as the
+one source for the a11y gate, the MCP and the gallery. **✅ Done 2026-10-15.**
+The 66 fixtures in `test/a11y/fixtures.mjs` (in `test/`, not shipped) are
+`src/components/<name>/<name>.example.json` now, against a new
+`schemas/example.v1.json`: the markup, the data each part is populated with,
+and the part to open. Long markup is an array of strings, joined with nothing.
+The package ships them; the a11y gate and one other spec read them through
+`test/a11y/examples.mjs`; the MCP's `get_component` has an Example section
+(`include: "example"`), read through `lib/sherpa.js`'s `loadExample`. A node
+test checks every component has one, each passes the schema, and its markup
+passes the usage check — for which `check-usage.mjs` now exports
+`markupProblems()`, one piece of markup. That check found the chat example's
+`data-type="person"`, not a value it takes: it is `user`. The a11y baseline
+did not move. `check:mcp-pack`: 19 tools, no failure.
+`T-a-component-ships-its-example`.
 
 ### `[x]` ✅ 270 — Phase 2: dead code, icon leftovers, repo strays
 

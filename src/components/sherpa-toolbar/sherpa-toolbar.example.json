@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-toolbar><sherpa-button slot=\"leading\" data-icon-start=\"plus\">Add customer</sherpa-button>",
+    "<sherpa-button slot=\"trailing\">Export</sherpa-button></sherpa-toolbar>"
+  ]
+}

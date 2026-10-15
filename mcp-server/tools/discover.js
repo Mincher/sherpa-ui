@@ -3,7 +3,7 @@
  *
  *   list_components   — every component + its def summary
  *   find_token        — token NAMES from the generated tokens.css, synonym-aware
- *   get_component     — the full def + code + Figma binding shape
+ *   get_component     — the full def + example + code + Figma binding shape
  *
  * check-mcp-tools.mjs gates this list against the registrations below.
  *
@@ -12,7 +12,7 @@
  */
 import { z } from "zod/v3";
 import {
-  loadComponentNames, loadDef, loadNameMap, loadCssTokenNames,
+  loadComponentNames, loadDef, loadExample, loadNameMap, loadCssTokenNames,
   compileDef,
 } from "../lib/sherpa.js";
 
@@ -142,13 +142,13 @@ export function register(server) {
   server.registerTool(
     "get_component",
     {
-      title: "Get a Component (def + code + Figma shape)",
+      title: "Get a Component (def + example + code + Figma shape)",
       description:
-        "The full picture for one component: its component.json spec (structure, props, tokens, events), the compiled TS/HTML/CSS (from compile_def, when the def carries an anatomy block), and its Figma binding shape (variant axes, bool/text/instance props, mode pins). Use before authoring a variant, reusing it as a nested child, or building it in Figma.",
+        "The full picture for one component: its component.json spec (structure, props, tokens, events), a working example (its markup as a page writes it, and the data it is populated with), the compiled TS/HTML/CSS (from compile_def, when the def carries an anatomy block), and its Figma binding shape (variant axes, bool/text/instance props, mode pins). Use before authoring a variant, using it in a page, reusing it as a nested child, or building it in Figma.",
       inputSchema: {
         name: z.string().describe("Component element name (e.g. sherpa-tag)"),
-        include: z.enum(["all", "def", "code", "figma"]).optional()
-          .describe("Which parts to return (default all): def | code | figma | all"),
+        include: z.enum(["all", "def", "example", "code", "figma"]).optional()
+          .describe("Which parts to return (default all): def | example | code | figma | all"),
       },
     },
     async ({ name, include = "all" }) => {
@@ -165,6 +165,21 @@ export function register(server) {
           out += `# ${def.name}${def.figmaName ? `  (Figma: ${def.figmaName})` : ""}\n`;
           out += `${def.description ?? ""}\n\n`;
           out += `## Definition\n\`\`\`json\n${JSON.stringify(def, null, 2)}\n\`\`\`\n\n`;
+        }
+
+        if (include === "all" || include === "example") {
+          // TRAP T-a-component-ships-its-example
+          const example = loadExample(name);
+          if (example) {
+            out += `## Example\nAs a page writes it.\n\`\`\`html\n${example.html}\n\`\`\`\n`;
+            for (const { at: sel, data } of example.fill ?? []) {
+              out += `Then \`document.querySelector(${JSON.stringify(sel)}).populate(data)\`, with:\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\`\n`;
+            }
+            if (example.show) out += `Then \`.show()\` on \`${example.show}\`: it draws only while open.\n`;
+            out += "\n";
+          } else {
+            out += `## Example\n_${name} ships no example._\n\n`;
+          }
         }
 
         if (include === "all" || include === "code") {

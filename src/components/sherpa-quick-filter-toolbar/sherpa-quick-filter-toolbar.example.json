@@ -1,0 +1,33 @@
+{
+  "html": "<sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>",
+  "fill": [
+    {
+      "at": "sherpa-quick-filter-toolbar",
+      "data": [
+        {
+          "id": "region",
+          "label": "Region",
+          "options": [
+            {
+              "value": "emea",
+              "label": "EMEA"
+            },
+            {
+              "value": "apac",
+              "label": "APAC"
+            },
+            {
+              "value": "amer",
+              "label": "Americas"
+            }
+          ]
+        },
+        {
+          "id": "trial",
+          "label": "On trial",
+          "type": "toggle"
+        }
+      ]
+    }
+  ]
+}

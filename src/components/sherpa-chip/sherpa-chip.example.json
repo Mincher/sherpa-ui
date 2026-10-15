@@ -1,0 +1,5 @@
+{
+  "html": [
+    "<sherpa-chip>EMEA</sherpa-chip> <sherpa-chip data-status=\"success\" data-dismissible>Active</sherpa-chip>"
+  ]
+}

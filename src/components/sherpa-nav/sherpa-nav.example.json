@@ -1,0 +1,49 @@
+{
+  "html": "<div style=\"block-size: 480px\"><sherpa-nav data-current-id=\"home\"></sherpa-nav></div>",
+  "fill": [
+    {
+      "at": "sherpa-nav",
+      "data": {
+        "product": {
+          "name": "Sherpa"
+        },
+        "sections": [
+          {
+            "label": "Main",
+            "items": [
+              {
+                "id": "home",
+                "label": "Home",
+                "icon": "home",
+                "href": "?context=home"
+              },
+              {
+                "id": "records",
+                "label": "Records",
+                "icon": "table-columns",
+                "href": "?context=records"
+              }
+            ]
+          },
+          {
+            "label": "Admin",
+            "items": [
+              {
+                "id": "team",
+                "label": "Team",
+                "icon": "person",
+                "children": [
+                  {
+                    "id": "roles",
+                    "label": "Roles",
+                    "href": "?context=roles"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

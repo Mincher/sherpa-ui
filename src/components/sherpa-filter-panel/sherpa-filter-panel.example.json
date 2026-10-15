@@ -1,0 +1,39 @@
+{
+  "html": [
+    "<div style=\"block-size: 480px\"><sherpa-filter-panel data-heading=\"Filters\" open>",
+    "</sherpa-filter-panel></div>"
+  ],
+  "fill": [
+    {
+      "at": "sherpa-filter-panel",
+      "data": [
+        {
+          "scope": "data",
+          "label": "Customer records",
+          "filters": [
+            {
+              "id": "plan",
+              "label": "Plan",
+              "options": [
+                {
+                  "value": "Pro",
+                  "label": "Pro"
+                },
+                {
+                  "value": "Free",
+                  "label": "Free"
+                }
+              ]
+            }
+          ],
+          "available": [
+            {
+              "id": "region",
+              "label": "Region"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

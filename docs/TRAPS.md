@@ -1104,9 +1104,10 @@ row a `listitem`. A calendar's cells sit in `role="row"` boxes that are
 
 ### T-the-a11y-gate-reads-shadow-roots
 
-**The accessibility gate is axe-core over ONE FIXTURE per component, WCAG 2.1
-level AA** — TODO 24. `test/a11y/fixtures.mjs` holds a realistic instance of
-every one, written as a page writes it; `test/e2e/a11y.spec.ts` draws each in the
+**The accessibility gate is axe-core over ONE EXAMPLE per component, WCAG 2.1
+level AA** — TODO 24. Each component's shipped `sherpa-<name>.example.json` is a
+realistic instance, written as a page writes it
+(`T-a-component-ships-its-example`); `test/e2e/a11y.spec.ts` draws each in the
 harness and runs axe on it. Three things make a green result mean something.
 **It is proved to read a shadow root**: a test puts an unnamed `<button>`
 inside one and expects axe to report it, with a target that crosses the
@@ -1114,8 +1115,8 @@ boundary. A checker that reads only the light DOM sees almost nothing of a
 Sherpa component and passes everything. **A name is asserted by ROLE**
 (`getByRole('switch', { name })`), never by reading `aria-label` back — the
 attribute was there all along on hosts where it named nothing
-(`T-a-host-label-must-reach-its-control`). **Every component must have a
-fixture**, so a new one cannot skip the gate.
+(`T-a-host-label-must-reach-its-control`). **Every component must have an
+example**, so a new one cannot skip the gate.
 
 The output is a REPORT per component in `test/a11y/reports/` (not tracked):
 what is wrong, the criterion it breaks, and how to correct it. The failures
@@ -1131,7 +1132,31 @@ panel by TEXT. And a row whose label is hidden — a collapsed nav rail — has 
 name at all unless the row carries `aria-label`.
 
 - Site: `test/e2e/a11y.spec.ts`
-- Site: `test/a11y/fixtures.mjs`
+
+### T-a-component-ships-its-example
+
+**Each component ships ONE example beside its spec** (code review 8.3, Will
+D1; TODO 271): `sherpa-<name>.example.json`, against `schemas/example.v1.json`.
+It is how a page WRITES the component — a label where it takes one, real
+words — with the data each part is given through `populate()` (`fill`), and
+the part to open (`show`) when it draws only while open. Markup may be an array
+of strings, joined with no separator, so a long one reads in a diff.
+
+It was `test/a11y/fixtures.mjs` until 2026-10-15: in `test/`, so not shipped,
+and read by the a11y gate alone. It is component documentation, not an app
+(D4), so it ships in the package, and ONE source feeds three readers: the
+accessibility gate, the MCP's `get_component`, and a gallery's first story
+for each component.
+
+A node test holds it: every component has one, each passes the schema, and
+its markup passes the usage check — a tag, a `data-*` or an enum value the
+spec does not have fails it. The move found one: the chat message's
+`data-type="person"`, which is not a value it takes.
+
+- Site: `test/a11y/examples.mjs`
+- Site: `test/unit/every-component-ships-an-example.test.mjs`
+- Site: `mcp-server/lib/sherpa.js`
+- Site: `mcp-server/tools/discover.js`
 
 ### T-one-overlay-panel-at-a-time
 

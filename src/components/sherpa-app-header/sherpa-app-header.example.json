@@ -1,0 +1,22 @@
+{
+  "html": [
+    "<sherpa-app-header data-heading=\"Records\" data-icon=\"table-columns\" data-ai data-theme-toggle data-notifications data-account data-help>",
+    "</sherpa-app-header>"
+  ],
+  "fill": [
+    {
+      "at": "sherpa-app-header",
+      "data": {
+        "breadcrumb": [
+          {
+            "label": "Home",
+            "href": "?context=home"
+          },
+          {
+            "label": "Records"
+          }
+        ]
+      }
+    }
+  ]
+}

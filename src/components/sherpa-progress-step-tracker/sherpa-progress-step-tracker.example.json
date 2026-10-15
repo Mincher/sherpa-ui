@@ -1,0 +1,20 @@
+{
+  "html": "<sherpa-progress-step-tracker data-current-step=\"2\"></sherpa-progress-step-tracker>",
+  "fill": [
+    {
+      "at": "sherpa-progress-step-tracker",
+      "data": [
+        {
+          "label": "Account"
+        },
+        {
+          "label": "Plan",
+          "description": "Pick one"
+        },
+        {
+          "label": "Confirm"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "html": [
+    "<sherpa-transfer-list data-source-heading=\"Available columns\" data-target-heading=\"Shown columns\">",
+    "</sherpa-transfer-list>"
+  ],
+  "fill": [
+    {
+      "at": "sherpa-transfer-list",
+      "data": [
+        {
+          "value": "name",
+          "label": "Name",
+          "selected": true
+        },
+        {
+          "value": "plan",
+          "label": "Plan"
+        },
+        {
+          "value": "seats",
+          "label": "Seats"
+        }
+      ]
+    }
+  ]
+}

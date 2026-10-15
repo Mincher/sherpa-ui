@@ -1,0 +1,17 @@
+{
+  "html": "<sherpa-breadcrumbs></sherpa-breadcrumbs>",
+  "fill": [
+    {
+      "at": "sherpa-breadcrumbs",
+      "data": [
+        {
+          "label": "Records",
+          "href": "?context=records"
+        },
+        {
+          "label": "Ada Lovelace"
+        }
+      ]
+    }
+  ]
+}

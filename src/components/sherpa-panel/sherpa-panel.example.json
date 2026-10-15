@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-panel data-heading=\"Overview\"><p>Panel body.</p>",
+    "<sherpa-button slot=\"footer\">Apply</sherpa-button></sherpa-panel>"
+  ]
+}

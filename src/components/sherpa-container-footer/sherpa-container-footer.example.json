@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-container-footer><sherpa-button>Cancel</sherpa-button>",
+    "<sherpa-button data-look=\"saturated\">Save</sherpa-button></sherpa-container-footer>"
+  ]
+}

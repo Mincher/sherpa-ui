@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-pagination data-page=\"2\" data-total-pages=\"10\" data-page-size=\"25\" data-rows-options=\"10,25,50\">",
+    "</sherpa-pagination>"
+  ]
+}

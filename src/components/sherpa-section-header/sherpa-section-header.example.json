@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-section-header data-heading=\"Details\">",
+    "<span slot=\"description\">How you appear to your team.</span></sherpa-section-header>"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "html": [
+    "<div style=\"block-size: 320px\">",
+    "<sherpa-data-grid data-selectable data-column-filters data-filterable></sherpa-data-grid></div>"
+  ],
+  "fill": [
+    {
+      "at": "sherpa-data-grid",
+      "data": {
+        "key": "id",
+        "columns": [
+          {
+            "field": "name",
+            "header": "Name",
+            "sortable": true
+          },
+          {
+            "field": "plan",
+            "header": "Plan",
+            "sortable": true
+          },
+          {
+            "field": "seats",
+            "header": "Seats",
+            "type": "number",
+            "sortable": true
+          }
+        ],
+        "rows": [
+          {
+            "id": "a",
+            "name": "Ada Lovelace",
+            "plan": "Pro",
+            "seats": 12
+          },
+          {
+            "id": "b",
+            "name": "Grace Hopper",
+            "plan": "Free",
+            "seats": 3
+          },
+          {
+            "id": "c",
+            "name": "Alan Turing",
+            "plan": "Team",
+            "seats": 8
+          }
+        ],
+        "actions": [
+          {
+            "id": "edit",
+            "label": "Edit",
+            "icon": "pencil"
+          },
+          {
+            "id": "delete",
+            "label": "Delete",
+            "icon": "trash",
+            "danger": true,
+            "multi": true
+          }
+        ]
+      }
+    }
+  ]
+}

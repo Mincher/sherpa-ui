@@ -1,0 +1,18 @@
+{
+  "html": "<sherpa-select-group data-label=\"Plan\" name=\"plan\"></sherpa-select-group>",
+  "fill": [
+    {
+      "at": "sherpa-select-group",
+      "data": [
+        {
+          "value": "pro",
+          "label": "Pro"
+        },
+        {
+          "value": "free",
+          "label": "Free"
+        }
+      ]
+    }
+  ]
+}

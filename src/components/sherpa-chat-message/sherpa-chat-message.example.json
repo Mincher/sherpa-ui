@@ -1,0 +1,8 @@
+{
+  "html": [
+    "<sherpa-chat-message data-type=\"assistant\" data-name=\"Sherpa\" data-timestamp=\"10:30\" data-message=\"The answer is 42.\">",
+    "</sherpa-chat-message>",
+    "<sherpa-chat-message data-type=\"user\" data-name=\"You\" data-timestamp=\"10:31\" data-message=\"Thanks.\">",
+    "</sherpa-chat-message>"
+  ]
+}

@@ -12,6 +12,7 @@
  *
  * Map:
  * - EVERYWHERE — attributes any component may carry: set by an ancestor or a parent, or read by the base class or a helper
+ * - markupProblems — every problem in one piece of markup, and how many tags it checked
  * - usageProblems — every problem in one project's markup, and how many tags it checked
  * - checkUsage — check one project and say so; the exit code it should end with
  */
@@ -32,47 +33,60 @@ export const EVERYWHERE = [
   'data-setting',
 ];
 
+/** Each component's props, by tag, from its spec. */
+let specs;
+const specsOf = () => {
+  specs ??= new Map(globSync('src/components/*/*.component.json', { cwd: UI }).map((f) => {
+    const spec = JSON.parse(readFileSync(join(UI, f), 'utf8'));
+    return [spec.$name, new Map((spec.props ?? []).map((p) => [p.name, p]))];
+  }));
+  return specs;
+};
+
+/** Every problem in one piece of markup, and how many tags it checked. `own`
+ *  names a project's own hooks, by tag. */
+export function markupProblems(html, where = 'markup', own = {}) {
+  const problems = [];
+  let tags = 0;
+  // Comments keep their length, so a line number still counts true.
+  const code = html.replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ' '));
+  for (const m of code.matchAll(/<(sherpa-[a-z0-9-]+)\b([^>]*)>/g)) {
+    const [, tag, attrs] = m;
+    const line = code.slice(0, m.index).split('\n').length;
+    const props = specsOf().get(tag);
+    tags++;
+    if (!props) {
+      problems.push(`${where}:${line}  <${tag}> is no Sherpa component`);
+      continue;
+    }
+    for (const [, name, value] of attrs.matchAll(/\s(data-[\w-]+)(?:="([^"]*)")?/g)) {
+      const p = props.get(name);
+      if (!p) {
+        const placed = /^data-col-span-\d+$/.test(name);
+        if (!placed && !EVERYWHERE.includes(name) && !(own[tag] ?? []).includes(name)) {
+          problems.push(`${where}:${line}  <${tag} ${name}> — ${tag} has no such attribute`);
+        }
+        continue;
+      }
+      if (p.type === 'enum' && value !== undefined && p.values?.length && !p.values.includes(value)) {
+        problems.push(`${where}:${line}  <${tag} ${name}="${value}"> — it takes ${p.values.map((v) => `"${v}"`).join(', ')}`);
+      }
+    }
+  }
+  return { problems, tags };
+}
+
 /** Every problem in one project's markup, and how many tags it checked. */
 export function usageProblems(project) {
-  const specs = new Map();
-  for (const f of globSync('src/components/*/*.component.json', { cwd: UI })) {
-    const spec = JSON.parse(readFileSync(join(UI, f), 'utf8'));
-    specs.set(spec.$name, new Map((spec.props ?? []).map((p) => [p.name, p])));
-  }
   const config = existsSync(join(project, 'sherpa-usage.json'))
     ? JSON.parse(readFileSync(join(project, 'sherpa-usage.json'), 'utf8')) : {};
-  const own = config.own ?? {};
   const problems = [];
   let tags = 0;
   for (const root of config.markup ?? ['app']) {
     for (const file of globSync('**/*.html', { cwd: join(project, root) })) {
-      const where = join(root, file);
-      const html = readFileSync(join(project, root, file), 'utf8');
-      // Comments keep their length, so a line number still counts true.
-      const code = html.replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ' '));
-      for (const m of code.matchAll(/<(sherpa-[a-z0-9-]+)\b([^>]*)>/g)) {
-        const [, tag, attrs] = m;
-        const line = code.slice(0, m.index).split('\n').length;
-        const props = specs.get(tag);
-        tags++;
-        if (!props) {
-          problems.push(`${where}:${line}  <${tag}> is no Sherpa component`);
-          continue;
-        }
-        for (const [, name, value] of attrs.matchAll(/\s(data-[\w-]+)(?:="([^"]*)")?/g)) {
-          const p = props.get(name);
-          if (!p) {
-            const placed = /^data-col-span-\d+$/.test(name);
-            if (!placed && !EVERYWHERE.includes(name) && !(own[tag] ?? []).includes(name)) {
-              problems.push(`${where}:${line}  <${tag} ${name}> — ${tag} has no such attribute`);
-            }
-            continue;
-          }
-          if (p.type === 'enum' && value !== undefined && p.values?.length && !p.values.includes(value)) {
-            problems.push(`${where}:${line}  <${tag} ${name}="${value}"> — it takes ${p.values.map((v) => `"${v}"`).join(', ')}`);
-          }
-        }
-      }
+      const found = markupProblems(readFileSync(join(project, root, file), 'utf8'), join(root, file), config.own ?? {});
+      problems.push(...found.problems);
+      tags += found.tags;
     }
   }
   return { problems, tags };
