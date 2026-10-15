@@ -159,6 +159,14 @@ legend or title slot, and the filter family declares `data-hide-unmatched`,
 are **gaps and duplicate declarations**, and go to Phase 5 (a shared
 declaration, D5) and the TODO ledger.
 
+## 10. Maximise — Will, 2026-10-15
+
+**Rule.** A component that grows to fill the window takes **`data-maximised`**
+(a boolean, UK spelling as the repo's own names). It sets the state itself on
+its one toggle — Maximise (`fullscreen`), then Minimise (`fullscreen-exit`) —
+and a host may set it too. **Not `data-expanded`:** that is a row's children
+shown. First use: `sherpa-overlay-panel` (TODO 303).
+
 ---
 
 ## What a yes does
