@@ -268,18 +268,8 @@
     },
     {
       "$type": "state",
-      "name": "has-icon",
-      "selector": ":host([data-has-icon])"
-    },
-    {
-      "$type": "state",
       "name": "collapsible",
       "selector": ":host([data-collapsible])"
-    },
-    {
-      "$type": "state",
-      "name": "has-heading",
-      "selector": ":host([data-has-heading])"
     },
     {
       "$type": "state",
@@ -295,11 +285,6 @@
       "$type": "state",
       "name": "collapsed",
       "selector": ":host([data-collapsed])"
-    },
-    {
-      "$type": "state",
-      "name": "has-metadata",
-      "selector": ":host([data-has-metadata])"
     },
     {
       "$type": "state",

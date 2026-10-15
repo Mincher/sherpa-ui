@@ -1073,19 +1073,19 @@ export abstract class SherpaElement extends Base {
 
   /* ── Private — slots ─────────────────────────────────────────────────── */
 
-  /** Listen to every slot, so `data-has-*` follows what is slotted. */
+  /** Listen to every slot, so `has-*` states follow what is slotted. */
   #wireSlots(): void {
     for (const slot of this.root.querySelectorAll('slot')) {
       const update = (): void => this.#reflectSlot(slot);
       /* NO SIGNAL: the slot lives as long as this stamp, and a re-stamp drops
-         it with its listener. The disconnect signal froze `data-has-*` on a
+         it with its listener. The disconnect signal froze `has-*` on a
          moved element. TRAP T-abort-controller-per-connect */
       slot.addEventListener('slotchange', update);
       update();
     }
   }
 
-  /** Set `data-has-<slot>` when a slot holds real content. */
+  /** Set the `has-<slot>` state when a slot holds real content. TRAP T-private-state-is-a-custom-state */
   #reflectSlot(slot: HTMLSlotElement): void {
     // TRAP T-slot-guards-only-when-filled — no flatten, so a slot's own
     // fallback never counts as "present".
@@ -1095,11 +1095,10 @@ export abstract class SherpaElement extends Base {
       if (n instanceof HTMLSlotElement) return n.assignedNodes({ flatten: true }).length > 0;
       return (n as Element).tagName !== 'TEMPLATE';
     });
-    /* `-slot`, not `data-has-content`: the attribute says THE DEFAULT SLOT IS
+    /* `-slot`, not `has-content`: the state says THE DEFAULT SLOT IS
        FILLED, which is not the same as the element having content. On a layout
        element it is inert either way. */
-    const attr = slot.name ? `data-has-${slot.name}` : 'data-has-content-slot';
-    this.toggleAttribute(attr, has);
+    this.toggleState(slot.name ? `has-${slot.name}` : 'has-content-slot', has);
   }
 
   /* ── Private — declared-prop sync ────────────────────────────────────── */

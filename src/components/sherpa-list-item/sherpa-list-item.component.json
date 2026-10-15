@@ -329,18 +329,8 @@
     },
     {
       "$type": "state",
-      "name": "has-leading",
-      "selector": ":host([data-has-leading])"
-    },
-    {
-      "$type": "state",
       "name": "interactive",
       "selector": ":host([data-interactive])"
-    },
-    {
-      "$type": "state",
-      "name": "has-trailing",
-      "selector": ":host([data-has-trailing])"
     },
     {
       "$type": "state",

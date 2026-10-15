@@ -3,7 +3,7 @@ import { test, expect } from './harness';
 /**
  * sherpa-section-header on the reforged base — the title-sync pattern (data-heading
  * writes .title text), the data-size heading scale, the data-divider rule, and the
- * data-has-{slot} reflection for description / actions / a custom heading.
+ * has-<slot> state for description / actions / a custom heading.
  */
 
 
@@ -52,7 +52,7 @@ test('data-size scales the heading font size (sm < base < lg)', async ({ page })
   expect(r.base).toBeLessThan(r.lg);
 });
 
-test('actions slot presence reflects to data-has-actions and shows the region', async ({
+test('actions slot presence reflects to has-actions and shows the region', async ({
   page,
 }) => {
   const r = await page.evaluate(async () => {
@@ -69,7 +69,7 @@ test('actions slot presence reflects to data-has-actions and shows the region', 
     // let the slotchange microtask settle
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasAttr: el.hasAttribute('data-has-actions'),
+      hasAttr: el.matches(':state(has-actions)'),
       display: getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display,
     };
   });
@@ -122,7 +122,7 @@ test('a slotted heading collapses the default .title', async ({ page }) => {
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasHeading: el.hasAttribute('data-has-heading'),
+      hasHeading: el.matches(':state(has-heading)'),
       // Default .title is slot fallback; a filled slot leaves it unrendered
       // (display "" not "none"). Assert the real contract via checkVisibility().
       titleHidden: !el.shadowRoot!.querySelector('.title')!.checkVisibility(),

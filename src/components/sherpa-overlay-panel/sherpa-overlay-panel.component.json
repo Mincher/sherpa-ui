@@ -246,7 +246,7 @@
       "accepts": [
         "content"
       ],
-      "description": "the metadata / description row under the title (reflects data-has-description)"
+      "description": "the metadata / description row under the title (reflects has-description)"
     },
     {
       "$type": "slot",
@@ -271,7 +271,7 @@
         "control",
         "input"
       ],
-      "description": "footer action controls (reflects data-has-footer)"
+      "description": "footer action controls (reflects has-footer)"
     }
   ],
   "populate": {

@@ -60,7 +60,7 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
-:host(:is([data-has-header], [data-label], [data-description])) .header {
+:host(:is(:state(has-header), [data-label], [data-description])) .header {
   display: flex;
 }
 
@@ -84,7 +84,7 @@
   display: inline-flex;
 }
 
-:host(:is([data-has-header], [data-label], [data-description])) .body {
+:host(:is(:state(has-header), [data-label], [data-description])) .body {
   border-block-start: var(--_divider-rule);
 }
 /* Footer divider; runs along the edge the footer was stacked on. */

@@ -223,11 +223,6 @@
     },
     {
       "$type": "state",
-      "name": "has-header",
-      "selector": ":host([data-has-header])"
-    },
-    {
-      "$type": "state",
       "name": "label",
       "selector": ":host([data-label])"
     },

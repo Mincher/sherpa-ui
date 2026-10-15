@@ -136,8 +136,8 @@
 }
 
 /* header/footer appear only when their slot has content. */
-:host([data-has-header]) .header { display: block; }
-:host([data-has-footer]) .footer { display: block; }
+:host(:state(has-header)) .header { display: block; }
+:host(:state(has-footer)) .footer { display: block; }
 
 /* The excluded components carry their own padding and divider; wrapping one in
    a second inset draws both twice. */
@@ -166,13 +166,13 @@
 .state > slot { display: none; }
 
 /* Loading, or the data's STATE, over the body — by data-state (the provider's)
-   or a slotted overlay (data-has-*). Loading wins. TRAP T-a-container-shows-its-datas-state */
-:host(:is([data-loading], [data-has-empty], [data-has-error], [data-state])) .state { display: flex; }
+   or a slotted overlay (`has-*` states). Loading wins. TRAP T-a-container-shows-its-datas-state */
+:host(:is([data-loading], :state(has-empty), :state(has-error), [data-state])) .state { display: flex; }
 :host([data-loading]) .state-loading { display: inline-flex; }
-:host(:not([data-loading]):is([data-has-empty], [data-state="empty"], [data-state="no-matches"])) .state-empty {
+:host(:not([data-loading]):is(:state(has-empty), [data-state="empty"], [data-state="no-matches"])) .state-empty {
   display: inline-flex;
 }
-:host(:not([data-loading]):is([data-has-error], [data-state="error"])) .state-error { display: inline-flex; }
+:host(:not([data-loading]):is(:state(has-error), [data-state="error"])) .state-error { display: inline-flex; }
 /* The empty slot's two defaults: no data, or no MATCHES. */
 .no-matches-default { display: none; }
 :host([data-state="no-matches"]) .no-matches-default { display: block; }

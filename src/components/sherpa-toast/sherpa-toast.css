@@ -88,7 +88,7 @@
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
-:host([data-has-content-slot]) .heading-text { display: none; }
+:host(:state(has-content-slot)) .heading-text { display: none; }
 /* Carries the status ink. */
 .value { display: none; }
 :host([data-value]) .value {

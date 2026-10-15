@@ -2,7 +2,7 @@ import { test, expect } from './fixture';
 
 /**
  * sherpa-list-item on the reforged base — heading / description text from data-*,
- * slot-presence reflection (data-has-leading / data-has-trailing), the current
+ * slot-presence reflection (has-leading / has-trailing), the current
  * state, and the item-click event gated on data-interactive.
  */
 
@@ -50,7 +50,7 @@ test('description hides when data-description is absent', async ({ page }) => {
   expect(r.display).toBe('none');
 });
 
-test('slotted leading and trailing content reflect to data-has-* on the host', async ({ page }) => {
+test('slotted leading and trailing content set has-* states on the host', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
     el.setAttribute('data-label', 'With slots');
@@ -60,8 +60,8 @@ test('slotted leading and trailing content reflect to data-has-* on the host', a
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     return {
-      hasLeading: el.hasAttribute('data-has-leading'),
-      hasTrailing: el.hasAttribute('data-has-trailing'),
+      hasLeading: el.matches(':state(has-leading)'),
+      hasTrailing: el.matches(':state(has-trailing)'),
       leadingVisible: getComputedStyle(s.querySelector('.leading')!).display !== 'none',
       trailingVisible: getComputedStyle(s.querySelector('.trailing')!).display !== 'none',
     };
@@ -79,7 +79,7 @@ test('trailing region stays hidden with no slotted content', async ({ page }) =>
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return {
-      hasTrailing: el.hasAttribute('data-has-trailing'),
+      hasTrailing: el.matches(':state(has-trailing)'),
       trailingDisplay: getComputedStyle(el.shadowRoot!.querySelector('.trailing')!).display,
     };
   });

@@ -126,7 +126,7 @@
       "accepts": [
         "header"
       ],
-      "description": "header region (reflects data-has-header)."
+      "description": "header region (reflects has-header)."
     },
     {
       "$type": "slot",
@@ -142,7 +142,7 @@
       "accepts": [
         "footer"
       ],
-      "description": "footer region (reflects data-has-footer)"
+      "description": "footer region (reflects has-footer)"
     }
   ],
   "populate": {
@@ -152,18 +152,8 @@
   "states": [
     {
       "$type": "state",
-      "name": "has-header",
-      "selector": ":host([data-has-header])"
-    },
-    {
-      "$type": "state",
       "name": "heading",
       "selector": ":host([data-heading])"
-    },
-    {
-      "$type": "state",
-      "name": "has-footer",
-      "selector": ":host([data-has-footer])"
     },
     {
       "$type": "state",

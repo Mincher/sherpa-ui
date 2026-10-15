@@ -32,7 +32,7 @@
 }
 
 .view-zone { display: none; }
-:host([data-has-view]) .view-zone {
+:host(:state(has-view)) .view-zone {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
@@ -51,13 +51,13 @@
 /* The 1×16 divider rectangle, in all three places it appears. `::after` on a
    zone, a real element in the action cluster. */
 .act-divider,
-:host([data-has-view]) .view-zone::after,
+:host(:state(has-view)) .view-zone::after,
 :host(:state(has-organise)) .organise-zone::after {
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([data-has-view]) .view-zone::after,
+:host(:state(has-view)) .view-zone::after,
 :host(:state(has-organise)) .organise-zone::after {
   content: "";
 }
@@ -76,7 +76,7 @@
   display: none;
 }
 /* Panel mode takes every action before it. */
-:host([data-panel-mode]:not([data-has-actions])) .act-divider { display: none; }
+:host([data-panel-mode]:not(:state(has-actions))) .act-divider { display: none; }
 
 .chips {
   display: flex;

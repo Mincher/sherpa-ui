@@ -175,7 +175,7 @@
       "accepts": [
         "icon"
       ],
-      "description": "custom illustration (reflects data-has-icon; replaces the glyph)"
+      "description": "custom illustration (reflects has-icon; replaces the glyph)"
     },
     {
       "$type": "slot",
@@ -183,7 +183,7 @@
       "accepts": [
         "content"
       ],
-      "description": "custom message body (reflects data-has-content-slot; replaces data-description)"
+      "description": "custom message body (reflects has-content-slot; replaces data-description)"
     },
     {
       "$type": "slot",
@@ -191,7 +191,7 @@
       "accepts": [
         "control"
       ],
-      "description": "call-to-action controls (reflects data-has-action)"
+      "description": "call-to-action controls (reflects has-action)"
     },
     {
       "$type": "slot",
@@ -199,7 +199,7 @@
       "accepts": [
         "text"
       ],
-      "description": "custom fine-print body (reflects data-has-small-print; replaces data-small-print text)"
+      "description": "custom fine-print body (reflects has-small-print; replaces data-small-print text)"
     }
   ],
   "populate": {
@@ -207,11 +207,6 @@
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "has-icon",
-      "selector": ":host([data-has-icon])"
-    },
     {
       "$type": "state",
       "name": "empty",
@@ -244,23 +239,8 @@
     },
     {
       "$type": "state",
-      "name": "has-content-slot",
-      "selector": ":host([data-has-content-slot])"
-    },
-    {
-      "$type": "state",
-      "name": "has-action",
-      "selector": ":host([data-has-action])"
-    },
-    {
-      "$type": "state",
       "name": "small-print",
       "selector": ":host([data-small-print])"
-    },
-    {
-      "$type": "state",
-      "name": "has-small-print",
-      "selector": ":host([data-has-small-print])"
     },
     {
       "$type": "state",

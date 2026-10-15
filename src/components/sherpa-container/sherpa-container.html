@@ -23,15 +23,15 @@
                     Not needed for the common one-child card.
 
   Slotting empty / error shows that overlay too, via the base class reflecting
-  data-has-{slot}; a slotted one replaces the default content.
+  a `has-<slot>` state; a slotted one replaces the default content.
 
   Slots:
     (default) — the card body
-    header    — header region (reflects data-has-header)
-    footer    — footer region (reflects data-has-footer)
+    header    — header region (reflects has-header)
+    footer    — footer region (reflects has-footer)
     loading   — loading content (has a default spinner); shown by data-loading
-    empty     — empty-state content; slotting it shows the empty overlay (data-has-empty)
-    error     — error-state content; slotting it shows the error overlay (data-has-error)
+    empty     — empty-state content; slotting it shows the empty overlay (has-empty)
+    error     — error-state content; slotting it shows the error overlay (has-error)
 
   Fires:
     data-refresh  — Retry, on an error

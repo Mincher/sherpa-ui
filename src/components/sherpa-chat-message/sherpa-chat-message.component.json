@@ -141,7 +141,7 @@
       "accepts": [
         "icon"
       ],
-      "description": "custom avatar content, replaces the default glyph (reflects data-has-avatar)"
+      "description": "custom avatar content, replaces the default glyph (reflects has-avatar)"
     },
     {
       "$type": "slot",
@@ -171,11 +171,6 @@
       "$type": "state",
       "name": "user",
       "selector": ":host([data-type=\"user\"])"
-    },
-    {
-      "$type": "state",
-      "name": "has-content-slot",
-      "selector": ":host([data-has-content-slot])"
     },
     {
       "$type": "state",

@@ -3,7 +3,7 @@
  *
  * A heading row: a title (or slotted heading) + optional description on the lead
  * side, and a trailing actions region that appears only when the actions slot has
- * content (data-has-actions, reflected by the base class). data-size scales the
+ * content (has-actions, reflected by the base class). data-size scales the
  * heading typography; data-divider draws a rule beneath the row. Pure data-*.
  *
  * Figma (27:767) binds Theme on every colour here, so each read is theme-direct.
@@ -47,7 +47,7 @@
 }
 
 /* When a heading is slotted, the default .title node collapses. */
-:host([data-has-heading]) .title { display: none; }
+:host(:state(has-heading)) .title { display: none; }
 
 /* ── Description ─────────────────────────────────────────────────────── */
 .description {
@@ -57,7 +57,7 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-:host([data-has-description]) .description { display: block; }
+:host(:state(has-description)) .description { display: block; }
 
 /* A link inside the heading or description inherits the accent link colour. */
 ::slotted(a),
@@ -72,7 +72,7 @@
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-:host([data-has-actions]) .actions { display: flex; }
+:host(:state(has-actions)) .actions { display: flex; }
 
 /* ── Size scale ──────────────────────────────────────────────────────── */
 /* base title = body-base (14, matches Figma); sm/lg step down/up from it. */

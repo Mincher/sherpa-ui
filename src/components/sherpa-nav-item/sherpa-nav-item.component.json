@@ -378,11 +378,6 @@
     },
     {
       "$type": "state",
-      "name": "has-trailing",
-      "selector": ":host([data-has-trailing])"
-    },
-    {
-      "$type": "state",
       "name": "expandable",
       "selector": ":host([data-expandable])"
     },

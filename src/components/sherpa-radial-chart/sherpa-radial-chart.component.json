@@ -236,18 +236,8 @@
   "states": [
     {
       "$type": "state",
-      "name": "has-legend",
-      "selector": ":host([data-has-legend])"
-    },
-    {
-      "$type": "state",
       "name": "pie",
       "selector": ":host([data-type=\"pie\"])"
-    },
-    {
-      "$type": "state",
-      "name": "not-has-legend",
-      "selector": ":host(:not([data-has-legend]))"
     },
     {
       "$type": "state",

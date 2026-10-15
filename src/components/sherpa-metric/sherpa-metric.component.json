@@ -149,6 +149,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-has-values",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
       "name": "data-icon",
       "type": "string",
       "observed": true,

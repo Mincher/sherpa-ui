@@ -920,11 +920,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "has-actions",
-      "selector": ":host([data-has-actions])"
-    },
-    {
-      "$type": "state",
       "name": "number",
       "selector": ":host([data-type=\"number\"])"
     },

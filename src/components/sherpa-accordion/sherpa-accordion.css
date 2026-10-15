@@ -70,7 +70,7 @@
   min-block-size: var(--sherpa-theme-content-line-height-base, 20px);
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-:host([data-has-actions]) .actions { display: flex; }
+:host(:state(has-actions)) .actions { display: flex; }
 
 /* ── Titles ──────────────────────────────────────────────────────────── */
 .titles {
@@ -97,7 +97,7 @@
 }
 
 :host([data-description]) .description,
-:host([data-has-description]) .description {
+:host(:state(has-description)) .description {
   display: block;
 }
 

@@ -123,11 +123,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "has-detail",
-      "selector": ":host([data-has-detail])"
-    },
-    {
-      "$type": "state",
       "name": "focus-visible",
       "selector": ".tab:focus-visible"
     }

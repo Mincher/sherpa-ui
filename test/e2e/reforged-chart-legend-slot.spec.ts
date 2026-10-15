@@ -133,7 +133,7 @@ for (const tag of CHARTS) {
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return {
         display: getComputedStyle(chart).display,
-        hasLegend: chart.hasAttribute('data-has-legend'),
+        hasLegend: chart.matches(':state(has-legend)'),
       };
     }, tag);
     expect(r.hasLegend).toBe(false);

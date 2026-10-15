@@ -518,11 +518,6 @@
     },
     {
       "$type": "state",
-      "name": "has-view",
-      "selector": ":host([data-has-view])"
-    },
-    {
-      "$type": "state",
       "name": "limit-options",
       "selector": ":host([data-limit-options])"
     },

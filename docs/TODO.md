@@ -266,7 +266,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ✅ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ✅ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
-| 🚧 | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
+| ✅ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
 | ⬜ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
 | ⬜ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
 | ⬜ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
@@ -6389,7 +6389,7 @@ reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
 
-### `[ ]` 🚧 275 — Phase 4: private host state is `:state()` (D3)
+### `[x]` ✅ 275 — Phase 4: private host state is `:state()` (D3)
 
 **✅ The host-private attributes, 2026-10-15.** Nine, each written by its own
 component on itself and read only by its own CSS and tests, are custom states:
@@ -6403,7 +6403,14 @@ cross-component write), `data-has-values` (Demos watches it), `data-empty`
 count) and `data-takes`, `data-no-minimap` and `data-searchable` (a host may
 set them). 636 tests in three engines.
 
-**⬜ Next: `data-has-*`,** which the base writes for every slot.
+**✅ `data-has-*`, 2026-10-15.** The base sets a `has-<slot>` state for every
+slot, `has-content-slot` for the default one; 27 stylesheets select
+`:host(:state(has-icon))`; the tests read `el.matches(':state(has-icon)')`.
+The tooltip's and the gauge's own `has-tip` and `has-caption` declarations went,
+since the base writes them. The gate's `data-has-` exemption is gone, which
+showed one more: the metric's `data-has-values`, which an app watches, is
+declared. 1171 tests in three engines, the a11y gate and the phone project.
+`T-private-state-is-a-custom-state`.
 
 ### `[x]` ✅ 274 — Phase 4: default ARIA, boolean accessors and forwarding, in the base
 

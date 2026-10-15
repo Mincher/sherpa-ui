@@ -127,7 +127,7 @@
       "accepts": [
         "text"
       ],
-      "description": "description text below the heading (reflects data-has-description)"
+      "description": "description text below the heading (reflects has-description)"
     },
     {
       "$type": "slot",
@@ -135,7 +135,7 @@
       "accepts": [
         "control"
       ],
-      "description": "trailing action controls (reflects data-has-actions)"
+      "description": "trailing action controls (reflects has-actions)"
     }
   ],
   "populate": {
@@ -143,21 +143,6 @@
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "has-heading",
-      "selector": ":host([data-has-heading])"
-    },
-    {
-      "$type": "state",
-      "name": "has-description",
-      "selector": ":host([data-has-description])"
-    },
-    {
-      "$type": "state",
-      "name": "has-actions",
-      "selector": ":host([data-has-actions])"
-    },
     {
       "$type": "state",
       "name": "sm",

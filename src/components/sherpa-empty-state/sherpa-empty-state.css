@@ -55,7 +55,7 @@
 }
 
 /* A slotted icon replaces the default glyph. */
-:host([data-has-icon]) .glyph { display: none; }
+:host(:state(has-icon)) .glyph { display: none; }
 
 /* ── Illustration glyphs (pure CSS, neutral non-emoji outline symbols) ──
    Monochrome unicode marks that inherit the icon tile colour — no emoji, so
@@ -95,9 +95,9 @@
 }
 .message-text { margin: 0; }
 /* Drop the default message node when neither data-description nor a slotted body exists. */
-:host(:not([data-description]):not([data-has-content-slot])) .message { display: none; }
+:host(:not([data-description]):not(:state(has-content-slot))) .message { display: none; }
 /* A slotted body replaces the data-description text node. */
-:host([data-has-content-slot]) .message-text { display: none; }
+:host(:state(has-content-slot)) .message-text { display: none; }
 
 /* ── Actions ─────────────────────────────────────────────────────────── */
 .actions {
@@ -107,7 +107,7 @@
   justify-content: center;
   gap: var(--sherpa-display-mode-space-sm, 12px);
 }
-:host([data-has-action]) .actions { display: flex; }
+:host(:state(has-action)) .actions { display: flex; }
 
 /* ── Small print — a muted fine-print / help line below the action.
    Hidden until data-small-print text or a slotted small-print exists. ── */
@@ -120,9 +120,9 @@
 }
 .small-print-text { margin: 0; }
 :host([data-small-print]) .small-print,
-:host([data-has-small-print]) .small-print { display: block; }
+:host(:state(has-small-print)) .small-print { display: block; }
 /* A slotted small-print replaces the data-small-print text node. */
-:host([data-has-small-print]) .small-print-text { display: none; }
+:host(:state(has-small-print)) .small-print-text { display: none; }
 
 /* ── Size scale ──────────────────────────────────────────────────────── */
 :host([data-size="sm"]) {

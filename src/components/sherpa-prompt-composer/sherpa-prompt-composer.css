@@ -66,7 +66,7 @@
 }
 /* `.extras` is hidden until the slot is filled. */
 .extras { display: none; }
-:host([data-has-extras]) .extras { display: flex; }
+:host(:state(has-extras)) .extras { display: flex; }
 
 /* Both buttons are the same 24px icon box — only the paint differs. */
 :is(.lead-btn, .send) {

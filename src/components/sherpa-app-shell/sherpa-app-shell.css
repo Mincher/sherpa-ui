@@ -140,7 +140,7 @@
      gutter rather than two. */
   padding-inline: calc(var(--sherpa-layout-grid-padding, 16px) / 2);
 }
-/* A SLOTTED BUT CLOSED panel takes no room either. `data-has-panel-*` says
+/* A SLOTTED BUT CLOSED panel takes no room either. the `has-panel-*` states say
    something is slotted, which stays true while the panel is SHUT — so the area
    kept its 360px and the Context never got it back. The area follows the
    panel's own `open`, read through `:has()` on the slotted element.
@@ -150,8 +150,8 @@
 .panel-start,
 .panel-end { display: none; }
 /* …and none where the body has no room for one. TRAP T-the-panel-is-desktop-only */
-:host([data-has-panel-start][data-panel-start-open]:not([data-no-room])) .panel-start,
-:host([data-has-panel-end][data-panel-end-open]:not([data-no-room])) .panel-end { display: block; }
+:host(:state(has-panel-start)[data-panel-start-open]:not([data-no-room])) .panel-start,
+:host(:state(has-panel-end)[data-panel-end-open]:not([data-no-room])) .panel-end { display: block; }
 
 .panel-start { --_asked: var(--_asked-start); }
 .panel-end { --_asked: var(--_asked-end); }

@@ -77,6 +77,8 @@ export class SherpaMetric extends SherpaElement {
     'data-delta': { type: 'string', kind: 'content', to: '.delta' },
     'data-trend': { type: 'enum', kind: 'style', values: ['up', 'down', 'flat'] },
     'data-status': { type: 'enum', kind: 'style', values: ['success', 'critical'] },
+    // Written BY the tile once it has a series; an app may watch it.
+    'data-has-values': { type: 'boolean', kind: 'visibility' },
   } as const;
 
   override onRender(): void {

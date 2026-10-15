@@ -112,16 +112,6 @@
       "$type": "state",
       "name": "bordered",
       "selector": ":host([data-type=\"bordered\"])"
-    },
-    {
-      "$type": "state",
-      "name": "not-has-leading",
-      "selector": ":host(:not([data-has-leading]))"
-    },
-    {
-      "$type": "state",
-      "name": "not-has-trailing",
-      "selector": ":host(:not([data-has-trailing]))"
     }
   ],
   "$extensions": {

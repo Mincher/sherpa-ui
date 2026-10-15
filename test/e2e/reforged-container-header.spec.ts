@@ -4,7 +4,7 @@ import { test, expect } from './fixture';
  * sherpa-container-header on the reforged base — the header bar for a container's
  * header slot. Exercises the title sync (data-heading → .title), the description
  * sync + its data-description visibility, the heading-slot override, and the
- * data-has-actions reflection for the trailing actions slot.
+ * has-actions reflection for the trailing actions slot.
  *
  * Not registered by the harness index — the spec imports its module in-page.
  */
@@ -72,7 +72,7 @@ test('the heading slot overrides data-heading', async ({ page }) => {
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
-      hasHeadingAttr: el.hasAttribute('data-has-heading'),
+      hasHeadingAttr: el.matches(':state(has-heading)'),
       // The default .title is FALLBACK content inside <slot name="heading">; a
       // filled slot leaves it unrendered (computed display is "" not "none"), so
       // assert the real contract — it isn't visible — via checkVisibility().
@@ -103,7 +103,7 @@ test('the actions region hides when empty and appears when slotted', async ({ pa
 
     return {
       bareActionsVisible: vis(bare),
-      fullActionsAttr: full.hasAttribute('data-has-actions'),
+      fullActionsAttr: full.matches(':state(has-actions)'),
       fullActionsVisible: vis(full),
     };
   });
@@ -205,7 +205,7 @@ test('the metadata slot is hidden when empty and appears when slotted', async ({
 
     return {
       bareMetadataVisible: vis(bare),
-      metaAttr: withMeta.hasAttribute('data-has-metadata'),
+      metaAttr: withMeta.matches(':state(has-metadata)'),
       metaVisible: vis(withMeta),
     };
   });

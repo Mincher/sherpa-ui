@@ -3,7 +3,7 @@ import { test, expect } from './harness';
 /**
  * sherpa-empty-state on the reforged base — title / description text sync, the
  * pure-CSS illustration glyph driven by data-illustration, the data-size scale,
- * and the data-has-{slot} reflection for a custom icon, a custom body, and the
+ * and the has-<slot> state for a custom icon, a custom body, and the
  * action region.
  */
 
@@ -92,7 +92,7 @@ test('data-size scales the icon disc (sm < base < lg)', async ({ page }) => {
   expect(r.base).toBeLessThan(r.lg);
 });
 
-test('action slot presence reflects to data-has-action and shows the row', async ({ page }) => {
+test('action slot presence reflects to has-action and shows the row', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
@@ -106,7 +106,7 @@ test('action slot presence reflects to data-has-action and shows the row', async
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasAttr: el.hasAttribute('data-has-action'),
+      hasAttr: el.matches(':state(has-action)'),
       display: getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display,
     };
   });
@@ -128,7 +128,7 @@ test('a slotted body replaces the default message text', async ({ page }) => {
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasContent: el.hasAttribute('data-has-content-slot'),
+      hasContent: el.matches(':state(has-content-slot)'),
       // Default .message-text is slot fallback; a filled slot leaves it unrendered
       // (display "" not "none"). Assert the real contract via checkVisibility().
       msgTextHidden: !el.shadowRoot!.querySelector('.message-text')!.checkVisibility(),
@@ -151,7 +151,7 @@ test('a slotted icon hides the default glyph', async ({ page }) => {
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasIcon: el.hasAttribute('data-has-icon'),
+      hasIcon: el.matches(':state(has-icon)'),
       // Default .glyph is slot fallback; a filled slot leaves it unrendered
       // (display "" not "none"). Assert the real contract via checkVisibility().
       glyphHidden: !el.shadowRoot!.querySelector('.glyph')!.checkVisibility(),

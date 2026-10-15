@@ -355,11 +355,6 @@
     },
     {
       "$type": "state",
-      "name": "has-badge",
-      "selector": ":host([data-has-badge])"
-    },
-    {
-      "$type": "state",
       "name": "no-tip",
       "selector": ":host([data-no-tip])"
     },

@@ -224,14 +224,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-has-caption",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "visibility"
-    },
-    {
-      "$type": "prop",
       "name": "data-invert",
       "type": "boolean",
       "observed": true,
@@ -386,11 +378,6 @@
       "$type": "state",
       "name": "caption",
       "selector": ":host([data-caption])"
-    },
-    {
-      "$type": "state",
-      "name": "has-caption",
-      "selector": ":host([data-has-caption])"
     },
     {
       "$type": "state",

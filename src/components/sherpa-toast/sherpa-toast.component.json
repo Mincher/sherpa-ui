@@ -209,11 +209,6 @@
     },
     {
       "$type": "state",
-      "name": "has-content-slot",
-      "selector": ":host([data-has-content-slot])"
-    },
-    {
-      "$type": "state",
       "name": "value",
       "selector": ":host([data-value])"
     },

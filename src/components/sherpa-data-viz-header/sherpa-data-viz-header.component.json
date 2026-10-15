@@ -173,23 +173,8 @@
     },
     {
       "$type": "state",
-      "name": "has-left",
-      "selector": ":host([data-has-left])"
-    },
-    {
-      "$type": "state",
       "name": "description",
       "selector": ":host([data-description])"
-    },
-    {
-      "$type": "state",
-      "name": "has-metadata",
-      "selector": ":host([data-has-metadata])"
-    },
-    {
-      "$type": "state",
-      "name": "has-actions",
-      "selector": ":host([data-has-actions])"
     }
   ],
   "tokens": {

@@ -139,7 +139,7 @@
       "accepts": [
         "control"
       ],
-      "description": "extra controls after the default leading buttons (reflects data-has-extras)"
+      "description": "extra controls after the default leading buttons (reflects has-extras)"
     }
   ],
   "populate": {
@@ -147,11 +147,6 @@
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "has-extras",
-      "selector": ":host([data-has-extras])"
-    },
     {
       "$type": "state",
       "name": "no-leading-actions",

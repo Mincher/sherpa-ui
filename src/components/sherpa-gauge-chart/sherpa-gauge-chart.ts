@@ -56,7 +56,6 @@ export class SherpaGaugeChart extends SherpaElement {
   static override labelTarget = '.gauge';
   static override props = {
     ...SUMMARY_PROPS,
-    'data-has-caption': { type: 'boolean', kind: 'visibility' },
     'data-legend': SHARED_PROPS['data-legend'],
     'data-value': { type: 'number', kind: 'behaviour' },
     'data-label': { type: 'string', kind: 'content' },

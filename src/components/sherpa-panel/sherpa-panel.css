@@ -67,11 +67,11 @@
   min-block-size: 0;
 }
 
-:host([data-has-header]) .header,
+:host(:state(has-header)) .header,
 :host([data-heading]) .header { display: block; }
-:host([data-has-footer]) .footer { display: block; }
+:host(:state(has-footer)) .footer { display: block; }
 
-:host([data-heading]:not([data-has-header])) .header {
+:host([data-heading]:not(:state(has-header))) .header {
   padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }

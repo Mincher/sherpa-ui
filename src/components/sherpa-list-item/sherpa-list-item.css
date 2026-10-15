@@ -92,13 +92,13 @@
   font-size: var(--sherpa-theme-size-icon-2xs, 10px);
 }
 :host([data-icon]) .leading,
-:host([data-has-leading]) .leading { display: inline-flex; }
+:host(:state(has-leading)) .leading { display: inline-flex; }
 /* A drawn icon holds an <svg>, so it is not :empty — this hides only a box
    nothing was ever written into. */
 .icon:empty { display: none; }
 
 /* Chained :host:not() is broken in shadow DOM — functional form only. */
-:host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not([data-has-leading])) .lead { display: none; }
+:host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not(:state(has-leading))) .lead { display: none; }
 
 /* ── Content column (title + description) ──────────────────────────── */
 .content {
@@ -143,7 +143,7 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   flex-shrink: 0;
 }
-:host([data-has-trailing]) .trailing { display: inline-flex; }
+:host(:state(has-trailing)) .trailing { display: inline-flex; }
 
 /* ── Interactive: hover + focus ────────────────────────────────────── */
 :host([data-interactive]) .row { cursor: pointer; }

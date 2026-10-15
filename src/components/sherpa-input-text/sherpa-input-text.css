@@ -81,7 +81,7 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }
 /* Snapped 32x32 action buttons sit flush against the box edge. */
-:host([data-has-actions]) .control-row { padding-inline-end: 0; }
+:host(:state(has-actions)) .control-row { padding-inline-end: 0; }
 
 /* The native control is borderless — the row owns the box. */
 .control {
@@ -240,14 +240,14 @@ textarea.control {
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end]) .icon-end { display: inline-flex; }
 
-/* ── Actions slot — gated on SherpaElement's auto-set data-has-actions ─── */
+/* ── Actions slot — gated on SherpaElement's auto-set has-actions ─── */
 .actions {
   display: none;
   flex: 0 0 auto;
   align-items: center;
   gap: var(--sherpa-structure-space-gap, 8px);
 }
-:host([data-has-actions]) .actions { display: inline-flex; }
+:host(:state(has-actions)) .actions { display: inline-flex; }
 
 /* ── Validation — a filled critical bar under the control ──────────────
    data-error PINS the field critical: its border stays neutral, per Figma. */

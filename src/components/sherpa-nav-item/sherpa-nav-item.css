@@ -141,7 +141,7 @@
 /* The flag is needed directly: `display` is not inherited, so a stale `inline-flex`
    would keep a collapsed 40px row trying to fit the pill. */
 :host([data-badge]) .badge,
-:host([data-has-trailing]) .badge { display: var(--_is-visible, inline-flex); }
+:host(:state(has-trailing)) .badge { display: var(--_is-visible, inline-flex); }
 
 /* Trailing chevron. A sibling of `.nav` (an interactive element may not nest inside
    another), so it takes the isVisible flag directly instead of via `content`. */

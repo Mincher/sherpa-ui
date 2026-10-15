@@ -47,6 +47,6 @@
   justify-content: flex-end;
 }
 
-/* data-has-{slot} is reflected onto the host by the base class. */
-:host(:not([data-has-leading])) .leading { display: none; }
-:host(:not([data-has-trailing])) .trailing { display: none; }
+/* The base class sets a `has-<slot>` state on the host. */
+:host(:not(:state(has-leading))) .leading { display: none; }
+:host(:not(:state(has-trailing))) .trailing { display: none; }

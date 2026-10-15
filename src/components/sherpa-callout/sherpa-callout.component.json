@@ -165,11 +165,6 @@
     },
     {
       "$type": "state",
-      "name": "not-has-content-slot",
-      "selector": ":host(:not([data-has-content-slot]))"
-    },
-    {
-      "$type": "state",
       "name": "not-dismissible",
       "selector": ":host(:not([data-dismissible]))"
     }

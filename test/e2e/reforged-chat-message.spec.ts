@@ -78,7 +78,7 @@ test('a slotted body replaces the data-message text node', async ({ page }) => {
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasContent: el.hasAttribute('data-has-content-slot'),
+      hasContent: el.matches(':state(has-content-slot)'),
       contentDisplay: getComputedStyle(el.shadowRoot!.querySelector('.content')!).display,
     };
   });
@@ -102,14 +102,14 @@ test('assistant shows the avatar; user hides it', async ({ page }) => {
   expect(r.user).toBe(false);
 });
 
-test('an avatar slot reflects data-has-avatar', async ({ page }) => {
+test('an avatar slot reflects has-avatar', async ({ page }) => {
   const has = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chat-message') as WithRender;
     el.innerHTML = '<img slot="avatar" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" />body';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
-    return el.hasAttribute('data-has-avatar');
+    return el.matches(':state(has-avatar)');
   });
   expect(has).toBe(true);
 });

@@ -7,7 +7,6 @@
  * declaration serves the TS, the CSS and the generated spec.
  *
  * Not flagged, because each is already named somewhere:
- *   data-has-*      the base class writes it from slot presence
  *   inner elements  [data-x] with no :host() — component-private
  *   CASCADES        data-status / data-look / data-elevation: an ANCESTOR
  *                   sets these and any component may read them, so declaring
@@ -68,7 +67,7 @@ for (const file of globSync('src/components/*/*.css', { cwd: ROOT })) {
      declared. Private state is a `:state()`. TRAP T-private-state-is-a-custom-state */
   const declared = declaredIn(ts, join(ROOT, file.replace(/\.css$/, '.ts')));
   for (const attr of [...hostAttrs].sort()) {
-    if (attr.startsWith('data-has-') || CASCADES.has(attr) || declared.has(attr)) continue;
+    if (CASCADES.has(attr) || declared.has(attr)) continue;
     problems.push(`${relative(ROOT, file)}  :host([${attr}]) is not declared by ${comp} — declare it, or make private state a :state()`);
   }
 }

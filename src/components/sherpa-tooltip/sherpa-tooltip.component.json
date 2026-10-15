@@ -70,14 +70,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-has-tip",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-placement",
       "type": "enum",
       "observed": true,
@@ -116,20 +108,13 @@
       "accepts": [
         "content"
       ],
-      "description": "rich tip content (reflects data-has-tip; overrides data-text)"
+      "description": "rich tip content (reflects has-tip; overrides data-text)"
     }
   ],
   "populate": {
-    "shape": "{ anchor?, hasTip?, placement?, text? }",
+    "shape": "{ anchor?, placement?, text? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
-  "states": [
-    {
-      "$type": "state",
-      "name": "has-tip",
-      "selector": ":host([data-has-tip])"
-    }
-  ],
   "capabilities": [
     {
       "$type": "capability",

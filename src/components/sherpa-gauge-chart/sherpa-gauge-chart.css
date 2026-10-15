@@ -230,7 +230,7 @@
 
 /* ── Caption ─────────────────────────────────────────────────────────
  * Shown by data-caption or by the filled caption slot (SherpaElement mirrors slot
- * presence to data-has-caption). Takes the scale row's middle track so a long
+ * presence to has-caption). Takes the scale row's middle track so a long
  * caption cannot shove the bounds off the arc's ends. */
 .caption {
   display: none;
@@ -243,8 +243,8 @@
   text-align: center;
 }
 :host([data-caption]) .caption,
-:host([data-has-caption]) .caption { display: block; }
-:host([data-has-caption]) .caption-text { display: none; }
+:host(:state(has-caption)) .caption { display: block; }
+:host(:state(has-caption)) .caption-text { display: none; }
 
 /* ── Tooltip anchors ─────────────────────────────────────────────────
  * NO VISIBLE MARKERS: the reader hovers the BAND itself. JS supplies each zone's

@@ -35,7 +35,7 @@
   gap: var(--sherpa-display-mode-space-sm, 12px);
   padding-inline: var(--sherpa-display-mode-space-sm, 12px);
 }
-:host([data-has-detail]) .detail { display: inline-flex; }
+:host(:state(has-detail)) .detail { display: inline-flex; }
 
 /* ── Tab buttons ──────────────────────────────────────────────────────── */
 .tab {

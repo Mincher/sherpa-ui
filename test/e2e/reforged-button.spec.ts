@@ -106,7 +106,7 @@ test('multi-template: data-type="icon" stamps the icon template (no label)', asy
   expect(r.hasIconStart).toBe(true);
 });
 
-test('slot presence reflects to data-has-content-slot on the host', async ({ page }) => {
+test('slot presence reflects to has-content-slot on the host', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const withText = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
     withText.textContent = 'Labelled';
@@ -120,8 +120,8 @@ test('slot presence reflects to data-has-content-slot on the host', async ({ pag
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
-      withText: withText.hasAttribute('data-has-content-slot'),
-      empty: empty.hasAttribute('data-has-content-slot'),
+      withText: withText.matches(':state(has-content-slot)'),
+      empty: empty.matches(':state(has-content-slot)'),
     };
   });
   expect(r.withText).toBe(true);

@@ -212,7 +212,7 @@ test('the header buttons are 24px; the pair is one object; a divider needs both 
         .getPropertyValue('--sherpa-border-rounding-top-right').trim();
       return {
         header: size(sr.querySelector('.header')),
-        metadata: sr.querySelector('.header')!.hasAttribute('data-has-metadata'),
+        metadata: sr.querySelector('.header')!.matches(':state(has-metadata)'),
         close: size(header.querySelector('.close')),
         expand: size(sr.querySelector('.expand')),
         afterActions: shown('.after-actions'),

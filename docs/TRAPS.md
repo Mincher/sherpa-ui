@@ -280,8 +280,14 @@ matches — is none of that.
   the TS, so 15 private flags looked declared (2026-10-14): 13 became states,
   and 2 were public and are declared (the provider sets a container's
   `data-loading`; a host may set the nav's `data-searchable`).
-- `data-has-*`, which the base writes for every slot, is still an attribute;
-  it moves last (TODO 275).
+- **`data-has-*` moved last (TODO 275, 2026-10-15).** The base sets a
+  `has-<slot>` state for every slot (`has-content-slot` for the default one),
+  and 27 stylesheets select `:host(:state(has-icon))`. Nine more private flags
+  moved first — `has-y-axis`, `has-query`, `has-files`, `has-organise`,
+  `has-value`, `dragging`, `panning` and `leaving` — and the gate's `data-has-`
+  exemption went, so a hand-written one is checked like any other. The metric's
+  `data-has-values` is DECLARED instead: an app watches it. A state is read
+  from outside as `el.matches(':state(has-icon)')`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/core/ui/form-value.ts`
@@ -13153,12 +13159,11 @@ They are now declared as `kind: 'style'`, which generates no DOM writes — it
 says the attribute is REAL. 576 Playwright tests stayed green, which is the
 point: the gap was never visible as a bug, only as a missing contract.
 
-`scripts/check-props.mjs` gates it. Three things it deliberately does not flag,
+`scripts/check-props.mjs` gates it. Two things it deliberately does not flag,
 because each is already named somewhere true:
 
 | | |
 |---|---|
-| `data-has-*` | the base class writes it from slot presence |
 | `[data-x]` with no `:host()` | an inner element — component-private |
 | `data-status`, `data-look`, `data-elevation`, `data-density`, `data-theme` | CASCADES. An ANCESTOR sets these and any component may read them, so declaring one would claim ownership it does not have |
 
@@ -13178,7 +13183,7 @@ is the declaration pass holding. Nine did not, and are now declared:
 |---|---|
 | `data-bounds` ×3 | a selector for the box a popover must stay inside, passed DOWN by the host. One meaning in three components, so it went to `SHARED_PROPS` |
 | `data-total-pages` | already in `DATA_PROPS`; the grid now reads from there rather than growing a copy |
-| `data-select`, `data-anchor`, `data-value`, `data-heading`, `data-has-caption` | one component each |
+| `data-select`, `data-anchor`, `data-value`, `data-heading`, `data-has-values` | one component each |
 
 `variantAttrs` counts as a declaration, and three `data-type` reads that first
 looked like gaps were already declared there.
@@ -14643,12 +14648,10 @@ Measured when the rule was written: 43 undeclared attributes in total, splitting
 them were `data-locked` — the attribute the whole state-ownership convention
 rests on, undeclared by every component that obeys it.
 
-**The `data-has-*` skip survives this rule**, which was not obvious. All seven
-hand-written ones — `data-has-files`, `data-has-value`, `data-has-y-axis`,
-`data-has-values`, `data-has-query`, `data-has-organise` — are written by the
-component and read only by its own CSS. Never read from a host, so never public
-API, so correctly exempt. The audit had listed the skip as a third hole; it is
-not one.
+**The `data-has-*` skip is gone** (2026-10-15). It was meant for the base's slot
+writes, and exempted seven hand-written ones as well. The slot ones are
+`has-<slot>` states now, the private hand-written ones states too, and the one an
+app watches, `data-has-values`, is declared.
 
 - Site: `scripts/check-props.mjs`
 

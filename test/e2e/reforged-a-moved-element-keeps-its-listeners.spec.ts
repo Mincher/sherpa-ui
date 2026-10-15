@@ -3,7 +3,7 @@ import { EXAMPLES } from '../a11y/examples.mjs';
 
 /**
  * A MOVED element is disconnected and connected again. Its slots must still
- * set `data-has-*`, and its own listeners must still hear — `onRender` runs
+ * set its `has-*` states, and its own listeners must still hear — `onRender` runs
  * once, so nothing it wired may hang on the disconnect signal.
  * TRAP T-abort-controller-per-connect
  */
@@ -28,14 +28,14 @@ test('every component, once moved, still marks what is slotted into it', async (
       await window.__settled();
       const names = [...el.shadowRoot!.querySelectorAll('slot')].map((s) => s.name);
       for (const name of names) {
-        const attr = name ? `data-has-${name}` : 'data-has-content-slot';
-        if (el.hasAttribute(attr)) continue;
+        const attr = name ? `has-${name}` : 'has-content-slot';
+        if (el.matches(`:state(${attr})`)) continue;
         const child = document.createElement('span');
         child.textContent = 'x';
         if (name) child.slot = name;
         el.append(child);
         await frames();
-        if (!el.hasAttribute(attr)) out.push(`${tag} ${attr}`);
+        if (!el.matches(`:state(${attr})`)) out.push(`${tag} ${attr}`);
         child.remove();
         await frames();
       }

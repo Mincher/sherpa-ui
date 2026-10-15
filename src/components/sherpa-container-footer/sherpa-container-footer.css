@@ -6,7 +6,7 @@
 :host {
   display: none;
 }
-:host([data-has-content-slot]) { display: block; }
+:host(:state(has-content-slot)) { display: block; }
 
 .row {
   display: flex;

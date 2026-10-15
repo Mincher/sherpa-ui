@@ -1,6 +1,6 @@
 import { test, expect } from './harness';
 
-/** sherpa-toolbar — leading / trailing slot regions collapse when empty (data-has-*). */
+/** sherpa-toolbar — leading / trailing slot regions collapse when empty (has-* states). */
 
 
 test('lays out leading / trailing slot regions', async ({ page }) => {
@@ -12,8 +12,8 @@ test('lays out leading / trailing slot regions', async ({ page }) => {
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       bar: !!el.shadowRoot?.querySelector('.bar'),
-      hasLeading: el.hasAttribute('data-has-leading'),
-      hasTrailing: el.hasAttribute('data-has-trailing'),
+      hasLeading: el.matches(':state(has-leading)'),
+      hasTrailing: el.matches(':state(has-trailing)'),
     };
   });
   expect(r.bar).toBe(true);

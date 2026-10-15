@@ -2,10 +2,10 @@ import { test, expect } from './harness';
 
 /**
  * sherpa-container on the reforged base — the composition surface. Exercises the
- * base class's slot-presence reflection (data-has-header/footer), elevation,
+ * base class's slot-presence reflection (has-header/footer), elevation,
  * padding, the populate({state}) → loading overlay data path, and the SLOT-DRIVEN
  * empty / error overlays (ratified D6: no data-state attr — slotting [slot="error"]
- * reflects data-has-error and shows the overlay through CSS).
+ * reflects has-error and shows the overlay through CSS).
  */
 
 
@@ -30,9 +30,9 @@ test('header/footer regions collapse when empty, appear when slotted', async ({ 
       getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
 
     return {
-      bareHeaderAttr: bare.hasAttribute('data-has-header'),
+      bareHeaderAttr: bare.matches(':state(has-header)'),
       bareHeaderVisible: vis(bare, '.header'),
-      fullHeaderAttr: full.hasAttribute('data-has-header'),
+      fullHeaderAttr: full.matches(':state(has-header)'),
       fullHeaderVisible: vis(full, '.header'),
       fullFooterVisible: vis(full, '.footer'),
     };
@@ -95,11 +95,11 @@ test('slotting [slot="error"] shows the error overlay (slot-driven, D6), not loa
     el.innerHTML = '<p>body</p><div slot="error">It broke.</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled(); // let slotchange reflect data-has-error
+    await (window as unknown as { __settled: () => Promise<void> }).__settled(); // let slotchange reflect has-error
 
     const shown = (sel: string) => getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {
-      hasErrorAttr: el.hasAttribute('data-has-error'),
+      hasErrorAttr: el.matches(':state(has-error)'),
       hasStateAttr: el.hasAttribute('data-state'),
       overlay: shown('.state'),
       error: shown('.state-error'),
@@ -125,7 +125,7 @@ test('slotting [slot="empty"] shows the empty overlay (slot-driven, D6)', async 
 
     const shown = (sel: string) => getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {
-      hasEmptyAttr: el.hasAttribute('data-has-empty'),
+      hasEmptyAttr: el.matches(':state(has-empty)'),
       overlay: shown('.state'),
       empty: shown('.state-empty'),
       error: shown('.state-error'),

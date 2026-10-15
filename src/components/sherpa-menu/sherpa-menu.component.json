@@ -833,11 +833,6 @@
     },
     {
       "$type": "state",
-      "name": "has-header",
-      "selector": ":host([data-has-header])"
-    },
-    {
-      "$type": "state",
       "name": "search",
       "selector": ":host([data-search])"
     },
@@ -890,11 +885,6 @@
       "$type": "state",
       "name": "commit",
       "selector": ":host([data-commit])"
-    },
-    {
-      "$type": "state",
-      "name": "has-footer",
-      "selector": ":host([data-has-footer])"
     },
     {
       "$type": "state",

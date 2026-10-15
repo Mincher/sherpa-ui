@@ -2,7 +2,7 @@ import { test, expect } from './fixture';
 
 /**
  * sherpa-container-footer on the reforged base — the footer bar for a container's
- * footer slot. A pure surface: exercises the data-has-content-slot reflection (collapse
+ * footer slot. A pure surface: exercises the has-content-slot reflection (collapse
  * when empty, appear when filled) and data-align controlling the slotted controls'
  * horizontal distribution.
  *
@@ -36,9 +36,9 @@ test('collapses when empty, appears when the slot has content', async ({ page })
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
-      bareContentAttr: bare.hasAttribute('data-has-content-slot'),
+      bareContentAttr: bare.matches(':state(has-content-slot)'),
       bareHostVisible: getComputedStyle(bare).display !== 'none',
-      fullContentAttr: full.hasAttribute('data-has-content-slot'),
+      fullContentAttr: full.matches(':state(has-content-slot)'),
       fullHostVisible: getComputedStyle(full).display !== 'none',
     };
   });

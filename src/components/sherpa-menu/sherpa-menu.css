@@ -123,7 +123,7 @@
  * (a list's search field, a calendar's month stepper). A grid, not a flex
  * column, so the drill trail can replace the heading in place. */
 .header { display: none; }
-:host(:is([data-heading], [data-has-header], [data-search], [data-type="filter"])) .header {
+:host(:is([data-heading], :state(has-header), [data-search], [data-type="filter"])) .header {
   display: grid;
   grid-template-areas:
     "heading"
@@ -535,14 +535,14 @@
 
 /* ── The footer ── a composed <sherpa-container-footer> that owns its own
  * padding, gap and top stroke; this only says WHEN it appears. `display: none`
- * beats the component's own [data-has-content-slot] rule.
+ * beats the component's own [has-content-slot] rule.
  *
  * Six things can raise the row and any ONE of them earns it — a filled
  * `footer` slot, data-commit
  * (Cancel·Apply), data-removable, data-clearable, Type=calendar
  * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], [data-has-footer])) .footer {
+:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], :state(has-footer))) .footer {
   display: block;
 }
 

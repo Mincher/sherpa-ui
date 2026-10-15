@@ -72,8 +72,8 @@
 
 .tip-text { color: inherit; }
 slot[name="tip"] { display: none; }
-:host([data-has-tip]) slot[name="tip"] { display: inline; }
-:host([data-has-tip]) .tip-text { display: none; }
+:host(:state(has-tip)) slot[name="tip"] { display: inline; }
+:host(:state(has-tip)) .tip-text { display: none; }
 
 /* ── Open — the popover is the state; the host need not wrap the trigger. ─── */
 .bubble:popover-open {

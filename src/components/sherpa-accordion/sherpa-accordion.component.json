@@ -205,18 +205,8 @@
   "states": [
     {
       "$type": "state",
-      "name": "has-actions",
-      "selector": ":host([data-has-actions])"
-    },
-    {
-      "$type": "state",
       "name": "description",
       "selector": ":host([data-description])"
-    },
-    {
-      "$type": "state",
-      "name": "has-description",
-      "selector": ":host([data-has-description])"
     },
     {
       "$type": "state",

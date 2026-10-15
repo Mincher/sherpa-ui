@@ -19,8 +19,6 @@ export class SherpaTooltip extends SherpaElement {
     'data-anchor': { type: 'string', kind: 'style' },
     
     'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
-    /* Written BY the tooltip: it has a tip to show. */
-    'data-has-tip': { type: 'boolean', kind: 'style' },
     'data-placement': { type: 'enum', kind: 'style', values: ['top', 'bottom', 'left', 'right'] },
   } as const;
 
@@ -46,7 +44,7 @@ export class SherpaTooltip extends SherpaElement {
    *  shuts; new words are a new width, so it is placed again. */
   override onChange(name: string): void {
     if (name !== 'data-text' || !this.$('.bubble')?.matches(':popover-open')) return;
-    if (this.dataset['text'] || this.hasAttribute('data-has-tip')) this.#place();
+    if (this.dataset['text'] || this.hasState('has-tip')) this.#place();
     else this.#hide();
   }
 
@@ -66,7 +64,7 @@ export class SherpaTooltip extends SherpaElement {
   /** Open the bubble beside the trigger. */
   #onShow = (): void => {
     // No text and no slotted tip would open an empty bubble.
-    if (!this.dataset['text'] && !this.hasAttribute('data-has-tip')) return;
+    if (!this.dataset['text'] && !this.hasState('has-tip')) return;
     const bubble = this.$<HTMLElement>('.bubble');
     if (!bubble) return;
     // SHOW FIRST, then measure: a closed popover is `display: none` and reads 0.

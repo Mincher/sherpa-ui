@@ -119,14 +119,14 @@
   block-size: var(--sherpa-theme-content-size-xs, 10px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-:host([data-has-actions]:is([data-expandable], [data-external])) .after-actions,
-:host(:is([data-has-actions], [data-expandable], [data-external]):is([data-dismissible], [data-collapsible])) .before-close {
+:host(:state(has-actions):is([data-expandable], [data-external])) .after-actions,
+:host(:is(:state(has-actions), [data-expandable], [data-external]):is([data-dismissible], [data-collapsible])) .before-close {
   display: block;
 }
 
 /* Collapsed → only the header shows. */
 :host([data-collapsed]) .body,
-:host([data-collapsed][data-has-footer]) .footer { display: none; }
+:host([data-collapsed]:state(has-footer)) .footer { display: none; }
 
 /* The left edge's handle: a strip over the border, drawn only when it is used. */
 .resize {

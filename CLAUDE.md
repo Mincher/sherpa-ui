@@ -201,7 +201,7 @@ the manual way, for a page with no provider.
 
 ### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
 
-All components extend this. It handles shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support. The FILES — carried in the JS by the build (fetched in a dev build, TRAP `T-the-text-is-in-the-js`), a consumer's own by `useTemplate(tag, { html, css })`, and reloaded live by `SherpaElement.reload(tag)` — are `src/core/ui/templater.ts`'s (TRAP `T-a-templater-owns-the-files`).
+All components extend this. It handles shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (a `has-<slot>` custom state on host), and multi-template support. The FILES — carried in the JS by the build (fetched in a dev build, TRAP `T-the-text-is-in-the-js`), a consumer's own by `useTemplate(tag, { html, css })`, and reloaded live by `SherpaElement.reload(tag)` — are `src/core/ui/templater.ts`'s (TRAP `T-a-templater-owns-the-files`).
 
 ```ts
 export class SherpaFoo extends SherpaElement {
@@ -269,7 +269,7 @@ three or more uses:
 | `default` | a real default string (`'Available'`, `'Ask N-zo'`) |
 
 A `to` target never holds a `<slot>`: the write would erase it. Put the text in a
-span BESIDE the slot, and let CSS hide it on `data-has-<slot>` — slotted content wins,
+span BESIDE the slot, and let CSS hide it on `:state(has-<slot>)` — slotted content wins,
 whenever it arrives (TRAP `T-slot-guards-only-when-filled`).
 
 Keep it hand-written when the write is not a plain attribute→text mapping: a runtime

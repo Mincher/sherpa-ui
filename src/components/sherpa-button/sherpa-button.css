@@ -189,7 +189,7 @@
   color: var(--_content);
 }
 :host([data-badge]) .badge,
-:host([data-has-badge]) .badge { display: inline-flex; }
+:host(:state(has-badge)) .badge { display: inline-flex; }
 :host([data-type="icon"]) .badge { display: none; }
 
 /* ── Disabled — the INACTIVE mode of its own look, pinned in state-pins.yaml;

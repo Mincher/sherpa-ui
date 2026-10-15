@@ -62,10 +62,10 @@
 }
 
 /* Header shows when the slot has content OR a data-heading is set. */
-:host(:is([data-has-header], [data-heading])) .header { display: block; }
-:host([data-has-footer]) .footer { display: block; }
+:host(:is(:state(has-header), [data-heading])) .header { display: block; }
+:host(:state(has-footer)) .footer { display: block; }
 
-:host([data-heading]:not([data-has-header])) .header {
+:host([data-heading]:not(:state(has-header))) .header {
   padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--_rule);
 }
