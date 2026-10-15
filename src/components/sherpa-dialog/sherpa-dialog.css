@@ -7,13 +7,8 @@
   /* Zero-box anchor; the real surface is the <dialog> in the top layer. */
   display: contents;
 
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
-  /* The header and footer strokes. */
-  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
-  /* The whole rule: three regions draw the same line, on different edges. */
+  /* The heading row's rule. */
   --_rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-  --_pad: var(--sherpa-card-pad);
 }
 
 .root {
@@ -47,37 +42,19 @@
   display: flex;
 }
 
-/* ── Regions ─────────────────────────────────────────────────────────
-   Bare wrappers: a composed <sherpa-container-header>/<sherpa-container-footer>
-   brings its own chrome; plain slotted content gets it here. */
-.header,
-.footer {
-  display: none;
-  padding: 0;
-}
+/* ── Regions: the bare header and footer are the regions sheet's. ── */
 .body {
   padding: var(--_pad);
   flex: 1 1 auto;
   min-block-size: 0;
 }
 
-/* Header shows when the slot has content OR a data-heading is set. */
-:host(:is(:state(has-header), [data-heading])) .header { display: block; }
-:host(:state(has-footer)) .footer { display: block; }
+/* The header shows for a data-heading too. */
+:host([data-heading]) .header { display: block; }
 
 :host([data-heading]:not(:state(has-header))) .header {
   padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--_rule);
-}
-.header ::slotted(:not(sherpa-container-header)) {
-  display: block;
-  padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--_rule);
-}
-.footer ::slotted(:not(sherpa-container-footer)) {
-  display: block;
-  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
-  border-block-start: var(--_rule);
 }
 
 /* Figma pins padding/sm on this footer INSTANCE, so the pin lands here.

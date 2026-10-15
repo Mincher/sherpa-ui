@@ -1,4 +1,6 @@
-/** sherpa-container — the base card. CSS owns style, padding and state. */
+/**
+ * sherpa-container — the base card. CSS owns style, padding and state.
+ */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-loader/sherpa-loader.js';
 import '../sherpa-empty-state/sherpa-empty-state.js';
@@ -16,7 +18,10 @@ interface ContainerState {
 }
 
 export class SherpaContainer extends SherpaElement {
-  static override css = new URL('./sherpa-container.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-container-regions.css', import.meta.url),
+    new URL('./sherpa-container.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-container.html', import.meta.url);
 
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */

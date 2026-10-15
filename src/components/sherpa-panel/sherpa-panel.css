@@ -10,16 +10,7 @@
   align-self: stretch;
   block-size: 100%;
 
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
-  /* The header and footer strokes. */
-  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
-  --_pad: var(--sherpa-card-pad);
-  /* A composed <sherpa-container-header>/<sherpa-container-footer> reads this
-     for its own inline padding and defaults to ZERO without it — so every
-     panel with a composed footer had its buttons flush against the edge.
-     `sherpa-container` and `sherpa-dialog` both supply it; this did not.
-     TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  /* A composed footer's inset. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
   --_pad-inline: var(--sherpa-card-pad);
 
   background: var(--_surface);
@@ -48,14 +39,9 @@
   flex: 1 1 auto;
 }
 
-/* ── Regions ─────────────────────────────────────────────────────────
-   Bare wrappers: a composed <sherpa-container-header>/<sherpa-container-footer>
-   brings its own chrome, so only plain slotted content gets padding + a divider
-   here. */
+/* ── Regions: the bare header and footer are the regions sheet's. ── */
 .header,
 .footer {
-  display: none;
-  padding: 0;
   /* NEVER shrink. A flex item's default is `1`, so a long body squashed the
      header to 14px and pushed its own search field outside the panel — the
      BODY is what scrolls. TRAP T-a-panel-chrome-row-never-shrinks */
@@ -67,25 +53,13 @@
   min-block-size: 0;
 }
 
-:host(:state(has-header)) .header,
+/* The header shows for a data-heading too. */
 :host([data-heading]) .header { display: block; }
-:host(:state(has-footer)) .footer { display: block; }
 
 :host([data-heading]:not(:state(has-header))) .header {
   padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
-.header ::slotted(:not(sherpa-container-header)) {
-  display: block;
-  padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-}
-.footer ::slotted(:not(sherpa-container-footer)) {
-  display: block;
-  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-}
-
 .heading-text {
   color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);

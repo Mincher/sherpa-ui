@@ -8,12 +8,6 @@
   position: relative;
   min-inline-size: 0;
 
-  /* The Style names Figma binds; the root pins Style=default (state-pins.yaml). */
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
-  /* The header and footer strokes. */
-  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
-
   background: var(--_surface);
   /* Per-edge widths, so a snap extension can zero one edge. Not a shorthand. */
   border-style: solid;
@@ -28,7 +22,6 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
 
-  --_pad: var(--sherpa-card-pad);
   --_shadow: none;
   box-shadow: var(--_shadow);
   --_shadow-color: var(--sherpa-style-surface-shadow, #35353d4c);
@@ -124,36 +117,13 @@
   flex: 0 0 auto;
 }
 
-/* ── Regions — the header/footer COMPONENTS own their own padding and divider,
-   so these wrappers are bare; plain slotted content is given them below. ── */
-.header,
-.footer {
-  display: none;
-  padding: 0;
-}
+/* ── Regions: the bare header and footer are the regions sheet's. ── */
 .body {
   /* Inline falls back to the block padding unless data-padding-inline names one. */
   padding-block: var(--_pad);
   padding-inline: var(--_pad-inline, var(--_pad));
   flex: 1 1 auto;
   min-block-size: 0;
-}
-
-/* header/footer appear only when their slot has content. */
-:host(:state(has-header)) .header { display: block; }
-:host(:state(has-footer)) .footer { display: block; }
-
-/* The excluded components carry their own padding and divider; wrapping one in
-   a second inset draws both twice. */
-.header ::slotted(:not(sherpa-container-header, sherpa-toolbar, sherpa-quick-filter-toolbar)) {
-  display: block;
-  padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-}
-.footer ::slotted(:not(sherpa-container-footer, sherpa-pagination)) {
-  display: block;
-  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
 /* ── State overlay. A neutral scrim, deliberately never a status tint. ── */

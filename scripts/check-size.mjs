@@ -28,6 +28,7 @@ export const SOURCES = [
   'src/core/sherpa-icon.css',
   'src/core/sherpa-motion.css',
   'src/core/sherpa-chart-*.css',
+  'src/core/sherpa-container-*.css',
   'src/components/**/*.html',
 ];
 

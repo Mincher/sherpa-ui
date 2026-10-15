@@ -10,7 +10,10 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
 
 export class SherpaDialog extends SherpaElement {
-  static override css = new URL('./sherpa-dialog.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-container-regions.css', import.meta.url),
+    new URL('./sherpa-dialog.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-dialog.html', import.meta.url);
   // Opened and shut from markup: `<sherpa-button commandfor="id" command="--show">`.
   static override commands = { '--show': 'show', '--hide': 'hide' };

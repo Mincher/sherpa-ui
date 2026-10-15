@@ -1,0 +1,37 @@
+/*
+ * sherpa-container-regions.css — the header / body / footer regions of a card.
+ * Adopted before their own sheet by container, dialog and panel. Never the
+ * overlay panel: its header and footer ARE the composed components.
+ */
+
+:host {
+  /* The Style names Figma binds; each root pins Style=default (state-pins.yaml). */
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
+  /* The header and footer strokes. */
+  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
+  --_pad: var(--sherpa-card-pad);
+}
+
+/* Bare wrappers: a composed header or footer brings its own chrome. They show
+   only when their slot has content. */
+.header,
+.footer {
+  display: none;
+  padding: 0;
+}
+:host(:state(has-header)) .header { display: block; }
+:host(:state(has-footer)) .footer { display: block; }
+
+/* Plain slotted content gets the chrome; these bring their own, and a second
+   inset would draw it twice. */
+.header ::slotted(:not(sherpa-container-header, sherpa-toolbar, sherpa-quick-filter-toolbar)) {
+  display: block;
+  padding: var(--sherpa-theme-padding-md, 8px);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+}
+.footer ::slotted(:not(sherpa-container-footer, sherpa-pagination)) {
+  display: block;
+  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+}
