@@ -8717,7 +8717,7 @@
               "kind": "field",
               "name": "menu",
               "type": {
-                "text": "MenuLike | null"
+                "text": "SherpaMenu | null"
               },
               "readonly": true
             },

@@ -8,6 +8,7 @@ import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constan
 // The template stamps these even when `data-advanced` is off — T-every-element-in-the-template.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 export class SherpaSelectCheckbox extends SherpaElement {
   static override css = new URL('./sherpa-select-checkbox.css', import.meta.url);
@@ -126,8 +127,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
   /* ── The advanced variant ─────────────────────────────────────────── */
 
   /** The menu a host slotted, if any. */
-  #menu(): (HTMLElement & { toggle?: (t?: HTMLElement) => void }) | null {
-    return this.querySelector('[slot="menu"]');
+  #menu(): SherpaMenu | null {
+    return this.querySelector<SherpaMenu>('[slot="menu"]');
   }
 
   /** Open or shut the slotted menu, anchored to the caret. */
@@ -139,7 +140,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
     menu.toggle?.(caret);
     caret.setAttribute(
       'aria-expanded',
-      String((menu as HTMLElement & { open?: boolean }).open ?? false),
+      String(menu.open ?? false),
     );
   };
 

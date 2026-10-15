@@ -42,6 +42,10 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-badge/sherpa-badge.js';
+import type { SherpaAccordion } from '../sherpa-accordion/sherpa-accordion.js';
+import type { SherpaInputText } from '../sherpa-input-text/sherpa-input-text.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
+import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 
 /** A count, in the reader's own digits — as a chip's badge writes it. */
 const RESULTS = new Intl.NumberFormat();
@@ -96,7 +100,7 @@ interface Held {
   box: HTMLElement;
   values: HTMLElement;
   /** The menu the panel BUILT for this field, where it needs one. */
-  menu?: HTMLElement;
+  menu?: SherpaMenu;
 }
 
 /** One filter a scope draws, in its order: a field, Group or Sort, or a preset. */
@@ -105,22 +109,6 @@ interface ScopeFilter {
   label: string;
   on: boolean;
 }
-
-/** A chip that answers a whole field: its own reading, and its own clear. */
-interface AnswerChip extends HTMLElement {
-  reading: FieldReading | null;
-  clear(): void;
-}
-
-/** What the panel asks of a `<sherpa-menu>`. */
-type MenuApi = HTMLElement & {
-  rendered?: Promise<void>;
-  open?: boolean;
-  values?: string[];
-  items?: (i: readonly FilterMenuItem[]) => void;
-  hide?: () => void;
-  show?: (trigger?: HTMLElement) => void;
-};
 
 export class SherpaFilterPanel extends SherpaElement {
   static override css = new URL('./sherpa-filter-panel.css', import.meta.url);
@@ -176,7 +164,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A hidden filter's rows, moved into its scope's Filters menu. TRAP T-drill-moves-not-clones */
   #drill = new MenuDrill();
   /** The menu the panel built for a drill, and the field it answers. */
-  #built: { menu: HTMLElement; held: Held } | null = null;
+  #built: { menu: SherpaMenu; held: Held } | null = null;
   /** A × asked its host to remove a filter: the rebuilt Filters menu opens again. */
   #reopen = false;
   /** What each PRESET row was told, by row value: on or off. TODO 54 */
@@ -252,8 +240,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const held of this.#held.values()) {
       const kind = held.def.id;
       if (kind !== 'group' && kind !== 'sort') continue;
-      const chip = this.#oneChip(held) as (HTMLElement & {
-        arrangeBy?: (field: string, direction?: string | null) => void }) | null;
+      const chip = this.#oneChip(held);
       chip?.arrangeBy?.(this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '', this.dataset['sortDirection']);
     }
   }
@@ -302,7 +289,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field's whole answer: the chips are Simple's, the menu's rows are
    *  Advanced's, and the menu says which is in force. TRAP T-both-answers-are-kept */
   #readingOf(held: Held): FieldReading {
-    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    const menu = held.menu;
     // A NUMBER body answers for itself, as it does on a bar chip.
     if (menu?.dataset['body'] === 'number') return menu.reading;
     /* A DATE too: its answer is its calendar's days. Its ONE chip is ticked or
@@ -318,7 +305,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Rows that still MIRROR the chips follow them. TRAP T-both-answers-are-kept */
   #followPicks(held: Held): void {
-    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    const menu = held.menu;
     if (!menu || menu.dataset['body'] || this.#oneChip(held)) return;
     const now = menu.reading;
     if (now.mirror) menu.reading = { ...now, picked: this.#picked(held) };
@@ -339,7 +326,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [key, held] of this.#held) {
       // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
       if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
-      const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+      const menu = held.menu;
       const chip = this.#answerChip(held);
       if (this.#oneChip(held)) {
         // Group and Sort ARRANGE: no reading draws them.
@@ -361,7 +348,7 @@ export class SherpaFilterPanel extends SherpaElement {
         const rows = readingRows(reading);
         const mode = reading.mode ?? (rows.length ? 'advanced' : undefined);
         if (mode) this.#setCustom(held, mode === 'advanced');
-        const given = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+        const given = held.menu;
         if (given) given.reading = { ...reading, picked: [...want] };
       }
       this.#said.set(key, JSON.stringify(this.#readingOf(held)));
@@ -397,11 +384,10 @@ export class SherpaFilterPanel extends SherpaElement {
     if (scope != null) this.#counted.set(scope, results);
     for (const held of this.#held.values()) {
       if (held.scope !== scope) continue;
-      type Counted = HTMLElement & { results?: number | null };
-      const one = this.#oneChip(held) as Counted | null;
+      const one = this.#oneChip(held);
       if (one) one.results = results[held.def.field ?? held.def.id] ?? null;
       else if (held.def.id === 'presets') {
-        for (const chip of held.values.querySelectorAll<Counted>('.value')) {
+        for (const chip of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
           chip.results = results[chip.dataset['value'] ?? ''] ?? null;
         }
       } else this.#headResults(held, results[held.def.field ?? held.def.id] ?? null);
@@ -424,7 +410,7 @@ export class SherpaFilterPanel extends SherpaElement {
       // A run only: one chip, the presets and a body are drawn by drawResults.
       if (held.scope !== scope || held.def.id === 'presets' || this.#oneChip(held)) continue;
       const own = results[held.def.field ?? held.def.id] ?? {};
-      for (const chip of held.values.querySelectorAll<HTMLElement & { results?: number | null }>('.value')) {
+      for (const chip of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
         if (this.#heldOfChip(chip) === held) chip.results = own[chip.dataset['value'] ?? ''] ?? null;
       }
     }
@@ -940,19 +926,14 @@ export class SherpaFilterPanel extends SherpaElement {
    * set into nothing were dropped, and Owner came back a blank `equals`.
    * TRAP T-custom-element-upgrade · TRAP T-a-conditioned-field-opens-on-its-rows
    */
-  #fill(menu: HTMLElement, items: FilterMenuItem[], state: FieldReading | undefined): void {
-    const api = menu as HTMLElement & {
-      items?: (i: readonly FilterMenuItem[]) => void;
-      reading: FieldReading;
-      rendered?: Promise<void>;
-    };
-    if (items.length) api.items?.(items);
+  #fill(menu: SherpaMenu, items: FilterMenuItem[], state: FieldReading | undefined): void {
+    if (items.length) menu.items?.(items);
     // `range` and `kept`: a number's shape, and the shape not in force. TRAP T-both-shapes-are-kept
     if (!state || (!readingRows(state).length && !state.mode && !state.mirror && state.range == null && !state.kept)) return;
-    this.#answering.push(Promise.resolve(api.rendered).then(() => {
-      api.reading = state;
+    this.#answering.push(Promise.resolve(menu.rendered).then(() => {
+      menu.reading = state;
       // SILENT, so its chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
-      menu.closest<HTMLElement & { refresh?: () => void }>('sherpa-quick-filter')?.refresh?.();
+      menu.closest<SherpaQuickFilter>('sherpa-quick-filter')?.refresh?.();
     }));
     if (this.#answering.length === 1) queueMicrotask(() => this.#settleAnswers());
   }
@@ -1062,10 +1043,10 @@ export class SherpaFilterPanel extends SherpaElement {
     });
     menu.setAttribute('data-align', 'end');
     btn.append(menu);
-    (menu as MenuApi).items?.(items);
+    menu.items?.(items);
     this.#syncFilters();
     // Rebuilt for a ×, under the reader's pointer: open again. TODO 54
-    if (reopen) void (menu as MenuApi).rendered?.then(() => { if (menu.isConnected) (menu as MenuApi).show?.(btn); });
+    if (reopen) void menu.rendered?.then(() => { if (menu.isConnected) menu.show?.(btn); });
   }
 
   /** The Filters menu's rows: each value, and the scope and filter it stands
@@ -1073,8 +1054,8 @@ export class SherpaFilterPanel extends SherpaElement {
   #rows = new Map<string, { scope: string; id: string }>();
 
   /** One scope's accordion. */
-  #scopeBox(scope: string): HTMLElement | null {
-    return this.$<HTMLElement>(`.scope[data-scope="${CSS.escape(scope)}"]`);
+  #scopeBox(scope: string): SherpaAccordion | null {
+    return this.$<SherpaAccordion>(`.scope[data-scope="${CSS.escape(scope)}"]`);
   }
 
   /** Is this scope's section shut? */
@@ -1106,7 +1087,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #countOf(scope: string, id: string): number {
     const held = this.#held.get(`${scope}:${id}`);
     if (!held) return 0;
-    return this.#oneChip(held) ? ((held.menu as MenuApi | undefined)?.values?.length ?? 0)
+    return this.#oneChip(held) ? (held.menu?.values?.length ?? 0)
       : this.#picked(held).length;
   }
 
@@ -1117,7 +1098,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** The ONE chip a whole field is drawn as — Group, Sort, a date — or null for a run. */
-  #oneChip(held: Held): HTMLElement | null {
+  #oneChip(held: Held): SherpaQuickFilter | null {
     if (!arranges(kindOf(held.def)) && !held.def.asChip) return null;
     return this.#chipIn(held, held.def.id);
   }
@@ -1125,13 +1106,13 @@ export class SherpaFilterPanel extends SherpaElement {
   /** The ONE chip that ANSWERS a field — a date — and so reads, draws and
    *  empties itself. Group and Sort arrange; a run has no one chip.
    *  TRAP T-a-chip-says-its-own-answer */
-  #answerChip(held: Held): AnswerChip | null {
-    return arranges(kindOf(held.def)) ? null : this.#oneChip(held) as AnswerChip | null;
+  #answerChip(held: Held): SherpaQuickFilter | null {
+    return arranges(kindOf(held.def)) ? null : this.#oneChip(held);
   }
 
   /** The chip for one value in a field's run. */
-  #chipIn(held: Held, value: string): HTMLElement | null {
-    return held.values.querySelector<HTMLElement>(`.value[data-value="${CSS.escape(value)}"]`);
+  #chipIn(held: Held, value: string): SherpaQuickFilter | null {
+    return held.values.querySelector<SherpaQuickFilter>(`.value[data-value="${CSS.escape(value)}"]`);
   }
 
   /** A scope's PRESET chip by id, or null for a field. */
@@ -1148,7 +1129,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #syncFilters(): void {
     const btn = this.$<HTMLElement>('.filters-btn');
     if (!btn) return;
-    const menu = btn.querySelector<HTMLElement & { setCount?(value: string, count: number): void }>('sherpa-menu');
+    const menu = btn.querySelector<SherpaMenu>('sherpa-menu');
     let on = false;
     for (const { scope } of this.#scopes) {
       if (!this.#isShut(scope)) continue;
@@ -1159,11 +1140,11 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     if (on) btn.dataset['status'] = 'active';
     else btn.removeAttribute('data-status');
-    this.#syncPresetRows(menu as MenuApi | null);
+    this.#syncPresetRows(menu);
   }
 
   /** A preset pressed in its scope: its row is ticked as it is, while the menu is shut. */
-  #syncPresetRows(menu: MenuApi | null): void {
+  #syncPresetRows(menu: SherpaMenu | null): void {
     if (!menu || menu.open || !this.#told.size) return;
     let moved = false;
     for (const [value, was] of this.#told) {
@@ -1190,7 +1171,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A hidden filter's row asked for its child menu. TRAP T-a-row-opens-its-child-menu */
   #onMenuDrill = (event: Event): void => {
-    const menu = this.pathFind(event, '.filters-btn')?.querySelector<HTMLElement>('sherpa-menu');
+    const menu = this.pathFind(event, '.filters-btn')?.querySelector<SherpaMenu>('sherpa-menu');
     // The ROW says which scope's filter it is.
     const at = this.#rows.get(String((event as CustomEvent).detail?.value ?? ''));
     const box = at && this.#scopeBox(at.scope);
@@ -1207,7 +1188,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * built for a run of values. A field answered by a body of its own — a
    * number, a condition — is drawn in the scope, so the door opens the scope.
    */
-  async #openDoor(held: Held, box: HTMLElement, menu: HTMLElement, label: string): Promise<void> {
+  async #openDoor(held: Held, box: SherpaAccordion, menu: SherpaMenu, label: string): Promise<void> {
     this.#drillOut();
     const chip = !!this.#oneChip(held);
     const run = !chip && !held.box.hasAttribute('data-advanced') && !held.box.hasAttribute('data-body')
@@ -1217,13 +1198,13 @@ export class SherpaFilterPanel extends SherpaElement {
     if (run && this.#built?.menu !== home) return;
     if (!home?.children.length) {
       this.#dropBuilt();
-      (menu as MenuApi).hide?.();
-      (box as HTMLElement & { open: boolean }).open = true;
+      menu.hide?.();
+      box.open = true;
       held.box.scrollIntoView({ block: 'nearest' });
       return;
     }
     // It may have shut while the rows were built.
-    if (!(menu as MenuApi).open) {
+    if (!menu.open) {
       this.#dropBuilt();
       return;
     }
@@ -1234,7 +1215,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * A run of values has no menu — its values ARE its chips — so the drill gets
    * one built from the same def, ticked as the chips are. TRAP T-one-field-one-filter-menu
    */
-  async #buildDrillMenu(held: Held): Promise<HTMLElement> {
+  async #buildDrillMenu(held: Held): Promise<SherpaMenu> {
     const picked = new Set(this.#picked(held));
     const def: FilterMenuDef = {
       id: held.def.id,
@@ -1249,8 +1230,8 @@ export class SherpaFilterPanel extends SherpaElement {
     menu.setAttribute('data-commit', '');
     held.box.append(menu);
     this.#built = { menu, held };
-    await (menu as MenuApi).rendered;
-    (menu as MenuApi).items?.(items);
+    await menu.rendered;
+    menu.items?.(items);
     return menu;
   }
 
@@ -1262,7 +1243,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #onDrilled(event: Event): void {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
     const home = this.#drill.home;
-    const menu = this.#drill.menu as MenuApi | null;
+    const menu = this.#drill.menu;
     const built = this.#built;
     this.#drill.out();
     if (built && home === built.menu) {
@@ -1305,7 +1286,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The values ticked in one field's run — or a long list's one chip's menu. */
   #picked(held: Held): string[] {
-    if (this.#answerChip(held) && held.menu?.dataset['body'] !== 'date') return [...(held.menu as MenuApi | undefined)?.values ?? []];
+    if (this.#answerChip(held) && held.menu?.dataset['body'] !== 'date') return [...held.menu?.values ?? []];
     return [...held.values.querySelectorAll<HTMLElement>('.value[data-current]')]
       .map((c) => c.dataset['value'] ?? '')
       .filter(Boolean);
@@ -1401,7 +1382,7 @@ export class SherpaFilterPanel extends SherpaElement {
     // The action row's Add condition is the field's inline menu's. Will, TODO 98.
     const add = this.pathFind(event, '.field-add-condition');
     if (add) {
-      (this.#fieldOf(add)?.menu as { addCondition?: () => void } | undefined)?.addCondition?.();
+      this.#fieldOf(add)?.menu?.addCondition?.();
       return;
     }
     // ADVANCED: the f(x) button flips the field's mode.
@@ -1463,7 +1444,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const on = !held.box.hasAttribute('data-advanced');
     const built = !held.menu;
     this.#setCustom(held, on);
-    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    const menu = held.menu;
     /* BUILT AT THIS FLIP: it takes the rows the Query kept, and the chips as
        they are ticked NOW. TRAP T-a-late-built-menu-takes-the-answer-as-it-stands */
     const kept = held.def.state;
@@ -1481,7 +1462,7 @@ export class SherpaFilterPanel extends SherpaElement {
     /* ONCE ITS ROWS ARE DRAWN. Read at once, a menu just built has none: the
        report said "Advanced, no rows", and the filter dropped until the next
        edit. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-    void Promise.resolve((held.menu as { rendered?: Promise<void> } | undefined)?.rendered)
+    void Promise.resolve(held.menu?.rendered)
       .then(() => this.#reportSoon(held));
   }
 
@@ -1504,7 +1485,7 @@ export class SherpaFilterPanel extends SherpaElement {
          TRAP T-conditions-are-opt-in-per-field */
       if (on) held.menu.setAttribute('data-advanced', '');
       // A NUMBER through its own door, which carries its body into the rows.
-      if (held.menu.dataset['body'] === 'number') (held.menu as HTMLElement & { mode: string }).mode = on ? 'advanced' : 'simple';
+      if (held.menu.dataset['body'] === 'number') held.menu.mode = on ? 'advanced' : 'simple';
       else held.menu.dataset['mode'] = on ? 'advanced' : 'simple';
     }
   }
@@ -1513,7 +1494,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  Clear only appears once there is something to clear. */
   #syncAnswered(held: Held): void {
     const ticked = held.values.querySelector('.value[data-current]') != null;
-    const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
+    const menu = held.menu;
     const advanced = held.box.hasAttribute('data-advanced')
       && (menu?.conditions?.length ?? 0) > 0;
     held.box.toggleAttribute('data-answered', ticked || advanced);
@@ -1528,7 +1509,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A saved preset's menu: each field's own menu, read-only, a heading per
    *  field. Will, TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
   #addSavedMenu(chip: HTMLElement, option: FilterOption, scope: string): void {
-    const menu = this.clone<MenuApi>('template.saved-menu-tpl');
+    const menu = this.clone('template.saved-menu-tpl');
     if (!menu) return;
     menu.setAttribute('data-heading', option.label ?? option.value);
     chip.setAttribute('data-menu', '');
@@ -1612,7 +1593,7 @@ export class SherpaFilterPanel extends SherpaElement {
       one.removeAttribute('data-current');
       delete one.dataset['direction'];
     }
-    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    const menu = held.menu;
     if (menu && !arranges(kindOf(held.def))) menu.reading = { picked: [] };
   }
 
@@ -1695,7 +1676,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * value keeps its field's label: "gold" still says Gold is a Tier.
    */
   #onSearch = (): void => {
-    const field = this.$<HTMLElement & { value?: string }>('.search');
+    const field = this.$<SherpaInputText>('.search');
     const q = (field?.value ?? '').trim().toLowerCase();
     // By BOX: Group and Sort are two fields in one section.
     const shown = new Set<HTMLElement>();
@@ -1786,7 +1767,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The Saved chip says the set on screen. */
   #syncSavedChip(): void {
-    drawSavedChip(this, this.$('.saved-chip'), this.#savedSets);
+    drawSavedChip(this, this.$<SherpaQuickFilter>('.saved-chip'), this.#savedSets);
   }
 
   /** A ⋮ row was chosen: do what its folded button does. */

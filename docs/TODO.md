@@ -273,7 +273,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
 | ✅ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
 | ⬜ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
-| ⬜ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
+| ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
 | ⬜ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
@@ -6438,6 +6438,25 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 282 — Phase 5: each component's own type, no hand-typed casts
+
+**✅ Done 2026-10-15.** Measured first: 90 lines of `HTMLElement & {…}` in
+`src/`, 66 in the filter family (the plan said 46), plus 51 casts through local
+copies (`FieldEl`, `MenuApi`, `ChipEl`, `HeadMenu`, `FieldMenu`, `AnswerChip`,
+`Counted`, `MenuLike`). Now 17 lines are left, none in the filter family but the
+grid's `SelectBox`. Each part is typed by its class, imported `import type`, so
+nothing is added at run time; `menuFor()` returns a `SherpaMenu`, and
+`FilterMenuItem` is an alias of the menu's own `MenuItem`. The same pattern
+reached button, app-header, app-shell, chart-legend, notifications,
+select-checkbox and pagination. One run-time change, identical by reading: the
+toolbar's item rows no longer copy five keys that `...item` already carries.
+**The generator needed no fix:** it reads the class by its parser since
+9fa16917, so `ChipEl`'s property-shaped methods were a workaround for a bug
+already gone. A read-only agent made every edit in a copy of `src/` first: the
+type-check and lint passed there and here, and the minified output was
+byte-identical but for the toolbar (−113 B) and panel (−10 B). Not run in a
+browser yet. `T-custom-element-upgrade`.
 
 ### `[x]` ✅ 295 — Phase 8.5: `custom-elements.json` and VS Code's HTML data
 

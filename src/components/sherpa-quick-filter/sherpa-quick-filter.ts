@@ -9,7 +9,7 @@ import {
   DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
-  fieldState, readingRows, type FieldCondition, type FieldReading, type FilterState,
+  fieldState, readingRows, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, movedTo } from '../../core/ui/shared-constants.js';
@@ -19,6 +19,7 @@ import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import '../sherpa-tooltip/sherpa-tooltip.js';
 import { paintSeries } from '../../core/ui/chart-parts.js';
 import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 /** A results count as the reader's locale writes it. */
 const RESULTS = new Intl.NumberFormat();
@@ -27,21 +28,6 @@ const RESULTS = new Intl.NumberFormat();
 interface JumpItem {
   value: string;
   label?: string;
-}
-
-interface MenuLike extends HTMLElement {
-  // show/hide, not toggle — see #openMenu for why the click cannot ask the menu.
-  show?: (trigger?: HTMLElement) => void;
-  hide?: () => void;
-  values?: string[];
-  mode?: string;
-}
-
-/** A menu that answers a FIELD — a list, a number or a date. */
-interface FieldMenu extends MenuLike {
-  reading: FieldReading;
-  conditionValue?: string;
-  conditions?: readonly FieldCondition[];
 }
 
 export class SherpaQuickFilter extends SherpaElement {
@@ -198,7 +184,7 @@ export class SherpaQuickFilter extends SherpaElement {
          rendered; its row remembers its op, so it reads at once. It only ever
          draws an answer, never takes one off.
          TRAP T-a-row-remembers-what-it-was-given */
-      void Promise.resolve((this.menu as { rendered?: Promise<void> } | null)?.rendered).then(() => {
+      void Promise.resolve(this.menu?.rendered).then(() => {
         if (this.isConnected && this.#hasTypedAnswer()) this.#drawFace();
       });
     }
@@ -223,7 +209,7 @@ export class SherpaQuickFilter extends SherpaElement {
        that decide that — neither touches the values, so nothing else re-syncs
        it. TRAP T-an-inactive-chip-says-where-its-filter-went */
     else if (name === 'data-superseded' || name === 'data-applied-at') {
-      this.#syncCountTip((this.menu?.values ?? []) as string[]);
+      this.#syncCountTip(this.menu?.values ?? []);
     } else this.#syncText();
   }
 
@@ -306,8 +292,8 @@ export class SherpaQuickFilter extends SherpaElement {
    *  nothing and the chip read as having no values at all. The menu is
    *  remembered when it is first seen, so a borrowed one is still the chip's.
    *  TRAP T-a-borrowed-menu-is-still-its-chips */
-  get menu(): MenuLike | null {
-    const slotted = this.querySelector<MenuLike>('[slot="menu"]');
+  get menu(): SherpaMenu | null {
+    const slotted = this.querySelector<SherpaMenu>('[slot="menu"]');
     if (slotted) {
       this.#menu = slotted;
       return slotted;
@@ -316,11 +302,11 @@ export class SherpaQuickFilter extends SherpaElement {
     return this.#menu?.isConnected ? this.#menu : null;
   }
   /** The slotted menu, cached once found. */
-  #menu: MenuLike | null = null;
+  #menu: SherpaMenu | null = null;
 
   /** The chip's picked values — the same list `quick-filter-change` reports. */
   get values(): string[] {
-    return (this.menu?.values ?? []) as string[];
+    return this.menu?.values ?? [];
   }
 
   /** Set the picks. TRAP T-chip-values-round-trip-silently — silent, unlike a pick. */
@@ -333,17 +319,17 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-value-before-the-first-render-is-held · TRAP T-custom-element-upgrade */
     customElements.upgrade(menu);
     if (!((menu as Element) instanceof SherpaElement)) return;
-    (menu as HTMLElement & { values: readonly string[] }).values = next;
+    menu.values = next;
     // Read BACK, never trust the ask: a value naming no row never landed.
-    this.#applySelection((menu.values ?? []) as string[]);
+    this.#applySelection(menu.values ?? []);
   }
 
   /** The menu that answers a FIELD, or null: a toggle, a selector, Group, Sort. */
-  #fieldMenu(): FieldMenu | null {
+  #fieldMenu(): SherpaMenu | null {
     const menu = this.menu;
     const body = menu?.dataset['body'];
     return menu && (body === 'number' || body === 'date' || menu.getAttribute('data-type') === 'filter')
-      ? menu as FieldMenu : null;
+      ? menu : null;
   }
 
   /**
@@ -376,7 +362,7 @@ export class SherpaQuickFilter extends SherpaElement {
        the menu's own door, which keeps a reading given before it has drawn. */
     if (body === 'date') {
       menu.reading = next;
-      this.#applySelection((menu.values ?? []) as string[]);
+      this.#applySelection(menu.values ?? []);
       const days = (next.text ?? '').trim() ? 1 : (next.picked ?? []).length;
       this.current = days > 0 && !next.suspended;
       this.refresh();
@@ -618,7 +604,7 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
 
-    const menu = this.menu as (HTMLElement & { dirty?: boolean; apply?: () => void }) | null;
+    const menu = this.menu;
     /* AN OPEN DRAFT IS APPLIED. A reader who typed a condition or ticked a
        value, then pressed the chip, meant "filter by that" — and closing the
        menu threw it away. TRAP T-a-chip-press-applies-its-menus-draft */
@@ -754,7 +740,7 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     const menu = this.menu;
-    const state = this.#state((menu?.values ?? []) as string[]);
+    const state = this.#state(menu?.values ?? []);
     const advanced = this.#given() || state.condition === 'advanced';
     this.#syncCondition(state);
     this.#syncBadge();
@@ -800,9 +786,9 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /** Drop a warning the menu answers once it has stamped. Never raises one. */
-  #recheckEmpty(menu: MenuLike): void {
+  #recheckEmpty(menu: SherpaMenu): void {
     const token = ++this.#emptyCheck;
-    void Promise.resolve((menu as { rendered?: Promise<void> }).rendered)
+    void Promise.resolve(menu.rendered)
       .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
       .then(() => {
         // A later check has already answered; this one is stale.
@@ -870,7 +856,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A TICKED answer is only readable once the rows stamp — and a TYPED one
        has none to tick, so it is asked too: the menu now draws before the
        chip has looked. TRAP T-a-chip-says-its-own-answer */
-    if (!((this.menu?.values ?? []) as string[]).length && !this.#hasTypedAnswer()) return;
+    if (!(this.menu?.values ?? []).length && !this.#hasTypedAnswer()) return;
     this.#drawFace();
   };
 
@@ -887,7 +873,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Label, tip, badge and condition, from ONE read of the menu. */
   #drawFace(): void {
-    const values = (this.menu?.values ?? []) as string[];
+    const values = this.menu?.values ?? [];
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
     const state = this.#state(values);
@@ -902,7 +888,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** A condition row changed: re-derive the face from it. */
   #onCondition = (): void => {
-    this.#applySelection((this.menu?.values ?? []) as string[]);
+    this.#applySelection(this.menu?.values ?? []);
   };
 
 
@@ -914,9 +900,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * decides. TRAP T-one-state-per-filtered-field
    */
   #state(values: string[]): FilterState {
-    const menu = this.menu as (HTMLElement & {
-      conditionValue?: string; reading?: FieldReading;
-    }) | null;
+    const menu = this.menu;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
     /* The menu's whole answer — both modes, and which is in force — so the
        badge and the tip read the answer that filters. A number's "> 2" is
@@ -1000,10 +984,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Is this chip's menu on a typing condition with something typed? */
   #hasTypedAnswer(): boolean {
-    const menu = this.menu as (HTMLElement & {
-      conditionValue?: string; mode?: string;
-      conditions?: { op: FilterOp; text?: string; picked?: unknown[] }[];
-    }) | null;
+    const menu = this.menu;
     if (menu?.getAttribute('data-type') !== 'filter') return false;
 
     /* ADVANCED mode answers with ROWS, and ANY answered row is an answer. A

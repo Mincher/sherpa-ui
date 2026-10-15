@@ -8,13 +8,8 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-badge/sherpa-badge.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
-/** What the button needs of a slotted menu. */
-interface MenuLike extends HTMLElement {
-  show(trigger?: HTMLElement): void;
-  hide(): void;
-  readonly open: boolean;
-}
 
 export class SherpaButton extends SherpaElement {
   static override css = new URL('./sherpa-button.css', import.meta.url);
@@ -142,8 +137,8 @@ export class SherpaButton extends SherpaElement {
   };
 
   /** The slotted menu, if this button is a trigger for one. */
-  get #menu(): MenuLike | null {
-    return this.querySelector<MenuLike>('[slot="menu"]');
+  get #menu(): SherpaMenu | null {
+    return this.querySelector<SherpaMenu>('[slot="menu"]');
   }
 
   /**

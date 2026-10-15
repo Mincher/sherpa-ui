@@ -13,7 +13,7 @@
  * - switchesOf — The ⋮ menu's two switches, as their request: Limit, and Hide unmatching.
  */
 
-type Menu = HTMLElement & { show?: (trigger?: HTMLElement) => void; hide?: () => void };
+import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 
 /** One ⋮ row: what it does, what it says, and whether it is off. */
 export type MoreRow = readonly [value: string, label: string, disabled?: boolean];
@@ -43,7 +43,7 @@ export function extraRows(host: HTMLElement): MoreRow[] {
 /** Draw the ⋮ menu from groups of rows — a divider between each — then the
  *  host's own switch, and show it at the trigger. Will, TODO 178. */
 export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLElement, groups: readonly MoreRow[][]): void {
-  const menu = root.querySelector<Menu>('.more-menu');
+  const menu = root.querySelector<SherpaMenu>('.more-menu');
   const item = root.querySelector<HTMLTemplateElement>('template.more-item-tpl')?.content.firstElementChild;
   const divider = root.querySelector<HTMLTemplateElement>('template.more-divider-tpl')?.content.firstElementChild;
   if (!menu || !item || !divider) return;
@@ -80,7 +80,7 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
  *  button, to press — or nothing, if it has gone; any other row, its value. */
 export function pickMore(host: HTMLElement, root: ParentNode, event: Event): string | HTMLElement | undefined {
   const value = String((event as CustomEvent).detail?.value ?? '');
-  root.querySelector<Menu>('.more-menu')?.hide?.();
+  root.querySelector<SherpaMenu>('.more-menu')?.hide?.();
   return value.startsWith(EXTRA) ? extras(host)[Number(value.slice(EXTRA.length))] : value;
 }
 

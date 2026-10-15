@@ -29,6 +29,11 @@ import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-badge/sherpa-badge.js';
+import type { SherpaBreadcrumbs } from '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
+import type { SherpaCalendar } from '../sherpa-calendar/sherpa-calendar.js';
+import type { SherpaInputText } from '../sherpa-input-text/sherpa-input-text.js';
+import type { SherpaSlider } from '../sherpa-slider/sherpa-slider.js';
+import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
 /** One item a menu draws for itself. */
 export interface MenuItem {
@@ -64,10 +69,6 @@ const CONTROL = 'a[href], button, input, select, textarea, label, summary, [cont
 
 /** A mode as written, as the one it means: anything but `advanced` is `simple`. */
 const modeOf = (raw: string | undefined): ConditionType => (raw === 'advanced' ? 'advanced' : 'simple');
-
-/** A composed `sherpa-input-text`: it carries a value, and a select variant
- *  takes its options through `populate()`. */
-type FieldEl = HTMLElement & { value: string; populate?: (d: unknown) => unknown };
 
 /** What a date's In the last and In the next count. */
 const DATE_UNITS = ['day', 'week', 'month'] as const;
@@ -323,7 +324,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** The body's operator changed. */
   #onBodyOp = (event: Event): void => {
-    const value = (event.target as HTMLElement & { value?: string }).value;
+    const value = (event.target as SherpaInputText).value;
     if (!value) return;
     this.set('data-op', value);
     this.#emitConditions(true);
@@ -336,7 +337,7 @@ export class SherpaMenu extends SherpaElement {
    *  TRAP T-a-borrowed-menu-leaves-its-toolbars-listeners-behind */
   #onRangeSwitch = (event: Event): void => {
     event.stopPropagation();
-    const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
+    const on = !!(event.target as SherpaSwitch).checked;
     this.set('data-range', on);
     // A RANGE defers: the pick is not finished on its first end.
     if (!this.hasAttribute('data-commit-fixed')) this.set('data-commit', on);
@@ -468,7 +469,7 @@ export class SherpaMenu extends SherpaElement {
   /** The ONE-value shape's answer: a pick under `=`, typed text under an op that takes text.
    *  TRAP T-one-number-is-a-pick-under-equals */
   #oneAnswer(): KeptAnswer {
-    const one = this.$<FieldEl>('.body-number-one')?.value.trim() ?? '';
+    const one = this.$<SherpaInputText>('.body-number-one')?.value.trim() ?? '';
     // The number body's own select is the live operator. TRAP T-a-menu-owns-its-own-bodies
     const op = this.op;
     if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
@@ -478,7 +479,7 @@ export class SherpaMenu extends SherpaElement {
   /** The RANGE shape's answer: its two ends, once a reader has moved one.
    *  TRAP T-a-full-range-is-still-a-range */
   #endsAnswer(): KeptAnswer {
-    const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
+    const slider = this.$<SherpaSlider>('.body-number-range');
     return { picked: slider?.hasAttribute('data-touched') ? slider.range.map(String) : [] };
   }
 
@@ -543,7 +544,7 @@ export class SherpaMenu extends SherpaElement {
   /** A number body's operator: its select, and the attribute that echoes it. */
   #setBodyOp(op: FilterOp): void {
     this.set('data-op', op);
-    const select = this.$<HTMLElement & { value?: string }>('.body-op');
+    const select = this.$<SherpaInputText>('.body-op');
     if (select && select.value !== op) select.value = op;
   }
 
@@ -560,7 +561,7 @@ export class SherpaMenu extends SherpaElement {
     this.#mirror = false;
     const row = this.#addRow();
     this.#emitConditions();
-    const field = row?.querySelector<HTMLElement & { rendered?: Promise<void> }>('.condition');
+    const field = row?.querySelector<SherpaInputText>('.condition');
     void Promise.resolve(field?.rendered).then(() => field?.focus());
   };
 
@@ -601,10 +602,10 @@ export class SherpaMenu extends SherpaElement {
 
   /** Send the three option sets into one row and set its values. */
   #fillRow(row: HTMLElement, seed?: FieldCondition): void {
-    const join = row.querySelector<FieldEl>('.join');
-    const cond = row.querySelector<FieldEl>('.condition');
-    const pick = row.querySelector<FieldEl>('.condition-pick');
-    const text = row.querySelector<FieldEl>('.condition-value');
+    const join = row.querySelector<SherpaInputText>('.join');
+    const cond = row.querySelector<SherpaInputText>('.condition');
+    const pick = row.querySelector<SherpaInputText>('.condition-pick');
+    const text = row.querySelector<SherpaInputText>('.condition-value');
 
     void join?.populate?.([
       { value: 'and', label: 'And' },
@@ -658,7 +659,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** A date row's own boxes: a day (and a time), two for Between, a count and a unit. TODO 21d */
   #fillDateRow(row: HTMLElement, seed?: FieldCondition): void {
-    const box = (name: string): FieldEl | null => row.querySelector<FieldEl>(`.condition-${name}`);
+    const box = (name: string): SherpaInputText | null => row.querySelector<SherpaInputText>(`.condition-${name}`);
     const set = (name: string, value: string): void => { const el = box(name); if (el) el.value = value; };
     const unit = box('unit');
     // Its value written AFTER its options exist. TRAP T-custom-element-upgrade
@@ -675,7 +676,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** A DATE row's answer, as the row's own op needs it. */
   #dateRowAnswer(row: HTMLElement, op: FilterOp): Omit<FieldCondition, 'op' | 'join'> {
-    const value = (name: string): string => (row.querySelector<FieldEl>(`.condition-${name}`)?.value ?? '').trim();
+    const value = (name: string): string => (row.querySelector<SherpaInputText>(`.condition-${name}`)?.value ?? '').trim();
     const at = (day: string, time: string): string => (value(day) && value(time) && this.hasAttribute('data-time')
       ? `${value(day)}T${value(time)}` : value(day));
     if (op === 'last' || op === 'next') return { text: value('count'), unit: (value('unit') || 'day') as DateUnit };
@@ -764,7 +765,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** A row's op: what it remembers, else what its control shows. */
   #opOf(row: HTMLElement): FilterOp {
-    return (row.dataset['op'] || row.querySelector<FieldEl>('.condition')?.value || DEFAULT_OP) as FilterOp;
+    return (row.dataset['op'] || row.querySelector<SherpaInputText>('.condition')?.value || DEFAULT_OP) as FilterOp;
   }
 
   /** Every row, as data. TRAP T-many-conditions-are-one-reading */
@@ -787,7 +788,7 @@ export class SherpaMenu extends SherpaElement {
       /* A NUMBER's `=` is typed, and answers as the one number it picks —
          as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
       if (this.#typesItsPicks() && takes === 'list') {
-        const typed = (row.querySelector<FieldEl>('.condition-value')?.value ?? '').trim();
+        const typed = (row.querySelector<SherpaInputText>('.condition-value')?.value ?? '').trim();
         if (typed) out.picked = [typed];
       } else if (takes === 'list') {
         /* `row.dataset.want` is what the READER chose. A `<select>` shows its
@@ -798,7 +799,7 @@ export class SherpaMenu extends SherpaElement {
         const picked = row.dataset['want'] ?? '';
         if (picked) out.picked = [picked];
       } else {
-        out.text = row.querySelector<FieldEl>('.condition-value')?.value ?? '';
+        out.text = row.querySelector<SherpaInputText>('.condition-value')?.value ?? '';
       }
       return out;
     });
@@ -907,13 +908,13 @@ export class SherpaMenu extends SherpaElement {
     if (row instanceof HTMLElement) {
       this.#mirror = false;
       // The reader just answered, so THAT is what the row remembers now.
-      const live = row.querySelector<FieldEl>('.condition')?.value;
+      const live = row.querySelector<SherpaInputText>('.condition')?.value;
       if (live) row.dataset['op'] = live;
-      const joined = row.querySelector<FieldEl>('.join')?.value;
+      const joined = row.querySelector<SherpaInputText>('.join')?.value;
       if (joined) row.dataset['join'] = joined;
       const op = this.#opOf(row);
       row.dataset['takes'] = this.#takes(op);
-      const picked = row.querySelector<FieldEl>('.condition-pick')?.value ?? '';
+      const picked = row.querySelector<SherpaInputText>('.condition-pick')?.value ?? '';
       if (picked) row.dataset['want'] = picked;
     }
 
@@ -941,7 +942,7 @@ export class SherpaMenu extends SherpaElement {
        reported the old operator. Read the control, not the echo of it.
        TRAP T-a-menu-owns-its-own-bodies */
     if (this.dataset['body'] === 'number') {
-      const picked = this.$<HTMLElement & { value?: string }>('.body-op')?.value;
+      const picked = this.$<SherpaInputText>('.body-op')?.value;
       if (picked && picked in OP_LABELS) return picked as FilterOp;
     }
     return (this.dataset['op'] as FilterOp | undefined) ?? DEFAULT_OP;
@@ -976,13 +977,13 @@ export class SherpaMenu extends SherpaElement {
   /** ROW ONE's condition field. `menu.op` and `menu.conditionValue` are the
    *  one-row view of the same state, so a caller that knows nothing about
    *  rows still works. TRAP T-a-filter-menu-has-two-modes */
-  #conditionField(): FieldEl | null {
-    return this.#rowEls()[0]?.querySelector<FieldEl>('.condition') ?? null;
+  #conditionField(): SherpaInputText | null {
+    return this.#rowEls()[0]?.querySelector<SherpaInputText>('.condition') ?? null;
   }
 
   /** ROW ONE's typed box. */
-  #valueField(): FieldEl | null {
-    return this.#rowEls()[0]?.querySelector<FieldEl>('.condition-value') ?? null;
+  #valueField(): SherpaInputText | null {
+    return this.#rowEls()[0]?.querySelector<SherpaInputText>('.condition-value') ?? null;
   }
 
   /**
@@ -1022,7 +1023,7 @@ export class SherpaMenu extends SherpaElement {
   /** Narrow rows to a typed substring; a hidden row keeps its tick.
    * TRAP T-menu-search-is-a-substring-find */
   #onSearch = (): void => {
-    const field = this.$<HTMLElement & { value?: string }>('.search');
+    const field = this.$<SherpaInputText>('.search');
     const q = (field?.value ?? '').trim().toLowerCase();
     let shown = 0;
     // A SECTION heading shows while a row under it does — never on its own name.
@@ -1177,8 +1178,8 @@ export class SherpaMenu extends SherpaElement {
   /** A NUMBER menu's value, or null. TRAP T-a-full-range-is-still-a-range */
   #numericValues(): string[] | null {
     if (this.dataset['body'] !== 'number') return null;
-    const field = this.$<FieldEl>('.body-number-one');
-    const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
+    const field = this.$<SherpaInputText>('.body-number-one');
+    const slider = this.$<SherpaSlider>('.body-number-range');
     if (!field && !slider) return null;
     if (this.hasAttribute('data-range')) {
       if (!slider || !slider.hasAttribute('data-touched')) return [];
@@ -1203,7 +1204,7 @@ export class SherpaMenu extends SherpaElement {
     this.#setShape(range);
     if (body === 'number') {
       // ONLY THE SHAPE NAMED is written. The other keeps what it holds.
-      const one = this.$<FieldEl>('.body-number-one')?.value ?? '';
+      const one = this.$<SherpaInputText>('.body-number-one')?.value ?? '';
       const ends = this.#endsAnswer().picked as string[];
       this.#setNumberBody(range ? one : (next[0] ?? ''), range ? [...next] : ends);
       return true;
@@ -1233,9 +1234,9 @@ export class SherpaMenu extends SherpaElement {
   /** Write BOTH number shapes: the one value, and the two ends — none puts the
    *  slider back on its bounds, untouched. TRAP T-a-full-range-is-still-a-range */
   #setNumberBody(one: string, ends: readonly string[]): void {
-    const field = this.$<FieldEl>('.body-number-one');
+    const field = this.$<SherpaInputText>('.body-number-one');
     if (field && field.value !== one) field.value = one;
-    const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
+    const slider = this.$<SherpaSlider>('.body-number-range');
     if (slider && ends.length > 1) {
       slider.setAttribute('data-value-start', ends[0]!);
       slider.setAttribute('data-value-end', ends[1]!);
@@ -1260,7 +1261,7 @@ export class SherpaMenu extends SherpaElement {
     return single ? [single] : [];
   }
 
-  set values(next: string[]) {
+  set values(next: readonly string[]) {
     /* Nothing to show them yet: HELD until it is drawn — a date's calendar is
        light DOM, so it takes them now. A drill moves the rows themselves, so
        once drawn they stay the live answer.
@@ -1481,7 +1482,7 @@ export class SherpaMenu extends SherpaElement {
   /** The drill trail. An `href` would dismiss the popover.
    * TRAP T-drill-crumbs-carry-no-href */
   #syncCrumb(): void {
-    const crumbs = this.$<HTMLElement & { populate(d: unknown): void }>('.drill-crumbs');
+    const crumbs = this.$<SherpaBreadcrumbs>('.drill-crumbs');
     if (!crumbs) return;
     const from = this.dataset['drillFrom'];
     if (!from) {
@@ -1531,7 +1532,7 @@ export class SherpaMenu extends SherpaElement {
     /* THE OPERATOR, from the ONE vocabulary — the same list the condition rows
        read. A host names the set; the menu draws it.
        TRAP T-ops-follow-the-column-type */
-    const picker = this.$<HTMLElement & { populate?: (i: unknown[]) => void; value?: string }>('.body-op');
+    const picker = this.$<SherpaInputText>('.body-op');
     // A FILTER menu's conditions are its rows; its Simple body has no operator.
     if (picker && this.hasAttribute('data-conditions') && this.dataset['type'] !== 'filter') {
       const ops = this.#opList();
@@ -1837,7 +1838,7 @@ export class SherpaMenu extends SherpaElement {
     const rows = this.conditions;
     const values = options.map((o) => o.value).filter(Boolean);
     this.#rowEls().forEach((row, i) => {
-      const pick = row.querySelector<FieldEl>('.condition-pick');
+      const pick = row.querySelector<SherpaInputText>('.condition-pick');
       if (!pick) return;
       // What the row WANTS beats what the select happens to show.
       const held = row.dataset['want'] || pick.value;
@@ -2010,7 +2011,7 @@ export class SherpaMenu extends SherpaElement {
     // A cleared range is untouched again. The reset writes both ends, which
     // re-flags it, so the flag comes off LAST.
     // TRAP T-a-full-range-is-still-a-range
-    for (const s of this.#own<HTMLElement & { range: [number, number] }>('sherpa-slider')) {
+    for (const s of this.#own<SherpaSlider>('sherpa-slider')) {
       s.range = [Number(s.getAttribute('min') ?? 0), Number(s.getAttribute('max') ?? 100)];
       s.removeAttribute('data-touched');
     }
@@ -2036,7 +2037,7 @@ export class SherpaMenu extends SherpaElement {
   /** Drive the slotted calendar to today; stays OPEN.
    * TRAP T-today-and-remove-are-menu-chrome */
   #onToday = (): void => {
-    for (const cal of this.#own<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
+    for (const cal of this.#own<SherpaCalendar>('sherpa-calendar')) {
       cal.today?.();
     }
   };

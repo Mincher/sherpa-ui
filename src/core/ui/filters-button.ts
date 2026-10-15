@@ -21,6 +21,8 @@
  * - .out — Put the rows home and the Filters menu's own list back.
  */
 import type { FilterMenuItem } from './filter-menu.js';
+import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
+import type { SherpaQuickFilter } from '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
 
 export const FILTERS_LABEL = 'Filters';
 const ADDED_SECTION = 'Added filters';
@@ -112,11 +114,11 @@ export function setPick(want: Set<string>, sets: readonly SavedSet[]): { apply?:
 
 /** The Saved chip says the set on screen: its name, and ` *` and the warning
  *  look once changed. `data-saved` on the host shows it. TRAP T-saved-filters-are-every-scope */
-export function drawSavedChip(host: HTMLElement, chip: HTMLElement | null, sets: readonly SavedSet[]): void {
+export function drawSavedChip(host: HTMLElement, chip: SherpaQuickFilter | null, sets: readonly SavedSet[]): void {
   const on = host.hasAttribute('data-saveable') ? sets.find((set) => set.on) : undefined;
   host.toggleAttribute('data-saved', !!on);
   if (!chip || !on) return;
-  (chip as HTMLElement & { valueLabel: string }).valueLabel = `${on.label}${on.edited ? ' *' : ''}`;
+  chip.valueLabel = `${on.label}${on.edited ? ' *' : ''}`;
   if (on.edited) chip.dataset['status'] = 'warning';
   else chip.removeAttribute('data-status');
 }
@@ -125,7 +127,7 @@ export function drawSavedChip(host: HTMLElement, chip: HTMLElement | null, sets:
 export class MenuDrill {
   /** Where the rows came from, and the Filters menu's own rows and settings. */
   #at: {
-    menu: HTMLElement; home: HTMLElement; rows: Element[];
+    menu: SherpaMenu; home: HTMLElement; rows: Element[];
     own: Record<string, string | null>; heading: string;
   } | null = null;
 
@@ -135,12 +137,12 @@ export class MenuDrill {
   }
 
   /** The Filters menu it is drilled into, or null. */
-  get menu(): HTMLElement | null {
+  get menu(): SherpaMenu | null {
     return this.#at?.menu ?? null;
   }
 
   /** Move `home`'s rows into `menu`. Back stays one level deep, never a chain. */
-  into(menu: HTMLElement, home: HTMLElement, label: string): void {
+  into(menu: SherpaMenu, home: HTMLElement, label: string): void {
     this.out();
     /* The Filters menu has settings of ITS OWN — Apply, search, many picks —
        and gets them back on the way out. TRAP T-one-filters-button */

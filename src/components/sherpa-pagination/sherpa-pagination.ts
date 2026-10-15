@@ -11,6 +11,7 @@ import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
 import '../sherpa-input-text/sherpa-input-text.js';
+import type { SherpaInputText } from '../sherpa-input-text/sherpa-input-text.js';
 
 export class SherpaPagination extends SherpaElement {
   static override css = new URL('./sherpa-pagination.css', import.meta.url);
@@ -123,7 +124,7 @@ export class SherpaPagination extends SherpaElement {
     const total = this.totalPages;
     const page = this.page;
 
-    const input = this.$<HTMLElement & { value: string }>('.page-input');
+    const input = this.$<SherpaInputText>('.page-input');
     if (input) {
       input.setAttribute('max', String(total));
       input.value = String(page);
@@ -174,7 +175,7 @@ export class SherpaPagination extends SherpaElement {
   #onPageInput = (event: Event): void => {
     // The field's `change` stops here; the pager reports `page-change`.
     event.stopPropagation();
-    this.goToPage(parseInt((event.target as HTMLElement & { value: string }).value, 10));
+    this.goToPage(parseInt((event.target as SherpaInputText).value, 10));
   };
 
   /** The rows-per-page picker — writes only when unlocked. */

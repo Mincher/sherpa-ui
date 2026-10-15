@@ -20,6 +20,7 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-button/sherpa-button.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 export interface Notification {
   id: string;
@@ -114,8 +115,8 @@ export class SherpaNotifications extends SherpaElement {
   /* ── Private ─────────────────────────────────────────────────────── */
 
   /** The dropdown menu the notifications list in. */
-  #menu(): (HTMLElement & { show(t?: HTMLElement): void; hide(): void; toggle(t?: HTMLElement): void }) | null {
-    return this.$('.menu');
+  #menu(): SherpaMenu | null {
+    return this.$<SherpaMenu>('.menu');
   }
 
   /** Draw the list, or the "all caught up" state when it is empty. */

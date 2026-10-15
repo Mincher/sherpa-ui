@@ -18,26 +18,10 @@ import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
 import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
+import type { MenuItem, SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 
-/** One row a menu offers. */
-export interface FilterMenuItem {
-  value: string;
-  label?: string;
-  selected?: boolean;
-  available?: boolean;
-  /** A second fact the row shows, muted — where a filter lives now. */
-  note?: string;
-  /** The section it is in, headed where it changes. */
-  section?: string;
-  /** It opens a child menu: a caret at its end. */
-  drill?: boolean;
-  /** `false`: no tick box. */
-  pickable?: boolean;
-  /** Picks its child menu holds. */
-  count?: number;
-  /** A × at its end that removes it: a one-value filter, whose tick means On. */
-  remove?: boolean;
-}
+/** One row a menu offers: the menu's own item. */
+export type FilterMenuItem = MenuItem;
 
 /** Enough of a filter definition to draw its menu. */
 export interface FilterMenuDef extends KindSource {
@@ -79,8 +63,8 @@ export interface FilterMenuOptions {
 export function menuFor(
   def: FilterMenuDef,
   opts: FilterMenuOptions = {},
-): { menu: HTMLElement; kind: FilterKind; items: FilterMenuItem[] } {
-  const menu = document.createElement('sherpa-menu');
+): { menu: SherpaMenu; kind: FilterKind; items: FilterMenuItem[] } {
+  const menu = document.createElement('sherpa-menu') as SherpaMenu;
   const kind = kindOf(def);
   const one = picksOne(kind);
 

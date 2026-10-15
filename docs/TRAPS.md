@@ -59,6 +59,12 @@ three `#pendingItems` queues are gone. A copy made with `cloneNode` from a
 template's content still lives in its inert document and does NOT upgrade —
 `customElements.upgrade()` cannot help it there.
 
+**A component's own type says nothing about upgrade.** The filter family is
+typed by each part's class (`SherpaMenu`, `SherpaQuickFilter`, TODO 282), not
+by hand-written `HTMLElement & {…}` copies, and imports it `import type` only, so
+no run-time edge is added. Keep the `?.()` on a slotted or freshly cloned child:
+the type is what it WILL be, not proof that it is upgraded yet.
+
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

@@ -11,7 +11,7 @@
 import { sayReadings, type SaidField } from '../data/filter-face.js';
 import { readingRows, type FieldFacts, type FieldReading } from '../data/filter-state.js';
 import { advancedOf, kindOf, type FilterKind } from './filter-kind.js';
-import { menuFor, type FilterMenuDef, type FilterMenuItem } from './filter-menu.js';
+import { menuFor, type FilterMenuDef } from './filter-menu.js';
 
 /** A saved filter's answer as its card draws it. */
 export interface SavedAnswer {
@@ -28,8 +28,6 @@ export interface SavedMenuHost {
   defOf(field: string): FilterMenuDef | undefined;
   bounds?: string | undefined;
 }
-
-type FieldMenu = HTMLElement & { reading: FieldReading; items(next: readonly FilterMenuItem[]): void };
 
 interface Card {
   saved: SavedAnswer;
@@ -108,7 +106,7 @@ function fieldNodes(card: Card, field: string, answer: FieldReading, def: Filter
       { ...def, advanced: only ? 'only' : true, commit: false, selectAll: false },
       { inline: true, remote: false, bounds: card.host.bounds },
     );
-    const own = built.menu as FieldMenu;
+    const own = built.menu;
     // TRAP T-an-inline-menu-is-the-same-menu
     own.removeAttribute('slot');
     own.setAttribute('data-readonly', '');

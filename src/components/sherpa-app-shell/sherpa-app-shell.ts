@@ -6,6 +6,7 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
+import type { SherpaNav } from '../sherpa-nav/sherpa-nav.js';
 
 /** The narrowest Context a panel area may leave: the layout grid's tablet breakpoint. */
 const TABLET = 768;
@@ -32,7 +33,7 @@ export class SherpaAppShell extends SherpaElement {
     this.addEventListener('nav-state-change', this.#onNavState as EventListener);
     // The header's phone menu button: the rail opens as a menu. TRAP T-the-nav-is-a-menu-on-a-phone
     this.addEventListener('nav-menu-request', () => {
-      (this.#rail() as (HTMLElement & { openMenu?: () => void }) | null)?.openMenu?.();
+      this.#rail()?.openMenu?.();
     });
     // Deferred: the rail sets itself to `collapsed` on its own first render.
     queueMicrotask(() => this.#adoptRailState());
@@ -148,10 +149,10 @@ export class SherpaAppShell extends SherpaElement {
   };
 
   /** The rail: slotted, the default, or inside a consumer's wrapper. */
-  #rail(): HTMLElement | null {
-    const slotted = this.querySelector<HTMLElement>('[slot="nav"]');
-    return (slotted?.localName === 'sherpa-nav' ? slotted : slotted?.querySelector<HTMLElement>('sherpa-nav'))
-      ?? this.$<HTMLElement>('sherpa-nav') ?? this.querySelector<HTMLElement>('sherpa-nav');
+  #rail(): SherpaNav | null {
+    const slotted = this.querySelector<SherpaNav>('[slot="nav"]');
+    return (slotted?.localName === 'sherpa-nav' ? slotted : slotted?.querySelector<SherpaNav>('sherpa-nav'))
+      ?? this.$<SherpaNav>('sherpa-nav') ?? this.querySelector<SherpaNav>('sherpa-nav');
   }
 
   /** Read the rail's current mode once, at startup. */

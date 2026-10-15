@@ -20,6 +20,7 @@ import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 const MAX_ITEMS = 6;
 
@@ -270,9 +271,7 @@ export class SherpaChartLegend extends SherpaElement {
 
   /** One checkbox row per folded category, plus its Apply. */
   #buildBreakdown(wrapper: HTMLElement): void {
-    const menu = wrapper.querySelector<HTMLElement & {
-      toggle?: (t?: HTMLElement) => void;
-    }>('.rollup-menu');
+    const menu = wrapper.querySelector<SherpaMenu>('.rollup-menu');
     const rowTpl = this.$<HTMLTemplateElement>('template.rollup-row-tpl');
     if (!menu || !rowTpl) return;
 

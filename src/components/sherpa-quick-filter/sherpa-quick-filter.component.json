@@ -723,7 +723,7 @@
         },
         {
           "name": "menu",
-          "type": "MenuLike | null",
+          "type": "SherpaMenu | null",
           "access": "read"
         },
         {

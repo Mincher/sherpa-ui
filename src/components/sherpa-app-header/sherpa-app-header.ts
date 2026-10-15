@@ -8,6 +8,7 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 // Every action is a composed sherpa-button. TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';
+import type { SherpaQuickFilterToolbar } from '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 
 interface Crumb { label: string; href?: string }
 interface FilterChip { id: string; label: string; type?: string; active?: boolean; count?: number }
@@ -139,13 +140,8 @@ export class SherpaAppHeader extends SherpaElement {
   }
 
   /** The filter bar in the header, if there is one. */
-  #toolbar():
-    | (HTMLElement & {
-        values: Record<string, readonly string[]>;
-        available?: (defs: FilterChip[]) => void;
-      })
-    | null {
-    return this.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+  #toolbar(): SherpaQuickFilterToolbar | null {
+    return this.querySelector<SherpaQuickFilterToolbar>('sherpa-quick-filter-toolbar[slot="filters"]');
   }
 
   /** Populate a consumer-slotted composed child. */

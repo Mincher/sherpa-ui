@@ -56,6 +56,8 @@ import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
+import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 
 export interface GridColumn extends OffersAdvanced {
   field: string;
@@ -71,7 +73,7 @@ export interface GridColumn extends OffersAdvanced {
 
 type GridRow = Record<string, unknown>;
 
-/** A selection box — all three are `sherpa-select-checkbox`, NOT `HTMLInputElement`. */
+/** A selection box — a `sherpa-select-checkbox`, or the one-row `sherpa-select-radio`; NOT `HTMLInputElement`. */
 type SelectBox = HTMLElement & { checked: boolean; indeterminate: boolean };
 
 /** One action a row offers. TRAP T-grid-actions-are-declared-once-used-twice. */
@@ -108,9 +110,6 @@ interface GridConfig {
    *  TRAP T-a-heading-opens-the-chips-menu */
   filters?: Readonly<Record<string, FieldFilter>>;
 }
-
-/** A heading's menu, as the grid reaches it. */
-type HeadMenu = HTMLElement & { reading: FieldReading; present: readonly string[] | null; items(next: readonly FilterMenuItem[]): void };
 
 /** The column types a heading can filter. Every body is the menu's own.
     TRAP T-a-menu-owns-its-own-bodies */
@@ -491,14 +490,14 @@ export class SherpaDataGrid extends SherpaElement {
        TRAP T-custom-element-upgrade · TRAP T-both-answers-are-kept
        TRAP T-a-heading-menu-opens-on-what-it-holds */
     customElements.upgrade(menu);
-    if (items.length) (menu as HeadMenu).items(this.#columnItems(items, held));
+    if (items.length) menu.items(this.#columnItems(items, held));
     if (!held) {
       this.#markPresent(th);
       return;
     }
     // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
     if (readingRows(held).length) menu.setAttribute('data-advanced', '');
-    (menu as HeadMenu).reading = held;
+    menu.reading = held;
     this.#markPresent(th);
   }
 
@@ -556,7 +555,7 @@ export class SherpaDataGrid extends SherpaElement {
   #markPresent(cell: HTMLElement): void {
     const field = cell.dataset['field']!;
     const chip = cell.querySelector<HTMLElement>('.head-filter');
-    const menu = chip?.querySelector<HeadMenu & { values?: string[] }>('sherpa-menu');
+    const menu = chip?.querySelector<SherpaMenu>('sherpa-menu');
     if (!chip || !menu || this.#superseded.has(field)) return;
     const left = this.#present[field] ?? null;
     menu.present = left;
@@ -599,7 +598,7 @@ export class SherpaDataGrid extends SherpaElement {
     const chip = (event.target as HTMLElement).closest<HTMLElement>('.head-filter');
     if (!chip) return;
     event.stopPropagation();
-    chip.querySelector<HTMLElement & { close?: () => void }>('sherpa-menu')?.close?.();
+    chip.querySelector<SherpaMenu>('sherpa-menu')?.close?.();
     this.#onColumnFilterCommit(new CustomEvent('menu-clear', { detail: {} , bubbles: false }) as Event, chip);
   };
 
@@ -633,7 +632,7 @@ export class SherpaDataGrid extends SherpaElement {
         /* The shared filter menu keeps its typed value in an ATTRIBUTE, which
            is the whole reason it survives a re-stamp — so clearing has to
            reach that, not only the boxes. TRAP T-one-field-one-filter-menu */
-        const fm = chip.querySelector<HeadMenu>('sherpa-menu');
+        const fm = chip.querySelector<SherpaMenu>('sherpa-menu');
         if (fm?.getAttribute('data-type') === 'filter') fm.setAttribute('data-value', '');
         // The MENU empties its own answer, whatever its body: ticks, rows, a number, a day.
         if (fm) fm.reading = {};
@@ -673,7 +672,7 @@ export class SherpaDataGrid extends SherpaElement {
    * and a range needs both ends. TRAP T-both-answers-are-kept
    */
   #readColumnFilter(chip: HTMLElement): FieldReading | null {
-    const menu = chip.querySelector<HeadMenu>('sherpa-menu');
+    const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
     if (!menu) return null;
     const reading = menu.reading;
     // A RANGE of days needs both ends: one is unfinished, not wrong.
@@ -867,7 +866,7 @@ export class SherpaDataGrid extends SherpaElement {
    * T-grid-toolbar-chip-borrows-the-menu — one menu serves both.
    */
   openColumnFilter(field: string, anchor?: HTMLElement): void {
-    const chip = this.$<HTMLElement>(
+    const chip = this.$<SherpaQuickFilter>(
       `.head-cell[data-field="${CSS.escape(field)}"] .head-filter`,
     );
     /* Ask the CHIP, not its menu: the chip owns the light-dismiss-safe open, and
@@ -875,8 +874,7 @@ export class SherpaDataGrid extends SherpaElement {
        through this door. The anchor still travels — a toolbar chip borrows this
        menu and must see it over ITSELF.
        TRAP T-a-trigger-click-follows-light-dismiss · T-grid-toolbar-chip-borrows-the-menu */
-    (chip as (HTMLElement & { toggleMenu?: (a?: HTMLElement) => void }) | null)
-      ?.toggleMenu?.(anchor);
+    chip?.toggleMenu?.(anchor);
   }
 
   /**
@@ -1284,7 +1282,7 @@ export class SherpaDataGrid extends SherpaElement {
   #openActions(trigger: HTMLElement): void {
     const record = this.#recordFor(trigger);
     if (!record || !this.#actions.length) return;
-    const menu = this.$<HTMLElement & { show?: (t?: HTMLElement) => void }>('.actions-menu');
+    const menu = this.$<SherpaMenu>('.actions-menu');
     const tpl = this.$<HTMLTemplateElement>('template.action-item-tpl');
     if (!menu || !tpl) return;
 
@@ -1327,7 +1325,7 @@ export class SherpaDataGrid extends SherpaElement {
   #closeActions(): void {
     this.#actionRow = null;
     for (const t of this.$$('.actions-trigger')) t.setAttribute('aria-expanded', 'false');
-    this.$<HTMLElement & { hide?: () => void }>('.actions-menu')?.hide?.();
+    this.$<SherpaMenu>('.actions-menu')?.hide?.();
   }
 
   /**
