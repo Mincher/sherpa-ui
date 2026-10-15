@@ -7,6 +7,15 @@
  * - Bound — One bound component: how it is bound, and what it was last pushed.
  * - BindHost — What the binding asks its source, live, at each push and draw.
  * - SourceBinding — Every bound component, by element.
+ * - .add — Bind a component, with the id a scope's `narrows` names it by.
+ * - .remove — Let a component go, and tell its sink.
+ * - .get — One component's bind, live, or undefined.
+ * - .elements — Every bound component, as a copy.
+ * - .entries — Every bind, live, in the order they were made.
+ * - .componentScopes — The scopes a bound component answers — every other one is the page's.
+ * - .wantsAllRows — Is any bind asking for the unpaged set?
+ * - .showsOf — What the first component bound into a scope says it shows.
+ * - .showsRows — Is a grid or a list bound into this scope?
  * - .publish — Push rows and state to every bound component.
  * - .push — Give one component the rows and the view state.
  * - .pushTo — Push to the components bound by these ids.
@@ -18,15 +27,6 @@
  * - .supersedeColumns — Tell each grid below the View the fields the View holds.
  * - .supersede — Tell each bar below the View which of its fields the View holds now.
  * - .syncPending — Tell each control over a scope its pending fields and whether it is dirty.
- * - .add — Bind a component, with the id a scope's `narrows` names it by.
- * - .remove — Let a component go, and tell its sink.
- * - .get — One component's bind, live, or undefined.
- * - .elements — Every bound component, as a copy.
- * - .entries — Every bind, live, in the order they were made.
- * - .componentScopes — The scopes a bound component answers — every other one is the page's.
- * - .wantsAllRows — Is any bind asking for the unpaged set?
- * - .showsOf — What the first component bound into a scope says it shows.
- * - .showsRows — Is a grid or a list bound into this scope?
  * - .debug — Each bind, for a bug report.
  */
 import { VIEW } from './query.js';

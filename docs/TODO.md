@@ -6533,10 +6533,27 @@ version counter for the applied Query), after 287.
 
 ### `[ ]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
 
-**🚧 Step 1 done 2026-10-15.** The 15 shapes a DataSource takes and gives move to
-`data-source-types.ts`, byte for byte; `data-source.ts` re-exports them, so
-every import still works and the built `.d.ts` is the same. 2,808 → 2,582 lines
-(2,515 after 288). Steps 2–8 wait for their plan's check.
+**🚧 Steps 1–5a and 6 done 2026-10-15**, one commit each, each safe by reading.
+A read-only agent planned it; a second checked the plan against the code.
+
+| step | what moved | to |
+|---|---|---|
+| 1 | the 15 shapes a DataSource takes and gives | `data-source-types.ts` |
+| 2 | what each field IS: kind, label, values (`#fields`, `#domains`) | `field-catalogue.ts` — `FieldCatalogue` |
+| 3 | the Query edits, as functions that take the Query first | `query-edits.ts` |
+| 4a | the bound components and how each is bound | `source-binding.ts` — `SourceBinding` |
+| 4b | publishing and every draw loop, behind a live `BindHost` | `source-binding.ts` |
+| 5a | the pure counting helpers (limits, distinct values, serial chains) | `source-counts.ts` |
+| 6 | tidy: header, banners, maps, one blank line, one doubled JSDoc | — |
+
+`data-source.ts`: 2,808 → 2,081 lines. After every step the built
+`DataSource` class and `data.d.ts` were byte-identical, and the bench counts
+did not move. The four data-layer entries grew about 3.5 KB minified (five
+modules cost more than one); no display component grew.
+**Waits for Will's next test run:** 5b — counts and limits as a `SourceCounts`
+class behind a `CountHost`. The bench does not cover serial sets, chart parts or
+carry-over fields. **Not run yet:** every step — type-check, lint, the bench and
+the d.ts diff only.
 
 ### `[x]` ✅ 286 — Phase 6: the bench
 

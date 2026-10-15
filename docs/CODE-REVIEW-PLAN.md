@@ -122,7 +122,7 @@ writes `display`/`hidden`/`visibility` on internals 0 times, uses chained
 
 | File | Lines |
 |---|---:|
-| `data-source.ts` | 2,813 (46 private fields, 14 of them Maps) |
+| `data-source.ts` | 2,813 (46 private fields, 14 of them Maps); 2,081 after 287, in five files |
 | `sherpa-menu.ts` | 2,096 |
 | `sherpa-data-grid.ts` | 1,986 |
 | `sherpa-quick-filter-toolbar.ts` | 1,899 |
@@ -427,7 +427,7 @@ records it where one exists.
 | Hand-typed element casts | 46 | falls |
 | `/* theme-direct */` markers (the baseline exists) | 160 | falls |
 | Old `--_status-*` reads | 6 | 0 |
-| `data-source.ts` / `sherpa-provider.ts` lines | 2,813 / 1,245 | falls (`check:size`) |
+| `data-source.ts` / `sherpa-provider.ts` lines | 2,813 / 1,245 | falls (`check:size`); 2,081 / 1,244 at 287 |
 | Dev dependencies | 17 | 13 |
 | Downloads at run time | 1 | 0 |
 | Files in sherpa-ui about a constructed app | to count (Phase 2) | 0 |

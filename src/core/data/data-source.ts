@@ -1,7 +1,8 @@
 /**
  * data-source.ts — one place that owns how records are being VIEWED.
  *
- * TRAP T-one-comparator-one-source
+ * Its parts: data-source-types, query-edits, field-catalogue, source-binding,
+ * source-counts. TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  *
  * Map:
@@ -114,7 +115,6 @@ import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
-
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
 } from './store.js';
@@ -1126,13 +1126,6 @@ export class DataSource extends EventTarget {
     return Object.values(this.#draft.scopes).flatMap((s) => Object.keys(s.readings));
   }
 
-  /* ── The Query: one reading per field, in the scope that holds it ─── */
-
-  /** Each grid below the View is told the fields the View holds, as APPLIED. */
-  #syncColumns(): void {
-    this.#binding.supersedeColumns(viewHeldReadings(this.#applied));
-  }
-
   /* ── Scopes: WHICH SURFACE holds a filter ──────────────────────────── */
 
   /**
@@ -1180,6 +1173,11 @@ export class DataSource extends EventTarget {
     for (const [field, home] of now) if (was.get(field) !== home) this.#draw(field);
     if (name === VIEW) this.#syncSuperseded(true);
     this.#binding.drawScopesSoon();
+  }
+
+  /** Each grid below the View is told the fields the View holds, as APPLIED. */
+  #syncColumns(): void {
+    this.#binding.supersedeColumns(viewHeldReadings(this.#applied));
   }
 
   /** Tell each grid and each bar below the View what the View holds now; a bar whose set changed may report again. */
@@ -1498,6 +1496,11 @@ export class DataSource extends EventTarget {
   #schedule = coalesce((): void => void this.load());
 
   /* ── Loading ───────────────────────────────────────────────────────── */
+
+  /** The ViewState as one comparable string. Key order is stable by construction. */
+  #stateKey(): string {
+    return JSON.stringify(this.#loadOptions());
+  }
 
   /** Build the load options the store is asked with. */
   #loadOptions(): LoadOptions {
@@ -1929,11 +1932,6 @@ export class DataSource extends EventTarget {
   #counting = new Latest();
   /** The applied Query the chips' results were last counted for, as JSON. */
   #countedFor = '';
-
-  /** The ViewState as one comparable string. Key order is stable by construction. */
-  #stateKey(): string {
-    return JSON.stringify(this.#loadOptions());
-  }
 
   /* ── Binding ───────────────────────────────────────────────────────── */
 
