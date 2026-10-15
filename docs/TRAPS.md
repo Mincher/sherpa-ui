@@ -4085,7 +4085,14 @@ IT DELIBERATELY CANNOT COMPUTE: no maths, no formatting, no reading component
 state. A derived row keeps its `fill` callback, because a template that could
 compute would be an expression language.
 
+**So a FIXED icon in an item prototype is erased.** `data-icon` there names a
+field, so `data-icon="chevron-right"` reads `item['chevron-right']` — nothing —
+and the attribute goes. The breadcrumb separator was blank for that reason
+(found by reading, 2026-10-15). A fixed glyph is written in `after`, or the
+prototype is cloned with `clone()`, which draws its own icons.
+
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.ts`
 
 ### T-variant-attrs-or-one-way-door
 

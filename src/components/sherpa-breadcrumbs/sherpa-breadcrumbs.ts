@@ -47,11 +47,13 @@ export class SherpaBreadcrumbs extends SherpaElement {
     this.#render();
   }
 
-  // Label and index come from the prototype; only "is last" is left in JS,
-  // because it depends on the list's length, not on any field a crumb carries.
+  // Label and index come from the prototype. "Is last" depends on the list's
+  // length, and in an item prototype `data-icon` names a FIELD, so the fixed
+  // separator glyph is written here. TRAP T-item-template-cannot-compute
   #render(): void {
     this.renderItems('.crumbs', 'template.crumb-tpl', this.#crumbs, {
       after: (row, crumb, i) => {
+        this.writeIcon(row.querySelector('.separator')!, 'chevron-right');
         const link = row.querySelector<HTMLAnchorElement>('.link')!;
         if (i === this.#crumbs.length - 1) link.setAttribute('aria-current', 'page');
         else if (crumb.href) link.setAttribute('href', crumb.href);

@@ -835,6 +835,11 @@ default is `microchip-ai` (the set has no robot), inside the `avatar` slot as
 before, so a slotted avatar still replaces it. Both tests now ask for a drawn
 `<svg>`, not a font. **Not run yet** — Will's next test run.
 
+**⚠ Fixed again, 2026-10-15:** the crumb's separator was blank. In a
+`renderItems` prototype `data-icon` names a FIELD, so the literal
+`chevron-right` read nothing and was removed (found by 285c's checker, by
+reading). It is written in `after` now. `T-item-template-cannot-compute`.
+
 ### `[x]` ✅ 64 — A collapsed accordion section fills with the down (+2) surface
 
 Will, 2026-09-26: a COLLAPSED `sherpa-accordion` section takes the Style

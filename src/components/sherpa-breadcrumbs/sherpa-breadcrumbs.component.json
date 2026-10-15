@@ -51,7 +51,6 @@
                 "el": "i",
                 "class": "separator sherpa-icon-box",
                 "attrs": {
-                  "data-icon": "chevron-right",
                   "aria-hidden": "true"
                 }
               },
