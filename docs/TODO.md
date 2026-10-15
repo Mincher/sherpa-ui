@@ -291,6 +291,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
+| ⬜ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -772,6 +773,26 @@ Will, 2026-09-25:
 ---
 
 ## C — Contained bugs
+
+### `[ ]` ⬜ 300 — BUG: not every tooltip is in the top layer
+
+Will, 2026-10-15: *"Not all tooltips are on the CSS top layer and are getting
+clipped by other elements and containers. Could be related to anchoring of
+tooltips to other components?"*
+
+What is known (a first look, no probe yet). Every tip in a template is
+`popover="manual"`, but a popover is in the top layer only once code opens it.
+Two doors do: `sherpa-tooltip` opens its own bubble, and
+`core/ui/top-layer-tips.ts` lifts the rest — ONLY a `.sherpa-tip` / `.chart-tip`
+that is the next sibling of, or inside, a `.sherpa-anchor` / `.chart-mark`, found
+from the event's deepest target. A tip of any other shape is shown by CSS where
+it sits, and a box with `overflow` clips it. Suspects: a tip whose anchor is in
+ANOTHER component (a slotted trigger, a chip's caret, a grid heading), and the
+gauge, radial and sparkline tips, whose marks are laid out differently.
+
+To do: probe every component's tip inside an `overflow: hidden` box, in all
+three engines; read `:popover-open` and the PIXELS, not computed style; fix the
+lifter's rule (D5: one door), and test each shape.
 
 ### `[ ]` ⬜ 299 — BUG: two glyphs still come from Font Awesome
 
