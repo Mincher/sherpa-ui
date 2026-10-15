@@ -98,7 +98,8 @@ import {
 import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
-  compile, eachScope, emptyScope, heldAbove, heldInView, narrowsOne, presetClauses, VIEW, withoutDropped,
+  answerOf, compile, eachScope, emptyScope, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
+  sameReading, VIEW, withoutDropped,
   type CompileFacts, type Query, type QueryDefaults, type ScopeQuery, type ViewScope,
 } from './query.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
@@ -557,7 +558,7 @@ export class DataSource extends EventTarget {
     }
     const entry = this.#scope(scope);
     if (bind) entry.narrows = [bind.id];
-    if (reading && answers(reading)) {
+    if (reading && readingAnswered(reading)) {
       entry.readings[field] = answerOf(reading);
       if (!entry.holds.includes(field)) entry.holds = [...entry.holds, field];
     } else {
@@ -1182,7 +1183,7 @@ export class DataSource extends EventTarget {
        an or-chain over two owners — has no picked values and no typed text, so
        this deleted the reading and the filter never applied.
        TRAP T-many-conditions-are-one-reading */
-    this.#setReading(field, answers(next) ? next : undefined);
+    this.#setReading(field, readingAnswered(next) ? next : undefined);
     this.#recompose();
     // AFTER the requery, so a listener sees the state the rows were fetched for.
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
@@ -1728,9 +1729,7 @@ export class DataSource extends EventTarget {
   /** Has this field been changed and not yet applied? Never, on a local source. */
   pending(field: string): boolean {
     if (!this.#remote) return false;
-    const was = answerIn(this.#applied, field);
-    const now = answerIn(this.#draft, field);
-    return JSON.stringify(was) !== JSON.stringify(now);
+    return !sameReading(answerIn(this.#applied, field), answerIn(this.#draft, field));
   }
 
   /** Has anything in this scope — or in any scope — been changed and not applied?
@@ -2549,25 +2548,3 @@ function answersOf(scope: ScopeQuery | undefined): unknown {
   const readings = Object.fromEntries(Object.entries(scope.readings).map(([f, r]) => [f, answerOf(r)]));
   return { readings, presets: scope.presets ?? {} };
 }
-
-/** Does a reading answer anything? CONDITIONS count — a field answered only by
- *  rows has no picks and no text — but an EMPTY row does not: a cleared menu
- *  keeps one. TRAP T-many-conditions-are-one-reading */
-function answers(reading: FieldReading): boolean {
-  return (reading.picked ?? []).length > 0
-    || (reading.text ?? '').trim() !== ''
-    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0)
-    // The other shape's answer is worth keeping too. TRAP T-both-shapes-are-kept
-    || (!!reading.kept && answers(reading.kept));
-}
-
-/** The ANSWER keys of a reading only — a bar's reading also carries its label
- *  and every value it offers, which are facts, not what the reader chose. */
-function answerOf(reading: FieldReading): FieldReading {
-  const out: Record<string, unknown> = {};
-  for (const key of READING_KEYS) if (reading[key] !== undefined) out[key] = reading[key];
-  return out as FieldReading;
-}
-// A key left off this list is DROPPED, silently. TRAP T-both-answers-are-kept
-const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'mode', 'mirror', 'range', 'kept', 'suspended'] as const;
-

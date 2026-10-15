@@ -23,6 +23,9 @@
  * - heldInView — The fields the View holds, which are answered there alone.
  * - heldAbove — The fields held above a scope: the View's, or none for the View itself.
  * - presetClauses — A saved filter's readings as clauses.
+ * - answerOf — The ANSWER keys of a reading only, not its label or the values it offers.
+ * - readingAnswered — Does a reading answer anything? An empty condition row does not.
+ * - sameReading — Do two readings give the same answer? Only the answer keys count.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
@@ -157,6 +160,35 @@ export function presetClauses(
     if (clause) out.push(clause);
   }
   return out;
+}
+
+// Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
+const READING_KEYS = Object.keys({
+  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, kept: 0, suspended: 0,
+} satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
+
+/** The ANSWER keys of a reading only — a bar's reading also carries its label
+ *  and every value it offers, which are facts, not what the reader chose. */
+export function answerOf(reading: FieldReading): FieldReading {
+  const out: Record<string, unknown> = {};
+  for (const key of READING_KEYS) if (reading[key] !== undefined) out[key] = reading[key];
+  return out as FieldReading;
+}
+
+/** Does a reading answer anything? CONDITIONS count — a field answered only by
+ *  rows has no picks and no text — but an EMPTY row does not: a cleared menu
+ *  keeps one. TRAP T-many-conditions-are-one-reading */
+export function readingAnswered(reading: FieldReading): boolean {
+  return (reading.picked ?? []).length > 0
+    || (reading.text ?? '').trim() !== ''
+    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0)
+    // The other shape's answer is worth keeping too. TRAP T-both-shapes-are-kept
+    || (!!reading.kept && readingAnswered(reading.kept));
+}
+
+/** Do two readings give the same answer? Only the answer keys count. */
+export function sameReading(a: FieldReading | null | undefined, b: FieldReading | null | undefined): boolean {
+  return JSON.stringify(a ? answerOf(a) : null) === JSON.stringify(b ? answerOf(b) : null);
 }
 
 /**

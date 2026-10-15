@@ -1116,9 +1116,9 @@ original simple values". The shape in force is `picked` (or `text`) with
 `range`; the other is `kept: { picked, op, text }`, remembered and never
 applied. It is in the READING, not only in the menu, because a filter panel
 REBUILDS a field's menu when its answer changes: a value held only in the old
-menu's input is gone. `answers()` counts a `kept` answer, so a range with
-nothing moved still holds the value typed before, and `READING_KEYS` carries
-the key — a key left off that list is dropped silently.
+menu's input is gone. `readingAnswered()` counts a `kept` answer, so a range
+with nothing moved still holds the value typed before, and `READING_KEYS` names
+every key of `FieldReading`, so leaving one off is a type error.
 
 In the menu: `#bodyReading()` writes both; `set reading` draws both and takes
 the shape from `range`; a bare `values =` writes only the shape it names — two
@@ -1132,7 +1132,7 @@ back in whatever shape the chip's menu was in. And "none names no shape"
 holds for a DATE too — a cleared range calendar came back as a single day.
 
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
@@ -2083,8 +2083,9 @@ means what it meant.
 X and Y over as `Equals X` OR `Equals Y`, and a change to the picks redraws
 them — until the reader edits a row.
 
-The data source copies a reading through `READING_KEYS`. A key left off that
-list is dropped with no error, so `mode` and `mirror` are on it.
+`answerOf()` in query.ts copies a reading through `READING_KEYS`, which names
+every key of `FieldReading`: a key added to the type and not the list is a type
+error.
 
 **A host reads and writes the menu's answer as `menu.reading`, never its
 parts.** The bar read `data-op` and the typed box — row one's echo — even in
@@ -2109,7 +2110,7 @@ filtered and its face stayed blank (TODO 82). And on a rebuild the READER'S kept
 one, or a def's typed condition came back on every rebuild.
 
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-keeps-both-answers.spec.ts`
@@ -9667,6 +9668,7 @@ writes. A reading carries EITHER — never both.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
