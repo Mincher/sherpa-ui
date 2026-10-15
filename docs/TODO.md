@@ -280,7 +280,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
 | 🚧 | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
-| ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
+| ✅ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
 | ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
 | 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
@@ -311,6 +311,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | ⬜ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
+| ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
+| ⬜ | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6459,6 +6461,29 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 289 — Phase 6: each layer its own job
+
+**✅ Done 2026-10-15**, the part that keeps behaviour (Q1 A: part B is 320).
+One commit each, each safe by reading; the bench counts never moved.
+
+| step | what | where now |
+|---|---|---|
+| 1 | one View chip id (`VIEW_CHIP`, 7 sites) and one View library builder (`viewLibrary`) | `shared-constants.ts`, `persist-view.ts` |
+| 2 | the draw contract is the data layer's: `BoundControl`; `src/core/data` imports nothing from `ui/` | `data-source-types.ts` |
+| 3 | data meaning leaves the provider: `mergeSet`, the change event's `emptiness`, `summariseBanded` | `query-edits.ts`, `data-source.ts`, `aggregate.ts` |
+| 4 | an unscoped bar's whole answer: `answerUnscoped` | `data-source.ts` (from `bind-source.ts`) |
+| 5 | the panel-or-bars mode: `ProviderMode` | `sherpa-provider/provider-mode.ts` |
+| 6 | the open page's Views, saved sets, drafts and Reset: `ProviderPage` | `sherpa-provider/provider-page.ts` |
+
+The provider falls from 1,245 to 756 lines. Its spec changed only in two door
+args (`deleteView(id?)`, `deleteFilters(id?)`). Public types: `boundElements`,
+`attach`, `allRows` and `unbind` speak `BoundControl`; `DataChangeDetail` gains
+`emptiness`, `SummarySpec` gains `zones`; `answerUnscoped` is new.
+**Not run yet:** the provider e2e suites (provider, provider-saves-filters,
+provider-summary, reset-at-default, reset-to-default, saved-filter, view-drafts,
+view-definition, outlet), the Demos filter-panel-mode and reset suites, and the
+unit tests for `summariseBanded`, `mergeSet` and saved filters.
 
 ### `[x]` ✅ 292 — Phase 6: one door per job, and the missing read-backs
 
