@@ -30,7 +30,8 @@ test('renders header (from data-heading) / body / footer regions', async ({ page
       getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {
       root: el.shadowRoot!.querySelector('.root')!.tagName.toLowerCase(),
-      heading: el.shadowRoot!.querySelector('.heading-text')!.textContent,
+      // The composed Container Header carries the title.
+      heading: el.shadowRoot!.querySelector('.heading')!.getAttribute('data-heading'),
       headerVisible: vis('.header'),
       bodyVisible: vis('.body'),
       footerVisible: vis('.footer'),

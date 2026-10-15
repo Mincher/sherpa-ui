@@ -2,15 +2,13 @@
   sherpa-panel — a persistent inline panel (a semantic <section> card).
 
   Public API:
-    data-heading    — convenience header label (a slotted [slot=header] overrides it)
+    data-heading    — the title of a composed sherpa-container-header; a slotted [slot=header] replaces it
     data-collapsed  — boolean; hides the body/footer, leaving the header
     data-status     — status colour cascade (critical | warning | success | info | urgent)
 
   Slots:
-    header    — header region (reflects has-header). data-heading renders a
-                PLAIN label; for the Figma panel header (icon + title + description +
-                close), COMPOSE a <sherpa-container-header> into this slot — the panel
-                intentionally does not build that chrome itself.
+    header    — header region (reflects has-header): a header of its own, in
+                place of data-heading's
     (default) — the panel body
     footer    — footer region (reflects has-footer)
 
@@ -19,7 +17,8 @@
 <template id="default">
   <section class="root" part="root">
     <div class="header" part="header">
-      <span class="heading-text"></span>
+      <!-- Figma's Container Header, default variant, as the Dialog and Panel compose it. -->
+      <sherpa-container-header class="heading" part="heading"></sherpa-container-header>
       <slot name="header" data-accepts="header"></slot>
     </div>
     <div class="body" part="body">

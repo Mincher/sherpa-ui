@@ -39,7 +39,8 @@ test('show() opens the modal and reflects open; close() closes it', async ({ pag
     return {
       opened,
       closed,
-      heading: el.shadowRoot!.querySelector('.heading-text')!.textContent,
+      // The composed Container Header carries the title.
+      heading: el.shadowRoot!.querySelector('.heading')!.getAttribute('data-heading'),
       footerVisible: getComputedStyle(el.shadowRoot!.querySelector('.footer')!).display !== 'none',
     };
   });

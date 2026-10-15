@@ -24,8 +24,9 @@
           "part": "header",
           "children": [
             {
-              "el": "span",
-              "class": "heading-text"
+              "el": "sherpa-container-header",
+              "class": "heading",
+              "part": "heading"
             },
             {
               "slot": "header",
@@ -81,7 +82,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "— convenience header label (a slotted [slot=header] overrides it)"
+      "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
     },
     {
       "$type": "prop",
@@ -99,7 +100,7 @@
       "accepts": [
         "header"
       ],
-      "description": "header region (reflects has-header)."
+      "description": "header region (reflects has-header): a header of its own, in place of data-heading's"
     },
     {
       "$type": "slot",
@@ -134,12 +135,6 @@
       "selector": ":host([data-collapsed])"
     }
   ],
-  "tokens": {
-    "heading-text.color": "{sherpa.theme-content-body-base}",
-    "heading-text.font-size": "{sherpa.font-size-body-base}",
-    "heading-text.font-weight": "{sherpa.font-weight-medium}",
-    "heading-text.line-height": "{sherpa.theme-content-line-height-base}"
-  },
   "$extensions": {
     "sherpa": {
       "figmaName": "Panel",

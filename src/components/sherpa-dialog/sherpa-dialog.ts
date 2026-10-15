@@ -7,6 +7,8 @@
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+// Defined before the template stamps it.
+import '../sherpa-container-header/sherpa-container-header.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
 
 export class SherpaDialog extends SherpaElement {
@@ -18,7 +20,7 @@ export class SherpaDialog extends SherpaElement {
   // Opened and shut from markup: `<sherpa-button commandfor="id" command="--show">`.
   static override commands = { '--show': 'show', '--hide': 'hide' };
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
+    'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
     'data-type': { type: 'enum', kind: 'style', values: ['modal', 'overlay'] },
   } as const;
 

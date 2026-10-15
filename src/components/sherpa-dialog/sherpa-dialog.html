@@ -3,17 +3,15 @@
   focus trap, ESC and top-layer come from showModal().
 
   Public API:
-    data-heading  — convenience header label (a slotted [slot=header] overrides it)
+    data-heading  — the title of a composed sherpa-container-header; a slotted [slot=header] replaces it
     data-type     — modal (default) | overlay — overlay fills its container and
                     opens NON-modal, so the page beside it stays live
     open          — native boolean (read reflects dialog.open; set → show()/close())
     data-status   — status colour cascade (critical | warning | success | info | urgent)
 
   Slots:
-    header    — header region (reflects has-header). data-heading renders a
-                PLAIN label; for the Figma dialog header (icon + title + description +
-                close), COMPOSE a <sherpa-container-header> into this slot — the dialog
-                intentionally does not build that chrome itself.
+    header    — header region (reflects has-header): a header of its own, in
+                place of data-heading's
     (default) — the dialog body
     footer    — footer region (reflects has-footer)
 
@@ -24,7 +22,8 @@
 <template id="default">
   <dialog class="root sherpa-border-edges sherpa-border-corners" part="root" tabindex="-1">
     <div class="header" part="header">
-      <span class="heading-text"></span>
+      <!-- Figma's Container Header, default variant, as the Dialog and Panel compose it. -->
+      <sherpa-container-header class="heading" part="heading"></sherpa-container-header>
       <slot name="header" data-accepts="header"></slot>
     </div>
     <div class="body" part="body">

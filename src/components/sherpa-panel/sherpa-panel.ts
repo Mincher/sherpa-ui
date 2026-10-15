@@ -5,6 +5,8 @@
  * No native behaviour to adopt — surface, regions and collapsed state are CSS.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+// Defined before the template stamps it.
+import '../sherpa-container-header/sherpa-container-header.js';
 
 export class SherpaPanel extends SherpaElement {
   static override css = [
@@ -14,7 +16,7 @@ export class SherpaPanel extends SherpaElement {
   static override html = new URL('./sherpa-panel.html', import.meta.url);
   static override props = {
     'data-collapsed': { type: 'boolean', kind: 'style' },
-    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
+    'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
   } as const;
 }
 

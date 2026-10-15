@@ -53,25 +53,15 @@
   min-block-size: 0;
 }
 
-/* The header shows for a data-heading too. */
+/* The header shows for a data-heading too; a slotted header replaces it. */
 :host([data-heading]) .header { display: block; }
-
-:host([data-heading]:not(:state(has-header))) .header {
-  padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-}
-.heading-text {
-  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-}
+:host(:state(has-header)) .heading { display: none; }
 
 /* ── Collapsed: keep the header, hide the body + footer ─────────────── */
 :host([data-collapsed]) .body,
 :host([data-collapsed]) .footer {
   display: none;
 }
-:host([data-collapsed]) .header {
+:host([data-collapsed]) .heading {
   border-block-end: none;
 }

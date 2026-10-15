@@ -305,7 +305,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
 | ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
-| 🚧 | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
+| ✅ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6557,7 +6557,7 @@ inset too, where 8ef4f2a1 asked for a full-width one. Its comment ("Container
 Footer binds padding/none inline") is stale. The likely fix deletes those
 lines. Needs a look at the pixels first.
 
-### `[ ]` ❓ 314 — Will: a composed header for dialog and panel?
+### `[x]` ✅ 314 — Will: a composed header for dialog and panel?
 
 Dialog and panel draw `data-heading` as a plain `<span class="heading-text">`
 with four title rules and a hand-drawn row — the same as
@@ -6573,6 +6573,19 @@ instances.
 
 **Will, 2026-10-15:** *"There are already header variants designed in Figma. The
 bridge is up."* So: read the header variants in Figma first, and build to them.
+
+**✅ Done 2026-10-15.** Read in Figma: the Dialog (1003:33675) and the Panel
+(1003:33690) each compose `Container Header` **Variant=default** (912:33355) and
+`Container Footer` Type=action-bar; the Overlay Panel composes Variant=Panel, as
+it already does in code. So dialog and panel stamp a
+`<sherpa-container-header class="heading">`, and `data-heading` reaches it by a
+new value of an existing prop option, `as: 'attr'` — the base passes the
+attribute itself on (and removes it when absent), so neither needs a sync method.
+A slotted header now hides it; before, both drew. The span, its four title rules
+and the hand-drawn row went. The footer already matched Figma: a page slots a
+`sherpa-container-footer`. **Not run yet:** the dialog, panel, a11y and phone specs;
+Demos' five dialogs with a `data-heading`. **Weight:** about +5.8 KB on the entries
+that reach the dialog — record at Will's run.
 
 ### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
 

@@ -1048,7 +1048,7 @@
       "attributes": [
         {
           "name": "data-heading",
-          "description": "— convenience header label (a slotted [slot=header] overrides it)"
+          "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
         },
         {
           "name": "data-status",
@@ -2540,7 +2540,7 @@
         },
         {
           "name": "data-heading",
-          "description": "— convenience header label (a slotted [slot=header] overrides it)"
+          "description": "— the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
         },
         {
           "name": "data-status",

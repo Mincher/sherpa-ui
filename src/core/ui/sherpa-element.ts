@@ -62,10 +62,11 @@ export interface PropDef {
    *  TRAP T-a-flag-brings-the-base-methods */
   accessor?: string;
   /**
-   * How the value is RENDERED. Default is plain text.
+   * How the value is RENDERED. Default is plain text; `'attr'` passes the
+   * attribute itself on, to a composed part.
    * TRAP T-icon-value-takes-two-forms — `'icon'` or an icon name prints literally.
    */
-  as?: 'text' | 'icon';
+  as?: 'text' | 'icon' | 'attr';
   /** Allowed values for an `enum`. Spec parity only; not enforced at runtime. */
   values?: readonly string[];
   /** Used when the attribute is absent. Numbers go through coerceNum. */
@@ -1050,7 +1051,10 @@ export abstract class SherpaElement extends Base {
     // Never a box that holds a <slot>: the text would erase it. TRAP T-slot-guards-only-when-filled
     for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
       if (!el) continue;
-      if (def.as === 'icon') this.writeIcon(el, text);
+      if (def.as === 'attr') {
+        if (raw == null) el.removeAttribute(name);
+        else el.setAttribute(name, raw);
+      } else if (def.as === 'icon') this.writeIcon(el, text);
       else el.textContent = text === 'NaN' ? '' : text;
     }
   }
