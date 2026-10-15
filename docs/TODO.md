@@ -261,7 +261,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
 | ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
 | ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
-| ❓ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
+| ✅ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ⬜ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
@@ -6371,7 +6371,7 @@ reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
 
-### `[ ]` ❓ 270 — Phase 2: dead code, icon leftovers, repo strays
+### `[x]` ✅ 270 — Phase 2: dead code, icon leftovers, repo strays
 
 The plan's Phase 2 rows for dead code, icons and the repo. One commit per area.
 
@@ -6386,12 +6386,13 @@ that wait, the higher-scope words), 41 (conditions do filter), 43 (the ⋮
 menu), 44c (a heading shows a held answer), 49 and 50 (a preset's and a saved
 filter's menu), and 126.
 
-**❓ Kept, for Will:** the plan named three unused scripts —
+**✅ Kept, by Will's ruling (A, 2026-10-15):** the plan named three unused scripts —
 `check-tokens.mjs`, `figma-harvest-colours.mjs` and
 `figma-extract-component.js`. No npm script runs them, but they are MANUAL
 Figma tools, run through the figma-console MCP, and `figma-harvest-colours`
 is the check that compares Figma's bound colour with the component's
-(2026-09-11). Kept until Will says.
+(2026-09-11). Each header now says it is a manual tool and how to run it;
+`check-tokens.mjs` no longer calls itself a CI gate.
 
 **✅ Icons, 2026-10-14.** Gone: `installIcons()`, a public no-op;
 `T-fa-pro-renders-nothing`, about a webfont nothing loads; and six comments
@@ -6413,7 +6414,6 @@ lose `export`: `STEERING_EVENTS`, `EXPLODE_AT`, five filters-button names,
 `.sherpa-grid`; and the five test-only helpers 269 made internal — the plan
 says internal, not gone.
 
-The ❓ above, the three Figma scripts, is all that is open here.
 
 ### `[x]` ✅ 269 — Phase 2: old names, data-API leftovers, component aliases
 

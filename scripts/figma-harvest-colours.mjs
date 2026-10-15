@@ -7,6 +7,10 @@
  *   node scripts/figma-harvest-colours.mjs --names
  *   node scripts/figma-harvest-colours.mjs --diff=<harvest.json> [--wrong-only]
  *
+ * A MANUAL Figma tool, run by hand — no npm script or gate runs it. Paste the
+ * `--snippet` output into the figma-console MCP's `figma_execute`, save what it
+ * prints as the harvest, then `--diff` it.
+ *
  * A binding counts as satisfied when the CSS mentions the projected property
  * anywhere; the two sides share no element↔selector correspondence.
  *

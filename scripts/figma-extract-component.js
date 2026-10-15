@@ -1,5 +1,6 @@
 /**
  * figma-extract-component.js — Figma PLUGIN-API snippet (not a Node script).
+ * A MANUAL Figma tool, run by hand — no npm script or gate runs it.
  *
  * Paste the body into `figma_execute` (figma-console MCP, file UnBEepLWb6d7b9ykm33j2s)
  * after setting NODE_IDS. It walks each component / component set and prints ONE

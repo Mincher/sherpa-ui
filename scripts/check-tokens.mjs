@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 /**
  * Diff a live Figma variable read against figma.tokens.json. Figma wins.
- * With --patch, rewrites the dump; otherwise exits non-zero on drift (CI gate).
+ * With --patch, rewrites the dump; otherwise exits non-zero on drift.
  *
  *   node scripts/check-tokens.mjs <live-tokens.json> [--patch] [--collection=slug]
+ *
+ * A MANUAL Figma tool, run by hand — no npm script or gate runs it. The live
+ * read comes from the figma-console MCP, saved in the dump's own shape.
  *
  * BASE collections only — extension overrides read back EMPTY from `valuesByMode`.
  * Not drift: a hex where Figma holds `{primitives.…}`, hex case, a `{MISSING:…}`
  * cross-library target.
- */import { readFileSync, writeFileSync } from 'node:fs';
+ */
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
