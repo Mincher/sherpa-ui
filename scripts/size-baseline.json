@@ -372,7 +372,7 @@
   "src/components/sherpa-empty-state/sherpa-empty-state.css": 150,
   "src/components/sherpa-file-upload/sherpa-file-upload.css": 207,
   "src/components/sherpa-filter-panel/sherpa-filter-panel.css": 259,
-  "src/components/sherpa-gauge-chart/sherpa-gauge-chart.css": 209,
+  "src/components/sherpa-gauge-chart/sherpa-gauge-chart.css": 212,
   "src/components/sherpa-group/sherpa-group.css": 171,
   "src/components/sherpa-input-text/sherpa-input-text.css": 330,
   "src/components/sherpa-key-value-list/sherpa-key-value-list.css": 65,

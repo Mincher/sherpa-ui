@@ -18,6 +18,9 @@
      Unitless: a `%` would resolve against whichever box it landed in. */
   --_ring: 0.3;
   --_fill: var(--_status-surface-strong, #3b4ccd);
+  /* A band's outline is its own: a card's --_border must not reach in, or a
+     gauge with no zones drew its band in the card's grey. TODO 309 */
+  --_border: initial;
   --_angle: -90deg;
 }
 

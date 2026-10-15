@@ -293,3 +293,20 @@ test('an inverted gauge reads its value from the top, and turns its field\'s ban
   expect(r.bands).toEqual(['Healthy 0 to 20', 'Watch 20 to 40', 'At risk 40 to 100']);
   expect(r.key).toEqual(['Healthy', 'Watch', 'At risk']);
 });
+
+test('a gauge with no zones outlines its band in its own fill, not a card\'s grey', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const card = document.createElement('sherpa-container');
+    const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    card.append(el);
+    document.getElementById('root')!.appendChild(card);
+    await customElements.whenDefined('sherpa-gauge-chart');
+    await el.rendered;
+    el.populate!(40);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const band = el.shadowRoot!.querySelector<SVGPathElement>('.zone:not([data-rest])')!;
+    const cs = getComputedStyle(band);
+    return { fill: cs.fill, stroke: cs.stroke };
+  });
+  expect(r.stroke).toBe(r.fill);
+});

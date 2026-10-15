@@ -300,7 +300,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
 | ❓ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
-| ⬜ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
+| ✅ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
 | ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
@@ -6482,13 +6482,18 @@ donuts would). **A:** join — one layout rule for every chart. **B:** keep its
 own grid. My pick: **A**, with Demos' two donuts set to `vertical` in the same
 step, so nothing you see moves.
 
-### `[ ]` ⬜ 309 — BUG: a zoneless gauge's band takes a container's grey outline
+### `[x]` ✅ 309 — BUG: a zoneless gauge's band takes a container's grey outline
 
 Found by 283's checker, by reading. `.chart-segment` reads `var(--_border, …)`
 first. A gauge with no zones gives its value band no inline `--_border`, so
 inside a `sherpa-container` or `sherpa-panel` — both set `--_border` on their
 `:host` — the band's outline is their grey (`#b3b3c3`), not `--_fill`. A fix:
 the gauge writes the band's own `--_border`. Needs a look first.
+
+**✅ Fixed 2026-10-15**, by reading: only the segment outline reads `--_border`,
+and every zone sets its own inline. The gauge's `:host` now sets
+`--_border: initial`, so nothing comes in from a card and a zoneless band's
+outline falls back to its fill. **Not run yet.**
 
 ### `[x]` ✅ 307 — BUG: radial and gauge tips were never lifted
 
