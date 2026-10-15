@@ -277,7 +277,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ✅ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
 | ✅ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
-| ⬜ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
+| ✅ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
 | ⬜ | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | ⬜ | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
@@ -6458,6 +6458,32 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 286 — Phase 6: the bench
+
+**✅ Done 2026-10-15** (Will: run it now, and in the hook on data-layer commits).
+`scripts/check-bench.mjs` (`npm run check:bench`) bundles the data layer from
+`src/`, opens the Records page over 10,000 seeded rows with its five controls
+faked from their specs, and counts what each reader's act costs — loads, counts,
+distinct reads, rows, compiles, clones — against `scripts/bench-baseline.json`,
+which may only fall. Time is printed, never gated. It runs in half a second; the
+hook runs it with `--staged` on data-layer commits, `npm test` always.
+`T-the-bench-counts-and-never-times`.
+
+**What it measured** (the first baseline; the plan's guesses by reading held):
+
+| act | loads (counts) | rows | compiles | clones |
+|---|---:|---:|---:|---:|
+| pick a value | 10 (3) | 45,223 | 14 | 7 |
+| the same pick again | 1 (0) | 10,000 | 2 | 0 |
+| a bar's whole report | 22 (10) | 38,337 | 14 | 13 |
+| sort | 16 (10) | 25,508 | 4 | 1 |
+| a heading's filter | 25 (12) | 39,875 | 11 | 7 |
+| search | 19 (12) | 25,602 | 4 | 1 |
+| clear | 23 (11) | 64,161 | 15 | 7 |
+
+A pick that changes nothing still reads all 10,000 rows; a sort or a search
+costs 10–12 chip counts, each a full load. These are 291's targets.
 
 ### `[x]` ✅ 284 — Phase 5: a roving-focus helper
 

@@ -93,6 +93,7 @@
     "check:props": "node scripts/check-props.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:weight": "node scripts/check-weight.mjs",
+    "check:bench": "node scripts/check-bench.mjs",
     "map": "node scripts/code-map.mjs",
     "map:write": "node scripts/code-map.mjs --write",
     "check:map": "node scripts/code-map.mjs --check",

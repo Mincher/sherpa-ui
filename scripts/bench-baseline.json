@@ -1,0 +1,114 @@
+{
+  "records/open": {
+    "loads": 6,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 40050,
+    "compiles": 15,
+    "clones": 12
+  },
+  "records/pick": {
+    "loads": 10,
+    "counts": 3,
+    "distinct": 0,
+    "rows": 45223,
+    "compiles": 14,
+    "clones": 7
+  },
+  "records/repick": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10000,
+    "compiles": 2,
+    "clones": 0
+  },
+  "records/report": {
+    "loads": 22,
+    "counts": 10,
+    "distinct": 0,
+    "rows": 38337,
+    "compiles": 14,
+    "clones": 13
+  },
+  "records/sort": {
+    "loads": 16,
+    "counts": 10,
+    "distinct": 0,
+    "rows": 25508,
+    "compiles": 4,
+    "clones": 1
+  },
+  "records/page": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 0
+  },
+  "records/heading": {
+    "loads": 25,
+    "counts": 12,
+    "distinct": 0,
+    "rows": 39875,
+    "compiles": 11,
+    "clones": 7
+  },
+  "records/search": {
+    "loads": 19,
+    "counts": 12,
+    "distinct": 0,
+    "rows": 25602,
+    "compiles": 4,
+    "clones": 1
+  },
+  "records/raise": {
+    "loads": 23,
+    "counts": 12,
+    "distinct": 0,
+    "rows": 42389,
+    "compiles": 14,
+    "clones": 16
+  },
+  "records/clear": {
+    "loads": 23,
+    "counts": 11,
+    "distinct": 0,
+    "rows": 64161,
+    "compiles": 15,
+    "clones": 7
+  },
+  "records/reset": {
+    "loads": 4,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 23545,
+    "compiles": 11,
+    "clones": 12
+  },
+  "remote/open": {
+    "loads": 5,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 30050,
+    "compiles": 10,
+    "clones": 12
+  },
+  "remote/pick": {
+    "loads": 9,
+    "counts": 2,
+    "distinct": 0,
+    "rows": 42690,
+    "compiles": 13,
+    "clones": 8
+  },
+  "remote/report": {
+    "loads": 16,
+    "counts": 6,
+    "distinct": 0,
+    "rows": 49371,
+    "compiles": 16,
+    "clones": 12
+  }
+}

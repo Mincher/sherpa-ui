@@ -175,6 +175,16 @@ if [ $SIZE_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# WHAT A READER'S ACT COSTS may only fall (scripts/check-bench.mjs). --staged:
+# only when the commit touches the data layer or the bench. Will, TODO 286.
+echo "⏱️  Checking what a reader's act costs..."
+BENCH_OUT=$(npm run check:bench --silent -- --staged 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$BENCH_OUT"
+  echo "❌ An act costs more. Remove what it added, or record it: npm run check:bench -- --update-baseline. Commit blocked."
+  exit 1
+fi
+
 # The editor files are written from the specs, by scripts/write-manifest.mjs.
 echo "🧩 Checking custom-elements.json against the specs..."
 MANIFEST_OUT=$(npm run check:manifest --silent 2>&1)

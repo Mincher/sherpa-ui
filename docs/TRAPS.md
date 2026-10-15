@@ -578,6 +578,30 @@ Writes are always checked in full.
 
 ---
 
+### T-the-bench-counts-and-never-times
+
+**`check:bench` gates COUNTS per reader's act — loads, counts, distinct reads,
+the rows they hand back, compiles and clones — and only prints time.** A count
+is the same on every machine and every run; a time gate fails under load and
+passes on a fast laptop (TODO 286).
+
+It bundles the data layer from `src/` with esbuild, never `dist/`: the hook
+builds nothing, and a stale `dist/` benches the last build. The bundle renames
+`compile` in `query.ts` and counts each call, and the bench fails if it cannot
+find it; `structuredClone` is wrapped for the run. A `totalCount` is a load as
+well, as `BaseStore` makes it, so a counts cache will show as fewer loads.
+
+The page is `test/unit/fixtures/records.page.json` over 10,000 seeded rows,
+bound as the provider binds it. Each fake control has the methods its spec lists
+and no more, because the source checks for them. An act ends when nothing has
+moved for three timer turns; a `report()` fails the run. The records page holds
+a chart over every row, so a page change loads nothing — that is the page, not
+a fault. A change to the fixture, the rows or an act moves the baseline: record
+it on purpose. Will, 2026-10-15: it runs in the hook on data-layer commits.
+
+- Site: `scripts/check-bench.mjs`
+- Site: `test/unit/bench.test.mjs`
+
 ## Design system
 
 ### T-gauge-status-is-named

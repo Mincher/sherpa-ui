@@ -98,6 +98,12 @@ npx sherpa-ui check-usage <folder>
 npm run check:weight
 npm run check:weight -- --update-baseline  # record growth on purpose
 
+# What a reader's act costs the data layer: loads, counts, rows, compiles and
+# clones per act, may only fall. Bundles src/, so it needs no build; the hook
+# runs it on data-layer commits, npm test always.
+npm run check:bench
+npm run check:bench -- --update-baseline  # record a change on purpose
+
 # The code map — every file's purpose and exports, from its header
 npm run map [path]        # print it; e.g. `npm run map src/core/data`
 npm run map:write <file>  # add missing names, drop stale ones — then edit the lines
