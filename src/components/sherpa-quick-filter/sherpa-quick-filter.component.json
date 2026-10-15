@@ -150,7 +150,9 @@
               "el": "button",
               "class": "jump-item",
               "attrs": {
-                "type": "button"
+                "type": "button",
+                "data-attr-value": "value",
+                "data-text": "label??value"
               }
             }
           ]

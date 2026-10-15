@@ -139,14 +139,10 @@ export class SherpaQuickFilter extends SherpaElement {
   protected override renderData(data: unknown): Promise<void> | void {
     if (this.dataset['type'] !== 'jump' || !Array.isArray(data)) return super.renderData(data);
     const menu = this.menu;
-    const row = this.$<HTMLTemplateElement>('template.jump-item-tpl')?.content.firstElementChild;
-    if (!menu || !row) return;
-    menu.replaceChildren(...(data as JumpItem[]).map(({ value, label }) => {
-      const button = row.cloneNode(true) as HTMLButtonElement;
-      button.value = value;
-      button.textContent = label ?? value;
-      return button;
-    }));
+    const tpl = this.$<HTMLTemplateElement>('template.jump-item-tpl');
+    if (!menu || !tpl) return;
+    // The menu is slotted, outside this shadow root. TRAP T-clone-item-is-for-two-destinations
+    menu.replaceChildren(...(data as JumpItem[]).flatMap((item) => this.cloneItem(tpl, item) ?? []));
   }
 
   /** A jump row: scroll to its target, then report it. */

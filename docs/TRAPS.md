@@ -7891,12 +7891,22 @@ why `renderItems` alone was not enough.
 target pane depending on its own `selected` field, so there is no one container
 to stamp into.
 
+Three reasons use it today, each about WHERE an item goes, never what it says:
+
+- **two destinations** — `sherpa-transfer-list`: an item goes to the source or the
+  target pane by its own `selected` field;
+- **something between items** — `sherpa-progress-step-tracker`: a connector is
+  stamped between two steps, so the steps share their container with another
+  prototype;
+- **a container outside the shadow root** — a jump chip (`sherpa-quick-filter`):
+  its rows go into its slotted menu, which `renderItems`' selector cannot reach.
+
 The row's FIELDS are still declared on the prototype (`T-item-template-cannot-compute`);
-only the CHOICE OF PARENT stays in code. That is the boundary — a second reason to
-reach for this instead of `renderItems` would mean the declarative vocabulary is
-missing something.
+only the CHOICE OF PARENT stays in code. A fourth reason that is not about the
+parent would mean the declarative vocabulary is missing something.
 
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-persist-view-returns-a-teardown
 

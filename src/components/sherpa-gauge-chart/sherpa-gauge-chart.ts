@@ -190,19 +190,9 @@ export class SherpaGaugeChart extends SherpaElement {
    * TRAP T-hotspots-follow-what-was-drawn.
    */
   #renderHotspots(zones: Zone[]): void {
-    const host = this.$('.hotspots');
-    const tpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
-    if (!host || !tpl) return;
-
-    host.replaceChildren();
-    zones.forEach((zone, i) => {
-      // The dot and its tip are SIBLINGS; the index pairs each with its arc.
-      const frag = tpl.content.cloneNode(true) as DocumentFragment;
-      const dot = frag.querySelector<HTMLElement>('.hotspot')!;
-      const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
-      tip.dataset['index'] = String(i);
-      dot.dataset['index'] = String(i);
-
+    // The dot and its tip are SIBLINGS; the index pairs each with its arc.
+    this.renderItems('.hotspots', 'template.hotspot-tpl', zones, { after: (dot, zone, i) => {
+      const tip = dot.nextElementSibling as HTMLElement;
       // The needle's own mapping, so a band's midpoint lands on its own arc.
       const mid = (zone.from + zone.to) / 2;
       const angle = -90 + mid * 180;
@@ -222,8 +212,7 @@ export class SherpaGaugeChart extends SherpaElement {
         arc.setAttribute('role', 'img');
         arc.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
       }
-      host.append(dot, tip);
-    });
+    } });
   }
 
   /** A band's NAME: its zone's own label, else its status title-cased
