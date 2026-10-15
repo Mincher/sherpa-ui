@@ -10,6 +10,7 @@
  * - TabDef — one tab: its id and label
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 
 export interface TabDef {
   id: string;
@@ -25,11 +26,23 @@ export class SherpaTabs extends SherpaElement {
 
   /** The tabs, as populated. */
   #tabs: TabDef[] = [];
+  /** One tab stop for the strip; an arrow picks, as a tablist does. TRAP T-one-tab-stop-per-set */
+  #roving: Roving | null = null;
 
   override onRender(): void {
     // Delegated — tabs come and go, the strip stays.
-    this.$('.tabs')?.addEventListener('click', this.#onClick);
-    this.$('.tabs')?.addEventListener('keydown', this.#onKeyDown);
+    const strip = this.$('.tabs');
+    strip?.addEventListener('click', this.#onClick);
+    if (strip) {
+      this.#roving = rovingFocus(strip, {
+        items: '.tab',
+        key: (tab) => tab.dataset['id'],
+        onMove: (tab) => {
+          const id = tab.dataset['id'];
+          if (id) this.#pick(id);
+        },
+      });
+    }
     if (this.#tabs.length) this.#render();
     else this.#applyCurrent();
   }
@@ -86,10 +99,8 @@ export class SherpaTabs extends SherpaElement {
   /** The prototype declares id and label; only the a11y wiring is derived. */
   #render(): void {
     this.renderItems('.tabs', 'template.tab-tpl', this.#tabs, {
-      after: (btn, tab, i) => {
+      after: (btn, tab) => {
         btn.id = `tab-${tab.id}`;
-        // Roving tabindex, until #applyCurrent moves it to the active tab.
-        btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
       },
     });
     this.#applyCurrent();
@@ -103,12 +114,9 @@ export class SherpaTabs extends SherpaElement {
       const on = btn.dataset['id'] === active;
       btn.toggleAttribute('data-current', on);
       btn.setAttribute('aria-selected', String(on));
-      btn.setAttribute('tabindex', on ? '0' : '-1');
     }
-    // Nothing matched (e.g. before render) — keep one tab reachable.
-    if (active === '' && this.#tabs[0]) {
-      this.$(`.tab[data-id="${this.#tabs[0].id}"]`)?.setAttribute('tabindex', '0');
-    }
+    // The open tab is the stop; with none, the first stays reachable.
+    this.#roving?.refresh(active);
 
     // Panels are the consumer's light DOM; CSS reveals the marked one.
     for (const panel of this.#panels()) {
@@ -135,40 +143,6 @@ export class SherpaTabs extends SherpaElement {
     const btn = (event.target as HTMLElement).closest<HTMLElement>('.tab');
     const id = btn?.dataset['id'];
     if (id) this.#pick(id);
-  };
-
-  /** Arrow keys, Home and End move between tabs. */
-  #onKeyDown = (event: KeyboardEvent): void => {
-    const keys = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'];
-    if (!keys.includes(event.key)) return;
-    const tabs = this.$$('.tab');
-    if (!tabs.length) return;
-
-    const current = tabs.findIndex((t) => t.dataset['id'] === this.currentId);
-    let next = current < 0 ? 0 : current;
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        next = (current + 1 + tabs.length) % tabs.length;
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        next = (current - 1 + tabs.length) % tabs.length;
-        break;
-      case 'Home':
-        next = 0;
-        break;
-      case 'End':
-        next = tabs.length - 1;
-        break;
-    }
-    event.preventDefault();
-    const target = tabs[next];
-    const id = target?.dataset['id'];
-    if (id) {
-      this.#pick(id);
-      target!.focus();
-    }
   };
 }
 

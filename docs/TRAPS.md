@@ -429,6 +429,7 @@ own roving tabindex.
 - Slotted light-DOM items are not supported.
 
 - Site: `src/core/ui/roving-focus.ts`
+- Site: `src/components/sherpa-tabs/sherpa-tabs.ts`
 
 ## Events and listeners
 
