@@ -21,6 +21,7 @@ export type BarDatum = ChartDatum;
 
 export class SherpaBarchart extends SherpaElement {
   static override css = [
+    new URL('../../core/sherpa-chart-frame.css', import.meta.url),
     new URL('../../core/sherpa-chart-axes.css', import.meta.url),
     new URL('./sherpa-barchart.css', import.meta.url),
   ];

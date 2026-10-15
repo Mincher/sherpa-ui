@@ -21,6 +21,7 @@ interface LineData {
 
 export class SherpaLineChart extends SherpaElement {
   static override css = [
+    new URL('../../core/sherpa-chart-frame.css', import.meta.url),
     new URL('../../core/sherpa-chart-axes.css', import.meta.url),
     new URL('./sherpa-line-chart.css', import.meta.url),
   ];

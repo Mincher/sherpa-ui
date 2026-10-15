@@ -44,6 +44,7 @@ const SPAN_DEG = 180;
 
 export class SherpaGaugeChart extends SherpaElement {
   static override css = [
+    new URL('../../core/sherpa-chart-frame.css', import.meta.url),
     new URL('../../core/sherpa-chart-segments.css', import.meta.url),
     new URL('./sherpa-gauge-chart.css', import.meta.url),
   ];

@@ -13552,7 +13552,7 @@ Three things that are not obvious:
   takes a third row.
 - **The rule must be LAST.** The plot's `grid-column: 1` lived in each
   chart's own sheet, which is adopted after its family's — so it beat the
-  family's narrow rule. It is in the family sheets now, above the query.
+  family's narrow rule. It is in the frame sheet now, above the query.
 - **The legend is TOLD, it does not measure.** Beside a chart it hugs its
   content, and an inline-size container has no content width: as its own
   container it would collapse. The chart's query sets
@@ -13562,8 +13562,7 @@ Three things that are not obvious:
 `::slotted()` inside an `@container` on the host works in Chromium, WebKit
 and Firefox — measured, by the tests below.
 
-- Site: `src/core/sherpa-chart-axes.css`
-- Site: `src/core/sherpa-chart-segments.css`
+- Site: `src/core/sherpa-chart-frame.css`
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `test/e2e/reforged-chart-legend-slot.spec.ts`

@@ -1,0 +1,72 @@
+/*
+ * sherpa-chart-frame.css — a chart's frame: its heading, its body and where the
+ * legend goes. Adopted first by the bar, line and gauge charts, then their
+ * family's sheet (axes or segments), then their own.
+ */
+
+:host {
+  /* `flex`, not `inline-flex`: an inline box cannot shrink, so a y-axis column
+     pushed the plot past the panel edge. */
+  display: flex;
+  flex-direction: column;
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  container: sherpa-chart / inline-size;
+}
+
+/* Figure semantics without a layout box — children stay items of the host. */
+.chart-figure {
+  display: contents;
+  margin: 0;
+}
+
+::slotted([slot="legend"]) {
+  flex: 0 0 auto;
+  min-inline-size: 0;
+}
+
+/* Legend BESIDE: the split reads the chart's own `data-legend`, not the legend's
+   `data-orientation` — `:host(:has(…))` does not parse and is dropped silently.
+   `minmax(0, Nfr)`: a bare fr floors at min-content, so a long label would break
+   the ratio instead of truncating. */
+:host([data-legend="vertical"]) {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+:host([data-legend="vertical"]) .chart-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+:host([data-legend="vertical"]) .chart-body {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* NARROW: a legend BESIDE the chart goes below it, and a legend strip becomes
+   a list. The host is the container, so only what is IN it can turn.
+   TRAP T-a-narrow-chart-stacks-its-legend */
+@container sherpa-chart (max-width: 22rem) {
+  :host([data-legend="vertical"]) .chart-body { grid-column: 1 / -1; }
+  :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: center;
+  }
+  ::slotted([slot="legend"]) { --sherpa-chart-legend-columns: 1; }
+}
+
+.title {
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
+
+  &:empty { display: none; }
+}

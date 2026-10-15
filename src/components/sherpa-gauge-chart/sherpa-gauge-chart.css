@@ -10,13 +10,9 @@
    TRAP T-at-property-needs-the-document. */
 
 :host {
-  /* `flex`, not `inline-flex`: an inline box cannot be given a height by its parent. */
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   --_max-size: 320px;
   /* Band thickness as a FRACTION OF THE RADIUS (mirrors RING_WIDTH in the TS).
      Unitless: a `%` would resolve against whichever box it landed in. */
@@ -41,24 +37,11 @@
   flex: 1 1 auto;
 }
 
-/* ── The legend ────────────────────────────────────────────────────────── */
-::slotted([slot="legend"]) {
-  flex: 0 0 auto;
-  min-inline-size: 0;
-  /* Opts out of the host's centring so the legend spans the chart's width. */
-  align-self: stretch;
-}
+/* The legend opts out of the host's centring, to span the chart's width. */
+::slotted([slot="legend"]) { align-self: stretch; }
 
-/* Legend BESIDE. The split reads the chart's own `data-legend`, not the legend's
-   `data-orientation`: `:host(:has(…))` does not PARSE and is dropped silently,
-   and chained `:host:has(…)` matches every host. */
-:host([data-legend="vertical"]) {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: center;
-  justify-items: center;
-}
+/* Legend BESIDE: the frame sheet splits the host; each cell centres. */
+:host([data-legend="vertical"]) { justify-items: center; }
 
 :host([data-legend="vertical"]) .chart-body {
   /* A CELL, not a flex item: filling it sizes the ring against the card. */
