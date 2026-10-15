@@ -135,11 +135,9 @@ if [ $CSS_RESULT -ne 0 ]; then
   exit 1
 fi
 
-# A doc that names a script or command must name one that EXISTS. Found four
-# dangling pointers the moment it was written, two of which read as live
-# instructions — including a note saying two scripts "were KEPT" that had since
-# been deleted.
-echo "📚 Checking docs name real scripts and commands..."
+# A doc names only scripts, commands, docs and links that EXIST; in a doc a
+# reader is given, each example's markup and imports are real too.
+echo "📚 Checking docs name real scripts, commands, examples and links..."
 DOCS_OUT=$(npm run check:docs --silent 2>&1)
 DOCS_RESULT=$?
 
