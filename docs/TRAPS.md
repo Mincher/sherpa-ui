@@ -10341,7 +10341,7 @@ selector is not a filter, and Customer and Region are global.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-mode.ts`
 
 ### T-a-panel-flush-between-surfaces-draws-two-edges
 
@@ -11597,9 +11597,9 @@ the panel under it.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `src/components/sherpa-provider/provider-mode.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 
@@ -15404,8 +15404,7 @@ the state change, never from one path's handler. The second path is always the
 one nobody tests.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
-
+- Site: `src/components/sherpa-provider/provider-mode.ts`
 
 ### T-apply-and-discard-wait-for-a-change
 
@@ -15526,11 +15525,11 @@ which forwards into its header. Both come from the provider's template and
 answer to the provider alone; `filter-configure` is gone. A host's buttons in
 the bar's slot fold away at narrow widths, as the old switch did.
 
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-provider/provider-mode.ts`
 
 ### T-the-provider-owns-the-panel-mode
 
@@ -15555,6 +15554,7 @@ its View filters alone.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `src/components/sherpa-provider/provider-mode.ts`
 
 ### T-a-page-goes-out-as-json
 

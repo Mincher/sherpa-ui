@@ -39,6 +39,7 @@ import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
+import { ProviderMode } from './provider-mode.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and where its Query is kept. */
@@ -152,7 +153,7 @@ export class SherpaProvider extends SherpaElement {
     // From the START: a child can ask before this has rendered.
     this.addEventListener('context-request', this.#onRequest);
     // The panel's own close, and the shell's room for it.
-    this.addEventListener('filter-panel-close', this.#onPanelClose);
+    this.addEventListener('filter-panel-close', this.#modes.closed);
     // A bar's or the panel's ⋮ switch: this provider owns the setting. TODO 178.
     this.addEventListener('limit-options-change', (event) => {
       this.limitOptions = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
@@ -161,7 +162,7 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('hide-unmatched-change', (event) => {
       this.hideUnmatched = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
     });
-    this.addEventListener('panel-room-change', this.#onRoom);
+    this.addEventListener('panel-room-change', this.#modes.room);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
     this.addEventListener('data-refresh', (event) => {
@@ -183,15 +184,22 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-the-provider-owns-the-panel-mode
    */
   get filterMode(): 'toolbars' | 'panel' {
-    return this.#mode;
+    return this.#modes.mode;
   }
   set filterMode(mode: 'toolbars' | 'panel') {
-    this.#wanted = mode;
-    this.#setMode(mode);
+    this.#modes.want(mode);
   }
 
-  /** What the panel and bars show now. */
-  #mode: 'toolbars' | 'panel' = 'toolbars';
+  /** The panel or the bars, and the buttons that switch them. */
+  readonly #modes = new ProviderMode({
+    bars: () => this.#bars(),
+    panels: () => this.#panels(),
+    button: () => this.clone('template.mode-toggle-tpl') as HTMLElement | null,
+    rendered: () => this.rendered,
+    changed: (mode) => {
+      this.emit('filter-mode-change', { mode });
+    },
+  });
 
   /** Each list filter offers only what the others leave — on every source it
    *  gives. The app sets it, from its session. TRAP T-a-ruled-out-value-is-greyed */
@@ -224,73 +232,6 @@ export class SherpaProvider extends SherpaElement {
   }
   /** The app's choice, for every source. */
   #limit = false;
-  /** What was ASKED for — a narrow window can refuse the panel for a while. */
-  #wanted: 'toolbars' | 'panel' = 'toolbars';
-  /** The shell has room for a panel area. TRAP T-the-panel-is-desktop-only */
-  #room = true;
-
-  /** Open or shut every panel, and step every bar back or forward to match. */
-  #setMode(mode: 'toolbars' | 'panel'): void {
-    const panels = this.#panels();
-    for (const panel of panels) {
-      if (mode !== 'panel') panel.hide?.();
-      else if (this.#room) panel.show?.();
-    }
-    // With no room the panel stays shut, so follow what it actually did.
-    this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('open')) ? 'panel' : 'toolbars';
-    for (const bar of this.#bars()) this.#stepBack(bar);
-    this.#giveToggles();
-  }
-
-  /**
-   * THE MODE'S OWN BUTTONS — the page's, so no bar or panel carries a switch
-   * for a mode it knows nothing of (Will, TODO 37). A bar has "View as filter
-   * panel" in its `actions` slot while a panel is on the page — taken out
-   * while the panel answers; a panel has "Filter in the toolbars instead".
-   * TRAP T-the-mode-switch-is-the-pages-own
-   */
-  #giveToggles(): void {
-    const panels = this.#panels();
-    for (const bar of this.#bars()) {
-      let toggle = this.#toggles.get(bar);
-      if (!panels.length) {
-        toggle?.remove();
-        this.#toggles.delete(bar);
-        continue;
-      }
-      toggle ??= this.#toggle(bar, 'sidebar', 'View as filter panel');
-      if (!toggle) continue;
-      if (this.#mode === 'panel') toggle.remove();
-      else if (!toggle.isConnected) bar.append(toggle);
-    }
-    for (const panel of panels) {
-      if (!this.#toggles.has(panel)) this.#toggle(panel, 'fullscreen-exit', 'Filter in the toolbars instead');
-    }
-  }
-
-  /** The mode buttons, by the bar or panel each sits in. */
-  #toggles = new Map<Element, HTMLElement>();
-
-  /** One mode button, from the template, into its host's `actions` slot — or,
-   *  before this provider has drawn its template, once it has. */
-  #toggle(host: Element, icon: string, label: string): HTMLElement | undefined {
-    const button = this.clone('template.mode-toggle-tpl') as HTMLElement | null;
-    if (!button) {
-      void this.rendered.then(() => this.#giveToggles());
-      return undefined;
-    }
-    button.dataset['iconStart'] = icon;
-    button.setAttribute('aria-label', label);
-    button.addEventListener('button-click', this.#onConfigure);
-    host.append(button);
-    this.#toggles.set(host, button);
-    return button;
-  }
-
-  /** A bar steps back while a panel answers for it. TRAP T-panel-mode-hides-what-the-panel-answers */
-  #stepBack(bar: Element): void {
-    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel');
-  }
 
   /** Every panel that asked — a control drawn over several scopes. */
   #panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }> {
@@ -301,34 +242,6 @@ export class SherpaProvider extends SherpaElement {
   #bars(): Element[] {
     return [...this.#asked.keys()].filter((el) => 'drawScope' in el && !('drawScopes' in el));
   }
-
-  /** A mode button: the reader switches the mode. */
-  #onConfigure = (): void => {
-    this.#wanted = this.#mode === 'panel' ? 'toolbars' : 'panel';
-    this.#setMode(this.#wanted);
-    this.emit('filter-mode-change', { mode: this.#wanted });
-  };
-
-  /** EVERY close reports, and a READER's is a choice worth keeping; a window
-   *  too narrow is not. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-  #onPanelClose = (event: Event): void => {
-    this.#mode = 'toolbars';
-    for (const bar of this.#bars()) this.#stepBack(bar);
-    this.#giveToggles();
-    // A narrow window, or a page with no filters, is not a choice.
-    const reason = (event as CustomEvent<{ reason?: string }>).detail?.reason;
-    if (reason === 'width' || reason === 'page' || this.#wanted === 'toolbars') return;
-    this.#wanted = 'toolbars';
-    this.emit('filter-mode-change', { mode: 'toolbars' });
-  };
-
-  /** The shell lost room for the panel: shut it, which is not a choice. Room
-   *  again, and the reader wanted it: give it back. TRAP T-the-panel-is-desktop-only */
-  #onRoom = (event: Event): void => {
-    this.#room = (event as CustomEvent<{ room?: boolean }>).detail?.room !== false;
-    if (!this.#room) for (const panel of this.#panels()) panel.hide?.('width');
-    else if (this.#wanted === 'panel') this.#setMode('panel');
-  };
 
   /**
    * Give this subtree its sources — and its Views. Every component already
@@ -1066,9 +979,7 @@ export class SherpaProvider extends SherpaElement {
     if (asks.shape === 'state' || asks.shape === 'scope') callback(undefined, leave);
     // A bar or a panel that joins takes the mode — a page loaded later too.
     if (asks.shape === 'scope') {
-      if ('drawScopes' in el && this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
-      else if (!('drawScopes' in el)) this.#stepBack(el);
-      this.#giveToggles();
+      this.#modes.join(el);
       this.#offerLimit(el);
     }
   }
