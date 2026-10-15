@@ -268,7 +268,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
 | ✅ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
 | ✅ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
-| ⬜ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
+| ✅ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
 | ⬜ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
 | ⬜ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
 | ⬜ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
@@ -6388,6 +6388,21 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 277 — Phase 4: state first
+
+The review counted five hold-until-rendered queues in the filter family
+(`#held`, `#early` twice, `#heldValues`, `#heldLabel`). **✅ Done 2026-10-15,
+and measured first:** TODO 113's state-first work had reshaped most of them
+already, so two remain, and they are two kinds. The chip's `valueLabel` was a
+pure hold — written into the caret if it existed, else kept; it is DATA now,
+always stored, and drawn once there is a caret, so the getter no longer reads
+the page. The menu's `#heldValues` and `#heldRows` stay: once its rows are
+drawn they ARE the live answer, because a drill MOVES them to another menu
+(`T-drill-moves-not-clones`), so making them data first would copy and lose
+that. Whether the menu can keep its op and text as data too is the question
+Phase 5's async root answers (280): it is the same cause as the double-frame
+waits, and that item takes it up. `T-a-value-before-the-first-render-is-held`.
 
 ### `[x]` ✅ 276 — Phase 4: one write door, and a smaller base
 

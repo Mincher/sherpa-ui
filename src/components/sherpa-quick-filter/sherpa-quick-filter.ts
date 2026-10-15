@@ -125,7 +125,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onRender(): void {
     this.#syncText();
-    if (this.#heldLabel) this.valueLabel = this.#heldLabel;
+    this.#drawLabel();
     // A name given before the first render is said now.
     this.#writeTip();
     this.#paintSwatch();
@@ -286,15 +286,21 @@ export class SherpaQuickFilter extends SherpaElement {
    * holds, a date included.
    */
   set valueLabel(text: string) {
-    const caret = this.$('.caret-label');
-    if (caret) caret.textContent = text;
-    else this.#heldLabel = text;
+    this.#caretText = text;
+    this.#drawLabel();
   }
   get valueLabel(): string {
-    return this.$('.caret-label')?.textContent ?? this.#heldLabel;
+    return this.#caretText;
   }
-  /** A value label set before the first render. TRAP T-a-value-before-the-first-render-is-held */
-  #heldLabel = '';
+  /** What the caret says: kept as data, drawn once there is a caret.
+   *  TRAP T-a-value-before-the-first-render-is-held */
+  #caretText = '';
+
+  /** Draw the caret text, if there is a caret. */
+  #drawLabel(): void {
+    const caret = this.$('.caret-label');
+    if (caret) caret.textContent = this.#caretText;
+  }
 
   /** The chip's value menu, if it has one.
    *
