@@ -45,9 +45,7 @@ Therefore:
 - an **attribute** write survives, because upgrading replays
   `attributeChangedCallback` for whatever is already there
 
-Silent, and timing-dependent. `sherpa-quick-filter-toolbar` hit it and works
-around it with a deferred replay queue (`customLabels`), holding property writes
-until after the whole run is appended. `renderItems()` avoids it by construction:
+Silent, and timing-dependent. `renderItems()` avoids it by construction:
 attributes only, written before append.
 
 **Since 2026-09-27 no host queues.** `SherpaElement.clone()` IMPORTS its copy
@@ -4303,8 +4301,8 @@ A2): its `fill` is now `renderItems`' `after`. The rule stands.
 container, clone the prototype per item, fill, append. What each row then
 BECOMES is the caller's business and stays in `after` — a roving tabindex, an
 `aria-current`, a per-column type. Only the plumbing is shared. Its clone is
-IMPORTED, as `clone()`'s is, so a component in an item upgrades at once and
-its icons draw.
+IMPORTED, as `clone()`'s is, so a component in an item upgrades at once. Its
+icons come from `data-icon` fields (`T-item-template-cannot-compute`).
 
 The template is looked up ONCE and reused for the whole run, so a long list
 costs one shadow query rather than one per row.
@@ -4326,8 +4324,8 @@ iterating a filtered list — writes it inside `after` from its own data.
 `firstElementChild`: a semantic pair like `<dt>` + `<dd>` is two SIBLING roots,
 and stamping only the first would silently drop the value half of every row.
 
-`after` then gets the FIRST root — the row element for a single-root prototype,
-which is every case that needs it. It is the escape hatch for the ONE derived
+`after` then gets the FIRST root; a second is its `nextElementSibling` (a chart
+dot and its tip). It is the escape hatch for the ONE derived
 value a declarative template cannot compute (`T-item-template-cannot-compute`);
 reach for it before abandoning the row to a hand-written `fill`.
 

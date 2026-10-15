@@ -526,13 +526,17 @@ export abstract class SherpaElement extends Base {
   }
 
   /**
-   * Clone a `<template class="…">` prototype's first element.
+   * Clone a `<template class="…">` prototype's first element — or the `inner`
+   * one an `<svg>` wrapper holds. A loop passes the template, looked up once.
    * TRAP T-clone-returns-null-never-asserts — `null` when missing or empty.
    */
-  protected clone<T extends Element = HTMLElement>(sel: string): T | null {
-    const tpl = this.$<HTMLTemplateElement>(sel);
+  protected clone<T extends Element = HTMLElement>(
+    from: string | HTMLTemplateElement | null | undefined,
+    inner?: string,
+  ): T | null {
+    const tpl = typeof from === 'string' ? this.$<HTMLTemplateElement>(from) : from;
     // `content` is absent on a non-<template>, so a wrong selector fails here.
-    const first = tpl?.content?.firstElementChild;
+    const first = inner ? tpl?.content?.querySelector(inner) : tpl?.content?.firstElementChild;
     if (!first) return null;
     /* IMPORTED into the page's document, not cloned in the template's inert
        one: every component in the copy upgrades NOW, so a host may call its
@@ -791,14 +795,11 @@ export abstract class SherpaElement extends Base {
 
     // The whole FRAGMENT: a <dt>+<dd> pair is two roots, and the first alone
     // drops half of every item. IMPORTED, as `clone()` does, so a component in
-    // it upgrades now and its icons draw. TRAP T-custom-element-upgrade
+    // it upgrades now; its icons come from `data-icon` FIELDS. TRAP T-custom-element-upgrade
     items.forEach((item, index) => {
       const frag = document.importNode(tpl.content, true);
-      for (const root of [...frag.children]) {
-        this.#fillItem(root as HTMLElement, item, index);
-        this.upgradeClonedIcons(root);
-      }
-      // `after` gets the first root — every case that needs it is single-root.
+      for (const root of [...frag.children]) this.#fillItem(root as HTMLElement, item, index);
+      // `after` gets the first root; a second is its nextElementSibling.
       const first = frag.firstElementChild as HTMLElement | null;
       if (first) opts?.after?.(first, item, index);
       container.appendChild(frag);
@@ -810,11 +811,11 @@ export abstract class SherpaElement extends Base {
    * TRAP T-clone-item-is-for-two-destinations
    */
   protected cloneItem<T extends Element = HTMLElement>(
-    tplSel: string,
+    from: string | HTMLTemplateElement | null | undefined,
     item: unknown,
     index = 0,
   ): T | null {
-    const node = this.clone<T>(tplSel);
+    const node = this.clone<T>(from);
     if (node) this.#fillItem(node as unknown as HTMLElement, item, index);
     return node;
   }

@@ -404,10 +404,9 @@ export class SherpaDataGrid extends SherpaElement {
     // Keep the fixed leading select-head <th>; rebuild only the dynamic cells.
     headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
     this.#shownColumns().forEach((col, i) => {
-      /* IMPORTED, not cloned: a copy in the page's document upgrades now, so
-         its menu takes its items at once. TRAP T-custom-element-upgrade */
-      const th = document.importNode(tpl.content.firstElementChild!, true) as HTMLElement;
-      this.upgradeClonedIcons(th);
+      // Imported, so its menu takes its items at once. TRAP T-custom-element-upgrade
+      const th = this.clone(tpl);
+      if (!th) return;
       th.dataset['field'] = col.field;
       if (col.type) th.dataset['type'] = col.type;
       // Not nth-child: the position shifts when a column is dropped.
@@ -941,8 +940,8 @@ export class SherpaDataGrid extends SherpaElement {
     filterRow.querySelectorAll('.filter-cell').forEach((el) => el.remove());
     const actionsSpacer = filterRow.querySelector('.actions-cell');
     this.#shownColumns().forEach((col, i) => {
-      const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      this.upgradeClonedIcons(th);
+      const th = this.clone(tpl);
+      if (!th) return;
       th.dataset['field'] = col.field;
       if (col.type) th.dataset['type'] = col.type;
       if (i === 0) this.#markPinned(th, true);
@@ -1018,8 +1017,8 @@ export class SherpaDataGrid extends SherpaElement {
       // Its group, so CSS hides it when that group is shut — no `display` write.
       if (group && lastGroup !== null) tr.dataset['groupKey'] = lastGroup;
       columns.forEach((col, c) => {
-        const td = cellTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-        this.upgradeClonedIcons(td);
+        const td = this.clone(cellTpl);
+        if (!td) return;
         if (col.type) td.dataset['type'] = col.type;
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
@@ -1287,8 +1286,8 @@ export class SherpaDataGrid extends SherpaElement {
     // focus for nothing — T-menu-rows-stay-native-controls.
     menu.replaceChildren();
     for (const action of this.#actions) {
-      const item = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      this.upgradeClonedIcons(item);
+      const item = this.clone(tpl);
+      if (!item) continue;
       item.setAttribute('value', action.id);
       item.toggleAttribute('data-danger', !!action.danger);
       const icon = item.querySelector('.action-icon');
