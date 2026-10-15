@@ -318,8 +318,9 @@ export class DataSource extends EventTarget {
    * TRAP T-reset-to-default-is-the-views-own
    */
   atDefault(base: Query, view?: QueryDefaults): boolean {
-    const first = this.#definition(base, false);
-    const second = view ? this.#definition(view, true, first.query) : null;
+    // Read only, so neither is copied.
+    const first = this.#definition(base, false, this.#draft, false);
+    const second = view ? this.#definition(view, true, first.query, false) : null;
     const facts = this.#compileFacts();
     const filters = (q: Query): string => {
       const { filter, only } = compile(q, facts);
@@ -1620,10 +1621,12 @@ export class DataSource extends EventTarget {
    * (`keep`) keeps the chips a scope it does not name holds, and a field it
    * answers is held, so its chip shows it.
    */
-  #definition(given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft): { query: Query; arrange: Arrange | null } {
+  #definition(
+    given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft, copy = true,
+  ): { query: Query; arrange: Arrange | null } {
     const next: Query = { v: 1, scopes: {} };
     let arrange: Arrange | null = null;
-    for (const [id, scope] of Object.entries(structuredClone(given.scopes))) {
+    for (const [id, scope] of Object.entries(copy ? structuredClone(given.scopes) : given.scopes)) {
       // A View says `where`; a whole Query, `readings`. TRAP T-one-way-to-write-a-condition
       const { sort, group, search, where, readings, ...rest } = scope as ViewScope
         & Partial<Pick<ScopeQuery, 'readings'>>;

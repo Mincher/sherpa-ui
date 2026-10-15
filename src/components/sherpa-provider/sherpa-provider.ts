@@ -654,10 +654,15 @@ export class SherpaProvider extends SherpaElement {
     const at = opened.source.atDefault(opened.initial, view?.query);
     for (const el of [...this.#bars(), ...this.#panels()]) el.toggleAttribute('data-at-default', at);
     // And Reset, where nothing is left to clear: a bar's own scope, the panel's every one.
+    const asked = new Map<string | undefined, boolean>();
+    const answered = (scope?: string): boolean => {
+      if (!asked.has(scope)) asked.set(scope, opened.source.answered(scope));
+      return asked.get(scope)!;
+    };
     for (const bar of this.#bars()) {
-      bar.toggleAttribute('data-nothing-to-reset', !opened.source.answered(this.#inherited(bar, 'data-scope') ?? undefined));
+      bar.toggleAttribute('data-nothing-to-reset', !answered(this.#inherited(bar, 'data-scope') ?? undefined));
     }
-    for (const panel of this.#panels()) panel.toggleAttribute('data-nothing-to-reset', !opened.source.answered());
+    for (const panel of this.#panels()) panel.toggleAttribute('data-nothing-to-reset', !answered());
   }
 
   /** Stops the open page's listeners. */
