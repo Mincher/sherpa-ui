@@ -430,6 +430,8 @@ own roving tabindex.
 
 - Site: `src/core/ui/roving-focus.ts`
 - Site: `src/components/sherpa-tabs/sherpa-tabs.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 
 ## Events and listeners
 
@@ -14489,8 +14491,9 @@ The chip asks, and applies. With nothing drafted, a press does what it did.
 A chart's tooltip carries the NUMBER. If only `:hover` reveals it, the number
 is pointer-only — the chart draws data a keyboard reader cannot get at.
 
-`sherpa-barchart` and `sherpa-line-chart` already made each mark a `<button>`,
-so both were fine. `sherpa-radial-chart` and `sherpa-gauge-chart` lit their tips
+`sherpa-barchart` made each mark a `<button>`; `sherpa-line-chart`'s buttons
+were `tabindex="-1"`, so it was not reachable either. `sherpa-radial-chart` and
+`sherpa-gauge-chart` lit their tips
 from `:hover` on an SVG arc with no `tabindex`, so **zero** of their data was
 reachable. Measured before the fix:
 
@@ -14502,8 +14505,11 @@ reachable. Measured before the fix:
 The gauge's own comment said the accessible name went "on the ARC, which is
 what a reader reaches" — the name was there and nothing could reach it.
 
-Both now set `tabindex="0"` alongside the `role="img"` and `aria-label` the arc
-already carried, and their tip lifts on `focusin` as on `pointerover`.
+Each chart is now ONE tab stop, with the arrows between its marks
+(`T-one-tab-stop-per-set`); a mark keeps the `role="img"` and `aria-label` it
+carried, and its tip lifts on `focusin` as on `pointerover`. The ring and the
+gauge are `role="group"`, not `img`: an `img` makes its children presentational,
+which hid every slice's and band's name.
 An SVG `<path>` takes focus from `tabindex` perfectly well; it is only as a CSS
 ANCHOR that it fails (T-anchoring-is-generic), which is what the separate
 zero-size hotspot exists for.
@@ -15266,7 +15272,7 @@ cache of its own — a "fresh" export can assert a stale alias.
 
 ### T-a-datum-focus-ring-is-for-the-keyboard-only
 
-A chart datum carries `tabindex="0"` so a reader with no pointer can reach it —
+A chart datum is its chart's tab stop, so a reader with no pointer can reach it —
 `T-a-chart-datum-is-reachable-without-a-pointer`. The cost is that CLICKING one
 leaves it focused, and the browser paints its default ring: measured on a donut
 slice, `rgb(0, 95, 204) auto 5px`, a blue halo across the chart.

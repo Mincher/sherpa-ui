@@ -53,7 +53,7 @@
   <!-- Positioning context for the tooltip layer, which is a SIBLING of the ring
        so a tip can escape the ring's box. -->
   <div class="gauge-wrap">
-  <div class="gauge" part="gauge" role="img" aria-label="Gauge chart">
+  <div class="gauge" part="gauge" role="group" aria-label="Gauge chart">
     <!--
       viewBox is the TOP HALF of a 100×100 space (SVG y grows downward) with the
       ring centred at (50,50), so nothing needs clipping.
@@ -61,7 +61,7 @@
       NO preserveAspectRatio="none" — the box is 2:1 and `none` would stretch the
       ring into an ellipse.
     -->
-    <svg class="ring" part="ring" viewBox="0 0 100 50" aria-hidden="true">
+    <svg class="ring" part="ring" viewBox="0 0 100 50" role="none">
       <!-- #renderArcs stamps every segment here, including the grey remainder.
            There is deliberately no separate full-length track. -->
       <g class="zones"></g>

@@ -16,6 +16,7 @@ import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/u
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatValue, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries } from '../../core/ui/chart-parts.js';
+import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
 
@@ -48,10 +49,14 @@ export class SherpaRadialChart extends SherpaElement {
 
   /** The slices, as populated. */
   #slices: RadialSlice[] = [];
+  /** One tab stop for the ring; the arrows move between slices. TRAP T-one-tab-stop-per-set */
+  #roving: Roving | null = null;
 
   override onRender(): void {
     this.#syncCentre();
-    this.$('.slices')?.addEventListener('click', this.#onClick);
+    const slices = this.$('.slices');
+    slices?.addEventListener('click', this.#onClick);
+    if (slices) this.#roving = rovingFocus(slices, { items: '.slice' });
     if (this.#slices.length) this.#renderRing();
   }
 
@@ -75,8 +80,15 @@ export class SherpaRadialChart extends SherpaElement {
 
   /* ── Render ─────────────────────────────────────────────────────── */
 
-  /** Draw the ring: one closed path per slice, and its hotspot. */
+  /** Draw the ring, keeping focus on its slice. */
   #renderRing(): void {
+    const r = this.#roving;
+    if (r) r.restamp(() => this.#drawRing());
+    else this.#drawRing();
+  }
+
+  /** Draw the ring: one closed path per slice, and its hotspot. */
+  #drawRing(): void {
     const group = this.$('.slices');
     const tpl = this.$<HTMLTemplateElement>('template.slice-tpl');
     if (!group || !tpl) return;
@@ -127,12 +139,8 @@ export class SherpaRadialChart extends SherpaElement {
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
       paintSeries(arc, i, slice.colorIndex);
-      /* KEYBOARD-REACHABLE. An SVG <path> takes focus from `tabindex`, and its
-         tip lifts on focus as on hover — so a reader with no pointer can read
-         every slice. `role="img"` because the
-         path IS the datum, not a control.
+      /* The path IS the datum, not a control; the ring is its one tab stop.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
-      arc.setAttribute('tabindex', '0');
       arc.setAttribute('role', 'img');
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);

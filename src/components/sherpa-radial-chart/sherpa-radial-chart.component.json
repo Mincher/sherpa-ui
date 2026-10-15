@@ -52,7 +52,7 @@
                     "part": "ring",
                     "attrs": {
                       "viewBox": "0 0 100 100",
-                      "role": "img",
+                      "role": "group",
                       "aria-label": "Donut chart",
                       "preserveAspectRatio": "xMidYMid meet"
                     },

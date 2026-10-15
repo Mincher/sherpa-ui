@@ -10,6 +10,7 @@ import { formatTick, radialArea, ringSegmentPath, statusBorderVar, statusVar } f
 import { isStatus } from '../../core/data/chart-datum.js';
 import type { Threshold } from '../../core/data/threshold.js';
 import { fillTip, pairAnchor } from '../../core/ui/chart-parts.js';
+import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
 
@@ -62,7 +63,12 @@ export class SherpaGaugeChart extends SherpaElement {
     'data-unit': { type: 'string', kind: 'content' },
   } as const;
 
+  /** One tab stop for the named bands; the arrows move between them. TRAP T-one-tab-stop-per-set */
+  #roving: Roving | null = null;
+
   override onRender(): void {
+    const bands = this.$('.zones');
+    if (bands) this.#roving = rovingFocus(bands, { items: '.zone[role="img"]' });
     this.#sync();
   }
 
@@ -103,7 +109,11 @@ export class SherpaGaugeChart extends SherpaElement {
     this.style.setProperty('--_angle', `${-90 + frac * 180}deg`);
 
     const zones = this.#parseZones(min, max);
-    this.#renderHotspots(this.#renderArcs(zones, frac));
+    // A value write re-draws every band: keep focus on its own.
+    const draw = (): void => this.#renderHotspots(this.#renderArcs(zones, frac));
+    const r = this.#roving;
+    if (r) r.restamp(draw);
+    else draw();
     this.#fillLegend(zones);
 
     // Three SCALE ticks: min, midpoint, max. The middle one is a tick, not the
@@ -204,13 +214,10 @@ export class SherpaGaugeChart extends SherpaElement {
       pairAnchor(`--gauge-zone-${i}`, dot, tip);
       const label = this.#zoneName(zone);
       fillTip(tip, label, this.#zoneRange(zone));
-      /* The accessible name goes on the ARC, and so does `tabindex` — without
-         it the name was there and nothing could reach it. Its tip lifts on
-         focus as on hover.
+      /* The accessible name goes on the ARC; the bands are one tab stop.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       const arc = this.$(`.zone[data-index="${i}"]`);
       if (arc) {
-        arc.setAttribute('tabindex', '0');
         arc.setAttribute('role', 'img');
         arc.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
       }

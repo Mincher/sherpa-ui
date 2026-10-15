@@ -62,7 +62,7 @@
                     "class": "gauge",
                     "part": "gauge",
                     "attrs": {
-                      "role": "img",
+                      "role": "group",
                       "aria-label": "Gauge chart"
                     },
                     "children": [
@@ -72,7 +72,7 @@
                         "part": "ring",
                         "attrs": {
                           "viewBox": "0 0 100 50",
-                          "aria-hidden": "true"
+                          "role": "none"
                         },
                         "children": [
                           {
