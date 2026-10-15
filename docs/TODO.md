@@ -6461,12 +6461,17 @@ wait left can only be removed with a test run to prove it, so they move to 302.
 
 ### `[ ]` 🚧 291 — Phase 6: faster
 
-**🚧 Steps 1–3 done 2026-10-15**, each safe by reading and measured by the bench.
+**🚧 Steps 1–6 done 2026-10-15**, each safe by reading and measured by the bench.
 1. An `ArrayStore` count copies no rows: it counts in place.
 2. `Store.distinct`: `ArrayStore` and the live stores read a field's values in
    place, and a `spoofRemote` store forwards it. `declareFromRows` asks it too.
 3. Fewer `structuredClone` copies: one for `source.query`, none for the first
    `#defaults` entry, none in the provider's change listener.
+4. Recency is a Map of change numbers, not an array rebuilt on each change.
+5. `present()`'s limits build a shallow Query, not a clone, per list field:
+   clones fall by 6 in each act that limits values (pick 7 → 1).
+6. A Reset check reads its definitions without copies, and the provider asks
+   each scope's `answered()` once per frame.
 
 The bench, re-recorded after the fakes were fixed (286):
 
@@ -6480,9 +6485,8 @@ The bench, re-recorded after the fakes were fixed (286):
 | clear | 23 (11) · 64,161 | 2 (12) · 10 · 3,520 |
 
 (The "now" column also counts every chip a bar reports, which the old fakes did
-not, so its counts are higher.) **Next, safe by reading:** 4 (recency as
-numbers) and 5 (present()'s limits without a clone), then 6. **Waits for a
-test:** 7 (one test per filter) and 8 (one compile per act). **Not run yet:**
+not, so its counts are higher.) **Waits for a test:** 7 (one test per filter)
+and 8 (one compile per act). **Not run yet:**
 present-limits-each-field, page-definition and the stores' unit tests.
 
 ### `[x]` ✅ 290 — Phase 6: honest entry points
