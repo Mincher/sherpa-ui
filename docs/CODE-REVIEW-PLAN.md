@@ -180,7 +180,7 @@ A refactor deletes what it replaced. One commit per area.
 | Component aliases | list-item `data-heading`; app-header `data-title`; toast `data-message` (its own `show()` still writes it); chat-message's three alias props; progress-bar `data-value` beside native `value`; list `bordered`; nav `NavItem` and the old `NavEntry[]` form; notifications `title`; metric `name`; file-upload's extra `files-change` event |
 | Dead code | `data-can-add`, `data-single`, `data-removable` (written, read by nothing); the 14 exports no file imports; `SHARED_PROPS['data-group']`; the sparkline rule marked "BUG, left as found"; orphan doc blocks over removed code (toolbar :131, :878; chip :861; data.ts :25, :146, :207; data-source :249, :552) |
 | Icons | `installIcons()`, a public no-op; the Font Awesome comments; `T-fa-pro-renders-nothing`; "all 214" (there are 217) |
-| Repo | the 4 root scratch pages (`leak.html`, `prop.html`, `risk.html`, `sz.html`); 3 unused scripts (`check-tokens.mjs`, `figma-harvest-colours.mjs`, `figma-extract-component.js`); 2 stale `.gitignore` lines; [Some things to address.md](Some%20things%20to%20address.md): each note is checked against the code and filed in TODO or marked done, then the file goes |
+| Repo | the 4 root scratch pages (`leak.html`, `prop.html`, `risk.html`, `sz.html`); 3 unused scripts (`check-tokens.mjs`, `figma-harvest-colours.mjs`, `figma-extract-component.js`); 2 stale `.gitignore` lines; `Some things to address.md` (270 deleted it, 08941f5b): each note is checked against the code and filed in TODO or marked done, then the file goes |
 
 **Kept on purpose:** chip, tag, tabs, select-card, transfer-list,
 step-tracker, layout-canvas, file-upload and nav-section have no user in

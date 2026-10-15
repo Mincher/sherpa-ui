@@ -284,7 +284,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
 | 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
-| ⬜ | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| 🚧 | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
@@ -2307,7 +2307,7 @@ test pages link both. No `data-mode` is light; dark follows the OS only under
 
 **✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
 
-`docs/FRAMEWORKS.md`, about 200 lines of steps: install, one import, tokens, a
+It was planned as `docs/FRAMEWORKS.md`, about 200 lines of steps: install, one import, tokens, a
 recipe per framework, attributes vs properties, events, forms, CSP, server
 rendering, and the `:not(:defined)` rule for the time before the JS loads.
 Served as `sherpa://frameworks`, with a short `AGENTS.md` in the package.
@@ -6461,6 +6461,18 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[~]` 🚧 293 — Phase 8.1: the doc set
+
+The plan's §8.1. Part A: a TRAPS index by area, made and gated by
+check:traps; TODO's head made true; PRINCIPLES' open work moved here; the four
+reviews moved to a history folder. Part B: the rules doc (`sherpa://rules`)
+written again, and CLAUDE.md cut to pointers. A read-only agent planned each
+part; a second checked each plan against the files.
+
+- **✅ Step 1, 2026-10-15:** check-docs also checks backticked `docs/….md` paths
+  and relative `.md` links (53 paths and 14 links; 2 dangled, now fixed). A line
+  with an obituary word (was, deleted, planned…) is still skipped.
 
 ### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
 
