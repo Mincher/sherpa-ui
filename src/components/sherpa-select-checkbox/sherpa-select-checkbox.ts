@@ -4,7 +4,6 @@
  * JS mirrors attributes onto a real checkbox and re-fires change; CSS owns the look.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { FormValue } from '../../core/ui/form-value.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 // The template stamps these even when `data-advanced` is off — T-every-element-in-the-template.
 import '../sherpa-button/sherpa-button.js';
@@ -13,6 +12,7 @@ import '../sherpa-menu/sherpa-menu.js';
 export class SherpaSelectCheckbox extends SherpaElement {
   static override css = new URL('./sherpa-select-checkbox.css', import.meta.url);
   static override html = new URL('./sherpa-select-checkbox.html', import.meta.url);
+  static override delegatesFocus = true;
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
@@ -33,8 +33,6 @@ export class SherpaSelectCheckbox extends SherpaElement {
 
   /** The native checkbox. */
   #control: HTMLInputElement | null = null;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
 
   override onRender(): void {
     this.#resetTo = this.hasAttribute('checked');
@@ -70,8 +68,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
   #syncForm(): void {
     const c = this.#control;
     if (!c) return;
-    this.#form.value(c.checked ? c.value : null);
-    this.#form.follow(c);
+    this.formLink.value(c.checked ? c.value : null);
+    this.formLink.follow(c);
   }
 
   /* Form lifecycle — called by the browser. */
@@ -123,19 +121,6 @@ export class SherpaSelectCheckbox extends SherpaElement {
   }
   set disabled(value: boolean) {
     this.toggleAttribute('disabled', value);
-  }
-
-  checkValidity(): boolean {
-    return this.#form.checkValidity();
-  }
-
-  /** Check, and show the browser's message on the box. */
-  reportValidity(): boolean {
-    return this.#form.reportValidity();
-  }
-
-  override focus(options?: FocusOptions): void {
-    this.#control?.focus(options);
   }
 
   /* ── The advanced variant ─────────────────────────────────────────── */

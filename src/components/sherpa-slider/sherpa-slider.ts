@@ -10,7 +10,6 @@
 import { SherpaElement, coerceNum, clampNum, define } from '../../core/ui/sherpa-element.js';
 // The value fields. Defined before the template stamps them.
 import '../sherpa-input-text/sherpa-input-text.js';
-import { FormValue } from '../../core/ui/form-value.js';
 
 /** A composed value field — `sherpa-input-text data-type="number"`. */
 type Field = HTMLElement & { value: string };
@@ -47,8 +46,6 @@ export class SherpaSlider extends SherpaElement {
 
   /** It submits its value — or a range's two ends — in a form. TODO 214 */
   static readonly formAssociated = true;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
   /** Its first values: what a form reset puts back. */
   #resetTo: Record<string, string | null> = {};
 
@@ -220,7 +217,7 @@ export class SherpaSlider extends SherpaElement {
 
   /** Mirror the value(s) onto every input and onto the --_pct fill bridge. */
   #sync(): void {
-    this.#form.value(this.#isRange ? this.range.map(String) : String(this.value));
+    this.formLink.value(this.#isRange ? this.range.map(String) : String(this.value));
     if (this.#isRange) {
       const [start, end] = this.range;
       // BOTH written even mid-drag — that is what stops a thumb passing its partner.

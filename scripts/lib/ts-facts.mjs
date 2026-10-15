@@ -231,6 +231,18 @@ function isPublic(member) {
   return !(mods & (ts.ModifierFlags.Private | ts.ModifierFlags.Protected | ts.ModifierFlags.Static));
 }
 
+/** What the BASE class gives a component that sets the platform's flag: the
+ *  spec lists it, since a caller reaches it on the component. TRAP T-a-flag-brings-the-base-methods */
+const FLAGGED = {
+  formAssociated: [
+    { name: 'checkValidity', args: '', description: 'Is it acceptable, as its form sees it?' },
+    { name: 'reportValidity', args: '', description: 'Check, and show the browser\'s message on the control.' },
+  ],
+  delegatesFocus: [
+    { name: 'focus', args: 'options?: FocusOptions', description: 'Focus its control: the first focusable part inside.' },
+  ],
+};
+
 /**
  * The component class's public methods and properties, read by TypeScript's
  * own parser — so a member of a TYPE or an object literal in the same file is
@@ -260,6 +272,11 @@ export function parseClassApi(src) {
         entry.get = entry.set = true;
         entry.type = literalType(ts.isPropertyAssignment(p) ? p.initializer : undefined) ?? entry.type;
       }
+      continue;
+    }
+    if (ts.isPropertyDeclaration(member) && FLAGGED[name] && member.initializer?.kind === ts.SyntaxKind.TrueKeyword
+      && (ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Static)) {
+      for (const m of FLAGGED[name]) if (!methods.some((x) => x.name === m.name)) methods.push({ $type: 'method', ...m });
       continue;
     }
     if (!isPublic(member)) continue;

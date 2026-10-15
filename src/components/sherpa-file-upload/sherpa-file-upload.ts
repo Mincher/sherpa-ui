@@ -5,7 +5,6 @@
  */
 import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
-import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);
@@ -24,8 +23,6 @@ export class SherpaFileUpload extends SherpaElement {
 
   /** It submits its files in a form. TODO 214 */
   static readonly formAssociated = true;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
 
   /** The hidden native file input. */
   #input: HTMLInputElement | null = null;
@@ -59,7 +56,7 @@ export class SherpaFileUpload extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-max-size' || name === 'data-accept') this.#syncText();
     if (name === 'data-accept' || name === 'data-multiple') this.#syncInput();
-    if (name === 'name') this.#form.value(this.#files);
+    if (name === 'name') this.formLink.value(this.#files);
   }
 
   /** The two TEXT TEMPLATES; the label and helper are declared props. CSS
@@ -146,7 +143,7 @@ export class SherpaFileUpload extends SherpaElement {
       },
     });
     this.toggleAttribute('data-has-files', this.#files.length > 0);
-    this.#form.value(this.#files);
+    this.formLink.value(this.#files);
   }
 
   /* Form lifecycle — called by the browser. Inside a disabled `<fieldset>` it

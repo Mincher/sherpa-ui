@@ -3,11 +3,11 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
-import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaSelectRadio extends SherpaElement {
   static override css = new URL('./sherpa-select-radio.css', import.meta.url);
   static override html = new URL('./sherpa-select-radio.html', import.meta.url);
+  static override delegatesFocus = true;
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
@@ -22,8 +22,6 @@ export class SherpaSelectRadio extends SherpaElement {
 
   /** The native radio. */
   #control: HTMLInputElement | null = null;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
 
   override onRender(): void {
     this.#resetTo = this.hasAttribute('checked');
@@ -60,17 +58,17 @@ export class SherpaSelectRadio extends SherpaElement {
   #syncForm(): void {
     const c = this.#control;
     if (!c) return;
-    this.#form.value(c.checked ? c.value : null);
+    this.formLink.value(c.checked ? c.value : null);
     const missing = this.hasAttribute('required') && !this.#group().some((r) => r.checked);
-    if (missing) this.#form.validity({ valueMissing: true }, c.validationMessage || 'Select one.', c);
-    else this.#form.validity();
+    if (missing) this.formLink.validity({ valueMissing: true }, c.validationMessage || 'Select one.', c);
+    else this.formLink.validity();
   }
 
   /** The radios sharing this `name` in its form — or its root, outside one. */
   #group(): SherpaSelectRadio[] {
     const name = this.getAttribute('name');
     if (!name) return [this];
-    const root = (this.#form.form ?? this.getRootNode()) as ParentNode;
+    const root = (this.formLink.form ?? this.getRootNode()) as ParentNode;
     return [...root.querySelectorAll<SherpaSelectRadio>(`sherpa-select-radio[name="${CSS.escape(name)}"]`)];
   }
 
@@ -111,26 +109,15 @@ export class SherpaSelectRadio extends SherpaElement {
     this.#syncForm();
   }
 
+  protected override syncFormValue(): void {
+    this.#syncForm();
+  }
+
   get disabled(): boolean {
     return this.hasAttribute('disabled');
   }
   set disabled(value: boolean) {
     this.toggleAttribute('disabled', value);
-  }
-
-  checkValidity(): boolean {
-    this.#syncForm();
-    return this.#form.checkValidity();
-  }
-
-  /** Check, and show the browser's message on the radio. */
-  reportValidity(): boolean {
-    this.#syncForm();
-    return this.#form.reportValidity();
-  }
-
-  override focus(options?: FocusOptions): void {
-    this.#control?.focus(options);
   }
 
   /** Native radio grouping does NOT cross shadow roots — deselect siblings here. */

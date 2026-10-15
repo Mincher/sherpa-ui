@@ -4,6 +4,7 @@
  * a radio, a switch and a text field the same way. Read from their specs.
  *
  *   node --test test/unit/form-control-names.test.mjs
+ * TRAP T-a-flag-brings-the-base-methods
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

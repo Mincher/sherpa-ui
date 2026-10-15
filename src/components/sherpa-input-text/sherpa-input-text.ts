@@ -9,7 +9,6 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
 import { validateField, type FieldRules } from '../../core/data/validate.js';
-import { FormValue } from '../../core/ui/form-value.js';
 // The number type's steppers. Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
 // A Find's replace menu, and the question Replace all asks.
@@ -54,6 +53,7 @@ export interface InputOption { value: string; label?: string; disabled?: boolean
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
+  static override delegatesFocus = true;
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -92,8 +92,6 @@ export class SherpaInputText extends SherpaElement {
   ];
 
   #control: Control | null = null;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
 
   /** Both pick the tree, so a change to either must re-stamp. */
   static override variantAttrs = ['data-type', 'data-multiline'];
@@ -351,11 +349,11 @@ export class SherpaInputText extends SherpaElement {
   #syncValue(): void {
     const control = this.#control;
     if (!control) return;
-    this.#form.value(control.value);
+    this.formLink.value(control.value);
     const message = this.dataset['error'] ?? '';
     // Our message wins; without one, the control's own validity.
-    if (message) this.#form.validity({ customError: true }, message, control);
-    else this.#form.follow(control);
+    if (message) this.formLink.validity({ customError: true }, message, control);
+    else this.formLink.follow(control);
   }
 
   /** Check this field and show the result. True means acceptable. */
@@ -493,27 +491,15 @@ export class SherpaInputText extends SherpaElement {
     this.#syncValue();
   }
 
+  protected override syncFormValue(): void {
+    this.#syncValue();
+  }
+
   get disabled(): boolean {
     return this.hasAttribute('disabled');
   }
   set disabled(value: boolean) {
     this.toggleAttribute('disabled', value);
-  }
-
-  /** Acceptable, as its form sees it — its own message included. */
-  checkValidity(): boolean {
-    this.#syncValue();
-    return this.#form.checkValidity();
-  }
-
-  /** Check, and show the browser's message on the field. */
-  reportValidity(): boolean {
-    this.#syncValue();
-    return this.#form.reportValidity();
-  }
-
-  override focus(options?: FocusOptions): void {
-    this.#control?.focus(options);
   }
 
   #onInput = (event: Event): void => {

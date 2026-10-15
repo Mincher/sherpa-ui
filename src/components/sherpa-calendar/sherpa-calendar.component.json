@@ -411,7 +411,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (formDisabledCallback, formResetCallback, today). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (checkValidity, reportValidity, formDisabledCallback, formResetCallback, today). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -488,6 +488,18 @@
     "sherpa": {
       "figmaName": "Calendar",
       "methods": [
+        {
+          "$type": "method",
+          "name": "checkValidity",
+          "args": "",
+          "description": "Is it acceptable, as its form sees it?"
+        },
+        {
+          "$type": "method",
+          "name": "reportValidity",
+          "args": "",
+          "description": "Check, and show the browser's message on the control."
+        },
         {
           "$type": "method",
           "name": "formDisabledCallback",

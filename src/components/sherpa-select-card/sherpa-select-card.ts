@@ -8,7 +8,6 @@
 import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
-import { FormValue } from '../../core/ui/form-value.js';
 
 /** The default footer control (a Sherpa select) — the parts JS reads/writes. */
 interface FooterControl extends HTMLElement {
@@ -19,6 +18,7 @@ interface FooterControl extends HTMLElement {
 export class SherpaSelectCard extends SherpaElement {
   static override css = new URL('./sherpa-select-card.css', import.meta.url);
   static override html = new URL('./sherpa-select-card.html', import.meta.url);
+  static override delegatesFocus = true;
   static override props = {
     'data-footer': { type: 'enum', kind: 'style', values: ['none'] },
     'data-orientation': SHARED_PROPS['data-orientation'],
@@ -37,8 +37,6 @@ export class SherpaSelectCard extends SherpaElement {
   /** Selected, it submits its value in a form: its footer controls are parts and
    *  join none. TODO 214 */
   static readonly formAssociated = true;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
   /** Its first `data-selected`: what a form reset puts back. */
   #resetTo = false;
 
@@ -90,7 +88,7 @@ export class SherpaSelectCard extends SherpaElement {
       // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
       c.toggleAttribute('disabled', this.matches(':disabled'));
     }
-    this.#form.value(this.selected ? this.value || 'on' : null);
+    this.formLink.value(this.selected ? this.value || 'on' : null);
   }
 
   /* Form lifecycle — called by the browser. */
@@ -169,9 +167,6 @@ export class SherpaSelectCard extends SherpaElement {
     this.setAttribute('value', v);
   }
 
-  override focus(options?: FocusOptions): void {
-    (this.#card ?? this).focus(options);
-  }
 }
 
 define('sherpa-select-card', SherpaSelectCard);

@@ -11,6 +11,7 @@ const MAX_HEIGHT = 160;
 export class SherpaPromptComposer extends SherpaElement {
   static override css = new URL('./sherpa-prompt-composer.css', import.meta.url);
   static override html = new URL('./sherpa-prompt-composer.html', import.meta.url);
+  static override delegatesFocus = true;
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -56,10 +57,6 @@ export class SherpaPromptComposer extends SherpaElement {
     }
     this.#input.value = v ?? '';
     this.#autoresize();
-  }
-
-  override focus(): void {
-    this.#input?.focus();
   }
 
   clear(): void {

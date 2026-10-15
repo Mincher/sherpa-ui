@@ -228,6 +228,11 @@ export class SherpaFoo extends SherpaElement {
 define('sherpa-foo', SherpaFoo);  // from sherpa-element: once, and nothing on a server
 ```
 
+A form control sets `static formAssociated = true` and gets `formLink`, `checkValidity()` and
+`reportValidity()` from the base (override `syncFormValue()` to refresh what it submits first);
+one whose control is inside sets `static delegatesFocus = true` and writes no `focus()`
+(TRAP `T-a-flag-brings-the-base-methods`).
+
 Shadow root queries: `this.$('.sel')` (querySelector) and `this.$$('.sel')` (querySelectorAll). Never use `this.shadowRoot.querySelector` directly.
 
 `onRender()` is guarded by a `#rendered` flag — it fires exactly once. Event listeners registered there will not double-bind.

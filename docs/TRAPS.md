@@ -5488,6 +5488,7 @@ ours it defers to the control's OWN native validity, which is already doing
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
 - Site: `src/core/ui/form-value.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-describedby-must-not-be-a-live-region
 
@@ -16168,6 +16169,37 @@ the event is heard, so a check made at once left every tip open.
 - Site: `src/core/sherpa-anchor.css`
 - Site: `test/e2e/reforged-button-tip.spec.ts`
 
+
+### T-focus-is-delegated-by-the-platform
+
+**A control whose one control is inside its shadow root sets `static
+delegatesFocus = true`** (D5; TODO 273) — the platform's own flag, which
+`SherpaElement` passes to `attachShadow`. A click on the host, or `focus()`
+on it, then goes to the first focusable part inside. Six components wrote the
+same `override focus() { this.#control?.focus(options) }`: switch, checkbox,
+radio, input-text, select-card and prompt-composer. The flag is OPT-IN, since
+it also changes what `:focus` matches on the host and where a click on an
+empty part goes: a component with several focusable parts, a menu or a grid,
+leaves it off.
+
+- Site: `src/core/ui/sherpa-element.ts`
+
+### T-a-flag-brings-the-base-methods
+
+**A platform flag a component sets brings the base's methods with it, and the
+spec lists them.** `static formAssociated = true` brings `checkValidity()` and
+`reportValidity()`; `static delegatesFocus = true`, `focus()`. They are written
+once, in `SherpaElement` (`formLink`, and a `syncFormValue()` a control
+overrides to refresh what it submits before a check), and were written by hand
+in 5 form controls. The spec generator reads only the component's own class, so
+`parseClassApi` adds the flag's methods — or the contract would lose the
+surface a caller reaches (`form-control-names.test.mjs` holds it). The move
+gave `checkValidity()` to the four form-associated controls that had none
+(calendar, file-upload, slider, transfer-list).
+
+- Site: `scripts/lib/ts-facts.mjs`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/unit/form-control-names.test.mjs`
 
 ### T-a-tooltip-is-always-in-the-top-layer
 

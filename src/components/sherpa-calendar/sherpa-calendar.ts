@@ -8,7 +8,6 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
-import { FormValue } from '../../core/ui/form-value.js';
 // Temporal, or its stand-in on an engine without it. TRAP T-temporal-is-the-date-model
 import { plainDate, plainYearMonth, today, type PlainDateLike, type PlainYearMonthLike } from '../../core/ui/temporal.js';
 
@@ -63,8 +62,6 @@ export class SherpaCalendar extends SherpaElement {
 
   /** It submits its day — or a range's two ends — in a form. TODO 214 */
   static readonly formAssociated = true;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
   /** Its first value: what a form reset puts back. */
   #resetTo: Record<string, string | null> = {};
 
@@ -95,7 +92,7 @@ export class SherpaCalendar extends SherpaElement {
   #syncForm(): void {
     const start = this.dataset['valueStart'];
     const end = this.dataset['valueEnd'];
-    this.#form.value(this.#type === 'range' ? (start && end ? [start, end] : null) : this.dataset['value'] || null);
+    this.formLink.value(this.#type === 'range' ? (start && end ? [start, end] : null) : this.dataset['value'] || null);
   }
 
   /* Form lifecycle — called by the browser. */

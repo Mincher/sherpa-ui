@@ -157,7 +157,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (formDisabledCallback, formResetCallback, checkValidity, reportValidity, focus). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (focus, checkValidity, reportValidity, formDisabledCallback, formResetCallback). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -212,6 +212,24 @@
       "methods": [
         {
           "$type": "method",
+          "name": "focus",
+          "args": "options?: FocusOptions",
+          "description": "Focus its control: the first focusable part inside."
+        },
+        {
+          "$type": "method",
+          "name": "checkValidity",
+          "args": "",
+          "description": "Is it acceptable, as its form sees it?"
+        },
+        {
+          "$type": "method",
+          "name": "reportValidity",
+          "args": "",
+          "description": "Check, and show the browser's message on the control."
+        },
+        {
+          "$type": "method",
           "name": "formDisabledCallback",
           "args": "",
           "description": "Inside a disabled `<fieldset>`, as by its own `disabled`."
@@ -221,22 +239,6 @@
           "name": "formResetCallback",
           "args": "",
           "description": "A form reset puts back its FIRST `checked`."
-        },
-        {
-          "$type": "method",
-          "name": "checkValidity",
-          "args": ""
-        },
-        {
-          "$type": "method",
-          "name": "reportValidity",
-          "args": "",
-          "description": "Check, and show the browser's message on the switch."
-        },
-        {
-          "$type": "method",
-          "name": "focus",
-          "args": "options?: FocusOptions"
         }
       ],
       "category": "control",

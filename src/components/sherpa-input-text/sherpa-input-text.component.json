@@ -981,7 +981,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (validate, formDisabledCallback, formResetCallback, formStateRestoreCallback, checkValidity, reportValidity, focus). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (focus, checkValidity, reportValidity, validate, formDisabledCallback, formResetCallback, formStateRestoreCallback). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1068,6 +1068,24 @@
       "methods": [
         {
           "$type": "method",
+          "name": "focus",
+          "args": "options?: FocusOptions",
+          "description": "Focus its control: the first focusable part inside."
+        },
+        {
+          "$type": "method",
+          "name": "checkValidity",
+          "args": "",
+          "description": "Is it acceptable, as its form sees it?"
+        },
+        {
+          "$type": "method",
+          "name": "reportValidity",
+          "args": "",
+          "description": "Check, and show the browser's message on the control."
+        },
+        {
+          "$type": "method",
           "name": "validate",
           "args": "",
           "description": "Check this field and show the result. True means acceptable."
@@ -1088,23 +1106,6 @@
           "name": "formStateRestoreCallback",
           "args": "state: string",
           "description": "Back-button or session restore — what setFormValue stored."
-        },
-        {
-          "$type": "method",
-          "name": "checkValidity",
-          "args": "",
-          "description": "Acceptable, as its form sees it — its own message included."
-        },
-        {
-          "$type": "method",
-          "name": "reportValidity",
-          "args": "",
-          "description": "Check, and show the browser's message on the field."
-        },
-        {
-          "$type": "method",
-          "name": "focus",
-          "args": "options?: FocusOptions"
         }
       ],
       "category": "control",

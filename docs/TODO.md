@@ -264,7 +264,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ✅ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ✅ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
-| ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
+| ✅ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ⬜ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
 | ⬜ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
 | ⬜ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
@@ -6388,6 +6388,23 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 273 — Phase 4: form plumbing and focus delegation, in the base
+
+D5: *"Anything generic gets elevated."* **✅ Done 2026-10-15.** The nine
+form-associated controls each made their own `FormValue`; five wrote the same
+`checkValidity()` and `reportValidity()`; six wrote the same `focus()`.
+`SherpaElement` has `formLink`, both validity methods (with a `syncFormValue()`
+a control overrides — the radio and the text field do), and `static
+delegatesFocus`, the platform's own flag, passed to `attachShadow`: the six
+set it and lost their `focus()`. The generator lists what a flag brings, so
+the contracts keep the surface — and calendar, file-upload, slider and
+transfer-list, which had no `checkValidity()`, now offer it. +490 bytes on
+every entry (0.2%), paid once; 273 control tests pass in three engines.
+Not elevated: `formResetCallback` (each puts back its own first value) and
+the `disabled` accessor (it syncs a different inner part in each) — edge
+cases, which D5 leaves in the component. `T-focus-is-delegated-by-the-platform`,
+`T-a-flag-brings-the-base-methods`.
 
 ### `[x]` ✅ 272 — Phase 8.3: `../Sherpa Gallery`
 

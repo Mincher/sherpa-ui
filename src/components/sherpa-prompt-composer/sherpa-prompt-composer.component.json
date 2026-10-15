@@ -225,7 +225,8 @@
         {
           "$type": "method",
           "name": "focus",
-          "args": ""
+          "args": "options?: FocusOptions",
+          "description": "Focus its control: the first focusable part inside."
         },
         {
           "$type": "method",

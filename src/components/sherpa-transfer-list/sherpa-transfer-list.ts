@@ -6,7 +6,6 @@
  * - TransferItem — A transfer-list item.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { FormValue } from '../../core/ui/form-value.js';
 
 /** A transfer-list item. */
 export interface TransferItem {
@@ -33,8 +32,6 @@ export class SherpaTransferList extends SherpaElement {
 
   /** It submits the values in its selected pane in a form. TODO 214 */
   static readonly formAssociated = true;
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
   /** Its first selection: what a form reset puts back. */
   #resetTo: string[] | null = null;
 
@@ -65,7 +62,7 @@ export class SherpaTransferList extends SherpaElement {
   }
 
   override onChange(): void {
-    this.#form.value(this.selected);
+    this.formLink.value(this.selected);
   }
 
   /* Form lifecycle — called by the browser. Inside a disabled `<fieldset>` it
@@ -109,7 +106,7 @@ export class SherpaTransferList extends SherpaElement {
     }
     this.$('.source')?.toggleAttribute('data-empty', !this.#items.some((i) => !i.selected));
     this.$('.target')?.toggleAttribute('data-empty', !this.#items.some((i) => i.selected));
-    this.#form.value(this.selected);
+    this.formLink.value(this.selected);
   }
 
   /** A row was ticked or unticked. */

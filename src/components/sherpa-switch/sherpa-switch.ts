@@ -6,11 +6,11 @@
  * @prop {string}  value    — what it stands for when on (default "on"), as a checkbox's
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
   static override html = new URL('./sherpa-switch.html', import.meta.url);
+  static override delegatesFocus = true;
   /* Its words beside the track, as a checkbox's. Will, TODO 230. */
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.title' },
@@ -35,16 +35,14 @@ export class SherpaSwitch extends SherpaElement {
     return this.$<HTMLInputElement>('.input');
   }
 
-  /** Its link to its form. */
-  #form = new FormValue(this, this.internals);
 
   /** On, it submits its value; off, nothing — as a native checkbox.
    *  TRAP T-a-form-value-follows-every-write */
   #syncForm(): void {
     const input = this.#input();
     if (!input) return;
-    this.#form.value(input.checked ? input.value : null);
-    this.#form.follow(input);
+    this.formLink.value(input.checked ? input.value : null);
+    this.formLink.follow(input);
   }
 
   override onRender(): void {
@@ -100,19 +98,6 @@ export class SherpaSwitch extends SherpaElement {
   }
   set value(v: string) {
     this.setAttribute('value', v);
-  }
-
-  checkValidity(): boolean {
-    return this.#form.checkValidity();
-  }
-
-  /** Check, and show the browser's message on the switch. */
-  reportValidity(): boolean {
-    return this.#form.reportValidity();
-  }
-
-  override focus(options?: FocusOptions): void {
-    this.#input()?.focus(options);
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */

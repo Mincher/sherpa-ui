@@ -27,6 +27,7 @@ import {
 } from './templater.js';
 import { report } from '../data/report.js';
 import { ownHtml } from './trusted-html.js';
+import { FormValue } from './form-value.js';
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
@@ -361,6 +362,11 @@ export abstract class SherpaElement extends Base {
    *  TRAP T-a-button-commands-by-markup */
   static commands: Readonly<Record<string, string>> = {};
 
+  /** The platform's flag, as it is: a click or `focus()` on the host goes to the
+   *  first focusable part inside. A control whose one control is inside sets it
+   *  and writes no `focus()`. TRAP T-focus-is-delegated-by-the-platform */
+  static delegatesFocus = false;
+
   /**
    * What this component ASKS its provider for — the shape of its data. Asked
    * on connect and answered by the nearest `sherpa-provider`; with none above
@@ -437,7 +443,7 @@ export abstract class SherpaElement extends Base {
 
   constructor() {
     super();
-    this.root = this.attachShadow({ mode: 'open' });
+    this.root = this.attachShadow({ mode: 'open', delegatesFocus: (this.constructor as typeof SherpaElement).delegatesFocus });
     this.rendered = new Promise((res) => (this.#resolveRendered = res));
     const Ctor = new.target as typeof SherpaElement;
     SherpaElement.#defineConfig(Ctor);
@@ -637,6 +643,34 @@ export abstract class SherpaElement extends Base {
   }
   /** Attached on the first ask, never twice. */
   #internals: ElementInternals | undefined;
+
+  /** A form control's link to its form: what it submits, and whether that is
+   *  acceptable. The component declares `static formAssociated = true`.
+   *  TRAP T-shadow-input-needs-element-internals */
+  protected get formLink(): FormValue {
+    return (this.#formLink ??= new FormValue(this, this.internals));
+  }
+  /** Made on the first ask. */
+  #formLink: FormValue | undefined;
+
+  /** A form control brings what it submits up to date; `checkValidity()` and
+   *  `reportValidity()` call it first. Nothing, by default. TRAP T-a-flag-brings-the-base-methods */
+  protected syncFormValue(): void {}
+
+  /** Is it acceptable, as its form sees it? A native form control's own door;
+   *  an element that is not form-associated has nothing to refuse. */
+  checkValidity(): boolean {
+    if (!(this.constructor as { formAssociated?: boolean }).formAssociated) return true;
+    this.syncFormValue();
+    return this.formLink.checkValidity();
+  }
+
+  /** Check, and show the browser's message on the control. */
+  reportValidity(): boolean {
+    if (!(this.constructor as { formAssociated?: boolean }).formAssociated) return true;
+    this.syncFormValue();
+    return this.formLink.reportValidity();
+  }
 
   /** Set or clear a CUSTOM STATE, read as `:host(:state(name))` — private state
    *  is never a public `data-*`. As `toggleAttribute`. TRAP T-private-state-is-a-custom-state */
