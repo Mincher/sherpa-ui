@@ -48,6 +48,14 @@
             },
             "children": [
               {
+                "el": "i",
+                "class": "separator sherpa-icon-box",
+                "attrs": {
+                  "data-icon": "chevron-right",
+                  "aria-hidden": "true"
+                }
+              },
+              {
                 "el": "a",
                 "class": "link",
                 "part": "link",
@@ -92,6 +100,8 @@
   "tokens": {
     "crumbs.gap": "{sherpa.display-mode-space-xs}",
     "crumb.gap": "{sherpa.display-mode-space-xs}",
+    "separator.--_icon-size": "{sherpa.theme-size-icon-2xs}",
+    "separator.color": "{sherpa.theme-content-body-1}",
     "link.color": "{sherpa.theme-content-link-1}",
     "link.font-weight": "{sherpa.font-weight-regular}",
     "link.line-height": "{sherpa.theme-content-line-height-small}",

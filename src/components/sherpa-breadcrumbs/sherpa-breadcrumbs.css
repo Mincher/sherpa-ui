@@ -27,21 +27,12 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Separator glyph — no DOM node. Needs the Font Awesome family + weight 900. */
-.crumb + .crumb::before {
-  content: "\f054"; /* chevron-right */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
+.separator {
+  --_icon-size: var(--sherpa-theme-size-icon-2xs, 10px);
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-size: var(--sherpa-theme-content-size-xs, 10px);
-  line-height: 1;
   user-select: none;
 }
+.crumb:first-child .separator { display: none; }
 
 .link {
   color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */

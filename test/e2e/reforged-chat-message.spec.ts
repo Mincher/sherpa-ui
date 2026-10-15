@@ -94,12 +94,15 @@ test('assistant shows the avatar; user hides it', async ({ page }) => {
       if (role) el.setAttribute('data-type', role);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      return getComputedStyle(el.shadowRoot!.querySelector('.avatar')!).display !== 'none';
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const avatar = el.shadowRoot!.querySelector('.avatar')!;
+      return { shown: getComputedStyle(avatar).display !== 'none', drawn: !!avatar.querySelector('svg') };
     };
     return { assistant: await vis(), user: await vis('user') };
   });
-  expect(r.assistant).toBe(true);
-  expect(r.user).toBe(false);
+  // The icon set's glyph, not a Font Awesome one from a font nothing loads.
+  expect(r.assistant).toEqual({ shown: true, drawn: true });
+  expect(r.user.shown).toBe(false);
 });
 
 test('an avatar slot reflects has-avatar', async ({ page }) => {

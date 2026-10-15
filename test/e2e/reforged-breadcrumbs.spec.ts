@@ -78,27 +78,21 @@ test('current crumb is styled non-link (default body colour, distinct from links
   expect(r.linkColor).not.toBe(r.currentColor);
 });
 
-test('separators are drawn via CSS ::before on crumbs after the first', async ({ page }) => {
+test('each crumb after the first shows a drawn chevron separator', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-breadcrumbs') as unknown as CrumbEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ label: 'A', href: '/a' }, { label: 'B', href: '/b' }, { label: 'C' }]);
-    await new Promise((rr) => requestAnimationFrame(rr));
-    const crumbs = Array.from(el.shadowRoot!.querySelectorAll('.crumb'));
-    const sep = (n: Element) => {
-      const cs = getComputedStyle(n, '::before');
-      return { content: cs.content, font: cs.fontFamily };
-    };
-    return { first: sep(crumbs[0]!), second: sep(crumbs[1]!), third: sep(crumbs[2]!) };
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return Array.from(el.shadowRoot!.querySelectorAll('.crumb')).map((c) => {
+      const sep = c.querySelector('.separator') as HTMLElement;
+      return { shown: getComputedStyle(sep).display !== 'none', drawn: !!sep.querySelector('svg') };
+    });
   });
-  // First crumb: no separator; subsequent crumbs render the Font Awesome chevron-right
-  // glyph (U+F054) — Figma's 12×12 chevron-right instance.
-  const CHEVRON = '""';
-  expect(r.first.content).toMatch(/none|""|normal/);
-  expect(r.second.content).toBe(CHEVRON);
-  expect(r.third.content).toBe(CHEVRON);
-  expect(r.second.font).toContain('Font Awesome 6 Free');
+  // The icon set's chevron-right, not a Font Awesome glyph from a font nothing loads.
+  expect(r.map((s) => s.shown)).toEqual([false, true, true]);
+  expect(r.every((s) => s.drawn)).toBe(true);
 });
 
 test('clicking a crumb fires breadcrumb-select with index/label/href', async ({ page }) => {

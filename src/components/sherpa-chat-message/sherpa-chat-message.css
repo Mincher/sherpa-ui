@@ -43,14 +43,6 @@
   line-height: 1;
   overflow: hidden;
 }
-/* A slotted avatar replaces this glyph. */
-.avatar-glyph {
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-style: normal;
-
-  &::before { content: "\f544"; } /* robot */
-}
 
 /* ── Meta row (name + time), inside the bubble ───────────────────────── */
 .meta {

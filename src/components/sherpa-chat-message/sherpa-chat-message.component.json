@@ -33,8 +33,11 @@
               },
               "children": [
                 {
-                  "el": "span",
-                  "class": "avatar-glyph"
+                  "el": "i",
+                  "class": "sherpa-icon-box",
+                  "attrs": {
+                    "data-icon": "microchip-ai"
+                  }
                 }
               ]
             }

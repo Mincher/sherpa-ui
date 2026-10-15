@@ -290,7 +290,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
-| ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
+| ✅ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
@@ -812,7 +812,7 @@ sides with a flip when its side does not fit, and the arrow follows the side
 shuts and opens on hover, it shows whole above an `overflow: hidden` box, it
 flips. `T-a-tooltip-is-always-in-the-top-layer`.
 
-### `[ ]` ⬜ 299 — BUG: two glyphs still come from Font Awesome
+### `[x]` ✅ 299 — BUG: two glyphs still come from Font Awesome
 
 Found in 270's icon pass, 2026-10-14. `sherpa-breadcrumbs` draws its
 separator as `content: "\f054"` and `sherpa-chat-message` its avatar as
@@ -821,6 +821,12 @@ font since the icons became SVGs (`installIcons()` was a no-op), so each draws
 a private-use character in the fallback font: a box, or nothing. Draw each
 from the icon set (`chevron-right`, a robot or person glyph) the way every
 other icon is drawn, and test the pixels.
+
+**✅ Done 2026-10-15.** Each crumb's prototype carries an `<i class="separator">`
+with `data-icon="chevron-right"`; CSS hides the first crumb's. The chat avatar's
+default is `microchip-ai` (the set has no robot), inside the `avatar` slot as
+before, so a slotted avatar still replaces it. Both tests now ask for a drawn
+`<svg>`, not a font. **Not run yet** — Will's next test run.
 
 ### `[x]` ✅ 64 — A collapsed accordion section fills with the down (+2) surface
 
