@@ -93,9 +93,10 @@
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
-  DEFAULT_OP, andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
+  DEFAULT_OP, andFilter, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
 } from './store.js';
-import { fieldState, readingClause, stateClause } from './filter-state.js';
+import { readingClause, stateClause } from './filter-state.js';
+import { FieldCatalogue } from './field-catalogue.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
   answerOf, compile, eachScope, emptyScope, filterKey, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
@@ -122,14 +123,6 @@ export type {
 
 /** How a definition arranges the rows — only what it names. */
 type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string; scope?: string };
-
-/** Steps a number slider may take. */
-const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
-
-/** A step that gives a slider over this span about 200 stops. */
-function niceStep(span: number): number {
-  return span <= 1000 ? 1 : (NICE_STEPS.find((n) => n >= span / 200) ?? 1000);
-}
 
 export class DataSource extends EventTarget {
   readonly store: Store;
@@ -209,10 +202,8 @@ export class DataSource extends EventTarget {
   #viewFilter: Filter | undefined | null = null;
   /** Each component scope's own answer — for a summary bound INTO that scope. */
   #scoped: Record<string, Filter> = {};
-  /** Every value a field can take, for the controls that draw its rows. */
-  #domains = new Map<string, unknown[]>();
-  /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
-  #fields = new Map<string, FieldDeclaration>();
+  /** What each field IS: its kind, label and values. TRAP T-the-field-type-decides-the-clause */
+  readonly #catalogue = new FieldCatalogue();
   /** Each preset's name, and whether the reader may edit it. */
   #presetFacts = new Map<string, { label?: string }>();
   /** Each component's OWN default filter, by its scope — put back under any
@@ -581,7 +572,7 @@ export class DataSource extends EventTarget {
     if (part) this.#narrowing.set(scope, part);
     else this.#narrowing.delete(scope);
     // Sent up, the View holds its field — and draws only a field it knows.
-    if (part && !this.#fields.has(part.field)) this.declareField(part.field);
+    if (part && !this.#catalogue.has(part.field)) this.declareField(part.field);
     this.#drawScopesSoon();
   }
 
@@ -645,7 +636,7 @@ export class DataSource extends EventTarget {
       const key = at.key;
       if (!key) throw new Error('apply: a component reach needs a `key`');
       const clauses = Object.entries(readings)
-        .map(([field, reading]) => stateClause(this.#stateFor(field, reading)))
+        .map(([field, reading]) => stateClause(this.#catalogue.stateFor(field, reading)))
         .filter((c): c is NonNullable<typeof c> => !!c);
       this.contribute(key, andFilter(clauses));
       return;
@@ -737,7 +728,7 @@ export class DataSource extends EventTarget {
       return {
         ...this.filterDef(f), removable: true,
         // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
-        ...(scope === VIEW && this.#fields.get(f)?.type === 'date' ? { range: true } : {}),
+        ...(scope === VIEW && this.#catalogue.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
         ...(down.length ? { sendTo: down.map((to) => ({
@@ -760,8 +751,8 @@ export class DataSource extends EventTarget {
     /* HOW its rows are arranged — only in a scope that arranges, and its own
        arrangement only. TRAP T-group-and-sort-are-component-scope */
     if (this.arranges(scope) && this.fields(scope).length) {
-      const cols = this.fields(scope).filter((f) => this.#fields.has(f))
-        .map((f) => ({ field: f, label: this.#fields.get(f)?.label ?? f }));
+      const cols = this.fields(scope).filter((f) => this.#catalogue.has(f))
+        .map((f) => ({ field: f, label: this.#catalogue.get(f)?.label ?? f }));
       out.group = cols;
       out.sort = cols;
       const mine = (this.#arrangedIn() ?? scope) === scope;
@@ -778,7 +769,7 @@ export class DataSource extends EventTarget {
   /** say(readings) — a saved filter in WORDS, field by field: the source knows
    *  each field's name, type and values. TRAP T-a-saved-chip-lists-its-conditions */
   say(readings: Readonly<Record<string, FieldReading>>): SaidField[] {
-    return sayReadings(readings, (field) => this.#facts(field));
+    return sayReadings(readings, (field) => this.#catalogue.facts(field));
   }
 
   /** A preset it holds, in words. */
@@ -930,27 +921,6 @@ export class DataSource extends EventTarget {
     this.#drawBars(scope);
   }
 
-  /** One field's state from a reading this source has NOT stored. */
-  #stateFor(field: string, reading: FieldReading): FilterState {
-    return fieldState({ field, ...this.#facts(field) }, reading);
-  }
-
-  /** What a field's clause needs to know: its values, kind and label.
-   *  A RANGE field has no declared list, and passing an empty one would say
-   *  it has no values at all. TRAP T-the-field-type-decides-the-clause */
-  #facts(field: string, label?: string): Omit<FieldFacts, 'field'> {
-    const facts = this.#fields.get(field) ?? {};
-    const values = this.#domains.get(field);
-    const named = label ?? facts.label;
-    return {
-      ...(values ? { values } : {}),
-      ...(facts.type ? { type: facts.type } : {}),
-      ...(facts.time ? { time: true } : {}),
-      ...(facts.thresholds ? { thresholds: facts.thresholds } : {}),
-      ...(named ? { label: named } : {}),
-    };
-  }
-
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
 
   /**
@@ -959,11 +929,7 @@ export class DataSource extends EventTarget {
    * lets two controls share one selection.
    */
   declareValues(field: string, values: readonly unknown[]): void {
-    /* Kept AS THE DATA HOLDS THEM, de-duplicated by key.
-       TRAP T-a-value-can-be-an-object */
-    const seen = new Map<string, unknown>();
-    for (const v of values) if (!seen.has(valueKey(v))) seen.set(valueKey(v), v);
-    this.#domains.set(field, [...seen.values()]);
+    this.#catalogue.declareValues(field, values);
   }
 
   /**
@@ -975,8 +941,7 @@ export class DataSource extends EventTarget {
    * TRAP T-the-field-type-decides-the-clause
    */
   declareField(field: string, facts: FieldDeclaration = {}): void {
-    const held = this.#fields.get(field) ?? {};
-    this.#fields.set(field, { ...held, ...facts });
+    this.#catalogue.declare(field, facts);
   }
 
   /**
@@ -985,59 +950,28 @@ export class DataSource extends EventTarget {
    * — the store's distinct() where it has one, else one load — and only when a
    * field needs it. TRAP T-the-data-says-what-a-field-may-hold
    */
-  async declareFromRows(fields: readonly string[]): Promise<void> {
-    const open = fields.filter((f) => {
-      const facts = this.#fields.get(f) ?? {};
-      if (facts.type === 'number') return facts.min == null || facts.max == null;
-      return facts.advanced !== 'only' && !this.#domains.has(f);
+  declareFromRows(fields: readonly string[]): Promise<void> {
+    return this.#catalogue.fromRows(fields, async (open) => {
+      if (this.store.distinct) return this.store.distinct(open, {});
+      const { rows } = await this.store.load({});
+      return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
     });
-    let found: Record<string, unknown[]> = {};
-    try {
-      if (open.length && this.store.distinct) found = await this.store.distinct(open, {});
-      else if (open.length) {
-        const { rows } = await this.store.load({});
-        found = Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
-      }
-    } catch (error) {
-      /* A store that cannot answer yet must not stop the page: its fields
-         offer no values, and the first load shows the failure on its card.
-         TRAP T-a-container-shows-its-datas-state */
-      report({
-        code: 'values-unread',
-        message: 'declareFromRows: the rows could not be read, so these fields offer no values yet.',
-        at: { fields: open.join(','), error: error instanceof Error ? error.message : String(error) },
-      });
-    }
-    for (const field of fields) {
-      const facts = this.#fields.get(field) ?? {};
-      const held = open.includes(field) ? (found[field] ?? []).filter((v) => v != null && v !== '') : [];
-      if (facts.type !== 'number') {
-        const unique = [...new Map(held.map((v) => [valueKey(v), v])).values()];
-        if (unique.length) this.declareValues(field, unique.sort((a, b) => compareValues(valueKey(a), valueKey(b))));
-        continue;
-      }
-      const nums = held.map(Number).filter(Number.isFinite);
-      const min = facts.min ?? (nums.length ? Math.floor(nums.reduce((a, b) => Math.min(a, b))) : undefined);
-      const max = facts.max ?? (nums.length ? Math.ceil(nums.reduce((a, b) => Math.max(a, b))) : undefined);
-      if (min == null || max == null) continue;
-      this.declareField(field, { min, max, step: facts.step ?? niceStep(max - min) });
-    }
   }
 
   /** What `declareField` was told. */
   fieldFacts(field: string): FieldDeclaration {
-    return { ...(this.#fields.get(field) ?? {}) };
+    return this.#catalogue.copyOf(field);
   }
 
   /** Readings in the plain form a definition or a View writes, by this source's
    *  field types. TRAP T-one-way-to-write-a-condition */
   whereOf(readings: Readonly<Record<string, FieldReading>>): Where {
-    return whereOf(readings, (f) => this.#facts(f));
+    return whereOf(readings, (f) => this.#catalogue.facts(f));
   }
 
   /** The plain form as readings, by this source's field types. */
   readingsOf(where: Readonly<Record<string, Condition>>): Record<string, FieldReading> {
-    return readingsOf(where, (f) => this.#facts(f));
+    return readingsOf(where, (f) => this.#catalogue.facts(f));
   }
 
   /** A field's filter, as any bar or panel draws it — ONE definition, so two
@@ -1045,18 +979,9 @@ export class DataSource extends EventTarget {
    *  the rows HOLD, never a lower-cased copy a heading's menu would not share.
    *  TRAP T-a-field-is-declared-once · TRAP T-one-comparison-rule-for-query-and-ui */
   filterDef(field: string): FieldFilter {
-    const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
-    const body = type === 'number' || type === 'date' ? type : undefined;
-    const values = body || rest.advanced === 'only' ? [] : this.valuesFor(field).map(valueKey);
-    // A date's declared values are the days a calendar may pick. TRAP T-a-date-chip-names-its-field
-    const days = type === 'date' ? this.valuesFor(field).map(String) : [];
-    return {
-      id: field, label: label ?? field, ...rest,
-      ...(body ? { kind: body } : {}),
-      ...(values.length ? { options: values.map((v) => ({ value: v, label: labels?.[v] ?? v })) } : {}),
-      ...(days.length ? { availableDates: days } : {}),
-    };
+    return this.#catalogue.filterDef(field);
   }
+
 
   /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
   declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {
@@ -1128,7 +1053,7 @@ export class DataSource extends EventTarget {
     // UP IS OPEN, DOWN IS CLOSED: below the View, what it holds is not offered.
     // TRAP T-component-extends-view-never-alters-it
     const skip = new Set([...taken, ...(scope === VIEW ? [] : this.scope(VIEW))]);
-    return this.fields(scope).filter((f) => !skip.has(f) && this.#fields.has(f)).map((f) => {
+    return this.fields(scope).filter((f) => !skip.has(f) && this.#catalogue.has(f)).map((f) => {
       const at = this.scopeOf(f);
       return at && at !== scope ? { ...this.filterDef(f), note: this.scopeLabel(at) } : this.filterDef(f);
     });
@@ -1136,14 +1061,7 @@ export class DataSource extends EventTarget {
 
   /** What `declareValues` was told, as the data holds it. */
   valuesFor(field: string): unknown[] {
-    return [...(this.#domains.get(field) ?? [])];
-  }
-
-  /** That field's declared values, by their string key. */
-  #domainByKey(field: string): Map<string, unknown> {
-    const out = new Map<string, unknown>();
-    for (const v of this.#domains.get(field) ?? []) out.set(valueKey(v), v);
-    return out;
+    return this.#catalogue.valuesFor(field);
   }
 
   /**
@@ -1162,7 +1080,7 @@ export class DataSource extends EventTarget {
     /* A control hands back the KEY it was given, so it maps to the value the
        row holds. A raw value is left alone.
        TRAP T-a-value-can-be-an-object */
-    const declared = this.#domainByKey(field);
+    const declared = this.#catalogue.byKey(field);
     const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
     const next: FieldReading = { ...answerOf(reading), picked: raws };
     /* CONDITIONS count. A field answered only by rows — "starts with Go", or
@@ -1251,7 +1169,7 @@ export class DataSource extends EventTarget {
    * chip, a column menu, a legend row or anything else that draws it.
    */
   selection(field: string, label?: string): FilterState {
-    return fieldState({ field, ...this.#facts(field, label) }, this.#reading(field) ?? {});
+    return this.#catalogue.stateFor(field, this.#reading(field) ?? {}, label);
   }
 
   /** Every field currently selected. */
@@ -1289,7 +1207,7 @@ export class DataSource extends EventTarget {
     for (const [, scope] of eachScope(this.#draft)) {
       // A carry-over field keeps its answer. TRAP T-a-field-can-carry-over-views
       scope.readings = Object.fromEntries(Object.entries(scope.readings)
-        .filter(([field]) => this.#fields.get(field)?.carryOver));
+        .filter(([field]) => this.#catalogue.carriesOver(field)));
     }
     this.#prune();
   }
@@ -1543,7 +1461,7 @@ export class DataSource extends EventTarget {
       only: this.#only,
       scopes: Object.fromEntries(this.scopes.map((id) => [id, this.scope(id)])),
       offers: Object.fromEntries(this.#offers),
-      fields: Object.fromEntries(this.#fields),
+      fields: Object.fromEntries(this.#catalogue.declared()),
       // Which field a Date filter narrows — or `null`, which explains one
       // that narrows nothing. TRAP T-a-record-has-a-time-of-its-own
       time: this.store.time ?? null,
@@ -1584,7 +1502,7 @@ export class DataSource extends EventTarget {
    *  component scopes, and the picks a later answer set aside. */
   #compileFacts(): CompileFacts {
     return {
-      field: (f) => this.#facts(f),
+      field: (f) => this.#catalogue.facts(f),
       preset: (id) => this.#presets.get(id),
       components: this.#componentScopes(),
       fixed: new Set(this.#defaults.keys()),
@@ -1648,7 +1566,7 @@ export class DataSource extends EventTarget {
        TRAP T-a-field-can-carry-over-views */
     for (const [id, scope] of eachScope(base)) {
       for (const [field, reading] of Object.entries(scope.readings)) {
-        if (!this.#fields.get(field)?.carryOver) continue;
+        if (!this.#catalogue.carriesOver(field)) continue;
         if (Object.values(next.scopes).some((s) => field in s.readings)) continue;
         (next.scopes[id] ??= emptyScope()).readings[field] = structuredClone(reading);
       }
@@ -1954,7 +1872,7 @@ export class DataSource extends EventTarget {
   async results(scope: string): Promise<Record<string, number>> {
     const q = this.#applied.scopes[scope];
     if (!q) return {};
-    const field = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
+    const field = (f: string): Omit<FieldFacts, 'field'> => this.#catalogue.facts(f);
     const { view } = compile(this.#applied, this.#compileFacts());
     const base = scope === VIEW || !view ? [] : [view];
     // One field, one scope: a field the View holds is the View's.
@@ -1991,9 +1909,9 @@ export class DataSource extends EventTarget {
     const out: Record<string, Record<string, number>> = {};
     await Promise.all(Object.entries(q.readings).flatMap(([f, reading]) => {
       if (above.has(f) || reading.suspended) return [];
-      const state = this.#stateFor(f, reading);
+      const state = this.#catalogue.stateFor(f, reading);
       if (state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP) return [];
-      const type = this.#fields.get(f)?.type;
+      const type = this.#catalogue.get(f)?.type;
       return (reading.picked ?? []).map(async (value) => {
         /* ONE value, with no list beside it: against the field's whole list,
            the one value of a one-value field reads as "everything", no filter.
@@ -2063,7 +1981,7 @@ export class DataSource extends EventTarget {
     // A chart's own scope answers its legend's one field.
     const part = this.#narrowing.get(scope)?.field;
     const fields = [...new Set([...(q?.holds ?? []), ...(scope === VIEW ? [] : this.fields(scope)), ...(part ? [part] : [])])]
-      .filter((f) => !above.has(f) && this.#isListField(f));
+      .filter((f) => !above.has(f) && this.#catalogue.isList(f));
     // Fields limited by the same filter share one pass over the rows.
     const passes = new Map<string, { filter: Filter | undefined; fields: string[] }>();
     const facts = this.#compileFacts();
@@ -2076,13 +1994,6 @@ export class DataSource extends EventTarget {
     const out: Record<string, string[]> = {};
     for (const { filter, fields: some } of passes.values()) Object.assign(out, await this.#presentUnder(some, filter));
     return out;
-  }
-
-  /** A field whose values are a list a control offers one by one. */
-  #isListField(field: string): boolean {
-    const facts = this.#fields.get(field) ?? {};
-    return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
-      && facts.advanced !== 'only';
   }
 
   /** What limits one field: the applied Query compiled WITHOUT that field's own answer in its scope. */
@@ -2120,7 +2031,7 @@ export class DataSource extends EventTarget {
   async #setAsideNow(): Promise<Map<string, Record<string, string[]>>> {
     const out = await this.#chainAside();
     if (!this.#limitOptions) return out;
-    const facts = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
+    const facts = (f: string): Omit<FieldFacts, 'field'> => this.#catalogue.facts(f);
     const viewHolds = heldInView(this.#applied);
     const below = this.#below();
     type Part = { field?: string; clause: Filter };
@@ -2138,9 +2049,9 @@ export class DataSource extends EventTarget {
       for (const f of newest) {
         const reading = q.readings[f]!;
         if (reading.suspended || (scope !== VIEW && viewHolds.has(f))) continue;
-        const state = this.#stateFor(f, reading);
+        const state = this.#catalogue.stateFor(f, reading);
         const picks = reading.picked ?? [];
-        if (!this.#isListField(f) || state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP || !picks.length) {
+        if (!this.#catalogue.isList(f) || state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP || !picks.length) {
           const clause = readingClause({ field: f, ...facts(f) }, reading);
           if (clause) parts.push({ field: f, clause });
           continue;
@@ -2192,7 +2103,7 @@ export class DataSource extends EventTarget {
   #clauseOf(scope: string, field: string, aside: readonly string[] | undefined): Filter | undefined {
     const reading = this.#applied.scopes[scope]?.readings[field];
     if (!reading || reading.suspended) return undefined;
-    return readingClause({ field, ...this.#facts(field) }, withoutDropped(reading, aside));
+    return readingClause({ field, ...this.#catalogue.facts(field) }, withoutDropped(reading, aside));
   }
 
   /** Down each serial chain: a list field keeps the picks the rows hold under
@@ -2204,7 +2115,7 @@ export class DataSource extends EventTarget {
       for (const f of chain) {
         const picks = this.#applied.scopes[scope]?.readings[f]?.picked ?? [];
         let aside: string[] = [];
-        if (above.length && picks.length && this.#isListField(f)) {
+        if (above.length && picks.length && this.#catalogue.isList(f)) {
           const held = new Set((await this.#presentUnder([f], andFilter(above)))[f]);
           aside = picks.map(valueKey).filter((k) => !held.has(k));
           if (aside.length) out.set(scope, { ...out.get(scope), [f]: aside });
@@ -2229,7 +2140,7 @@ export class DataSource extends EventTarget {
       if (s !== scope) continue;
       const above: Filter[] = [];
       for (const f of chain) {
-        if (above.length && this.#isListField(f)) Object.assign(out, await this.#presentUnder([f], andFilter(above)));
+        if (above.length && this.#catalogue.isList(f)) Object.assign(out, await this.#presentUnder([f], andFilter(above)));
         const clause = this.#clauseOf(scope, f, aside[f]);
         if (clause) above.push(clause);
       }

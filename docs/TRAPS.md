@@ -1335,7 +1335,7 @@ failure would have no banner.
 - Site: `src/components/sherpa-container/sherpa-container.css`
 - Site: `test/e2e/reforged-container.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/field-catalogue.ts`
 
 ### T-the-nav-is-a-menu-on-a-phone
 
@@ -11155,6 +11155,7 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/field-catalogue.ts`
 
 ### T-the-panel-reports-its-own-reading
 
@@ -13512,6 +13513,7 @@ to right-align or sort numerically must read the row, not the state.
 - Site: `src/core/data/validate.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/value-types.test.mjs`
+- Site: `src/core/data/field-catalogue.ts`
 
 ### T-one-comparison-rule-for-query-and-ui
 
@@ -14326,7 +14328,7 @@ next reader does not chase them again:
   `#chipPicks` reads. Setting `chip.values` on one looks like it worked and
   reports nothing.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/field-catalogue.ts`
 
 ### T-any-component-can-be-bound
 
