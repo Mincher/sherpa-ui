@@ -107,24 +107,24 @@ export class SherpaMetric extends SherpaElement {
     const label = rawLabel != null && total && !/^total\b/i.test(String(rawLabel))
       ? `Total ${String(rawLabel).charAt(0).toLowerCase()}${String(rawLabel).slice(1)}`
       : rawLabel;
-    if (label != null) this.dataset['label'] = String(label);
+    if (label != null) this.set('data-label', String(label));
 
     /* An explicit `value` wins: deriving over the caller's own number would
        silently disagree with it. Otherwise the series answers. */
     const derived = data.value ?? deriveValue(data.values, data.show);
     if (typeof derived === 'number') this.value = derived;
-    else if (derived != null) this.dataset['value'] = derived;
+    else if (derived != null) this.set('data-value', derived);
 
     if (data.delta != null) {
-      this.dataset['delta'] = data.delta;
+      this.set('data-delta', data.delta);
     } else if (data.deltaPercent != null && Number.isFinite(data.deltaPercent)) {
       /* TWO decimals at most (Will, 2026-09-22), signed, in the reader's own
          digits — the platform's percent. TRAP T-a-delta-is-derived-not-declared */
-      this.dataset['delta'] = DELTA.format(data.deltaPercent / 100);
+      this.set('data-delta', DELTA.format(data.deltaPercent / 100));
     }
 
     const trend = data.trend ?? this.#deriveTrend(data.deltaPercent);
-    if (trend) this.dataset['trend'] = trend;
+    if (trend) this.set('data-trend', trend);
     this.#applyStatus(trend);
 
     if (Array.isArray(data.values) && data.values.length > 0) {
@@ -138,8 +138,8 @@ export class SherpaMetric extends SherpaElement {
   }
   set value(n: number | undefined) {
     this.#value = n;
-    if (n == null) this.removeAttribute('data-value');
-    else this.dataset['value'] = this.#format(n);
+    if (n == null) this.set('data-value', null);
+    else this.set('data-value', this.#format(n));
   }
 
   /** The last number given. */
@@ -177,8 +177,8 @@ export class SherpaMetric extends SherpaElement {
   /** A rising trend reads success, a falling one critical. */
   #applyStatus(trend: 'up' | 'down' | 'flat' | null): void {
     const status = trend === 'up' ? 'success' : trend === 'down' ? 'critical' : null;
-    if (status) this.dataset['status'] = status;
-    else delete this.dataset['status'];
+    if (status) this.set('data-status', status);
+    else this.set('data-status', null);
   }
 
   /** Trend from the percent, when the caller gave none. */
@@ -194,7 +194,7 @@ export class SherpaMetric extends SherpaElement {
     const spark = this.$<Sparkline>('sherpa-sparkline');
     if (!spark) return;
     this.#series = [...values];
-    this.setAttribute('data-has-values', '');
+    this.set('data-has-values', '');
     spark.populate?.(values);
   }
 }

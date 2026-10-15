@@ -267,7 +267,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ✅ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
 | ✅ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
-| ⬜ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
+| ✅ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
 | ⬜ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
 | ⬜ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
 | ⬜ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
@@ -6388,6 +6388,22 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 276 — Phase 4: one write door, and a smaller base
+
+D5. **✅ Done 2026-10-15.** A component writes its own `data-*` through
+`this.set(...)`: 110 hand writes in 26 components — `dataset['x'] = v`,
+`delete dataset['x']`, and `set`/`toggle`/`removeAttribute('data-x')` — are
+calls to it now, moved by a script that reads the TypeScript syntax tree, so a
+write that spans lines is safe. (Three uses against about 167 was the review's
+count; the state moves had taken some already.) `emit(name, detail, { cancelable })`
+returns whether the event was kept: `view-reset` is no longer built by hand three
+times, nor `select-all-request`. The hand `Number(…)` reads of an attribute are
+`this.num()`, and the app header's icon is a declared prop with `as: 'icon'`.
+`markNeedles` and `markMatch`, one user each, are `core/ui/mark-text.ts`.
+Already done by 274: `mirrorAttrs`. Left: nav and input-text's own icon writes,
+which say why in their comments (the host's slot fallback must be emptied
+first; the raw-glyph sink). 1318 tests in three engines.
 
 ### `[x]` ✅ 275 — Phase 4: private host state is `:state()` (D3)
 

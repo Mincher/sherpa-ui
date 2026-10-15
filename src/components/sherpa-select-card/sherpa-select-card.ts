@@ -136,7 +136,7 @@ export class SherpaSelectCard extends SherpaElement {
 
   /** Apply the selected state, coordinate the radio group, report it. */
   #setSelected(next: boolean): void {
-    this.toggleAttribute('data-selected', next);
+    this.set('data-selected', next);
     if (next && !this.#isCheckbox()) this.#deselectGroup();
     this.emit('change', { selected: next, value: this.value });
   }

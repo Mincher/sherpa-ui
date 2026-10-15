@@ -53,7 +53,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
     return this.num('data-current-step', 0, { int: true });
   }
   set currentStep(index: number) {
-    this.dataset['currentStep'] = String(index);
+    this.set('data-current-step', String(index));
   }
 
   /** Draw each step and the connector between them. */

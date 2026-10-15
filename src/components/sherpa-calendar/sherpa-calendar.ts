@@ -70,7 +70,7 @@ export class SherpaCalendar extends SherpaElement {
     const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart'])
       ?? this.#availableAnchor();
     if (anchor) this.#shown = anchor.toPlainYearMonth();
-    if (!this.dataset['view']) this.dataset['view'] = 'day';
+    if (!this.dataset['view']) this.set('data-view', 'day');
     // Project the stepper BEFORE binding, so it exists to bind to.
     if (this.hasAttribute('data-embedded')) this.#projectHeader();
     for (const el of this.#headerEls('.cal-prev')) el.addEventListener('click', this.#onPrev);
@@ -126,7 +126,7 @@ export class SherpaCalendar extends SherpaElement {
   /* ── Public API ─────────────────────────────────────────────────────── */
 
   get value(): string { return this.dataset['value'] ?? ''; }
-  set value(v: string) { if (v) this.dataset['value'] = v; else delete this.dataset['value']; }
+  set value(v: string) { if (v) this.set('data-value', v); else this.set('data-value', null); }
 
   get #view(): View {
     const v = this.dataset['view'];
@@ -458,7 +458,7 @@ export class SherpaCalendar extends SherpaElement {
 
   /** The label zooms out: day → month → year. */
   #onLabel = (): void => {
-    this.dataset['view'] = this.#view === 'day' ? 'month' : 'year';
+    this.set('data-view', this.#view === 'day' ? 'month' : 'year');
     this.#render();
   };
 
@@ -468,7 +468,7 @@ export class SherpaCalendar extends SherpaElement {
     const m = cell?.dataset['month'];
     if (m == null || cell?.hasAttribute('disabled')) return;
     this.#shown = this.#shown.with({ month: Number(m) + 1 });
-    this.dataset['view'] = 'day';
+    this.set('data-view', 'day');
     this.#render();
   };
 
@@ -478,7 +478,7 @@ export class SherpaCalendar extends SherpaElement {
     const y = cell?.dataset['year'];
     if (y == null || cell?.hasAttribute('disabled')) return;
     this.#shown = this.#shown.with({ year: Number(y) });
-    this.dataset['view'] = 'month';
+    this.set('data-view', 'month');
     this.#render();
   };
 
@@ -496,7 +496,7 @@ export class SherpaCalendar extends SherpaElement {
   #pickSingle(iso: string): void {
     const time = this.#hasTime ? this.#currentTime() : '';
     const value = time ? `${iso}T${time}` : iso;
-    this.dataset['value'] = value;
+    this.set('data-value', value);
     this.#syncTimeInput();
     this.#render();
     this.emit('datetime-change', { value });
@@ -509,15 +509,15 @@ export class SherpaCalendar extends SherpaElement {
     this.#picking = true;
     try {
       if (!start || (start && end)) {
-        this.dataset['valueStart'] = iso;
-        delete this.dataset['valueEnd'];
+        this.set('data-value-start', iso);
+        this.set('data-value-end', null);
         this.#render();
         return;
       }
       let s = start, e = iso;
       if (e < s) { [s, e] = [e, s]; }
-      this.dataset['valueStart'] = s;
-      this.dataset['valueEnd'] = e;
+      this.set('data-value-start', s);
+      this.set('data-value-end', e);
       this.#render();
       this.emit('range-select', { start: s, end: e });
     } finally {
@@ -538,7 +538,7 @@ export class SherpaCalendar extends SherpaElement {
     if (!date) return;
     const time = this.#currentTime();
     const value = time ? `${date}T${time}` : date;
-    this.dataset['value'] = value;
+    this.set('data-value', value);
     this.emit('datetime-change', { value });
   };
 
@@ -557,7 +557,7 @@ export class SherpaCalendar extends SherpaElement {
   #onToday = (): void => {
     const now = today();
     this.#shown = now.toPlainYearMonth();
-    this.dataset['view'] = 'day';
+    this.set('data-view', 'day');
     const iso = now.toString();
     const min = this.dataset['min'] ?? '';
     const max = this.dataset['max'] ?? '';

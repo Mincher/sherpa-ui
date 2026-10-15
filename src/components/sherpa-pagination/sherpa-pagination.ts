@@ -49,14 +49,14 @@ export class SherpaPagination extends SherpaElement {
     return this.num('data-total-pages', 1, { min: 1, int: true });
   }
   set totalPages(value: number) {
-    this.setAttribute('data-total-pages', String(Math.max(1, Math.trunc(value) || 1)));
+    this.set('data-total-pages', String(Math.max(1, Math.trunc(value) || 1)));
   }
 
   get page(): number {
     return this.num('data-page', 1, { min: 1, max: this.totalPages, int: true });
   }
   set page(value: number) {
-    this.setAttribute('data-page', String(this.#clamp(value)));
+    this.set('data-page', String(this.#clamp(value)));
   }
 
   /** The default rows-per-page when a host does not name one. */
@@ -73,7 +73,7 @@ export class SherpaPagination extends SherpaElement {
     return opts.includes(preferred) ? preferred : (opts[0] ?? preferred);
   }
   set pageSize(value: number) {
-    this.setAttribute('data-page-size', String(Math.max(1, Math.trunc(value) || 1)));
+    this.set('data-page-size', String(Math.max(1, Math.trunc(value) || 1)));
   }
 
   /**
@@ -87,7 +87,7 @@ export class SherpaPagination extends SherpaElement {
       this.#render(); // snap the input back if the user typed an out-of-range value
       return;
     }
-    if (!this.hasAttribute('data-locked')) this.setAttribute('data-page', String(next));
+    if (!this.hasAttribute('data-locked')) this.set('data-page', String(next));
     this.emit('page-change', { page: next });
   }
 
@@ -182,7 +182,7 @@ export class SherpaPagination extends SherpaElement {
     const select = event.target as HTMLSelectElement;
     const size = parseInt(select.value, 10);
     if (Number.isNaN(size)) return;
-    if (!this.hasAttribute('data-locked')) this.setAttribute('data-page-size', String(size));
+    if (!this.hasAttribute('data-locked')) this.set('data-page-size', String(size));
     this.emit('page-size-change', { pageSize: size });
   };
 }

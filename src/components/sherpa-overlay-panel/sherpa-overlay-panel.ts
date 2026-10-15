@@ -132,7 +132,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Collapse or expand the panel, and report it. */
   #onCollapse = (): void => {
     const collapsed = !this.hasAttribute('data-collapsed');
-    this.toggleAttribute('data-collapsed', collapsed);
+    this.set('data-collapsed', collapsed);
     this.emit('panel-collapse', { collapsed });
   };
 

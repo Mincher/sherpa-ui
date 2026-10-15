@@ -576,7 +576,10 @@
       "$type": "event",
       "name": "select-all-request",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "answer": "(rows: readonly GridRow[]) => void"
+      }
     }
   ],
   "tokens": {

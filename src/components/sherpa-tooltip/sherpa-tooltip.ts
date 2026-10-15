@@ -23,7 +23,7 @@ export class SherpaTooltip extends SherpaElement {
   } as const;
 
   override onRender(): void {
-    if (!this.dataset['placement']) this.dataset['placement'] = 'top';
+    if (!this.dataset['placement']) this.set('data-placement', 'top');
 
     const bubble = this.$('.bubble');
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
@@ -147,8 +147,8 @@ export class SherpaTooltip extends SherpaElement {
     return this.dataset['text'] ?? '';
   }
   set text(value: string) {
-    if (value) this.dataset['text'] = value;
-    else delete this.dataset['text'];
+    if (value) this.set('data-text', value);
+    else this.set('data-text', null);
   }
 }
 

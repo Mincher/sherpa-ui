@@ -160,7 +160,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Cumulative: step 2 sets collapse-1 and collapse-2. TRAP T-private-state-is-a-custom-state
     for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) this.toggleState(`collapse-${step}`, false);
     this.#collapse = 0;
-    this.removeAttribute('data-folded');
+    this.set('data-folded', null);
     this.#showAllChips();
 
     for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) {
@@ -176,7 +176,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         const chip = run[i]!;
         chip.toggleAttribute('data-folded-away', true);
         folded.unshift(chip);
-        this.setAttribute('data-folded', String(folded.length));
+        this.set('data-folded', String(folded.length));
         if (!this.#overflowing()) break;
       }
     }
@@ -1486,7 +1486,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         /* The View's OWN filters — only its provider knows them. CANCELABLE: a
            host that asks the reader first takes it over.
            TRAP T-reset-to-default-is-the-views-own */
-        this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
+        this.emit('view-reset', {}, { cancelable: true });
         break;
       case 'refresh':
         this.emit('data-refresh');
@@ -1645,7 +1645,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #toggleFavourite(): void {
     const on = !this.hasAttribute('data-favourite');
     if (!this.hasAttribute('data-locked')) {
-      this.toggleAttribute('data-favourite', on);
+      this.set('data-favourite', on);
       this.#syncFavouriteFromAttr();
     }
     this.emit('view-favorite', { favourite: on });

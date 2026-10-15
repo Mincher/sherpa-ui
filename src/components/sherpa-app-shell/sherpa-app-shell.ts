@@ -110,7 +110,7 @@ export class SherpaAppShell extends SherpaElement {
 
   /** The host's width for an area, in: none is the area's own. */
   #askWidth(side: 'start' | 'end'): void {
-    const px = Number(this.getAttribute(`data-panel-${side}-width`));
+    const px = this.num(`data-panel-${side}-width`, 0);
     if (px > 0) this.style.setProperty(`--_asked-${side}`, `${px}px`);
     else this.style.removeProperty(`--_asked-${side}`);
   }
@@ -144,7 +144,7 @@ export class SherpaAppShell extends SherpaElement {
   #onNavState = (event: Event): void => {
     if (this.hasAttribute('data-no-nav')) return;
     const state = (event as CustomEvent).detail?.state as string | undefined;
-    if (state) this.dataset['navState'] = state;
+    if (state) this.set('data-nav-state', state);
   };
 
   /** The rail: slotted, the default, or inside a consumer's wrapper. */
@@ -158,7 +158,7 @@ export class SherpaAppShell extends SherpaElement {
   #adoptRailState(): void {
     if (this.hasAttribute('data-no-nav')) return;
     const state = this.#rail()?.dataset['navState'];
-    if (state) this.dataset['navState'] = state;
+    if (state) this.set('data-nav-state', state);
   }
 }
 

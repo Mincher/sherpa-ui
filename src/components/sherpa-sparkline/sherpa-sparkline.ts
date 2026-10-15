@@ -35,7 +35,7 @@ export class SherpaSparkline extends SherpaElement {
   /** populate(number[]) — the points, kept in data-values, which is the source of truth */
   protected override renderData(source: unknown): void {
     if (!Array.isArray(source)) return;
-    this.dataset['values'] = JSON.stringify(source);
+    this.set('data-values', JSON.stringify(source));
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
@@ -60,7 +60,7 @@ export class SherpaSparkline extends SherpaElement {
     const count = values.length;
 
     // CSS owns which shapes show, via :host([data-len="…"]).
-    this.dataset['len'] = String(count);
+    this.set('data-len', String(count));
 
     if (count === 0) return;
 

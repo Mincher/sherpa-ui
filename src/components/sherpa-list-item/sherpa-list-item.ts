@@ -92,7 +92,7 @@ export class SherpaListItem extends SherpaElement {
   #onExpand = (event: Event): void => {
     event.stopPropagation();
     const expanded = !this.hasAttribute('data-expanded');
-    this.toggleAttribute('data-expanded', expanded);
+    this.set('data-expanded', expanded);
     this.emit('item-expand', { expanded });
   };
 

@@ -190,7 +190,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if ((event as CustomEvent).detail?.value !== 'reset-default') return;
       event.stopPropagation();
       // CANCELABLE: a host that asks the reader first takes it over.
-      this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
+      this.emit('view-reset', {}, { cancelable: true });
     });
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // REMOTE: every field's Apply or Discard at once. Will, TODO 98.
@@ -1797,7 +1797,7 @@ export class SherpaFilterPanel extends SherpaElement {
     } else if (picked === 'reset') {
       this.#onResetAll();
     } else if (picked === 'reset-default') {
-      this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
+      this.emit('view-reset', {}, { cancelable: true });
     } else this.#saveAct(picked);
   };
 

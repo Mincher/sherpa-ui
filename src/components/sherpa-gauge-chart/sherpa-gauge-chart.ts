@@ -97,7 +97,7 @@ export class SherpaGaugeChart extends SherpaElement {
     return this.num('data-value', 0);
   }
   set value(v: number) {
-    this.dataset['value'] = String(v);
+    this.set('data-value', String(v));
   }
 
   /** Redraw everything from the current attributes. */

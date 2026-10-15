@@ -41,7 +41,7 @@ export class SherpaContainer extends SherpaElement {
     // Dismiss is this card's own: the overlay goes, the last data stays.
     for (const b of this.$$('.dismiss')) {
       b.addEventListener('button-click', () => {
-        this.removeAttribute('data-state');
+        this.set('data-state', null);
         this.emit('state-dismiss');
       });
     }
@@ -50,11 +50,11 @@ export class SherpaContainer extends SherpaElement {
   /** populate({ state, message }) — a host with no provider sets the state by hand. */
   protected override renderData(data: unknown): void {
     const { state, message } = (data ?? {}) as ContainerState;
-    this.toggleAttribute('data-loading', state === 'loading');
-    if (state && state !== 'loading') this.dataset['state'] = state;
-    else delete this.dataset['state'];
-    if (message) this.dataset['errorMessage'] = message;
-    else delete this.dataset['errorMessage'];
+    this.set('data-loading', state === 'loading');
+    if (state && state !== 'loading') this.set('data-state', state);
+    else this.set('data-state', null);
+    if (message) this.set('data-error-message', message);
+    else this.set('data-error-message', null);
   }
 }
 

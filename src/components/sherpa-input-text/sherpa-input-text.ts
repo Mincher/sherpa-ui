@@ -391,8 +391,8 @@ export class SherpaInputText extends SherpaElement {
 
   /** Write the message; CSS paints the state. */
   #setError(message: string): void {
-    if (message) this.dataset['error'] = message;
-    else delete this.dataset['error'];
+    if (message) this.set('data-error', message);
+    else this.set('data-error', null);
     this.#control?.setAttribute('aria-invalid', message ? 'true' : 'false');
     this.#syncValue();
   }

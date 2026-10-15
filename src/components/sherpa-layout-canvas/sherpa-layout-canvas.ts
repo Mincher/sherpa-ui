@@ -162,7 +162,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.style.setProperty('--_x', `${this.#x}px`);
     this.style.setProperty('--_y', `${this.#y}px`);
     this.style.setProperty('--_zoom', String(this.#zoom));
-    this.dataset['zoom'] = String(SherpaLayoutCanvas.#round(this.#zoom));
+    this.set('data-zoom', String(SherpaLayoutCanvas.#round(this.#zoom)));
     const at = Math.round(this.#zoom * 100);
     this.$('.viewport')?.setAttribute('aria-label', `Canvas, ${at}%`);
     const [min, max] = this.#bounds();

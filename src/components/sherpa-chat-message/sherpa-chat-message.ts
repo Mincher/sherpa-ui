@@ -19,7 +19,7 @@ export class SherpaChatMessage extends SherpaElement {
   } as const;
 
   override onRender(): void {
-    if (!this.dataset['type']) this.dataset['type'] = 'assistant';
+    if (!this.dataset['type']) this.set('data-type', 'assistant');
     this.#sync();
   }
 

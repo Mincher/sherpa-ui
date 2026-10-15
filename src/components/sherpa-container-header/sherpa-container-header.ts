@@ -50,7 +50,7 @@ export class SherpaContainerHeader extends SherpaElement {
   /** Collapse or expand, and report it. */
   #onToggle = (): void => {
     const collapsed = !this.hasAttribute('data-collapsed');
-    this.toggleAttribute('data-collapsed', collapsed);
+    this.set('data-collapsed', collapsed);
     this.emit('header-collapse', { collapsed });
   };
 

@@ -106,7 +106,7 @@ export class SherpaDialog extends SherpaElement {
    */
   confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean } = {}): Promise<boolean> {
     const action = this.#buttons().at(-1);
-    if (ask.heading !== undefined) this.dataset['heading'] = ask.heading;
+    if (ask.heading !== undefined) this.set('data-heading', ask.heading);
     const words = this.querySelector(':scope > p');
     if (words && ask.words !== undefined) words.textContent = ask.words;
     if (action && ask.action !== undefined) action.textContent = ask.action;

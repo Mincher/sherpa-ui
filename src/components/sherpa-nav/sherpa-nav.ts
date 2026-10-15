@@ -87,7 +87,7 @@ export class SherpaNav extends SherpaElement {
   #beforeSettings: NavState = 'collapsed';
 
   override onRender(): void {
-    if (!this.dataset['navState']) this.dataset['navState'] = 'collapsed';
+    if (!this.dataset['navState']) this.set('data-nav-state', 'collapsed');
 
     // Delegated — rows come and go, these listeners stay.
     this.$('.rail')?.addEventListener('item-select', this.#onItemClick as EventListener);
@@ -141,7 +141,7 @@ export class SherpaNav extends SherpaElement {
    */
   openMenu(): void {
     if (this.hasAttribute('data-menu')) return;
-    this.toggleAttribute('data-menu', true);
+    this.set('data-menu', true);
     // The top layer: over the shell and its overlay, whatever contains them.
     this.popover = 'manual';
     this.showPopover();
@@ -154,7 +154,7 @@ export class SherpaNav extends SherpaElement {
     if (!this.hasAttribute('data-menu')) return;
     if (this.matches(':popover-open')) this.hidePopover();
     this.removeAttribute('popover');
-    this.removeAttribute('data-menu');
+    this.set('data-menu', null);
     if (this.state !== 'settings') this.#setState('collapsed');
     this.emit('nav-menu-change', { open: false });
   }
@@ -180,7 +180,7 @@ export class SherpaNav extends SherpaElement {
     if (previous === next) return;
     if (next === 'settings') this.#beforeSettings = previous;
     // Writing the attribute is the ONLY step; onChange owns the re-render.
-    this.dataset['navState'] = next;
+    this.set('data-nav-state', next);
     this.emit('nav-state-change', { state: next });
   }
 
@@ -265,7 +265,7 @@ export class SherpaNav extends SherpaElement {
       this.#applyIcon(iconSlot, this.#config.product.icon);
     }
     // A product name implies a full nav, which has search.
-    if (this.#config.product) this.toggleAttribute('data-searchable', true);
+    if (this.#config.product) this.set('data-searchable', true);
   }
 
   /** The quick items above the sections; none in Settings. */
@@ -397,8 +397,8 @@ export class SherpaNav extends SherpaElement {
     return this.dataset['currentId'] ?? '';
   }
   set currentId(id: string) {
-    if (id) this.setAttribute('data-current-id', id);
-    else this.removeAttribute('data-current-id');
+    if (id) this.set('data-current-id', id);
+    else this.set('data-current-id', null);
   }
 
   /** A row was clicked: make it current and report it. */
@@ -406,7 +406,7 @@ export class SherpaNav extends SherpaElement {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     const id = row?.dataset['id'];
     if (!id) return;
-    this.setAttribute('data-current-id', id);
+    this.set('data-current-id', id);
     this.emit('nav-select', { id, ...this.entry(id) });
     // A CONTEXT row goes, so the menu goes; an Area only opens. TRAP T-the-nav-is-a-menu-on-a-phone
     if (row?.querySelector('sherpa-nav-item')?.hasAttribute('data-href')) this.closeMenu();

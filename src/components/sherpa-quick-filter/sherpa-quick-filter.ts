@@ -192,7 +192,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (initial.length) {
       this.#syncLabelForSelection(initial);
       this.#syncCountTip(initial);
-      if (initial.length > 1) this.dataset['count'] = String(initial.length);
+      if (initial.length > 1) this.set('data-count', String(initial.length));
     } else {
       /* …and a TYPED answer, which ticks nothing — asked once its menu has
          drawn AND its rows have filled: a frame later, or a few on a busy
@@ -274,7 +274,7 @@ export class SherpaQuickFilter extends SherpaElement {
     return this.hasAttribute('data-current');
   }
   set current(v: boolean) {
-    this.toggleAttribute('data-current', v);
+    this.set('data-current', v);
     this.#syncEmpty();
   }
 
@@ -422,7 +422,7 @@ export class SherpaQuickFilter extends SherpaElement {
       menu.mode = 'simple';
     }
     if (this.hasAttribute('data-menu')) return this.#setPicks([]);
-    this.removeAttribute('data-current');
+    this.set('data-current', null);
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
   }
 
@@ -540,7 +540,7 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #applySort(field: string | null, direction: SortDirection | null): void {
     // A suspended chip rewinds to `asc` — that is where a resume starts.
-    this.dataset['direction'] = direction ?? 'asc';
+    this.set('data-direction', direction ?? 'asc');
     this.current = direction !== null;
     this.#drawArrangement();
     this.emit('sort-change', {
@@ -561,22 +561,22 @@ export class SherpaQuickFilter extends SherpaElement {
   arrangeBy(field: string, direction?: string | null): void {
     if (!this.#arranges()) return;
     if (!field) {
-      this.removeAttribute('data-current');
+      this.set('data-current', null);
       this.#drawArrangement();
       return;
     }
     /* NAME THE COLUMN, then tick it. A rebuilt menu has no rows for a frame, so
        the tick can miss — `data-column` is what the chip reads until it lands.
        TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-    this.dataset['column'] = field;
+    this.set('data-column', field);
     for (const radio of this.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
       radio.checked = radio.value === field;
     }
     const suspended = this.dataset['kind'] === 'sort' && direction === '';
     if (this.dataset['kind'] === 'sort') {
-      this.dataset['direction'] = suspended ? 'asc' : sortDirectionFrom(direction ?? undefined) ?? 'asc';
+      this.set('data-direction', suspended ? 'asc' : sortDirectionFrom(direction ?? undefined) ?? 'asc');
     }
-    this.toggleAttribute('data-current', !suspended);
+    this.set('data-current', !suspended);
     this.#drawArrangement();
   }
 
@@ -592,7 +592,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.valueLabel = field ? (row?.textContent ?? '').trim() || field : '';
     const dir = this.dataset['kind'] === 'sort' ? this.direction : null;
     if (this.dataset['kind'] === 'sort') {
-      this.setAttribute('data-icon-start', dir === null ? ORGANISE_ICONS.sortNone
+      this.set('data-icon-start', dir === null ? ORGANISE_ICONS.sortNone
         : dir === 'desc' ? ORGANISE_ICONS.sortDesc : ORGANISE_ICONS.sortAsc);
     }
     // The tip says the column, and for a sort which WAY. Will, TODO 125.
@@ -656,7 +656,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** Open the value menu, or close it if it is open. */
   #openMenu(anchor?: HTMLElement): void {
     const wasOpen = this.hasAttribute('data-open');
-    this.removeAttribute('data-open');
+    this.set('data-open', null);
     if (wasOpen) this.menu?.hide?.();
     else this.menu?.show?.(anchor ?? this);
   }
@@ -700,7 +700,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const open = event.type === 'menu-open';
     this.$('.caret')?.setAttribute('aria-expanded', String(open));
     // Focus is inside the menu, so `:focus-visible` is false — CSS rings on this.
-    this.toggleAttribute('data-open', open);
+    this.set('data-open', open);
   };
 
   /** The menu changed: apply the picks — at once for an arrangement. */
@@ -748,7 +748,7 @@ export class SherpaQuickFilter extends SherpaElement {
        which reads as zero values the moment nothing is chosen.
        TRAP T-an-organise-chip-has-no-values */
     if (!this.#answersForItself()) {
-      this.removeAttribute('data-empty');
+      this.set('data-empty', null);
       return;
     }
     const menu = this.menu;
@@ -763,7 +763,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const empty = !!menu && this.current && !advanced
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
 
-    this.toggleAttribute('data-empty', empty);
+    this.set('data-empty', empty);
     /* AND CHECK AGAIN. `data-empty` is the AMBER warning, and a rebuilt menu
        reads ZERO values until it stamps — so a bar that had just added or
        removed one filter could paint an unrelated chip as "on, filtering
@@ -787,8 +787,8 @@ export class SherpaQuickFilter extends SherpaElement {
   #syncCondition(state: FilterState): void {
     if (!this.#answersForItself()) return;
     const condition = this.#given() ? 'advanced' : state.condition;
-    if (condition) this.dataset['condition'] = condition;
-    else this.removeAttribute('data-condition');
+    if (condition) this.set('data-condition', condition);
+    else this.set('data-condition', null);
   }
 
   /** An ADVANCED chip with no filter menu holds a GIVEN answer — a saved filter.
@@ -808,7 +808,7 @@ export class SherpaQuickFilter extends SherpaElement {
         const answered = (menu.values?.length ?? 0) > 0
           || menu.mode === 'advanced'
           || this.#hasTypedAnswer();
-        if (answered) this.removeAttribute('data-empty');
+        if (answered) this.set('data-empty', null);
       });
   }
 
@@ -992,7 +992,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#field ??= this.dataset['label'] ?? null;
     const field = this.#field;
     if (field == null) return;
-    this.dataset['label'] = field;
+    this.set('data-label', field);
 
     const face = filterFace(this.#state(values));
     this.valueLabel = face.value;
@@ -1024,11 +1024,11 @@ export class SherpaQuickFilter extends SherpaElement {
     const badge = this.$('.count');
     if (n == null) {
       badge?.removeAttribute('aria-label');
-      delete this.dataset['count'];
+      this.set('data-count', null);
       return;
     }
     const said = RESULTS.format(n);
-    this.dataset['count'] = said;
+    this.set('data-count', said);
     badge?.setAttribute('aria-label', `${said} ${n === 1 ? 'result' : 'results'}`);
   }
 

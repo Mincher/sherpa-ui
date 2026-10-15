@@ -1406,7 +1406,7 @@ first hit wherever that was). Overlapping or touching hits JOIN into one
 `<mark>`, so two marks never split one span.
 
 - Site: `src/core/data/store.ts`
-- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/mark-text.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
@@ -3735,7 +3735,7 @@ needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/mark-text.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
@@ -3757,7 +3757,7 @@ back.
 It returns the `<mark>`: nav-item wraps it in a `Range` for the Custom
 Highlight layer, and a caller that only wants it drawn ignores the return.
 
-- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/mark-text.ts`
 
 ### T-declared-only-means-css-owns-it
 

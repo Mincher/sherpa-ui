@@ -275,11 +275,11 @@ export class SherpaMenu extends SherpaElement {
     /* ADVANCED ONLY has no other mode to be in, so it opens in one and
        cannot leave. TRAP T-a-filter-answers-by-values-conditions-or-both */
     if (this.#advancedOnly()) {
-      if (this.dataset['mode'] !== 'advanced') this.dataset['mode'] = 'advanced';
+      if (this.dataset['mode'] !== 'advanced') this.set('data-mode', 'advanced');
       return;
     }
     if (this.dataset['mode'] === 'advanced' && !this.#offersAdvanced()) {
-      this.removeAttribute('data-mode');
+      this.set('data-mode', null);
     }
   }
 
@@ -307,7 +307,7 @@ export class SherpaMenu extends SherpaElement {
     // There is nowhere else to go. TRAP T-a-filter-answers-by-values-conditions-or-both
     if (to === 'simple' && this.#advancedOnly()) return;
     const was = this.mode;
-    this.dataset['mode'] = to;
+    this.set('data-mode', to);
     /* A NUMBER going Advanced carries its body into the rows, whoever flipped
        it — the menu's own button, a panel's f(x). TRAP T-a-number-has-advanced-rows */
     if (this.#typedBody() && was !== 'advanced' && to === 'advanced' && this.$('.condition-rows')) {
@@ -325,7 +325,7 @@ export class SherpaMenu extends SherpaElement {
   #onBodyOp = (event: Event): void => {
     const value = (event.target as HTMLElement & { value?: string }).value;
     if (!value) return;
-    this.dataset['op'] = value;
+    this.set('data-op', value);
     this.#emitConditions(true);
   };
 
@@ -337,9 +337,9 @@ export class SherpaMenu extends SherpaElement {
   #onRangeSwitch = (event: Event): void => {
     event.stopPropagation();
     const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
-    this.toggleAttribute('data-range', on);
+    this.set('data-range', on);
     // A RANGE defers: the pick is not finished on its first end.
-    if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', on);
+    if (!this.hasAttribute('data-commit-fixed')) this.set('data-commit', on);
     /* A FLIP names both sides. Any previous single pick is left alone —
        re-picking starts a range anyway. */
     this.#own('sherpa-calendar')[0]?.setAttribute('data-type', on ? 'range' : 'single');
@@ -542,7 +542,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** A number body's operator: its select, and the attribute that echoes it. */
   #setBodyOp(op: FilterOp): void {
-    this.dataset['op'] = op;
+    this.set('data-op', op);
     const select = this.$<HTMLElement & { value?: string }>('.body-op');
     if (select && select.value !== op) select.value = op;
   }
@@ -823,7 +823,7 @@ export class SherpaMenu extends SherpaElement {
       if (!keep && this.dataset['value']) this.conditionValue = '';
       return;
     }
-    if (this.dataset['op'] !== first.op) this.dataset['op'] = first.op;
+    if (this.dataset['op'] !== first.op) this.set('data-op', first.op);
     const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '') : '';
     /* `data-value` TOO. A rebuilt row already holds the text, so comparing the
        box alone skipped the write — and the next re-sync put back the empty
@@ -901,9 +901,9 @@ export class SherpaMenu extends SherpaElement {
     this.#refillPicks();
     // Row one still mirrors to the host attributes: the one-row view.
     const op = (this.#conditionField()?.value ?? DEFAULT_OP) as FilterOp;
-    if (this.dataset['op'] !== op) this.dataset['op'] = op;
-    this.setAttribute('data-takes', this.#takes(op));
-    this.dataset['value'] = this.#valueField()?.value ?? '';
+    if (this.dataset['op'] !== op) this.set('data-op', op);
+    this.set('data-takes', this.#takes(op));
+    this.set('data-value', this.#valueField()?.value ?? '');
 
     this.#emitConditions();
   };
@@ -925,7 +925,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set op(next: FilterOp) {
-    this.dataset['op'] = next;
+    this.set('data-op', next);
   }
 
   /**
@@ -940,7 +940,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set conditionValue(next: string) {
-    if (this.dataset['value'] !== next) this.dataset['value'] = next;
+    if (this.dataset['value'] !== next) this.set('data-value', next);
     const box = this.#valueField();
     if (box) box.value = next;
     /* ROW ONE, through the one-row door: a typed condition IS an Advanced
@@ -982,8 +982,8 @@ export class SherpaMenu extends SherpaElement {
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
     const select = this.#conditionField();
     if (select && select.value !== op) select.value = op;
-    if (this.dataset['op'] !== op) this.dataset['op'] = op;
-    this.setAttribute('data-takes', this.#takes(op));
+    if (this.dataset['op'] !== op) this.set('data-op', op);
+    this.set('data-takes', this.#takes(op));
     this.#rowEls()[0]?.setAttribute('data-takes', this.#takes(op));
 
     // Put back what was typed — a re-stamp blanked the box, not the state.
@@ -1201,8 +1201,8 @@ export class SherpaMenu extends SherpaElement {
   /** One value or two ends: the shape, and the commit rule that follows it. */
   #setShape(range: boolean): void {
     if (range === this.hasAttribute('data-range')) return;
-    this.toggleAttribute('data-range', range);
-    if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', range);
+    this.set('data-range', range);
+    if (!this.hasAttribute('data-commit-fixed')) this.set('data-commit', range);
   }
 
   /** Write BOTH number shapes: the one value, and the two ends — none puts the
@@ -1515,7 +1515,7 @@ export class SherpaMenu extends SherpaElement {
         void picker.populate?.(ops.map((op) => ({ value: op, label: OP_LABELS[op] })));
       }
       const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
-      if (this.dataset['op'] !== op) this.dataset['op'] = op;
+      if (this.dataset['op'] !== op) this.set('data-op', op);
       if (picker.value !== op) picker.value = op;
     }
     const field = this.$<HTMLElement>('.body-number-one');
@@ -1807,7 +1807,7 @@ export class SherpaMenu extends SherpaElement {
       const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
       row.dataset['takes'] = this.#takes(op);
     }
-    if (!this.#typedBody() && this.hasAttribute('data-takes')) this.setAttribute('data-takes', this.#takes(this.op));
+    if (!this.#typedBody() && this.hasAttribute('data-takes')) this.set('data-takes', this.#takes(this.op));
     const options = this.#valueOptions();
     if (!options.length) return;
     const rows = this.conditions;

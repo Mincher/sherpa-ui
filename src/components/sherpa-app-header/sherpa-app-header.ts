@@ -56,7 +56,7 @@ export class SherpaAppHeader extends SherpaElement {
        opens something and does not look open reads as broken.
        TRAP T-a-trigger-shows-what-it-opened */
     'data-notifications-open': { type: 'boolean', kind: 'style' },
-    'data-icon': { type: 'string', kind: 'content' },
+    'data-icon': { type: 'string', kind: 'content', to: '.context-icon', as: 'icon' },
     'data-notifications': { type: 'number', kind: 'content' },
   } as const;
 
@@ -161,8 +161,6 @@ export class SherpaAppHeader extends SherpaElement {
   /** Write the icon, the badge and the open state. */
   #sync(): void {
     this.#syncOpen();
-    const icon = this.$('.context-icon');
-    if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
     const dark = this.dataset['themeMode'] === 'dark';
     const theme = this.$('.theme-toggle');
     theme?.setAttribute('data-icon-start', dark ? 'sun' : 'moon');
@@ -172,7 +170,7 @@ export class SherpaAppHeader extends SherpaElement {
     const count = this.dataset['notifications'];
     const badge = this.$('.notif-badge');
     if (badge) badge.textContent = count && count !== '0' ? count : '';
-    if (count === '0') this.removeAttribute('data-notifications');
+    if (count === '0') this.set('data-notifications', null);
 
   }
 

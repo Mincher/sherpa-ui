@@ -42,8 +42,8 @@ export class SherpaTabs extends SherpaElement {
     return this.dataset['currentId'] ?? '';
   }
   set currentId(value: string) {
-    if (value) this.setAttribute('data-current-id', value);
-    else this.removeAttribute('data-current-id');
+    if (value) this.set('data-current-id', value);
+    else this.set('data-current-id', null);
   }
 
   /** Activate a tab by id, silently — a host that sets it needs no echo.
@@ -51,7 +51,7 @@ export class SherpaTabs extends SherpaElement {
   select(id: string): boolean {
     if (!id || id === this.currentId) return false;
     if (this.#tabs.length && !this.#tabs.some((t) => t.id === id)) return false;
-    this.setAttribute('data-current-id', id);
+    this.set('data-current-id', id);
     return true;
   }
 
@@ -78,7 +78,7 @@ export class SherpaTabs extends SherpaElement {
       .map((t) => ({ id: String(t.id ?? ''), label: String(t.label ?? '') }))
       .filter((t) => t.id);
     if (!this.dataset['currentId'] && this.#tabs[0]) {
-      this.setAttribute('data-current-id', this.#tabs[0].id);
+      this.set('data-current-id', this.#tabs[0].id);
     }
     this.#render();
   }

@@ -278,7 +278,7 @@ or a value derived from something other than the attribute (`sherpa-list`'s row 
 
 ### `data-*` attributes as the public API
 
-Components expose their entire public API through `data-*` attributes. CSS selects on them via `:host([data-*])`; JS reads/writes `this.dataset`. Native HTML attributes (`disabled`, `hidden`, `name`, `value`, etc.) stay un-prefixed.
+Components expose their entire public API through `data-*` attributes. CSS selects on them via `:host([data-*])`; JS reads/writes `this.dataset`. Native HTML attributes (`disabled`, `hidden`, `name`, `value`, etc.) stay un-prefixed. A component writes its own `data-*` through `this.set('data-x', v)` — `null`, `undefined` and `false` remove it (TRAP `T-set-removes-on-falsy`).
 
 Standard names: `data-variant`, `data-size`, `data-status`, `data-type`, `data-layout`, `data-current`, `data-selected`, `data-elevation`, `data-label`, `data-heading`, `data-description`, `data-icon-start`, `data-icon-end`.
 

@@ -17,8 +17,9 @@ import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FieldFilter } from '../../core/data/data-source.js';
 import {
-  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedles, define,
+  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, define,
 } from '../../core/ui/sherpa-element.js';
+import { markNeedles } from '../../core/ui/mark-text.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
@@ -1089,9 +1090,9 @@ export class SherpaDataGrid extends SherpaElement {
     const marks = this.#marks();
     const at = marks.findIndex((m) => m.hasAttribute('data-current'));
     let next = at < 0 ? (direction > 0 ? 0 : marks.length - 1) : at + direction;
-    const pages = Math.max(1, Number(this.dataset['totalPages'] ?? 1) || 1);
+    const pages = Math.max(1, this.num('data-total-pages', 1));
     if (marks.length && pages > 1 && (next < 0 || next >= marks.length)) {
-      const page = Math.max(1, Number(this.dataset['page'] ?? 1) || 1);
+      const page = Math.max(1, this.num('data-page', 1));
       this.#landing = direction > 0 ? 'first' : 'last';
       this.emit('page-change', { page: ((page - 1 + direction + pages) % pages) + 1 });
       return { index: -1, count: marks.length };
@@ -1738,11 +1739,8 @@ export class SherpaDataGrid extends SherpaElement {
    * for the rest. True when a host took the ask. TODO 238 · TRAP T-select-all-is-the-visible-rows
    */
   #askEvery(): boolean {
-    if (this.#paginates || Number(this.dataset['totalPages'] ?? 1) <= 1) return false;
-    return !this.dispatchEvent(new CustomEvent('select-all-request', {
-      bubbles: true, composed: true, cancelable: true,
-      detail: { answer: (rows: readonly GridRow[]): void => this.#selectEvery(rows) },
-    }));
+    if (this.#paginates || this.num('data-total-pages', 1) <= 1) return false;
+    return !this.emit('select-all-request', { answer: (rows: readonly GridRow[]): void => this.#selectEvery(rows) }, { cancelable: true });
   }
 
   /** Tick every row its source answered, the ones on other pages too. */

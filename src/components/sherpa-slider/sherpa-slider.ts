@@ -107,7 +107,7 @@ export class SherpaSlider extends SherpaElement {
     // A set of either end AFTER upgrade is a real change — the toolbar seeds
     // the bounds before this element exists. TRAP T-a-full-range-is-still-a-range
     if (name === 'value-start' || name === 'value-end' || name === 'value') {
-      this.setAttribute('data-touched', '');
+      this.set('data-touched', '');
     }
     if (
       name === 'min' ||

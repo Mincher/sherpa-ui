@@ -17,7 +17,8 @@
  *
  * @tier sub-component
  */
-import { SherpaElement, markMatch, define } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { markMatch } from '../../core/ui/mark-text.js';
 
 let uid = 0;
 
@@ -200,7 +201,7 @@ export class SherpaNavItem extends SherpaElement {
   #toggleExpand(): void {
     if (this.hasAttribute('disabled')) return;
     const expanded = !this.hasAttribute('data-expanded');
-    this.toggleAttribute('data-expanded', expanded);
+    this.set('data-expanded', expanded);
     this.emit('item-expand', { expanded });
   }
 

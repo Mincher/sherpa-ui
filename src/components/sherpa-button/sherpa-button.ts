@@ -167,7 +167,7 @@ export class SherpaButton extends SherpaElement {
     if (menu && event.composedPath().includes(menu)) return;
     if (menu) {
       const wasOpen = this.hasAttribute('data-open');
-      this.removeAttribute('data-open');
+      this.set('data-open', null);
       if (wasOpen) menu.hide();
       else menu.show(this);
     }
@@ -187,7 +187,7 @@ export class SherpaButton extends SherpaElement {
   /** Mirror the menu's open state; focus is inside it, so CSS reads this. */
   #onMenuToggle = (event: Event): void => {
     const open = event.type === 'menu-open';
-    this.toggleAttribute('data-open', open);
+    this.set('data-open', open);
     this.$('.trigger')?.setAttribute('aria-expanded', String(open));
     /* The REAL button is the inner `.trigger`, so that is where the state
        belongs. A host-level `aria-expanded` cannot be maintained from outside
