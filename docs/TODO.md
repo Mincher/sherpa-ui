@@ -305,6 +305,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
 | ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
+| ❓ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6543,6 +6544,20 @@ inset too, where 8ef4f2a1 asked for a full-width one. Its comment ("Container
 Footer binds padding/none inline") is stale. The likely fix deletes those
 lines. Needs a look at the pixels first.
 
+### `[ ]` ❓ 314 — Will: a composed header for dialog and panel?
+
+Dialog and panel draw `data-heading` as a plain `<span class="heading-text">`
+with four title rules and a hand-drawn row — the same as
+`sherpa-container-header`'s title. **A:** compose a `sherpa-container-header`
+(default variant), as the overlay panel does — one header for every card, and a
+slotted header then hides it (today both draw). Cost: about +5.8 KB on 14
+single-component entries (input-text imports the dialog, the menu imports
+input-text), and the title truncates where it wraps today. **B:** keep the span,
+move its four rules into the regions sheet. No weight, no visible change. My
+pick: **A** ("compose, never re-implement"), after one light Figma read of the
+Dialog (1003:33675) and Panel headers to confirm they are Container Header
+instances.
+
 ### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
 
 Found by the 281 plan agent, by reading. The panel draws a date, or a list over
@@ -6607,7 +6622,17 @@ and the checkbox's `required` was missing. Now read from the imported file.
 **Queued, not done:** a required radio-card group (the card has no group
 validity), and arrow keys between radios (284).
 
-⬜ Part B, containers.
+**✅ Part B, containers, 2026-10-15** — three of its five steps. 1: chip and tag
+keep ONE template each; the × is hidden by CSS until `data-dismissible`, as the
+callout's is, so the second template and its re-stamp went. 2: the trailing ×
+rule, written four times (callout, chip, tag, toast), is `.sherpa-dismiss` in the
+base sheet. 3: a card's header / body / footer regions, written three times with
+exclusion lists that had drifted, are one family sheet,
+`sherpa-container-regions.css` (container, dialog, panel). Net about −110 lines.
+4 is **❓ 314** (it adds weight and may move pixels). 5, the footer: **kept as it
+is** — a page slots a `sherpa-container-footer`; making each container compose
+its own would break about 15 call sites, so it waits for a reason. Found on the
+way: 312 (fixed), 313 (queued). **Not run yet.**
 
 **✅ Part C, templates, 2026-10-15** — four commits, safe by reading; a read-only
 agent planned it and a second checked the plan. `clone()` and `cloneItem()` take
