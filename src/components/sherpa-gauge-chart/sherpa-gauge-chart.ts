@@ -318,9 +318,8 @@ export class SherpaGaugeChart extends SherpaElement {
     bands.forEach((band) => {
       if (band.to <= band.from) return;
       const i = index++;
-      // Clone the <path> INSIDE the template's <svg>, not the wrapper — the
-      // wrapper only exists to put the clone in the SVG namespace.
-      const arc = tpl.content.querySelector('.zone')!.cloneNode(true) as SVGPathElement;
+      const arc = this.clone<SVGPathElement>(tpl, '.zone');
+      if (!arc) return;
       arc.setAttribute(
         'd',
         ringSegmentPath({

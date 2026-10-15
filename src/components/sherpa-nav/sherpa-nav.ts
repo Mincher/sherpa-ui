@@ -293,7 +293,8 @@ export class SherpaNav extends SherpaElement {
         : this.#config.sections;
 
     for (const section of sections ?? []) {
-      const el = sectionTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const el = this.clone(sectionTpl);
+      if (!el) break;
       el.querySelector('.section-label')!.textContent = section.label ?? '';
       const items = el.querySelector('.section-items')!;
       for (const entry of section.items ?? []) {

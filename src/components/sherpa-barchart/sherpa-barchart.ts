@@ -91,7 +91,8 @@ export class SherpaBarchart extends SherpaElement {
     bars.replaceChildren();
     if (zeroLine) bars.appendChild(zeroLine);
     for (const { d, i } of shown) {
-      const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const col = this.clone(tpl);
+      if (!col) break;
       // TRAP T-hiding-a-series-rescales-the-axis — the ORIGINAL index.
       col.dataset['index'] = String(i);
       const bar = col.querySelector<HTMLElement>('.bar')!;

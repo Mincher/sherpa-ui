@@ -1386,9 +1386,9 @@ export class SherpaMenu extends SherpaElement {
     const name = this.#group;
     const held = this.#heldValues ? valueSet(this.#heldValues) : null;
     this.#heldValues = null;
-    const stamp = (item: MenuItem): HTMLElement => {
-      const bare = item.pickable === false ? this.clone('template.menu-bare-tpl') : null;
-      const row = bare ?? tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const stamp = (item: MenuItem): HTMLElement | null => {
+      const row = (item.pickable === false ? this.clone('template.menu-bare-tpl') : null) ?? this.clone(tpl);
+      if (!row) return null;
       const box = row.querySelector('input');
       if (box) {
         box.value = item.value;
@@ -1434,7 +1434,8 @@ export class SherpaMenu extends SherpaElement {
         }
       }
       section = item.section;
-      rows.push(stamp(item));
+      const one = stamp(item);
+      if (one) rows.push(one);
     }
     // SELECT ALL belongs to the section it heads, so it follows a leading heading.
     const head = rows[0]?.classList.contains('menu-section') ? [rows.shift()!] : [];

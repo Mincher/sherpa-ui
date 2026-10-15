@@ -1525,10 +1525,12 @@ export class SherpaFilterPanel extends SherpaElement {
     button.setAttribute('aria-label', `Send ${name} to a scope`);
     button.setAttribute('aria-haspopup', 'dialog');
     const menu = this.clone('template.lower-menu-tpl');
-    const row = this.$<HTMLTemplateElement>('template.lower-item-tpl')?.content.firstElementChild;
+    const row = this.$<HTMLTemplateElement>('template.lower-item-tpl');
     if (!menu || !row) return;
     for (const { scope, label, origin } of targets) {
-      const item = row.cloneNode(true) as HTMLButtonElement;
+      // `return`, not `break`: an empty prototype appends no empty menu.
+      const item = this.clone<HTMLButtonElement>(row);
+      if (!item) return;
       item.value = scope;
       item.textContent = origin ? `Return to ${label}` : `Send to ${label}`;
       menu.append(item);

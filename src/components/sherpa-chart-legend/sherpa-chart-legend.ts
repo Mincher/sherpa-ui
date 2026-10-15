@@ -276,7 +276,8 @@ export class SherpaChartLegend extends SherpaElement {
     if (!menu || !rowTpl) return;
 
     for (const { index, item } of this.#rolled) {
-      const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const row = this.clone(rowTpl);
+      if (!row) break;
       const input = row.querySelector('input')!;
       // The SOURCE index, not the row's position.
       input.value = String(index);

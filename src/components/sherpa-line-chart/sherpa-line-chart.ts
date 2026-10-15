@@ -97,10 +97,11 @@ export class SherpaLineChart extends SherpaElement {
     // TRAP T-gridlines-run-to-the-top-label
     grid.replaceChildren();
     const bands = ticks > 0 ? scale.bands : 0;
-    const gridline = this.$<HTMLTemplateElement>('template.gridline-tpl')?.content.querySelector('line');
-    for (let i = 1; i <= bands && gridline; i++) {
+    const gridTpl = this.$<HTMLTemplateElement>('template.gridline-tpl');
+    for (let i = 1; i <= bands; i++) {
+      const line = this.clone<SVGLineElement>(gridTpl, 'line');
+      if (!line) break;
       const y = String(100 - tickPercent(i, bands));
-      const line = document.importNode(gridline, true);
       line.setAttribute('y1', y);
       line.setAttribute('y2', y);
       grid.appendChild(line);
@@ -115,9 +116,8 @@ export class SherpaLineChart extends SherpaElement {
         return [x, y] as const;
       });
 
-      const proto = this.$<HTMLTemplateElement>('template.series-tpl')?.content.querySelector('.series');
-      if (!proto) return;
-      const g = document.importNode(proto, true) as SVGGElement;
+      const g = this.clone<SVGGElement>('template.series-tpl', '.series');
+      if (!g) return;
       paintSeries(g, si, s.colorIndex);
 
       const area = g.querySelector('.area')!;

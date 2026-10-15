@@ -66,13 +66,12 @@ export class SherpaProgressStepTracker extends SherpaElement {
     track.replaceChildren();
     this.#steps.forEach((step, i) => {
       // The number is position, not a field, so the prototype cannot declare it.
-      const item = this.cloneItem('template.step-tpl', step, i);
+      const item = this.cloneItem(stepTpl, step, i);
       if (!item) return;
       item.querySelector('.number')!.textContent = String(i + 1);
       track.appendChild(item);
-      if (i < this.#steps.length - 1 && connTpl) {
-        track.appendChild(connTpl.content.firstElementChild!.cloneNode(true));
-      }
+      const conn = i < this.#steps.length - 1 ? this.clone(connTpl) : null;
+      if (conn) track.appendChild(conn);
     });
     this.#applyStates();
   }
