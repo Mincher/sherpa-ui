@@ -81,6 +81,9 @@ installed, so nothing is downloaded.
 - `sherpa-ui/css` is `tokens.css`, and `sherpa-ui/css/page` is `page.css`.
 - `sherpa-ui/components/<name>` is one component alone, for example
   `import 'sherpa-ui/components/button'`.
+- Each component has a page in
+  [docs/components](https://github.com/Mincher/sherpa-ui/blob/main/docs/components/README.md):
+  its attributes, events, slots, parts and an example, written from its spec.
 
 A bundler or Node finds these names through the package's `exports`. A page
 with no bundler needs an import map to use them in its own modules. Put it in

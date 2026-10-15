@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schema/example/v1.json",
   "title": "Sherpa-UI component example",
-  "description": "One realistic instance of a component, shipped beside its spec as sherpa-<name>.example.json: its markup, the data each part is populated with, and the part to open. The a11y gate, the MCP's get_component and a gallery read it.",
+  "description": "One realistic instance of a component, shipped beside its spec as sherpa-<name>.example.json: its markup, the data each part is populated with, and the part to open. The a11y gate, the MCP's get_component, a gallery and the reference read it.",
   "type": "object",
   "additionalProperties": false,
   "required": ["html"],
@@ -28,6 +28,7 @@
         }
       }
     },
+    "use": { "description": "When to reach for it, and what to use instead. One or two sentences; a sherpa-* it names must exist. The reference and get_component show it.", "type": "string", "minLength": 1 },
     "show": { "description": "A part to open with show(), for one that draws only when open.", "type": "string" },
     "anchor": { "description": "What `show` opens against.", "type": "string" }
   }

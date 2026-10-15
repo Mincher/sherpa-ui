@@ -43,6 +43,10 @@ function example(tag) {
 /** One component's page, from its spec and its example. */
 export function page(s, ex, tags) {
   const tag = s.$name;
+  // A `use` line names only components that exist.
+  for (const m of String(ex?.use ?? '').replace(/`[^`]*`/g, '').matchAll(/\bsherpa-[a-z][a-z0-9-]*[a-z0-9]\b/g)) {
+    if (!tags.has(m[0])) throw new Error(`${tag}.example.json: its use names ${m[0]}, which is no component`);
+  }
   const say = (t) => prose(t, tags, tag);
   const ext = s.$extensions?.sherpa ?? {};
   const out = [BANNER(`${tag}.component.json and ${tag}.example.json`), '', `# ${tag}`, '', capital(say(s.$description)), ''];
@@ -126,8 +130,9 @@ export function page(s, ex, tags) {
 /** The index page: every component by category, with its first sentence. */
 export function index(all, tags) {
   const groups = Object.groupBy(all, (s) => s.$extensions?.sherpa?.category ?? 'other');
+  const uses = all.filter((s) => example(s.$name)?.use).length;
   const out = [BANNER('the component specs'), '', '# Components', '',
-    `${all.length} components. Each page is written from the component's spec and its example.`, ''];
+    `${all.length} components. Each page is written from the component's spec and its example. ${uses} of ${all.length} say when to use them.`, ''];
   const order = Object.keys(groups).sort((a, b) => (a === 'other') - (b === 'other') || (a < b ? -1 : a > b ? 1 : 0));
   for (const k of order) {
     const rows = groups[k].sort((a, b) => (a.$name < b.$name ? -1 : 1)).map((s) => [`[${s.$name}](${s.$name}.md)`,

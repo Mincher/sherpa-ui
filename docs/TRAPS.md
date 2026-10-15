@@ -1265,7 +1265,8 @@ It was `test/a11y/fixtures.mjs` until 2026-10-15: in `test/`, so not shipped,
 and read by the a11y gate alone. It is component documentation, not an app
 (D4), so it ships in the package, and ONE source feeds four readers: the
 accessibility gate, the MCP's `get_component`, a gallery's first story for each
-component, and the component reference (`npm run reference`).
+component, and the component reference (`npm run reference`). Its `use` says
+when to reach for it; the reference and `get_component` show it.
 
 A node test holds it: every component has one, each passes the schema, and
 its markup passes the usage check — a tag, a `data-*` or an enum value the
