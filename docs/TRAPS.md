@@ -2304,7 +2304,7 @@ it on would light a chip that groups nothing, the host would write the empty
 attribute straight back, and the chip would correct itself a tick later — a
 flicker. It stays off, and the menu is where a column is chosen.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
@@ -7093,6 +7093,7 @@ go.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/data/filter-state.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
@@ -7145,6 +7146,7 @@ on, it may be let go. A chip with a menu always opens it.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
+- Site: `src/core/data/filter-state.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 

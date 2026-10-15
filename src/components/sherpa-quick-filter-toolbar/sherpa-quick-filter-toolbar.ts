@@ -4,9 +4,7 @@
  * TRAP T-actions-were-a-slot
  *
  * Map:
- * - OrganiseColumn — One column the grid can be grouped or sorted by.
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
- * - SortDirection — Matches the standard data-sort-direction values.
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
@@ -21,15 +19,17 @@ import {
   MenuDrill, OneRows, SavedSets, drawFiltersButton, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  askSwitches, extraRows, folded, openMore, pickMore, resetRows, saveRows, type MoreRow,
+  askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
+  type MoreRow,
 } from '../../core/ui/more-menu.js';
+import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
-import { DEFAULT_OP } from '../../core/data/store.js';
+import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
 import {
-  readingRows,
+  readingRows, ruleOut, setAside,
   type FieldReading,
 } from '../../core/data/filter-state.js';
-import type { FilterSet, ScopeDescription } from '../../core/data/data-source.js';
+import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -43,21 +43,14 @@ import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filt
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
 
-/** One column the grid can be grouped or sorted by. */
-export interface OrganiseColumn {
-  /** Reported in group-change / sort-change. */
-  field: string;
-  label: string;
-}
-
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
   group?: OrganiseColumn[];
   sort?: OrganiseColumn[];
 }
 
-/** Matches the standard data-sort-direction values. */
-export type SortDirection = 'asc' | 'desc';
+export type { OrganiseColumn } from '../../core/data/data-source.js';
+export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
@@ -330,7 +323,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#available.length) this.#renderAvailable();
     // onChange never fires for an attribute set before the first render.
     this.#syncFavouriteFromAttr();
-    this.#syncResets();
+    syncResets(this, this.root, '.act[data-act="clear"]');
 
     // CLICK, not hover: a passing pointer would drill the list out from under it.
     this.addEventListener('menu-drill', this.#onMenuDrill as EventListener);
@@ -483,7 +476,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * ever pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill
    */
   #syncPending(): void {
-    const waiting = new Set((this.dataset['pending'] ?? '').split(' ').filter(Boolean));
+    const waiting = pendingFields(this);
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
@@ -581,10 +574,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.present = left;
     menu.offered = offered;
     // Hiding unmatched, a row Limit rules out goes. Will, TODO 205.
-    menu.toggleAttribute('data-hide-unavailable', this.dataset['limitOptions'] === 'on' && this.dataset['hideUnmatched'] === 'on');
-    const picks = menu.values ?? [];
-    const out = (v: string): boolean => (!!left && !left.includes(v)) || (!!offered && !offered.includes(v));
-    chip.toggleAttribute('data-unavailable', picks.length > 0 && picks.every(out));
+    menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
+    chip.toggleAttribute('data-unavailable', setAside(menu.values ?? [], ruleOut(left, offered)));
   }
 
   /**
@@ -1014,33 +1005,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const chip of this.#chips()) this.#markPresent(chip);
-    this.#syncArrangement('group');
-    this.#syncArrangement('sort');
+    for (const kind of ['group', 'sort'] as const) {
+      arrangeFrom(this, this.$<SherpaQuickFilter>(`.organise-chip[data-id="${kind}"]`), kind);
+    }
     this.#syncFavouriteFromAttr();
     if (name === 'data-saveable') this.#saved.draw();
-    this.#syncResets();
-  }
-
-  /** Reset, and Reset all to default, are not offered where they would change
-   *  nothing — the host says. TODO 231 */
-  #syncResets(): void {
-    this.$('.act[data-act="clear"]')?.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
-    this.$('.reset-more')?.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
-  }
-
-  /**
-   * Follow `data-group-field` / `data-sort-field` onto their chip.
-   *
-   * A GROUP IS A SORT WITH NO DIRECTION. These were two methods four apart, and
-   * they drifted: one kept the column when its chip went off and the other
-   * blanked it, so Group forgot what Sort remembered.
-   * TRAP T-a-chip-body-cycles-its-states — no event; an empty field SUSPENDS.
-   */
-  #syncArrangement(kind: 'group' | 'sort'): void {
-    const chip = this.$<SherpaQuickFilter>(
-      `.organise-chip[data-id="${kind}"]`);
-    // The chip knows how: a bar and a panel follow the same attributes the same way.
-    chip?.arrangeBy(this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '', this.dataset['sortDirection']);
+    syncResets(this, this.root, '.act[data-act="clear"]');
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
@@ -1700,12 +1670,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        reload restores both — so the chip is built on that column rather than
        waiting for a second pass to tick it. */
     const on = { group: this.dataset['groupField'] ?? '', sort: this.dataset['sortField'] ?? '' };
-    const cols = (list: readonly OrganiseColumn[], field: string): FilterOption[] =>
-      list.map((c) => ({ value: c.field, label: c.label, selected: c.field === field }));
-
     if (group.length) {
       zone.appendChild(this.#organiseChip('group', 'Group',
-        SherpaQuickFilterToolbar.#icons.group, cols(group, on.group), on.group));
+        SherpaQuickFilterToolbar.#icons.group, organiseOptions(group, on.group), on.group));
     }
     if (sort.length) {
       // The MENU picks the column, the BODY cycles direction. Built OFF, so it
@@ -1714,7 +1681,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          is ON with none set, so writing it is a third place that has to agree.
          TRAP T-one-cycle-for-one-value */
       zone.appendChild(this.#organiseChip('sort', 'Sort',
-        SherpaQuickFilterToolbar.#icons.sortNone, cols(sort, on.sort), on.sort));
+        SherpaQuickFilterToolbar.#icons.sortNone, organiseOptions(sort, on.sort), on.sort));
     }
   }
 

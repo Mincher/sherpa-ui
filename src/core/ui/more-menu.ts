@@ -7,6 +7,8 @@
  * - MoreRow — One ⋮ row: what it does, what it says, and whether it is off.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all to default — off where they would change nothing.
+ * - syncResets — Reset, and Reset all to default, as buttons: off where they would change nothing.
+ * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
@@ -32,6 +34,18 @@ export function resetRows(host: HTMLElement, reset: string): MoreRow[] {
     [reset, 'Reset filters', host.hasAttribute('data-nothing-to-reset')],
     ['reset-default', 'Reset all to default', host.hasAttribute('data-at-default')],
   ];
+}
+
+/** Reset, and Reset all to default, as buttons: off where they would change
+ *  nothing — the host says. `reset` is the host's own Reset button. TODO 231 */
+export function syncResets(host: HTMLElement, root: ParentNode, reset: string): void {
+  root.querySelector(reset)?.toggleAttribute('disabled', host.hasAttribute('data-nothing-to-reset'));
+  root.querySelector('.reset-more')?.toggleAttribute('disabled', host.hasAttribute('data-at-default'));
+}
+
+/** Limit is on, and hides what it rules out. Will, TODO 205. */
+export function hidesUnmatched(host: HTMLElement): boolean {
+  return host.dataset['limitOptions'] === 'on' && host.dataset['hideUnmatched'] === 'on';
 }
 
 /** Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves. TODO 105 */

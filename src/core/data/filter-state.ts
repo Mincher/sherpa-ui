@@ -27,6 +27,9 @@
  * - FieldCondition — One row of a multi-condition filter.
  * - rowOffer — What row `index` may offer: the values the rows before it in its AND chain leave.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
+ * - RuledOut — Why the source rules a value out: not offered, or not matched.
+ * - ruleOut — A field's limits as one test: what its chain offers first, then what the other answers leave.
+ * - setAside — Every pick a chip holds is ruled out: it is set aside.
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
@@ -228,6 +231,23 @@ export function rowAnswered(row: FieldCondition): boolean {
   return (OP_TAKES[row.op] ?? 'list') === 'text'
     ? (row.text ?? '').trim() !== ''
     : (row.picked ?? []).length > 0;
+}
+
+/** Why the source rules a value out: its chain does not offer it, or the other answers leave none of it. */
+export type RuledOut = 'unoffered' | 'unmatched' | null;
+
+/** A field's limits as one test: what its chain OFFERS first, then what the other
+ *  answers LEAVE. A null list limits nothing. TRAP T-a-ruled-out-value-is-greyed */
+export function ruleOut(present: Iterable<string> | null | undefined, offered?: Iterable<string> | null): (value: string) => RuledOut {
+  const left = present ? new Set(present) : null;
+  const offers = offered ? new Set(offered) : null;
+  return (value) => (offers && !offers.has(value) ? 'unoffered' : left && !left.has(value) ? 'unmatched' : null);
+}
+
+/** Every pick a chip holds is ruled out: it is set aside, kept and not applied.
+ *  TRAP T-a-later-answer-sets-an-earlier-pick-aside */
+export function setAside(picks: readonly string[], out: (value: string) => RuledOut): boolean {
+  return picks.length > 0 && picks.every((v) => out(v) !== null);
 }
 
 /**

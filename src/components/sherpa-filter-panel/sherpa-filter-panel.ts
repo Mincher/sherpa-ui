@@ -6,13 +6,14 @@
  * TRAP T-the-panel-is-the-toolbar-in-a-column
  *
  * Map:
- * - PanelColumn — A column Group or Sort may arrange by.
  * - PanelScope — One scope: a named group of fields, plus what the Filters menu offers for it.
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import type { FieldFilter, FilterSet, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
+import type {
+  FieldFilter, FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows,
+} from '../../core/data/data-source.js';
 import {
   arranges, advancedOf, hasOwnBody, kindOf, oneChipList, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
@@ -26,11 +27,12 @@ import {
   type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  askSwitches, extraRows, folded, openMore, pickMore, resetRows, saveRows,
+  askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
 } from '../../core/ui/more-menu.js';
+import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
-import { readingRows, type FieldReading } from '../../core/data/filter-state.js';
-import { valueKey } from '../../core/data/store.js';
+import { readingRows, ruleOut, setAside, type FieldReading } from '../../core/data/filter-state.js';
+import { valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
@@ -49,12 +51,6 @@ import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filt
 
 /** A count, in the reader's own digits — as a chip's badge writes it. */
 const RESULTS = new Intl.NumberFormat();
-
-/** A column Group or Sort may arrange by. */
-export interface PanelColumn {
-  field: string;
-  label: string;
-}
 
 /** One scope: a named group of fields, plus what the Filters menu offers for it. */
 export interface PanelScope {
@@ -79,12 +75,12 @@ export interface PanelScope {
    * TRAP T-organise-chips-lead-the-bar
    * TRAP T-group-and-sort-are-component-scope
    */
-  group?: PanelColumn[];
-  sort?: PanelColumn[];
+  group?: OrganiseColumn[];
+  sort?: OrganiseColumn[];
   /** Which column each is on now, and which way the sort runs. */
   groupField?: string;
   sortField?: string;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: SortDirection;
 }
 
 /** A scope's icon, for what it narrows. A chart wears `reports` — three bars,
@@ -171,7 +167,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #oneRows = new OneRows();
 
   override onRender(): void {
-    this.#syncResets();
+    syncResets(this, this.root, '.reset-all');
     this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
     // Only the provider knows the View's own filters. TRAP T-reset-to-default-is-the-views-own
     this.$('.reset-more')?.addEventListener('menu-select', (event) => {
@@ -225,7 +221,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-at-default' || name === 'data-nothing-to-reset') this.#syncResets();
+    if (name === 'data-at-default' || name === 'data-nothing-to-reset') syncResets(this, this.root, '.reset-all');
     else if (name === 'data-heading') this.#syncHeading();
     else if (name === 'data-saveable') this.#saved.draw();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
@@ -239,9 +235,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #syncArrangement(): void {
     for (const held of this.#held.values()) {
       const kind = held.def.id;
-      if (kind !== 'group' && kind !== 'sort') continue;
-      const chip = this.#oneChip(held);
-      chip?.arrangeBy?.(this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '', this.dataset['sortDirection']);
+      if (kind === 'group' || kind === 'sort') arrangeFrom(this, this.#oneChip(held), kind);
     }
   }
 
@@ -447,24 +441,21 @@ export class SherpaFilterPanel extends SherpaElement {
     const field = held.def.field ?? held.def.id;
     const left = this.#presentBy.get(held.scope)?.[field] ?? null;
     const offered = this.#offeredBy.get(held.scope)?.[field] ?? null;
-    const keep = left ? new Set(left) : null;
-    const offers = offered ? new Set(offered) : null;
-    const out = (value: string): boolean => (!!offers && !offers.has(value)) || (!!keep && !keep.has(value));
+    const out = ruleOut(left, offered);
     // Hiding unmatched, a menu's ruled-out rows go too. Will, TODO 205.
-    held.menu?.toggleAttribute('data-hide-unavailable', this.dataset['limitOptions'] === 'on' && this.dataset['hideUnmatched'] === 'on');
+    held.menu?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     const one = this.#answerChip(held);
     if (one) {
       // ONE chip is greyed when every pick is ruled out, as a bar chip is.
-      const picks = this.#picked(held);
-      one.toggleAttribute('data-unavailable', picks.length > 0 && picks.every(out));
+      one.toggleAttribute('data-unavailable', setAside(this.#picked(held), out));
       if (held.menu) Object.assign(held.menu, { present: left, offered });
       return;
     }
     for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(chip) !== held) continue;
-      const value = chip.dataset['value'] ?? '';
-      chip.toggleAttribute('data-removed', !!offers && !offers.has(value) && !chip.hasAttribute('data-current'));
-      chip.toggleAttribute('data-unavailable', out(value));
+      const why = out(chip.dataset['value'] ?? '');
+      chip.toggleAttribute('data-removed', why === 'unoffered' && !chip.hasAttribute('data-current'));
+      chip.toggleAttribute('data-unavailable', why !== null);
     }
     if (held.menu) Object.assign(held.menu, { present: left, offered });
   }
@@ -581,9 +572,7 @@ export class SherpaFilterPanel extends SherpaElement {
                views of one control cannot drift. A Sort opens on `sort-none`
                and its icon follows the direction from there. */
             icon: kind === 'group' ? ORGANISE_ICONS.group : ORGANISE_ICONS.sortNone,
-            options: (cols ?? []).map((c) => ({
-              value: c.field, label: c.label, selected: c.field === on,
-            })),
+            options: organiseOptions(cols, on),
           }, scope.scope, section.box, section.values);
           if (chip) {
             /* SEED THE CYCLE and let the chip draw itself: `data-direction`
@@ -1278,7 +1267,7 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   #syncPending(): void {
     const remote = this.hasAttribute('data-remote');
-    const pending = new Set((this.dataset['pending'] ?? '').split(' ').filter(Boolean));
+    const pending = pendingFields(this);
     for (const held of this.#held.values()) {
       held.box.toggleAttribute('data-pending', remote && pending.has(held.def.field ?? held.def.id));
     }
@@ -1745,13 +1734,6 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => askSwitches(this, event, (name, on) => this.emit(name, { on }));
-
-  /** Reset, and Reset all to default, are not offered where they would change
-   *  nothing — the host says. TODO 231 */
-  #syncResets(): void {
-    this.$('.reset-all')?.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
-    this.$('.reset-more')?.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
-  }
 
   /** RESET ALL: every field in both scopes, Group and Sort too, then applied —
    *  as the toolbar's Reset is. Will, 2026-09-26. */

@@ -31,7 +31,7 @@ import {
   DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  clauseConditions, fieldState, readingClause, readingRows,
+  clauseConditions, fieldState, readingClause, readingRows, ruleOut, setAside,
   type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
@@ -559,8 +559,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip || !menu || this.#superseded.has(field)) return;
     const left = this.#present[field] ?? null;
     menu.present = left;
-    const picks = menu.values ?? [];
-    chip.toggleAttribute('data-unavailable', !!left && picks.length > 0 && picks.every((v) => !left.includes(v)));
+    chip.toggleAttribute('data-unavailable', setAside(menu.values ?? [], ruleOut(left)));
   }
   /** What each field's other answers leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};

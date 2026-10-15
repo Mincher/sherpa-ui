@@ -295,6 +295,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
 | ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
+| ⬜ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
+| ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6438,6 +6440,20 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
+
+Found by the 281 plan agent, by reading. The panel draws a date, or a list over
+16 values, as ONE chip; `#syncPending` marks only the field's box, never that
+chip, so the chip's results badge stays up while its Apply waits —
+`T-a-chip-counts-its-own-results` says pending shows none. A fix marks
+`#answerChip(held)` too. Needs a test first.
+
+### `[ ]` ⬜ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
+
+Found by the 281 plan agent, by reading. The provider writes
+`data-hide-unmatched` only to bars and panels, and the grid's `#markPresent`
+never toggles `data-hide-unavailable` on a heading's menu. Intended, or a gap?
 
 ### `[ ]` 🚧 281 — Phase 5: toolbar and panel, one helper for each part written twice
 

@@ -12,6 +12,7 @@
  * - HeldFilter — One filter a scope holds, as a control draws it.
  * - ScopeShows — What a scope's filters narrow: the View, or the content one component shows.
  * - FilterSet — Fields a scope draws as ONE group.
+ * - OrganiseColumn — One column a Group or Sort chip offers: the field it reports, and its name.
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
  * - ViewState — The view state a source owns.
  * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
@@ -222,6 +223,12 @@ export interface FilterSet {
   fields: readonly string[];
 }
 
+/** One column a Group or Sort chip offers: the field it reports, and its name. */
+export interface OrganiseColumn {
+  field: string;
+  label: string;
+}
+
 /** One scope as a control draws it WHOLE — what it holds and answers, what it
  *  may add, and how its rows are arranged. JSON. TRAP T-a-panel-asks-for-its-scopes */
 export interface ScopeDescription {
@@ -236,8 +243,8 @@ export interface ScopeDescription {
   available: FieldFilter[];
   /** Its filter sets, each drawn as one group. TRAP T-a-filter-set-groups-or-chains */
   sets?: FilterSet[];
-  group?: { field: string; label: string }[];
-  sort?: { field: string; label: string }[];
+  group?: OrganiseColumn[];
+  sort?: OrganiseColumn[];
   groupField?: string;
   sortField?: string;
   sortDirection?: SortDirection;
