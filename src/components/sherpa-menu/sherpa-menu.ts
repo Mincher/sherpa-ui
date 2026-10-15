@@ -20,7 +20,7 @@ import {
   DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  readingRows, rowAnswered, rowOffer, ruleOut, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
+  modeOf, readingRows, rowAnswered, rowOffer, ruleOut, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -68,7 +68,7 @@ const HOVER_OPENS_AFTER = 500;
 const CONTROL = 'a[href], button, input, select, textarea, label, summary, [contenteditable]';
 
 /** A mode as written, as the one it means: anything but `advanced` is `simple`. */
-const modeOf = (raw: string | undefined): ConditionType => (raw === 'advanced' ? 'advanced' : 'simple');
+const modeAttr = (raw: string | undefined): ConditionType => (raw === 'advanced' ? 'advanced' : 'simple');
 
 /** What a date's In the last and In the next count. */
 const DATE_UNITS = ['day', 'week', 'month'] as const;
@@ -266,7 +266,7 @@ export class SherpaMenu extends SherpaElement {
   /** simple | advanced — values to pick, or condition rows (Will's words).
    *  TRAP T-a-filter-menu-has-two-modes */
   get mode(): ConditionType {
-    return modeOf(this.dataset['mode']);
+    return modeAttr(this.dataset['mode']);
   }
 
   /** A host writing `data-mode="advanced"` on a field that did not opt in is
@@ -300,7 +300,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set mode(next: ConditionType) {
-    const to = modeOf(next);
+    const to = modeAttr(next);
     /* A field that did not opt in has no Advanced mode to be in — the button
        is hidden, and a host writing the attribute must not get one either.
        TRAP T-conditions-are-opt-in-per-field */
@@ -509,7 +509,7 @@ export class SherpaMenu extends SherpaElement {
         const rows = (next.conditions ?? []).filter(rowAnswered);
         this.#setRows(rows);
         // No `mode` — a saved answer: its rows decide, as a list's do.
-        this.mode = next.mode ?? (rows.length ? 'advanced' : 'simple');
+        this.mode = modeOf(next, rows) ?? 'simple';
       }
       this.#syncDirty();
       return;
@@ -521,7 +521,7 @@ export class SherpaMenu extends SherpaElement {
       if (this.#offersAdvanced()) {
         const rows = (next.conditions ?? []).filter(rowAnswered);
         this.#setRows(rows);
-        this.mode = next.mode ?? (rows.length ? 'advanced' : 'simple');
+        this.mode = modeOf(next, rows) ?? 'simple';
       }
       return;
     }
@@ -537,7 +537,7 @@ export class SherpaMenu extends SherpaElement {
     if (this.#mirror) this.#seedFromPicks();
     else this.conditions = rows;
     // No `mode` is a reading from before both were kept: its rows decide.
-    const mode = next.mode ?? (rows.some(rowAnswered) ? 'advanced' : undefined);
+    const mode = modeOf(next, rows);
     if (mode) this.mode = mode;
   }
 

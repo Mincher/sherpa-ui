@@ -26,7 +26,7 @@ import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filte
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
 import {
-  readingRows, ruleOut, allSetAside,
+  modeOf, readingRows, ruleOut, allSetAside,
   type FieldReading,
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
@@ -858,7 +858,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-a-rebuild-keeps-every-answer */
     const gist = (r: FieldReading): string => {
       const own = readingRows(r);
-      return JSON.stringify([own, r.mode ?? (own.length ? 'advanced' : 'simple'), !!r.mirror]);
+      return JSON.stringify([own, modeOf(r, own) ?? 'simple', !!r.mirror]);
     };
     if (gist(menu.reading) === gist(reading)) return;
     const held: FieldReading = { ...reading };

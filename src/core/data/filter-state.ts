@@ -31,6 +31,7 @@
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the other answers leave.
  * - allSetAside — Every pick a chip holds is ruled out: it is set aside.
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
+ * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -273,6 +274,12 @@ export function readingRows(reading: FieldReading): FieldCondition[] {
   return (reading.picked ?? []).map((value, i) => (i ? { op, join, picked: [value] } : { op, picked: [value] }));
 }
 
+/** Which answer a reading puts in force: its own `mode`, else Advanced where `rows`
+ *  answer, else none said. TRAP T-both-answers-are-kept */
+export function modeOf(reading: FieldReading, rows: readonly FieldCondition[] = readingRows(reading)): ConditionType | undefined {
+  return reading.mode ?? (rows.length ? 'advanced' : undefined);
+}
+
 /**
  * Work out one field's whole state — the ONLY place that decides whether a
  * field is filtering, which values are picked, and which are out of reach.
@@ -336,7 +343,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      TRAP T-one-condition-system */
   const ends = values.filter((v) => v.state === 'picked').map((v) => v.raw);
   // Only the answer IN FORCE compiles; the other is kept. TRAP T-both-answers-are-kept
-  const mode: ConditionType = reading.mode ?? (conditions.length ? 'advanced' : 'simple');
+  const mode: ConditionType = modeOf(reading, conditions) ?? 'simple';
   const rows: FieldCondition[] = mode === 'advanced' ? [...conditions]
     : !answered ? []
       : takesText ? [{ op, text }]

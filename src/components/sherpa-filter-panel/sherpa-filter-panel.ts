@@ -31,7 +31,7 @@ import {
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
-import { readingRows, ruleOut, allSetAside, type FieldReading } from '../../core/data/filter-state.js';
+import { modeOf, readingRows, ruleOut, allSetAside, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
@@ -337,8 +337,7 @@ export class SherpaFilterPanel extends SherpaElement {
             one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
           }
         }
-        const rows = readingRows(reading);
-        const mode = reading.mode ?? (rows.length ? 'advanced' : undefined);
+        const mode = modeOf(reading);
         if (mode) this.#setCustom(held, mode === 'advanced');
         const given = held.menu;
         if (given) given.reading = { ...reading, picked: [...want] };
@@ -864,7 +863,7 @@ export class SherpaFilterPanel extends SherpaElement {
        rows. Drawn as plain chips, the refill after an Add hid Owner's rows,
        and the next Apply reported it unanswered: adding Email reset Owner.
        TRAP T-a-conditioned-field-opens-on-its-rows */
-    const opens = def.state?.mode ?? (readingRows(def.state ?? {}).length ? 'advanced' : 'simple');
+    const opens = modeOf(def.state ?? {}) ?? 'simple';
     if (box.hasAttribute('data-advanced-ok') && opens === 'advanced') this.#setCustom(held, true, true);
     return box;
   }
