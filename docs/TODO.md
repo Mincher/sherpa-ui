@@ -6651,6 +6651,16 @@ part; a second checked each plan against the files.
 - **✅ Step 5, 2026-10-15 — part A done:** the four reviews are in
   `docs/history/`; every path and link moved, proved by check-docs and one git
   grep. Part B (the rules doc, and CLAUDE.md to pointers) is next.
+- **✅ Part B step 1, 2026-10-15:** PRINCIPLES now states each rule that only
+  CLAUDE.md stated: where generic code goes (D5), the one `@media`, the slot
+  vocabulary, the app-layer boundary, the naming rules, the tier rule,
+  current/selected, no aliases, the event endings, the words (19), tokens (20),
+  report do not derive (21), comments (22) and suppressions (23), the `@function`
+  trap, and checking a generator by its output. Facts fixed on the way: rules 5
+  and 6 only warn in the hook; rule 16 is half gated by eslint; the accordion
+  example in 18 was false (it is the switch that keeps `change`). LEXICON points
+  at PRINCIPLES 15; a TRAPS line named the wrong motion sheet. CLAUDE.md is not
+  cut yet.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.

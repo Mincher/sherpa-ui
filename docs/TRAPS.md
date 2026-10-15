@@ -12891,7 +12891,7 @@ because "motion gating is owned globally". Nothing owned it.** Searched
 library ignored the setting, and the rule that forbade a local fix was the
 reason nobody added one.
 
-The gate is in `sherpa-base.css`, which every shadow root adopts. It sets
+The gate is in `sherpa-motion.css`, which every shadow root adopts. It sets
 `animation-duration` rather than `animation: none`, so a paused animation lands
 on its END state instead of snapping back to its start — and `!important`,
 because a component's own rule outranks a shared sheet's and this has to win

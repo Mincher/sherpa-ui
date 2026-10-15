@@ -5,7 +5,7 @@ the bulk-rename yes for **its rows**, and nothing outside it is renamed. A
 unit test (279) then holds every spec to it, with a baseline that may only fall.
 
 Rulings it rests on: D5 (anything generic is elevated), D6 (native names where
-a native element does the same job), and the tier rule in CLAUDE.md (a control
+a native element does the same job), and the tier rule (PRINCIPLES 15) (a control
 takes `data-label`, a container `data-heading`). No alias is kept: a renamed
 name drops the old one in the same change (`T-a-rename-drops-the-old-name`).
 
@@ -64,7 +64,7 @@ fires on every close, by the ✕ or by `hide()`, so it is a `-close` event.
 
 **Rule.** A control that is ticked takes the native name: **`checked`**, with
 `change{checked}`. `data-selected` and `data-current` stay for ROWS (any-of-many
-and one-of-many, as CLAUDE.md says). The default `value` is **`'on'`**, as a
+and one-of-many, as PRINCIPLES 15 says). The default `value` is **`'on'`**, as a
 native checkbox and radio.
 
 **Moves (3).** select-card `data-selected` → `checked`, its event detail
