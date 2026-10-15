@@ -6473,6 +6473,10 @@ part; a second checked each plan against the files.
 - **✅ Step 1, 2026-10-15:** check-docs also checks backticked `docs/….md` paths
   and relative `.md` links (53 paths and 14 links; 2 dangled, now fixed). A line
   with an obituary word (was, deleted, planned…) is still skipped.
+- **✅ Step 2, 2026-10-15:** `docs/TRAPS-INDEX.md` — 656 entries in 11 areas;
+  `npm run traps:write` makes it, and check:traps fails when it is stale. It is
+  by code area, not by reader, so 193's "a tag on each entry by who meets it" is
+  still not done.
 
 ### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
 

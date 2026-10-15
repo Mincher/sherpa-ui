@@ -11,6 +11,11 @@ reported 22 failures and exited 0 for three months.
 **If you are about to "simplify" something that looks redundant, search this file
 first.** Most of what is here is the record of the obvious approach being wrong.
 
+**By area: [TRAPS-INDEX.md](TRAPS-INDEX.md).** `npm run traps:write` makes it from
+the `Site:` lines below, and `npm run check:traps` fails when it is stale. So
+after you add an entry or change a Site, run `npm run traps:write`. The `##`
+headings below are older than the index: most entries are under the last one.
+
 ---
 
 ## Shadow DOM and the platform

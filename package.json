@@ -88,6 +88,7 @@
     "spec:validate": "node scripts/validate-component.mjs --all",
     "spec:check": "node scripts/generate-component-spec.mjs --all --check",
     "check:traps": "node scripts/check-traps.mjs",
+    "traps:write": "node scripts/check-traps.mjs --write",
     "check:mcp": "node scripts/check-mcp-tools.mjs",
     "check:ownership": "node scripts/check-ownership.mjs",
     "check:props": "node scripts/check-props.mjs",

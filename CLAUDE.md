@@ -27,7 +27,7 @@ made that necessary.
 | Doc | Read it when |
 |---|---|
 | [docs/PRINCIPLES.md](docs/PRINCIPLES.md) | **First, always.** The rules, the gate that enforces each, and the open work |
-| [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways |
+| [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways. By area: [docs/TRAPS-INDEX.md](docs/TRAPS-INDEX.md) |
 | [docs/APP-GUIDE.md](docs/APP-GUIDE.md) | Building an app on Sherpa, step by step. Served to agents as `sherpa://app-guide` |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | Pointing Sherpa at a backend. Served to agents as `sherpa://data-rules` |
 | [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component from a def. Served as `sherpa://rules` |

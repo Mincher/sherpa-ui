@@ -63,7 +63,8 @@ TRAPS_RESULT=$?
 
 if [ $TRAPS_RESULT -ne 0 ]; then
   echo "$TRAPS_OUT"
-  echo "❌ A trap and its citation have drifted. Commit blocked."
+  echo "❌ A trap, its citation or docs/TRAPS-INDEX.md have drifted. Commit blocked."
+  echo "   If only the index is stale: npm run traps:write"
   exit 1
 fi
 

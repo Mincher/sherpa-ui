@@ -69,7 +69,7 @@ are a reminder of why.
 |---|---|---|
 | 9 | Every `:host([data-*])` and every `this.dataset` read is DECLARED in `static props` | `check:props` |
 | 10 | One owner per value. A bound component REPORTS; `data-locked` says the host owns it | `check:ownership` |
-| 11 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it | `check:traps` |
+| 11 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it. `TRAPS-INDEX.md` is made from those Sites | `check:traps` |
 | 12 | A `.component.json` regenerates the source it describes, and is what that source generates now | `spec:check` |
 | 13 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage | `lint` |
 | 14 | Every file's header says what it holds, and ends in a `Map:` of its exports — one line each. A changed file carries its map; `npm run map` prints them all | `check:map` |
@@ -190,13 +190,13 @@ rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 | File | Who reads it |
 |---|---|
 | `PRINCIPLES.md` | People. This file — the rules, the doors, the open work |
-| `TRAPS.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, and that entry's `Site:` list must match who cites it |
+| `TRAPS.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, and that entry's `Site:` list must match who cites it; `npm run traps:write` makes `TRAPS-INDEX.md`, the entries by area, from those lists |
 | `APP-GUIDE.md` | The MCP server, as `sherpa://app-guide` |
 | `DEF-TO-FIGMA-BUILD-RULES.md` | The MCP server, as `sherpa://rules` |
 | `DATA-SOURCE-RULES.md` | The MCP server, as `sherpa://data-rules` |
 
 `TRAPS.md` is where the depth went, and it is gated both ways. That is the
-trade: the citation stays beside the code, the essay moves out. About 1,800
-citations in `src/` point at it.
+trade: the citation stays beside the code, the essay moves out. Each `TRAP T-…`
+comment in the code points at it.
 
 If a rule here and a gate disagree, **the gate wins** — it runs.
