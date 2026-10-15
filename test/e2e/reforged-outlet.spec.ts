@@ -36,7 +36,7 @@ test('the outlet loads the route\'s Context, hands it one ctx, and tears it down
   })()`) as Record<string, unknown>;
   expect(r['alpha']).toEqual({
     text: 'Alpha', heading: 'Alpha', icon: 'home', pin: true, params: 'context=alpha view',
-    ctx: { root: 'context-root', keys: ['header', 'label', 'panels', 'session', 'signal', 'view'], label: 'Alpha', header: true, gone: false },
+    ctx: { root: 'context-root', keys: ['header', 'id', 'label', 'panels', 'session', 'signal', 'view'], label: 'Alpha', id: 'alpha', header: true, gone: false },
   });
   expect(r['beta']).toEqual({
     text: 'Beta', alphaGone: true, heading: 'Beta', icon: null, noHeader: true, teardown: true, aborted: true,
@@ -91,7 +91,7 @@ test('a Settings page opens over the Context and its back arrow closes it', asyn
   }))()`);
   expect(open).toEqual({
     page: 'prefs', text: 'Preferences', heading: 'Preferences',
-    ctx: { root: 'settings-root', label: 'Preferences', gone: false }, context: true,
+    ctx: { root: 'settings-root', label: 'Preferences', id: 'prefs', gone: false }, context: true,
   });
   expect(closed).toEqual({
     page: null, shown: false, gone: true, url: '?context=alpha',

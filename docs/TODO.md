@@ -263,7 +263,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ✅ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ✅ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
-| ⬜ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
+| 🚧 | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ⬜ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
 | ⬜ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
@@ -6391,6 +6391,17 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[ ]` 🚧 272 — Phase 8.3: `../Sherpa Gallery`
+
+The plan's 8.3: a sibling project that takes `sherpa-ui` as a consumer does —
+native pages now, CSF stories that Storybook can read later, and a fake data
+layer.
+
+**✅ A gap it found first, 2026-10-15:** a Context's module was not told WHICH
+Context it is — `ctx` had its label, not its id — so one module could not serve
+many. The gallery has a Context per component and one module for all of them.
+`ctx.id` is its key in `app.json` now, for a Settings page too.
 
 ### `[x]` ✅ 271 — Phase 8.3: each component ships its example
 

@@ -72,6 +72,8 @@ export interface ContextInit {
   panels: Readonly<Record<string, HTMLElement | undefined>>;
   /** Its own row's name. */
   label: string;
+  /** Its id in `app.json`, so one module can serve many Contexts. */
+  id: string;
 }
 
 /** A Context's module: `init(root, ctx)`, which may hand back a teardown. */

@@ -223,7 +223,7 @@ export class SherpaOutlet extends SherpaElement {
     if (token !== this.#settings.token) return;
     const leaving = (this.#settings.leaving = new AbortController());
     const teardown = await module.init?.(where.root, {
-      session: options.session, view: null, signal: leaving.signal, panels: options.panels ?? {}, label: page.label,
+      session: options.session, view: null, signal: leaving.signal, panels: options.panels ?? {}, label: page.label, id: name,
       ...(where.header ? { header: where.header } : {}),
     });
     if (token !== this.#settings.token) {
@@ -308,7 +308,7 @@ export class SherpaOutlet extends SherpaElement {
     const leaving = (this.#leaving = new AbortController());
     const header = this.#header;
     const ctx: ContextInit = {
-      session: options.session, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label,
+      session: options.session, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
       ...(source ? { source } : {}), ...(header ? { header } : {}),
     };
     const teardown = await module?.init?.(this, ctx);
