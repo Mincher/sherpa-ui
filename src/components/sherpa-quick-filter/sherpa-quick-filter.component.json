@@ -168,13 +168,6 @@
     },
     {
       "$type": "prop",
-      "name": "asc",
-      "type": "string",
-      "observed": false,
-      "description": "and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is"
-    },
-    {
-      "$type": "prop",
       "name": "data-applied-at",
       "type": "string",
       "observed": true,
@@ -450,13 +443,6 @@
       "observed": true,
       "declared": true,
       "kind": "style"
-    },
-    {
-      "$type": "prop",
-      "name": "desc",
-      "type": "string",
-      "observed": false,
-      "description": "and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is"
     },
     {
       "$type": "prop",

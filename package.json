@@ -61,8 +61,11 @@
     "docs/DATA-SOURCE-RULES.md",
     "docs/DEF-TO-FIGMA-BUILD-RULES.md",
     "scripts/check-usage.mjs",
-    "bin/"
+    "bin/",
+    "custom-elements.json",
+    "vscode.html-data.json"
   ],
+  "customElements": "custom-elements.json",
   "bin": {
     "sherpa-ui": "./bin/sherpa-ui.mjs"
   },
@@ -95,6 +98,8 @@
     "check:map": "node scripts/code-map.mjs --check",
     "check:extensions": "node scripts/check-extensions.mjs",
     "check:size": "node scripts/check-size.mjs",
+    "manifest": "node scripts/write-manifest.mjs",
+    "check:manifest": "node scripts/write-manifest.mjs --check",
     "mcp": "node mcp-server/index.js",
     "check:mcp-pack": "node scripts/check-mcp-pack.mjs",
     "preview": "node bin/sherpa-ui.mjs serve . --port 4000",

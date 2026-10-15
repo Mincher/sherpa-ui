@@ -563,12 +563,18 @@ function generateSpec(name) {
      spellings of use. A DOUBLE-quoted match is deliberately not proof:
      `"stretch"` is a VALUE in `[data-align="stretch"]`. Single quotes are, as
      that is how TS spells an attribute NAME in an `observed` list. */
+  /* A quoted name is an attribute NAME as a key, a list item or a call's
+     argument — never as a compared or default value: `?? 'asc'` kept phantom
+     `asc` and `desc` props. A `data-*` name is unambiguous anywhere. */
+  const quotedAsName = (nm, esc) => (nm.startsWith('data-')
+    ? sourceText.includes(`'${nm}'`)
+    : new RegExp(`(?:^|[\\[(,])\\s*'${esc}'\\s*[,\\]):]`, 'm').test(sourceText));
   const attrInUse = (nm) => {
     const camel = nm.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`:host\\([^{]*\\[${esc}[\\]=~|^$*]`).test(sourceText)   // a HOST selector: an inner cell's `[data-value]` is not the host's
       || sourceText.includes(`${nm}=`)            // HTML attribute
-      || sourceText.includes(`'${nm}'`)           // getAttribute / observed list
+      || quotedAsName(nm, esc)                    // getAttribute / observed list / a props key
       || sourceText.includes(`this.dataset['${camel}']`)
       || sourceText.includes(`this.dataset.${camel}`);
   };

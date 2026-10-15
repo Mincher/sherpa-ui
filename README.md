@@ -30,6 +30,17 @@ it — a router, a provider, the app shell, page definitions and Views. Sherpa
 itself knows no app: [docs/APP-GUIDE.md](docs/APP-GUIDE.md) says how one is
 built.
 
+## In your editor
+
+The package ships `custom-elements.json` (the standard manifest, named by
+`package.json`'s `customElements`) and VS Code's HTML data. Both list every
+`<sherpa-*>` tag with its attributes, values, events and slots. In VS Code, add
+this to `.vscode/settings.json` for completion and hover docs in plain HTML:
+
+```json
+{ "html.customData": ["./node_modules/sherpa-ui/vscode.html-data.json"] }
+```
+
 ## What it needs
 
 - **A current browser.** Chrome, Edge and Firefox, on a desktop and on

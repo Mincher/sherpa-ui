@@ -175,4 +175,13 @@ if [ $SIZE_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# The editor files are written from the specs, by scripts/write-manifest.mjs.
+echo "🧩 Checking custom-elements.json against the specs..."
+MANIFEST_OUT=$(npm run check:manifest --silent 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$MANIFEST_OUT"
+  echo "❌ Commit blocked. Run: npm run manifest"
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

@@ -1,0 +1,3712 @@
+{
+  "version": 1.1,
+  "tags": [
+    {
+      "name": "sherpa-accordion",
+      "description": "a disclosure card built on native <details> / <summary>. State IS the native `open` attribute — there is no data-expanded.",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "— optional secondary line under the title (fallback to slotted [slot=description])"
+        },
+        {
+          "name": "data-heading",
+          "description": "— the summary title (fallback to slotted [slot=heading])"
+        },
+        {
+          "name": "data-icon",
+          "description": "— a glyph before the title: what the section holds"
+        },
+        {
+          "name": "data-status",
+          "description": "— status colour cascade (critical | warning | success | info | urgent)"
+        },
+        {
+          "name": "open",
+          "description": "— native boolean (current disclosure state; drives [open] visuals)",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-app-header",
+      "description": "the top application header bar.",
+      "attributes": [
+        {
+          "name": "data-account",
+          "description": "show the account button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-ai",
+          "description": "show the \"Ask N-zo\" AI button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-ai-label",
+          "description": "its label"
+        },
+        {
+          "name": "data-back",
+          "description": "show the back button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading",
+          "description": "the Context title (row 2)"
+        },
+        {
+          "name": "data-help",
+          "description": "show the support button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon",
+          "description": "the Context icon — an icon name (\"gauge\")"
+        },
+        {
+          "name": "data-labs",
+          "description": "show the labs/beaker button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-loading",
+          "description": "run the indeterminate loading bar",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-menu",
+          "description": "show the app-switcher button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-notifications",
+          "description": "unread count — shows the bell + its badge"
+        },
+        {
+          "name": "data-notifications-open",
+          "description": "the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-theme-mode",
+          "description": "light | dark — the mode on screen; the button offers the other",
+          "values": [
+            {
+              "name": "light"
+            },
+            {
+              "name": "dark"
+            }
+          ]
+        },
+        {
+          "name": "data-theme-toggle",
+          "description": "show the light/dark (moon) button",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-app-shell",
+      "description": "the frame for an app and its Contexts. Nav and header are PRE-COMPOSED; slotting your own replaces the default.",
+      "attributes": [
+        {
+          "name": "data-nav-state",
+          "description": "collapsed  | hover | default | pinned | settings — mirrored from the rail; drives the content inset",
+          "values": [
+            {
+              "name": "collapsed"
+            },
+            {
+              "name": "hover"
+            },
+            {
+              "name": "default"
+            },
+            {
+              "name": "pinned"
+            },
+            {
+              "name": "settings"
+            }
+          ]
+        },
+        {
+          "name": "data-no-header",
+          "description": "let the content span the full height (no header row)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-no-nav",
+          "description": "drop the nav rail; the content spans the full width",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-no-room",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-panel-end-open",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-panel-end-width",
+          "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
+        },
+        {
+          "name": "data-panel-start-open",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-panel-start-width",
+          "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
+        }
+      ]
+    },
+    {
+      "name": "sherpa-badge",
+      "description": "a small count: Figma \"Indicator (atom)/Type=count\". The consumer pins its Style mode, as Figma pins the instance.",
+      "attributes": []
+    },
+    {
+      "name": "sherpa-barchart",
+      "description": "a vertical bar chart for categorical comparison.",
+      "attributes": [
+        {
+          "name": "data-aggregate",
+          "description": "count  | sum | mean | min | max | distinct, per value",
+          "values": [
+            {
+              "name": "count"
+            },
+            {
+              "name": "sum"
+            },
+            {
+              "name": "mean"
+            },
+            {
+              "name": "min"
+            },
+            {
+              "name": "max"
+            },
+            {
+              "name": "distinct"
+            }
+          ]
+        },
+        {
+          "name": "data-axis-label",
+          "description": "y-axis caption (shown when set)"
+        },
+        {
+          "name": "data-bands",
+          "description": "a number segment-field cut at these edges, \"0,20,40\" — a histogram"
+        },
+        {
+          "name": "data-bucket",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "data-field",
+          "description": "the number that aggregate reads"
+        },
+        {
+          "name": "data-legend",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
+          "name": "data-max",
+          "description": "explicit y-max (else derived from the data)"
+        },
+        {
+          "name": "data-over-field"
+        },
+        {
+          "name": "data-segment-field",
+          "description": "ASKED of its provider: one bar per value of this field"
+        },
+        {
+          "name": "data-ticks",
+          "description": "number of y gridlines/values"
+        },
+        {
+          "name": "data-where"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-breadcrumbs",
+      "description": "a navigation trail.",
+      "attributes": []
+    },
+    {
+      "name": "sherpa-button",
+      "description": "the primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square).",
+      "attributes": [
+        {
+          "name": "command",
+          "description": "native: what it is told — `--show`, `--hide`"
+        },
+        {
+          "name": "commandfor",
+          "description": "native: the id of the element a press commands (a dialog, a panel)"
+        },
+        {
+          "name": "data-badge",
+          "description": "the text of the trailing sherpa-badge (or slot a node into \"badge\")"
+        },
+        {
+          "name": "data-icon-end",
+          "description": "icon glyph value"
+        },
+        {
+          "name": "data-icon-start",
+          "description": "icon glyph value"
+        },
+        {
+          "name": "data-label",
+          "description": "label text (or use the default slot)"
+        },
+        {
+          "name": "data-look",
+          "description": "saturated (primary) | transparent (tertiary) (omitted = default / \"secondary\": white surface, grey border, dark ink)",
+          "values": [
+            {
+              "name": "saturated"
+            },
+            {
+              "name": "transparent"
+            }
+          ]
+        },
+        {
+          "name": "data-no-tab",
+          "description": "out of the tab order — for a host whose own keys do the same (a stepper)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-no-tip",
+          "description": "no tooltip — for a host that composes the button and says it itself",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-open",
+          "description": "set by JS while its slotted menu is open — CSS only",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-size",
+          "description": "2xs | xs | sm | lg | xl",
+          "values": [
+            {
+              "name": "2xs"
+            },
+            {
+              "name": "xs"
+            },
+            {
+              "name": "sm"
+            },
+            {
+              "name": "lg"
+            },
+            {
+              "name": "xl"
+            }
+          ]
+        },
+        {
+          "name": "data-status",
+          "description": "critical | warning | success | info | urgent  (tints the look tier)",
+          "values": [
+            {
+              "name": "critical"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "info"
+            },
+            {
+              "name": "urgent"
+            }
+          ]
+        },
+        {
+          "name": "data-tip",
+          "description": "the tooltip's text. Unset: an unlabelled button's tip is its aria-label, and a labelled one has none"
+        },
+        {
+          "name": "data-type",
+          "description": "icon"
+        },
+        {
+          "name": "disabled",
+          "description": "native disabled state",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-calendar-cell",
+      "description": "one day, month or year in a calendar's grid. Figma \"Calendar Cell\" (276:16589).",
+      "attributes": [
+        {
+          "name": "data-label",
+          "description": "when absent, so a cell with no calendar around it still reports something."
+        },
+        {
+          "name": "data-outside",
+          "description": "this day belongs to the neighbouring month",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-state",
+          "description": "default (omitted) | today | selected | range-start | range-end | range-mid",
+          "values": [
+            {
+              "name": "default"
+            },
+            {
+              "name": "today"
+            },
+            {
+              "name": "selected"
+            },
+            {
+              "name": "range-start"
+            },
+            {
+              "name": "range-end"
+            },
+            {
+              "name": "range-mid"
+            }
+          ]
+        },
+        {
+          "name": "data-value",
+          "description": "the ISO date this cell STANDS FOR (2026-09-18), which is what cell-click carries. The label is a number in the month's own terms and cannot say which month; this can. Falls back to"
+        },
+        {
+          "name": "disabled",
+          "description": "native — outside data-min / data-max",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-calendar",
+      "description": "a date picker with day / month / year views. The header label zooms OUT (day → month → year); picking one zooms back IN.",
+      "attributes": [
+        {
+          "name": "data-available",
+          "description": "comma-separated ISO days that EXIST in the data; every other day is disabled. A SET, not a span — a column of dates is a scatter, and min/max would leave the empty days between them selectable. Omit it and every day is selectable, which is the override: a host that wants a picker unconstrained by its own data simply does not supply one."
+        },
+        {
+          "name": "data-embedded",
+          "description": "the HOST owns the card's chrome — see the note below data-embedded: this component contributes only its GRID — the footer is hidden and the stepper is projected into the host's `header` slot, so a menu hosting a calendar has ONE header and ONE footer rather than two.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-has-time",
+          "description": "show a native <input type=time> in the footer",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-type",
+          "description": "single | range  — one day, or a two-click start→end range",
+          "values": [
+            {
+              "name": "single"
+            },
+            {
+              "name": "range"
+            }
+          ]
+        },
+        {
+          "name": "data-value-end",
+          "description": "range end, ISO YYYY-MM-DD (range mode)"
+        },
+        {
+          "name": "data-value-start",
+          "description": "range start, ISO YYYY-MM-DD (range mode)"
+        },
+        {
+          "name": "data-view",
+          "description": "day | month | year  — the active picker (the Grid-collection swap)",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "max",
+          "description": "latest selectable day (ISO); later days are disabled"
+        },
+        {
+          "name": "min",
+          "description": "earliest selectable day (ISO); earlier days are disabled"
+        },
+        {
+          "name": "value",
+          "description": "selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-callout",
+      "description": "a status message box.",
+      "attributes": [
+        {
+          "name": "data-dismissible",
+          "description": "show the close button (fires callout-dismiss)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading",
+          "description": "heading text (rendered into .title)"
+        },
+        {
+          "name": "data-status",
+          "description": "info | success | warning | critical | urgent",
+          "values": [
+            {
+              "name": "info"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "critical"
+            },
+            {
+              "name": "urgent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-chart-legend",
+      "description": "a legend for charts. Figma \"Chart Legend\" (1098:37846).",
+      "attributes": [
+        {
+          "name": "data-aggregate",
+          "values": [
+            {
+              "name": "count"
+            },
+            {
+              "name": "sum"
+            },
+            {
+              "name": "mean"
+            },
+            {
+              "name": "min"
+            },
+            {
+              "name": "max"
+            },
+            {
+              "name": "distinct"
+            }
+          ]
+        },
+        {
+          "name": "data-bands"
+        },
+        {
+          "name": "data-bucket",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "data-field"
+        },
+        {
+          "name": "data-orientation",
+          "description": "vertical  | horizontal",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
+          "name": "data-over-field"
+        },
+        {
+          "name": "data-readonly",
+          "description": "a KEY, not a filter: its rows do not toggle",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-segment-field",
+          "description": "ASKED of its provider, or read off its chart: one row per value. A click narrows its chart alone"
+        },
+        {
+          "name": "data-where"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-chat-message",
+      "description": "a single chat bubble for AI / messaging threads.",
+      "attributes": [
+        {
+          "name": "data-message",
+          "description": "optional text body (the default slot overrides it when slotted)"
+        },
+        {
+          "name": "data-name",
+          "description": "optional author name shown above the bubble"
+        },
+        {
+          "name": "data-timestamp",
+          "description": "optional timestamp shown beside the name"
+        },
+        {
+          "name": "data-type",
+          "description": "assistant  | user (right, accent) | system (centred, muted)",
+          "values": [
+            {
+              "name": "assistant"
+            },
+            {
+              "name": "system"
+            },
+            {
+              "name": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-chip",
+      "description": "a compact input/filter chip (Figma Chip, 62:1732).",
+      "attributes": [
+        {
+          "name": "data-dismissible",
+          "description": "show the close button (selects the dismissible template)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon",
+          "description": "leading icon glyph value (shown when present; or slot \"icon\")"
+        },
+        {
+          "name": "data-status",
+          "description": "info | success | warning | critical | urgent (via the cascade)",
+          "values": [
+            {
+              "name": "info"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "critical"
+            },
+            {
+              "name": "urgent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-code-block",
+      "description": "a monospace code display with a copy button.",
+      "attributes": [
+        {
+          "name": "data-code",
+          "description": "the code to show (also settable via the default slot)"
+        },
+        {
+          "name": "data-language",
+          "description": "a short language label shown in the header (e.g. \"bash\")"
+        },
+        {
+          "name": "data-line-numbers",
+          "description": "boolean — render a line-number gutter beside the code. Numbers derive from the code's line count; CSS-gated.",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-container-footer",
+      "description": "the footer bar for a container's `footer` slot.",
+      "attributes": [
+        {
+          "name": "data-align",
+          "description": "start | end  | between | stretch At \"stretch\" ONE wide control fills the row (a chat composer, a search field), rather than buttons clustered at one end.",
+          "values": [
+            {
+              "name": "between"
+            },
+            {
+              "name": "end"
+            },
+            {
+              "name": "start"
+            },
+            {
+              "name": "stretch"
+            }
+          ]
+        },
+        {
+          "name": "data-dirty",
+          "description": "true | false — the HOST says whether anything has changed. False turns its pair off: the controls marked data-footer=\"commit\" and data-footer=\"revert\". Absent, the footer leaves them alone. TRAP T-the-footer-owns-nothing-to-save",
+          "values": [
+            {
+              "name": "true"
+            },
+            {
+              "name": "false"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-container-header",
+      "description": "the header bar for a container's `header` slot.",
+      "attributes": [
+        {
+          "name": "data-collapsed",
+          "description": "collapsed state (opt-in; absent = expanded default; the toggle reflects it)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-collapsible",
+          "description": "show the collapse toggle",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "secondary text (rendered into .description)"
+        },
+        {
+          "name": "data-dismissible",
+          "description": "show the close button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-draggable",
+          "description": "show the drag handle",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading",
+          "description": "heading text (rendered into .title)"
+        },
+        {
+          "name": "data-icon",
+          "description": "a glyph before the title (shows the icon slot)"
+        },
+        {
+          "name": "data-type",
+          "description": "default | panel",
+          "values": [
+            {
+              "name": "default"
+            },
+            {
+              "name": "panel"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-container",
+      "description": "base surface card: header / content / footer slots, plus loading / empty / error states.",
+      "attributes": [
+        {
+          "name": "data-elevation",
+          "description": "none  | sm | md | lg",
+          "values": [
+            {
+              "name": "none"
+            },
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            }
+          ]
+        },
+        {
+          "name": "data-error",
+          "description": "the error's own words, under its heading"
+        },
+        {
+          "name": "data-fill",
+          "description": "with data-row-span AND several body children: only the child marked data-grow takes the spare height; the rest keep their natural size. A records card is a toolbar, a filter bar, the GRID, then the pager — the grid grows, the pager stays put. Not needed for the common one-child card. Slotting empty / error shows that overlay too, via the base class reflecting a `has-<slot>` state; a slotted one replaces the default content.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-keep-content",
+          "description": "a state never replaces the body: loading is a bar under the header and the body is locked; a state is a banner above it. Written by the provider. Will, TODO 59.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-loading",
+          "description": "show the loading overlay (ratified boolean-verb state)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-padding",
+          "description": "none | sm | md | lg | xl — one scale on both axes; unset is the card's own (lg)",
+          "values": [
+            {
+              "name": "none"
+            },
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            },
+            {
+              "name": "xl"
+            }
+          ]
+        },
+        {
+          "name": "data-padding-inline",
+          "values": [
+            {
+              "name": "none"
+            },
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            },
+            {
+              "name": "xl"
+            }
+          ]
+        },
+        {
+          "name": "data-row-span",
+          "description": "1–12 — a FIXED height of N layout-grid rows. The body's content fills it, so a chart draws into the whole card and a data grid scrolls inside it instead of the card growing with the data.",
+          "values": [
+            {
+              "name": "1"
+            },
+            {
+              "name": "2"
+            },
+            {
+              "name": "3"
+            },
+            {
+              "name": "4"
+            },
+            {
+              "name": "5"
+            },
+            {
+              "name": "6"
+            },
+            {
+              "name": "7"
+            },
+            {
+              "name": "8"
+            },
+            {
+              "name": "9"
+            },
+            {
+              "name": "10"
+            },
+            {
+              "name": "11"
+            },
+            {
+              "name": "12"
+            }
+          ]
+        },
+        {
+          "name": "data-state",
+          "description": "empty | no-matches | error — its default content, IN PLACE of the body. Written by the provider. TRAP T-a-container-shows-its-datas-state",
+          "values": [
+            {
+              "name": "empty"
+            },
+            {
+              "name": "no-matches"
+            },
+            {
+              "name": "error"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-data-grid",
+      "description": "a sortable, filterable, groupable data table.",
+      "attributes": [
+        {
+          "name": "data-apply-on",
+          "values": [
+            {
+              "name": "change"
+            },
+            {
+              "name": "input"
+            }
+          ]
+        },
+        {
+          "name": "data-bounds"
+        },
+        {
+          "name": "data-column-filters",
+          "description": "a filter button in each column heading",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-column-values",
+          "description": "the WHOLE column's values, so a filter menu offers them all even when the drawn rows carry only some: `field:a|b|c` per entry, NEWLINE separated. A value no drawn row carries sorts below a divider, dimmed but still selectable — that is how a reader broadens a filter back out. TRAP T-unavailable-value-sorts-below-a-divider"
+        },
+        {
+          "name": "data-filter-fields",
+          "description": "space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status=\"active\". Written by SherpaDataSource — a host driving the grid by hand can write it too."
+        },
+        {
+          "name": "data-filterable",
+          "description": "show a secondary header row of filter inputs",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-group-field",
+          "description": "group rows by this column"
+        },
+        {
+          "name": "data-locked",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-needles",
+          "description": "what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction"
+        },
+        {
+          "name": "data-page",
+          "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
+        },
+        {
+          "name": "data-page-size",
+          "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
+        },
+        {
+          "name": "data-scope",
+          "description": "ASKED of its provider: the Query scope its headings answer"
+        },
+        {
+          "name": "data-select",
+          "description": "multiple  | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen",
+          "values": [
+            {
+              "name": "single"
+            },
+            {
+              "name": "multiple"
+            }
+          ]
+        },
+        {
+          "name": "data-selectable",
+          "description": "show a leading selection column",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-sort-direction",
+          "description": "current sort (asc | desc)",
+          "values": [
+            {
+              "name": "asc"
+            },
+            {
+              "name": "desc"
+            },
+            {
+              "name": ""
+            }
+          ]
+        },
+        {
+          "name": "data-sort-field",
+          "description": "current sort (asc | desc)"
+        },
+        {
+          "name": "data-total-pages",
+          "description": "how many pages the host believes there are. READ ONLY, and only to avoid re-reporting a count that has not changed — the grid never writes it. Not observed: a change to it is the ECHO of the grid's own report, and re-rendering on it would be a loop. JS API — what a person can do by clicking, a caller can do by calling. This is what lets a SAVED VIEW, a preset or an agent configure a grid: setColumnFilter(field, clause)  set one column's filter from a store FilterClause columnClause(field)            read it back — the same clause, for saving suspendColumnFilter(field, on) keep the clause but stop applying it clearColumnFilter(field?)      delete one, or all openColumnFilter(field, anchor) open that column's menu, anchored anywhere select(keys) / clearSelection() set the selection BY KEY (needs `key` in populate) actionsFor(count)              the actions that apply to a selection of that size — all of them for 1, only the `multi` ones for 2+, none for 0. A bulk toolbar reads this so it cannot disagree with the row menu selectedKeys / selectedRecords read it back"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-data-viz-header",
+      "description": "the header strip of a metric or a chart's card. Figma \"Data Viz Header\" (1456:30467).",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "a line under it (else the metadata slot)"
+        },
+        {
+          "name": "data-divider",
+          "description": "the rule under it; shown by DEFAULT — \"none\" hides it (a metric's)",
+          "values": [
+            {
+              "name": "none"
+            }
+          ]
+        },
+        {
+          "name": "data-heading",
+          "description": "the title — small, light, in CAPS"
+        },
+        {
+          "name": "data-icon",
+          "description": "a glyph before the title (else the leading slot)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-dialog",
+      "description": "a modal surface on the native <dialog>: modality, ::backdrop, focus trap, ESC and top-layer come from showModal().",
+      "attributes": [
+        {
+          "name": "data-heading",
+          "description": "— convenience header label (a slotted [slot=header] overrides it)"
+        },
+        {
+          "name": "data-status",
+          "description": "— status colour cascade (critical | warning | success | info | urgent)"
+        },
+        {
+          "name": "data-type",
+          "description": "— modal  | overlay — overlay fills its container and opens NON-modal, so the page beside it stays live",
+          "values": [
+            {
+              "name": "modal"
+            },
+            {
+              "name": "overlay"
+            }
+          ]
+        },
+        {
+          "name": "open",
+          "description": "— native boolean (read reflects dialog.open; set → show()/close())",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-empty-state",
+      "description": "a centred placeholder for a blank list, grid, or region.",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "message text (rendered into .message-text)"
+        },
+        {
+          "name": "data-heading",
+          "description": "heading text (rendered into .title)"
+        },
+        {
+          "name": "data-illustration",
+          "description": "built-in glyph: empty  | search | folder | data | error | success",
+          "values": [
+            {
+              "name": "data"
+            },
+            {
+              "name": "empty"
+            },
+            {
+              "name": "error"
+            },
+            {
+              "name": "folder"
+            },
+            {
+              "name": "search"
+            },
+            {
+              "name": "success"
+            }
+          ]
+        },
+        {
+          "name": "data-size",
+          "description": "sm | md  | lg",
+          "values": [
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            }
+          ]
+        },
+        {
+          "name": "data-small-print",
+          "description": "fine-print / help text (rendered into .small-print-text)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-file-upload",
+      "description": "drag-and-drop file zone; \"browse\" triggers the hidden <input type=\"file\">.",
+      "attributes": [
+        {
+          "name": "accept",
+          "description": "comma-separated MIME types / extensions → native accept + hint"
+        },
+        {
+          "name": "data-description",
+          "description": "helper text under the list (hidden when empty)"
+        },
+        {
+          "name": "data-label",
+          "description": "label above the drop zone (hidden when empty)"
+        },
+        {
+          "name": "data-loading",
+          "description": "in-flight state (disables the upload button)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-max-size",
+          "description": "maximum file-size hint (e.g. \"4 MB\") shown in details"
+        },
+        {
+          "name": "disabled",
+          "description": "disabled state",
+          "valueSet": "v"
+        },
+        {
+          "name": "multiple",
+          "description": "allow selecting more than one file → native multiple",
+          "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "the form field its files are submitted under"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-filter-panel",
+      "description": "the filter toolbars, as a column.",
+      "attributes": [
+        {
+          "name": "data-apply-on",
+          "description": "input: its source applies LIVE, so a value reports while it moves. Set by a bound source. TODO 107",
+          "values": [
+            {
+              "name": "change"
+            },
+            {
+              "name": "input"
+            }
+          ]
+        },
+        {
+          "name": "data-at-default",
+          "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-dirty",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-group-field",
+          "description": "the group in force. Written by the source; the Group chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut"
+        },
+        {
+          "name": "data-heading",
+          "description": "the panel's own title"
+        },
+        {
+          "name": "data-hide-unmatched",
+          "description": "on | off — the host hides what Limit rules out, when it is on",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-limit-options",
+          "description": "on | off — the host offers \"Limit to matching filters\": its ⋮ menu holds the switch. Written by the provider. TODO 178.",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-locked",
+          "description": "the source owns the state — report, never set",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-nothing-to-reset",
+          "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-pending",
+          "description": "the FIELDS changed and not yet applied, space-separated. Set by a bound source; each shows Apply and Discard."
+        },
+        {
+          "name": "data-remote",
+          "description": "its source fetches from outside the data layer, so a change waits for its field's Apply. Set by a bound source.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-saveable",
+          "description": "the host SAVES filters: the header's Save filters saves every scope under one name, and its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-saved",
+          "description": "written BY the panel: a saved set is on, so its Saved chip shows",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-sort-direction",
+          "description": "the sort in force. Written by the source; the Sort chip shows it.",
+          "values": [
+            {
+              "name": "asc"
+            },
+            {
+              "name": "desc"
+            },
+            {
+              "name": ""
+            }
+          ]
+        },
+        {
+          "name": "data-sort-field",
+          "description": "the sort in force. Written by the source; the Sort chip shows it."
+        },
+        {
+          "name": "open",
+          "description": "the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-gauge-chart",
+      "description": "a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is not hittable.",
+      "attributes": [
+        {
+          "name": "data-aggregate",
+          "description": "ASKED of its provider: count | sum | mean | min | max | distinct",
+          "values": [
+            {
+              "name": "count"
+            },
+            {
+              "name": "sum"
+            },
+            {
+              "name": "mean"
+            },
+            {
+              "name": "min"
+            },
+            {
+              "name": "max"
+            },
+            {
+              "name": "distinct"
+            }
+          ]
+        },
+        {
+          "name": "data-bands"
+        },
+        {
+          "name": "data-bucket",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "data-caption",
+          "description": "caption text shown below the arc (e.g. \"30GB of 60GB used\")"
+        },
+        {
+          "name": "data-field",
+          "description": "the number that aggregate reads"
+        },
+        {
+          "name": "data-invert",
+          "description": "it reads its value from the TOP — max − value, as risk is 100 − health — and turns its field's thresholds round. TRAP T-a-threshold-is-a-fact-of-the-field",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-label",
+          "description": "the MIDPOINT tick above the arc. Defaults to the middle of the"
+        },
+        {
+          "name": "data-legend",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
+          "name": "data-over-field"
+        },
+        {
+          "name": "data-segment-field"
+        },
+        {
+          "name": "data-status",
+          "description": "critical | warning | success | info  (single-colour fill)",
+          "values": [
+            {
+              "name": "critical"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "info"
+            }
+          ]
+        },
+        {
+          "name": "data-unit",
+          "description": "suffix for all three scale ticks, e.g. \"%\" → 0% / 50% / 100%"
+        },
+        {
+          "name": "data-where"
+        },
+        {
+          "name": "data-zones",
+          "description": "threshold bands — \"0-50:success,50-80:warning,80-100:critical\" (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info) or any CSS colour. Left out, its provider draws its field's thresholds (TODO 150); with none, the single-colour sweep. TRAP T-a-threshold-is-a-fact-of-the-field A band may be NAMED — \"0-50:success:Low\", or `label` in the JSON — and the name is its tooltip's and its legend row's."
+        },
+        {
+          "name": "max",
+          "description": "scale bounds shown beneath"
+        },
+        {
+          "name": "min",
+          "description": "scale bounds shown beneath"
+        },
+        {
+          "name": "value",
+          "description": "number on the scale (drives the fill sweep + needle angle)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-group",
+      "description": "a row, column or grid of controls that reads as ONE object.",
+      "attributes": [
+        {
+          "name": "data-col-count",
+          "description": "the grid's column count (2|3|4|5|6|8|10|12); grid only",
+          "values": [
+            {
+              "name": "2"
+            },
+            {
+              "name": "3"
+            },
+            {
+              "name": "4"
+            },
+            {
+              "name": "5"
+            },
+            {
+              "name": "6"
+            },
+            {
+              "name": "8"
+            },
+            {
+              "name": "10"
+            },
+            {
+              "name": "12"
+            }
+          ]
+        },
+        {
+          "name": "data-direction",
+          "description": "row  | column | grid",
+          "values": [
+            {
+              "name": "row"
+            },
+            {
+              "name": "column"
+            },
+            {
+              "name": "grid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-input-text",
+      "description": "a labelled text field. Templates: default (label + description + control + message), multiline (auto-growing <textarea>), minimal (bare inline field, no description/message).",
+      "attributes": [
+        {
+          "name": "data-borderless",
+          "description": "drop the control border (minimal style)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-clearable",
+          "description": "a text area or a select shows Clear too (they do not by themselves)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "helper text under the label"
+        },
+        {
+          "name": "data-error",
+          "description": "validation message — shown as a filled critical bar"
+        },
+        {
+          "name": "data-icon-end",
+          "description": "trailing icon glyph inside the control row (CSS-gated)"
+        },
+        {
+          "name": "data-icon-start",
+          "description": "leading icon glyph inside the control row (CSS-gated)"
+        },
+        {
+          "name": "data-label",
+          "description": "field label (hidden when empty)"
+        },
+        {
+          "name": "data-matches",
+          "description": "how many matches a Find's host found; \"0\" leaves nothing to step to or replace"
+        },
+        {
+          "name": "data-multiline",
+          "description": "auto-growing <textarea>"
+        },
+        {
+          "name": "data-no-clear",
+          "description": "no Clear button. A typed field shows one by itself while it holds something; a number has steppers and shows none",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-replace",
+          "description": "a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-rules",
+          "description": "names a validation rule the platform has no idea about (e.g. \"email\") — see the TS for the rule set"
+        },
+        {
+          "name": "data-state",
+          "values": [
+            {
+              "name": "error"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "warning"
+            }
+          ]
+        },
+        {
+          "name": "data-type",
+          "description": "\"minimal\" for the bare inline field ; \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter",
+          "values": [
+            {
+              "name": "minimal"
+            },
+            {
+              "name": "select"
+            },
+            {
+              "name": "number"
+            },
+            {
+              "name": "find"
+            }
+          ]
+        },
+        {
+          "name": "autocomplete",
+          "description": "native attributes, reflected to the inner control"
+        },
+        {
+          "name": "disabled",
+          "description": "native attributes, reflected to the inner control",
+          "valueSet": "v"
+        },
+        {
+          "name": "inputmode",
+          "description": "native attributes, reflected to the inner control"
+        },
+        {
+          "name": "max",
+          "description": "a number field's bounds and step, reflected too"
+        },
+        {
+          "name": "maxlength",
+          "description": "native attributes, reflected to the inner control"
+        },
+        {
+          "name": "min",
+          "description": "a number field's bounds and step, reflected too"
+        },
+        {
+          "name": "minlength",
+          "description": "native attributes, reflected to the inner control"
+        },
+        {
+          "name": "name",
+          "description": "native attributes, reflected to the inner control"
+        },
+        {
+          "name": "pattern",
+          "description": "native attributes, reflected to the inner control"
+        },
+        {
+          "name": "placeholder",
+          "description": "native placeholder"
+        },
+        {
+          "name": "readonly",
+          "description": "native attributes, reflected to the inner control",
+          "valueSet": "v"
+        },
+        {
+          "name": "required",
+          "description": "native attributes, reflected to the inner control",
+          "valueSet": "v"
+        },
+        {
+          "name": "step",
+          "description": "a number field's bounds and step, reflected too"
+        },
+        {
+          "name": "value",
+          "description": "native value (also a JS property)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-key-value-list",
+      "description": "a semantic definition list.",
+      "attributes": [
+        {
+          "name": "data-orientation",
+          "description": "horizontal | vertical  No events — display only.",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-layout-canvas",
+      "description": "an infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. Will, TODO 25. TRAP T-a-canvas-owns-its-view",
+      "attributes": [
+        {
+          "name": "data-max-zoom",
+          "description": "the largest zoom"
+        },
+        {
+          "name": "data-min-zoom",
+          "description": "the smallest zoom"
+        },
+        {
+          "name": "data-no-minimap",
+          "description": "no minimap",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-zoom",
+          "description": "the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-layout-grid",
+      "description": "the layout grid a view places its content on.",
+      "attributes": [
+        {
+          "name": "data-col-count",
+          "description": "override the breakpoint's column count (1|2|3|4|5|6|8|10|12)",
+          "values": [
+            {
+              "name": "1"
+            },
+            {
+              "name": "2"
+            },
+            {
+              "name": "3"
+            },
+            {
+              "name": "4"
+            },
+            {
+              "name": "5"
+            },
+            {
+              "name": "6"
+            },
+            {
+              "name": "8"
+            },
+            {
+              "name": "10"
+            },
+            {
+              "name": "12"
+            }
+          ]
+        },
+        {
+          "name": "data-col-span-12",
+          "description": "on a CHILD: a dragged width, counted, read only at that column count; only the grid (or a host putting a layout back) writes it"
+        },
+        {
+          "name": "data-col-span-8",
+          "description": "on a CHILD: a dragged width, counted, read only at that column count; only the grid (or a host putting a layout back) writes it"
+        },
+        {
+          "name": "data-grouped",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-grow",
+          "description": "on a CHILD: the item that takes the remaining height"
+        },
+        {
+          "name": "data-min-row-span",
+          "description": "on a CHILD: 1–12, the fewest rows a drag may leave it; a child without one is not row-resizable"
+        },
+        {
+          "name": "data-resizable",
+          "description": "draw a handle in each gutter, to resize the children by dragging or by the keys. TRAP T-a-gutter-moves-a-line",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-row-count",
+          "description": "set an explicit row count (1–12); a fit grid needs it",
+          "values": [
+            {
+              "name": "1"
+            },
+            {
+              "name": "2"
+            },
+            {
+              "name": "3"
+            },
+            {
+              "name": "4"
+            },
+            {
+              "name": "5"
+            },
+            {
+              "name": "6"
+            },
+            {
+              "name": "7"
+            },
+            {
+              "name": "8"
+            },
+            {
+              "name": "9"
+            },
+            {
+              "name": "10"
+            },
+            {
+              "name": "11"
+            },
+            {
+              "name": "12"
+            }
+          ]
+        },
+        {
+          "name": "data-row-span-12",
+          "description": "on a CHILD: the same, for its rows. TRAP T-a-dragged-layout-is-kept-per-column-count"
+        },
+        {
+          "name": "data-row-span-8",
+          "description": "on a CHILD: the same, for its rows. TRAP T-a-dragged-layout-is-kept-per-column-count"
+        },
+        {
+          "name": "data-rows",
+          "description": "fit — every row one grid row tall, and the LAST row takes the rest | fixed — every row is one grid row tall",
+          "values": [
+            {
+              "name": "fit"
+            },
+            {
+              "name": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-line-chart",
+      "description": "a line/area chart over a numeric series.",
+      "attributes": [
+        {
+          "name": "data-aggregate",
+          "description": "count  | sum | mean | min | max | distinct, per point",
+          "values": [
+            {
+              "name": "count"
+            },
+            {
+              "name": "sum"
+            },
+            {
+              "name": "mean"
+            },
+            {
+              "name": "min"
+            },
+            {
+              "name": "max"
+            },
+            {
+              "name": "distinct"
+            }
+          ]
+        },
+        {
+          "name": "data-axis-label",
+          "description": "y-axis caption (shown when set)"
+        },
+        {
+          "name": "data-bands"
+        },
+        {
+          "name": "data-bucket",
+          "description": "a date over-field, cut to day | month | year",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "data-field",
+          "description": "the number that aggregate reads"
+        },
+        {
+          "name": "data-legend",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
+          "name": "data-max",
+          "description": "y-scale bounds (else derived)"
+        },
+        {
+          "name": "data-min",
+          "description": "y-scale bounds (else derived)"
+        },
+        {
+          "name": "data-over-field",
+          "description": "ASKED of its provider: the x axis runs over this field"
+        },
+        {
+          "name": "data-segment-field",
+          "description": "one line per value of this field"
+        },
+        {
+          "name": "data-ticks",
+          "description": "number of y gridlines/values"
+        },
+        {
+          "name": "data-type",
+          "description": "line  | area",
+          "values": [
+            {
+              "name": "line"
+            },
+            {
+              "name": "area"
+            }
+          ]
+        },
+        {
+          "name": "data-where"
+        },
+        {
+          "name": "data-x-axis-label",
+          "description": "x-axis caption (shown when set)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-list-item",
+      "description": "a single list row.",
+      "attributes": [
+        {
+          "name": "data-current",
+          "description": "current-row state",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "secondary text"
+        },
+        {
+          "name": "data-draggable",
+          "description": "show the drag handle",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-expandable",
+          "description": "show the expand toggle",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-expanded",
+          "description": "expanded state (the toggle reflects it)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon",
+          "description": "a leading icon glyph"
+        },
+        {
+          "name": "data-interactive",
+          "description": "hover + click behaviour",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-label",
+          "description": "primary text"
+        },
+        {
+          "name": "data-selectable",
+          "description": "show a leading selection control (checkbox affordance)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-selected",
+          "description": "selection state (for the leading control)",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "disabled state",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-list",
+      "description": "a vertical row container. Slot sherpa-list-item children, or call populate() to stamp rows from the .row-tpl prototype.",
+      "attributes": [
+        {
+          "name": "data-empty",
+          "description": "empty-state message No events of its own — child rows emit item-click, which the list uses to keep a single current row."
+        },
+        {
+          "name": "data-type",
+          "description": "| plain (no dividers)",
+          "values": [
+            {
+              "name": "plain"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-loader",
+      "description": "an animated loading indicator. CSS-only off data-* on the host.",
+      "attributes": [
+        {
+          "name": "data-orientation",
+          "description": "horizontal  | vertical",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
+          "name": "data-panel",
+          "description": "render a solid surface background behind the loader",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-size",
+          "description": "sm | md | lg   (spinner diameter; default md)",
+          "values": [
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-menu",
+      "description": "a floating list of choices or actions. Figma \"Menu\" SET (1156:29240), Type axis List | Calendar.",
+      "attributes": [
+        {
+          "name": "data-advanced",
+          "description": "FILTER type only: this field offers Advanced conditions, so the mode button shows. OPT-IN: most fields are answered by ticking values, and a `Contains` box over a closed set of three is noise. TRAP T-conditions-are-opt-in-per-field",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-advanced-only",
+          "description": "FILTER type only: Advanced conditions and NOTHING else. Implies data-advanced, opens in advanced mode and cannot leave it, and hides the switch — there is no list behind it. For a field whose values are a wall nobody ticks: 240 emails. TRAP T-a-filter-answers-by-values-conditions-or-both",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-align",
+          "description": "start  | end   which trigger edge the card lines up with",
+          "values": [
+            {
+              "name": "start"
+            },
+            {
+              "name": "end"
+            }
+          ]
+        },
+        {
+          "name": "data-apply-on",
+          "values": [
+            {
+              "name": "change"
+            },
+            {
+              "name": "input"
+            }
+          ]
+        },
+        {
+          "name": "data-available"
+        },
+        {
+          "name": "data-body",
+          "values": [
+            {
+              "name": "number"
+            },
+            {
+              "name": "date"
+            }
+          ]
+        },
+        {
+          "name": "data-bounds"
+        },
+        {
+          "name": "data-clearable",
+          "description": "show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today there instead — see the footer)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-commit",
+          "description": "show the Apply / Cancel footer and DEFER changes until Apply",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-commit-fixed",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-conditions",
+          "description": "FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set."
+        },
+        {
+          "name": "data-drill",
+          "description": "the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-drill-from",
+          "description": "names the list that was replaced — the breadcrumb's text"
+        },
+        {
+          "name": "data-from"
+        },
+        {
+          "name": "data-has-value",
+          "description": "written BY the menu: the typed value is not empty, so the input's Clear button shows."
+        },
+        {
+          "name": "data-heading",
+          "description": "optional heading (rendered upper-case at 10/16)"
+        },
+        {
+          "name": "data-hide-unavailable",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-inline",
+          "description": "draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-max"
+        },
+        {
+          "name": "data-min"
+        },
+        {
+          "name": "data-mode",
+          "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes",
+          "values": [
+            {
+              "name": "simple"
+            },
+            {
+              "name": "advanced"
+            }
+          ]
+        },
+        {
+          "name": "data-no-select-all",
+          "description": "a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-op",
+          "description": "FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many."
+        },
+        {
+          "name": "data-range",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-readonly",
+          "description": "SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no Advanced button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-removable",
+          "description": "show a \"Remove\" button in the footer (after Today); it emits menu-select with value=\"remove\"",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-search",
+          "description": "show a search input under the heading that filters the rows",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-select",
+          "description": "multiple  | single (radio rows)",
+          "values": [
+            {
+              "name": "single"
+            },
+            {
+              "name": "multiple"
+            }
+          ]
+        },
+        {
+          "name": "data-step"
+        },
+        {
+          "name": "data-takes",
+          "description": "written BY the menu from data-op: list | text. CSS reads it to reveal the rows or the text box.",
+          "values": [
+            {
+              "name": "list"
+            },
+            {
+              "name": "text"
+            }
+          ]
+        },
+        {
+          "name": "data-time",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-to"
+        },
+        {
+          "name": "data-type",
+          "description": "list  | calendar | filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu.",
+          "values": [
+            {
+              "name": "list"
+            },
+            {
+              "name": "calendar"
+            },
+            {
+              "name": "filter"
+            }
+          ]
+        },
+        {
+          "name": "data-value",
+          "description": "FILTER type only: what was TYPED under a typing condition. An ATTRIBUTE because a variant re-stamp replaces the whole shadow tree, and a value living only in the box is lost."
+        },
+        {
+          "name": "open",
+          "description": "native-ish boolean: reflects/controls the popover",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-metric",
+      "description": "a KPI tile with an optional embedded sparkline.",
+      "attributes": [
+        {
+          "name": "data-aggregate",
+          "description": "— ASKED of its provider: count | sum | mean | min | max | distinct",
+          "values": [
+            {
+              "name": "count"
+            },
+            {
+              "name": "sum"
+            },
+            {
+              "name": "mean"
+            },
+            {
+              "name": "min"
+            },
+            {
+              "name": "max"
+            },
+            {
+              "name": "distinct"
+            }
+          ]
+        },
+        {
+          "name": "data-bands"
+        },
+        {
+          "name": "data-bucket",
+          "description": "— a date over-field, cut to day | month | year",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "data-delta",
+          "description": "— the change text (e.g. \"+12.5%\")"
+        },
+        {
+          "name": "data-field",
+          "description": "— the number that aggregate reads"
+        },
+        {
+          "name": "data-format",
+          "description": "— the value's Intl.NumberFormatOptions, as JSON"
+        },
+        {
+          "name": "data-has-values",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon",
+          "description": "— a glyph before the name"
+        },
+        {
+          "name": "data-label",
+          "description": "— the metric name, in its header above the value"
+        },
+        {
+          "name": "data-over-field",
+          "description": "— the sparkline runs over this field"
+        },
+        {
+          "name": "data-segment-field"
+        },
+        {
+          "name": "data-status",
+          "values": [
+            {
+              "name": "success"
+            },
+            {
+              "name": "critical"
+            }
+          ]
+        },
+        {
+          "name": "data-trend",
+          "description": "— up | down | flat  (colours the delta + shows the arrow)",
+          "values": [
+            {
+              "name": "up"
+            },
+            {
+              "name": "down"
+            },
+            {
+              "name": "flat"
+            }
+          ]
+        },
+        {
+          "name": "data-value",
+          "description": "— the formatted value string (big number)"
+        },
+        {
+          "name": "data-where",
+          "description": "— its OWN default filter, a condition by field as JSON; narrows this tile alone"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-nav-item",
+      "description": "a single navigation row. Figma \"Navigation Item\" (32:43138).",
+      "attributes": [
+        {
+          "name": "data-badge",
+          "description": "the trailing Tag's text (Figma hasTag)"
+        },
+        {
+          "name": "data-current",
+          "description": "current item in the nav set",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "promo description (promo variant only)"
+        },
+        {
+          "name": "data-expandable",
+          "description": "the item has children — shows the chevron (Figma hasChildren)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-expanded",
+          "description": "expanded state — rotates the chevron",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-href",
+          "description": "render the row as a link"
+        },
+        {
+          "name": "data-icon",
+          "description": "leading icon — an icon name (\"home\"); any other value renders as a literal text glyph"
+        },
+        {
+          "name": "data-label",
+          "description": "row label text"
+        },
+        {
+          "name": "data-status-dot",
+          "description": "render the trailing Indicator (atom) dot",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-tier",
+          "description": "nesting depth 2 | 3 — indents the row to the Figma indent tier (tier 1 is the default, no attribute needed)",
+          "values": [
+            {
+              "name": "2"
+            },
+            {
+              "name": "3"
+            }
+          ]
+        },
+        {
+          "name": "data-type",
+          "description": "\"promo\" for the CTA row"
+        },
+        {
+          "name": "disabled",
+          "description": "disabled state",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-nav-section",
+      "description": "a section label + rule that groups items in a nav rail.",
+      "attributes": [
+        {
+          "name": "data-collapsed",
+          "description": "present on a collapsed rail — hides the label, keeps the rule",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-label",
+          "description": "the section label text (rendered verbatim — author its case)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-nav",
+      "description": "the primary application navigation rail.",
+      "attributes": [
+        {
+          "name": "data-current-id",
+          "description": "id of the current Context"
+        },
+        {
+          "name": "data-menu",
+          "description": "the PHONE's menu: the whole screen, no Pin, Settings at the bottom, and Cancel — openMenu() / closeMenu()",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-nav-state",
+          "description": "collapsed  | hover | default | pinned | settings",
+          "values": [
+            {
+              "name": "collapsed"
+            },
+            {
+              "name": "hover"
+            },
+            {
+              "name": "default"
+            },
+            {
+              "name": "pinned"
+            },
+            {
+              "name": "settings"
+            }
+          ]
+        },
+        {
+          "name": "data-searchable",
+          "description": "show the search field (auto-set when a product is given)",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-notifications",
+      "description": "the bell's list.",
+      "attributes": [
+        {
+          "name": "data-empty",
+          "description": "what to say when there is nothing"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-outlet",
+      "description": "where the route's Context is drawn. It is the app's main landmark, and its light DOM IS the Context: on each route change it loads the one app.json names, runs it, and tears the last one down. TRAP T-an-outlet-loads-the-context",
+      "attributes": []
+    },
+    {
+      "name": "sherpa-overlay-panel",
+      "description": "a NON-modal floating panel on native <dialog>. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
+      "attributes": [
+        {
+          "name": "data-collapsed",
+          "description": "collapsed state (body/footer hidden; the collapse toggle reflects it)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-collapsible",
+          "description": "show the collapse toggle",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-dismissible",
+          "description": "show the close button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-expandable",
+          "description": "show the expand button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-external",
+          "description": "show the external-link button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading",
+          "description": "header title text (rendered into .title)"
+        },
+        {
+          "name": "data-icon",
+          "description": "a glyph before the title (shows the icon slot area)"
+        },
+        {
+          "name": "data-status",
+          "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
+        },
+        {
+          "name": "open",
+          "description": "native boolean (read reflects dialog.open; set → show()/close())",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-pagination",
+      "description": "results-size + page navigation control.",
+      "attributes": [
+        {
+          "name": "data-locked",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-page",
+          "description": "— current 1-based page"
+        },
+        {
+          "name": "data-page-size",
+          "description": "— active rows-per-page value"
+        },
+        {
+          "name": "data-rows-options",
+          "description": "— comma list of rows-per-page choices, e.g. \"10,25,50\""
+        },
+        {
+          "name": "data-total-pages",
+          "description": "— total page count"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-panel",
+      "description": "a persistent inline panel (a semantic <section> card).",
+      "attributes": [
+        {
+          "name": "data-collapsed",
+          "description": "— boolean; hides the body/footer, leaving the header",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading",
+          "description": "— convenience header label (a slotted [slot=header] overrides it)"
+        },
+        {
+          "name": "data-status",
+          "description": "— status colour cascade (critical | warning | success | info | urgent)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-progress-bar",
+      "description": "horizontal task-progress indicator, built on native <progress>. Fill/track are styled via the vendor pseudo-elements (::-webkit-progress-bar / -value, ::-moz-progress-bar); indeterminate = value removed, not set to 0.",
+      "attributes": [
+        {
+          "name": "data-indeterminate",
+          "description": "animated sweep for unknown-duration work (boolean; renders a native indeterminate <progress> — no value)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-label",
+          "description": "accessible task label (shown above the bar; drives aria-label)"
+        },
+        {
+          "name": "data-status",
+          "description": "critical | warning | success | info  (colours the fill)",
+          "values": [
+            {
+              "name": "critical"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "info"
+            }
+          ]
+        },
+        {
+          "name": "value",
+          "description": "0–100 completion (native <progress value>); read/write"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-progress-step-tracker",
+      "description": "a horizontal stepper.",
+      "attributes": [
+        {
+          "name": "data-current-step",
+          "description": "— 0-based index of the active step"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-prompt-composer",
+      "description": "an AI prompt input. Auto-growing textarea. Enter submits; Shift+Enter inserts a newline.",
+      "attributes": [
+        {
+          "name": "data-no-leading-actions",
+          "description": "— hide the two default leading buttons (attach + lab)",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "— disables the input, leading buttons + send button",
+          "valueSet": "v"
+        },
+        {
+          "name": "placeholder",
+          "description": "— textarea placeholder"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-provider",
+      "description": "the data layer, over a SUBTREE of the page.",
+      "attributes": [
+        {
+          "name": "data-keep-content",
+          "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources)",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-quick-filter-toolbar",
+      "description": "a strip of quick-filter chips above a grid/list.",
+      "attributes": [
+        {
+          "name": "data-apply-on",
+          "description": "input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107",
+          "values": [
+            {
+              "name": "change"
+            },
+            {
+              "name": "input"
+            }
+          ]
+        },
+        {
+          "name": "data-at-default",
+          "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-bounds"
+        },
+        {
+          "name": "data-custom-view",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-favourite",
+          "description": "the ★ is lit (view type) — the value, IN",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-group-field",
+          "description": "the field the Group chip points at (the standard name)"
+        },
+        {
+          "name": "data-hide-unmatched",
+          "description": "on | off — the host hides what Limit rules out, when it is on",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-limit-options",
+          "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178.",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-locked",
+          "description": "the host owns the ★; report the click, never self-set",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-no-actions",
+          "description": "hide the built-in cluster entirely (host owns the trailing end)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-nothing-to-reset",
+          "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-panel-mode",
+          "description": "a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-pending",
+          "description": "the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does."
+        },
+        {
+          "name": "data-remote",
+          "description": "its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-reset-on-populate",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-saveable",
+          "description": "the host SAVES filters: its ⋮ offers Save filters and Save filters as, and Delete filters while a set is on. Its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-saved",
+          "description": "written BY the bar: a saved set is on, so its Saved chip shows",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-scope",
+          "description": "ASKED of its provider: the Query scope it draws and answers"
+        },
+        {
+          "name": "data-sort-direction",
+          "description": "asc  | desc",
+          "values": [
+            {
+              "name": "asc"
+            },
+            {
+              "name": "desc"
+            },
+            {
+              "name": ""
+            }
+          ]
+        },
+        {
+          "name": "data-sort-field",
+          "description": "the field the Sort chip points at (the standard name)"
+        },
+        {
+          "name": "data-type",
+          "description": "data  | view   (view adds the ★/Save/▾ group)",
+          "values": [
+            {
+              "name": "view"
+            },
+            {
+              "name": "data"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-quick-filter",
+      "description": "a filter chip used in toolbars. Figma \"Filter Chip (atom)\" (154:3904), State axis simple | menu.",
+      "attributes": [
+        {
+          "name": "aria-label",
+          "description": "the name of a chip that shows no label. Its tooltip says it. TRAP T-a-chip-says-its-own-answer"
+        },
+        {
+          "name": "data-applied-at"
+        },
+        {
+          "name": "data-column",
+          "description": "which column a group or sort chip arranges by, for a host that draws the choice without a menu. A menu, where there is one, is the answer."
+        },
+        {
+          "name": "data-condition",
+          "description": "written BY the chip: simple | advanced — which condition it holds, absent when it holds none. No colour follows it: an Advanced chip is active, as a Simple one. TRAP T-a-conditioned-chip-reads-as-active",
+          "values": [
+            {
+              "name": "simple"
+            },
+            {
+              "name": "advanced"
+            }
+          ]
+        },
+        {
+          "name": "data-count",
+          "description": "leading count chip (shown when present). A menu sets it only at TWO or more picked values — at one the label already names the value, so a \"1\" badge would be noise. Hovering the badge reveals .count-tip ABOVE it, listing the chosen values. The bubble is a local copy of the sherpa-tooltip look rather than a nested instance: the badge lives in this shadow root, so a light-DOM wrapper component cannot reach it. Reveal is pure CSS on .count-wrap:hover."
+        },
+        {
+          "name": "data-current",
+          "description": "selected/on state",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-direction",
+          "description": "asc | desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten",
+          "values": [
+            {
+              "name": "asc"
+            },
+            {
+              "name": "desc"
+            }
+          ]
+        },
+        {
+          "name": "data-dismiss",
+          "description": "its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-full-value",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon",
+          "description": "start leading icon — an FA class list (Figma default is a funnel)"
+        },
+        {
+          "name": "data-icon-only",
+          "description": "the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header).",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon-start",
+          "description": "leading icon — an icon name (Figma default is a funnel)"
+        },
+        {
+          "name": "data-id"
+        },
+        {
+          "name": "data-indicator",
+          "description": "show the leading status dot (Figma \"Indicator (atom)\", opt-in)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-kind",
+          "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `advanced` with no filter menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as Advanced. TRAP T-a-saved-filter-is-its-readings",
+          "values": [
+            {
+              "name": "boolean"
+            },
+            {
+              "name": "single"
+            },
+            {
+              "name": "multi"
+            },
+            {
+              "name": "advanced"
+            },
+            {
+              "name": "number"
+            },
+            {
+              "name": "date"
+            },
+            {
+              "name": "group"
+            },
+            {
+              "name": "sort"
+            }
+          ]
+        },
+        {
+          "name": "data-label",
+          "description": "chip text (or use the default slot). Rewritten to \"Field: Value\" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge."
+        },
+        {
+          "name": "data-locked",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-menu",
+          "description": "Figma State=menu — snap on the caret button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-no-value",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-open",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-panelled",
+          "description": "a FILTER PANEL is drawing this field instead, so the bar hides the chip — two controls over one field make a reader guess which is in force. Written by the host. TRAP T-the-view-chip-stays-on-the-header",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-pending",
+          "description": "changed, not yet applied: the active edge, no fill. Written by the bar. TRAP T-a-pending-chip-has-no-fill",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-persistent",
+          "description": "a SELECTOR rather than a toggle: always on, and never \"empty\". Set by sherpa-quick-filter-toolbar from a filter definition's `persistent` flag. The view chip is the case — you are always in SOME view, so the amber \"on but filtering by nothing\" state is one it cannot be in.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-plain",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-readonly",
+          "description": "a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-superseded",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-swatch",
+          "description": "a data-viz series, from 1, or a status name: the chip leads with that swatch, as a chart's legend does — one value of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field"
+        },
+        {
+          "name": "data-type",
+          "description": "default | ai | jump | key `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view. `key` is a chart legend's row: no border, mono 12px, 16 tall. Its ON is SHOWN, so at rest every key is on. TODO 149",
+          "values": [
+            {
+              "name": "default"
+            },
+            {
+              "name": "ai"
+            },
+            {
+              "name": "jump"
+            },
+            {
+              "name": "key"
+            }
+          ]
+        },
+        {
+          "name": "data-unavailable",
+          "description": "the other filters rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-unsupported",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "greyed and refused; its tooltip says \"Not available here.\"",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-radial-chart",
+      "description": "a donut / pie / arc for part-to-whole data.",
+      "attributes": [
+        {
+          "name": "data-aggregate",
+          "description": "count  | sum | mean | min | max | distinct, per value",
+          "values": [
+            {
+              "name": "count"
+            },
+            {
+              "name": "sum"
+            },
+            {
+              "name": "mean"
+            },
+            {
+              "name": "min"
+            },
+            {
+              "name": "max"
+            },
+            {
+              "name": "distinct"
+            }
+          ]
+        },
+        {
+          "name": "data-bands"
+        },
+        {
+          "name": "data-bucket",
+          "values": [
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            }
+          ]
+        },
+        {
+          "name": "data-field",
+          "description": "the number that aggregate reads"
+        },
+        {
+          "name": "data-inner",
+          "description": "hole size, a FRACTION of the outer radius (0–1). A pie ignores it — a pie has no hole by definition."
+        },
+        {
+          "name": "data-label",
+          "description": "centre big text"
+        },
+        {
+          "name": "data-over-field"
+        },
+        {
+          "name": "data-segment-field",
+          "description": "ASKED of its provider: one slice per value of this field"
+        },
+        {
+          "name": "data-sublabel",
+          "description": "centre small text"
+        },
+        {
+          "name": "data-sweep",
+          "description": "how far it runs, in degrees. 360  is a full ring; a gauge is this ring stopped short — start 270, sweep 180."
+        },
+        {
+          "name": "data-sweep-start",
+          "description": "where the arc begins, clockwise degrees from 12 o'clock"
+        },
+        {
+          "name": "data-type",
+          "description": "donut  | pie   (pie fills to the centre, no hole)",
+          "values": [
+            {
+              "name": "donut"
+            },
+            {
+              "name": "pie"
+            }
+          ]
+        },
+        {
+          "name": "data-where"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-router",
+      "description": "the ONE owner of the URL, on the Navigation API. It draws nothing.",
+      "attributes": [
+        {
+          "name": "data-overlay",
+          "description": "owned parameters that open OVER the page. A link that names only these keeps the rest of the route as it is"
+        },
+        {
+          "name": "data-params",
+          "description": "the URL search parameters it owns, space separated: `name`, or `name=default` for the value a URL that leaves it out means"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-section-header",
+      "description": "a semantic heading row for a content section.",
+      "attributes": [
+        {
+          "name": "data-divider",
+          "description": "bottom divider; shown by DEFAULT — set data-divider=\"none\" to hide it",
+          "values": [
+            {
+              "name": "none"
+            }
+          ]
+        },
+        {
+          "name": "data-heading",
+          "description": "heading text (rendered into .title)"
+        },
+        {
+          "name": "data-size",
+          "description": "sm | md  | lg",
+          "values": [
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-select-card",
+      "description": "a selectable card with header / content / footer regions.",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "helper line under the title"
+        },
+        {
+          "name": "data-footer",
+          "description": "none → hide the footer region entirely (CSS-only)",
+          "values": [
+            {
+              "name": "none"
+            }
+          ]
+        },
+        {
+          "name": "data-label",
+          "description": "header title (used when no header slot is given)"
+        },
+        {
+          "name": "data-orientation",
+          "description": "vertical | horizontal (footer beside the body vs below; default vertical)",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
+          "name": "data-select-mode",
+          "description": "radio | checkbox — which footer control shows . checkbox = multi-select (re-click toggles); radio = single-select.",
+          "values": [
+            {
+              "name": "radio"
+            },
+            {
+              "name": "checkbox"
+            }
+          ]
+        },
+        {
+          "name": "checked",
+          "description": "present → the card is ticked (also a JS property)",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "native — dims + blocks interaction",
+          "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "radio group name"
+        },
+        {
+          "name": "value",
+          "description": "submitted / reported value when selected"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-select-checkbox",
+      "description": "a labelled checkbox. Native <input type=\"checkbox\">; the visible box is drawn in CSS off :checked / :indeterminate / :disabled.",
+      "attributes": [
+        {
+          "name": "data-advanced",
+          "description": "show the caret + its slotted menu",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "helper line below the label"
+        },
+        {
+          "name": "data-label",
+          "description": "label text to the right of the box (or default slot)"
+        },
+        {
+          "name": "checked",
+          "description": "native checked state (also a JS property)",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "native attributes, mirrored to the inner control",
+          "valueSet": "v"
+        },
+        {
+          "name": "indeterminate",
+          "description": "mixed state (JS property → input.indeterminate; CSS :indeterminate)"
+        },
+        {
+          "name": "name",
+          "description": "native attributes, mirrored to the inner control"
+        },
+        {
+          "name": "value",
+          "description": "submitted value when checked"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-select-group",
+      "description": "a labelled group of checkbox or radio options.",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "helper line under the heading"
+        },
+        {
+          "name": "data-error",
+          "description": "validation message; present → validation row shown"
+        },
+        {
+          "name": "data-label",
+          "description": "group heading (hidden when empty)"
+        },
+        {
+          "name": "data-status",
+          "description": "status cascade re-inks heading + validation (critical/…)"
+        },
+        {
+          "name": "disabled",
+          "description": "disable every option",
+          "valueSet": "v"
+        },
+        {
+          "name": "multiple",
+          "description": "present → checkboxes (multi-select); absent → radios",
+          "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "what every option submits under, in a form — the platform's way"
+        },
+        {
+          "name": "value",
+          "description": "property: string[] when multiple, else string | null"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-select-radio",
+      "description": "a labelled radio button.",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "helper line below the label"
+        },
+        {
+          "name": "data-label",
+          "description": "label text to the right of the dot (or default slot)"
+        },
+        {
+          "name": "checked",
+          "description": "native checked state (also a JS property)",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "native attributes, mirrored to the inner control",
+          "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "native attributes, mirrored to the inner control"
+        },
+        {
+          "name": "required",
+          "description": "native attributes, mirrored to the inner control",
+          "valueSet": "v"
+        },
+        {
+          "name": "value",
+          "description": "submitted value when selected"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-slider",
+      "description": "a single-value range control wrapping a native <input type=range>.",
+      "attributes": [
+        {
+          "name": "data-label",
+          "description": "— label text above the slider (shown when set)"
+        },
+        {
+          "name": "data-show-value",
+          "description": "— show the editable value field under the track ; a range's two fields share that row, half each",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-type",
+          "description": "— single  | range — two thumbs and two value fields",
+          "values": [
+            {
+              "name": "single"
+            },
+            {
+              "name": "range"
+            }
+          ]
+        },
+        {
+          "name": "data-value-end",
+          "description": "— the range ends (data-type=\"range\" only)"
+        },
+        {
+          "name": "data-value-readonly",
+          "description": "— make the value display read-only (no typing)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-value-start",
+          "description": "— the range ends (data-type=\"range\" only)"
+        },
+        {
+          "name": "disabled",
+          "description": "— disabled state",
+          "valueSet": "v"
+        },
+        {
+          "name": "max",
+          "description": "— maximum value (native, default 100)"
+        },
+        {
+          "name": "min",
+          "description": "— minimum value (native, default 0)"
+        },
+        {
+          "name": "name",
+          "description": "— the form field its value, or a range's two ends, are submitted under"
+        },
+        {
+          "name": "step",
+          "description": "— step increment (native, default 1)"
+        },
+        {
+          "name": "value",
+          "description": "— current value (native)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-sparkline",
+      "description": "a compact inline trend chart (line area or bars).",
+      "attributes": [
+        {
+          "name": "data-len"
+        },
+        {
+          "name": "data-type",
+          "description": "— line  | bar (flat-topped columns)",
+          "values": [
+            {
+              "name": "bar"
+            }
+          ]
+        },
+        {
+          "name": "data-values",
+          "description": "— comma-separated or JSON array (e.g. \"10,25,15,30\")"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-stack",
+      "description": "a run of controls in one direction, with a token gap. A layout surface: no chrome, fill, border or padding. Bordered box = sherpa-container; two-zone action strip = sherpa-toolbar.",
+      "attributes": [
+        {
+          "name": "data-align",
+          "description": "start | center | end | stretch  | between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it",
+          "values": [
+            {
+              "name": "between"
+            },
+            {
+              "name": "center"
+            },
+            {
+              "name": "end"
+            },
+            {
+              "name": "start"
+            },
+            {
+              "name": "stretch"
+            }
+          ]
+        },
+        {
+          "name": "data-direction",
+          "description": "block  | inline (a row)",
+          "values": [
+            {
+              "name": "block"
+            },
+            {
+              "name": "inline"
+            }
+          ]
+        },
+        {
+          "name": "data-fill",
+          "description": "take the parent's height and hand the spare space to the child marked data-grow. Without it the stack is content-height and there is no spare space to give.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-gap",
+          "description": "sm (4) | md (8) | lg (12, default) | xl (16) | 2xl (24)",
+          "values": [
+            {
+              "name": "2xl"
+            },
+            {
+              "name": "lg"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "none"
+            },
+            {
+              "name": "sm"
+            },
+            {
+              "name": "xl"
+            }
+          ]
+        },
+        {
+          "name": "data-grow",
+          "description": "with data-fill on the stack, this item takes the spare space and the others keep their natural size. Two attributes, not one: a stack cannot see its own children from CSS — `:host(:has(…))` does not parse, and `:host:has(…)` matches every host."
+        },
+        {
+          "name": "data-measure",
+          "description": "cap the run's width at a reading measure (90ch) and centre it On a CHILD (not on the stack):",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-min-item",
+          "description": "with data-wrap: hug — each item at its OWN width (a run of chips); else the floor an item may shrink to while it STRETCHES to share the line — sm (120) | md (200, default) | lg (280) | xl (360)",
+          "values": [
+            {
+              "name": "hug"
+            },
+            {
+              "name": "sm"
+            },
+            {
+              "name": "md"
+            },
+            {
+              "name": "lg"
+            },
+            {
+              "name": "xl"
+            }
+          ]
+        },
+        {
+          "name": "data-scroll",
+          "description": "the run scrolls when it is taller than its room, instead of pushing the page. It caps the stack at its parent's height, so the parent must have one.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-wrap",
+          "description": "inline only: items wrap and share the line",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-switch",
+      "description": "an immediate binary toggle.",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "a helper line under the label"
+        },
+        {
+          "name": "data-label",
+          "description": "its words, beside the track — a click on them toggles it, as on a checkbox"
+        },
+        {
+          "name": "data-type",
+          "description": "— default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)",
+          "values": [
+            {
+              "name": "default"
+            },
+            {
+              "name": "simple"
+            }
+          ]
+        },
+        {
+          "name": "checked",
+          "description": "— native boolean       (current value; drives :checked visuals)",
+          "valueSet": "v"
+        },
+        {
+          "name": "disabled",
+          "description": "— native boolean       (reflected onto the inner input)",
+          "valueSet": "v"
+        },
+        {
+          "name": "required",
+          "description": "— native boolean       (a form refuses it while off)",
+          "valueSet": "v"
+        },
+        {
+          "name": "value",
+          "description": "— native string        (what it stands for when on; default \"on\")"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-tabs",
+      "description": "a tabbed content switcher.",
+      "attributes": [
+        {
+          "name": "data-current-id",
+          "description": "— id of the currently active tab / panel"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-tag",
+      "description": "a compact labelled pill. Colour comes from the [data-status] cascade on an ancestor, not from the tag itself.",
+      "attributes": [
+        {
+          "name": "data-dismissible",
+          "description": "show the close button (selects the dismissible template)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-icon",
+          "description": "leading icon glyph value (shown when present; or slot \"icon\")"
+        },
+        {
+          "name": "data-status",
+          "description": "info | success | warning | critical | urgent (via the cascade)",
+          "values": [
+            {
+              "name": "info"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "critical"
+            },
+            {
+              "name": "urgent"
+            }
+          ]
+        },
+        {
+          "name": "data-type",
+          "description": "dot   (render as a small circular indicator; default full)",
+          "values": [
+            {
+              "name": "dot"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-toast",
+      "description": "a transient notification (Figma Toast 27:750). The card is NEUTRAL, not status-filled; only the icon badge carries the hue.",
+      "attributes": [
+        {
+          "name": "data-action",
+          "description": "an action link label (shown when present; fires toast-action)"
+        },
+        {
+          "name": "data-duration",
+          "description": "auto-dismiss delay in ms"
+        },
+        {
+          "name": "data-heading",
+          "description": "the primary line (or the default slot)"
+        },
+        {
+          "name": "data-stacked",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-status",
+          "description": "info  | success | warning | critical | urgent",
+          "values": [
+            {
+              "name": "info"
+            },
+            {
+              "name": "success"
+            },
+            {
+              "name": "warning"
+            },
+            {
+              "name": "critical"
+            },
+            {
+              "name": "urgent"
+            }
+          ]
+        },
+        {
+          "name": "data-value",
+          "description": "the supporting detail line (shown when present)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-toolbar",
+      "description": "a horizontal control strip: leading zone hugs, trailing grows.",
+      "attributes": [
+        {
+          "name": "data-density",
+          "description": "comfortable  | compact (tighter block padding)",
+          "values": [
+            {
+              "name": "comfortable"
+            },
+            {
+              "name": "compact"
+            }
+          ]
+        },
+        {
+          "name": "data-type",
+          "description": "plain  | bordered (adds a bottom rule)",
+          "values": [
+            {
+              "name": "plain"
+            },
+            {
+              "name": "bordered"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-tooltip",
+      "description": "a hover/focus tooltip wrapping a trigger.",
+      "attributes": [
+        {
+          "name": "data-anchor",
+          "description": "a selector for the box it describes, when it does not wrap one"
+        },
+        {
+          "name": "data-placement",
+          "description": "top  | bottom | left | right",
+          "values": [
+            {
+              "name": "top"
+            },
+            {
+              "name": "bottom"
+            },
+            {
+              "name": "left"
+            },
+            {
+              "name": "right"
+            }
+          ]
+        },
+        {
+          "name": "data-text",
+          "description": "tip text (or use the `tip` slot)"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-transfer-list",
+      "description": "a two-pane shuttle (available ↔ selected). Pool comes from populate([{ value, label, selected? }]); `selected` picks the pane.",
+      "attributes": [
+        {
+          "name": "data-source-heading",
+          "description": "heading for the available pane"
+        },
+        {
+          "name": "data-target-heading",
+          "description": "heading for the selected pane"
+        },
+        {
+          "name": "disabled",
+          "description": "disabled state — no move is made",
+          "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "the form field its selected values are submitted under"
+        }
+      ]
+    }
+  ]
+}

@@ -335,6 +335,19 @@ own `node_modules`). `realpathSync` on both sides is the check;
 - Site: `scripts/check-usage.mjs`
 - Site: `test/unit/nothing-downloads-to-serve.test.mjs`
 
+### T-the-manifest-is-written-from-the-specs
+
+**`custom-elements.json` and `vscode.html-data.json` are written, never
+edited.** `npm run manifest` makes both from the component specs, and the hook's
+`check:manifest` fails a commit whose specs changed without them. They are a
+subset of the specs in two public formats — the Custom Elements Manifest 2.1.0,
+which editors, Storybook and doc tools read, and VS Code's HTML custom data — so
+no analyzer reads the code a second time. A prop the spec gets wrong is wrong in
+every editor, which is how the phantom `asc` / `desc` props on the filter chip
+were found.
+
+- Site: `scripts/write-manifest.mjs`
+
 ### T-a-button-commands-by-markup
 
 **A page opens a dialog with no script**: `<sherpa-button commandfor="edit"

@@ -286,7 +286,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
 | ⬜ | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
-| ⬜ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
+| ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ⬜ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
@@ -294,6 +294,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
+| ⬜ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6437,6 +6438,28 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 295 — Phase 8.5: `custom-elements.json` and VS Code's HTML data
+
+**✅ Done 2026-10-15.** `npm run manifest` (`scripts/write-manifest.mjs`) writes
+both from the 66 specs: the Custom Elements Manifest 2.1.0 (attributes with
+their values and defaults, JS properties, methods with parameters, events with
+their detail types, slots, parts, custom states) and VS Code's HTML data.
+`package.json` names the manifest in `customElements` and ships both files; the
+hook's `check:manifest` keeps them fresh; README's *In your editor* gives the
+VS Code setting. It found two phantom props — the filter chip's `asc` and
+`desc`, kept because the generator took any quoted bare word as an attribute;
+now a quoted bare name counts only as a key, a list item or a call argument.
+JetBrains' `web-types.json` is not written: nobody asked. Not tested in an
+editor yet. `T-the-manifest-is-written-from-the-specs`.
+
+### `[ ]` ⬜ 303 — BUG: breadcrumbs belong in the overlay panel, not the app header
+
+Will, 2026-10-15: *"The app header shows breadcrumbs when an overlay panel is
+opened (on grid row focus) but this isn't required. Breadcrumbs should be shown
+at the top of the overlay panel when it is expanded to full overlay mode. We
+need the maximise & minimise buttons added to the header to toggle these
+states."*
 
 ### `[ ]` ⬜ 302 — Phase 5: the filter family's last frame waits
 
