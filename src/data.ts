@@ -1,32 +1,8 @@
 /**
- * data.ts — the data layer, with NO components and NO DOM.
- *
- *   import { ArrayStore, DataSource } from 'sherpa-ui/data';
- *
- * WHY A SECOND ENTRY POINT. `index.ts` exports all 65 components, and importing
- * a component DEFINES a custom element — so `import 'sherpa-ui'` throws
- * "HTMLElement is not defined" the moment a server, a test or an MCP tool tries
- * it. The data layer was always headless; there was simply no door into it.
- *
- * Verified module by module: store, stores, validate, data-source, live-stores,
- * persist-view, pointer, session, idb-store, view-sync, chart-datum and
- * format-tick all import cleanly in Node today. `npm run lint` keeps them that way — see the
- * no-restricted-globals override in eslint.config.js.
- *
- * WHAT IS HERE: everything that answers "what are the records, and which of
- * them am I looking at" — stores, the query, validation, live connections, and
- * saved views.
- *
- * WHAT IS NOT: every component, `SherpaElement`, `installTokens` and
- * `renderElement`. Those need a DOM by definition;
- * `sherpa-ui` is their door — and so is a view's CONTENT, which is markup
- * (`parseViewMarkup`) and therefore needs a parser.
- *
- * FOUR THINGS HERE TOUCH STORAGE — `persistView`, `SessionStore`, `IdbStore`
- * and `syncViews` — and that is deliberate. Each wraps every access in `try/catch → null`, so in Node
- * they degrade to "nothing was kept" rather than throwing. A server restoring a
- * saved view from a database needs the SHAPE (`ViewSnapshot`, `applyViewSnapshot`)
- * far more than it needs the browser's storage.
+ * data.ts — `sherpa-ui/data`: the data layer, with no components and no DOM, for
+ * a server, a test or an MCP tool. Every module here is one the lint holds DOM-free.
+ * The app layer (saved Views, their sync, saved filters, the session) is `sherpa-ui/app`.
+ * TRAP T-the-data-entry-loads-no-dom
  */
 
 export {
@@ -92,14 +68,6 @@ export {
   localRecords,
   type LocalRecordsOptions,
 } from './core/browser/idb-store.js';
-// A view's state kept locally for speed and pushed onward on a schedule.
-// TRAP T-local-first-then-onward.
-export {
-  syncViews,
-  type SyncOptions,
-  type ViewRemote,
-  type ViewSync,
-} from './core/browser/view-sync.js';
 export {
   DataSource,
   type DataChangeDetail,
@@ -128,21 +96,6 @@ export {
   type ContextInit,
   type ContextModule,
 } from './core/data/app-definition.js';
-// Keeping a view state across a reload — a HELPER, not part of DataSource, so
-// a host chooses whether and where its view state persists.
-export {
-  persistView, clearViewState, applyViewSnapshot, captureView,
-  viewOptions, uniqueViewLabel, onViewPicked,
-  loadSavedViews, saveViewAs, deleteSavedView,
-  type PersistOptions, type ViewSnapshot, type ApplyReport,
-  type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
-  type SavedViewStore,
-} from './core/browser/persist-view.js';
-// A data source's saved filters — kept per DATA, not per page.
-export {
-  loadSavedFilters, saveFilterAs, deleteSavedFilter,
-  type SavedFilter, type SavedFilterSet, type SavedFilterOptions,
-} from './core/browser/saved-filters.js';
 // The id a saved view or filter takes from its name.
 export { labelId } from './core/browser/web-storage.js';
 export {
@@ -177,14 +130,7 @@ export {
   type RuleMap,
   type StandardSchema,
 } from './core/data/validate.js';
-// The session store and JSON pointers: app-level state, addressed by pointer.
-// Headless — `persist()` degrades to "nothing kept" with no storage.
-export {
-  SessionStore,
-  SessionList,
-  type ListOptions as SessionListOptions,
-  type PersistOptions as SessionPersistOptions,
-} from './core/browser/session.js';
+// JSON pointers: one value in a document, by its path.
 export { getPointer, setPointer, pointersOverlap } from './core/data/pointer.js';
 /* The one datum shape every chart and legend shares — and the two rules for
    reading it. A legend widens `value` to `string | number`, so a caller adding

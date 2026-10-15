@@ -11,7 +11,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, saveViewAs } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource } from '../../dist/data.js';
+import { saveViewAs } from '../../dist/core/browser/persist-view.js';
 
 const ROWS = [{ id: 1, plan: 'Pro', name: 'b' }, { id: 2, plan: 'Free', name: 'a' }];
 

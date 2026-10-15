@@ -30,7 +30,7 @@ export const APP = [
   'core/browser/view-markup.js', 'core/browser/saved-filters.js', 'core/ui/bind-settings.js',
   'core/data/app-definition.js',
 ];
-/** These may reach it: the app layer itself, the package, and the data entry, which ships saved Views and the session.
+/** These may reach it: the app layer itself, the package, and the data entry, for checkApp, which a server runs headless.
  *  TRAP T-the-app-layer-is-opt-in */
 const APP_ENTRIES = new Set([
   'index.js', 'app.js', 'data.js', 'components/sherpa-provider/sherpa-provider.js', 'components/sherpa-router/sherpa-router.js',

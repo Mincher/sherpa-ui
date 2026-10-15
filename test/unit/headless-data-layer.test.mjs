@@ -554,12 +554,7 @@ test('several live stores can feed ONE shared store', async () => {
 });
 
 test('the `sherpa-ui/data` entry point is importable and usable in Node', async () => {
-  /* WHAT THIS GUARDS: `dist/index.js` exports all 62 components, and importing
-     a component DEFINES a custom element — so `import 'sherpa-ui'` throws
-     "HTMLElement is not defined" in Node. The data layer was always headless;
-     there was no DOOR into it until this entry point existed.
-
-     Importing it is not enough to prove anything, so this also runs a query. */
+  // The door a server or an MCP tool uses: no components, and the layer WORKS, not merely loads.
   const data = await import('../../dist/data.js');
 
   // NO COMPONENTS. A single component export would drag in customElements and
@@ -579,19 +574,17 @@ test('the `sherpa-ui/data` entry point is importable and usable in Node', async 
   await source.load();
   assert.deepEqual(source.result.rows.map((r) => r.n), ['a', 'b']);
 
-  // Validation, the session store and a view snapshot all come through it too —
-  // the four things a server or an MCP tool actually needs.
+  // Validation, the app definition's check and the local stores come through it too.
   assert.equal(typeof data.rules, 'function');
-  assert.equal(typeof data.applyViewSnapshot, 'function');
-  const session = new data.SessionStore({ theme: { mode: 'dark' } });
-  assert.equal(session.get('/theme/mode'), 'dark');
-  // persist() degrades with no storage rather than throwing — that is the
-  // contract that lets it sit in a headless entry point at all.
-  assert.equal(session.persist('/theme/mode'), false);
-
-  // The LOCAL stores come through the same door, and degrade the same way.
+  assert.equal(typeof data.checkApp, 'function');
   assert.equal(typeof data.IdbStore, 'function');
-  assert.equal(typeof data.syncViews, 'function');
+});
+
+test('the session degrades with no storage rather than throwing', async () => {
+  const { SessionStore } = await import('../../dist/core/browser/session.js');
+  const session = new SessionStore({ theme: { mode: 'dark' } });
+  assert.equal(session.get('/theme/mode'), 'dark');
+  assert.equal(session.persist('/theme/mode'), false);
 });
 
 test('the data layer exports NO view renderer and no second wiring mechanism', async () => {

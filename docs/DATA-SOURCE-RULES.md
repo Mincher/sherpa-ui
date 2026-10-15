@@ -312,12 +312,11 @@ panel extending a card, is the same relationship with different words.
 import { ArrayStore, DataSource } from 'sherpa-ui/data';
 ```
 
-Stores, queries, validation, live connections and saved views all work in Node —
-on a server, in a test, in an MCP tool. `sherpa-ui` itself does not: it exports
-65 components, and importing a component defines a custom element.
-
-A lint rule keeps those modules DOM-free, and a test proves the entry point
-stays free of components.
+Stores, queries, validation, live connections and the app definition's check
+all run in Node — on a server, in a test, in an MCP tool. A lint rule keeps
+each module here DOM-free, and a test checks that `sherpa-ui/data` loads
+nothing else. Saved Views, saved filters and the session are the app layer:
+`sherpa-ui/app`. `sherpa-ui` imports in Node too; it defines no component there.
 
 ---
 

@@ -350,7 +350,7 @@
   "src/core/ui/temporal.ts": 113,
   "src/core/ui/top-layer-tips.ts": 62,
   "src/core/ui/trusted-html.ts": 39,
-  "src/data.ts": 317,
+  "src/data.ts": 263,
   "src/index.ts": 10,
   "src/components/sherpa-accordion/sherpa-accordion.css": 136,
   "src/components/sherpa-app-header/sherpa-app-header.css": 247,

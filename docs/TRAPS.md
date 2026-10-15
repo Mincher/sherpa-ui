@@ -6832,7 +6832,6 @@ does, and a push waits for that write.
 - Site: `src/core/browser/view-sync.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
-- Site: `src/data.ts`
 
 ### T-sync-pushes-a-snapshot-not-a-diff
 
@@ -17379,6 +17378,22 @@ any app, with or without the app layer.
 - Site: `src/index.ts`
 - Site: `scripts/check-weight.mjs`
 - Site: `test/unit/the-package-surface.test.mjs`
+
+### T-the-data-entry-loads-no-dom
+
+**`sherpa-ui/data` loads only modules the lint holds DOM-free** (TODO 290). It
+re-exported 32 app-layer names until then — saved Views and their sync, saved
+filters, the session — and with them `onViewPicked`, which builds DOM. They are
+`sherpa-ui/app`'s; `sherpa-ui` still has each one. `checkApp` stays in both: it
+reads JSON, and a server, a test or the MCP's `validate_page` runs it in Node.
+
+The lint checks each FILE, never what it imports: `view-sync.ts` passed it and
+still loaded `persist-view.ts`. So a test reads each export's module out of
+`src/data.ts`, walks what `dist/data.js` loads, and fails on a file
+`eslint.config.js` does not ban `document` in.
+
+- Site: `src/data.ts`
+- Site: `test/unit/the-data-entry-loads-no-dom.test.mjs`
 
 ### T-an-outlet-loads-the-context
 

@@ -59,8 +59,8 @@ export default [
         noDom('document', 'This module must run with NO DOM — it is the half of the data layer a server, a test or an MCP tool imports. Take the element as an argument instead.'),
         noDom('window', 'This module must run with NO DOM. Use `globalThis` if you truly need the global scope.'),
         noDom('customElements', 'This module must run with NO DOM — nothing here may define or look up a component.'),
-        noDom('localStorage', 'This module must run with NO DOM. Storage belongs in persist-view.ts or session.ts, which are browser-only by design.'),
-        noDom('sessionStorage', 'This module must run with NO DOM. Storage belongs in persist-view.ts or session.ts, which are browser-only by design.'),
+        noDom('localStorage', 'This module must run with NO DOM. Storage goes through core/browser/web-storage.ts, which cannot throw.'),
+        noDom('sessionStorage', 'This module must run with NO DOM. Storage goes through core/browser/web-storage.ts, which cannot throw.'),
         noDom('indexedDB', 'This module must run with NO DOM. IndexedDB belongs in idb-store.ts, which guards every access behind IdbStore.available.'),
         noDom('getComputedStyle'),
         noDom('requestAnimationFrame', 'This module must run with NO DOM. Use a microtask or a timer if the work must be deferred.'),
@@ -85,9 +85,9 @@ export default [
   },
   {
     /* HEADLESS-SAFE but not storage-free: each reaches storage behind a guard
-       (LocalStore's try/catch, IdbStore.available), so in Node it degrades. The
+       (LocalStore's and web-storage's try/catch, IdbStore.available), so in Node it degrades. The
        DOM ban applies; the storage ban does not. */
-    files: ['src/core/data/stores.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/view-sync.ts'],
+    files: ['src/core/data/stores.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/view-sync.ts', 'src/core/browser/web-storage.ts'],
     rules: {
       'no-restricted-globals': ['error',
         noDom('document', 'This module must run with NO DOM — it is imported by tests, servers and MCP tools.'),

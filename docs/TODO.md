@@ -281,7 +281,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
-| ⬜ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
+| ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
 | ⬜ | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ⬜ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
 | ⬜ | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
@@ -6458,6 +6458,21 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 290 — Phase 6: honest entry points
+
+**✅ Done 2026-10-15** (Q1, my pick A, as CODE-REVIEW-PLAN 6.4 says). 32
+app-layer names leave `sherpa-ui/data`: persist-view (18), view-sync (4),
+saved-filters (6) and session (4). Each keeps its door at `sherpa-ui/app` and
+`sherpa-ui`; no sibling imported one from `/data`. `checkApp`, `bindSource` and
+`labelId` stay: each is DOM-free, and a server runs `checkApp`. The lint now
+holds `web-storage.ts` DOM-free, as `IdbStore` loads it. `dist/data.js` loads 7
+fewer modules. A new test, `the-data-entry-loads-no-dom`, reads each export's
+module and walks what `dist/data.js` loads, against the lint's own file list;
+`T-the-data-entry-loads-no-dom` says why the lint alone cannot catch it.
+**Not run yet:** that test, headless-data-layer, a-scope-arranges-its-own-rows,
+the-package-surface, weight. **Waits for Will:** Q2, `spoofRemote` →
+`fakeRemote` (a rename outside the lexicon; my pick A).
 
 ### `[ ]` 🚧 288 — Phase 6: one copy of each data helper
 

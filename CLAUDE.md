@@ -193,8 +193,9 @@ import { SherpaButton, SherpaProvider } from 'sherpa-ui'; // all three, one line
 Importing a component DEFINES a custom element — in a browser. In Node it
 loads and defines nothing, so a server-rendering framework can import it
 (TRAP `T-a-component-imports-anywhere`). `sherpa-ui/data` (`src/data.ts`) is
-the stores, query, validation, live connections and saved views with no
-components and no DOM, for a server, a test or an MCP tool. **The app layer is
+the stores, query, validation, live connections and the app definition's
+check, with no components and no DOM, for a server, a test or an MCP tool;
+saved Views and the session are `sherpa-ui/app`. **The app layer is
 opt-in**: no display component imports the provider, the router, the session,
 saved Views or the app definition, so one button never pays for them
 (TRAP `T-the-app-layer-is-opt-in`). `npm run lint` enforces both boundaries;
