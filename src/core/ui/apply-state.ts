@@ -12,36 +12,16 @@
  * - Populatable — An element that takes a data payload.
  * - applyState — Apply a `state` block through an element's own public API.
  */
-import type { FieldReading } from '../data/filter-state.js';
-import type { ScopeDescription } from '../data/data-source-types.js';
+import type { BoundControl } from '../data/data-source-types.js';
 
-/** An element that takes a data payload. TRAP T-populatable-declared-four-times */
-export interface Populatable extends HTMLElement {
+/** An element that takes a data payload, and may be drawn by its source. TRAP T-populatable-declared-four-times */
+export interface Populatable extends HTMLElement, BoundControl {
+  /** HTMLElement's own, said again so the two parents agree. */
+  id: string;
   populate?: (data: unknown) => void | Promise<void>;
   rendered?: Promise<void>;
-  /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
-  drawReading?: (field: string, reading: FieldReading, scope: string) => void;
-  /** A whole scope, drawn SILENTLY — its chips, answers and presets — as the panel draws each. */
-  drawScope?: (scope: ScopeDescription) => void | Promise<void>;
-  /** Each answered chip's results — the rows its own answer matches. */
-  drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
-  /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
-  drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
-  /** Each field's values the other answers leave, as value keys; a field not named is not limited. */
-  drawPresent?: (present: Readonly<Record<string, readonly string[]>>, scope: string) => void;
-  /** Each serial-set field's values to OFFER, as value keys; the rest are removed. A field not named offers all. */
-  drawOffered?: (offered: Readonly<Record<string, readonly string[]>>, scope: string) => void;
-  /** A control over SEVERAL scopes — the panel — drawn each one whole. */
-  drawScopes?: (scopes: ScopeDescription[]) => void | Promise<void>;
   /** The fields its chips hold — what a scoped bar's scope holds. */
   heldFields?: string[];
-  /** Told which of its fields a scope ABOVE it holds now, and that scope's name. */
-  supersede?: (fields: readonly string[], appliedAt?: string) => void;
-  /** A grid: those fields WITH their answers there, shown read-only in its headings. */
-  supersedeColumns?: (readings: Readonly<Record<string, FieldReading>>, appliedAt?: string) => void;
-  superseded?: string[];
-  /** Announce its whole answer again. */
-  report?: () => void;
 }
 
 /** A list of CALLS, not one argument list? TRAP T-state-value-may-be-a-call-list */

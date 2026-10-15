@@ -5901,8 +5901,9 @@ What is left, end to end:
 | a component's DATA | `populate()` |
 
 `Populatable` moved to `apply-state.ts` with it: it is the one shape every
-bound component shares (`T-populatable-declared-four-times`), and
-`data-source.ts` imports it as a type.
+bound component shares (`T-populatable-declared-four-times`), and its draw
+half, `BoundControl`, is the data layer's: `data-source-types.ts` declares it,
+and the data layer imports nothing from `ui/`.
 
 - Site: `src/core/ui/apply-state.ts`
 
@@ -5944,9 +5945,10 @@ a grid's column filter, which is the thing view definitions exist for.
 
 ### T-populatable-declared-four-times
 
-`Populatable` is `HTMLElement` plus `populate?` and `rendered?`. The optional
-members are what lets a plain `HTMLElement` be passed where one is expected, and
-be skipped rather than crash.
+`Populatable` is `HTMLElement` plus `populate?` and `rendered?`, and the draw
+members, declared once in the data layer's `BoundControl`. The optional members
+are what lets a plain `HTMLElement` be passed where one is expected, and be
+skipped rather than crash.
 
 `rendered` MATTERS AND WAS MISSING from render-element's copy, while data-source,
 render-view and app-header each declared their own copy WITH it. Four declarations

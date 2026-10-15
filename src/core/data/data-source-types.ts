@@ -17,6 +17,7 @@
  * - AttachFacts — What the binder tells the source about one component.
  * - BoundView — What a bound component is told of the view; `undefined` is none.
  * - BindSink — Where the source sends one bound component's view, rows and pending fields.
+ * - BoundControl — What a bound control may be drawn: each member optional, read when the source draws.
  * - DataChangeDetail — What `change` carries, for a listener that wants the result without asking.
  */
 import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
@@ -237,6 +238,33 @@ export interface BindSink {
   pending(fields: readonly string[], dirty: boolean): void;
   /** The source let it go. */
   off(): void;
+}
+
+/** What a bound control may be DRAWN: each member optional, read when the source draws. The source keys its binds by it. */
+export interface BoundControl {
+  /** The id a scope's narrows names it by, where AttachFacts gives none. */
+  readonly id?: string;
+  /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
+  drawReading?: (field: string, reading: FieldReading, scope: string) => void;
+  /** A whole scope, drawn SILENTLY — its chips, answers and presets — as the panel draws each. */
+  drawScope?: (scope: ScopeDescription) => void | Promise<void>;
+  /** Each answered chip's results — the rows its own answer matches. */
+  drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
+  /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
+  drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
+  /** Each field's values the other answers leave, as value keys; a field not named is not limited. */
+  drawPresent?: (present: Readonly<Record<string, readonly string[]>>, scope: string) => void;
+  /** Each serial-set field's values to OFFER, as value keys; the rest are removed. A field not named offers all. */
+  drawOffered?: (offered: Readonly<Record<string, readonly string[]>>, scope: string) => void;
+  /** A control over SEVERAL scopes — the panel — drawn each one whole. */
+  drawScopes?: (scopes: ScopeDescription[]) => void | Promise<void>;
+  /** Told which of its fields a scope ABOVE it holds now, and that scope's name. */
+  supersede?: (fields: readonly string[], appliedAt?: string) => void;
+  /** A grid: those fields WITH their answers there, shown read-only in its headings. */
+  supersedeColumns?: (readings: Readonly<Record<string, FieldReading>>, appliedAt?: string) => void;
+  superseded?: string[];
+  /** Announce its whole answer again. */
+  report?: () => void;
 }
 
 /** What `change` carries, for a listener that wants the result without asking. */

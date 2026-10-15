@@ -118,17 +118,16 @@ import {
 import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
-import type { Populatable } from '../ui/apply-state.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
 } from './store.js';
 import type {
-  ApplyAt, AttachFacts, BindSink, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
+  ApplyAt, AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
   FilterSet, HeldFilter, ScopeDescription, SourceState, ViewState,
 } from './data-source-types.js';
 export type {
-  ApplyAt, AttachFacts, BindSink, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
+  ApplyAt, AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
   FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows, SourceState, ViewState,
 } from './data-source-types.js';
 
@@ -211,7 +210,7 @@ export class DataSource extends EventTarget {
   #scopeLabels = new Map<string, string>();
   /** Each PART: the one field it answers, and the one component it narrows.
    *  TRAP T-a-chart-scope-is-its-legend-field */
-  #narrowing = new Map<string, { field: string; only: Populatable; label?: string }>();
+  #narrowing = new Map<string, { field: string; only: BoundControl; label?: string }>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -520,7 +519,7 @@ export class DataSource extends EventTarget {
    * total. `undefined` removes the reading.
    * TRAP T-a-component-part-narrows-one-component · TRAP T-one-query-one-owner
    */
-  write(scope: string, field: string, reading: FieldReading | undefined, at: { only?: Populatable } = {}): void {
+  write(scope: string, field: string, reading: FieldReading | undefined, at: { only?: BoundControl } = {}): void {
     // A declared part narrows its own component, whoever writes it — a panel too.
     const only = at.only ?? this.#narrowing.get(scope)?.only;
     const bind = only ? this.#binding.get(only) : undefined;
@@ -563,7 +562,7 @@ export class DataSource extends EventTarget {
    * write to it from anywhere narrows that component. `undefined` forgets it.
    * TRAP T-a-chart-scope-is-its-legend-field
    */
-  declarePart(scope: string, part: { field: string; only: Populatable; label?: string } | undefined): void {
+  declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
     if (part) this.#narrowing.set(scope, part);
     else this.#narrowing.delete(scope);
     // Sent up, the View holds its field — and draws only a field it knows.
@@ -572,7 +571,7 @@ export class DataSource extends EventTarget {
   }
 
   /** What `declarePart` was told for this scope, or undefined. Not a `contribute` part. `only` is the element itself. */
-  partFacts(scope: string): { field: string; only: Populatable; label?: string } | undefined {
+  partFacts(scope: string): { field: string; only: BoundControl; label?: string } | undefined {
     const part = this.#narrowing.get(scope);
     return part ? { ...part } : undefined;
   }
@@ -586,7 +585,7 @@ export class DataSource extends EventTarget {
   declareDefault(
     scope: string,
     readings: Readonly<Record<string, FieldReading>> | undefined,
-    at: { only?: Populatable } = {},
+    at: { only?: BoundControl } = {},
   ): void {
     const was = this.#draft.scopes[scope]?.readings ?? {};
     if (!readings) {
@@ -1976,7 +1975,7 @@ export class DataSource extends EventTarget {
 
   /** Take a component its binder has wired, and send it what is already
    *  loaded. `bindSource()` is the way in. TODO 196 */
-  attach(el: Populatable, facts: AttachFacts, sink: BindSink): void {
+  attach(el: BoundControl, facts: AttachFacts, sink: BindSink): void {
     const had = this.#binding.componentScopes();
     const scope = typeof facts.scope === 'string' ? facts.scope : undefined;
     const arranged = scope ? this.arranges(scope) : false;
@@ -2005,7 +2004,7 @@ export class DataSource extends EventTarget {
 
   /** Every row a bound component is under, UNPAGED — what "Select all rows"
    *  ticks on a grid that holds one page. TODO 238 · TRAP T-select-all-is-the-visible-rows */
-  async allRows(el?: Populatable): Promise<readonly Row[]> {
+  async allRows(el?: BoundControl): Promise<readonly Row[]> {
     const { skip: _skip, take: _take, ...options } = this.#loadOptions();
     const { rows } = await this.store.load(options);
     const entry = el ? this.#binding.get(el) : undefined;
@@ -2014,7 +2013,7 @@ export class DataSource extends EventTarget {
   }
 
   /** Stop steering and stop populating this component. */
-  unbind(el: Populatable): void {
+  unbind(el: BoundControl): void {
     const had = this.#binding.componentScopes();
     this.#binding.remove(el);
     this.#rescope(had);
@@ -2029,7 +2028,7 @@ export class DataSource extends EventTarget {
   }
 
   /** Every component currently bound. */
-  get boundElements(): Populatable[] {
+  get boundElements(): BoundControl[] {
     return this.#binding.elements;
   }
 

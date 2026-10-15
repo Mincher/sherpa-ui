@@ -70,6 +70,7 @@ export {
 } from './core/browser/idb-store.js';
 export {
   DataSource,
+  type BoundControl,
   type DataChangeDetail,
   type DataSourceOptions,
   type ViewState,

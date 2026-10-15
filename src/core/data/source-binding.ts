@@ -32,8 +32,7 @@
 import { VIEW } from './query.js';
 import { andFilter, filterRows, type Filter, type Row } from './store.js';
 import { coalesce } from './timing.js';
-import type { Populatable } from '../ui/apply-state.js';
-import type { AttachFacts, BindSink, BoundView, ScopeDescription } from './data-source-types.js';
+import type { AttachFacts, BindSink, BoundControl, BoundView, ScopeDescription } from './data-source-types.js';
 import type { FieldReading } from './filter-state.js';
 
 /** One bound component: how it is bound, and what it was last pushed. */
@@ -75,7 +74,7 @@ export interface BindHost {
 /** Every bound component, by element. */
 export class SourceBinding {
   /** Every bound component, and how it is bound. */
-  #bound = new Map<Populatable, Bound>();
+  #bound = new Map<BoundControl, Bound>();
   /** Binds made, for an id when the element has none. */
   #binds = 0;
   /** The source this binding draws from. */
@@ -86,7 +85,7 @@ export class SourceBinding {
   }
 
   /** Bind a component, with the id a scope's `narrows` names it by. */
-  add(el: Populatable, facts: AttachFacts, sink: BindSink): void {
+  add(el: BoundControl, facts: AttachFacts, sink: BindSink): void {
     this.#bound.set(el, {
       id: facts.id ?? (el.id || `bind-${++this.#binds}`),
       readonly: facts.readonly ?? false,
@@ -99,23 +98,23 @@ export class SourceBinding {
   }
 
   /** Let a component go, and tell its sink. */
-  remove(el: Populatable): void {
+  remove(el: BoundControl): void {
     this.#bound.get(el)?.sink.off();
     this.#bound.delete(el);
   }
 
   /** One component's bind, live, or undefined. */
-  get(el: Populatable): Bound | undefined {
+  get(el: BoundControl): Bound | undefined {
     return this.#bound.get(el);
   }
 
   /** Every bound component, as a copy. */
-  get elements(): Populatable[] {
+  get elements(): BoundControl[] {
     return [...this.#bound.keys()];
   }
 
   /** Every bind, live, in the order they were made. */
-  entries(): IterableIterator<[Populatable, Bound]> {
+  entries(): IterableIterator<[BoundControl, Bound]> {
     return this.#bound.entries();
   }
 
@@ -150,7 +149,7 @@ export class SourceBinding {
   }
 
   /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
-  push(el: Populatable): void {
+  push(el: BoundControl): void {
     const entry = this.#bound.get(el);
     if (!entry) return;
     entry.sink.view(this.#host.view());
