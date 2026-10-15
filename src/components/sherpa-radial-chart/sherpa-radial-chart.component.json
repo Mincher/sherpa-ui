@@ -238,11 +238,6 @@
       "$type": "state",
       "name": "pie",
       "selector": ":host([data-type=\"pie\"])"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ":focus-visible"
     }
   ],
   "capabilities": [

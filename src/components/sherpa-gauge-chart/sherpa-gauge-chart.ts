@@ -222,8 +222,8 @@ export class SherpaGaugeChart extends SherpaElement {
       const label = this.#zoneName(zone);
       fillTip(tip, label, this.#zoneRange(zone));
       /* The accessible name goes on the ARC, and so does `tabindex` — without
-         it the name was there and nothing could reach it. The CSS lights this
-         zone's tip on :focus-visible as well as :hover.
+         it the name was there and nothing could reach it. Its tip lifts on
+         focus as on hover.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       const arc = this.$(`.zone[data-index="${i}"]`);
       if (arc) {

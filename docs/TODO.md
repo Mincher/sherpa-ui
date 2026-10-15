@@ -298,6 +298,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
 | ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
+| ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6441,6 +6442,16 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 307 — BUG: radial and gauge tips were never lifted
+
+Found by the 283 plan agent, by reading. `top-layer-tips.ts` lifts the tip of an
+`.sherpa-anchor` or `.chart-mark`; a donut slice and a gauge band are neither,
+so their tips stayed in the page, where a card's containment can clip them. 300
+checked the gallery's tips open; it did not check they were lifted. **✅ Fixed
+2026-10-15 with 283 step 5:** the lift finds a segment's tip by its index and
+shows it. **Not run yet** — a test for a 14-slice donut and an 8-zone gauge waits
+for Will's run.
 
 ### `[x]` ✅ 306 — BUG: the panel's number and date filters never drew alone
 

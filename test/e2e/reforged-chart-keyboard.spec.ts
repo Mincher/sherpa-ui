@@ -85,8 +85,8 @@ test('sherpa-gauge-chart: every zone takes focus and names its band', async ({ p
       rendered?: Promise<void>; populate?: (d: unknown) => void;
     };
     // The zones ARE the data here — a gauge shows one value against bands.
-    el.setAttribute('data-min', '0');
-    el.setAttribute('data-max', '100');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '100');
     el.setAttribute('data-zones', '0-60:success,60-85:warning,85-100:critical');
     document.getElementById('root')!.appendChild(el);
     await customElements.whenDefined('sherpa-gauge-chart');
@@ -116,4 +116,38 @@ test('sherpa-gauge-chart: every zone takes focus and names its band', async ({ p
   expect(r.firstLabel).toContain('60');
   expect(r.focused).toBe(true);
   expect(r.tipOnFocus).not.toBe('none');
+});
+
+test('a segment past the old caps still shows its tip: slice 13 of 14, zone 7 of 8', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const make = async (tag: string, setup: (el: HTMLElement) => void, data: unknown): Promise<ShadowRoot> => {
+      const el = document.createElement(tag) as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+      setup(el);
+      document.getElementById('root')!.appendChild(el);
+      await customElements.whenDefined(tag);
+      await el.rendered;
+      el.populate!(data);
+      await settle();
+      return el.shadowRoot!;
+    };
+    const tipOf = async (sr: ShadowRoot, mark: string, i: number): Promise<{ open: boolean; display: string }> => {
+      sr.querySelector<HTMLElement>(`${mark}[data-index="${i}"]`)!.focus();
+      await new Promise((res) => setTimeout(res, 150));
+      const tip = sr.querySelector<HTMLElement>(`.chart-tip[data-index="${i}"]`)!;
+      return { open: tip.matches(':popover-open'), display: getComputedStyle(tip).display };
+    };
+    const donut = await make('sherpa-radial-chart', () => {},
+      Array.from({ length: 14 }, (_, i) => ({ label: `S${i}`, value: 10 + i, colorIndex: (i % 8) + 1 })));
+    const zones = Array.from({ length: 8 }, (_, i) => `${i * 12.5}-${(i + 1) * 12.5}:${i % 2 ? 'warning' : 'success'}`).join(',');
+    const gauge = await make('sherpa-gauge-chart', (el) => {
+      el.setAttribute('min', '0');
+      el.setAttribute('max', '100');
+      el.setAttribute('data-zones', zones);
+    }, 50);
+    return { slice: await tipOf(donut, '.slice', 13), zone: await tipOf(gauge, '.zone', 7) };
+  });
+  // The lift shows a segment's tip; no CSS rule per index caps it.
+  expect(r.slice).toEqual({ open: true, display: 'flex' });
+  expect(r.zone).toEqual({ open: true, display: 'flex' });
 });

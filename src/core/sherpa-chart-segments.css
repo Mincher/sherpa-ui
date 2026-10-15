@@ -35,3 +35,10 @@
   inset-inline-start: calc(50% + sin(var(--_dot-angle, 0deg)) * var(--_ring-r));
   inset-block-start: calc(var(--_hub-y, 50%) - cos(var(--_dot-angle, 0deg)) * var(--_ring-r));
 }
+
+/* A segment's tip shows while it is lifted: the path is in <svg>, so no selector
+   reaches the tip, and :has() needed one rule per index. TRAP T-a-tip-lives-in-the-top-layer */
+.hotspots > .chart-tip:popover-open {
+  display: flex;
+  opacity: 1;
+}

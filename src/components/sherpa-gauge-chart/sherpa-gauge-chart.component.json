@@ -381,11 +381,6 @@
       "$type": "state",
       "name": "caption",
       "selector": ":host([data-caption])"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ":focus-visible"
     }
   ],
   "capabilities": [

@@ -5358,7 +5358,7 @@ at a band that does not exist and every later index would slip by one.
 `#renderArcs` therefore counts with its own `index`, not `forEach`'s: `forEach`'s
 index would leave a hole wherever a band was skipped, while the hover layer
 indexes its dots from 0 with no holes — so tip N would pair with band N+1. The
-index is the only thing pairing an arc with its tip; CSS cannot derive it.
+index is the only thing pairing an arc with its tip; `top-layer-tips.ts` pairs them by it.
 
 The dot and its tip are **SIBLINGS**, both cloned out of the same fragment. The
 tip cannot be a descendant of the dot: an absolutely-positioned ancestor breaks
@@ -14463,7 +14463,7 @@ The gauge's own comment said the accessible name went "on the ARC, which is
 what a reader reaches" — the name was there and nothing could reach it.
 
 Both now set `tabindex="0"` alongside the `role="img"` and `aria-label` the arc
-already carried, and their `:has()` chains match `:is(:hover, :focus-visible)`.
+already carried, and their tip lifts on `focusin` as on `pointerover`.
 An SVG `<path>` takes focus from `tabindex` perfectly well; it is only as a CSS
 ANCHOR that it fails (T-anchoring-is-generic), which is what the separate
 zero-size hotspot exists for.
@@ -14472,9 +14472,7 @@ zero-size hotspot exists for.
 something.
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
-- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
-- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
 - Site: `test/e2e/reforged-chart-keyboard.spec.ts`
 
 ### T-a-total-says-so-in-its-label
@@ -16223,11 +16221,21 @@ undone in the shared rule, or the tip is placed by it instead.
 **It drops a frame after `pointerout`.** Firefox still matches `:hover` while
 the event is heard, so a check made at once left every tip open.
 
+**A chart SEGMENT is the exception: the lift SHOWS its tip.** A donut slice
+or a gauge band is an SVG path, so no sibling selector crosses from it to its
+tip, and `:has()` needed one rule per index — radial tips stopped at 11 slices,
+gauge tips at 6 zones (TODO 283). The lift finds the tip by the segment's
+`data-index` and `.hotspots > .chart-tip:popover-open` shows it, in the segments
+sheet. Before this, `ANCHOR` never matched a segment, so those tips were never
+lifted at all and a card could clip them (TODO 307). The cost: a re-render under
+a still pointer shows no tip until the pointer moves.
+
 `sherpa-tooltip` lifts its own bubble: `T-a-tooltip-is-always-in-the-top-layer`.
 
 - Site: `src/core/ui/top-layer-tips.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/core/sherpa-anchor.css`
+- Site: `src/core/sherpa-chart-segments.css`
 - Site: `test/e2e/reforged-button-tip.spec.ts`
 
 
