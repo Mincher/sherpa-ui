@@ -466,7 +466,7 @@ export class SherpaNav extends SherpaElement {
   /** Typing in the search: filter the rows and report the query. */
   #onSearch = (event: Event): void => {
     const query = (event.target as HTMLInputElement).value;
-    this.toggleAttribute('data-has-query', query.length > 0);
+    this.toggleState('has-query', query.length > 0);
     this.#filter(query);
     this.emit('nav-search', { query });
   };
@@ -475,7 +475,7 @@ export class SherpaNav extends SherpaElement {
   #onSearchClear = (): void => {
     const input = this.$<HTMLInputElement>('.search-input');
     if (input) input.value = '';
-    this.removeAttribute('data-has-query');
+    this.toggleState('has-query', false);
     this.#filter('');
     this.emit('nav-search', { query: '' });
     input?.focus();

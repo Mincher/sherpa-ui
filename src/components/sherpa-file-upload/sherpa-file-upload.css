@@ -197,7 +197,7 @@
   justify-content: space-between;
   gap: var(--sherpa-display-mode-space-base, 16px);
 }
-:host([data-has-files]) .actions { display: flex; }
+:host(:state(has-files)) .actions { display: flex; }
 
 .clear-all,
 .upload {

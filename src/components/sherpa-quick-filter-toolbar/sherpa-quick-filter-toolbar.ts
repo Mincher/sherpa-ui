@@ -1775,7 +1775,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     zone.replaceChildren();
     // CSS cannot see whether the zone has children, and an empty one would leave
     // its divider rule floating.
-    this.toggleAttribute('data-has-organise', group.length > 0 || sort.length > 0);
+    this.toggleState('has-organise', group.length > 0 || sort.length > 0);
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
        reload restores both — so the chip is built on that column rather than

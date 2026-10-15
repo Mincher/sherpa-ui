@@ -272,11 +272,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "has-files",
-      "selector": ":host([data-has-files])"
-    },
-    {
-      "$type": "state",
       "name": "focus-visible",
       "selector": ".browse:focus-visible"
     }

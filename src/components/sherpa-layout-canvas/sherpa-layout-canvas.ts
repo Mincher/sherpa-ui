@@ -28,9 +28,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   static override props = {
     /* Written BY the canvas: the Pan tool is on. */
-    'data-panning': { type: 'boolean', kind: 'style' },
     /* Written BY the canvas, while a drag pans. */
-    'data-dragging': { type: 'boolean', kind: 'style' },
     'data-no-minimap': { type: 'boolean', kind: 'style' },
     'data-zoom': { type: 'number', kind: 'behaviour' },
     'data-min-zoom': { type: 'number', kind: 'behaviour' },
@@ -190,7 +188,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /** A drag pans with the Pan tool on, or with the middle button. */
   #onPointerDown = (event: PointerEvent): void => {
-    const onContent = event.target !== event.currentTarget && !this.hasAttribute('data-panning');
+    const onContent = event.target !== event.currentTarget && !this.hasState('panning');
     if (event.button === 1 || (event.button === 0 && !onContent)) {
       event.preventDefault();
       this.#drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: [this.#x, this.#y] };
@@ -198,7 +196,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
       try {
         (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
       } catch { /* the drag still follows the pointer's own events */ }
-      this.toggleAttribute('data-dragging', true);
+      this.toggleState('dragging', true);
     }
   };
 
@@ -211,7 +209,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
       return;
     }
     this.#drag = null;
-    this.removeAttribute('data-dragging');
+    this.toggleState('dragging', false);
   };
 
   /** The arrows pan; + and - zoom; 0 is 100%. */
@@ -231,8 +229,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /** The Pan tool: on, a drag anywhere moves the view. */
   #onPanTool = (): void => {
-    const on = !this.hasAttribute('data-panning');
-    this.toggleAttribute('data-panning', on);
+    const on = !this.hasState('panning');
+    this.toggleState('panning', on);
     this.$('.pan')?.setAttribute('aria-pressed', String(on));
   };
 

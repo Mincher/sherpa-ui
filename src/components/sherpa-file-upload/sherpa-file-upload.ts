@@ -142,7 +142,7 @@ export class SherpaFileUpload extends SherpaElement {
         row.querySelector('.file-status')!.textContent = this.#status.get(file) ?? '';
       },
     });
-    this.toggleAttribute('data-has-files', this.#files.length > 0);
+    this.toggleState('has-files', this.#files.length > 0);
     this.formLink.value(this.#files);
   }
 

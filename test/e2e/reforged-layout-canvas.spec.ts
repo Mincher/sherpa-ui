@@ -106,16 +106,16 @@ test('the Pan tool: a drag anywhere moves the view', async ({ page }) => {
     const el = eval(sel) as Canvas;
     const sr = el.shadowRoot!;
     sr.querySelector('.pan')!.shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
-    const on = { panning: el.hasAttribute('data-panning'), pressed: sr.querySelector('.pan')!.getAttribute('aria-pressed') };
+    const on = { panning: el.matches(':state(panning)'), pressed: sr.querySelector('.pan')!.getAttribute('aria-pressed') };
     const viewport = sr.querySelector<HTMLElement>('.viewport')!;
     const at = (type: string, x: number, y: number) => viewport.dispatchEvent(
       new PointerEvent(type, { pointerId: 7, button: 0, buttons: 1, clientX: x, clientY: y, bubbles: true }));
     // On the CONTENT, it still pans: the tool is on.
     el.querySelector('#a')!.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 7, button: 0, buttons: 1, clientX: 300, clientY: 300, bubbles: true, composed: true }));
     at('pointermove', 340, 270);
-    const dragging = el.hasAttribute('data-dragging');
+    const dragging = el.matches(':state(dragging)');
     at('pointerup', 340, 270);
-    return { on, dragging, view: el.view, done: el.hasAttribute('data-dragging') };
+    return { on, dragging, view: el.view, done: el.matches(':state(dragging)') };
   }, canvas);
   expect(r.on).toEqual({ panning: true, pressed: 'true' });
   expect(r.dragging).toBe(true);

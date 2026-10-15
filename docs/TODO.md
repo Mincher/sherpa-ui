@@ -266,7 +266,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ✅ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ✅ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
-| ⬜ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
+| 🚧 | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
 | ⬜ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
 | ⬜ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
 | ⬜ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
@@ -6388,6 +6388,22 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[ ]` 🚧 275 — Phase 4: private host state is `:state()` (D3)
+
+**✅ The host-private attributes, 2026-10-15.** Nine, each written by its own
+component on itself and read only by its own CSS and tests, are custom states:
+`has-y-axis` (the bar and line charts, and the shared axes sheet), `has-query`
+(nav), `has-files` (file upload), `has-organise` (the filter toolbar),
+`has-value` (input text), `dragging` and `panning` (the canvas), `leaving`
+(toast). A `:state()` rule is private, so each also leaves the spec. Left, on
+purpose, as attributes: `data-touched` (the menu writes it onto a slider, a
+cross-component write), `data-has-values` (Demos watches it), `data-empty`
+(the generated page-level token CSS selects it), `data-folded` (it carries a
+count) and `data-takes`, `data-no-minimap` and `data-searchable` (a host may
+set them). 636 tests in three engines.
+
+**⬜ Next: `data-has-*`,** which the base writes for every slot.
 
 ### `[x]` ✅ 274 — Phase 4: default ARIA, boolean accessors and forwarding, in the base
 

@@ -270,11 +270,6 @@
     },
     {
       "$type": "state",
-      "name": "not-has-y-axis",
-      "selector": ":host(:not([data-has-y-axis]))"
-    },
-    {
-      "$type": "state",
       "name": "focus-visible",
       "selector": ".bar-col:focus-visible"
     }

@@ -79,14 +79,6 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-dragging",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-max-zoom",
       "type": "number",
       "observed": true,
@@ -116,15 +108,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-panning",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "written BY the canvas: the Pan tool is on, so a drag anywhere pans"
-    },
-    {
-      "$type": "prop",
       "name": "data-zoom",
       "type": "number",
       "observed": true,
@@ -144,20 +127,10 @@
     }
   ],
   "populate": {
-    "shape": "{ dragging?, maxZoom?, minZoom?, noMinimap?, panning?, zoom? }",
+    "shape": "{ maxZoom?, minZoom?, noMinimap?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "panning",
-      "selector": ":host([data-panning])"
-    },
-    {
-      "$type": "state",
-      "name": "dragging",
-      "selector": ":host([data-dragging])"
-    },
     {
       "$type": "state",
       "name": "no-minimap",

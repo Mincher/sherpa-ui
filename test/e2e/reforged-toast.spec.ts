@@ -95,7 +95,7 @@ test('the close button fires toast-dismiss and removes the toast', async ({ page
     await close.rendered;
     (close.shadowRoot.querySelector('button') as HTMLElement).click();
     // The event fires straight away; the node leaves after the slide-out animation.
-    const leavingImmediately = el.hasAttribute('data-leaving');
+    const leavingImmediately = el.matches(':state(leaving)');
     await new Promise((res) => setTimeout(res, 300));
 
     return { dismissed, leavingImmediately, connected: el.isConnected };
@@ -133,7 +133,7 @@ test('the default life is five seconds', async ({ page }) => {
     await el.rendered;
     // Not yet dismissed a moment after appearing — the 5s timer is running.
     await new Promise((res) => setTimeout(res, 120));
-    const stillHere = el.isConnected && !el.hasAttribute('data-leaving');
+    const stillHere = el.isConnected && !el.matches(':state(leaving)');
     el.remove();
     return stillHere;
   });

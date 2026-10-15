@@ -688,14 +688,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-has-value",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-icon-end",
       "type": "string",
       "observed": true,

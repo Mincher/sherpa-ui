@@ -39,7 +39,6 @@ export class SherpaToast extends SherpaElement {
     'data-value': { type: 'string', kind: 'content', to: '.value' },
     'data-action': { type: 'string', kind: 'content', to: '.action' },
     /* Written BY the toast for the duration of its exit animation. */
-    'data-leaving': { type: 'boolean', kind: 'style' },
   } as const;
 
   /** The auto-dismiss timer. */
@@ -68,9 +67,9 @@ export class SherpaToast extends SherpaElement {
       clearTimeout(this.#timer);
       this.#timer = null;
     }
-    if (this.hasAttribute('data-leaving')) return;
+    if (this.hasState('leaving')) return;
     this.emit('toast-dismiss');
-    this.toggleAttribute('data-leaving', true);
+    this.toggleState('leaving', true);
 
     // The fallback covers an animation that never runs at all.
     let done = false;

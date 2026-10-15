@@ -184,7 +184,7 @@
      gradient's height. */
   box-sizing: content-box;
 }
-:host(:not([data-has-y-axis])) .gridlines { display: none; }
+:host(:not(:state(has-y-axis))) .gridlines { display: none; }
 
 .y-axis {
   display: none;

@@ -31,7 +31,7 @@
 }
 
 /* The duration lives HERE only — JS waits for `animationend`, it holds no number. */
-:host([data-leaving]) {
+:host(:state(leaving)) {
   animation: sherpa-toast-out 160ms ease-in both;
   pointer-events: none;
 }

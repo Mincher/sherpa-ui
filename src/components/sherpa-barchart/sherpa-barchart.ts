@@ -121,7 +121,7 @@ export class SherpaBarchart extends SherpaElement {
   #renderYAxis(scale: ChartScale, shownCount: number): void {
     const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }) > 0 ? scale.bands : 0;
     this.style.setProperty('--_bands', String(steps));
-    this.toggleAttribute('data-has-y-axis', renderValueAxis(
+    this.toggleState('has-y-axis', renderValueAxis(
       this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, shownCount > 0 ? steps : 0,
     ));
   }

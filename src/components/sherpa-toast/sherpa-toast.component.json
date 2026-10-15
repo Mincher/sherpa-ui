@@ -156,14 +156,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-leaving",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-stacked",
       "type": "boolean",
       "observed": true,
@@ -206,7 +198,7 @@
     }
   ],
   "populate": {
-    "shape": "{ action?, heading?, leaving?, stacked?, value? }",
+    "shape": "{ action?, heading?, stacked?, value? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -214,11 +206,6 @@
       "$type": "state",
       "name": "stacked",
       "selector": ":host([data-stacked])"
-    },
-    {
-      "$type": "state",
-      "name": "leaving",
-      "selector": ":host([data-leaving])"
     },
     {
       "$type": "state",

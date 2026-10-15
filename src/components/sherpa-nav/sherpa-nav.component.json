@@ -335,11 +335,6 @@
     },
     {
       "$type": "state",
-      "name": "has-query",
-      "selector": ":host([data-has-query])"
-    },
-    {
-      "$type": "state",
       "name": "not-searchable",
       "selector": ":host(:not([data-searchable]))"
     },

@@ -79,7 +79,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
     const planChip = sr.querySelector<HTMLElement>('.chip[data-id="plan"]')!;
 
     const layout = {
-      flag: el.hasAttribute('data-has-organise'),
+      flag: el.matches(':state(has-organise)'),
       // Group first, Sort second, and BEFORE the filter run.
       ids: Array.from(zone.children).map((c) => (c as HTMLElement).dataset['id']),
       beforeFilters:

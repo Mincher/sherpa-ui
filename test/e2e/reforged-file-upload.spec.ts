@@ -53,7 +53,7 @@ test('dropping files renders the list and fires file-add', async ({ page }) => {
     return {
       fired: count,
       rows: el.shadowRoot!.querySelectorAll('.file-item').length,
-      hasFiles: el.hasAttribute('data-has-files'),
+      hasFiles: el.matches(':state(has-files)'),
     };
   });
   expect(r.fired).toBe(2);
@@ -141,7 +141,7 @@ test('clear all empties the list and fires file-clear', async ({ page }) => {
     el.addEventListener('file-clear', () => (cleared = true));
     await pressComposed(el.shadowRoot!.querySelector('.clear-all'));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    return { cleared, rows: el.shadowRoot!.querySelectorAll('.file-item').length, hasFiles: el.hasAttribute('data-has-files') };
+    return { cleared, rows: el.shadowRoot!.querySelectorAll('.file-item').length, hasFiles: el.matches(':state(has-files)') };
   });
   expect(r.cleared).toBe(true);
   expect(r.rows).toBe(0);

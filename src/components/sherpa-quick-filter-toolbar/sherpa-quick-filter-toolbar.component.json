@@ -523,11 +523,6 @@
     },
     {
       "$type": "state",
-      "name": "has-organise",
-      "selector": ":host([data-has-organise])"
-    },
-    {
-      "$type": "state",
       "name": "limit-options",
       "selector": ":host([data-limit-options])"
     },
@@ -550,11 +545,6 @@
       "$type": "state",
       "name": "panel-mode",
       "selector": ":host([data-panel-mode])"
-    },
-    {
-      "$type": "state",
-      "name": "not-has-organise",
-      "selector": ":host(:not([data-has-organise]))"
     },
     {
       "$type": "state",

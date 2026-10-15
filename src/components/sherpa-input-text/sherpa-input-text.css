@@ -164,8 +164,8 @@
   cursor: pointer;
 }
 
-:host([data-has-value]:not([data-multiline], [data-type="select"], [data-no-clear], :disabled, [readonly])) .clear,
-:host([data-clearable][data-has-value]:not([data-no-clear], :disabled, [readonly])) .clear {
+:host(:state(has-value):not([data-multiline], [data-type="select"], [data-no-clear], :disabled, [readonly])) .clear,
+:host([data-clearable]:state(has-value):not([data-no-clear], :disabled, [readonly])) .clear {
   display: inline-flex;
 }
 

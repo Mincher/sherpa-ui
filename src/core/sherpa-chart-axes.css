@@ -90,7 +90,7 @@
 
 /* Written by JS: an absent data-ticks means "default 4" and data-ticks="0"
    means none, which no selector can tell apart. */
-:host([data-has-y-axis]) .y-axis { display: block; }
+:host(:state(has-y-axis)) .y-axis { display: block; }
 
 /* Each label sits at its own --_at percentage, centred on that line. Pinned at
    both ends and right-aligned so "0" still ends flush against the rule. */

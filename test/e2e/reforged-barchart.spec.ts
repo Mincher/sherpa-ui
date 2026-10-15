@@ -178,7 +178,7 @@ test('the y axis labels its gridlines and lines up with the plot', async ({ page
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const noTicks = {
       shown: getComputedStyle(axis).display !== 'none',
-      flag: el.hasAttribute('data-has-y-axis'),
+      flag: el.matches(':state(has-y-axis)'),
     };
     return { withTicks, noTicks };
   });

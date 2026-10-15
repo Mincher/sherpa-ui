@@ -64,7 +64,6 @@ export class SherpaInputText extends SherpaElement {
     'data-clearable': { type: 'boolean', kind: 'style' },
     'data-no-clear': { type: 'boolean', kind: 'style' },
     /* Written BY the field: there is something to clear. */
-    'data-has-value': { type: 'boolean', kind: 'style' },
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
     'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select', 'number', 'find'] },
@@ -160,7 +159,7 @@ export class SherpaInputText extends SherpaElement {
 
   /** JS writes the flag; CSS owns the Clear button's reveal. */
   #syncHasValue(): void {
-    this.toggleAttribute('data-has-value', (this.#control?.value ?? '') !== '');
+    this.toggleState('has-value', (this.#control?.value ?? '') !== '');
     this.#syncSteps();
     this.#syncFind();
   }

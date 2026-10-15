@@ -67,9 +67,9 @@
 }
 
 /* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
-:host([data-panning]) .viewport { cursor: grab; }
-:host([data-panning]) .plane { pointer-events: none; }
-:host([data-dragging]) .viewport { cursor: grabbing; }
+:host(:state(panning)) .viewport { cursor: grab; }
+:host(:state(panning)) .plane { pointer-events: none; }
+:host(:state(dragging)) .viewport { cursor: grabbing; }
 
 /* ── The controls ─────────────────────────────────────────────────────── */
 .controls {

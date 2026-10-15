@@ -296,7 +296,7 @@
     box-shadow: var(--sherpa-focus-ring);
   }
 }
-:host([data-has-query]) .search-clear { display: inline-flex; }
+:host(:state(has-query)) .search-clear { display: inline-flex; }
 
 /* Quick items (Home · Recent · Favorites). `align-items: stretch` matters:
    without it the <li> rows shrink-wrap their label and stop short of the rail. */

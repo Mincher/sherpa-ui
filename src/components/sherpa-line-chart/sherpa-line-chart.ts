@@ -163,7 +163,7 @@ export class SherpaLineChart extends SherpaElement {
   /** The value ticks, placed on the same scale as the gridlines. */
   #renderYAxis(scale: ChartScale): void {
     const steps = this.#tickSteps() > 0 && this.#series.length ? scale.bands : 0;
-    this.toggleAttribute('data-has-y-axis', renderValueAxis(
+    this.toggleState('has-y-axis', renderValueAxis(
       this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, steps,
     ));
   }
