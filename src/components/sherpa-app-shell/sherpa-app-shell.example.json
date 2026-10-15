@@ -4,6 +4,7 @@
     "</sherpa-nav><sherpa-app-header slot=\"header\" data-heading=\"Home\"></sherpa-app-header>",
     "<p>The page.</p></sherpa-app-shell></div>"
   ],
+  "use": "The frame for an app: the nav, the app header, the Context, and a panel area on each side for a fixed panel, such as filters. Settings goes in its `overlay` slot as a `<sherpa-dialog data-type=\"overlay\">`; a quick peek over the Context is a `sherpa-overlay-panel`, not a panel area.",
   "fill": [
     {
       "at": "sherpa-nav",

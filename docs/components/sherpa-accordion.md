@@ -11,6 +11,10 @@ A disclosure card built on native &lt;details> / &lt;summary>. State IS the nati
 | Figma | Accordion |
 | Source | [.ts](../../src/components/sherpa-accordion/sherpa-accordion.ts) · [.html](../../src/components/sherpa-accordion/sherpa-accordion.html) · [.css](../../src/components/sherpa-accordion/sherpa-accordion.css) · [.component.json](../../src/components/sherpa-accordion/sherpa-accordion.component.json) · [.example.json](../../src/components/sherpa-accordion/sherpa-accordion.example.json) |
 
+## When to use it
+
+For a section the reader opens and shuts: a heading row over a body, on native `<details>`. For a card that stays open, use `sherpa-container`.
+
 ## Example
 
 ```html

@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-stack data-gap=\"md\"><p>One</p><p>Two</p></sherpa-stack>"
+  "html": "<sherpa-stack data-gap=\"md\"><p>One</p><p>Two</p></sherpa-stack>",
+  "use": "To lay items out in a column or a row with a token gap, with no box, fill, border or padding. For a bordered box, use `sherpa-container`; for a two-zone action strip, use `sherpa-toolbar`."
 }

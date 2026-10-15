@@ -3,6 +3,7 @@
     "<sherpa-button class=\"opener\" data-type=\"icon\" data-icon-start=\"notifications\" aria-label=\"Notifications\">",
     "</sherpa-button><sherpa-notifications></sherpa-notifications>"
   ],
+  "use": "For the list behind a notifications bell: rows with a time and an unread mark, and a Mark all read button. It opens as a `sherpa-menu` from its trigger, and a `DataSource` can feed it live.",
   "fill": [
     {
       "at": "sherpa-notifications",

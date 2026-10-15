@@ -11,6 +11,10 @@ A modal surface on the native &lt;dialog>: modality, ::backdrop, focus trap, ESC
 | Figma | Dialog |
 | Source | [.ts](../../src/components/sherpa-dialog/sherpa-dialog.ts) · [.html](../../src/components/sherpa-dialog/sherpa-dialog.html) · [.css](../../src/components/sherpa-dialog/sherpa-dialog.css) · [.component.json](../../src/components/sherpa-dialog/sherpa-dialog.component.json) · [.example.json](../../src/components/sherpa-dialog/sherpa-dialog.example.json) |
 
+## When to use it
+
+For a task that blocks the page until the reader answers, such as a confirm or a short form; open it with `commandfor` or `.show()`, not `showModal()`. With `data-type="overlay"` it opens non-modal over its container, as Settings does; for a quick peek, use `sherpa-overlay-panel`.
+
 ## Example
 
 ```html

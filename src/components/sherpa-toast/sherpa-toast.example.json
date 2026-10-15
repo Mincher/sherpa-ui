@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-toast data-status=\"success\" data-heading=\"Saved\" data-value=\"The record was saved.\" data-duration=\"0\">",
     "</sherpa-toast>"
-  ]
+  ],
+  "use": "For short feedback after an action, such as Saved, that goes away by itself after 5 seconds by default; a static helper such as `SherpaToast.success()` adds one. For a message that stays on the page, use `sherpa-callout`."
 }

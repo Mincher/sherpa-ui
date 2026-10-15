@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-code-block data-language=\"javascript\" data-line-numbers data-code=\"const answer = 42;\">",
     "</sherpa-code-block>"
-  ]
+  ],
+  "use": "To show a block of code exactly as written, with a copy button and optional line numbers (`data-line-numbers`). It does no syntax highlighting."
 }

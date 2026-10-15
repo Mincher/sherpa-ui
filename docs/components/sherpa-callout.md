@@ -10,6 +10,10 @@ A status message box.
 | Figma | Callout |
 | Source | [.ts](../../src/components/sherpa-callout/sherpa-callout.ts) · [.html](../../src/components/sherpa-callout/sherpa-callout.html) · [.css](../../src/components/sherpa-callout/sherpa-callout.css) · [.component.json](../../src/components/sherpa-callout/sherpa-callout.component.json) · [.example.json](../../src/components/sherpa-callout/sherpa-callout.example.json) |
 
+## When to use it
+
+For a status message that stays on the page: info, success, warning, critical or urgent, with an optional close button. For short feedback that goes away by itself, use `sherpa-toast`.
+
 ## Example
 
 ```html

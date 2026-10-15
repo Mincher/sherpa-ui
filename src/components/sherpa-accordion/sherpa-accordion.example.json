@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-accordion data-heading=\"Details\"><p>More about this record.</p></sherpa-accordion>"
+  "html": "<sherpa-accordion data-heading=\"Details\"><p>More about this record.</p></sherpa-accordion>",
+  "use": "For a section the reader opens and shuts: a heading row over a body, on native `<details>`. For a card that stays open, use `sherpa-container`."
 }

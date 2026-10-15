@@ -10,6 +10,10 @@ A centred placeholder for a blank list, grid, or region.
 | Figma | Empty State |
 | Source | [.ts](../../src/components/sherpa-empty-state/sherpa-empty-state.ts) · [.html](../../src/components/sherpa-empty-state/sherpa-empty-state.html) · [.css](../../src/components/sherpa-empty-state/sherpa-empty-state.css) · [.component.json](../../src/components/sherpa-empty-state/sherpa-empty-state.component.json) · [.example.json](../../src/components/sherpa-empty-state/sherpa-empty-state.example.json) |
 
+## When to use it
+
+For a blank list, grid or region: an icon, a heading, a message and an optional action. A `sherpa-container` draws its own empty and error states from its `data-state`.
+
 ## Example
 
 ```html

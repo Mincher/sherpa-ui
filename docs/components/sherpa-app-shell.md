@@ -10,6 +10,10 @@ The frame for an app and its Contexts. Nav and header are PRE-COMPOSED; slotting
 | Figma | App Shell |
 | Source | [.ts](../../src/components/sherpa-app-shell/sherpa-app-shell.ts) · [.html](../../src/components/sherpa-app-shell/sherpa-app-shell.html) · [.css](../../src/components/sherpa-app-shell/sherpa-app-shell.css) · [.component.json](../../src/components/sherpa-app-shell/sherpa-app-shell.component.json) · [.example.json](../../src/components/sherpa-app-shell/sherpa-app-shell.example.json) |
 
+## When to use it
+
+The frame for an app: the nav, the app header, the Context, and a panel area on each side for a fixed panel, such as filters. Settings goes in its `overlay` slot as a `<sherpa-dialog data-type="overlay">`; a quick peek over the Context is a `sherpa-overlay-panel`, not a panel area.
+
 ## Example
 
 ```html

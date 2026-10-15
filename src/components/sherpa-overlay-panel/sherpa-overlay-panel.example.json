@@ -3,5 +3,6 @@
     "<sherpa-overlay-panel data-heading=\"Ada Lovelace\" data-icon=\"person\" data-dismissible data-collapsible data-expandable>",
     "<p>Pro plan, 12 seats.</p><sherpa-button slot=\"footer\">Edit</sherpa-button></sherpa-overlay-panel>"
   ],
+  "use": "For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. For a fixed panel beside the Context, use a `sherpa-app-shell` panel area; for a task that blocks the page, use `sherpa-dialog`.",
   "show": "sherpa-overlay-panel"
 }

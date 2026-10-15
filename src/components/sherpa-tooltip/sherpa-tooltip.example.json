@@ -3,5 +3,6 @@
     "<sherpa-tooltip data-text=\"Delete this item\">",
     "<sherpa-button data-type=\"icon\" data-icon-start=\"trash\" aria-label=\"Delete\"></sherpa-button>",
     "</sherpa-tooltip>"
-  ]
+  ],
+  "use": "For a short hint on hover or focus, such as on an icon-only button. It does not name its trigger, so an icon-only trigger still needs its own `aria-label`."
 }

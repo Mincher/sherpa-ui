@@ -10,6 +10,10 @@ A single list row.
 | Figma | Menu List Item |
 | Source | [.ts](../../src/components/sherpa-list-item/sherpa-list-item.ts) · [.html](../../src/components/sherpa-list-item/sherpa-list-item.html) · [.css](../../src/components/sherpa-list-item/sherpa-list-item.css) · [.component.json](../../src/components/sherpa-list-item/sherpa-list-item.component.json) · [.example.json](../../src/components/sherpa-list-item/sherpa-list-item.example.json) |
 
+## When to use it
+
+For one row in a `sherpa-list`: a label, a description, and optional icon, tick, expand and drag controls. Use `data-current` for the row the reader is on and `data-selected` for a ticked row; a row can be both.
+
 ## Example
 
 ```html

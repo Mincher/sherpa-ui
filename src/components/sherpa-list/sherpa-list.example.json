@@ -4,5 +4,6 @@
     "<sherpa-list-item data-label=\"Increase contrast\" data-description=\"Stronger borders and text.\">",
     "<sherpa-switch slot=\"trailing\" name=\"contrast\" aria-label=\"Increase contrast\"></sherpa-switch>",
     "</sherpa-list-item><sherpa-list-item data-label=\"Reduce motion\"></sherpa-list-item></sherpa-list>"
-  ]
+  ],
+  "use": "For a vertical list of rows, from `sherpa-list-item` children or `populate()`, such as settings with a switch in each row's `trailing` slot. One row is current at a time."
 }

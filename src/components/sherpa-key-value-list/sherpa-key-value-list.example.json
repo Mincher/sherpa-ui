@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-key-value-list data-orientation=\"vertical\"></sherpa-key-value-list>",
+  "use": "For read-only label and value pairs, side by side or stacked, drawn as a native `<dl>`. Fill it from `<dt>` and `<dd>` children or from `populate([{ key, value }])`.",
   "fill": [
     {
       "at": "sherpa-key-value-list",

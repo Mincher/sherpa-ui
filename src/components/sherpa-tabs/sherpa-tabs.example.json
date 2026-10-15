@@ -3,6 +3,7 @@
     "<sherpa-tabs><section data-tab=\"a\">Panel A</section><section data-tab=\"b\">Panel B</section>",
     "</sherpa-tabs>"
   ],
+  "use": "To switch between panels in one place on the page: each child with a `data-tab` id is a panel, and `data-current-id` picks the one shown. To go to another Context, write a real `<a href>`.",
   "fill": [
     {
       "at": "sherpa-tabs",

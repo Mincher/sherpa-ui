@@ -10,6 +10,10 @@ A vertical row container. Slot [sherpa-list-item](sherpa-list-item.md) children,
 | Figma | List |
 | Source | [.ts](../../src/components/sherpa-list/sherpa-list.ts) · [.html](../../src/components/sherpa-list/sherpa-list.html) · [.css](../../src/components/sherpa-list/sherpa-list.css) · [.component.json](../../src/components/sherpa-list/sherpa-list.component.json) · [.example.json](../../src/components/sherpa-list/sherpa-list.example.json) |
 
+## When to use it
+
+For a vertical list of rows, from `sherpa-list-item` children or `populate()`, such as settings with a switch in each row's `trailing` slot. One row is current at a time.
+
 ## Example
 
 ```html

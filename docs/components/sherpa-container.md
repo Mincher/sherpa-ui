@@ -10,6 +10,10 @@ Base surface card: header / content / footer slots, plus loading / empty / error
 | Figma | Container |
 | Source | [.ts](../../src/components/sherpa-container/sherpa-container.ts) · [.html](../../src/components/sherpa-container/sherpa-container.html) · [.css](../../src/components/sherpa-container/sherpa-container.css) · [.component.json](../../src/components/sherpa-container/sherpa-container.component.json) · [.example.json](../../src/components/sherpa-container/sherpa-container.example.json) |
 
+## When to use it
+
+For a standalone card with a header, a body and a footer; it shows its data's loading, empty and error states. To lay items out with no box, use `sherpa-stack`.
+
 ## Example
 
 ```html

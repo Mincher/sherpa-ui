@@ -10,6 +10,10 @@ The footer bar for a container's `footer` slot.
 | Figma | Container Footer |
 | Source | [.ts](../../src/components/sherpa-container-footer/sherpa-container-footer.ts) · [.html](../../src/components/sherpa-container-footer/sherpa-container-footer.html) · [.css](../../src/components/sherpa-container-footer/sherpa-container-footer.css) · [.component.json](../../src/components/sherpa-container-footer/sherpa-container-footer.component.json) · [.example.json](../../src/components/sherpa-container-footer/sherpa-container-footer.example.json) |
 
+## When to use it
+
+For the action buttons in the `footer` slot of a `sherpa-container`, `sherpa-dialog` or `sherpa-panel`. Mark the save and cancel pair `data-footer="commit"` and `data-footer="revert"`; while the host sets `data-dirty="false"` on the footer, that pair is off.
+
 ## Example
 
 ```html

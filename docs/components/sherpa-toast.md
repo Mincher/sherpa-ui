@@ -10,6 +10,10 @@ A transient notification (Figma Toast 27:750). The card is NEUTRAL, not status-f
 | Figma | Toast |
 | Source | [.ts](../../src/components/sherpa-toast/sherpa-toast.ts) · [.html](../../src/components/sherpa-toast/sherpa-toast.html) · [.css](../../src/components/sherpa-toast/sherpa-toast.css) · [.component.json](../../src/components/sherpa-toast/sherpa-toast.component.json) · [.example.json](../../src/components/sherpa-toast/sherpa-toast.example.json) |
 
+## When to use it
+
+For short feedback after an action, such as Saved, that goes away by itself after 5 seconds by default; a static helper such as `SherpaToast.success()` adds one. For a message that stays on the page, use `sherpa-callout`.
+
 ## Example
 
 ```html

@@ -1,5 +1,6 @@
 {
   "html": [
     "<sherpa-callout data-status=\"warning\" data-heading=\"Heads up\">Your trial ends in 3 days.</sherpa-callout>"
-  ]
+  ],
+  "use": "For a status message that stays on the page: info, success, warning, critical or urgent, with an optional close button. For short feedback that goes away by itself, use `sherpa-toast`."
 }

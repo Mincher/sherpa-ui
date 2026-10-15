@@ -3,6 +3,7 @@
     "<sherpa-transfer-list data-source-heading=\"Available columns\" data-target-heading=\"Shown columns\">",
     "</sherpa-transfer-list>"
   ],
+  "use": "To pick a set of items from a pool by moving them between two panes, such as which columns to show. It submits the values in its selected pane under its `name` in a form.",
   "fill": [
     {
       "at": "sherpa-transfer-list",

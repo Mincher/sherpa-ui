@@ -5,5 +5,6 @@
     "<sherpa-button data-look=\"saturated\" data-status=\"critical\">Delete</sherpa-button>",
     "</sherpa-container-footer></sherpa-dialog>"
   ],
+  "use": "For a task that blocks the page until the reader answers, such as a confirm or a short form; open it with `commandfor` or `.show()`, not `showModal()`. With `data-type=\"overlay\"` it opens non-modal over its container, as Settings does; for a quick peek, use `sherpa-overlay-panel`.",
   "show": "sherpa-dialog"
 }

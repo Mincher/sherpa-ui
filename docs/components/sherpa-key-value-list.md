@@ -10,6 +10,10 @@ A semantic definition list.
 | Figma | Key Value Pair |
 | Source | [.ts](../../src/components/sherpa-key-value-list/sherpa-key-value-list.ts) · [.html](../../src/components/sherpa-key-value-list/sherpa-key-value-list.html) · [.css](../../src/components/sherpa-key-value-list/sherpa-key-value-list.css) · [.component.json](../../src/components/sherpa-key-value-list/sherpa-key-value-list.component.json) · [.example.json](../../src/components/sherpa-key-value-list/sherpa-key-value-list.example.json) |
 
+## When to use it
+
+For read-only label and value pairs, side by side or stacked, drawn as a native `<dl>`. Fill it from `<dt>` and `<dd>` children or from `populate([{ key, value }])`.
+
 ## Example
 
 ```html

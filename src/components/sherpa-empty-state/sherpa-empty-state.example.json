@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-empty-state data-heading=\"No results\" data-description=\"Try a different search.\">",
     "<sherpa-button>Clear filters</sherpa-button></sherpa-empty-state>"
-  ]
+  ],
+  "use": "For a blank list, grid or region: an icon, a heading, a message and an optional action. A `sherpa-container` draws its own empty and error states from its `data-state`."
 }

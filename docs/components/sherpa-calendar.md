@@ -10,6 +10,10 @@ A date picker with day / month / year views. The header label zooms OUT (day →
 | Figma | Calendar |
 | Source | [.ts](../../src/components/sherpa-calendar/sherpa-calendar.ts) · [.html](../../src/components/sherpa-calendar/sherpa-calendar.html) · [.css](../../src/components/sherpa-calendar/sherpa-calendar.css) · [.component.json](../../src/components/sherpa-calendar/sherpa-calendar.component.json) · [.example.json](../../src/components/sherpa-calendar/sherpa-calendar.example.json) |
 
+## When to use it
+
+To pick a day, a day and a time, or a start-to-end range from a month grid; `min`, `max` and `data-available` limit the days a reader can pick. It submits its day, or a range's two ends, in a form.
+
 ## Example
 
 ```html

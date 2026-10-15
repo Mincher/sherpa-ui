@@ -11,6 +11,10 @@ The bell's list.
 | Figma | Notifications |
 | Source | [.ts](../../src/components/sherpa-notifications/sherpa-notifications.ts) · [.html](../../src/components/sherpa-notifications/sherpa-notifications.html) · [.css](../../src/components/sherpa-notifications/sherpa-notifications.css) · [.component.json](../../src/components/sherpa-notifications/sherpa-notifications.component.json) · [.example.json](../../src/components/sherpa-notifications/sherpa-notifications.example.json) |
 
+## When to use it
+
+For the list behind a notifications bell: rows with a time and an unread mark, and a Mark all read button. It opens as a `sherpa-menu` from its trigger, and a `DataSource` can feed it live.
+
 ## Example
 
 ```html

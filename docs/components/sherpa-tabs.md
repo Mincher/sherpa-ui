@@ -10,6 +10,10 @@ A tabbed content switcher.
 | Figma | Tab Group |
 | Source | [.ts](../../src/components/sherpa-tabs/sherpa-tabs.ts) · [.html](../../src/components/sherpa-tabs/sherpa-tabs.html) · [.css](../../src/components/sherpa-tabs/sherpa-tabs.css) · [.component.json](../../src/components/sherpa-tabs/sherpa-tabs.component.json) · [.example.json](../../src/components/sherpa-tabs/sherpa-tabs.example.json) |
 
+## When to use it
+
+To switch between panels in one place on the page: each child with a `data-tab` id is a panel, and `data-current-id` picks the one shown. To go to another Context, write a real `<a href>`.
+
 ## Example
 
 ```html

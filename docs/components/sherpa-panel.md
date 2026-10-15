@@ -10,6 +10,10 @@ A persistent inline panel (a semantic &lt;section> card).
 | Figma | Panel |
 | Source | [.ts](../../src/components/sherpa-panel/sherpa-panel.ts) · [.html](../../src/components/sherpa-panel/sherpa-panel.html) · [.css](../../src/components/sherpa-panel/sherpa-panel.css) · [.component.json](../../src/components/sherpa-panel/sherpa-panel.component.json) · [.example.json](../../src/components/sherpa-panel/sherpa-panel.example.json) |
 
+## When to use it
+
+For a panel that sits flush between other surfaces in the page flow, as a `<section>` with a heading, a body and a footer. For a standalone card, use `sherpa-container`; for one that floats over the page, use `sherpa-overlay-panel`.
+
 ## Example
 
 ```html

@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-container-header data-heading=\"Overview\" data-description=\"This quarter\" data-collapsible data-dismissible>",
     "</sherpa-container-header>"
-  ]
+  ],
+  "use": "For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, actions, and optional collapse, close and drag buttons that fire events. `sherpa-dialog` and `sherpa-panel` draw their own from `data-heading`; for a card that opens and shuts by itself, use `sherpa-accordion`."
 }

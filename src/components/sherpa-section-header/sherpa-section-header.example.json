@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-section-header data-heading=\"Details\">",
     "<span slot=\"description\">How you appear to your team.</span></sherpa-section-header>"
-  ]
+  ],
+  "use": "For a heading row above a section of a page, with a description and actions. On a Settings page one goes before each set of settings, and a Jump to chip (`sherpa-quick-filter data-type=\"jump\"`) scrolls to it by its `id`; for the header of a card, use `sherpa-container-header`."
 }

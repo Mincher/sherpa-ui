@@ -4,5 +4,6 @@
     "</sherpa-container-header><p>Card body.</p><sherpa-container-footer slot=\"footer\">",
     "<sherpa-button>Cancel</sherpa-button><sherpa-button data-look=\"saturated\">Save</sherpa-button>",
     "</sherpa-container-footer></sherpa-container>"
-  ]
+  ],
+  "use": "For a standalone card with a header, a body and a footer; it shows its data's loading, empty and error states. To lay items out with no box, use `sherpa-stack`."
 }

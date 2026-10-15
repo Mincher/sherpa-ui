@@ -10,6 +10,10 @@ A semantic heading row for a content section.
 | Figma | Section Header |
 | Source | [.ts](../../src/components/sherpa-section-header/sherpa-section-header.ts) · [.html](../../src/components/sherpa-section-header/sherpa-section-header.html) · [.css](../../src/components/sherpa-section-header/sherpa-section-header.css) · [.component.json](../../src/components/sherpa-section-header/sherpa-section-header.component.json) · [.example.json](../../src/components/sherpa-section-header/sherpa-section-header.example.json) |
 
+## When to use it
+
+For a heading row above a section of a page, with a description and actions. On a Settings page one goes before each set of settings, and a Jump to chip (`sherpa-quick-filter data-type="jump"`) scrolls to it by its `id`; for the header of a card, use `sherpa-container-header`.
+
 ## Example
 
 ```html

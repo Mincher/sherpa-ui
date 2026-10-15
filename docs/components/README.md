@@ -2,7 +2,7 @@
 
 # Components
 
-66 components. Each page is written from the component's spec and its example. 19 of 66 say when to use them.
+66 components. Each page is written from the component's spec and its example. 41 of 66 say when to use them.
 
 ## Chart
 

@@ -10,6 +10,10 @@ The header bar for a container's `header` slot.
 | Figma | Container Header |
 | Source | [.ts](../../src/components/sherpa-container-header/sherpa-container-header.ts) · [.html](../../src/components/sherpa-container-header/sherpa-container-header.html) · [.css](../../src/components/sherpa-container-header/sherpa-container-header.css) · [.component.json](../../src/components/sherpa-container-header/sherpa-container-header.component.json) · [.example.json](../../src/components/sherpa-container-header/sherpa-container-header.example.json) |
 
+## When to use it
+
+For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, actions, and optional collapse, close and drag buttons that fire events. `sherpa-dialog` and `sherpa-panel` draw their own from `data-heading`; for a card that opens and shuts by itself, use `sherpa-accordion`.
+
 ## Example
 
 ```html

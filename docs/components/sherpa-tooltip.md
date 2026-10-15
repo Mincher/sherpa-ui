@@ -10,6 +10,10 @@ A hover/focus tooltip wrapping a trigger.
 | Figma | Tooltip (atom) |
 | Source | [.ts](../../src/components/sherpa-tooltip/sherpa-tooltip.ts) · [.html](../../src/components/sherpa-tooltip/sherpa-tooltip.html) · [.css](../../src/components/sherpa-tooltip/sherpa-tooltip.css) · [.component.json](../../src/components/sherpa-tooltip/sherpa-tooltip.component.json) · [.example.json](../../src/components/sherpa-tooltip/sherpa-tooltip.example.json) |
 
+## When to use it
+
+For a short hint on hover or focus, such as on an icon-only button. It does not name its trigger, so an icon-only trigger still needs its own `aria-label`.
+
 ## Example
 
 ```html

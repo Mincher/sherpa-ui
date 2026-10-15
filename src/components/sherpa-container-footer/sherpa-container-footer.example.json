@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-container-footer><sherpa-button>Cancel</sherpa-button>",
     "<sherpa-button data-look=\"saturated\">Save</sherpa-button></sherpa-container-footer>"
-  ]
+  ],
+  "use": "For the action buttons in the `footer` slot of a `sherpa-container`, `sherpa-dialog` or `sherpa-panel`. Mark the save and cancel pair `data-footer=\"commit\"` and `data-footer=\"revert\"`; while the host sets `data-dirty=\"false\"` on the footer, that pair is off."
 }

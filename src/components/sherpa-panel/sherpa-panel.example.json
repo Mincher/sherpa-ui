@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-panel data-heading=\"Overview\"><p>Panel body.</p>",
     "<sherpa-button slot=\"footer\">Apply</sherpa-button></sherpa-panel>"
-  ]
+  ],
+  "use": "For a panel that sits flush between other surfaces in the page flow, as a `<section>` with a heading, a body and a footer. For a standalone card, use `sherpa-container`; for one that floats over the page, use `sherpa-overlay-panel`."
 }

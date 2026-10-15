@@ -10,6 +10,10 @@ A two-pane shuttle (available ↔ selected). Pool comes from populate([{ value, 
 | Figma | Transfer List |
 | Source | [.ts](../../src/components/sherpa-transfer-list/sherpa-transfer-list.ts) · [.html](../../src/components/sherpa-transfer-list/sherpa-transfer-list.html) · [.css](../../src/components/sherpa-transfer-list/sherpa-transfer-list.css) · [.component.json](../../src/components/sherpa-transfer-list/sherpa-transfer-list.component.json) · [.example.json](../../src/components/sherpa-transfer-list/sherpa-transfer-list.example.json) |
 
+## When to use it
+
+To pick a set of items from a pool by moving them between two panes, such as which columns to show. It submits the values in its selected pane under its `name` in a form.
+
 ## Example
 
 ```html

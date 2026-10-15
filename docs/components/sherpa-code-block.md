@@ -10,6 +10,10 @@ A monospace code display with a copy button.
 | Figma | Code Block |
 | Source | [.ts](../../src/components/sherpa-code-block/sherpa-code-block.ts) · [.html](../../src/components/sherpa-code-block/sherpa-code-block.html) · [.css](../../src/components/sherpa-code-block/sherpa-code-block.css) · [.component.json](../../src/components/sherpa-code-block/sherpa-code-block.component.json) · [.example.json](../../src/components/sherpa-code-block/sherpa-code-block.example.json) |
 
+## When to use it
+
+To show a block of code exactly as written, with a copy button and optional line numbers (`data-line-numbers`). It does no syntax highlighting.
+
 ## Example
 
 ```html

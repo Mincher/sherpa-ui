@@ -11,6 +11,10 @@ A NON-modal floating panel on native &lt;dialog>. show(), not showModal(): no ba
 | Figma | Overlay Panel |
 | Source | [.ts](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts) · [.html](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.html) · [.css](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.css) · [.component.json](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.component.json) · [.example.json](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.example.json) |
 
+## When to use it
+
+For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. For a fixed panel beside the Context, use a `sherpa-app-shell` panel area; for a task that blocks the page, use `sherpa-dialog`.
+
 ## Example
 
 ```html

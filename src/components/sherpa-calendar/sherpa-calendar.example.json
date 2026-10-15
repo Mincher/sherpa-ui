@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-calendar value=\"2026-08-13\"></sherpa-calendar>"
+  "html": "<sherpa-calendar value=\"2026-08-13\"></sherpa-calendar>",
+  "use": "To pick a day, a day and a time, or a start-to-end range from a month grid; `min`, `max` and `data-available` limit the days a reader can pick. It submits its day, or a range's two ends, in a form."
 }

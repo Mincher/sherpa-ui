@@ -10,6 +10,10 @@ A run of controls in one direction, with a token gap. A layout surface: no chrom
 | Figma | Stack |
 | Source | [.ts](../../src/components/sherpa-stack/sherpa-stack.ts) · [.html](../../src/components/sherpa-stack/sherpa-stack.html) · [.css](../../src/components/sherpa-stack/sherpa-stack.css) · [.component.json](../../src/components/sherpa-stack/sherpa-stack.component.json) · [.example.json](../../src/components/sherpa-stack/sherpa-stack.example.json) |
 
+## When to use it
+
+To lay items out in a column or a row with a token gap, with no box, fill, border or padding. For a bordered box, use `sherpa-container`; for a two-zone action strip, use `sherpa-toolbar`.
+
 ## Example
 
 ```html
