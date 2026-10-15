@@ -8,7 +8,7 @@
  * - BindOptions — What a component may do with the source it is bound to.
  * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
  * - SteeringEvent — One of them.
- * - SteerBind — What steering needs of one binding: its scope, and what its bar answered last.
+ * - SteerBind — What steering needs of one binding: its scope.
  * - steer — Turn one component's event into its source's call.
  */
 import { report } from '../data/report.js';
@@ -175,13 +175,9 @@ const STEERING_EVENTS = [
 /** One of them. */
 export type SteeringEvent = (typeof STEERING_EVENTS)[number];
 
-/** What steering needs of one binding: its scope, and what its bar answered last. */
+/** What steering needs of one binding: its scope. */
 export interface SteerBind {
   scope?: string | readonly string[];
-  /** The fields an unscoped bar answered last, so a field it drops is cleared. */
-  answered?: Set<string>;
-  /** Its saved filters' part keys, so one switched off takes its part with it. */
-  saved?: Set<string>;
 }
 
 /** Which scope a Group or Sort came from: the event's, else its one bound scope. TODO 99 */
@@ -220,31 +216,14 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
         return;
       }
       const readings = (detail['readings'] as Record<string, FieldReading> | undefined) ?? pickedReadings(detail['values']);
-      /* A REPORT IS THE WHOLE ANSWER. A field this control answered before
-         and does not name now is a field it has stopped filtering by, so it
-         is cleared — its OWN fields only, never another control's.
-         TRAP T-a-filter-report-is-the-whole-answer */
       /* A SCOPED bar answers in the Query: its saved filters are presets, on
          or off, and their readings go to the library. TRAP T-one-query-one-owner */
       if (typeof bind?.scope === 'string') {
         source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets });
         return;
       }
-      for (const field of bind?.answered ?? []) {
-        if (!(field in readings)) source.select(field, []);
-      }
-      if (bind) bind.answered = new Set(Object.keys(readings));
-      source.apply(readings);
-      /* SAVED FILTERS: one named part each, over any fields — and one switched
-         off or taken away takes its part with it.
-         TRAP T-a-saved-filter-is-its-readings */
-      const saved = Object.fromEntries(Object.entries(presets).filter(([, p]) => p.on).map(([id, p]) => [id, p.readings]));
-      const parts = new Set(Object.keys(saved).map((id) => `saved:${id}`));
-      for (const key of bind?.saved ?? []) if (!parts.has(key)) source.contribute(key, undefined);
-      for (const [id, given] of Object.entries(saved)) {
-        source.apply(given, { reach: 'component', key: `saved:${id}` });
-      }
-      if (bind) bind.saved = parts;
+      // An unscoped bar's report is its whole answer, saved filters too.
+      source.answerUnscoped(el, readings, presets);
       return;
     }
     case 'filter-add':

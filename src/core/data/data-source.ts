@@ -95,6 +95,7 @@
  * - .boundElements — Every component currently bound.
  * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
  * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
+ * - .answerUnscoped — An unscoped bar's whole answer: dropped fields cleared, each saved filter on as its own part.
  * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
@@ -2063,6 +2064,25 @@ export class DataSource extends EventTarget {
     // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
     this.commit();
     if (fresh) this.#binding.drawBars(scope);
+  }
+
+  /** An UNSCOPED bar's whole answer: a field it answered before and names no longer
+   *  is cleared (its own only), and each saved filter it has on is one part of its own.
+   *  TRAP T-a-filter-report-is-the-whole-answer · TRAP T-a-saved-filter-is-its-readings */
+  answerUnscoped(
+    by: BoundControl,
+    readings: Readonly<Record<string, FieldReading>>,
+    presets: Readonly<Record<string, { on: boolean; readings: Record<string, FieldReading> }>> = {},
+  ): void {
+    const bind = this.#binding.get(by);
+    for (const field of bind?.answered ?? []) if (!(field in readings)) this.select(field, []);
+    if (bind) bind.answered = new Set(Object.keys(readings));
+    this.apply(readings);
+    const on = Object.entries(presets).filter(([, p]) => p.on);
+    const parts = new Set(on.map(([id]) => `saved:${id}`));
+    for (const key of bind?.saved ?? []) if (!parts.has(key)) this.contribute(key, undefined);
+    for (const [id, p] of on) this.apply(p.readings, { reach: 'component', key: `saved:${id}` });
+    if (bind) bind.saved = parts;
   }
 
   /** Move fields into a scope — sent DOWN from the View to the one scope

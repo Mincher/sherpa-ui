@@ -11434,7 +11434,6 @@ longer the grid bar's to clear, and the bar's next report cannot wipe it.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
-- Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-a-group-is-a-data-layer-concept
@@ -14024,7 +14023,7 @@ reads it back into readings. One stored before 197 is not read (Will, D4).
 `advanced`. The bar's report names each in `presets`, on or off, by chip id,
 and a bound source applies each ON one with `apply(readings, { reach: 'component', key:
 'saved:<id>' })` — so two saved filters AND, one over two fields is one part,
-and one switched off takes its part with it (`bind.saved`).
+and one switched off takes its part with it (the source's bind keeps the keys: `answerUnscoped`).
 
 **The chip draws it.** An `advanced` chip with no FILTER menu holds a given answer
 (`#given()`), so it reads as `data-condition="advanced"` and wears `fx` from
@@ -14042,7 +14041,6 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
-- Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/ui/filter-def.ts`
 
 ### T-saved-filters-are-every-scope
