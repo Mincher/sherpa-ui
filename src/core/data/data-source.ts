@@ -98,7 +98,7 @@ import {
 import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
-  answerOf, compile, eachScope, emptyScope, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
+  answerOf, compile, eachScope, emptyScope, filterKey, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
   sameReading, VIEW, withoutDropped,
   type CompileFacts, type Query, type QueryDefaults, type ScopeQuery, type ViewScope,
 } from './query.js';
@@ -121,17 +121,6 @@ export type {
 
 /** How a definition arranges the rows — only what it names. */
 type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string; scope?: string };
-
-/** A filter as one string, its AND and OR children in one order: the same filter
- *  always reads the same. */
-function canonical(filter: Filter | undefined): string {
-  const walk = (f: Filter): unknown => (Array.isArray(f) && (f[0] === 'and' || f[0] === 'or')
-    ? [f[0], ...(f.slice(1) as Filter[]).map((c) => JSON.stringify(walk(c))).sort()]
-    : f);
-  return filter ? JSON.stringify(walk(filter)) : '';
-}
-
-
 
 /** Steps a number slider may take. */
 const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
@@ -334,7 +323,7 @@ export class DataSource extends EventTarget {
     const facts = this.#compileFacts();
     const filters = (q: Query): string => {
       const { filter, only } = compile(q, facts);
-      return JSON.stringify([canonical(filter), Object.entries(only).map(([el, f]) => [el, canonical(f)]).sort()]);
+      return JSON.stringify([filterKey(filter), Object.entries(only).map(([el, f]) => [el, filterKey(f)]).sort()]);
     };
     const at = second?.query ?? first.query;
     if (filters(at) !== filters(this.#applied)) return false;

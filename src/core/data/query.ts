@@ -26,6 +26,7 @@
  * - answerOf — The ANSWER keys of a reading only, not its label or the values it offers.
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
  * - sameReading — Do two readings give the same answer? Only the answer keys count.
+ * - filterKey — A filter as one string, its AND and OR children in one order.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
@@ -189,6 +190,15 @@ export function readingAnswered(reading: FieldReading): boolean {
 /** Do two readings give the same answer? Only the answer keys count. */
 export function sameReading(a: FieldReading | null | undefined, b: FieldReading | null | undefined): boolean {
   return JSON.stringify(a ? answerOf(a) : null) === JSON.stringify(b ? answerOf(b) : null);
+}
+
+/** A filter as one string, its AND and OR children in one order: the same filter
+ *  always reads the same. */
+export function filterKey(filter: Filter | undefined): string {
+  const walk = (f: Filter): unknown => (Array.isArray(f) && (f[0] === 'and' || f[0] === 'or')
+    ? [f[0], ...(f.slice(1) as Filter[]).map((c) => JSON.stringify(walk(c))).sort()]
+    : f);
+  return filter ? JSON.stringify(walk(filter)) : '';
 }
 
 /**

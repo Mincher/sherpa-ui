@@ -85,7 +85,7 @@ export function filtersOf(view: QueryDefaults): QueryDefaults {
  *  names? Only what FILTERS counts: each field's condition and the saved
  *  filters on — not a chip held empty. */
 export function sameFilters(saved: QueryDefaults, now: QueryDefaults): boolean {
-  const meaning = (scope: Partial<ViewScope> | undefined): string => canonical({
+  const meaning = (scope: Partial<ViewScope> | undefined): string => sortedJson({
     where: scope?.where ?? {},
     on: Object.entries(scope?.presets ?? {}).filter(([, on]) => on).map(([id]) => id).sort(),
   });
@@ -93,7 +93,7 @@ export function sameFilters(saved: QueryDefaults, now: QueryDefaults): boolean {
 }
 
 /** JSON with every object's keys in order, so two equal answers read the same. */
-function canonical(value: unknown): string {
+function sortedJson(value: unknown): string {
   const walk = (v: unknown): unknown => (Array.isArray(v) ? v.map(walk)
     : isPlainObject(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, walk(v[k])])) : v);
   return JSON.stringify(walk(value));
