@@ -18,8 +18,7 @@ import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
-import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
-import { bandEdges } from '../../core/data/threshold.js';
+import { summariseBanded, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import {
@@ -35,6 +34,7 @@ import type { SavedSet } from '../../core/ui/filters-button.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataChangeDetail, DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
+import { mergeSet } from '../../core/data/query-edits.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
@@ -533,15 +533,7 @@ export class SherpaProvider extends SherpaElement {
     if (!opened || !set) return false;
     this.#flush?.();
     const before = this.#savedSet ? this.#savedSet.before : opened.source.query.applied;
-    const now = opened.source.query.applied;
-    /* Each scope it names, as saved; the rest as they are. A set that names no
-       chips keeps the scope's own, and holds the fields it answers. */
-    const scopes: Record<string, unknown> = { ...now.scopes };
-    for (const [id, scope] of Object.entries(structuredClone(set.query.scopes))) {
-      const named = Object.keys(scope.where ?? {});
-      scopes[id] = { ...scope, holds: scope.holds ?? [...new Set([...(now.scopes[id]?.holds ?? []), ...named])] };
-    }
-    await opened.source.setQuery({ v: 1, scopes: scopes as QueryDefaults['scopes'] });
+    await opened.source.setQuery(mergeSet(opened.source.query.applied, set.query));
     this.#putOn({ id, label: set.label, query: set.query, before });
     return true;
   }
@@ -785,8 +777,7 @@ export class SherpaProvider extends SherpaElement {
         else for (const c of cards(false)) c.removeAttribute('data-loading');
       }, { signal });
       source.addEventListener('change', (event) => {
-        const { total, state: { filter, search } } = (event as CustomEvent<DataChangeDetail>).detail;
-        const state = total > 0 ? null : filter || search ? 'no-matches' : 'empty';
+        const state = (event as CustomEvent<DataChangeDetail>).detail.emptiness ?? null;
         for (const c of cards(false)) if (c.dataset['state'] === 'error') delete c.dataset['state'];
         for (const c of cards(true)) {
           if (state) c.dataset['state'] = state;
@@ -1049,7 +1040,7 @@ export class SherpaProvider extends SherpaElement {
       ...(scope ? { scope } : {}),
       ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
-      ...(spec ? { readonly: true, as: (rows, src) => this.#summary(rows, spec, asks, src) } : {}),
+      ...(spec ? { readonly: true, as: (rows, src) => summariseBanded(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f)) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'
@@ -1128,19 +1119,6 @@ export class SherpaProvider extends SherpaElement {
     return null;
   }
 
-  /** A summary, with its field's BANDS where it has them: a histogram cut at
-   *  them, a gauge's zones drawn from them. TRAP T-a-threshold-is-a-fact-of-the-field */
-  #summary(rows: Parameters<typeof summarise>[0], spec: SummarySpec, asks: DataAsk, src: DataSource): unknown {
-    const segment = spec.segment ? src.fieldFacts(spec.segment) : {};
-    const cut = spec.shape === 'segments' && !spec.bands && segment.thresholds?.length && segment.min != null
-      ? { ...spec, bands: bandEdges(segment.thresholds, segment.min), bandLabels: segment.thresholds.map((t) => t.label) }
-      : spec;
-    const value = summarise(rows, cut, (f) => src.valuesFor(f));
-    const zones = asks.thresholds && spec.field ? src.fieldFacts(spec.field).thresholds : undefined;
-    if (!zones?.length) return value;
-    return { ...(typeof value === 'number' ? { value } : value), zones };
-  }
-
   /** The summary a component declared, as JSON — or none, and it waits. */
   #spec(el: Element, asks: DataAsk): SummarySpec | undefined {
     const spec: Record<string, unknown> = { shape: asks.shape };
@@ -1160,6 +1138,8 @@ export class SherpaProvider extends SherpaElement {
     // "0,20,40" — a histogram's edges, as numbers.
     if (typeof spec['bands'] === 'string') spec['bands'] = spec['bands'].split(',').map(Number);
     if (asks.keepEmpty) spec['keepEmpty'] = true;
+    // Its field's bands come with its value. TRAP T-a-threshold-is-a-fact-of-the-field
+    if (asks.thresholds) spec['zones'] = true;
     return spec as unknown as SummarySpec;
   }
 

@@ -23,9 +23,13 @@
  * - SummarySpec — What a component asks to see of its rows: its attributes, as JSON.
  * - Summary — What `summarise` hands a component, by the shape it asked for.
  * - summarise — Rows into the shape a component declared — one door for every chart and tile.
+ * - BandFacts — A field's bands, as a summary reads them: its thresholds, and the bottom of its scale.
+ * - Zoned — A summary with its value field's bands beside it: a gauge's zones.
+ * - summariseBanded — Rows into the declared shape, with the fields' bands: a segments cut, and zones.
  */
 import { readField, groupRows, valueKey, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
+import { bandEdges, type Threshold } from './threshold.js';
 
 /* ── Reducers ──────────────────────────────────────────────────────────── */
 
@@ -246,6 +250,8 @@ export interface SummarySpec {
   /** Keep every declared category, at zero — a legend.
    *  TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
   keepEmpty?: boolean;
+  /** Hand its value field's thresholds beside it as zones: a gauge. */
+  zones?: boolean;
 }
 
 /** What `summarise` hands a component, by the shape it asked for. */
@@ -336,5 +342,29 @@ export function summarise(
     series: order.filter((name) => spec.keepEmpty || groups.has(name)).map((name) =>
       seriesBy(groups.get(name) ?? [], at, points, name, { ...opts, colorIndex: order.indexOf(name) + 1 })),
   };
+}
+
+/** A field's bands, as a summary reads them: its thresholds, and the bottom of its scale. */
+export type BandFacts = (field: string) => { thresholds?: readonly Threshold[]; min?: number };
+
+/** A summary with its value field's bands beside it: a gauge's zones. */
+export type Zoned = Record<string, unknown> & { zones: readonly Threshold[] };
+
+/** Rows into the declared shape, with the fields' BANDS: a segments summary cut
+ *  at its field's thresholds, and zones beside a value. TRAP T-a-threshold-is-a-fact-of-the-field */
+export function summariseBanded(
+  rows: readonly Row[],
+  spec: SummarySpec,
+  domain: (field: string) => readonly unknown[] = () => [],
+  bands: BandFacts = () => ({}),
+): Summary | Zoned {
+  const segment = spec.segment ? bands(spec.segment) : {};
+  const cut = spec.shape === 'segments' && !spec.bands && segment.thresholds?.length && segment.min != null
+    ? { ...spec, bands: bandEdges(segment.thresholds, segment.min), bandLabels: segment.thresholds.map((t) => t.label) }
+    : spec;
+  const value = summarise(rows, cut, domain);
+  const zones = spec.zones && spec.field ? bands(spec.field).thresholds : undefined;
+  if (!zones?.length) return value;
+  return { ...(typeof value === 'number' ? { value } : value), zones };
 }
 

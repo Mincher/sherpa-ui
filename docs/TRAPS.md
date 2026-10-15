@@ -1337,6 +1337,7 @@ failure would have no banner.
 - Site: `test/e2e/reforged-container.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/field-catalogue.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-the-nav-is-a-menu-on-a-phone
 
@@ -1985,6 +1986,7 @@ condition when a filter names it, and a cut when a chart asks.
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/e2e/reforged-gauge-chart.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/aggregate.ts`
 
 ### T-a-relative-date-stays-relative
 
@@ -14082,6 +14084,7 @@ A page's own presets stay preset chips, applied one at a time.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-saved-filters-are-the-last-section
 

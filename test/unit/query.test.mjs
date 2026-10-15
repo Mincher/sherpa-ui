@@ -464,3 +464,15 @@ test('answered: a reading that filters, a saved filter on, or the rows arranged'
   src.setState({ sort: [{ field: 'region', dir: 'asc' }] });
   assert.equal(src.answered(VIEW), true, 'a Reset clears the arrangement too');
 });
+
+test('a saved filter set keeps a scope it does not name, and holds what it answers', async () => {
+  const { mergeSet } = await import(new URL('../../dist/core/data/query-edits.js', import.meta.url));
+  const now = { v: 1, scopes: { [VIEW]: { holds: ['region'], readings: {} }, grid: { holds: ['status'], readings: {} } } };
+  const merged = mergeSet(now, { v: 1, scopes: { grid: { where: { owner: 'Dana Whitlock' } } } });
+  assert.deepEqual(merged.scopes[VIEW], now.scopes[VIEW]);
+  assert.deepEqual(merged.scopes.grid.holds, ['status', 'owner']);
+  assert.deepEqual(merged.scopes.grid.where, { owner: 'Dana Whitlock' });
+  // A set that says its holds keeps them as it says.
+  assert.deepEqual(mergeSet(now, { v: 1, scopes: { grid: { holds: ['plan'] } } }).scopes.grid.holds, ['plan']);
+});
+

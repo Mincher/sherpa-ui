@@ -1630,9 +1630,11 @@ export class DataSource extends EventTarget {
       }
 
       this.#binding.publish();
+      // Empty, or no matches: the data layer says which. TRAP T-a-container-shows-its-datas-state
+      const emptiness = result.total > 0 ? undefined : this.#filter || this.#state.search ? 'no-matches' : 'empty';
       this.dispatchEvent(
         new CustomEvent<DataChangeDetail>('change', {
-          detail: { ...result, state: this.state },
+          detail: { ...result, state: this.state, ...(emptiness ? { emptiness } : {}) },
         }),
       );
       void this.#drawResults();

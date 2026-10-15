@@ -23,6 +23,7 @@
  * - viewHeldReadings — Each field the View holds, with its answer unless suspended.
  * - DefinitionFacts — What turning a definition into a Query needs from its source.
  * - definitionOf — A definition as a whole Query, and how it arranges the rows.
+ * - mergeSet — A saved filter set over the Query on screen: the scopes it names take its filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
  * - answersOf — A scope's answers and its saved filters, as one comparable value.
  */
@@ -243,6 +244,18 @@ export function definitionOf(
     }
   }
   return { query: next, arrange };
+}
+
+/** A saved filter SET over the Query on screen: each scope it names takes its
+ *  filters, and keeps what it held plus what it answers unless the set says its
+ *  holds; the rest stay as they are. TRAP T-saved-filters-are-every-scope */
+export function mergeSet(now: Query, set: QueryDefaults): QueryDefaults {
+  const scopes: QueryDefaults['scopes'] = { ...now.scopes };
+  for (const [id, scope] of Object.entries(structuredClone(set.scopes))) {
+    const named = Object.keys(scope.where ?? {});
+    scopes[id] = { ...scope, holds: scope.holds ?? [...new Set([...(now.scopes[id]?.holds ?? []), ...named])] };
+  }
+  return { v: 1, scopes };
 }
 
 /** One field's answer in one copy of the Query, wherever it lives, or null. */

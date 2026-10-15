@@ -270,4 +270,6 @@ export interface BoundControl {
 /** What `change` carries, for a listener that wants the result without asking. */
 export interface DataChangeDetail extends LoadResult {
   state: ViewState;
+  /** No row came back, and why: the data holds none, or the question matched none. Absent while rows came. */
+  emptiness?: 'empty' | 'no-matches';
 }
