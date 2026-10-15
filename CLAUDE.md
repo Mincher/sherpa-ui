@@ -31,7 +31,7 @@ made that necessary.
 | [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways. By area: [docs/TRAPS-INDEX.md](docs/TRAPS-INDEX.md) |
 | [docs/APP-GUIDE.md](docs/APP-GUIDE.md) | Building an app on Sherpa, step by step. Served to agents as `sherpa://app-guide` |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | Pointing Sherpa at a backend. Served to agents as `sherpa://data-rules` |
-| [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component from a def. Served as `sherpa://rules` |
+| [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component: the five files, the class, the template, the CSS recipes, Figma. Served as `sherpa://rules` |
 | [docs/components/](docs/components/README.md) | Using one component: its attributes, events, slots, parts and example. Written from its spec |
 
 Active branch is `sherpa-data-layer`. **Never push** — commit freely, pushing is

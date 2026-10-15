@@ -9,8 +9,8 @@
  *
  * THE RULE: a component's geometry properties (gap, padding, radius, stroke-width)
  * MUST bind the token that RESOLVES to their value — never a raw number. Bind the
- * component's own scoped token where one exists (Button::button-space/*,
- * Container::container-space/*); else the Core scale below.
+ * component's own token where one exists (Structure's structure-space/*, or a
+ * component's own projected tokens); else the Display Mode scale below.
  *
  * SAFETY RULES (learned — a naive value-match over-binds ~13×):
  *  - Map by RESOLVED pixel value, not by a name regex (semantic tokens are aliased;

@@ -238,7 +238,7 @@ export function register(server) {
     {
       title: "Validate a Component Def",
       description:
-        "Check a def against the design-system rules it can check (docs/DEF-TO-FIGMA-BUILD-RULES.md): its name and shape; nested components are real ones (Rule 1); every token name is a real token in tokens.css or the component's projected region (Rule 8); a status container's surface and border (Rule 3); owned buttons set a size (Rule 6); text nodes have a content role (Rule 2). Token ROLE and scope are not checked. Returns errors (must fix) + warnings.",
+        "Check a def against the design-system rules it can check (docs/DEF-TO-FIGMA-BUILD-RULES.md): its name and shape; nested components are real ones (Rule 1); every token name is a real token in tokens.css or the component's projected region (Rule 8); owned buttons set a size (Rule 6). Token ROLE and scope are not checked. Returns errors (must fix) + warnings.",
       inputSchema: {
         def: z.string().describe("The component def as a JSON string (the shape loadDef returns from <name>.component.json)"),
       },
@@ -307,7 +307,7 @@ export function register(server) {
       try {
         const token = tokenForValue(property, value);
         if (token) {
-          return ok(`\`${property} = ${value}\` → bind **\`${token}\`** (the Core token that resolves to ${value}px).\nPrefer the component's own scoped token if one exists (e.g. Button::button-space/*, Container::container-space/*).`);
+          return ok(`\`${property} = ${value}\` → bind **\`${token}\`** (the Display Mode scale token that resolves to ${value}px).\nPrefer Structure's \`structure-space/*\`, or a component's own projected tokens, where one fits.`);
         }
         return ok(`\`${property} = ${value}\` → **no token**. Either the property isn't geometry-scoped, or ${value}px is off-scale (a scale gap or intentional — leave it raw; not a violation).`);
       } catch (e) {

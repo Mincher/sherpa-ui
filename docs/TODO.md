@@ -6661,6 +6661,14 @@ part; a second checked each plan against the files.
   example in 18 was false (it is the switch that keeps `change`). LEXICON points
   at PRINCIPLES 15; a TRAPS line named the wrong motion sheet. CLAUDE.md is not
   cut yet.
+- **✅ Part B step 2, 2026-10-15:** the rules doc (`sherpa://rules`) is today's
+  build rules: reuse, the five files, the class, the template, the CSS recipes,
+  events, what the generator reads, Figma, and the checks — 208 → 199 lines,
+  pointing at PRINCIPLES by number. Rules 3 and 4 are retired; the disabled and
+  focus recipes no longer read Theme (a new component's Theme baseline is 0). Its
+  Figma names are as exported 2026-09-09, not read live. Five MCP strings that
+  named collections no longer in the export (`Button::`, `Container::`, "Core",
+  "Typography") now say Structure, Display Mode and Theme.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.

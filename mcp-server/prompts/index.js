@@ -65,12 +65,12 @@ export function register(server) {
 3. **Author.** Fill every TODO: anatomy (node tree + figma hints), props (data-* + shared vocabulary, one \`kind\` each), slots (with \`accepts\`), events (unprefixed noun-verb + trigger + default), and the \`tokens\` map (aliases without the --sherpa- prefix; status colours as { override, fallback }). Use \`find_token\` to find a token name that really exists, and \`token_for(property, value)\` for any geometry value.
 4. **Validate — loop until clean.** Call \`validate_def(def)\`. Fix every error (warnings too, where sensible). Re-run until it passes. Watch for: every token name must be a real token in tokens.css (Rule 8); a colour binds the Style tier (\`style-*\`), so a status pin re-points it.
 5. **Compile.** Call \`compile_def(def)\` → TS/HTML/CSS. Write the three files to \`src/components/${name}/\`, then hand-finish the CSS (hex fallbacks, edge-case rules, transitions).
-6. **Figma (optional).** To build the Figma component, invoke the \`build-figma-component\` skill — it binds Typography vars on text, keeps buttons on the Button size collection, and verifies icon swaps.
+6. **Figma (optional).** To build the Figma component, invoke the \`build-figma-component\` skill — it binds Typography vars on text, keeps buttons on the Structure size mode, and verifies icon swaps.
 7. **Audit.** Call \`audit_component("${name}")\` and \`check_bindings("${name}")\` to confirm the bindings.
 
 ## Rules to honour (read \`sherpa://rules\` for the full set)
 - data-* public API; reuse the shared vocabulary; native attrs stay bare.
-- Every text node binds all six Typography vars + a content colour (Rule 2).
+- Every text node binds all six Theme content vars + a content colour (Rule 2).
 - Every geometry property binds the token that resolves to its value (Rule 8); skip off-scale values.
 - Events: bubbles + composed, unprefixed noun-verb, each on its own line in the HTML \`Fires:\` block. The contract reads the events the TS really dispatches; an @fires JSDoc tag does nothing.
 

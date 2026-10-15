@@ -1,208 +1,199 @@
-# def → Figma Build Rules (lessons from the proofs)
+# Build rules: one sherpa-* component
 
-> Hard rules for building a component in Figma from a def. Each was learned from a
-> real defect in the alert-card / pill-counter proofs. The build-figma skill's
-> gates catch *structural* faults; these catch *design-system* faults.
-
----
-
-## Rule 1 — Reuse the existing component; never invent a primitive
-
-Before building a sub-part, **search the Figma file for a component that already does
-it**. The alert-card wrongly used a Tag for a count and a Tag for a status dot — when
-**Badge** already exists with exactly `Type=count` and `Type=dot`.
-
-- A count indicator → **Badge `Type=count`** (not a Tag with a number).
-- A status dot → **Badge `Type=dot`** (not a collapsed Tag).
-- A dismiss → an icon **Button** (already the shared pattern).
-
-Checklist: for every leaf role (count, dot, avatar, chip, dismiss, field…), grep the
-component list first. Inventing a look-alike from a different component is a defect.
+How to build one component today, in order. Served as `sherpa://rules`. The
+RULES are in `docs/PRINCIPLES.md`, by number; this doc gives the steps and the
+recipes, and states no rule a second time. A check named here runs in a
+sherpa-ui checkout.
 
 ---
 
-## Rule 2 — Text MUST bind variables; never raw font values
+## Rule 1 — reuse
 
-The alert-card set raw `fontSize`/`fontFamily`/`fontWeight` on its text — **zero
-Typography bindings**. **This file has NO local text styles** (`getLocalTextStylesAsync`
-= 0) — text is styled by binding **Typography variables directly**. Every text node
-must bind all six + a fill (the pattern the real Tag/Button use):
+Before you build a part, look for a component that already does it: run the
+MCP's `list_components`, or `npm run map src/components` in a checkout.
 
-```js
-node.setBoundVariable('fontSize',       V('Typography','size'));
-node.setBoundVariable('lineHeight',     V('Typography','line-height'));
-node.setBoundVariable('letterSpacing',  V('Typography','letter-spacing'));
-node.setBoundVariable('paragraphSpacing',V('Typography','paragraph'));
-node.setBoundVariable('fontFamily',     V('Typography','family'));
-node.setBoundVariable('fontWeight',     V('Typography','weight'));
-bindFill(node, V('Style (Sherpa)','content/title/base'), {…});  // per role
+- A count → `sherpa-badge` (Figma "Indicator (atom)", Type=count).
+- A dismiss → an icon `sherpa-button`.
+- A field, a chip, a menu → the real `sherpa-*` element, composed. A look-alike
+  built from another component is a defect.
+
+## The five files
+
+| File | Written by |
+|---|---|
+| `sherpa-<name>.ts` | hand — lifecycle, events, attribute coordination. JS is the last resort |
+| `sherpa-<name>.css` | hand — ALL presentation: variants, states, visibility |
+| `sherpa-<name>.html` | hand — the shadow template, slots, structure |
+| `sherpa-<name>.component.json` | generated: `node scripts/generate-component-spec.mjs <name>`. Never edit it |
+| `sherpa-<name>.example.json` | hand — one example as a page writes it, its data, and when to use it (`T-a-component-ships-its-example`) |
+
+## The class
+
+```ts
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+
+export class SherpaFoo extends SherpaElement {
+  static override css = new URL('./sherpa-foo.css', import.meta.url);
+  static override html = new URL('./sherpa-foo.html', import.meta.url);
+
+  // The public attribute surface, DECLARED. Every key is observed.
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-status': { type: 'enum', kind: 'style', values: ['info', 'success', 'warning', 'critical', 'urgent'] },
+  } as const;
+
+  // Native attributes, and attributes the component handles itself.
+  static override observed = ['disabled'];
+
+  override onRender() { /* once: the shadow DOM is ready */ }
+  override onConnect() { /* each time it is connected, after the first render; pair it with onDisconnect */ }
+  override onDisconnect() { /* stop timers and observers */ }
+  override onChange(name: string) { /* an attribute changed */ }
+}
+define('sherpa-foo', SherpaFoo);
 ```
 
-Size/weight vary by text style via the **Typography mode** (h1…h5, default/emphasised/
-light × sizes) — pin the Typography mode on the text node/frame for the intended style.
-Never literal font numerics. Gate: read back `boundVariables` (fontSize/fontFamily/…)
-and `fills[0].boundVariables` on every TEXT node.
+- `onRender` runs once. Props are written BEFORE it, and `onChange` still fires
+  after.
+- A prop's `kind` matches the spec's: `content` (the base class writes the text
+  into `to`), `style` (CSS selects on it, and it gets no JS branch),
+  `visibility` (presence toggles a CSS rule), `behaviour` (only the component's
+  JS reads it).
+- `PropDef` options: `to`, `all` (every match), `accessor` (a boolean's JS
+  property, `T-a-flag-brings-the-base-methods`), `as` (`'text'`, `'icon'` or
+  `'attr'`, `T-icon-value-takes-two-forms`), `values`, `default`.
+- An attribute more than one component declares is in the shared vocabulary in
+  `sherpa-element.ts` (`T-the-shared-vocabulary-is-declared-once`). Spread it;
+  do not declare it again.
+- A `to` target never holds a `<slot>`. Put the text in a span beside the slot,
+  and let CSS hide it on `:state(has-<slot>)` (`T-slot-guards-only-when-filled`).
+- Keep a write by hand when it is not a plain attribute → text: a selector picked
+  at run time, a text template, or a value from something other than the
+  attribute.
+- A form control sets `static formAssociated = true`; one whose control is
+  inside sets `static delegatesFocus = true`. A component answers a button's
+  `command` through `static commands` (`T-a-button-commands-by-markup`).
+- The build carries each template and sheet inside the JS
+  (`T-the-text-is-in-the-js`); a consumer's own files go through `useTemplate`,
+  and `SherpaElement.reload(tag)` reloads them live (`T-a-templater-owns-the-files`).
+- Reach for the doors on `SherpaElement` before you write the same thing again:
+  PRINCIPLES, "The doors".
 
-### Rule 2a — A ROLE's text style is canonical; reuse it, never re-invent it per variant
+## The template
 
-A **role** (a field's label, its placeholder/value, a description, a helper) has ONE
-canonical text style — a specific Typography mode + a specific content fill. When you add
-a **new variant** of a component (e.g. a "minimal" Input), its label/value/etc. must reuse
-the **same** mode + fill the existing/default variant already uses for that role. A variant
-changes *arrangement* (layout, which parts show, borders), **not** the typography of a role.
+- Wrap the content in `<template id="default">`. Every element the component
+  will ever show is there from the start (PRINCIPLES 17).
+- A repeating item is a prototype, `<template class="…-tpl">`, with no id
+  (`T-cloning-prototypes-have-no-id`). Another template is picked with
+  `get templateId()`.
+- The header comment has three blocks the generator reads: `Public API:`,
+  `Slots:` and `Fires:`, one entry per line. A `Fires:` entry's first sentence is
+  the event's meaning in the spec; the names come from the code.
+- Every slot carries `data-accepts` (PRINCIPLES 12).
 
-Concrete failure (Input minimal variant, 2026-08-16): the minimal field's label was given
-`content/secondary` + no mode pin and its placeholder `content/secondary`, when the field's
-canonical roles are **label → Typography `emphasised/sm` + `content/label/base`** and
-**placeholder/value → Typography `default/base` + `content/tertiary/base`**. Result: the
-same role looked different across two variants of one component.
+## The CSS
 
-How to get it right:
-- **Read the default/existing variant's text node first** and copy its Typography mode +
-  fill for each role. In Figma the fastest correct move is `minimalLabel.fills =
-  defaultLabel.fills` (carries the bound variable byref) + pin the same Typography mode.
-- In **code**, style by role in ONE place (`.label {…}`, `.control {…}`) and let every
-  template/variant inherit it. Do **not** add per-variant `font-size`/`font-weight`/`color`
-  overrides — a variant rule should only touch layout (`flex-direction`, `gap`, `flex`,
-  borders). If you're writing `font-*` or a content `color` inside a `.variant-x .role`
-  selector, stop — you're diverging a role's style.
-- Gate: read back the new variant's per-role fill + Typography mode and assert they EQUAL
-  the default variant's for the same role.
+Visibility is a host attribute that CSS selects (PRINCIPLES 16):
 
-Canonical field-role text styles (Input, reuse everywhere a field appears):
-| role | Typography mode | fill |
-|---|---|---|
-| label | `emphasised/sm` | `content/label/base` |
-| description | `default/sm` | `content/secondary/base` |
-| value / placeholder | `default/base` | `content/tertiary/base` |
-| validation message | `default/sm` | status/critical text |
+```css
+.icon { display: none; }
+:host([data-icon-start]) .icon { display: inline-flex; }
+```
 
----
+- **Disabled:** `:host([disabled]) { cursor: not-allowed; pointer-events: none; }`,
+  and the colour is a pin, `'&[disabled]': inactive`, in
+  `scripts/figma-data/state-pins.yaml`. Then run
+  `node scripts/project-tokens.mjs`. Never `opacity` (PRINCIPLES 3), and never a
+  Theme colour: `lint:css` `theme-colour` counts Theme reads per component
+  against a baseline that may only fall, and a new component's is 0.
+- **Focus:** `box-shadow: var(--sherpa-focus-ring)`, with `outline: none`. Never
+  write its value by hand. The ones that differ on purpose: `sherpa-button`,
+  `sherpa-progress-step-tracker` and the `sherpa-select-card` tick;
+  `sherpa-input-text` and `sherpa-pagination` route it through `--_border-focus`.
+- **Responsive:** `:host { container: sherpa-foo / inline-size; }`, then
+  `@container sherpa-foo (max-width: 200px) { … }` (PRINCIPLES 5).
+- **Colour** binds the Style name Figma binds: `var(--sherpa-style-surface-base)`.
+  `base`, `+1` and `+2` are default, hover and down. A state (on, current, open)
+  is a pin in `state-pins.yaml`, never a colour rule. A pin works at any depth.
+  The `--_status-*` names are the old door (PRINCIPLES 8).
+- **Tokens** read `var(--sherpa-x, <its value>)` (PRINCIPLES 20). The cascade
+  layers, in order: core, display-mode, theme, layout, structure, border, style,
+  elevation, components. Four collections are projected into the component that
+  owns them: `structure` into `sherpa-button.css`, `input` into
+  `sherpa-input-text.css`, `navigation` into `sherpa-nav.css` and
+  `sherpa-nav-item.css`, `switch` into `sherpa-switch.css`.
+- **The grids:** 4px for spacing, 2px for text (`T-the-grid-is-two-grids`).
+  `lint:css` exempts borders, 1px and below, `999px`, and a px inside
+  `var(--token, 12px)`. A drawn glyph opts out with `/* off-grid-ok */`.
+- **Shared sheets** are adopted by every shadow root: `sherpa-base.css`,
+  `sherpa-typography.css`, `sherpa-grouping.css` (`.sherpa-group*`,
+  `.sherpa-border-edges`, `.sherpa-border-corners` — never write the per-edge
+  chain), `sherpa-icon.css`, `sherpa-group-positions.css`,
+  `sherpa-style-modes.css`, `sherpa-anchor.css` (`.chart-tip`, `.sherpa-tip`,
+  `.chart-mark`) and `sherpa-motion.css`. A family sheet is listed first in a
+  component's `static css`: the chart frame, chart axes, chart segments and
+  container regions sheets in `src/core/`.
 
-## Rule 3 — Status containers bind container-* tokens that alias THROUGH status
+## Events
 
-A status-tinted **container** should bind its own `container-surface/*` /
-`container-border/*` tokens and let those resolve to the status colour via the mode
-cascade — **not** bind `status-surface/*` directly. (The real Callout binds
-`status-surface` directly today; that is the *current* state, but the intended model
-is container tokens that alias through status, so the container's own semantics stay
-intact and only the tint changes.) A **control** (button/tag) is the exception — it
-binds `status-*` because status IS its surface.
+- `this.emit(name, detail)` sets `bubbles` and `composed`. Only a component's
+  own events leave it (PRINCIPLES 18).
+- A name is `noun-verb`. A re-dispatched native event keeps its native name.
+- An `@fires` tag does nothing. A `document.dispatchEvent` broadcast is the one
+  case where `bubbles` does not matter.
 
-Rule of thumb: bind the **nearest component-scoped token** (`container-*`, `control-*`),
-which aliases upward through Status — do not reach past it to `status-*` unless the
-component has no scoped token for that property.
+## What the generator reads
 
----
+- Events: what the code emits — `emit()`, `new CustomEvent`, `new Event` — and
+  each `Fires:` entry's meaning (`T-an-event-name-is-not-always-a-literal`,
+  `T-a-constructed-event-is-not-a-dispatched-one`). An event's detail is typed
+  by TypeScript's checker (`T-a-detail-is-typed-by-the-checker`).
+- Props: a bare (non-`data-*`) `Public API:` name must be used in the code
+  (`T-a-bare-name-must-be-used-not-mentioned`). A default is read where the
+  header marks it — `md (default)` — and kept only if it is a value of the type.
+- Anatomy has three forms: `root`, `roots` (two or more sibling roots) and
+  `byTemplate` (templates that are different trees). A composed child is a node
+  whose `el` is a `sherpa-*` tag.
+- `npm run spec:check` has three halves: validate, round-trip and fresh.
+  `node scripts/resync-figma.mjs --check` reports drift from Figma.
 
-## Rule 4 — Content colour must flip with the look tier (the Button bug)
+## Figma
 
-**Confirmed defect in shipped sherpa-button:** a secondary/tertiary Button placed in a
-`Status` context renders **light text on a light surface** — unreadable. Cause: the
-button label binds **`status-content/primary`** directly. Under a status pin that
-token resolves to the on-color (light) ink meant for text *on a saturated fill* — but
-a secondary button has a *light* surface, so the text vanishes.
+Names as exported on 2026-09-09; confirm them in the file before a build.
 
-The label must bind a **control-aware** content token that flips with the Control look
-tier: on a filled (primary) surface → on-color/light ink; on a light (secondary/
-tertiary) surface → dark ink. Binding `status-content/*` straight bypasses that flip.
+- **Rule 2 — text binds variables.** Every text node binds Theme
+  `content/{font, size, line-height, weight, letter-spacing, paragraph-spacing}`
+  and a content fill. Never a raw font value.
+- **Rule 2a — a role's text style is canonical.** A new variant reuses the text
+  style the default variant gives each role (label, value, description); a
+  variant changes arrangement, not a role's type. In CSS, style a role in one
+  place and let every template inherit it.
+- **Rules 3 and 4 are retired.** A colour binds the Style name Figma binds
+  (PRINCIPLES 8).
+- **Rule 5 — verify an icon swap** by its main component's name, not a screenshot.
+- **Rule 6 — a Button keeps its Structure bindings** (`height`, `icon-size`,
+  `structure-space/padding` and `gap`, `structure-font/size` and `line-height`)
+  and is sized by the Structure mode: 2xs, xs, sm, default, lg, xl. Never HUG it,
+  and never give it a raw px.
+- **Rule 7 — a mode pin does not reach a nested instance's own bindings.** Pin
+  the mode on the instance itself, and never resize an instance away from its
+  natural size.
+- **Rule 8 — every property binds the variable that resolves to its value.** The
+  scale is Display Mode's `space/*`, `border/rounding/*` and `border/width/*`.
+  Bind a stroke only where a stroke exists, skip an off-scale value, and never
+  touch an instance's internals. The MCP's `token_for` and `check_bindings`, and
+  `scripts/audit-bindings.mjs`, do it.
+- An override collection is keyed by its parent's mode ids
+  (`T-an-override-collection-is-keyed-by-its-parent`).
 
-**FIXED (Figma side).** Root cause was a **Figma⇄code DIVERGENCE**:
-- **CSS** (`sherpa-button.css`) was already correct — it has NO status handling; each
-  variant sets `--_content` per look tier (secondary → `control-content-default` = dark).
-  A button's label colour is status-INDEPENDENT in code, flipping only by variant.
-- **Figma** had wired the label/icon to `status-content/primary` (status-dependent),
-  which broke under a status pin on a light secondary surface.
+## Check it
 
-Fix: repointed the Button's default-state label + icons from `status-content/primary`
-→ **`control-content/default`**, which resolves correctly per Control mode (light
-on-color on a filled primary; dark on a light secondary/tertiary). Verified: secondary/
-primary/tertiary buttons in a Status=info context all read correctly. Now Figma matches
-the CSS: button label colour flips by look tier, not by status.
+In a checkout: `npm run type-check`, `npm run lint`, `npm run lint:css`,
+`npm run spec:check`, `npm run check:props`, `npm run check:ownership`,
+`npm run check:traps`, `npm run check:map`, `npm run check:size` and
+`npm run test:a11y`. Then `npm run manifest` and `npm run reference`.
 
-**Lesson:** a button's TEXT is not status-tinted — only its SURFACE/BORDER are (and
-only for a filled primary in a status context). Bind control-content, never
-status-content, for control labels. This is a case the two-way sync must reconcile:
-the CSS was the correct source of truth.
+## With the MCP
 
----
-
-## Rule 5 — Icon-swap must target the intended glyph AND be verified
-
-The dismiss button showed a **tick, not a cross**. The instance's default icon is a
-tick; swapping to `cross` must (a) target the correct component (the `cross` set's
-variant, not the set node), and (b) be **read back** to confirm. Screenshot is not
-enough — assert the swapped instance's mainComponent name is `cross`.
-
----
-
-## Rule 6 — A Button ALWAYS binds the Button size variables (size mode must work)
-
-The alert-card's nested action/dismiss buttons were force-set to HUG/auto vertical
-sizing, which **dropped the `height` binding to `Button::button-size/height`**. Once a
-button's height (or padding/gap/icon) is not bound to the Button collection, its **size
-mode (2xs…3xl) can no longer drive it** — pinning `Button = sm` does nothing.
-
-Rule: a Button instance's geometry MUST stay bound to the Button size collection:
-
-| Property | Bind to |
-|---|---|
-| height | `Button::button-size/height` (vertical sizing = FIXED, so the var drives it) |
-| paddingLeft/Right | `Button::button-space/padding` |
-| itemSpacing (gap) | `Button::button-space/gap` |
-| icon width | `Button::button-size/icon` |
-| label fontSize/lineHeight | `Button::button-font/size` / `button-font/line-height` |
-
-Then set the size by **pinning the Button collection mode** (`2xs`/`xs`/`sm`/`md`/`xl`/
-`2xl`/`3xl`) on the instance — the bound vars re-value per mode and the button resizes.
-NEVER HUG a button's height or hard-set a pixel height; that severs the size system.
-Gate: read back `instance.boundVariables.height` points at `Button::button-size/height`
-AND the Button collection is mode-pinned to the intended size.
-
----
-
-## Rule 7 — Mode pins do NOT cascade into nested instances automatically
-
-The status dot Tag didn't tint because a `Status` mode pinned on the **parent** does
-not automatically drive a nested **instance's** own bound variables — the instance
-resolves modes in its own context. To tint a nested instance by status, pin the
-`Status` mode **on the instance** (or use a component whose default already reads the
-inherited mode). Also: do not `resize()` an instance away from its component's natural
-size (the dot was force-sized to 10px, overriding its real dimensions).
-
----
-
-## Rule 8 — EVERY property binds a variable if a relevant one exists
-
-The discipline rule. A component's geometry — gap, padding, radius, stroke-width —
-must **bind the token that resolves to its value**, never a raw number. Component
-definition and creation must be meticulous about this.
-
-Resolution (source of truth: `scripts/audit-bindings.mjs`):
-- Map by **resolved pixel value**, not a name (semantic tokens are aliased —
-  `space/sm` resolves to 12, it isn't literally "12").
-- Prefer the component's **own scoped token** (`Button::button-space/*`,
-  `Container::container-space/*`); else the **Core** scale (`space/*`,
-  `border/rounding/*`, `border/width/*`).
-
-Safety (a naive value-match over-binds ~13×, so these are mandatory):
-- Bind stroke-width **only where a stroke paint actually exists** — never on a
-  strokeless layout frame.
-- **Skip off-scale values** (radius 1, radius 5 have no token — leave them; they
-  are a scale gap or intentional, not a violation).
-- Never touch **instance internals** — they inherit from their main component.
-
-Audit: `scripts/audit-bindings.mjs` holds the value→token maps + `shouldBind()`.
-A full pass over the built components found **297 real violations** (down from a
-naive 4131 of false positives) and bound **245** cleanly (0 errors, 0 visual
-change — the tokens resolve to the same pixels). After the pass: **0 remaining**.
-
----
-
-## The meta-lesson
-
-The pipeline builds **structure** correctly (nodes, variants, nesting, scope-checked
-binds). What it got wrong was **design-system fidelity**: which component to reuse,
-binding text vars, the alias-through-status model, and mode inheritance. These are
-ontology/knowledge concerns — encoded here and in the ontology so the next build is
-right by construction.
+`list_components` → `scaffold_def` → `validate_def` → `compile_def` → finish
+the three files by hand → the spec generator → write `.example.json`.

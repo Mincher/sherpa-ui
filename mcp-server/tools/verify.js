@@ -130,7 +130,7 @@ export function register(server) {
         }
 
         out += `\n### The live rule\n`;
-        out += `\`scripts/audit-bindings.mjs\` holds the value→token maps + \`shouldBind()\`. The full pass walks the built Figma nodes: for every geometry property it maps the RESOLVED pixel value to a Core token (space 12 → space/sm, radius 8 → rounding/lg, …), binds where one exists, and SKIPS off-scale values (radius 1, 5) and strokeless-frame stroke-widths. Never bind instance internals. Run it via the build-figma-component verify gate; this checked the def's token map.`;
+        out += `\`scripts/audit-bindings.mjs\` holds the value→token maps + \`shouldBind()\`. The full pass walks the built Figma nodes: for every geometry property it maps the RESOLVED pixel value to the Display Mode scale (space 12 → space/sm, radius 8 → rounding/lg, …), binds where one exists, and SKIPS off-scale values (radius 1, 5) and strokeless-frame stroke-widths. Never bind instance internals. Run it via the build-figma-component verify gate; this checked the def's token map.`;
 
         return ok(out);
       } catch (e) {
