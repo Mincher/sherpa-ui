@@ -408,6 +408,28 @@ polyfill.
 - Site: `test/unit/a-day-without-temporal.test.mjs`
 - Site: `test/e2e/reforged-a-calendar-without-temporal.spec.ts`
 
+### T-one-tab-stop-per-set
+
+**A set of items — tabs, a chart's marks, a calendar's days — is ONE tab stop,
+and the arrows, Home and End move it** (TODO 284; ARIA's composite widgets).
+`rovingFocus()` in `core/ui/roving-focus.ts` keeps it, so no component writes its
+own roving tabindex.
+
+- Items are FOUND AGAIN at every key and every focus, by a selector: a set that
+  re-draws needs no re-wiring.
+- **A re-stamp removes the focused node, and focus drops to `<body>`.** So
+  `restamp(draw)` reads `activeElement` BEFORE it draws, finds the same item by
+  its key after, and refocuses it with `preventScroll`.
+- Wire it in `onRender`, once per stamp, with no signal: its listeners are on the
+  component's own nodes (`T-abort-controller-per-connect`), and a re-stamp makes
+  a new container.
+- A handled key is `preventDefault`ed, and the helper — and any listener above
+  it — checks `defaultPrevented` first, so an inner set's move is never taken
+  twice. Alt, Ctrl and Meta pass through: Alt+ArrowLeft is the browser's Back.
+- Slotted light-DOM items are not supported.
+
+- Site: `src/core/ui/roving-focus.ts`
+
 ## Events and listeners
 
 ### T-capture-beats-registration-order
