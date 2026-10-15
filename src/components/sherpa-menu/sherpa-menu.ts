@@ -20,7 +20,7 @@ import {
   DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  readingRows, rowAnswered, rowOffer, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
+  readingRows, rowAnswered, rowOffer, ruleOut, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -1347,13 +1347,13 @@ export class SherpaMenu extends SherpaElement {
   #markPresent(): void {
     const given = new Map(this.#items.map((i) => [i.value, i]));
     const hides = this.hasAttribute('data-hide-unavailable');
+    const limit = ruleOut(this.#present, this.#offered);
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
-      const offered = this.#offered === null || this.#offered.has(box.value);
-      const ruled = given.get(box.value)?.available === false
-        || (this.#present !== null && !this.#present.has(box.value));
-      row?.toggleAttribute('data-removed', (!offered || (hides && ruled)) && !box.checked);
-      const out = ruled || !offered;
+      const why = limit(box.value);
+      const ruled = given.get(box.value)?.available === false || why === 'unmatched';
+      row?.toggleAttribute('data-removed', (why === 'unoffered' || (hides && ruled)) && !box.checked);
+      const out = ruled || why === 'unoffered';
       // Only ever undo its OWN refusal.
       if (out) box.disabled = !box.checked;
       else if (row?.hasAttribute('data-unavailable')) box.disabled = false;
