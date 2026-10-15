@@ -9904,6 +9904,7 @@ away and does not say so.
 second trip into condition mode never overwrites real work.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/core/data/filter-state.ts`
 
 ---
 

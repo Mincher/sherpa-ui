@@ -32,6 +32,7 @@
  * - allSetAside — Every pick a chip holds is ruled out: it is set aside.
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
+ * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -278,6 +279,27 @@ export function readingRows(reading: FieldReading): FieldCondition[] {
  *  answer, else none said. TRAP T-both-answers-are-kept */
 export function modeOf(reading: FieldReading, rows: readonly FieldCondition[] = readingRows(reading)): ConditionType | undefined {
   return reading.mode ?? (rows.length ? 'advanced' : undefined);
+}
+
+/** Simple's answer as Advanced's rows, for a mode switch to carry over; undefined
+ *  when a body has nothing to carry. TRAP T-a-mode-switch-carries-the-answer-over */
+export function rowsFromPicks(body: 'number' | 'date' | undefined, simple: FieldReading): FieldCondition[] | undefined {
+  const [a, b] = (simple.picked ?? []).map(String);
+  // A date: one day is On it, two are Between them. TODO 21d
+  if (body === 'date') {
+    if (a != null && b != null) return [{ op: 'between', picked: [a, b] }];
+    return a != null ? [{ op: DEFAULT_OP, picked: [a] }] : undefined;
+  }
+  // A number: one value under its op, or a range as At least AND At most.
+  if (body === 'number') {
+    const typed = (simple.text ?? '').trim();
+    if (simple.range && a != null && b != null) return [{ op: 'gte', text: a }, { op: 'lte', join: 'and', text: b }];
+    if (typed) return [{ op: simple.op ?? DEFAULT_OP, text: typed }];
+    return a != null ? [{ op: simple.op ?? DEFAULT_OP, picked: [a] }] : undefined;
+  }
+  return (simple.picked ?? []).map((value, i) => (
+    i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] } : { op: DEFAULT_OP, picked: [value] }
+  ));
 }
 
 /**

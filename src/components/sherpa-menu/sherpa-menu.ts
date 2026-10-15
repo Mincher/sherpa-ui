@@ -20,7 +20,7 @@ import {
   DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  modeOf, readingRows, rowAnswered, rowOffer, ruleOut, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
+  modeOf, readingRows, rowAnswered, rowOffer, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -383,30 +383,11 @@ export class SherpaMenu extends SherpaElement {
   #seedFromPicks(): void {
     // Rows the reader wrote are theirs. TRAP T-both-answers-are-kept
     if (!this.#mirror && this.conditions.some(rowAnswered)) return;
-    /* A NUMBER carries its body over: one value under its op, or a range as
-       At least AND At most. TRAP T-a-number-has-advanced-rows */
-    // A DATE carries its calendar over: one day is On it, two are Between them. TODO 21d
-    if (this.#dated()) {
-      const [a, b] = (this.#bodyReading().picked ?? []).map(String);
-      if (a != null && b != null) this.conditions = [{ op: 'between', picked: [a, b] }];
-      else if (a != null) this.conditions = [{ op: DEFAULT_OP, picked: [a] }];
-      return;
-    }
-    if (this.#numeric()) {
-      const now = this.#bodyReading();
-      const [a, b] = (now.picked ?? []).map(String);
-      const typed = (now.text ?? '').trim();
-      if (now.range && a != null && b != null) {
-        this.conditions = [{ op: 'gte', text: a }, { op: 'lte', join: 'and', text: b }];
-      } else if (typed) this.conditions = [{ op: now.op ?? DEFAULT_OP, text: typed }];
-      else if (a != null) this.conditions = [{ op: now.op ?? DEFAULT_OP, picked: [a] }];
-      return;
-    }
-    this.conditions = this.values.map((value, i) => (
-      i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] }
-        : { op: DEFAULT_OP, picked: [value] }
-    ));
-    this.#mirror = true;
+    // A number or a date carries its BODY over. TRAP T-a-number-has-advanced-rows
+    const body = this.#dated() ? 'date' : this.#numeric() ? 'number' : undefined;
+    const rows = rowsFromPicks(body, body ? this.#bodyReading() : { picked: this.values });
+    if (rows) this.conditions = rows;
+    if (!body) this.#mirror = true;
   }
 
   /** The rows still copy the picks — until the reader edits a row.
