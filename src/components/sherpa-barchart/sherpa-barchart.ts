@@ -8,7 +8,6 @@
  * - BarDatum — one bar: its label and value
  */
 import type { ChartDatum } from '../../core/data/chart-datum.js';
-import type { ChartScale } from '../../core/data/format-tick.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale } from '../../core/data/format-tick.js';
@@ -60,8 +59,6 @@ export class SherpaBarchart extends SherpaElement {
   #render(): void {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
-    const xAxis = this.$('.x-axis-row');
-    const xTpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     if (!bars || !tpl) return;
 
     const shown = this.#data.map((d, i) => ({ d, i }));
@@ -69,10 +66,11 @@ export class SherpaBarchart extends SherpaElement {
     /* ONE scale rule for every chart. TRAP T-nan-is-the-not-given-sentinel: an
        absent max is derived. TRAP T-one-scale-for-every-chart */
     const explicitMax = this.num('data-max', NaN);
+    const ticks = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
     const scale = chartScale(shown.map(({ d }) => d.value), {
       // `data-ticks` is the PREFERRED band count; the scale may use one either
       // side to land every gridline on a round number.
-      bands: this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }),
+      bands: ticks,
       ...(explicitMax > 0 ? { max: explicitMax } : {}),
     });
 
@@ -83,13 +81,15 @@ export class SherpaBarchart extends SherpaElement {
     this.toggleState('below-zero', scale.min < 0);
     this.style.setProperty('--_zero', `${zero}%`);
 
-    this.#renderYAxis(scale, shown.length);
+    // The value axis, and the gridline bands the CSS draws from it.
+    const steps = renderValueAxis(this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, ticks > 0 && shown.length > 0);
+    this.style.setProperty('--_bands', String(steps));
+    this.toggleState('has-y-axis', steps > 0);
 
     // The zero line is the bars' own child, so it survives the re-stamp.
     const zeroLine = bars.querySelector('.bars-zero');
     bars.replaceChildren();
     if (zeroLine) bars.appendChild(zeroLine);
-    xAxis?.replaceChildren();
     for (const { d, i } of shown) {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       // TRAP T-hiding-a-series-rescales-the-axis — the ORIGINAL index.
@@ -108,23 +108,9 @@ export class SherpaBarchart extends SherpaElement {
       // The tip is hidden until hover, so it names nothing: the bar says it itself.
       col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.chart-tip-value')!.textContent}`);
       bars.appendChild(col);
-
-      // A SIBLING of the plot, so it lands below the baseline.
-      if (xAxis && xTpl) {
-        const label = xTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-        label.textContent = d.label;
-        xAxis.appendChild(label);
-      }
     }
-  }
-
-  /** The value axis, and the gridline bands the CSS draws from it. */
-  #renderYAxis(scale: ChartScale, shownCount: number): void {
-    const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }) > 0 ? scale.bands : 0;
-    this.style.setProperty('--_bands', String(steps));
-    this.toggleState('has-y-axis', renderValueAxis(
-      this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, shownCount > 0 ? steps : 0,
-    ));
+    // A SIBLING of the plot, so it lands below the baseline.
+    this.renderItems('.x-axis-row', 'template.xlabel-tpl', this.#data);
   }
 
   /** A bar was clicked: report which. */

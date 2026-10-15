@@ -4,7 +4,7 @@
  */
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { chartScale, tickPercent, type ChartScale } from '../../core/data/format-tick.js';
+import { chartScale, tickPercent } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
@@ -68,32 +68,35 @@ export class SherpaLineChart extends SherpaElement {
   #render(): void {
     const layer = this.$('.series-layer');
     const grid = this.$('.grid');
-    const xAxis = this.$('.x-axis');
-    const xtpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     const hotspots = this.$('.hotspots');
     const dotTpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
-    if (!layer || !grid || !xAxis || !xtpl) return;
+    if (!layer || !grid) return;
 
     // Bounds come from the series it is given. TRAP T-hiding-a-series-rescales-the-axis
     const all = this.#series.flatMap((s) => s.values);
     /* ONE scale rule for every chart. NaN is the not-given sentinel; Number('')
        would be 0. TRAP T-nan-is-the-not-given-sentinel
        TRAP T-one-scale-for-every-chart */
+    // Value divisions, shared by the axis and the gridlines.
+    const ticks = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
     const scale = chartScale(all, {
       min: this.num('data-min', NaN),
       max: this.num('data-max', NaN),
       // The PREFERRED band count; the scale may use one either side so every
       // gridline is a round number.
-      bands: this.#tickSteps(),
+      bands: ticks,
     });
     const { min, span } = scale;
 
-    this.#renderYAxis(scale);
+    // The value ticks, placed on the same scale as the gridlines.
+    this.toggleState('has-y-axis', renderValueAxis(
+      this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, ticks > 0 && this.#series.length > 0,
+    ) > 0);
 
     // From i=1, inclusive of `bands`, so a line meets the top label.
     // TRAP T-gridlines-run-to-the-top-label
     grid.replaceChildren();
-    const bands = this.#tickSteps() > 0 ? scale.bands : 0;
+    const bands = ticks > 0 ? scale.bands : 0;
     const gridline = this.$<HTMLTemplateElement>('template.gridline-tpl')?.content.querySelector('line');
     for (let i = 1; i <= bands && gridline; i++) {
       const y = String(100 - tickPercent(i, bands));
@@ -147,26 +150,7 @@ export class SherpaLineChart extends SherpaElement {
       }
     });
 
-    xAxis.replaceChildren();
-    for (const label of this.#labels) {
-      const span = xtpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      span.textContent = label;
-      xAxis.appendChild(span);
-    }
-
-  }
-
-  /** Value divisions, shared by the axis and the gridlines. */
-  #tickSteps(): number {
-    return this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
-  }
-
-  /** The value ticks, placed on the same scale as the gridlines. */
-  #renderYAxis(scale: ChartScale): void {
-    const steps = this.#tickSteps() > 0 && this.#series.length ? scale.bands : 0;
-    this.toggleState('has-y-axis', renderValueAxis(
-      this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, steps,
-    ));
+    this.renderItems('.x-axis', 'template.xlabel-tpl', this.#labels.map((label) => ({ label })));
   }
 }
 

@@ -8241,12 +8241,13 @@ sideways as the numbers tick.
 
 The axis PRESENCE is written rather than inferred, for the same reason
 `T-empty-write-lets-css-collapse` exists: an absent `data-ticks` must not mean
-"no axis", and a `data-ticks="0"` must. So `data-has-y-axis` is toggled
-explicitly, and `#tickSteps()` passes `min: 0` rather than testing `>= 0` — a
+"no axis", and a `data-ticks="0"` must. So `:state(has-y-axis)` is written
+from the bands `renderValueAxis` drew, and the `data-ticks` read passes `min: 0`
+rather than testing `>= 0` — a
 NEGATIVE count then clamps to "no ticks" instead of silently falling back to the
 default of 4 (which matches the Figma Chart Axis).
 
-The barchart clears the ticks BEFORE its early return, or a `data-ticks="0"`
+`renderValueAxis` clears the ticks BEFORE its early return, or a `data-ticks="0"`
 would leave the previous scale on screen labelling nothing.
 
 One label per division BOUNDARY — `steps + 1` of them — each placed at the SAME
@@ -8256,9 +8257,8 @@ every 1/bands of the plot: the lines and the labels come off that ONE number.
 
 The line chart's span is `min..max`, NOT `0..max`: its y-scale is derived from
 its own extent, so an axis running from 0 would label gridlines that are not
-where the lines actually sit. Both charts stamp DESCENDING, because the axis is
-inverted relative to the DOM's flow — the highest value is at the TOP of the plot
-but the FIRST child in the column.
+where the lines actually sit. Each tick is placed by its own `--_at`, so the
+DOM's order says nothing about where a label sits.
 
 - Site: `src/core/ui/chart-parts.ts`
 
