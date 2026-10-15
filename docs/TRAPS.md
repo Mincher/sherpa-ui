@@ -4420,6 +4420,7 @@ imports each one itself because it cannot rely on the page having done so:
 | search field | `sherpa-input-text` | the Menu node instances the composed Input Field (atom), not a hand-rolled `<input>` |
 | Apply / Cancel | `sherpa-button` | real buttons, so the menu must register them |
 | the footer | `sherpa-container-footer` | it IS Figma's Container Footer instance, not an action row of the menu's own |
+| number and date bodies | `sherpa-slider`, `sherpa-switch`, `sherpa-calendar` | imported by `menuFor()`, which asks for those bodies — not by the menu, so a text field's options menu does not load a calendar. The panel had none of them, so its number and date filters never drew alone (found 2026-10-15) |
 
 The search is listened to on the COMPONENT, never by reaching into its shadow
 root for the raw `<input>`: `sherpa-input-text` re-dispatches the inner
@@ -4427,6 +4428,7 @@ control's `input`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-cancel-baseline-captured-on-open
 

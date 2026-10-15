@@ -31,7 +31,7 @@ import {
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
-import { readingRows, ruleOut, setAside, type FieldReading } from '../../core/data/filter-state.js';
+import { readingRows, ruleOut, allSetAside, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
@@ -445,7 +445,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const one = this.#answerChip(held);
     if (one) {
       // ONE chip is greyed when every pick is ruled out, as a bar chip is.
-      one.toggleAttribute('data-unavailable', setAside(this.#picked(held), out));
+      one.toggleAttribute('data-unavailable', allSetAside(this.#picked(held), out));
       if (held.menu) Object.assign(held.menu, { present: left, offered });
       return;
     }

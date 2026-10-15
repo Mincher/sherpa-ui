@@ -297,6 +297,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
 | ⬜ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
 | ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
+| ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6440,6 +6441,15 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 306 — BUG: the panel's number and date filters never drew alone
+
+Found by the checker of 282's plan. A number body draws a slider and a Range
+switch, a date body a calendar — but only the bar and the grid imported them,
+so `sherpa-ui/components/filter-panel` alone drew those bodies empty. **✅ Fixed
+2026-10-15:** `menuFor()` — which asks for those bodies — imports the three, and
+the bar's and grid's own copies went. Not the menu: a text field's options menu
+must not load a calendar. `T-menu-composes-real-components`. **Not run yet.**
 
 ### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
 

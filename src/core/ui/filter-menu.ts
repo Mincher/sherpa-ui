@@ -19,6 +19,11 @@ import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
 import type { MenuItem, SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
+// A number body draws a slider and a Range switch, a date body a calendar: whoever
+// asks for one gets its parts. TRAP T-menu-composes-real-components
+import '../../components/sherpa-calendar/sherpa-calendar.js';
+import '../../components/sherpa-slider/sherpa-slider.js';
+import '../../components/sherpa-switch/sherpa-switch.js';
 
 /** One row a menu offers: the menu's own item. */
 export type FilterMenuItem = MenuItem;

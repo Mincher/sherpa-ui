@@ -26,7 +26,7 @@ import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filte
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
 import {
-  readingRows, ruleOut, setAside,
+  readingRows, ruleOut, allSetAside,
   type FieldReading,
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
@@ -34,9 +34,6 @@ import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-calendar/sherpa-calendar.js';
-import '../sherpa-slider/sherpa-slider.js';
-import '../sherpa-switch/sherpa-switch.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 
@@ -575,7 +572,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.offered = offered;
     // Hiding unmatched, a row Limit rules out goes. Will, TODO 205.
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
-    chip.toggleAttribute('data-unavailable', setAside(menu.values ?? [], ruleOut(left, offered)));
+    chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left, offered)));
   }
 
   /**
@@ -711,7 +708,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */
     for (const f of this.#inSets(allow(this.#filters, this.#allowedFields))) {
-      const chip = tpl.content.firstElementChild!.cloneNode(true) as SherpaQuickFilter;
+      // Not upgraded until it is appended. TRAP T-custom-element-upgrade
+      const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
@@ -746,7 +744,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
         // The chip says its own days. TRAP T-a-chip-says-its-own-answer
-        chip.refresh();
+        (chip as SherpaQuickFilter).refresh();
       }
     }
 

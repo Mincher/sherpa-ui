@@ -31,7 +31,7 @@ import {
   DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  clauseConditions, fieldState, readingClause, readingRows, ruleOut, setAside,
+  clauseConditions, fieldState, readingClause, readingRows, ruleOut, allSetAside,
   type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
@@ -53,9 +53,6 @@ import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
-import '../sherpa-switch/sherpa-switch.js';
-import '../sherpa-calendar/sherpa-calendar.js';
-import '../sherpa-slider/sherpa-slider.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 
@@ -559,7 +556,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip || !menu || this.#superseded.has(field)) return;
     const left = this.#present[field] ?? null;
     menu.present = left;
-    chip.toggleAttribute('data-unavailable', setAside(menu.values ?? [], ruleOut(left)));
+    chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left)));
   }
   /** What each field's other answers leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
