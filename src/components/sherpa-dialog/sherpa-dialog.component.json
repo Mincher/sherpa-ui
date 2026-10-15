@@ -171,6 +171,11 @@
       "$type": "capability",
       "api": "js-methods",
       "description": "callable from a view definition's state block (show, hide, close, prompt, confirm). See $extensions.sherpa.methods."
+    },
+    {
+      "$type": "capability",
+      "api": "invoker-commands",
+      "description": "answers a commandfor button's command (--show, --hide). See $extensions.sherpa.commands."
     }
   ],
   "events": [
@@ -222,6 +227,16 @@
           "name": "confirm",
           "args": "ask: { heading?: string; words?: string; action?: string; critical?: boolean } = {}",
           "description": "Ask yes or no. `words` go in its first paragraph and `action` on its LAST footer button, critical when the ACTION is; what is not given stays as the markup wrote it. True for the action, false for anything else."
+        }
+      ],
+      "commands": [
+        {
+          "name": "--show",
+          "method": "show"
+        },
+        {
+          "name": "--hide",
+          "method": "hide"
         }
       ],
       "category": "container",

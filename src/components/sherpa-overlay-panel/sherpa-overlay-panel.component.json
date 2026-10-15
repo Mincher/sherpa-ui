@@ -310,6 +310,11 @@
       "$type": "capability",
       "api": "js-methods",
       "description": "callable from a view definition's state block (show, hide, close). See $extensions.sherpa.methods."
+    },
+    {
+      "$type": "capability",
+      "api": "invoker-commands",
+      "description": "answers a commandfor button's command (--show, --hide). See $extensions.sherpa.commands."
     }
   ],
   "events": [
@@ -382,6 +387,16 @@
           "name": "close",
           "args": "",
           "description": "`hide()`, in the native <dialog>'s spelling."
+        }
+      ],
+      "commands": [
+        {
+          "name": "--show",
+          "method": "show"
+        },
+        {
+          "name": "--hide",
+          "method": "hide"
         }
       ],
       "category": "container",

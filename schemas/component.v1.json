@@ -381,6 +381,19 @@
             }
           }
         },
+        "commands": {
+          "description": "The invoker commands it answers: a `commandfor` button's `command`, and the method it calls.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "method"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^--" },
+              "method": { "type": "string" }
+            }
+          }
+        },
         "behaviour": {
           "description": "The Figma behaviour channel — runtime behaviour Figma can't model structurally.",
           "type": ["array", "string"]

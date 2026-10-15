@@ -6378,8 +6378,9 @@ host; `sherpa-dialog` and `sherpa-overlay-panel` declare `--show` and `--hide`;
 `sherpa-button` carries `commandfor` / `command` onto its inner `<button>` in
 the click. A test opens a dialog and a panel and shuts the dialog from a button
 inside it, with no script, in three engines. CLAUDE.md's CRUD flow and
-APP-GUIDE say so. **Not done:** the spec generator does not list `static
-commands` yet. `T-a-button-commands-by-markup`.
+APP-GUIDE say so. **✅ And the spec, 2026-10-15:** the generator reads `static
+commands` into `$extensions.sherpa.commands`, and the MCP's `component_api`
+lists them. `T-a-button-commands-by-markup`.
 
 ### `[x]` ✅ 298 — Phase 7: sherpa-ui ships no tooling
 

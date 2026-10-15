@@ -36,6 +36,7 @@ function apiOf(name) {
     def: spec,
     methods: ext.methods ?? [],
     jsProps: ext.jsProps ?? [],
+    commands: ext.commands ?? [],
     events: spec.events ?? [],
     props: spec.props ?? [],
   };
@@ -58,7 +59,7 @@ export function register(server) {
         const avail = loadComponentNames().filter((n) => n.startsWith("sherpa-")).sort();
         return ok(`No component "${name}".\n\nAvailable: ${avail.join(", ")}`);
       }
-      const { def, methods, jsProps, events, props } = api;
+      const { def, methods, jsProps, commands, events, props } = api;
 
       const lines = [];
       lines.push(`## ${name} — what a caller can do\n`);
@@ -87,6 +88,13 @@ export function register(server) {
         lines.push("_None recorded._");
       }
       lines.push("");
+
+      if (commands.length) {
+        lines.push(`### Commands (${commands.length})\n`);
+        lines.push("From markup, no script: `<sherpa-button commandfor=\"<id>\" command=\"<name>\">`.\n");
+        for (const c of commands) lines.push(`- \`${c.name}\` — calls \`${c.method}()\``);
+        lines.push("");
+      }
 
       if (def.populate) {
         lines.push("### Its data — `populate()`, or the `data` property\n");

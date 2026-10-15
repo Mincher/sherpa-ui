@@ -251,12 +251,13 @@ const FLAGGED = {
  * paragraph. The class is the one `define()` registers.
  * TRAP T-a-spec-reads-the-class-by-its-parser
  *
- * @returns {{ methods: object[], props: object[] }}
+ * @returns {{ methods: object[], commands: object[], props: object[] }}
  */
 export function parseClassApi(src) {
   const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
   const cls = registeredClass(sf, src);
   const methods = [];
+  const commands = [];
   const props = new Map();
   /* A TYPE as written, or `unknown`: a wrong type in a contract is worse than
      an honest gap. Every property read `string` before. */
@@ -272,6 +273,15 @@ export function parseClassApi(src) {
         const entry = prop(p.name.getText(sf));
         entry.get = entry.set = true;
         entry.type = literalType(ts.isPropertyAssignment(p) ? p.initializer : undefined) ?? entry.type;
+      }
+      continue;
+    }
+    // `static commands`: what a `commandfor` button can ask of it. TRAP T-a-button-commands-by-markup
+    if (ts.isPropertyDeclaration(member) && name === 'commands' && member.initializer
+      && ts.isObjectLiteralExpression(member.initializer)) {
+      for (const p of member.initializer.properties) {
+        if (!ts.isPropertyAssignment(p) || !ts.isStringLiteralLike(p.initializer)) continue;
+        commands.push({ name: p.name.getText(sf).replace(/^['"]|['"]$/g, ''), method: p.initializer.text });
       }
       continue;
     }
@@ -303,6 +313,7 @@ export function parseClassApi(src) {
   }
   return {
     methods,
+    commands,
     props: [...props.values()].map(({ get, set, ...p }) => ({
       ...p, access: get && set ? 'read-write' : get ? 'read' : 'write',
     })),

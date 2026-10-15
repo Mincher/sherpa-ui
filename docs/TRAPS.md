@@ -352,10 +352,12 @@ Safari since 2025. Measured in all three engines (2026-10-14).
   method it calls. `sherpa-dialog` and `sherpa-overlay-panel` declare `--show`
   and `--hide`. The base listens on the host, once, only when a component
   declares any.
-- The spec generator does not read `static commands` yet; the HTML's
-  `Commands:` line says them, and the methods they call are in the spec.
+- The spec lists them: `$extensions.sherpa.commands` (name → method) and an
+  `invoker-commands` capability, read from `static commands` by its parser.
+  The MCP's `component_api` shows them.
 
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `scripts/lib/ts-facts.mjs`
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 - Site: `test/e2e/reforged-a-button-commands-by-markup.spec.ts`
 

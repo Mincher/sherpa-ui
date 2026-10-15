@@ -704,6 +704,7 @@ function generateSpec(name) {
   // ── capabilities + jsProps (best-effort) ──────────────────────────────────────
   const jsProps = ts ? parseTsJsProps(ts) : [];
   const methods = ts ? parseTsMethods(ts) : [];
+  const commands = ts ? parseClassApi(ts).commands : [];
   const capabilities = [];
   if (jsProps.length) {
     capabilities.push({
@@ -720,12 +721,21 @@ function generateSpec(name) {
     });
   }
 
+  if (commands.length) {
+    capabilities.push({
+      $type: 'capability',
+      api: 'invoker-commands',
+      description: `answers a commandfor button's command (${commands.map((c) => c.name).join(', ')}). See $extensions.sherpa.commands.`,
+    });
+  }
+
   // ── $extensions.sherpa ────────────────────────────────────────────────────────
   // Carried verbatim from the prior spec; only methods and jsProps are re-derived.
   const sherpaExt = {};
   if (priorExt.figmaName) sherpaExt.figmaName = priorExt.figmaName;
   // never carried, so a removed method disappears rather than lingering
   if (methods.length) sherpaExt.methods = methods;
+  if (commands.length) sherpaExt.commands = commands;
   // The node ID is what makes a binding CHECKABLE; omitting it from this list
   // silently dropped it on every regen.
   if (priorExt.figmaNodeId) sherpaExt.figmaNodeId = priorExt.figmaNodeId;
