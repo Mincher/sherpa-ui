@@ -16161,13 +16161,43 @@ undone in the shared rule, or the tip is placed by it instead.
 **It drops a frame after `pointerout`.** Firefox still matches `:hover` while
 the event is heard, so a check made at once left every tip open.
 
-`sherpa-tooltip` lifts its own bubble, with `data-floating`.
+`sherpa-tooltip` lifts its own bubble: `T-a-tooltip-is-always-in-the-top-layer`.
 
 - Site: `src/core/ui/top-layer-tips.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/core/sherpa-anchor.css`
 - Site: `test/e2e/reforged-button-tip.spec.ts`
 
+
+### T-a-tooltip-is-always-in-the-top-layer
+
+**A `sherpa-tooltip` bubble is a popover that the element opens, always**
+(Will, 2026-10-15, TODO 300: *"Not all tooltips are on the CSS top layer and
+are getting clipped"*). It had two modes. `data-floating` lifted the bubble;
+the ordinary mode was "pure CSS", showing it off `:hover` in place. But the
+bubble carried `popover="manual"` for the floating mode, and a closed popover
+is `display: none` to the browser: the ordinary rule set `visibility`, and
+nothing set `display`, so **an ordinary tooltip never showed at all** — and
+where it was meant to show, a box with `overflow` would have cut it.
+Nothing in the library used the ordinary mode, so only an app met it.
+
+The ordinary mode is gone, and `data-floating` with it (`T-a-rename-drops-the-old-name`).
+The element opens the bubble on `pointerenter` and `focusin` of its trigger (or
+of the `data-anchor` box) and places it from measured coordinates: on
+`data-placement`'s side, or the opposite one when that does not fit, centred,
+inside the viewport. The side it landed on is a custom state, `side-top`,
+`side-bottom`, `side-left` or `side-right`, which the arrow reads.
+
+**The other tips were fine.** Every `.sherpa-tip` and `.chart-tip` is lifted by
+`top-layer-tips.ts` (`T-a-tip-lives-in-the-top-layer`); a probe over all 66
+component pages found each one opens, and the charts' and the sparkline's land
+beside their marks in all three engines. A first probe that hovered the
+middle of each anchor said otherwise, and was wrong: it found tips that open
+when the pointer is on the mark, not on a gap in it.
+
+- Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
+- Site: `src/components/sherpa-tooltip/sherpa-tooltip.css`
+- Site: `test/e2e/reforged-tooltip.spec.ts`
 
 ### T-every-button-says-its-action
 

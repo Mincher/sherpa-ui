@@ -51,7 +51,7 @@ test('once moved, a slider, a tooltip, a nav and a dialog still hear', async ({ 
     const frames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     root.innerHTML = '<div class="a">'
       + '<sherpa-slider data-label="Volume" min="0" max="100" value="40"></sherpa-slider>'
-      + '<sherpa-tooltip data-floating data-text="Delete"><button>x</button></sherpa-tooltip>'
+      + '<sherpa-tooltip data-text="Delete"><button>x</button></sherpa-tooltip>'
       + '<sherpa-nav></sherpa-nav>'
       + '<sherpa-dialog data-type="overlay" data-heading="Edit" open></sherpa-dialog>'
       + '</div><div class="b"></div>';

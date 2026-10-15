@@ -1,14 +1,12 @@
 /**
  * sherpa-tooltip.css — all tooltip presentation.
- * Trigger in .anchor, tip in .bubble; show/hide and placement are CSS only.
+ * Trigger in .anchor, tip in .bubble: a popover in the TOP LAYER, placed from
+ * measured coordinates (--_x / --_y) by the element. TRAP T-a-tooltip-is-always-in-the-top-layer
  */
 
 :host {
   display: inline-flex;
-  position: relative;
   vertical-align: middle;
-
-  --_gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 .anchor {
@@ -23,15 +21,15 @@
   --_bg: var(--sherpa-style-content-base, #0c0b11);
   /* Figma's label binds a ghost; surface-base is the inverse of the bubble in both modes. */
   --_fg: var(--sherpa-style-surface-base, #ffffff);
-  position: absolute;
-  z-index: 10;
-  /* Reset the UA popover border/background/inset — the bubble paints its own. */
+  /* Placed from measured coordinates. A popover has its own border, inset and
+     overflow, undone here. */
+  position: fixed;
+  inset: auto;
+  inset-block-start: var(--_y, 0);
+  inset-inline-start: var(--_x, 0);
   margin: 0;
   border: 0;
   overflow: visible;
-  inset-inline-start: 50%;
-  inset-block-end: calc(100% + var(--_gap));
-  transform: translateX(-50%);
   max-width: 16rem;
   width: max-content;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
@@ -56,6 +54,7 @@
 }
 
 /* ── The pointer arrow — a 12×6 CSS border-triangle in the bubble fill ───
+   It sits on the edge facing the trigger, on the side the bubble landed on.
    The offsets stay PHYSICAL on purpose: they are welded to the physical
    border-width/border-color that makes the point, so logical inset-* would
    desync point direction from coloured edge in RTL. */
@@ -68,7 +67,7 @@
   border-color: var(--_bg) transparent transparent transparent;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  translate: -50% 0;
 }
 
 .tip-text { color: inherit; }
@@ -76,87 +75,34 @@ slot[name="tip"] { display: none; }
 :host([data-has-tip]) slot[name="tip"] { display: inline; }
 :host([data-has-tip]) .tip-text { display: none; }
 
-/* ── Reveal on hover / focus-within — the entire show/hide logic ──────── */
-:host(:is(:hover, :focus-within)) .bubble {
+/* ── Open — the popover is the state; the host need not wrap the trigger. ─── */
+.bubble:popover-open {
   visibility: visible;
   opacity: 1;
 }
 
-/* ── Placement — plain absolute sides off data-placement ──────────────── */
-:host([data-placement="bottom"]) .bubble {
-  inset-block-end: auto;
-  inset-block-start: calc(100% + var(--_gap));
-}
-/* Side placements share their block axis; only the inline edge differs. */
-:host([data-placement="left"]) .bubble,
-:host([data-placement="right"]) .bubble {
-  inset-block-end: 50%;
-  inset-block-start: auto;
-  transform: translateY(50%);
-}
-:host([data-placement="left"]) .bubble {
-  inset-inline-start: auto;
-  inset-inline-end: calc(100% + var(--_gap));
-}
-:host([data-placement="right"]) .bubble {
-  inset-inline-start: calc(100% + var(--_gap));
-  inset-inline-end: auto;
-}
-
-/* ── Arrow follows the placement — always points back at the trigger ────── */
-:host([data-placement="bottom"]) .arrow {
+/* ── The side it landed on ───────────────────────────────────────────────
+   Above the trigger is the arrow's default: it points down from the bottom. */
+:host(:state(side-bottom)) .arrow {
   top: auto;
   bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
   border-width: 0 6px 6px 6px;
   border-color: transparent transparent var(--_bg) transparent;
 }
-/* Side arrows share their vertical centring; the edge that paints differs. */
-:host([data-placement="left"]) .arrow,
-:host([data-placement="right"]) .arrow {
+:host(:state(side-left)) .arrow,
+:host(:state(side-right)) .arrow {
   top: 50%;
   bottom: auto;
-  transform: translateY(-50%);
+  translate: 0 -50%;
 }
-:host([data-placement="left"]) .arrow {
+:host(:state(side-left)) .arrow {
   left: 100%;
   border-width: 6px 0 6px 6px;
   border-color: transparent transparent transparent var(--_bg);
 }
-:host([data-placement="right"]) .arrow {
+:host(:state(side-right)) .arrow {
   left: auto;
   right: 100%;
   border-width: 6px 6px 6px 0;
   border-color: transparent var(--_bg) transparent transparent;
-}
-
-/* ── Floating mode: the bubble lives in the TOP LAYER ────────────────
- * `popover` escapes every ancestor `overflow` clip. A popover is fixed, so JS
- * measures viewport coordinates into --_x / --_y — CSS anchor positioning
- * cannot cross a shadow boundary.
- */
-:host([data-floating]) .bubble {
-  position: fixed;
-  inset: auto;
-  inset-block-start: var(--_y, 0);
-  inset-inline-start: var(--_x, 0);
-  /* JS centres it; the 50% + translate pair places against the HOST, which a
-     fixed box no longer sits in. */
-  transform: none;
-}
-
-/* A floating tooltip may wrap nothing (see data-anchor), so there is no hover
-   state to key off — `:popover-open` is the state instead. */
-:host([data-floating]) .bubble:popover-open {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Floating mode always sits the bubble above its trigger. */
-:host([data-floating]) .arrow {
-  inset-block-start: 100%;
-  inset-block-end: auto;
-  inset-inline-start: 50%;
-  translate: -50% 0;
 }

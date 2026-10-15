@@ -27,8 +27,7 @@ test('mirrors data-text into the bubble and sets aria-describedby', async ({ pag
   expect(r.describedby).toBe(r.bubbleId); // association points at the bubble
 });
 
-test('bubble is hidden by default and revealed on hover (CSS-driven)', async ({ page }) => {
-  const el = page.locator('sherpa-tooltip');
+test('the bubble is shut by default and opens in the top layer on hover', async ({ page }) => {
   await page.evaluate(async () => {
     const t = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void> };
     t.setAttribute('data-text', 'Hi there');
@@ -36,21 +35,55 @@ test('bubble is hidden by default and revealed on hover (CSS-driven)', async ({ 
     document.getElementById('root')!.appendChild(t);
     await t.rendered;
   });
-
-  const hiddenBefore = await el.evaluate(
-    (t) => getComputedStyle((t as HTMLElement).shadowRoot!.querySelector('.bubble')!).visibility,
-  );
-  expect(hiddenBefore).toBe('hidden');
-
-  // Real hover over the trigger → :host(:hover) reveals the bubble.
+  const bubble = () => page.evaluate(() => {
+    const b = document.querySelector('sherpa-tooltip')!.shadowRoot!.querySelector('.bubble') as HTMLElement;
+    const r = b.getBoundingClientRect();
+    return { open: b.matches(':popover-open'), visibility: getComputedStyle(b).visibility, width: r.width };
+  });
+  expect(await bubble()).toMatchObject({ open: false, width: 0 });
   await page.locator('#trig').hover();
-  await expect
-    .poll(() =>
-      el.evaluate(
-        (t) => getComputedStyle((t as HTMLElement).shadowRoot!.querySelector('.bubble')!).visibility,
-      ),
-    )
-    .toBe('visible');
+  await expect.poll(bubble).toMatchObject({ open: true, visibility: 'visible' });
+  expect((await bubble()).width).toBeGreaterThan(0);
+  await page.mouse.move(600, 400);
+  await expect.poll(bubble).toMatchObject({ open: false });
+});
+
+/**
+ * NOT CLIPPED: a tooltip in a box with `overflow: hidden` is drawn whole — the
+ * bubble is in the top layer. It was a closed popover with no rule to open it,
+ * so an ordinary tooltip never showed at all.
+ * TRAP T-a-tooltip-is-always-in-the-top-layer
+ */
+test('a tooltip inside an overflow box shows whole, above the box', async ({ page }) => {
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = '<div id="clip" style="overflow:hidden;block-size:32px;inline-size:100px;margin:80px">'
+      + '<sherpa-tooltip data-text="A tip longer than the box that holds it"><button id="trig">x</button></sherpa-tooltip></div>';
+    await (document.querySelector('sherpa-tooltip') as HTMLElement & { rendered: Promise<void> }).rendered;
+  });
+  await page.locator('#trig').hover();
+  const r = await page.evaluate(() => {
+    const b = document.querySelector('sherpa-tooltip')!.shadowRoot!.querySelector('.bubble') as HTMLElement;
+    const box = b.getBoundingClientRect();
+    const clip = document.getElementById('clip')!.getBoundingClientRect();
+    return { open: b.matches(':popover-open'), wider: box.width > clip.width, above: box.bottom <= clip.top };
+  });
+  expect(r).toEqual({ open: true, wider: true, above: true });
+});
+
+test('it takes the opposite side when its own does not fit, and the arrow follows', async ({ page }) => {
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = '<sherpa-tooltip data-text="Below, then" data-placement="top" style="position:fixed;inset-block-start:2px;inset-inline-start:200px">'
+      + '<button id="trig">x</button></sherpa-tooltip>';
+    await (document.querySelector('sherpa-tooltip') as HTMLElement & { rendered: Promise<void> }).rendered;
+  });
+  await page.locator('#trig').hover();
+  const r = await page.evaluate(() => {
+    const t = document.querySelector('sherpa-tooltip') as HTMLElement;
+    const b = t.shadowRoot!.querySelector('.bubble')!.getBoundingClientRect();
+    const trig = document.getElementById('trig')!.getBoundingClientRect();
+    return { below: b.top >= trig.bottom, bottomState: t.matches(':state(side-bottom)'), topState: t.matches(':state(side-top)') };
+  });
+  expect(r).toEqual({ below: true, bottomState: true, topState: false });
 });
 
 test('data-placement defaults to top', async ({ page }) => {

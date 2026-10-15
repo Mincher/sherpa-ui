@@ -1,11 +1,16 @@
 /**
  * sherpa-tooltip — a hint bubble shown on hover or focus.
  *
- * Ordinary mode is pure CSS; JS runs only for floating (top-layer) mode.
+ * The bubble is a popover, opened on hover or focus and placed from measured
+ * coordinates, so no box it sits in clips it. TRAP T-a-tooltip-is-always-in-the-top-layer
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 let uid = 0;
+
+type Side = 'top' | 'bottom' | 'left' | 'right';
+const SIDES: readonly Side[] = ['top', 'bottom', 'left', 'right'];
+const OPPOSITE: Record<Side, Side> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
 
 export class SherpaTooltip extends SherpaElement {
   static override css = new URL('./sherpa-tooltip.css', import.meta.url);
@@ -14,8 +19,7 @@ export class SherpaTooltip extends SherpaElement {
     'data-anchor': { type: 'string', kind: 'style' },
     
     'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
-    /* Written BY the tooltip: it is positioned, and it has a tip to show. */
-    'data-floating': { type: 'boolean', kind: 'style' },
+    /* Written BY the tooltip: it has a tip to show. */
     'data-has-tip': { type: 'boolean', kind: 'style' },
     'data-placement': { type: 'enum', kind: 'style', values: ['top', 'bottom', 'left', 'right'] },
   } as const;
@@ -59,14 +63,8 @@ export class SherpaTooltip extends SherpaElement {
     this.#hide();
   }
 
-  /** Whether this tooltip places itself in the top layer. */
-  get #floating(): boolean {
-    return this.hasAttribute('data-floating');
-  }
-
   /** Open the bubble beside the trigger. */
   #onShow = (): void => {
-    if (!this.#floating) return;
     // No text and no slotted tip would open an empty bubble.
     if (!this.dataset['text'] && !this.hasAttribute('data-has-tip')) return;
     const bubble = this.$<HTMLElement>('.bubble');
@@ -86,7 +84,6 @@ export class SherpaTooltip extends SherpaElement {
 
   /** Close the bubble. */
   #onHide = (): void => {
-    if (!this.#floating) return;
     this.#hide();
   };
 
@@ -106,7 +103,8 @@ export class SherpaTooltip extends SherpaElement {
   static readonly OFFSET = 4;
 
   /**
-   * Put the floating bubble above its trigger, centred, inside the viewport.
+   * Put the bubble beside its trigger on `data-placement`'s side, or the
+   * opposite one when that does not fit, centred, inside the viewport.
    *
    * Measured rather than anchored — TRAP T-anchor-cross-root.
    */
@@ -119,17 +117,30 @@ export class SherpaTooltip extends SherpaElement {
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
 
-    let y = t.top - gap - b.height;
-    if (y < gap) y = Math.min(vh - b.height - gap, t.bottom + gap);
+    const preferred = (this.dataset['placement'] as Side | undefined) ?? 'top';
+    const fits: Record<Side, boolean> = {
+      top: t.top - gap - b.height >= gap,
+      bottom: t.bottom + gap + b.height <= vh - gap,
+      left: t.left - gap - b.width >= gap,
+      right: t.right + gap + b.width <= vw - gap,
+    };
+    const side = [preferred, OPPOSITE[preferred]].find((s) => fits[s]) ?? preferred;
 
     // NOT clampNum: `min` must win, so a bubble wider than the viewport pins
     // LEFT and shows the start of its text. The order is deliberate.
-    let x = t.left + t.width / 2 - b.width / 2;
-    if (x + b.width > vw - gap) x = vw - b.width - gap;
-    if (x < gap) x = gap;
+    const across = (from: number, size: number, own: number, limit: number): number =>
+      Math.max(gap, Math.min(from + size / 2 - own / 2, limit - own - gap));
+    const x = side === 'left' ? t.left - gap - b.width
+      : side === 'right' ? t.right + gap
+        : across(t.left, t.width, b.width, vw);
+    const y = side === 'top' ? t.top - gap - b.height
+      : side === 'bottom' ? t.bottom + gap
+        : across(t.top, t.height, b.height, vh);
 
     bubble.style.setProperty('--_x', `${Math.round(x)}px`);
     bubble.style.setProperty('--_y', `${Math.round(y)}px`);
+    // Which side it landed on, for the arrow.
+    for (const s of SIDES) this.toggleState(`side-${s}`, s === side);
   }
 
   /* ── Public API ──────────────────────────────────────────────────────── */

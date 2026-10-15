@@ -1,16 +1,14 @@
 <!--
   sherpa-tooltip — a hover/focus tooltip wrapping a trigger.
 
-  Show/hide is entirely CSS (:hover / :focus-within on the host); JS never toggles
-  visibility.
+  The bubble is a popover in the TOP LAYER, opened on hover or focus and
+  placed from measured coordinates, so no box it sits in clips it. When its
+  side does not fit, it takes the opposite one.
 
   Public API:
     data-text       tip text (or use the `tip` slot)
     data-placement  top (default) | bottom | left | right
-    data-floating   place the bubble in the TOP LAYER from measured coordinates
-                    rather than relative to the host. For a tooltip inside a box
-                    that clips — a toolbar's chip run, a scroller — where the
-                    ordinary absolute bubble is cut off.
+    data-anchor     a selector for the box it describes, when it does not wrap one
 
   Slots:
     (default) — the trigger element the tooltip describes
@@ -22,11 +20,7 @@
   <span class="anchor" part="anchor">
     <slot data-accepts="content"></slot>
   </span>
-  <!--
-    `popover=manual` lifts the bubble past any clipping ancestor; `auto` would
-    dismiss it on an outside click. A popover is position: fixed, so
-    data-floating places it from measured viewport coords (--_x / --_y).
-  -->
+  <!-- `popover=manual`: `auto` would dismiss it on an outside click. -->
   <span class="bubble" part="bubble" role="tooltip" popover="manual">
     <span class="tip-text"></span>
     <slot name="tip" data-accepts="content"></slot>

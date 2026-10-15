@@ -65,16 +65,8 @@
       "type": "string",
       "observed": true,
       "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
-      "name": "data-floating",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
       "kind": "style",
-      "description": "place the bubble in the TOP LAYER from measured coordinates rather than relative to the host. For a tooltip inside a box that clips — a toolbar's chip run, a scroller — where the ordinary absolute bubble is cut off."
+      "description": "a selector for the box it describes, when it does not wrap one"
     },
     {
       "$type": "prop",
@@ -128,7 +120,7 @@
     }
   ],
   "populate": {
-    "shape": "{ anchor?, floating?, hasTip?, placement?, text? }",
+    "shape": "{ anchor?, hasTip?, placement?, text? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -136,26 +128,6 @@
       "$type": "state",
       "name": "has-tip",
       "selector": ":host([data-has-tip])"
-    },
-    {
-      "$type": "state",
-      "name": "bottom",
-      "selector": ":host([data-placement=\"bottom\"])"
-    },
-    {
-      "$type": "state",
-      "name": "left",
-      "selector": ":host([data-placement=\"left\"])"
-    },
-    {
-      "$type": "state",
-      "name": "right",
-      "selector": ":host([data-placement=\"right\"])"
-    },
-    {
-      "$type": "state",
-      "name": "floating",
-      "selector": ":host([data-floating])"
     }
   ],
   "capabilities": [

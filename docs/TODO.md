@@ -291,7 +291,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
-| ⬜ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
+| ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -774,25 +774,22 @@ Will, 2026-09-25:
 
 ## C — Contained bugs
 
-### `[ ]` ⬜ 300 — BUG: not every tooltip is in the top layer
+### `[x]` ✅ 300 — BUG: not every tooltip is in the top layer
 
 Will, 2026-10-15: *"Not all tooltips are on the CSS top layer and are getting
 clipped by other elements and containers. Could be related to anchoring of
 tooltips to other components?"*
 
-What is known (a first look, no probe yet). Every tip in a template is
-`popover="manual"`, but a popover is in the top layer only once code opens it.
-Two doors do: `sherpa-tooltip` opens its own bubble, and
-`core/ui/top-layer-tips.ts` lifts the rest — ONLY a `.sherpa-tip` / `.chart-tip`
-that is the next sibling of, or inside, a `.sherpa-anchor` / `.chart-mark`, found
-from the event's deepest target. A tip of any other shape is shown by CSS where
-it sits, and a box with `overflow` clips it. Suspects: a tip whose anchor is in
-ANOTHER component (a slotted trigger, a chip's caret, a grid heading), and the
-gauge, radial and sparkline tips, whose marks are laid out differently.
-
-To do: probe every component's tip inside an `overflow: hidden` box, in all
-three engines; read `:popover-open` and the PIXELS, not computed style; fix the
-lifter's rule (D5: one door), and test each shape.
+**✅ Done 2026-10-15.** Not the anchoring: every `.sherpa-tip` and
+`.chart-tip` is lifted, and a probe over all 66 gallery pages found each opens.
+The defect was `sherpa-tooltip`, whose ordinary mode — the one an app gets —
+never showed at all: its bubble is a popover, a closed one is `display: none`,
+and only `data-floating` opened it (the filter chip's count tip, the one use
+in the library). It is always a top-layer popover now, placed on any of four
+sides with a flip when its side does not fit, and the arrow follows the side
+(a custom state). `data-floating` is gone. Three tests, in three engines: it
+shuts and opens on hover, it shows whole above an `overflow: hidden` box, it
+flips. `T-a-tooltip-is-always-in-the-top-layer`.
 
 ### `[ ]` ⬜ 299 — BUG: two glyphs still come from Font Awesome
 

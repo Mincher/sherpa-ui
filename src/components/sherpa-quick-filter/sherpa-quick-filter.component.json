@@ -22,7 +22,6 @@
           "el": "sherpa-tooltip",
           "class": "count-wrap",
           "attrs": {
-            "data-floating": "",
             "data-anchor": ".chip"
           }
         },
