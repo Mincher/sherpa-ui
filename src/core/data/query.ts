@@ -17,6 +17,12 @@
  * - withoutDropped — A reading without the picks set aside.
  * - Compiled — A Query as the source runs it: one shared filter, and each one-component filter.
  * - VIEW — The id of the page's own scope, which every component scope sits under.
+ * - emptyScope — A scope that holds and answers nothing yet, for a caller to fill.
+ * - narrowsOne — Does this scope narrow only the components it names?
+ * - eachScope — Each scope that answers for the page, by id, as a copy.
+ * - heldInView — The fields the View holds, which are answered there alone.
+ * - heldAbove — The fields held above a scope: the View's, or none for the View itself.
+ * - presetClauses — A saved filter's readings as clauses.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
@@ -115,6 +121,44 @@ export interface Compiled {
 /** The id of the page's own scope, which every component scope sits under. */
 export const VIEW = 'view';
 
+/** A scope that holds and answers nothing yet, for a caller to fill. */
+export function emptyScope(holds: readonly string[] = []): ScopeQuery {
+  return { holds: [...holds], readings: {} };
+}
+
+/** Does this scope narrow only the components it names? TRAP T-a-component-part-narrows-one-component */
+export function narrowsOne(scope: ScopeQuery): boolean {
+  return !!scope.narrows?.length;
+}
+
+/** Each scope that answers for the page, by id. A copy, so a caller may edit the Query as it goes. */
+export function eachScope(query: Query): Array<[string, ScopeQuery]> {
+  return Object.entries(query.scopes).filter(([, s]) => !narrowsOne(s));
+}
+
+/** The fields the View holds, which are answered there alone. TRAP T-a-view-held-heading-shows-and-refuses */
+export function heldInView(query: Query): ReadonlySet<string> {
+  return new Set(query.scopes[VIEW]?.holds ?? []);
+}
+
+/** The fields held above a scope: the View's, or none for the View itself. */
+export function heldAbove(query: Query, scope: string): ReadonlySet<string> {
+  return scope === VIEW ? new Set<string>() : heldInView(query);
+}
+
+/** A saved filter's readings as clauses. A reading that answers nothing gives none. */
+export function presetClauses(
+  readings: Readonly<Record<string, FieldReading>>,
+  field?: CompileFacts['field'],
+): Filter[] {
+  const out: Filter[] = [];
+  for (const [f, reading] of Object.entries(readings)) {
+    const clause = readingClause({ field: f, ...field?.(f) }, reading);
+    if (clause) out.push(clause);
+  }
+  return out;
+}
+
 /**
  * Turn a Query into what the source runs — the ONE place a Query becomes a
  * filter. Pure: the same Query and facts always compile to the same thing.
@@ -132,7 +176,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   const view: Filter[] = [];
   const scoped: Record<string, Filter> = {};
   const only: Record<string, Filter[]> = {};
-  const viewHolds = new Set(query.scopes[VIEW]?.holds ?? []);
+  const viewHolds = heldInView(query);
   let arranged: ScopeQuery | undefined;
 
   for (const [id, scope] of Object.entries(query.scopes)) {
@@ -155,10 +199,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
         });
         continue;
       }
-      for (const [field, reading] of Object.entries(given)) {
-        const clause = readingClause({ field, ...facts.field?.(field) }, reading);
-        if (clause) clauses.push(clause);
-      }
+      clauses.push(...presetClauses(given, facts.field));
     }
 
     if (scope.narrows?.length) {

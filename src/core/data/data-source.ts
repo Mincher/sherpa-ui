@@ -98,7 +98,8 @@ import {
 import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
-  compile, VIEW, withoutDropped, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery, type ViewScope,
+  compile, eachScope, emptyScope, heldAbove, heldInView, narrowsOne, presetClauses, VIEW, withoutDropped,
+  type CompileFacts, type Query, type QueryDefaults, type ScopeQuery, type ViewScope,
 } from './query.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
@@ -296,8 +297,8 @@ export class DataSource extends EventTarget {
     const { sort, group, search } = this.#state;
     // The arrangement goes in the scope that arranged it. TRAP T-group-and-sort-are-component-scope
     const by = this.#arrangedIn() ?? VIEW;
-    query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? { holds: [], readings: {} }), search };
-    query.scopes[by] = { ...(query.scopes[by] ?? { holds: [], readings: {} }), sort: structuredClone(sort), group };
+    query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), search };
+    query.scopes[by] = { ...(query.scopes[by] ?? emptyScope()), sort: structuredClone(sort), group };
     const presets: SourceState['presets'] = {};
     for (const scope of Object.values(query.scopes)) {
       for (const id of Object.keys(scope.presets ?? {})) {
@@ -338,8 +339,8 @@ export class DataSource extends EventTarget {
     if (filters(at) !== filters(this.#applied)) return false;
     /* WHICH filters each scope holds: one taken off, or moved, is a change too
        (Will, 2026-10-12). A component's own part is its, not the reader's. */
-    const holds = (q: Query): string => JSON.stringify(Object.entries(q.scopes)
-      .filter(([, scope]) => !scope.narrows && scope.holds.length)
+    const holds = (q: Query): string => JSON.stringify(eachScope(q)
+      .filter(([, scope]) => scope.holds.length)
       .map(([id, scope]) => [id, [...scope.holds].sort()]).sort());
     if (holds(at) !== holds(this.#applied)) return false;
     const want = { ...first.arrange, ...second?.arrange };
@@ -611,7 +612,7 @@ export class DataSource extends EventTarget {
       return;
     }
     // Its OWN before the first write compiles, so a View-held field cannot set it aside.
-    this.#defaults.set(scope, structuredClone(this.#draft.scopes[scope] ?? { holds: [], readings: {} }));
+    this.#defaults.set(scope, structuredClone(this.#draft.scopes[scope] ?? emptyScope()));
     for (const field of Object.keys(was)) if (!(field in readings)) this.write(scope, field, undefined);
     for (const [field, reading] of Object.entries(readings)) this.write(scope, field, reading, at);
     const written = this.#draft.scopes[scope];
@@ -712,7 +713,7 @@ export class DataSource extends EventTarget {
    * TRAP T-a-panel-asks-for-its-scopes
    */
   describe(scope: string): ScopeDescription {
-    const q = this.#draft.scopes[scope] ?? { holds: [], readings: {} };
+    const q = this.#draft.scopes[scope] ?? emptyScope();
     const above = scope === VIEW ? [] : this.scope(VIEW);
     const part = this.#narrowing.get(scope);
     if (part) {
@@ -912,8 +913,8 @@ export class DataSource extends EventTarget {
        place; left so, the field showed there AGAIN as it landed in another —
        and its answer could land in either. Each lets go first, while the View
        still holds the answer. Will, TODO 168. TRAP T-send-to-view-filters */
-    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
-      if (id === VIEW || id === to || scope.narrows || !scope.holds.includes(field)) continue;
+    for (const [id, scope] of eachScope(this.#draft)) {
+      if (id === VIEW || id === to || !scope.holds.includes(field)) continue;
       this.hold(id, scope.holds.filter((f) => f !== field));
       this.#drawBars(id);
     }
@@ -1286,20 +1287,19 @@ export class DataSource extends EventTarget {
 
   /** One scope's entry, made when first written. */
   #scope(id: string): ScopeQuery {
-    return (this.#draft.scopes[id] ??= { holds: [], readings: {} });
+    return (this.#draft.scopes[id] ??= emptyScope());
   }
 
   /** Write one field's reading at its home, or remove it. */
   #setReading(field: string, reading: FieldReading | undefined): void {
-    for (const scope of Object.values(this.#draft.scopes)) if (!scope.narrows) Reflect.deleteProperty(scope.readings, field);
+    for (const [, scope] of eachScope(this.#draft)) Reflect.deleteProperty(scope.readings, field);
     if (reading) this.#scope(this.#home(field)).readings[field] = reading;
     this.#prune();
   }
 
   /** Forget every reading; the holds stay. */
   #clearReadings(): void {
-    for (const scope of Object.values(this.#draft.scopes)) {
-      if (scope.narrows) continue;
+    for (const [, scope] of eachScope(this.#draft)) {
       // A carry-over field keeps its answer. TRAP T-a-field-can-carry-over-views
       scope.readings = Object.fromEntries(Object.entries(scope.readings)
         .filter(([field]) => this.#fields.get(field)?.carryOver));
@@ -1310,8 +1310,7 @@ export class DataSource extends EventTarget {
   /** A hold MOVED fields, so move each reading to its new home. Every reading
    *  still applies once, so the filter does not change. */
   #rehome(): void {
-    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
-      if (scope.narrows) continue;
+    for (const [id, scope] of eachScope(this.#draft)) {
       for (const [field, reading] of Object.entries(scope.readings)) {
         const home = this.#home(field);
         if (home === id) continue;
@@ -1328,7 +1327,7 @@ export class DataSource extends EventTarget {
    * contradict it. TRAP T-a-view-held-heading-shows-and-refuses
    */
   #syncColumns(): void {
-    const view = this.#applied.scopes[VIEW] ?? { holds: [], readings: {} };
+    const view = this.#applied.scopes[VIEW] ?? emptyScope();
     const held = Object.fromEntries(view.holds.map((f) => {
       const r = view.readings[f];
       return [f, r && !r.suspended ? r : {}];
@@ -1350,8 +1349,8 @@ export class DataSource extends EventTarget {
   /** Which scope each answered field's reading sits in. */
   #homes(): Map<string, string> {
     const out = new Map<string, string>();
-    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
-      if (!scope.narrows) for (const field of Object.keys(scope.readings)) out.set(field, id);
+    for (const [id, scope] of eachScope(this.#draft)) {
+      for (const field of Object.keys(scope.readings)) out.set(field, id);
     }
     return out;
   }
@@ -1397,8 +1396,8 @@ export class DataSource extends EventTarget {
        filtering with no chip on screen. Cleared FIRST, while this scope still
        holds it, so the controls over this scope are drawn the clear.
        TRAP T-one-query-one-owner */
-    const elsewhere = (field: string): boolean => Object.entries(this.#draft.scopes)
-      .some(([id, s]) => id !== name && !s.narrows && s.holds.includes(field));
+    const elsewhere = (field: string): boolean => eachScope(this.#draft)
+      .some(([id, s]) => id !== name && s.holds.includes(field));
     for (const field of before) {
       if (!next.includes(field) && !elsewhere(field) && this.#reading(field)) this.select(field, []);
     }
@@ -1446,8 +1445,8 @@ export class DataSource extends EventTarget {
   scopeOf(field: string): string | null {
     if (this.holds(VIEW, field)) return VIEW;
     // A scope that narrows ONE component is that component's alone.
-    for (const [name, scope] of Object.entries(this.#draft.scopes)) {
-      if (!scope.narrows && scope.holds.includes(field)) return name;
+    for (const [name, scope] of eachScope(this.#draft)) {
+      if (scope.holds.includes(field)) return name;
     }
     return null;
   }
@@ -1658,28 +1657,26 @@ export class DataSource extends EventTarget {
     if (!keep) return { query: next, arrange };
     /* A carry-over field keeps its answer where the View gives none.
        TRAP T-a-field-can-carry-over-views */
-    for (const [id, scope] of Object.entries(base.scopes)) {
-      if (scope.narrows) continue;
+    for (const [id, scope] of eachScope(base)) {
       for (const [field, reading] of Object.entries(scope.readings)) {
         if (!this.#fields.get(field)?.carryOver) continue;
         if (Object.values(next.scopes).some((s) => field in s.readings)) continue;
-        (next.scopes[id] ??= { holds: [], readings: {} }).readings[field] = structuredClone(reading);
+        (next.scopes[id] ??= emptyScope()).readings[field] = structuredClone(reading);
       }
     }
-    for (const [id, scope] of Object.entries(base.scopes)) {
-      if (scope.narrows || given.scopes[id]?.holds) continue;
-      (next.scopes[id] ??= { holds: [], readings: {} }).holds = [...scope.holds];
+    for (const [id, scope] of eachScope(base)) {
+      if (given.scopes[id]?.holds) continue;
+      (next.scopes[id] ??= emptyScope()).holds = [...scope.holds];
     }
     /* …and its SAVED filters, as chips: each stays on its bar, OFF unless the
        View turns it on. A View that named none took them all off the bar.
        TRAP T-a-view-keeps-the-saved-filter-chips */
-    for (const [id, scope] of Object.entries(base.scopes)) {
-      if (scope.narrows || !scope.presets) continue;
-      const to = (next.scopes[id] ??= { holds: [], readings: {} });
+    for (const [id, scope] of eachScope(base)) {
+      if (!scope.presets) continue;
+      const to = (next.scopes[id] ??= emptyScope());
       to.presets = { ...Object.fromEntries(Object.keys(scope.presets).map((p) => [p, false])), ...to.presets };
     }
-    for (const scope of Object.values(next.scopes)) {
-      if (scope.narrows) continue;
+    for (const [, scope] of eachScope(next)) {
       for (const field of Object.keys(scope.readings)) {
         if (!scope.holds.includes(field)) scope.holds = [...scope.holds, field];
       }
@@ -1748,11 +1745,11 @@ export class DataSource extends EventTarget {
 
   /** One field's answer, from one copy onto the other, in the scope that holds it. */
   #copyField(from: Query, to: Query, field: string): void {
-    for (const scope of Object.values(to.scopes)) if (!scope.narrows) Reflect.deleteProperty(scope.readings, field);
-    for (const [id, scope] of Object.entries(from.scopes)) {
+    for (const [, scope] of eachScope(to)) Reflect.deleteProperty(scope.readings, field);
+    for (const [id, scope] of eachScope(from)) {
       const held = scope.readings[field];
-      if (!held || scope.narrows) continue;
-      (to.scopes[id] ??= { holds: [...scope.holds], readings: {} }).readings[field] = structuredClone(held);
+      if (!held) continue;
+      (to.scopes[id] ??= emptyScope(scope.holds)).readings[field] = structuredClone(held);
     }
   }
 
@@ -1983,16 +1980,14 @@ export class DataSource extends EventTarget {
     const { view } = compile(this.#applied, this.#compileFacts());
     const base = scope === VIEW || !view ? [] : [view];
     // One field, one scope: a field the View holds is the View's.
-    const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
+    const above = heldAbove(this.#applied, scope);
     const own: Array<[string, Filter | undefined]> = [
       ...Object.entries(q.readings)
         .filter(([f]) => !above.has(f))
         .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
           [f, readingClause({ field: f, ...field(f) }, withoutDropped(reading, this.#setAside.get(scope)?.[f]))]),
       ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
-        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
-          .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
-          .filter((c): c is NonNullable<typeof c> => !!c))]),
+        .map(([id]): [string, Filter | undefined] => [id, andFilter(presetClauses(this.#presets.get(id) ?? {}, field))]),
     ];
     const out: Record<string, number> = {};
     await Promise.all(own.map(async ([id, clause]) => {
@@ -2014,7 +2009,7 @@ export class DataSource extends EventTarget {
     if (!q) return {};
     const { view } = compile(this.#applied, this.#compileFacts());
     const base = scope === VIEW || !view ? [] : [view];
-    const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
+    const above = heldAbove(this.#applied, scope);
     const out: Record<string, Record<string, number>> = {};
     await Promise.all(Object.entries(q.readings).flatMap(([f, reading]) => {
       if (above.has(f) || reading.suspended) return [];
@@ -2086,7 +2081,7 @@ export class DataSource extends EventTarget {
   async present(scope: string): Promise<Record<string, string[]>> {
     if (!this.#limitOptions) return {};
     const q = this.#applied.scopes[scope];
-    const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
+    const above = heldAbove(this.#applied, scope);
     // A chart's own scope answers its legend's one field.
     const part = this.#narrowing.get(scope)?.field;
     const fields = [...new Set([...(q?.holds ?? []), ...(scope === VIEW ? [] : this.fields(scope)), ...(part ? [part] : [])])]
@@ -2146,19 +2141,16 @@ export class DataSource extends EventTarget {
     const out = await this.#chainAside();
     if (!this.#limitOptions) return out;
     const facts = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
-    const viewHolds = new Set(this.#applied.scopes[VIEW]?.holds ?? []);
+    const viewHolds = heldInView(this.#applied);
     const below = this.#below();
     type Part = { field?: string; clause: Filter };
     const run = async (scope: string, base: readonly Part[]): Promise<Part[]> => {
       const q = this.#applied.scopes[scope];
       const parts = [...base];
-      if (!q || q.narrows?.length) return parts;
+      if (!q || narrowsOne(q)) return parts;
       for (const [id, on] of Object.entries(q.presets ?? {})) {
         if (!on) continue;
-        for (const [f, reading] of Object.entries(this.#presets.get(id) ?? {})) {
-          const clause = readingClause({ field: f, ...facts(f) }, reading);
-          if (clause) parts.push({ clause });
-        }
+        for (const clause of presetClauses(this.#presets.get(id) ?? {}, facts)) parts.push({ clause });
       }
       const chained = out.get(scope) ?? {};
       const newest = Object.keys(q.readings)
@@ -2194,7 +2186,7 @@ export class DataSource extends EventTarget {
   /** Each SERIAL set's chain, by scope: the fields it holds, in the set's order.
    *  A field the View holds is answered there, so it is out of a component's chain. */
   #chains(): Array<[scope: string, chain: string[]]> {
-    const viewHolds = new Set(this.#applied.scopes[VIEW]?.holds ?? []);
+    const viewHolds = heldInView(this.#applied);
     const out: Array<[string, string[]]> = [];
     for (const [scope, sets] of this.#sets) {
       const holds = new Set(this.#applied.scopes[scope]?.holds ?? []);
@@ -2544,9 +2536,9 @@ export class DataSource extends EventTarget {
 
 /** One field's answer in one copy of the Query, wherever it lives, or null. */
 function answerIn(query: Query, field: string): FieldReading | null {
-  for (const scope of Object.values(query.scopes)) {
+  for (const [, scope] of eachScope(query)) {
     const held = scope.readings[field];
-    if (held && !scope.narrows) return answerOf(held);
+    if (held) return answerOf(held);
   }
   return null;
 }
