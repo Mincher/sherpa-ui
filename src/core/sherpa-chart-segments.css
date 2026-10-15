@@ -48,6 +48,30 @@
   &:empty { display: none; }
 }
 
+/* ── A segment: a donut's slice, a gauge's band ─────────────────────────
+   A CLOSED PATH from ringSegmentPath(), and the hover target. SVG has no inside
+   stroke, so the TS insets the path and owns the width. No fill-opacity: the
+   series token carries its 50% and this would multiply it. The outline does
+   NOT track the fill. Round joins: a mitre spikes past a narrow corner. */
+.chart-segment {
+  fill: var(--_hue, var(--_fill, var(--sherpa-data-viz-series-1, #8364c880)));
+  stroke: var(--_border, var(--_hue, var(--_fill, var(--sherpa-data-viz-series-1, #8364c880))));
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: fill-opacity 100ms ease;
+}
+.chart-segment:hover { fill-opacity: 1; }
+
+/* A clicked segment keeps focus — it carries `tabindex` for a reader with no
+   pointer — but a pointer user has no use for the ring.
+   TRAP T-a-datum-focus-ring-is-for-the-keyboard-only */
+.chart-segment:focus:not(:focus-visible) { outline: none; }
+.chart-segment:focus-visible {
+  outline: none;
+  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
+  stroke-width: 2;
+}
+
 /* A segment's anchor, polar → cartesian from the hub; the angle runs from 12
    o'clock. --_dot-angle, NOT --_angle: the gauge's needle owns that on the host,
    and it inherits. */

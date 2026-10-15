@@ -15242,8 +15242,8 @@ So suppress that one, and DRAW the keyboard ring rather than leaving it to the
 UA:
 
 ```css
-.slice:focus:not(:focus-visible) { outline: none; }
-.slice:focus-visible {
+.chart-segment:focus:not(:focus-visible) { outline: none; }
+.chart-segment:focus-visible {
   outline: none;
   stroke: var(--sherpa-theme-border-accent-2, #3b4ccd);
   stroke-width: 2;
@@ -15253,10 +15253,9 @@ UA:
 A `stroke`, not a `box-shadow`: an SVG `<path>` has no box to shadow, and the
 inset-ring idiom the controls use does not apply.
 
-Both radial charts need it — donut `.slice` and gauge `.zone`.
+One rule in the segments sheet serves both — the donut's `.slice` and the gauge's `.zone` are each a `.chart-segment`.
 
-- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
-- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
+- Site: `src/core/sherpa-chart-segments.css`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
 
 ### T-a-pie-slice-has-no-rounded-corner

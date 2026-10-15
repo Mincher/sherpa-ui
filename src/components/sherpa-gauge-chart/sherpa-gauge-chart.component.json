@@ -157,7 +157,7 @@
             "children": [
               {
                 "el": "path",
-                "class": "zone"
+                "class": "zone chart-segment"
               }
             ]
           }
@@ -385,7 +385,7 @@
     {
       "$type": "state",
       "name": "focus-visible",
-      "selector": ".zone:focus-visible"
+      "selector": ":focus-visible"
     }
   ],
   "capabilities": [

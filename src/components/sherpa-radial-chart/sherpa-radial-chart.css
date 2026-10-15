@@ -65,37 +65,6 @@
   overflow: visible;
 }
 
-/* ── Slices ──────────────────────────────────────────────────────────────
-   SVG has no inside stroke, so the TS insets the path by half a stroke and owns
-   the width (a viewBox-unit attribute cannot read a custom property). */
-.slice {
-  fill: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
-  /* No fill-opacity — the series token carries its 50% and this would multiply it. */
-  /* Outline = colour 5 at full strength, deliberately NOT tracking the fill. */
-  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
-  /* Round joins — a mitre spikes past the corner on a narrow slice. */
-  stroke-linejoin: round;
-  transition: fill-opacity 100ms ease;
-  cursor: pointer;
-}
-
-.slice:hover { fill-opacity: 1; }
-
-/* A CLICKED slice keeps focus — it carries `tabindex` so a reader with no
-   pointer can reach it — but a pointer user has no use for the ring, and the
-   browser's default is a 5px blue halo over the chart.
-   `:focus` without `:focus-visible` IS the mouse case: measured after a real
-   click, the slice matched `:focus` and not `:focus-visible`.
-   TRAP T-a-datum-focus-ring-is-for-the-keyboard-only */
-.slice:focus:not(:focus-visible) { outline: none; }
-
-/* The keyboard ring stays, and is drawn rather than left to the UA. */
-.slice:focus-visible {
-  outline: none;
-  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-  stroke-width: 2;
-}
-
 .centre {
   position: absolute;
   inset: 0;

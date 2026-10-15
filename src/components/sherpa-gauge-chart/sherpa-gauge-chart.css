@@ -100,39 +100,6 @@
   overflow: visible;
 }
 
-/* NO ROTATION and NO DASH OFFSET on the bands: `transform-box: fill-box` measures
-   the origin against the fill box, not the viewBox centre, so rotation swings the
-   whole ring. Each band is a path drawn where it belongs. */
-
-/* One band — a CLOSED PATH from ringSegmentPath(), and the hover target. SVG has
-   no inside stroke, so the TS insets the path and sets stroke-width there: the
-   attribute cannot read a custom property. */
-.zone {
-  fill: var(--_hue, var(--_fill));
-  /* NO fill-opacity: the series token carries its 50% and this would MULTIPLY it. */
-  /* The OUTLINE has its own token and does NOT track the fill. */
-  stroke: var(--_border, var(--_hue, var(--_fill)));
-  /* ROUND joins: a mitre spikes past the corner on a narrow band. */
-  stroke-linejoin: round;
-  cursor: pointer;
-  transition: fill-opacity 100ms ease;
-}
-
-.zone:hover {
-  fill-opacity: 1;
-}
-
-/* A clicked zone keeps focus but a pointer user has no use for the ring — see
-   the twin rule in sherpa-radial-chart.css.
-   TRAP T-a-datum-focus-ring-is-for-the-keyboard-only */
-.zone:focus:not(:focus-visible) { outline: none; }
-
-.zone:focus-visible {
-  outline: none;
-  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-  stroke-width: 2;
-}
-
 /* NO FULL-LENGTH TRACK — #renderArcs appends the grey remainder as a band through
    the same code path, so it cannot drift from the coloured ones' geometry.
    Pinned Style=default, as Figma pins its remainder segment. */

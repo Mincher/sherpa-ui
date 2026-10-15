@@ -80,7 +80,7 @@
             "children": [
               {
                 "el": "path",
-                "class": "slice"
+                "class": "slice chart-segment"
               }
             ]
           }
@@ -242,7 +242,7 @@
     {
       "$type": "state",
       "name": "focus-visible",
-      "selector": ".slice:focus-visible"
+      "selector": ":focus-visible"
     }
   ],
   "capabilities": [
@@ -267,8 +267,6 @@
   ],
   "tokens": {
     "layout.gap": "{sherpa.display-mode-space-lg}",
-    "slice.fill": "{sherpa.data-viz-series-1}",
-    "slice.stroke": "{sherpa.data-viz-series-1}",
     "value.font-size": "{sherpa.theme-content-size-h1}",
     "value.font-weight": "{sherpa.font-weight-regular}",
     "value.line-height": "{sherpa.theme-content-line-height-h1}",
