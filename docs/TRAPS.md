@@ -435,6 +435,7 @@ own roving tabindex.
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `test/e2e/reforged-chart-keyboard.spec.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ## Events and listeners
 

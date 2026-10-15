@@ -42,6 +42,14 @@ test('a month: its length, add and with across years, and its days', () => {
   assert.equal(plainDate('2024-02-10').toPlainYearMonth().daysInMonth, 29);
 });
 
+test('a day adds as Temporal does: months first, clamped, then days', () => {
+  assert.equal(plainDate('2024-01-31').add({ months: 1 }).toString(), '2024-02-29');
+  assert.equal(plainDate('2024-12-30').add({ days: 3 }).toString(), '2025-01-02');
+  assert.equal(plainDate('2024-03-01').add({ days: -1 }).toString(), '2024-02-29');
+  assert.equal(plainDate('2024-02-29').add({ years: 1 }).toString(), '2025-02-28');
+  assert.equal(plainDate('2024-01-31').add({ months: 1, days: 1 }).toString(), '2024-03-01');
+});
+
 test('today is this device\'s day', () => {
   const now = new Date();
   const t = today();

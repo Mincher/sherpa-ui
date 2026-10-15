@@ -20,6 +20,8 @@ export interface PlainDateLike {
   readonly day: number;
   /** ISO: Monday 1 to Sunday 7. */
   readonly dayOfWeek: number;
+  /** A month adds first, its day clamped to that month; then the days. */
+  add(by: { years?: number; months?: number; days?: number }): PlainDateLike;
   toPlainYearMonth(): PlainYearMonthLike;
   toLocaleString(locales?: string | string[], options?: Intl.DateTimeFormatOptions): string;
   toString(): string;
@@ -47,6 +49,12 @@ class StandInDate implements PlainDateLike {
   constructor(public readonly year: number, public readonly month: number, public readonly day: number) {}
   get dayOfWeek(): number {
     return utc(this.year, this.month, this.day).getUTCDay() || 7;
+  }
+  add({ years = 0, months = 0, days = 0 }: { years?: number; months?: number; days?: number }): PlainDateLike {
+    const ym = new StandInMonth(this.year, this.month).add({ years, months });
+    const at = utc(ym.year, ym.month, Math.min(this.day, ym.daysInMonth));
+    at.setUTCDate(at.getUTCDate() + days);
+    return new StandInDate(at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate());
   }
   toPlainYearMonth(): PlainYearMonthLike {
     return new StandInMonth(this.year, this.month);

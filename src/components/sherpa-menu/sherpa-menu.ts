@@ -1893,6 +1893,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** ArrowRight opens a row's child menu, and ArrowLeft goes back, as in an OS menu. */
   #onRowKey = (event: KeyboardEvent): void => {
+    // An inner set moved on this key already. TRAP T-one-tab-stop-per-set
+    if (event.defaultPrevented) return;
     const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
     if (event.key === 'ArrowRight' && row) this.#drillInto(row);
     else if (event.key === 'ArrowLeft' && this.hasAttribute('data-drill')) this.emit('menu-back');
