@@ -115,21 +115,22 @@
     },
     {
       "$type": "prop",
-      "name": "data-placeholder",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
-      "description": "— textarea placeholder"
-    },
-    {
-      "$type": "prop",
       "name": "disabled",
       "type": "boolean",
       "observed": true,
       "native": true,
       "default": false,
       "description": "— disables the input, leading buttons + send button"
+    },
+    {
+      "$type": "prop",
+      "name": "placeholder",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "content",
+      "description": "— textarea placeholder"
     }
   ],
   "slots": [
@@ -143,7 +144,7 @@
     }
   ],
   "populate": {
-    "shape": "{ noLeadingActions?, placeholder? }",
+    "shape": "{ noLeadingActions? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

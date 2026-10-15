@@ -1,6 +1,6 @@
 {
   "html": [
-    "<sherpa-file-upload data-label=\"Attach a contract\" data-helper=\"PDF only\" data-accept=\"application/pdf\" data-max-size=\"5MB\">",
+    "<sherpa-file-upload data-label=\"Attach a contract\" data-description=\"PDF only\" accept=\"application/pdf\" data-max-size=\"5MB\">",
     "</sherpa-file-upload>"
   ]
 }

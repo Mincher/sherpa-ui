@@ -749,12 +749,12 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-empty-flag-needs-rows-to-count — PERSISTENT, LOCKED and ORGANISE are exempt.
    */
   #syncEmpty(): void {
-    /* `data-empty` means ON BUT FILTERING NOTHING. An organise chip never
+    /* `data-filters-nothing` means ON BUT FILTERING NOTHING. An organise chip never
        filters, so the question does not apply — and its menu picks a COLUMN,
        which reads as zero values the moment nothing is chosen.
        TRAP T-an-organise-chip-has-no-values */
     if (!this.#answersForItself()) {
-      this.set('data-empty', null);
+      this.set('data-filters-nothing', null);
       return;
     }
     const menu = this.menu;
@@ -769,8 +769,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const empty = !!menu && this.current && !advanced
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
 
-    this.set('data-empty', empty);
-    /* AND CHECK AGAIN. `data-empty` is the AMBER warning, and a rebuilt menu
+    this.set('data-filters-nothing', empty);
+    /* AND CHECK AGAIN. `data-filters-nothing` is the AMBER warning, and a rebuilt menu
        reads ZERO values until it stamps — so a bar that had just added or
        removed one filter could paint an unrelated chip as "on, filtering
        nothing". The recheck may only ever CLEAR a warning the menu has since
@@ -814,7 +814,7 @@ export class SherpaQuickFilter extends SherpaElement {
         const answered = (menu.values?.length ?? 0) > 0
           || menu.mode === 'advanced'
           || this.#hasTypedAnswer();
-        if (answered) this.set('data-empty', null);
+        if (answered) this.set('data-filters-nothing', null);
       });
   }
 

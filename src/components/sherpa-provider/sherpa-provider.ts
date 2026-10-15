@@ -792,7 +792,7 @@ export class SherpaProvider extends SherpaElement {
         const { error } = (event as CustomEvent).detail as { error: unknown };
         for (const c of cards(false)) {
           c.dataset['state'] = 'error';
-          c.dataset['errorMessage'] = error instanceof Error ? error.message : String(error);
+          c.dataset['error'] = error instanceof Error ? error.message : String(error);
         }
       }, { signal });
     }

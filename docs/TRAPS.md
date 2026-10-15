@@ -4981,7 +4981,7 @@ make a host routing it into its query filter twice.
 ### T-one-pick-reads-field-and-value
 
 A VALUE chip that is ON with no values filters nothing out, so CSS paints it
-WARNING off `data-empty` (`T-empty-flag-needs-rows-to-count`). A plain TOGGLE
+WARNING off `data-filters-nothing` (`T-empty-flag-needs-rows-to-count`). A plain TOGGLE
 chip never gets it — on/off is its whole meaning.
 
 At EXACTLY ONE pick the chip reads "Field: Value": it fits, and it says what
@@ -5061,7 +5061,7 @@ off, which is a different fact from who owns its state.
 
 ### T-empty-flag-needs-rows-to-count
 
-`data-empty` flags "on, but filtering by nothing" so CSS can paint the chip
+`data-filters-nothing` flags "on, but filtering by nothing" so CSS can paint the chip
 WARNING. A VALUE chip only — a plain toggle has no values to hold.
 
 It reads the menu's CHECKED ROWS, not the last event's detail: a chip can be
@@ -10904,8 +10904,8 @@ remove do. `test/unit/raw-data-is-untouched.test.mjs` holds that half.
 
 ### T-an-organise-chip-has-no-values
 
-`data-empty` means ON BUT FILTERING NOTHING, and `state-pins.yaml` paints
-`[data-current][data-empty]` AMBER. An organise chip never filters, so the
+`data-filters-nothing` means ON BUT FILTERING NOTHING, and `state-pins.yaml` paints
+`[data-current][data-filters-nothing]` AMBER. An organise chip never filters, so the
 question does not apply to it — but it IS a `sherpa-quick-filter` with a menu,
 and that menu picks a COLUMN. `menu.values` reads ticked inputs, so a Sort chip
 with no column chosen reports zero values and the chip is judged empty.
@@ -11501,7 +11501,7 @@ So there is no state pin and no CSS for `data-condition`. The attribute stays,
 because three things still read it:
 
 - a grid heading shows the `fx` glyph for an Advanced column;
-- an Advanced chip is never `data-empty` — a condition is an answer, so the
+- an Advanced chip is never `data-filters-nothing` — a condition is an answer, so the
   amber "on but filtering by nothing" warning would be a lie;
 - a test can ask which kind a chip is.
 
@@ -11528,7 +11528,7 @@ A chip added from the Add menu arrives OFF.
 
 It used to arrive `active: true`, "so the reason you added it is visible
 immediately". But a chip on with no values is exactly the state
-`data-empty` paints AMBER — so the reader pressed Add, got what they asked
+`data-filters-nothing` paints AMBER — so the reader pressed Add, got what they asked
 for, and was shown a warning about it.
 
 They add the chip, then answer it. The chip lights when it has an answer.
@@ -11586,7 +11586,7 @@ some may now be removable — each needs its own proof.
 
 **AND THE AMBER WARNING RIDES ON IT.** A chip that is ON while its menu holds
 no values is the contradiction `state-pins.yaml` paints `warning`
-(`&[data-current][data-empty]`). A rebuilt menu reads zero values until it
+(`&[data-current][data-filters-nothing]`). A rebuilt menu reads zero values until it
 stamps, so `#syncEmpty` could set that flag from a premature read and paint an
 unrelated chip as broken. Saying NOT empty is always safe; saying EMPTY waits
 for the menu's own `rendered` and one frame after it, and a later check

@@ -1,5 +1,5 @@
 /**
- * sherpa-select-group — a labelled group of checkboxes (data-multiple) or radios.
+ * sherpa-select-group — a labelled group of checkboxes (multiple) or radios.
  *
  * Options come from the `options` slot or from populate(); either way they live
  * in the host's LIGHT DOM.
@@ -31,7 +31,7 @@ export class SherpaSelectGroup extends SherpaElement {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     'data-error': { type: 'string', kind: 'content', to: '.validation' },
-    'data-multiple': { type: 'boolean', kind: 'behaviour' },
+    'multiple': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   static override observed = [
@@ -56,7 +56,7 @@ export class SherpaSelectGroup extends SherpaElement {
   }
 
   get #multiple(): boolean {
-    return this.hasAttribute('data-multiple');
+    return this.hasAttribute('multiple');
   }
 
   /** Checkboxes when several may be picked, radios when one. */
@@ -71,7 +71,7 @@ export class SherpaSelectGroup extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-multiple') this.#render();
+    if (name === 'multiple') this.#render();
     else if (name === 'disabled') this.#syncDisabled();
     else if (name === 'name') this.#syncNames();
   }

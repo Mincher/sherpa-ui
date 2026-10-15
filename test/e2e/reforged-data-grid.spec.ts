@@ -1417,7 +1417,7 @@ test('applying a column filter flags the column and reports a ready clause', asy
       // The chip must read ACTIVE, not the amber "on but empty" warning: its
       // menu has no tickable rows, so "nothing ticked" says nothing about
       // whether it is filtering. data-locked is what tells it so.
-      empty: chip().hasAttribute('data-empty'),
+      empty: chip().hasAttribute('data-filters-nothing'),
       value: (chip().querySelector('sherpa-menu') as HTMLElement & { conditionValue: string })
         .conditionValue,
     };

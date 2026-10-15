@@ -13,10 +13,10 @@ export class SherpaFileUpload extends SherpaElement {
     /* An upload is in flight — the host sets it, CSS shows the bar. */
     'data-loading': { type: 'boolean', kind: 'style' },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-helper': { type: 'string', kind: 'content', to: '.helper' },
+    'data-description': { type: 'string', kind: 'content', to: '.helper' },
     'data-max-size': { type: 'string', kind: 'content' },
-    'data-accept': { type: 'string', kind: 'content' },
-    'data-multiple': { type: 'boolean', kind: 'behaviour' },
+    'accept': { type: 'string', kind: 'content' },
+    'multiple': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   static override observed = ['disabled', 'name'];
@@ -54,8 +54,8 @@ export class SherpaFileUpload extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-max-size' || name === 'data-accept') this.#syncText();
-    if (name === 'data-accept' || name === 'data-multiple') this.#syncInput();
+    if (name === 'data-max-size' || name === 'accept') this.#syncText();
+    if (name === 'accept' || name === 'multiple') this.#syncInput();
     if (name === 'name') this.formLink.value(this.#files);
   }
 
@@ -65,16 +65,16 @@ export class SherpaFileUpload extends SherpaElement {
     const maxSize = this.$('.max-size');
     if (maxSize) maxSize.textContent = this.dataset['maxSize'] ? `Maximum file size: ${this.dataset['maxSize']}` : '';
     const allowed = this.$('.allowed-types');
-    if (allowed) allowed.textContent = this.dataset['accept'] ? `Allowed file types: ${this.dataset['accept']}` : '';
+    if (allowed) allowed.textContent = this.getAttribute('accept') ? `Allowed file types: ${this.getAttribute('accept')}` : '';
   }
 
-  /** Mirror `data-accept` and `data-multiple` onto the native input. */
+  /** Mirror `accept` and `multiple` onto the native input. */
   #syncInput(): void {
     const input = this.#input;
     if (!input) return;
-    if (this.dataset['accept']) input.setAttribute('accept', this.dataset['accept']);
+    if (this.hasAttribute('accept')) input.setAttribute('accept', this.getAttribute('accept') ?? '');
     else input.removeAttribute('accept');
-    input.toggleAttribute('multiple', this.hasAttribute('data-multiple'));
+    input.toggleAttribute('multiple', this.hasAttribute('multiple'));
   }
 
   /* ── Open / drag / drop ────────────────────────────────────────────── */
@@ -128,8 +128,8 @@ export class SherpaFileUpload extends SherpaElement {
   /** Add files — one replaces, unless several are allowed. */
   #add(incoming: File[]): void {
     if (!incoming.length) return;
-    const added = this.hasAttribute('data-multiple') ? incoming : incoming.slice(0, 1);
-    this.#files = this.hasAttribute('data-multiple') ? [...this.#files, ...added] : added;
+    const added = this.hasAttribute('multiple') ? incoming : incoming.slice(0, 1);
+    this.#files = this.hasAttribute('multiple') ? [...this.#files, ...added] : added;
     this.#render();
     this.emit('file-add', { added, files: this.#files });
   }

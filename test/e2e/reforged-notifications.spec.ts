@@ -113,7 +113,7 @@ test('an empty list says so rather than showing an empty card', async ({ page })
       populate(d: unknown): void;
       shadowRoot: ShadowRoot;
     };
-    el.setAttribute('data-empty-text', 'All caught up');
+    el.setAttribute('data-empty', 'All caught up');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate([]);

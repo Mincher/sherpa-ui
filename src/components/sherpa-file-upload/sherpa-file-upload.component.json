@@ -185,7 +185,7 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-accept",
+      "name": "accept",
       "type": "string",
       "observed": true,
       "declared": true,
@@ -194,7 +194,7 @@
     },
     {
       "$type": "prop",
-      "name": "data-helper",
+      "name": "data-description",
       "type": "string",
       "observed": true,
       "declared": true,
@@ -230,21 +230,23 @@
     },
     {
       "$type": "prop",
-      "name": "data-multiple",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "allow selecting more than one file → native multiple"
-    },
-    {
-      "$type": "prop",
       "name": "disabled",
       "type": "boolean",
       "observed": true,
       "native": true,
       "default": false,
       "description": "disabled state"
+    },
+    {
+      "$type": "prop",
+      "name": "multiple",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "default": false,
+      "description": "allow selecting more than one file → native multiple"
     },
     {
       "$type": "prop",
@@ -266,7 +268,7 @@
     }
   ],
   "populate": {
-    "shape": "{ accept?, helper?, label?, loading?, maxSize?, multiple? }",
+    "shape": "{ description?, label?, loading?, maxSize? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

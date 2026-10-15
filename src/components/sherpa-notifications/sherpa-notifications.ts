@@ -37,7 +37,7 @@ export class SherpaNotifications extends SherpaElement {
   static override css = new URL('./sherpa-notifications.css', import.meta.url);
   static override html = new URL('./sherpa-notifications.html', import.meta.url);
   static override props = {
-    'data-empty-text': { type: 'string', kind: 'content' },
+    'data-empty': { type: 'string', kind: 'content' },
   } as const;
 
   /** The notifications, as populated. */
@@ -132,7 +132,7 @@ export class SherpaNotifications extends SherpaElement {
       for (const node of this.$$('.menu > .notification, .menu > .empty')) node.remove();
       const empty = this.clone('template.empty-tpl');
       if (empty) {
-        empty.textContent = this.dataset['emptyText'] ?? 'No notifications';
+        empty.textContent = this.dataset['empty'] ?? 'No notifications';
         menu.appendChild(empty);
       }
       return;

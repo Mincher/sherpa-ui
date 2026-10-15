@@ -3,7 +3,7 @@ import { test, expect } from './harness';
 /**
  * AN ORGANISE CHIP HAS NO VALUES, SO IT CANNOT BE "ON BUT FILTERING NOTHING".
  *
- * `[data-current][data-empty]` is the AMBER warning pin. `data-empty` has one
+ * `[data-current][data-filters-nothing]` is the AMBER warning pin. `data-filters-nothing` has one
  * writer — the chip's own `#syncEmpty` — but `data-current` has 26 outside it,
  * and a Sort chip's menu picks a COLUMN, which reads as zero values until one
  * is chosen. Will saw the yellow border three times and never on a filter.
@@ -61,7 +61,7 @@ test('a sort chip set current from OUTSIDE, with no column, never goes amber', a
     sortChip.setAttribute('data-current', '');
     await window.__settled();
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    const unmarked = sortChip.hasAttribute('data-empty');
+    const unmarked = sortChip.hasAttribute('data-filters-nothing');
 
     sortChip.removeAttribute('data-current');
     sortChip.dataset.kind = 'sort';
@@ -74,7 +74,7 @@ test('a sort chip set current from OUTSIDE, with no column, never goes amber', a
       unmarked,
       values: (sortChip.menu?.values ?? []).length,
       current: sortChip.hasAttribute('data-current'),
-      empty: sortChip.hasAttribute('data-empty'),
+      empty: sortChip.hasAttribute('data-filters-nothing'),
     };
   })()`) as { unmarked: boolean; values: number; current: boolean; empty: boolean };
 
@@ -100,7 +100,7 @@ test('clicking the sort body with no column picked leaves the chip OFF', async (
     await window.__settled();
     const afterBare = {
       current: sortChip.hasAttribute('data-current'),
-      empty: sortChip.hasAttribute('data-empty'),
+      empty: sortChip.hasAttribute('data-filters-nothing'),
     };
 
     // Pick a column from the menu, and the body cycles as it always did.
@@ -133,7 +133,7 @@ test('a real filter chip STILL warns when it is on with nothing ticked', async (
     await window.__settled();
     // The fix must not silence the warning where it is TRUE.
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    return chip.hasAttribute('data-empty');
+    return chip.hasAttribute('data-filters-nothing');
   })()`) as boolean;
 
   expect(empty).toBe(true);

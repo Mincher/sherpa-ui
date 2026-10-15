@@ -61,7 +61,7 @@ test('the slider, select card, calendar, file upload and transfer list submit th
       <sherpa-select-card name="plan" value="pro" checked></sherpa-select-card>
       <sherpa-calendar name="due" data-value="2026-10-12"></sherpa-calendar>
       <sherpa-calendar name="span" data-type="range" data-value-start="2026-10-01" data-value-end="2026-10-05"></sherpa-calendar>
-      <sherpa-file-upload name="docs" data-multiple></sherpa-file-upload>
+      <sherpa-file-upload name="docs" multiple></sherpa-file-upload>
       <sherpa-transfer-list name="regions"></sherpa-transfer-list>
     </fieldset></form>`;
     const settle = (window as unknown as { __settled(): Promise<void> }).__settled;

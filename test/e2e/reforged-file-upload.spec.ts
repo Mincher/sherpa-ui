@@ -13,8 +13,8 @@ test('renders a drop zone and mirrors accept/multiple to the input', async ({ pa
   }
   
     const el = document.createElement('sherpa-file-upload') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-accept', 'image/*');
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('accept', 'image/*');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const input = el.shadowRoot!.querySelector<HTMLInputElement>('.file-input')!;
@@ -35,7 +35,7 @@ test('dropping files renders the list and fires file-add', async ({ page }) => {
   }
   
     const el = document.createElement('sherpa-file-upload') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -73,9 +73,9 @@ test('adding files fires file-add; the actions row and details appear', async ({
   }
   
     const el = document.createElement('sherpa-file-upload') as FileEl;
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     el.setAttribute('data-max-size', '4 MB');
-    el.setAttribute('data-accept', '.png');
+    el.setAttribute('accept', '.png');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     let added = -1;
@@ -132,7 +132,7 @@ test('clear all empties the list and fires file-clear', async ({ page }) => {
   }
   
     const el = document.createElement('sherpa-file-upload') as FileEl;
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     { const dt = new DataTransfer(); for (const n of ['a.txt', 'b.txt']) dt.items.add(new File(["x"], n, { type: "text/plain" })); el.shadowRoot!.querySelector(".drop-zone")!.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true })); }
@@ -158,7 +158,7 @@ test('removing a file fires file-remove with the removed file', async ({ page })
   }
   
     const el = document.createElement('sherpa-file-upload') as FileEl;
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     { const dt = new DataTransfer(); for (const n of ['keep.txt', 'drop.txt']) dt.items.add(new File(["x"], n, { type: "text/plain" })); el.shadowRoot!.querySelector(".drop-zone")!.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true })); }
@@ -180,7 +180,7 @@ test('removing a file fires file-remove with the removed file', async ({ page })
 test('each row shows its real file name', async ({ page }) => {
   const names = await page.evaluate(async () => {
     const el = document.createElement('sherpa-file-upload') as FileEl;
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     { const dt = new DataTransfer(); for (const n of ['invoice.pdf', 'photo.png']) dt.items.add(new File(["x"], n, { type: "text/plain" })); el.shadowRoot!.querySelector(".drop-zone")!.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true })); }
@@ -197,7 +197,7 @@ test('a file keeps its status through an add and a remove', async ({ page }) => 
     const el = document.createElement('sherpa-file-upload') as HTMLElement & {
       rendered?: Promise<void>; setFileStatus(index: number, status: string): void;
     };
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const drop = (...names: string[]): void => {

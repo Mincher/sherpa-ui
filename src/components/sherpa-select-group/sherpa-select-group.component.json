@@ -102,15 +102,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-multiple",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "present → checkboxes (multi-select); absent → radios"
-    },
-    {
-      "$type": "prop",
       "name": "data-status",
       "type": "string",
       "observed": false,
@@ -125,6 +116,17 @@
       "native": true,
       "default": false,
       "description": "disable every option"
+    },
+    {
+      "$type": "prop",
+      "name": "multiple",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "default": false,
+      "description": "present → checkboxes (multi-select); absent → radios"
     },
     {
       "$type": "prop",

@@ -108,7 +108,7 @@ test('every saved chip on a bar opens its conditions, a heading per field; it is
     bar.addEventListener('quick-filter-change', (e) => { heard = (e as CustomEvent).detail.active; });
     chip('at-risk').shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await window.__settled();
-    const on = { current: chip('at-risk').hasAttribute('data-current'), active: bar.active, heard, amber: chip('at-risk').hasAttribute('data-empty') };
+    const on = { current: chip('at-risk').hasAttribute('data-current'), active: bar.active, heard, amber: chip('at-risk').hasAttribute('data-filters-nothing') };
 
     // The CARET opens the list; neither a line nor a read-only row is a control.
     chip('risky').toggleMenu();

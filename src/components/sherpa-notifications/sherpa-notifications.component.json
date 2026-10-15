@@ -93,7 +93,7 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-empty-text",
+      "name": "data-empty",
       "type": "string",
       "observed": true,
       "declared": true,

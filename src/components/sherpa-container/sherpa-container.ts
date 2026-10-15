@@ -29,7 +29,7 @@ export class SherpaContainer extends SherpaElement {
     'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg'] },
     /* Its data's state — written by the provider. TRAP T-a-container-shows-its-datas-state */
     'data-state': { type: 'enum', kind: 'visibility', values: ['empty', 'no-matches', 'error'] },
-    'data-error-message': { type: 'string', kind: 'content', to: '.error-message', all: true },
+    'data-error': { type: 'string', kind: 'content', to: '.error-message', all: true },
     // A state is a bar or a banner, never IN PLACE of the body. Will, TODO 59.
     'data-keep-content': { type: 'boolean', kind: 'style' },
   } as const;
@@ -53,8 +53,8 @@ export class SherpaContainer extends SherpaElement {
     this.set('data-loading', state === 'loading');
     if (state && state !== 'loading') this.set('data-state', state);
     else this.set('data-state', null);
-    if (message) this.set('data-error-message', message);
-    else this.set('data-error-message', null);
+    if (message) this.set('data-error', message);
+    else this.set('data-error', null);
   }
 }
 

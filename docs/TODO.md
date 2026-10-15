@@ -6400,6 +6400,16 @@ keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
 - **Row 3, selection ✅:** select-card is `checked` (attribute, property, and
   `change{checked}`), as checkbox, radio and switch; the default `value` is
   `'on'` on all four.
+- **Row 4, `data-state` ⏸ held:** input-text's `data-state` is the Figma `input`
+  collection's mode attribute, so the rename waits for Figma's queue.
+- **Row 5, error, empty, help ✅:** container `data-error-message` →
+  `data-error`; notifications `data-empty-text` → `data-empty`; file-upload
+  `data-helper` → `data-description`, `data-accept` → `accept`, `data-multiple` →
+  `multiple`; select-group `data-multiple` → `multiple`; prompt-composer
+  `data-placeholder` → `placeholder`; the chip's flag `data-empty` →
+  `data-filters-nothing` (its pin in `state-pins.yaml` and the token CSS follow).
+  The props gate caught three `dataset['accept'|'placeholder']` reads that the
+  type-checker could not: a native name is read with `getAttribute`.
 
 ### `[x]` ✅ 277 — Phase 4: state first
 

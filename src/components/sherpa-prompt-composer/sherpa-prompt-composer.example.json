@@ -1,3 +1,3 @@
 {
-  "html": "<sherpa-prompt-composer data-placeholder=\"Message the assistant…\"></sherpa-prompt-composer>"
+  "html": "<sherpa-prompt-composer placeholder=\"Message the assistant…\"></sherpa-prompt-composer>"
 }

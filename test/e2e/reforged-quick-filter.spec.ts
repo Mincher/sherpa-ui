@@ -375,28 +375,28 @@ test('a value chip that is ON with no values picked paints WARNING, not active',
 
     // Switch the value chip on with nothing picked — the contradiction.
     value.current = true;
-    const emptyOn = { empty: value.hasAttribute('data-empty'), ...(await paint(value)) };
+    const emptyOn = { empty: value.hasAttribute('data-filters-nothing'), ...(await paint(value)) };
 
     // Pick something — it becomes a real applied filter, so back to the active look.
     const input = value.querySelector<HTMLInputElement>('input')!;
     input.click();
-    const withValue = { empty: value.hasAttribute('data-empty'), ...(await paint(value)) };
+    const withValue = { empty: value.hasAttribute('data-filters-nothing'), ...(await paint(value)) };
 
     // Untick the last value: the chip switches itself OFF (existing behaviour —
     // no picks means nothing applied), so it is plain off, not on-and-empty.
     input.click();
     const unticked = {
       current: value.hasAttribute('data-current'),
-      empty: value.hasAttribute('data-empty'),
+      empty: value.hasAttribute('data-filters-nothing'),
     };
 
     // Re-arm the contradiction the way a host does: on, with nothing picked.
     value.current = true;
-    const emptyAgain = { empty: value.hasAttribute('data-empty'), ...(await paint(value)) };
+    const emptyAgain = { empty: value.hasAttribute('data-filters-nothing'), ...(await paint(value)) };
 
     // A plain TOGGLE chip has no values to hold, so "on" is never empty.
     toggle.current = true;
-    const toggleOn = { empty: toggle.hasAttribute('data-empty'), ...(await paint(toggle)) };
+    const toggleOn = { empty: toggle.hasAttribute('data-filters-nothing'), ...(await paint(toggle)) };
 
     // Each mode's own tokens, resolved the same way, so the check follows Figma.
     const mode = (name: string) => {

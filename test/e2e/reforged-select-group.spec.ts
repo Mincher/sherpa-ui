@@ -53,10 +53,10 @@ test('renders one child per option with label + description', async ({ page }) =
   expect(r.betaDesc).toBe('the second');
 });
 
-test('data-multiple renders checkboxes and allows multi-select', async ({ page }) => {
+test('multiple renders checkboxes and allows multi-select', async ({ page }) => {
   const r = await page.evaluate(async (options) => {
     const el = document.createElement('sherpa-select-group') as unknown as GroupEl;
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
@@ -89,7 +89,7 @@ test('radio value is a single string (single-select)', async ({ page }) => {
 test('toggling a child fires change with the aggregate value (composedPath)', async ({ page }) => {
   const r = await page.evaluate(async (options) => {
     const el = document.createElement('sherpa-select-group') as unknown as GroupEl;
-    el.setAttribute('data-multiple', '');
+    el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
@@ -120,7 +120,7 @@ test('a value set before the options arrive, and a tick, both survive populate()
   const r = await page.evaluate(async (options) => {
     const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
     const one = document.createElement('sherpa-select-group') as unknown as GroupEl;
-    one.setAttribute('data-multiple', '');
+    one.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(one);
     one.value = ['b', 'c'];
     const early = one.value;

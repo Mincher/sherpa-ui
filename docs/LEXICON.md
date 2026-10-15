@@ -84,6 +84,8 @@ calendar-cell's day (`today|selected|range-start|…`).
 cascade. A calendar day's own state keeps `data-state` — it is its only
 state, read by nothing else.
 
+**⏸ Held, 2026-10-15:** input-text's `data-state` is the attribute the Figma `input` collection projects its modes onto (`scripts/project-tokens.mjs`, and the generated block at the top of its CSS, which selects `[data-state="validation"]`). The rename is Figma's, so it waits for the Figma queue; the code never reads `error|success|warning`, which `data-error` does.
+
 **Moves (1).** input-text `data-state` → `data-status` (values `critical`,
 `success`, `warning`: `error` → `critical`, the cascade's word).
 **❓ Calendar-cell:** keep `data-state` (my pick), or `data-day`.

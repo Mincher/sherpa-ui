@@ -763,7 +763,7 @@ test('the view chip offers no remove, defaults to its first option, and never go
       checked,
       viewOn: view.hasAttribute('data-current'),
       // …so the chip is never ON-with-nothing, and never wears the warning tint.
-      viewEmpty: view.hasAttribute('data-empty'),
+      viewEmpty: view.hasAttribute('data-filters-nothing'),
       // The bar reports it like any other applied filter.
       values: JSON.parse(JSON.stringify(el.values)),
       // "Remove" is a FOOTER BUTTON on the chip's menu now, not a row in
@@ -830,7 +830,7 @@ test('the Add button puts an available filter on the bar and drops it from its m
       // not a value), so "did it arrive on?" is read off the chip itself.
       addedIsOn: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-current'),
       // On with no values is the AMBER warning, which is what we are avoiding.
-      addedIsWarning: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-empty'),
+      addedIsWarning: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-filters-nothing'),
     };
   });
 

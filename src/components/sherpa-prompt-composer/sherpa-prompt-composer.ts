@@ -17,7 +17,7 @@ export class SherpaPromptComposer extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-no-leading-actions': { type: 'boolean', kind: 'style' },
-    'data-placeholder': { type: 'string', kind: 'content' },
+    'placeholder': { type: 'string', kind: 'content' },
   } as const;
   static override observed = ['disabled'];
 
@@ -43,7 +43,7 @@ export class SherpaPromptComposer extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-placeholder') this.#syncPlaceholder();
+    if (name === 'placeholder') this.#syncPlaceholder();
     else if (name === 'disabled') this.#syncDisabled();
   }
 
@@ -63,9 +63,9 @@ export class SherpaPromptComposer extends SherpaElement {
     this.value = '';
   }
 
-  /** Mirror `data-placeholder` onto the text box. */
+  /** Mirror `placeholder` onto the text box. */
   #syncPlaceholder(): void {
-    if (this.#input) this.#input.placeholder = this.dataset['placeholder'] ?? '';
+    if (this.#input) this.#input.placeholder = this.getAttribute('placeholder') ?? '';
   }
 
   /** Disable the text box and every button with the host. */

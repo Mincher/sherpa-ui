@@ -2612,7 +2612,7 @@
     --_status-icon: var(--sherpa-style-active-indicator-accent);
   }
 
-  sherpa-quick-filter[data-current][data-empty] {
+  sherpa-quick-filter[data-current][data-filters-nothing] {
     --sherpa-style-border-base: var(--sherpa-style-warning-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-warning-border-base-1);
     --sherpa-style-border-width: var(--sherpa-style-warning-border-width);
