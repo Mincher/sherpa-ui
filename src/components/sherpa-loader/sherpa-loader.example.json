@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-loader data-size=\"sm\"><span slot=\"label\">Loading customers…</span></sherpa-loader>"
+  "html": "<sherpa-loader data-size=\"sm\"><span slot=\"label\">Loading customers…</span></sherpa-loader>",
+  "use": "To say \"please wait\" while something loads; it spins, and a screen reader hears it as a status. For a card that loads, set `data-loading` on its `sherpa-container`, which shows a loader itself; for work you can measure, use `sherpa-progress-bar`."
 }

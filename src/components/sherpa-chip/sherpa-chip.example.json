@@ -1,5 +1,6 @@
 {
   "html": [
     "<sherpa-chip>EMEA</sherpa-chip> <sherpa-chip data-status=\"success\" data-dismissible>Active</sherpa-chip>"
-  ]
+  ],
+  "use": "For a small selection or filter token; `data-dismissible` adds a cross that reports `chip-dismiss`, so the host can remove it. For a filter with a menu of values, use `sherpa-quick-filter`; for a passive label, use `sherpa-tag`."
 }

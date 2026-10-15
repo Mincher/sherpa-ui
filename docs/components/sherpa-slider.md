@@ -10,6 +10,10 @@ A single-value range control wrapping a native &lt;input type=range>.
 | Figma | Slider |
 | Source | [.ts](../../src/components/sherpa-slider/sherpa-slider.ts) · [.html](../../src/components/sherpa-slider/sherpa-slider.html) · [.css](../../src/components/sherpa-slider/sherpa-slider.css) · [.component.json](../../src/components/sherpa-slider/sherpa-slider.component.json) · [.example.json](../../src/components/sherpa-slider/sherpa-slider.example.json) |
 
+## When to use it
+
+To pick one number on a rail between `min` and `max`, or a range with `data-type="range"`; `data-show-value` adds a field to type it. To type a number with no rail, use `sherpa-input-text` with `data-type="number"`.
+
 ## Example
 
 ```html

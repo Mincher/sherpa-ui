@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-select-checkbox data-label=\"Accept terms\" data-description=\"Required to continue.\" name=\"terms\">",
     "</sherpa-select-checkbox>"
-  ]
+  ],
+  "use": "For one tick box with a label; `indeterminate` shows a mixed state, and `data-advanced` adds a menu of selection choices such as \"Select all on page\". For several options under one label, use `sherpa-select-group` with `multiple`; for an on/off that applies at once, use `sherpa-switch`."
 }

@@ -11,6 +11,7 @@
     "<sherpa-input-text class=\"pick\" data-label=\"Region\" name=\"region\" data-type=\"select\">",
     "</sherpa-input-text>"
   ],
+  "use": "For a typed value with a label, help text and an error message. Set `data-type` to `select` for one of a known set, `number` for a number, or `find` to step through the matches a host finds; set `data-multiline` for text on more than one line.",
   "fill": [
     {
       "at": ".pick",

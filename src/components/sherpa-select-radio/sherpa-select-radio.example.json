@@ -3,5 +3,6 @@
     "<sherpa-select-radio data-label=\"Standard shipping\" data-description=\"3–5 business days.\" name=\"ship\" value=\"standard\">",
     "</sherpa-select-radio><sherpa-select-radio data-label=\"Express\" name=\"ship\" value=\"express\">",
     "</sherpa-select-radio>"
-  ]
+  ],
+  "use": "For one option among several that share a `name`; ticking one unticks the others. To give the set one label, one error message and one value, put it in `sherpa-select-group`."
 }

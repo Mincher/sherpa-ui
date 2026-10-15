@@ -10,6 +10,10 @@ A selectable card with header / content / footer regions.
 | Figma | Select Card |
 | Source | [.ts](../../src/components/sherpa-select-card/sherpa-select-card.ts) · [.html](../../src/components/sherpa-select-card/sherpa-select-card.html) · [.css](../../src/components/sherpa-select-card/sherpa-select-card.css) · [.component.json](../../src/components/sherpa-select-card/sherpa-select-card.component.json) · [.example.json](../../src/components/sherpa-select-card/sherpa-select-card.example.json) |
 
+## When to use it
+
+To pick one option, or several with `data-select-mode="checkbox"`, when each option needs a card of its own: a title, a description and a body. The whole card is the control; for a labelled list of radio or checkbox rows, use `sherpa-select-group`.
+
 ## Example
 
 ```html

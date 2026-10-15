@@ -10,6 +10,10 @@ A labelled checkbox. Native &lt;input type="checkbox">; the visible box is drawn
 | Figma | Select Checkbox |
 | Source | [.ts](../../src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts) · [.html](../../src/components/sherpa-select-checkbox/sherpa-select-checkbox.html) · [.css](../../src/components/sherpa-select-checkbox/sherpa-select-checkbox.css) · [.component.json](../../src/components/sherpa-select-checkbox/sherpa-select-checkbox.component.json) · [.example.json](../../src/components/sherpa-select-checkbox/sherpa-select-checkbox.example.json) |
 
+## When to use it
+
+For one tick box with a label; `indeterminate` shows a mixed state, and `data-advanced` adds a menu of selection choices such as "Select all on page". For several options under one label, use `sherpa-select-group` with `multiple`; for an on/off that applies at once, use `sherpa-switch`.
+
 ## Example
 
 ```html

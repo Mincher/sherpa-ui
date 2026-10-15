@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-progress-step-tracker data-current-step=\"2\"></sherpa-progress-step-tracker>",
+  "use": "To show where the reader is in a flow of named steps; a press on a step only reports `step-select`, and the host moves `data-current-step`. For how far one task has run, use `sherpa-progress-bar`.",
   "fill": [
     {
       "at": "sherpa-progress-step-tracker",

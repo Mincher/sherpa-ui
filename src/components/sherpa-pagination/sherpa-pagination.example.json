@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-pagination data-page=\"2\" data-total-pages=\"10\" data-page-size=\"25\" data-rows-options=\"10,25,50\">",
     "</sherpa-pagination>"
-  ]
+  ],
+  "use": "To step through rows a page at a time, and to set how many rows a page holds. It does not change the URL: to go to another page of the app, write a real `<a href>`."
 }

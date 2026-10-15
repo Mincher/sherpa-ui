@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-button>Save</sherpa-button> <sherpa-button data-look=\"saturated\" data-icon-start=\"plus\">Add customer</sherpa-button> <sherpa-button data-type=\"icon\" data-icon-start=\"cross\" aria-label=\"Close\">",
     "</sherpa-button> <sherpa-button disabled>Delete</sherpa-button>"
-  ]
+  ],
+  "use": "For an action on this page: save, add, delete, open a dialog with `commandfor`, or open a `sherpa-menu` in its `menu` slot. To go to another page, write a real `<a href>`, not a button."
 }

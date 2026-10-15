@@ -10,6 +10,10 @@ An animated loading indicator. CSS-only off data-* on the host.
 | Figma | Loading Spinner (atom) |
 | Source | [.ts](../../src/components/sherpa-loader/sherpa-loader.ts) · [.html](../../src/components/sherpa-loader/sherpa-loader.html) · [.css](../../src/components/sherpa-loader/sherpa-loader.css) · [.component.json](../../src/components/sherpa-loader/sherpa-loader.component.json) · [.example.json](../../src/components/sherpa-loader/sherpa-loader.example.json) |
 
+## When to use it
+
+To say "please wait" while something loads; it spins, and a screen reader hears it as a status. For a card that loads, set `data-loading` on its `sherpa-container`, which shows a loader itself; for work you can measure, use `sherpa-progress-bar`.
+
 ## Example
 
 ```html

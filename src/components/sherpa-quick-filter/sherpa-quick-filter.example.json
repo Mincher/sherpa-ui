@@ -5,5 +5,6 @@
     "<sherpa-menu slot=\"menu\" data-heading=\"Region\" data-select=\"multiple\"><label>",
     "<input type=\"checkbox\" value=\"emea\" /> EMEA</label><label>",
     "<input type=\"checkbox\" value=\"apac\" /> APAC</label></sherpa-menu></sherpa-quick-filter>"
-  ]
+  ],
+  "use": "One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. For a row of filters, use `sherpa-quick-filter-toolbar`, which stamps the chips itself. With `data-type=\"jump\"` it is a Jump to chip: a pick scrolls to a place on the page, as on a Settings page."
 }

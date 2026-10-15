@@ -10,6 +10,10 @@ A compact labelled pill. Colour comes from the [data-status] cascade on an ances
 | Figma | Tag |
 | Source | [.ts](../../src/components/sherpa-tag/sherpa-tag.ts) · [.html](../../src/components/sherpa-tag/sherpa-tag.html) · [.css](../../src/components/sherpa-tag/sherpa-tag.css) · [.component.json](../../src/components/sherpa-tag/sherpa-tag.component.json) · [.example.json](../../src/components/sherpa-tag/sherpa-tag.example.json) |
 
+## When to use it
+
+To mark a thing with a short label and a status colour; `data-type="dot"` is a small circle. For a count, use `sherpa-badge`; for a selection or filter token, use `sherpa-chip`.
+
 ## Example
 
 ```html

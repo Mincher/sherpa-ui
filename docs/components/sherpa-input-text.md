@@ -12,6 +12,10 @@ A labelled text field. Templates: default (label + description + control + messa
 | Figma | Input Field (atom) |
 | Source | [.ts](../../src/components/sherpa-input-text/sherpa-input-text.ts) · [.html](../../src/components/sherpa-input-text/sherpa-input-text.html) · [.css](../../src/components/sherpa-input-text/sherpa-input-text.css) · [.component.json](../../src/components/sherpa-input-text/sherpa-input-text.component.json) · [.example.json](../../src/components/sherpa-input-text/sherpa-input-text.example.json) |
 
+## When to use it
+
+For a typed value with a label, help text and an error message. Set `data-type` to `select` for one of a known set, `number` for a number, or `find` to step through the matches a host finds; set `data-multiline` for text on more than one line.
+
 ## Example
 
 ```html

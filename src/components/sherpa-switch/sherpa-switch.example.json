@@ -3,5 +3,6 @@
     "<sherpa-switch name=\"contrast\" aria-label=\"Increase contrast\">",
     "</sherpa-switch> <sherpa-switch data-type=\"simple\" name=\"motion\" aria-label=\"Reduce motion\" checked>",
     "</sherpa-switch>"
-  ]
+  ],
+  "use": "For an on/off setting that takes effect at once; `data-type=\"simple\"` is the pill with no ON/OFF text. For a mixed state, use `sherpa-select-checkbox`; to pick from a set of options, use `sherpa-select-group`."
 }

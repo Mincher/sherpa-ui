@@ -11,6 +11,10 @@ An immediate binary toggle.
 | Figma | Switch |
 | Source | [.ts](../../src/components/sherpa-switch/sherpa-switch.ts) · [.html](../../src/components/sherpa-switch/sherpa-switch.html) · [.css](../../src/components/sherpa-switch/sherpa-switch.css) · [.component.json](../../src/components/sherpa-switch/sherpa-switch.component.json) · [.example.json](../../src/components/sherpa-switch/sherpa-switch.example.json) |
 
+## When to use it
+
+For an on/off setting that takes effect at once; `data-type="simple"` is the pill with no ON/OFF text. For a mixed state, use `sherpa-select-checkbox`; to pick from a set of options, use `sherpa-select-group`.
+
 ## Example
 
 ```html

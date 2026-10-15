@@ -12,6 +12,10 @@ The primary interactive trigger. Two templates, selected by data-type: default (
 | Figma | Button |
 | Source | [.ts](../../src/components/sherpa-button/sherpa-button.ts) · [.html](../../src/components/sherpa-button/sherpa-button.html) · [.css](../../src/components/sherpa-button/sherpa-button.css) · [.component.json](../../src/components/sherpa-button/sherpa-button.component.json) · [.example.json](../../src/components/sherpa-button/sherpa-button.example.json) |
 
+## When to use it
+
+For an action on this page: save, add, delete, open a dialog with `commandfor`, or open a `sherpa-menu` in its `menu` slot. To go to another page, write a real `<a href>`, not a button.
+
 ## Example
 
 ```html

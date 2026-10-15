@@ -10,6 +10,10 @@ Results-size + page navigation control.
 | Figma | Pagination |
 | Source | [.ts](../../src/components/sherpa-pagination/sherpa-pagination.ts) · [.html](../../src/components/sherpa-pagination/sherpa-pagination.html) · [.css](../../src/components/sherpa-pagination/sherpa-pagination.css) · [.component.json](../../src/components/sherpa-pagination/sherpa-pagination.component.json) · [.example.json](../../src/components/sherpa-pagination/sherpa-pagination.example.json) |
 
+## When to use it
+
+To step through rows a page at a time, and to set how many rows a page holds. It does not change the URL: to go to another page of the app, write a real `<a href>`.
+
 ## Example
 
 ```html

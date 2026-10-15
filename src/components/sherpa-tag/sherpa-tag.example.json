@@ -1,5 +1,6 @@
 {
   "html": [
     "<sherpa-tag>Draft</sherpa-tag> <sherpa-tag data-status=\"critical\" data-dismissible>Overdue</sherpa-tag>"
-  ]
+  ],
+  "use": "To mark a thing with a short label and a status colour; `data-type=\"dot\"` is a small circle. For a count, use `sherpa-badge`; for a selection or filter token, use `sherpa-chip`."
 }

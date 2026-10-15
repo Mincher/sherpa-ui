@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-select-group data-label=\"Plan\" name=\"plan\"></sherpa-select-group>",
+  "use": "For a labelled set of options: radios to pick one, or checkboxes with `multiple` to pick several, with one `name`, one error message and one `change`. For options that each need a card, use `sherpa-select-card`.",
   "fill": [
     {
       "at": "sherpa-select-group",

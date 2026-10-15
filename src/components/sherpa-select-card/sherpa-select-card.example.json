@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-select-card data-label=\"Pro\" data-description=\"For growing teams\" name=\"plan\" value=\"pro\" checked>12 seats</sherpa-select-card>",
     "<sherpa-select-card data-label=\"Free\" data-description=\"To try it\" name=\"plan\" value=\"free\">3 seats</sherpa-select-card>"
-  ]
+  ],
+  "use": "To pick one option, or several with `data-select-mode=\"checkbox\"`, when each option needs a card of its own: a title, a description and a body. The whole card is the control; for a labelled list of radio or checkbox rows, use `sherpa-select-group`."
 }

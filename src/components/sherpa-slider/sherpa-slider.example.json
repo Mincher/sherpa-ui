@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-slider data-label=\"Volume\" min=\"0\" max=\"100\" step=\"5\" value=\"40\" data-show-value>",
     "</sherpa-slider>"
-  ]
+  ],
+  "use": "To pick one number on a rail between `min` and `max`, or a range with `data-type=\"range\"`; `data-show-value` adds a field to type it. To type a number with no rail, use `sherpa-input-text` with `data-type=\"number\"`."
 }

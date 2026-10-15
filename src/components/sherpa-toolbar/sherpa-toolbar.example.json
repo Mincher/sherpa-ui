@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-toolbar><sherpa-button slot=\"leading\" data-icon-start=\"plus\">Add customer</sherpa-button>",
     "<sherpa-button slot=\"trailing\">Export</sherpa-button></sherpa-toolbar>"
-  ]
+  ],
+  "use": "For a strip of controls in one row, in a `leading` and a `trailing` slot. It is layout only and does nothing itself; for filter chips, use `sherpa-quick-filter-toolbar`."
 }

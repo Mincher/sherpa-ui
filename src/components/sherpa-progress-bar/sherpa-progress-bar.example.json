@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-progress-bar data-label=\"Upload\" value=\"40\"></sherpa-progress-bar>"
+  "html": "<sherpa-progress-bar data-label=\"Upload\" value=\"40\"></sherpa-progress-bar>",
+  "use": "To show how far one task has run, from 0 to 100; set `data-indeterminate` when you cannot tell how long the task takes. For a flow of named steps, use `sherpa-progress-step-tracker`."
 }

@@ -10,6 +10,10 @@ Drag-and-drop file zone; "browse" triggers the hidden &lt;input type="file">.
 | Figma | File Uploader |
 | Source | [.ts](../../src/components/sherpa-file-upload/sherpa-file-upload.ts) · [.html](../../src/components/sherpa-file-upload/sherpa-file-upload.html) · [.css](../../src/components/sherpa-file-upload/sherpa-file-upload.css) · [.component.json](../../src/components/sherpa-file-upload/sherpa-file-upload.component.json) · [.example.json](../../src/components/sherpa-file-upload/sherpa-file-upload.example.json) |
 
+## When to use it
+
+To let a reader drop or browse for files, and see and remove them in a list; in a form it submits them under `name`. It does not send them: Upload reports `file-upload-start`, the host sends them, and `setFileStatus()` shows each file's status.
+
 ## Example
 
 ```html

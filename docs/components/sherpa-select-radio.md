@@ -11,6 +11,10 @@ A labelled radio button.
 | Figma | Select Radio |
 | Source | [.ts](../../src/components/sherpa-select-radio/sherpa-select-radio.ts) · [.html](../../src/components/sherpa-select-radio/sherpa-select-radio.html) · [.css](../../src/components/sherpa-select-radio/sherpa-select-radio.css) · [.component.json](../../src/components/sherpa-select-radio/sherpa-select-radio.component.json) · [.example.json](../../src/components/sherpa-select-radio/sherpa-select-radio.example.json) |
 
+## When to use it
+
+For one option among several that share a `name`; ticking one unticks the others. To give the set one label, one error message and one value, put it in `sherpa-select-group`.
+
 ## Example
 
 ```html

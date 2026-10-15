@@ -10,6 +10,10 @@ Horizontal task-progress indicator, built on native &lt;progress>. Fill/track ar
 | Figma | Progress Bar (atom) |
 | Source | [.ts](../../src/components/sherpa-progress-bar/sherpa-progress-bar.ts) · [.html](../../src/components/sherpa-progress-bar/sherpa-progress-bar.html) · [.css](../../src/components/sherpa-progress-bar/sherpa-progress-bar.css) · [.component.json](../../src/components/sherpa-progress-bar/sherpa-progress-bar.component.json) · [.example.json](../../src/components/sherpa-progress-bar/sherpa-progress-bar.example.json) |
 
+## When to use it
+
+To show how far one task has run, from 0 to 100; set `data-indeterminate` when you cannot tell how long the task takes. For a flow of named steps, use `sherpa-progress-step-tracker`.
+
 ## Example
 
 ```html

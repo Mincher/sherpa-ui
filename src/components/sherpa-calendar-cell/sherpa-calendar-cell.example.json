@@ -3,5 +3,6 @@
     "<div role=\"grid\" aria-label=\"August 2026\"><div role=\"row\">",
     "<sherpa-calendar-cell role=\"gridcell\" data-label=\"15\" data-value=\"2026-08-15\">",
     "</sherpa-calendar-cell></div></div>"
-  ]
+  ],
+  "use": "One day, month or year in a calendar's grid; `sherpa-calendar` draws its cells and sets each `data-state` itself. To let a reader pick a date or a range, use `sherpa-calendar`."
 }

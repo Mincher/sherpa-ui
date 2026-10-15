@@ -10,6 +10,10 @@ A strip of quick-filter chips above a grid/list.
 | Figma | Filter Toolbar |
 | Source | [.ts](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts) · [.html](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html) · [.css](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css) · [.component.json](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.component.json) · [.example.json](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.example.json) |
 
+## When to use it
+
+For the row of filter chips above a grid or list: it stamps one `sherpa-quick-filter` per filter and reports the whole answer in `quick-filter-change`. For the same filters in a column, use `sherpa-filter-panel`; for a strip of other controls, use `sherpa-toolbar`.
+
 ## Example
 
 ```html

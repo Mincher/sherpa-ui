@@ -10,6 +10,10 @@ A horizontal stepper.
 | Figma | Progress Steps |
 | Source | [.ts](../../src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.ts) · [.html](../../src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.html) · [.css](../../src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.css) · [.component.json](../../src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.component.json) · [.example.json](../../src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.example.json) |
 
+## When to use it
+
+To show where the reader is in a flow of named steps; a press on a step only reports `step-select`, and the host moves `data-current-step`. For how far one task has run, use `sherpa-progress-bar`.
+
 ## Example
 
 ```html

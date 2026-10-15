@@ -11,6 +11,10 @@ One day, month or year in a calendar's grid. Figma "Calendar Cell" (276:16589).
 | Figma | Calendar Cell |
 | Source | [.ts](../../src/components/sherpa-calendar-cell/sherpa-calendar-cell.ts) · [.html](../../src/components/sherpa-calendar-cell/sherpa-calendar-cell.html) · [.css](../../src/components/sherpa-calendar-cell/sherpa-calendar-cell.css) · [.component.json](../../src/components/sherpa-calendar-cell/sherpa-calendar-cell.component.json) · [.example.json](../../src/components/sherpa-calendar-cell/sherpa-calendar-cell.example.json) |
 
+## When to use it
+
+One day, month or year in a calendar's grid; `sherpa-calendar` draws its cells and sets each `data-state` itself. To let a reader pick a date or a range, use `sherpa-calendar`.
+
 ## Example
 
 ```html

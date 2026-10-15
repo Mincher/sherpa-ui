@@ -10,6 +10,10 @@ A filter chip used in toolbars. Figma "Filter Chip (atom)" (154:3904), State axi
 | Figma | Filter Chip (atom) |
 | Source | [.ts](../../src/components/sherpa-quick-filter/sherpa-quick-filter.ts) · [.html](../../src/components/sherpa-quick-filter/sherpa-quick-filter.html) · [.css](../../src/components/sherpa-quick-filter/sherpa-quick-filter.css) · [.component.json](../../src/components/sherpa-quick-filter/sherpa-quick-filter.component.json) · [.example.json](../../src/components/sherpa-quick-filter/sherpa-quick-filter.example.json) |
 
+## When to use it
+
+One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. For a row of filters, use `sherpa-quick-filter-toolbar`, which stamps the chips itself. With `data-type="jump"` it is a Jump to chip: a pick scrolls to a place on the page, as on a Settings page.
+
 ## Example
 
 ```html

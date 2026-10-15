@@ -11,6 +11,10 @@ A labelled group of checkbox or radio options.
 | Figma | Fieldset |
 | Source | [.ts](../../src/components/sherpa-select-group/sherpa-select-group.ts) · [.html](../../src/components/sherpa-select-group/sherpa-select-group.html) · [.css](../../src/components/sherpa-select-group/sherpa-select-group.css) · [.component.json](../../src/components/sherpa-select-group/sherpa-select-group.component.json) · [.example.json](../../src/components/sherpa-select-group/sherpa-select-group.example.json) |
 
+## When to use it
+
+For a labelled set of options: radios to pick one, or checkboxes with `multiple` to pick several, with one `name`, one error message and one `change`. For options that each need a card, use `sherpa-select-card`.
+
 ## Example
 
 ```html

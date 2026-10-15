@@ -10,6 +10,10 @@ A compact input/filter chip (Figma Chip, 62:1732).
 | Figma | Chip |
 | Source | [.ts](../../src/components/sherpa-chip/sherpa-chip.ts) · [.html](../../src/components/sherpa-chip/sherpa-chip.html) · [.css](../../src/components/sherpa-chip/sherpa-chip.css) · [.component.json](../../src/components/sherpa-chip/sherpa-chip.component.json) · [.example.json](../../src/components/sherpa-chip/sherpa-chip.example.json) |
 
+## When to use it
+
+For a small selection or filter token; `data-dismissible` adds a cross that reports `chip-dismiss`, so the host can remove it. For a filter with a menu of values, use `sherpa-quick-filter`; for a passive label, use `sherpa-tag`.
+
 ## Example
 
 ```html

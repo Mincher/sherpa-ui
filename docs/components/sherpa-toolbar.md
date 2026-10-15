@@ -10,6 +10,10 @@ A horizontal control strip: leading zone hugs, trailing grows.
 | Figma | Toolbar |
 | Source | [.ts](../../src/components/sherpa-toolbar/sherpa-toolbar.ts) · [.html](../../src/components/sherpa-toolbar/sherpa-toolbar.html) · [.css](../../src/components/sherpa-toolbar/sherpa-toolbar.css) · [.component.json](../../src/components/sherpa-toolbar/sherpa-toolbar.component.json) · [.example.json](../../src/components/sherpa-toolbar/sherpa-toolbar.example.json) |
 
+## When to use it
+
+For a strip of controls in one row, in a `leading` and a `trailing` slot. It is layout only and does nothing itself; for filter chips, use `sherpa-quick-filter-toolbar`.
+
 ## Example
 
 ```html
