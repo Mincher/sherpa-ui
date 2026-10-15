@@ -269,8 +269,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
 | ✅ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
 | ✅ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
-| ❓ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
-| ⬜ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
+| ✅ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
+| 🚧 | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
 | ⬜ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
 | ⬜ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ⬜ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
@@ -6388,6 +6388,15 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[ ]` 🚧 279 — Phase 3: the lexicon's moves
+
+Will approved `docs/LEXICON.md` whole, with my two picks (the calendar cell
+keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
+2026-10-15. One commit per row.
+
+- **Row 2, dismiss ✅:** `chip-remove` → `chip-dismiss`, `tag-remove` →
+  `tag-dismiss`; `data-dismissible` is a declared boolean on both.
 
 ### `[x]` ✅ 277 — Phase 4: state first
 

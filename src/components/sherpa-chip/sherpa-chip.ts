@@ -3,7 +3,7 @@
  *
  * CSS handles the look — the neutral surface, the status cascade, the square
  * radius, and the disabled look. The only behaviour is the optional close button
- * (data-dismissible), which fires chip-remove so the app can remove it, plus
+ * (data-dismissible), which fires chip-dismiss so the app can remove it, plus
  * mirroring the data-icon glyph value.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
@@ -18,6 +18,7 @@ export class SherpaChip extends SherpaElement {
    */
   static override props = {
     'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
+    'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
 
   /** `data-dismissible` picks the tree, so a change to it has to re-stamp. */
@@ -35,7 +36,7 @@ export class SherpaChip extends SherpaElement {
   /** The remove button: say so, without clicking the chip. */
   #onRemove = (event: Event): void => {
     event.stopPropagation();
-    this.emit('chip-remove');
+    this.emit('chip-dismiss');
   };
 }
 

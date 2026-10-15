@@ -130,7 +130,7 @@ use a text prop when a slot only ever holds a label.
 
 ### events — unprefixed `noun-verb`
 `{ name, bubbles, composed, cancelable, detail, trigger, default }`.
-- Name is **unprefixed `noun-verb`** (`tag-remove`, `page-change`, `list-item-click`). **No
+- Name is **unprefixed `noun-verb`** (`tag-dismiss`, `page-change`, `list-item-click`). **No
   `sherpa-` prefix.** Native re-dispatch keeps the native name (`change`, `input`).
 - `bubbles: true`, `composed: true` when the event must reach app code.
 - `cancelable: true` **and a `default` block** whenever the component takes a built-in action

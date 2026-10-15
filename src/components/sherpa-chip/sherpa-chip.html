@@ -9,7 +9,7 @@
 
   Templates (via data-dismissible):
     default     — leading icon + label
-    dismissible — leading icon + label + a close button (fires chip-remove)
+    dismissible — leading icon + label + a close button (fires chip-dismiss)
 
   Public API:
     data-status       info | success | warning | critical | urgent (via the cascade)
@@ -20,7 +20,7 @@
     icon      — a leading glyph (overrides data-icon; shown when data-icon is set)
     (default) — the label
 
-  Fires: chip-remove — detail: {}
+  Fires: chip-dismiss — detail: {}
 -->
 <template id="default">
   <span class="chip" part="chip">

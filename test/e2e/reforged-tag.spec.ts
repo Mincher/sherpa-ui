@@ -53,7 +53,7 @@ test('an ancestor [data-status] colours the pill via the cascade', async ({ page
   expect(r.critical.text).not.toBe(r.neutral.text); // the text carries the status hue (--_status-text)
 });
 
-test('dismissible template adds a close button that fires tag-remove', async ({ page }) => {
+test('dismissible template adds a close button that fires tag-dismiss', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-dismissible', '');
@@ -62,7 +62,7 @@ test('dismissible template adds a close button that fires tag-remove', async ({ 
     await el.rendered;
 
     let removed = 0;
-    el.addEventListener('tag-remove', () => removed++);
+    el.addEventListener('tag-dismiss', () => removed++);
     const close = el.shadowRoot!.querySelector<HTMLElement>('.close');
     // The close button is a composed sherpa-button: it has its own render, and
     // the click target is its inner trigger, not the host.

@@ -1,4 +1,4 @@
-/** sherpa-tag — a small pill with a label. CSS owns the look; JS only fires tag-remove. */
+/** sherpa-tag — a small pill with a label. CSS owns the look; JS only fires tag-dismiss. */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
@@ -9,6 +9,7 @@ export class SherpaTag extends SherpaElement {
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['dot'] },
     'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
+    'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
 
   /** Picks the template, so a change must re-stamp. */
@@ -25,7 +26,7 @@ export class SherpaTag extends SherpaElement {
   /** The remove button: say so, without clicking the tag. */
   #onRemove = (event: Event): void => {
     event.stopPropagation();
-    this.emit('tag-remove');
+    this.emit('tag-dismiss');
   };
 }
 

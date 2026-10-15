@@ -72,8 +72,9 @@
     {
       "$type": "prop",
       "name": "data-dismissible",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the close button (selects the dismissible template)"
     },
@@ -121,7 +122,7 @@
     }
   ],
   "populate": {
-    "shape": "{ icon? }",
+    "shape": "{ dismissible?, icon? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -139,7 +140,7 @@
   "events": [
     {
       "$type": "event",
-      "name": "chip-remove",
+      "name": "chip-dismiss",
       "bubbles": true,
       "composed": true
     }

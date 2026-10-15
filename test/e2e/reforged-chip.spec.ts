@@ -4,7 +4,7 @@ import { test, expect } from './fixture';
  * sherpa-chip on the reforged base — the Figma Chip (62:1732): a near-square
  * neutral token (radius 2) by default, coloured via the [data-status] cascade.
  * Covers the neutral default, the leading icon glyph, and the dismissible close
- * button + chip-remove event.
+ * button + chip-dismiss event.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -46,7 +46,7 @@ test('data-icon mirrors a leading glyph and reveals the icon slot', async ({ pag
   expect(r.iconShown).toBe(true);
 });
 
-test('dismissible shows a close button that fires chip-remove', async ({ page }) => {
+test('dismissible shows a close button that fires chip-dismiss', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chip') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-dismissible', '');
@@ -54,7 +54,7 @@ test('dismissible shows a close button that fires chip-remove', async ({ page })
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     let fired = false;
-    el.addEventListener('chip-remove', () => (fired = true));
+    el.addEventListener('chip-dismiss', () => (fired = true));
     // A composed sherpa-button: its own render to await, and the click target
     // is the inner trigger, not the host.
     const close = el.shadowRoot!.querySelector('.close') as HTMLElement & {
