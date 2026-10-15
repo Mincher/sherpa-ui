@@ -929,7 +929,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
 - [T-a-cli-is-run-through-a-link](TRAPS.md#t-a-cli-is-run-through-a-link) — check-usage, sherpa-ui
-- [T-a-component-ships-its-example](TRAPS.md#t-a-component-ships-its-example) — discover, sherpa
+- [T-a-component-ships-its-example](TRAPS.md#t-a-component-ships-its-example) — discover, sherpa, write-reference
 - [T-a-constructed-event-is-not-a-dispatched-one](TRAPS.md#t-a-constructed-event-is-not-a-dispatched-one) — generate-component-spec
 - [T-a-container-width-is-named-not-counted](TRAPS.md#t-a-container-width-is-named-not-counted) — project-tokens
 - [T-a-content-grid-has-two-row-modes](TRAPS.md#t-a-content-grid-has-two-row-modes) — project-tokens
@@ -975,7 +975,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — check-weight
 - [T-the-bench-counts-and-never-times](TRAPS.md#t-the-bench-counts-and-never-times) — check-bench
 - [T-the-grid-is-two-grids](TRAPS.md#t-the-grid-is-two-grids) — lint-css, project-tokens
-- [T-the-manifest-is-written-from-the-specs](TRAPS.md#t-the-manifest-is-written-from-the-specs) — write-manifest
+- [T-the-manifest-is-written-from-the-specs](TRAPS.md#t-the-manifest-is-written-from-the-specs) — write-manifest, write-reference
 - [T-the-mcp-reads-sherpa-ui-through-one-door](TRAPS.md#t-the-mcp-reads-sherpa-ui-through-one-door) — check-mcp-pack, data, sherpa, vendor
 - [T-the-shared-vocabulary-is-declared-once](TRAPS.md#t-the-shared-vocabulary-is-declared-once) — check-ownership
 - [T-the-text-is-in-the-js](TRAPS.md#t-the-text-is-in-the-js) — build-reforged, check-weight

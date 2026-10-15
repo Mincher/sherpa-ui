@@ -6507,6 +6507,13 @@ lands; the CSS table shows the tokens each class's base rule reads.
   `select-all-request`, and the bar's and the panel's `view-reset`). The
   manifest carries the meanings. CLAUDE.md said an event missing from `Fires:`
   is dropped from the contract; the code has kept it for weeks, and now says so.
+- **✅ Step 3, 2026-10-15:** the reference. `npm run reference` writes
+  `docs/components/`: 66 pages and an index (67 files, about 380 KB), each from
+  its spec and its example — what it is, its facts, its example, attributes with
+  values and defaults, properties, methods, commands, events with their detail
+  and meaning, slots, parts and the CSS custom properties each class reads.
+  `check:reference` fails a commit whose pages are not what the specs make, and
+  runs in the hook. Not shown yet: "When to use it" (step 4).
 ### `[ ]` ⬜ 328 — GAP: 5 token names no stylesheet defines
 
 `--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),

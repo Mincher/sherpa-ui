@@ -355,7 +355,13 @@ no analyzer reads the code a second time. A prop the spec gets wrong is wrong in
 every editor, which is how the phantom `asc` / `desc` props on the filter chip
 were found.
 
+**So is the component reference.** `npm run reference` writes `docs/components/`:
+a page for each spec and its example, and an index. `check:reference` fails a
+commit whose pages are not what the specs and examples make. A wrong line on a
+page is fixed in the source or the generator, never on the page.
+
 - Site: `scripts/write-manifest.mjs`
+- Site: `scripts/write-reference.mjs`
 
 ### T-a-button-commands-by-markup
 
@@ -1257,9 +1263,9 @@ of strings, joined with no separator, so a long one reads in a diff.
 
 It was `test/a11y/fixtures.mjs` until 2026-10-15: in `test/`, so not shipped,
 and read by the a11y gate alone. It is component documentation, not an app
-(D4), so it ships in the package, and ONE source feeds three readers: the
-accessibility gate, the MCP's `get_component`, and a gallery's first story
-for each component.
+(D4), so it ships in the package, and ONE source feeds four readers: the
+accessibility gate, the MCP's `get_component`, a gallery's first story for each
+component, and the component reference (`npm run reference`).
 
 A node test holds it: every component has one, each passes the schema, and
 its markup passes the usage check — a tag, a `data-*` or an enum value the
@@ -1270,6 +1276,7 @@ spec does not have fails it. The move found one: the chat message's
 - Site: `test/unit/every-component-ships-an-example.test.mjs`
 - Site: `mcp-server/lib/sherpa.js`
 - Site: `mcp-server/tools/discover.js`
+- Site: `scripts/write-reference.mjs`
 
 ### T-one-overlay-panel-at-a-time
 

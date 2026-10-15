@@ -164,7 +164,8 @@ rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 list of open work) and `TRAPS-INDEX`, which is made from `TRAPS`. The four old
 reviews are in `docs/history/`: `COMPONENT-AUDIT`, `FILTER-REVIEW`,
 `COMPONENT-API-AUDIT` and `CONSUMER-REVIEW`. Where one disagrees with the code,
-the code and its gate win.
+the code and its gate win. `docs/components/` is the component reference:
+written from the specs by `npm run reference`, never edited.
 
 | File | Who reads it |
 |---|---|

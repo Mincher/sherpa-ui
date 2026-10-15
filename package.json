@@ -102,6 +102,8 @@
     "check:size": "node scripts/check-size.mjs",
     "manifest": "node scripts/write-manifest.mjs",
     "check:manifest": "node scripts/write-manifest.mjs --check",
+    "reference": "node scripts/write-reference.mjs",
+    "check:reference": "node scripts/write-reference.mjs --check",
     "mcp": "node mcp-server/index.js",
     "check:mcp-pack": "node scripts/check-mcp-pack.mjs",
     "preview": "node bin/sherpa-ui.mjs serve . --port 4000",

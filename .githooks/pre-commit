@@ -193,4 +193,13 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# The component reference is written from the specs, by scripts/write-reference.mjs.
+echo "📖 Checking docs/components/ against the specs..."
+REF_OUT=$(npm run check:reference --silent 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$REF_OUT"
+  echo "❌ Commit blocked. Run: npm run reference"
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

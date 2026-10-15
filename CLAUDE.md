@@ -32,6 +32,7 @@ made that necessary.
 | [docs/APP-GUIDE.md](docs/APP-GUIDE.md) | Building an app on Sherpa, step by step. Served to agents as `sherpa://app-guide` |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | Pointing Sherpa at a backend. Served to agents as `sherpa://data-rules` |
 | [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component from a def. Served as `sherpa://rules` |
+| [docs/components/](docs/components/README.md) | Using one component: its attributes, events, slots, parts and example. Written from its spec |
 
 Active branch is `sherpa-data-layer`. **Never push** — commit freely, pushing is
 Will's call.
@@ -71,6 +72,13 @@ npm run lint:css:strict
 # commit; `node scripts/generate-component-spec.mjs <name>` fixes it.
 npm run spec:check
 npm run spec:validate      # the schema half alone
+
+# What the specs make, written and never edited: custom-elements.json and VS
+# Code's HTML data (manifest), and a page per component in docs/components/
+# (reference). The hook's check:manifest and check:reference block a stale one,
+# so run both after a spec or an example changes.
+npm run manifest
+npm run reference
 
 # Tests — Playwright in three engines, then the node unit tests. The webServer
 # runs `npm run build`, so `npm test` builds for you.
@@ -147,7 +155,7 @@ validate tooling. Never hand-edit it; regenerate it.
 
 A fifth, `sherpa-<name>.example.json`, is hand-written and shipped: ONE example of
 the component as a page writes it, and the data it is given. The a11y gate, the
-MCP's `get_component` and a gallery read it (TRAP `T-a-component-ships-its-example`).
+MCP's `get_component`, a gallery and the reference (`docs/components/`) read it (TRAP `T-a-component-ships-its-example`).
 
 **An event's DETAIL is read from its `emit()` call sites**, and each field is
 typed by TypeScript's own checker — so a type in the contract is the type the

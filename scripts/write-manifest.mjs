@@ -9,6 +9,7 @@
  *
  * Map:
  * - specs — every component spec, by tag
+ * - partsOf — every part named in a spec's anatomy
  * - manifest — the Custom Elements Manifest (schema 2.1.0) for every component
  * - htmlData — VS Code's HTML custom data (version 1.1) for every component
  * - FILES — the two files written, and what makes each
@@ -48,7 +49,7 @@ function params(args) {
 }
 
 /** Every `part` named in a spec's anatomy. */
-function partsOf(node, out = new Set()) {
+export function partsOf(node, out = new Set()) {
   if (Array.isArray(node)) node.forEach((n) => partsOf(n, out));
   else if (node && typeof node === 'object') {
     if (typeof node.part === 'string') node.part.split(/\s+/).forEach((p) => p && out.add(p));
