@@ -295,7 +295,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
 | ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
-| ⬜ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
+| ✅ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
 | ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
@@ -307,8 +307,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
 | ✅ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
 | ⬜ | 62.60 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
-| ⬜ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
-| ⬜ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
+| ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
+| ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | ⬜ | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
@@ -6480,6 +6480,18 @@ stand-in gained `add()` for the calendar. **My picks on the plan's questions**
 right-to-left arrows later. **Not run yet:** the tabs, chart keyboard, radial,
 gauge and the date unit test. **Queued:** 315 (calendar), 316–318.
 
+### `[x]` ✅ 316 — A11Y: a breadcrumb with no href could not be reached
+
+**✅ Fixed 2026-10-15.** A crumb with no `href` (not the current one) is a step
+back all the same: it is `role="link"` with `tabindex="0"`, Enter presses it, and
+it underlines on hover as a live crumb does. **Not run yet.**
+
+### `[x]` ✅ 317 — A11Y: an arrow in a drilled menu's text field went Back
+
+**✅ Fixed 2026-10-15.** The menu's ArrowLeft-goes-Back and ArrowRight-drills
+skip a key whose real target is a text field, a textarea, a slider or editable
+text: there an arrow moves the caret or the value. **Not run yet.**
+
 ### `[ ]` ⬜ 315 — Phase 5: the calendar's roving grid
 
 Waits for a measured run. The plan: `sherpa-calendar-cell` gets
@@ -6631,13 +6643,16 @@ and the hand-drawn row went. The footer already matched Figma: a page slots a
 Demos' five dialogs with a `data-heading`. **Weight:** about +5.8 KB on the entries
 that reach the dialog — record at Will's run.
 
-### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
+### `[x]` ✅ 304 — BUG: a one-chip field in the panel never shows pending
 
 Found by the 281 plan agent, by reading. The panel draws a date, or a list over
 16 values, as ONE chip; `#syncPending` marks only the field's box, never that
 chip, so the chip's results badge stays up while its Apply waits —
 `T-a-chip-counts-its-own-results` says pending shows none. A fix marks
 `#answerChip(held)` too. Needs a test first.
+
+**✅ Fixed 2026-10-15**, by reading: `#syncPending` marks the field's one chip as
+it marks its box. **Not run yet.**
 
 ### `[ ]` ⬜ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
 

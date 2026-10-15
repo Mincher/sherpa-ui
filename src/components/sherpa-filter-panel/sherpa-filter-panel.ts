@@ -1267,7 +1267,10 @@ export class SherpaFilterPanel extends SherpaElement {
     const remote = this.hasAttribute('data-remote');
     const pending = pendingFields(this);
     for (const held of this.#held.values()) {
-      held.box.toggleAttribute('data-pending', remote && pending.has(held.def.field ?? held.def.id));
+      const on = remote && pending.has(held.def.field ?? held.def.id);
+      held.box.toggleAttribute('data-pending', on);
+      // A field drawn as ONE chip shows it too, so its badge waits. TODO 304
+      this.#answerChip(held)?.toggleAttribute('data-pending', on);
     }
   }
 

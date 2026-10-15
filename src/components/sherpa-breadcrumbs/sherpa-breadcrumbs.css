@@ -43,8 +43,8 @@
   padding: 0;
   cursor: pointer;
 
-  /* [href] = a live crumb; the current one has none. */
-  &[href]:hover { text-decoration: underline; }
+  /* A live crumb — an href, or a step back without one; the current one is neither. */
+  &:is([href], [role="link"]):hover { text-decoration: underline; }
 
   &:focus-visible {
     outline: none;

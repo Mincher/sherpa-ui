@@ -1895,6 +1895,10 @@ export class SherpaMenu extends SherpaElement {
   #onRowKey = (event: KeyboardEvent): void => {
     // An inner set moved on this key already. TRAP T-one-tab-stop-per-set
     if (event.defaultPrevented) return;
+    // In a text field or a slider an arrow moves the caret or the value. TODO 317
+    const at = event.composedPath()[0];
+    if ((at instanceof HTMLInputElement && at.type !== 'checkbox' && at.type !== 'radio')
+      || at instanceof HTMLTextAreaElement || (at instanceof HTMLElement && at.isContentEditable)) return;
     const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
     if (event.key === 'ArrowRight' && row) this.#drillInto(row);
     else if (event.key === 'ArrowLeft' && this.hasAttribute('data-drill')) this.emit('menu-back');

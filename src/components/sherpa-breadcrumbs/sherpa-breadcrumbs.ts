@@ -23,6 +23,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
   override onRender(): void {
     // One delegated listener for the whole trail — crumbs come and go, this stays.
     this.$('.crumbs')?.addEventListener('click', this.#onClick);
+    this.$('.crumbs')?.addEventListener('keydown', this.#onKey);
     if (this.#crumbs.length) this.#render();
   }
 
@@ -57,9 +58,22 @@ export class SherpaBreadcrumbs extends SherpaElement {
         const link = row.querySelector<HTMLAnchorElement>('.link')!;
         if (i === this.#crumbs.length - 1) link.setAttribute('aria-current', 'page');
         else if (crumb.href) link.setAttribute('href', crumb.href);
+        else {
+          // No href, but still a step back: reachable, and Enter presses it. TODO 316
+          link.setAttribute('role', 'link');
+          link.setAttribute('tabindex', '0');
+        }
       },
     });
   }
+
+  /** Enter on a crumb with no href presses it, as on a real link. */
+  #onKey = (event: KeyboardEvent): void => {
+    const link = (event.target as HTMLElement).closest<HTMLElement>('.link[role="link"]');
+    if (event.key !== 'Enter' || !link) return;
+    event.preventDefault();
+    link.click();
+  };
 
   /** A crumb was clicked: report which. */
   #onClick = (event: Event): void => {
