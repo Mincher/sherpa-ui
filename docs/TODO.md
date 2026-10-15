@@ -310,7 +310,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
-| ⬜ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
+| ❓ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | | | | **✅ Done — newest first** | |
@@ -6461,6 +6461,17 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
+
+`declarePreset` keeps the CALLER's readings object, and `describe()` and
+`debugState()` hand out the source's own presets, parts and `only`. A caller
+that edits one changes the library. No caller in sherpa-ui or the siblings does
+today (read 2026-10-15). **For Will:** A — copy on the way in only
+(`declarePreset` clones once; rare, cheap), and say in `describe()`'s doc that
+what it hands out is read-only; B — copy both ways (every `describe()` clones
+each preset's readings; the bench's clone count rises in every act that draws a
+bar). My pick: A.
 
 ### `[ ]` 🚧 321 — BUG: a Context's saved Views have two keys
 
