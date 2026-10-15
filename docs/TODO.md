@@ -274,7 +274,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
 | ✅ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
-| ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
+| ✅ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
 | 🚧 | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
 | ⬜ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
@@ -299,6 +299,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
+| ❓ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
+| ⬜ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6442,6 +6444,41 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 283 — Phase 5: charts, one frame sheet, shared hotspots, no caps, shared axis code
+
+**✅ Done 2026-10-15**, in six commits. A read-only agent planned it, a second
+checked the plan against the code. 1: `.hotspots` once, in `sherpa-anchor.css`
+beside `.chart-tip`; the polar anchor once, in the segments sheet. 2: a donut
+slice and a gauge band are one `.chart-segment` rule. 3: a third family sheet,
+`sherpa-chart-frame.css` — heading, body, the legend's place and the narrow
+stack — for bar, line and gauge (it was written three times). 4: bar and line
+share `renderValueAxis()`, which now returns the bands it drew, and stamp their
+x-labels by `renderItems`. 5: no tip cap on radial (was 11 slices) or gauge (6
+zones): the lift finds a segment's tip by index and shows it (307). 6: the
+sparkline stamps its shapes and dots from prototypes, each with its values
+inline; `data-len` goes; the last 8 values are still drawn. And stale pointers
+went. Net about −290 lines. **Not run yet:** the chart, keyboard, tooltip,
+sparkline and metric specs; Demos' live-alerts. **❓ 308** holds the one step
+left: the radial chart on the frame sheet.
+
+### `[ ]` ❓ 308 — Will: the radial chart on the chart-frame sheet?
+
+The frame sheet (283) serves bar, line and gauge. The radial chart lays out its
+own `.layout` grid, 7:3, legend beside. On the frame it would gain a `heading`
+slot and `data-legend` like the others, and lose `part="layout"`; its legend
+would sit **below** unless a page sets `data-legend="vertical"` (Demos' two
+donuts would). **A:** join — one layout rule for every chart. **B:** keep its
+own grid. My pick: **A**, with Demos' two donuts set to `vertical` in the same
+step, so nothing you see moves.
+
+### `[ ]` ⬜ 309 — BUG: a zoneless gauge's band takes a container's grey outline
+
+Found by 283's checker, by reading. `.chart-segment` reads `var(--_border, …)`
+first. A gauge with no zones gives its value band no inline `--_border`, so
+inside a `sherpa-container` or `sherpa-panel` — both set `--_border` on their
+`:host` — the band's outline is their grey (`#b3b3c3`), not `--_fill`. A fix:
+the gauge writes the band's own `--_border`. Needs a look first.
 
 ### `[x]` ✅ 307 — BUG: radial and gauge tips were never lifted
 

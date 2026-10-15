@@ -30,15 +30,8 @@ interface Zone {
   label?: string;
 }
 
-/** TRAP T-gauge-status-is-named — resolved BY NAME, never by position. */
-
-
-/* Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
-   none of these can move to CSS. */
-
-
-
-/** Zero and span, clockwise from 12 o'clock: 9 o'clock to 3. */
+/** Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
+ *  none of these can move to CSS. Zero and span, clockwise from 12 o'clock: 9 o'clock to 3. */
 const START_DEG = 270;
 const SPAN_DEG = 180;
 
@@ -49,8 +42,6 @@ export class SherpaGaugeChart extends SherpaElement {
     new URL('./sherpa-gauge-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  // ONE LINE, deliberately: the spec generator reads only the first line.
-  /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
   static override asks: DataAsk = { shape: 'aggregate', shows: 'chart', thresholds: true };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
@@ -276,7 +267,8 @@ export class SherpaGaugeChart extends SherpaElement {
   /** The legend rows last written, as JSON. */
   #legendSaid = '';
 
-  /** A zone's colour name → its band's fill. Anything unknown passes through. */
+  /** A zone's colour name → its band's fill. Anything unknown passes through.
+   *  TRAP T-gauge-status-is-named — resolved BY NAME, never by position. */
   #zoneColour(name: string): string {
     return isStatus(name) ? statusVar(name) : name;
   }
