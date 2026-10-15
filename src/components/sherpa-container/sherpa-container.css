@@ -54,16 +54,20 @@
     var(--sherpa-display-mode-size-2xl, 32px) -8px var(--_shadow-color);
 }
 
-/* ── Padding scale ──────────────────────────────────────────────────── */
+/* ── Padding scale — ONE, on both axes: none 0 · sm 4 · md 8 · lg 16 · xl 20.
+   No attribute is the card's own default, which is the `lg` step. ───────── */
 :host([data-padding="none"]) { --_pad: var(--sherpa-theme-padding-none, 0); }
-:host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
-:host([data-padding="lg"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
+:host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-sm, 4px); }
+:host([data-padding="md"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
+:host([data-padding="lg"]) { --_pad: var(--sherpa-theme-padding-lg, 16px); }
+:host([data-padding="xl"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
 
 /* Inline padding, separate from block: a card of full-bleed parts wants no
    block padding (so dividers meet both edges) but still needs inline room. */
 :host([data-padding-inline="sm"]) { --_pad-inline: var(--sherpa-theme-padding-sm, 4px); }
 :host([data-padding-inline="md"]) { --_pad-inline: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding-inline="lg"]) { --_pad-inline: var(--sherpa-theme-padding-lg, 16px); }
+:host([data-padding-inline="xl"]) { --_pad-inline: var(--sherpa-display-mode-space-lg, 20px); }
 
 /* ── data-row-span="N" — the card is N layout-grid rows tall: N row heights plus
    the (N-1) gutters between them, so it lines up with the grid it sits on. ── */

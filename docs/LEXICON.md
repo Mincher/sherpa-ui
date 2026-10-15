@@ -120,6 +120,10 @@ select-group `data-multiple` → `multiple`; prompt-composer `data-placeholder` 
 
 **Rule.** One scale, `none|sm|md|lg`, `md` the default, each step the same
 pixels on both axes' tokens.
+**Done as `none sm md lg xl` (0, 4, 8, 16, 20px), on both axes, and unset stays the
+card's own `lg`** — `md` as the default would have shrunk every card. Old block
+`sm` → `md`, `base` gone, block `lg` → `xl`.
+
 **Moves (1 value + 1 size).** container `data-padding` value `base` → `md`; the
 two `sm` steps made equal (the value is read from the tokens at the time, and
 any visible change is reported, not hidden).

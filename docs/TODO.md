@@ -6400,6 +6400,12 @@ keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
 - **Row 3, selection ✅:** select-card is `checked` (attribute, property, and
   `change{checked}`), as checkbox, radio and switch; the default `value` is
   `'on'` on all four.
+- **Row 6, padding ✅:** one scale on both axes, `none sm md lg xl` = 0, 4, 8,
+  16, 20px, on the theme tokens. The default, with no attribute, is still the
+  card's own — the `lg` step, 16px — so no card changes; the lexicon's "md is
+  the default" would have shrunk every one. Old block `sm` (8) is `md`, `base`
+  is gone (it was the default), and block `lg` (20) is `xl`. Nothing in the
+  library or Demos used them but the test.
 - **Row 4, `data-state` ⏸ held:** input-text's `data-state` is the Figma `input`
   collection's mode attribute, so the rename waits for Figma's queue.
 - **Row 5, error, empty, help ✅:** container `data-error-message` →

@@ -173,7 +173,10 @@ test('data-padding-inline pads the content sideways without restoring the block 
       // Block stays flush; inline breathes.
       split: await read('data-padding=none data-padding-inline=md'),
       // With no override the inline axis still follows the padding scale.
-      scale: await read('data-padding=sm'),
+      scale: await read('data-padding=md'),
+      // ONE scale: sm is 4px on both axes, xl 20px.
+      sm: await read('data-padding=sm'),
+      xl: await read('data-padding=xl data-padding-inline=xl'),
     };
   });
 
@@ -181,4 +184,6 @@ test('data-padding-inline pads the content sideways without restoring the block 
   expect(got.split).toEqual({ block: '0px', inline: '8px' });
   // Unchanged behaviour for every card that does not use the new attribute.
   expect(got.scale).toEqual({ block: '8px', inline: '8px' });
+  expect(got.sm).toEqual({ block: '4px', inline: '4px' });
+  expect(got.xl).toEqual({ block: '20px', inline: '20px' });
 });

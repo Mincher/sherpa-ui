@@ -325,10 +325,11 @@
       "values": [
         "none",
         "sm",
-        "base",
-        "lg"
+        "md",
+        "lg",
+        "xl"
       ],
-      "description": "none | sm | base  | lg"
+      "description": "none | sm | md | lg | xl — one scale on both axes; unset is the card's own (lg)"
     },
     {
       "$type": "prop",
@@ -341,7 +342,8 @@
         "none",
         "sm",
         "md",
-        "lg"
+        "lg",
+        "xl"
       ]
     },
     {
@@ -464,8 +466,18 @@
     },
     {
       "$type": "state",
+      "name": "md",
+      "selector": ":host([data-padding=\"md\"])"
+    },
+    {
+      "$type": "state",
       "name": "lg",
       "selector": ":host([data-padding=\"lg\"])"
+    },
+    {
+      "$type": "state",
+      "name": "xl",
+      "selector": ":host([data-padding=\"xl\"])"
     },
     {
       "$type": "state",
@@ -481,6 +493,11 @@
       "$type": "state",
       "name": "lg",
       "selector": ":host([data-padding-inline=\"lg\"])"
+    },
+    {
+      "$type": "state",
+      "name": "xl",
+      "selector": ":host([data-padding-inline=\"xl\"])"
     },
     {
       "$type": "state",

@@ -24,9 +24,9 @@ export class SherpaContainer extends SherpaElement {
     'data-fill': { type: 'boolean', kind: 'style' },
     // The provider sets it while its data loads.
     'data-loading': { type: 'boolean', kind: 'style' },
-    'data-padding': { type: 'enum', kind: 'style', values: ['none', 'sm', 'base', 'lg'] },
+    'data-padding': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg', 'xl'] },
     'data-row-span': { type: 'enum', kind: 'style', values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] },
-    'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg'] },
+    'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg', 'xl'] },
     /* Its data's state — written by the provider. TRAP T-a-container-shows-its-datas-state */
     'data-state': { type: 'enum', kind: 'visibility', values: ['empty', 'no-matches', 'error'] },
     'data-error': { type: 'string', kind: 'content', to: '.error-message', all: true },
