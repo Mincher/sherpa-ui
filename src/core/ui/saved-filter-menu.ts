@@ -6,6 +6,7 @@
  * - SavedAnswer — a saved filter's answer as its card draws it
  * - SavedMenuHost — what a bar or panel lends the card: a unit to fill, and its defs
  * - drawSavedMenu — draw a saved filter's fields into its card, or update them in place
+ * - hangSavedMenu — Hang a saved filter's card on its chip, headed by the filter's name, and draw it.
  */
 
 import { sayReadings, type SaidField } from '../data/filter-face.js';
@@ -167,4 +168,12 @@ export function drawSavedMenu(menu: HTMLElement, saved: SavedAnswer, host: Saved
     anchor = nodesOf(field)[0] ?? anchor;
   }
   return fields.length;
+}
+
+/** Hang a saved filter's card on its chip, headed by the filter's name, and draw it. */
+export function hangSavedMenu(chip: HTMLElement, menu: HTMLElement, label: string, saved: SavedAnswer, host: SavedMenuHost): void {
+  menu.setAttribute('data-heading', label);
+  chip.setAttribute('data-menu', '');
+  chip.appendChild(menu);
+  drawSavedMenu(menu, saved, host);
 }

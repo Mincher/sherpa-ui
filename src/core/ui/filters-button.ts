@@ -12,6 +12,7 @@
  * - SavedSet — One saved set of filters, as the menu and the Saved chip draw it.
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: off with nothing to list, its badge the filters it hides, the old menu gone.
+ * - reopenFilters — The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn.
  * - SavedSets — The reader's saved sets, as the host last drew them, and the Saved chip that names the one on.
  * - .set — Keep a copy of the host's sets, and redraw the Saved chip.
  * - .all — A copy of each set, as kept.
@@ -132,6 +133,14 @@ export function drawFiltersButton(
     commit: true,
     options,
   };
+}
+
+/** The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn. TODO 54 */
+export async function reopenFilters(button: HTMLElement | null): Promise<void> {
+  const menu = button?.querySelector<SherpaMenu>('sherpa-menu');
+  if (!button || !menu) return;
+  await menu.rendered;
+  if (menu.isConnected) menu.show?.(button);
 }
 
 /** The reader's saved sets, as the host last drew them, and the Saved chip that

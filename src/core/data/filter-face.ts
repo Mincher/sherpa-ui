@@ -13,6 +13,7 @@
  * - FilterFace — What a control SHOWS for a field — the same six facts whatever draws them.
  * - filterFace — How one field's state READS, for any control that draws it.
  * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
+ * - countSaid — A count as a badge shows it and its name says it: `1,204`, and `1,204 results`.
  * - spellConditions — Chained rows, in words: `Contains "ab" or Equals cd`.
  * - SaidField — One field's part of a saved filter, in words.
  * - conditionLines — a state's answer in force, a line per condition
@@ -108,6 +109,16 @@ export function filterFace(state: FilterState): FilterFace {
 
 /** The ONE mark a control wears when conditions are applied. */
 export const CONDITION_BADGE = 'fx';
+
+/** A count in the reader's own digits. */
+const COUNT = new Intl.NumberFormat();
+
+/** A count as a badge shows it and its name says it: `1,204`, and `1,204 results`.
+ *  `n === 1`, not plural rules: those follow the locale and would change the English. */
+export function countSaid(n: number, noun: readonly [one: string, many: string] = ['result', 'results']): { said: string; label: string } {
+  const said = COUNT.format(n);
+  return { said, label: `${said} ${n === 1 ? noun[0] : noun[1]}` };
+}
 
 /** An op's name in its field's words: a date is On, Before or After. TODO 21d */
 function opName(op: FilterOp, dated: boolean): string {

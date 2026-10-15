@@ -272,7 +272,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
 | ✅ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
 | ✅ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
-| 🚧 | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
+| ✅ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
@@ -6455,7 +6455,7 @@ Found by the 281 plan agent, by reading. The provider writes
 `data-hide-unmatched` only to bars and panels, and the grid's `#markPresent`
 never toggles `data-hide-unavailable` on a heading's menu. Intended, or a gap?
 
-### `[ ]` 🚧 281 — Phase 5: toolbar and panel, one helper for each part written twice
+### `[x]` ✅ 281 — Phase 5: toolbar and panel, one helper for each part written twice
 
 **✅ Part A, 2026-10-15.** Four parts the bar and the panel each wrote, now one
 copy in `core/ui/`: the reader's saved sets and the Saved chip (`SavedSets`,
@@ -6471,8 +6471,19 @@ line), net +42. Specs unchanged. A read-only agent planned it and a second
 checked it against the code first. **Not run yet:** the toolbar, filter-panel,
 one-filters-button, panel-filters-button and provider-saves-filters specs.
 
-⬜ Part B: `#syncResets`, organise sync, one column type and `SortDirection`,
-"ruled out" marking, the results words, saved cards, pending, reopen after ×.
+**✅ Part B, 2026-10-15.** Eight more, each to the file whose job it is:
+`OrganiseColumn` once, in `data-source.ts` (it had a third copy inside
+`ScopeDescription`), and `SortDirection` from `store.ts` — `PanelColumn` goes,
+no alias; the reset buttons and the hide test beside `resetRows` in
+`more-menu.ts`; the Group/Sort rows, the arrangement and the `data-pending`
+parse in a new `core/ui/filter-host.ts`; ONE "ruled out" rule, `ruleOut()` and
+`setAside()` in `filter-state.ts`, used by the bar, the panel, the grid and the
+menu (five copies, not three); the results words, `countSaid()` in
+`filter-face.ts` — the chip and the panel, not the bar, wrote them, and only
+filter code loads that file; the saved card's tail, `hangSavedMenu()`; and
+`reopenFilters()` after a ×. Bar −45, panel −24, chip −3, grid −1; the shared
+homes +128. Each copy is one now; the line count is not the gain. Two probable
+bugs found on the way are queued: 304, 305. Specs unchanged. **Not run yet.**
 
 ### `[ ]` 🚧 285 — Phase 5: controls, containers, templates
 

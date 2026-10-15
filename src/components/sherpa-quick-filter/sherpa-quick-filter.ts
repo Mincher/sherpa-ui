@@ -11,7 +11,7 @@ import {
 import {
   fieldState, readingRows, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
-import { filterFace } from '../../core/data/filter-face.js';
+import { countSaid, filterFace } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, movedTo } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
@@ -20,9 +20,6 @@ import '../sherpa-tooltip/sherpa-tooltip.js';
 import { paintSeries } from '../../core/ui/chart-parts.js';
 import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
-
-/** A results count as the reader's locale writes it. */
-const RESULTS = new Intl.NumberFormat();
 
 /** One place a jump chip can scroll to — `value` is the target element's id. */
 interface JumpItem {
@@ -822,7 +819,7 @@ export class SherpaQuickFilter extends SherpaElement {
   #writeTip(): void {
     // OFF, the badge keeps its number and the tip says nothing.
     const n = this.current ? this.#shownResults() : null;
-    const matches = n == null ? '' : `${RESULTS.format(n)} ${n === 1 ? 'match' : 'matches'}`;
+    const matches = n == null ? '' : countSaid(n, ['match', 'matches']).label;
     // OFF filters nothing, so it says nothing — but one held ABOVE says where it went.
     const says = this.current || ['data-superseded', 'data-unavailable', 'disabled'].some((a) => this.hasAttribute(a));
     const said = [says ? this.#tipText(this.#said) : '', matches].filter(Boolean).join(' - ');
@@ -977,9 +974,9 @@ export class SherpaQuickFilter extends SherpaElement {
       this.set('data-count', null);
       return;
     }
-    const said = RESULTS.format(n);
+    const { said, label } = countSaid(n);
     this.set('data-count', said);
-    badge?.setAttribute('aria-label', `${said} ${n === 1 ? 'result' : 'results'}`);
+    badge?.setAttribute('aria-label', label);
   }
 
   /** Is this chip's menu on a typing condition with something typed? */

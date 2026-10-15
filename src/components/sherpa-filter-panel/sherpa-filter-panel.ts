@@ -20,10 +20,10 @@ import {
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  drawSavedMenu, type SavedMenuHost,
+  hangSavedMenu, type SavedMenuHost,
 } from '../../core/ui/saved-filter-menu.js';
 import {
-  MenuDrill, OneRows, SavedSets, drawFiltersButton,
+  MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters,
   type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
@@ -32,6 +32,7 @@ import {
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { readingRows, ruleOut, setAside, type FieldReading } from '../../core/data/filter-state.js';
+import { countSaid } from '../../core/data/filter-face.js';
 import { valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -48,9 +49,6 @@ import type { SherpaAccordion } from '../sherpa-accordion/sherpa-accordion.js';
 import type { SherpaInputText } from '../sherpa-input-text/sherpa-input-text.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
-
-/** A count, in the reader's own digits — as a chip's badge writes it. */
-const RESULTS = new Intl.NumberFormat();
 
 /** One scope: a named group of fields, plus what the Filters menu offers for it. */
 export interface PanelScope {
@@ -469,10 +467,10 @@ export class SherpaFilterPanel extends SherpaElement {
       badge.removeAttribute('aria-label');
       return;
     }
-    const said = RESULTS.format(n);
+    const { said, label } = countSaid(n);
     held.box.dataset['results'] = said;
     badge.textContent = said;
-    badge.setAttribute('aria-label', `${said} ${n === 1 ? 'result' : 'results'}`);
+    badge.setAttribute('aria-label', label);
   }
 
   /** Is it showing? The `open` attribute, as on every surface that opens. */
@@ -1027,7 +1025,7 @@ export class SherpaFilterPanel extends SherpaElement {
     menu.items?.(items);
     this.#syncFilters();
     // Rebuilt for a ×, under the reader's pointer: open again. TODO 54
-    if (reopen) void menu.rendered?.then(() => { if (menu.isConnected) menu.show?.(btn); });
+    if (reopen) void reopenFilters(btn);
   }
 
   /** The Filters menu's rows: each value, and the scope and filter it stands
@@ -1479,11 +1477,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  field. Will, TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
   #addSavedMenu(chip: HTMLElement, option: FilterOption, scope: string): void {
     const menu = this.clone('template.saved-menu-tpl');
-    if (!menu) return;
-    menu.setAttribute('data-heading', option.label ?? option.value);
-    chip.setAttribute('data-menu', '');
-    chip.appendChild(menu);
-    drawSavedMenu(menu, option.saved ?? { readings: {} }, this.#savedHost(scope));
+    if (menu) hangSavedMenu(chip, menu, option.label ?? option.value, option.saved ?? { readings: {} }, this.#savedHost(scope));
   }
 
   /** What a saved preset's card borrows from this panel. */

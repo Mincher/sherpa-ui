@@ -13,10 +13,10 @@ import { advancedOf, kindOf } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  drawSavedMenu, type SavedMenuHost,
+  drawSavedMenu, hangSavedMenu, type SavedMenuHost,
 } from '../../core/ui/saved-filter-menu.js';
 import {
-  MenuDrill, OneRows, SavedSets, drawFiltersButton, type AddedFilter, type SavedSet,
+  MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
   askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
@@ -915,11 +915,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!menu) return;
     // Nothing to say and nothing to do: the chip stays a plain toggle.
     if (!Object.keys(def.readings ?? {}).length && !(def.removable && !def.persistent)) return;
-    menu.setAttribute('data-heading', def.label);
     this.#addRemove(chip, menu, def);
-    chip.setAttribute('data-menu', '');
-    chip.appendChild(menu);
-    this.#drawSaved(def, menu);
+    hangSavedMenu(chip, menu, def.label, { readings: def.readings ?? {}, says: def.says }, this.#savedHost());
   }
 
   /** A saved filter's card, drawn in place: an open card stays open. */
@@ -1503,7 +1500,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = String((event as CustomEvent).detail?.value ?? '');
     if (!id) return;
     this.#removeFilter(id);
-    void this.#reopenAdd();
+    void reopenFilters(this.$('.add-btn'));
   };
 
   /** What each ONE-value row was told. TODO 54 */
@@ -1513,15 +1510,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #syncOneRows(): void {
     const menu = this.$('.add-btn')?.querySelector<SherpaMenu>('sherpa-menu');
     this.#oneRows.follow(menu, (id) => !!this.#chips().find((c) => c.dataset['id'] === id)?.current);
-  }
-
-  /** The Filters menu was rebuilt under the reader's pointer: open it again. */
-  async #reopenAdd(): Promise<void> {
-    const add = this.$<HTMLElement>('.add-btn');
-    const menu = add?.querySelector<SherpaMenu>('sherpa-menu');
-    if (!add || !menu) return;
-    await menu.rendered;
-    if (menu.isConnected) menu.show?.(add);
   }
 
   /**
