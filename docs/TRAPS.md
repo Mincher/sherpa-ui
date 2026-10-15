@@ -1435,18 +1435,18 @@ its field CARRIES OVER** (Will, TODO 21b: *"which chips carry over should be
 CONFIGURABLE"*). `carryOver: true` in a field's declaration (the page JSON
 takes it) keeps its answer through a View that does not answer it; a View
 that does answer it wins. Two paths honour it: a JSON View (`setQuery` with
-`holds: 'keep'`, in `#definition`) and a View with no Query (`clearAll({
+`holds: 'keep'`, in `definitionOf()`) and a View with no Query (`clearAll({
 carry: true })`). A RESTORE
 is exact, and Reset still clears everything: only a View change carries.
 Nothing on Records carries over yet — the default is Will's.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-carry-over.spec.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-send-to-view-filters
 
@@ -1454,7 +1454,7 @@ Nothing on Records carries over yet — the default is Will's.
 21f: beside Clear in a component scope's field header in the panel (the View's
 own fields have none). It is the panel's ordinary `filter-add` request, with
 the View's scope: the View HOLDS the field, its answer goes with it
-(`#rehome`), and the chip below keeps its place, suspended, saying where its
+(`rehome()`), and the chip below keeps its place, suspended, saying where its
 filter went (`T-up-is-open-down-is-closed`). So the rows do not move, and the
 header gets ONE chip — the View's Add list stops offering it.
 
@@ -1496,6 +1496,7 @@ forgotten.
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -13942,9 +13943,8 @@ filters at rest and none after the first View pick.
 Each saved filter a scope holds stays on its bar, OFF unless the View turns
 it on.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/page-definition.test.mjs`
-
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-saved-chip-lists-its-conditions
 
@@ -15634,6 +15634,7 @@ or `write` reports `component-part-on-a-page`. Bad JSON reports
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/data/query.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-heading-asks-through-the-source
 
@@ -17249,6 +17250,7 @@ condition rows, so it reports `unreadable-condition` and filters nothing.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/one-way-to-write-a-condition.test.mjs`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-an-app-is-its-definition
 
