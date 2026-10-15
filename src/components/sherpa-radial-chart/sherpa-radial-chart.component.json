@@ -16,48 +16,73 @@
     "roots": [
       {
         "el": "figure",
-        "class": "layout",
-        "part": "layout",
+        "class": "chart-figure",
+        "part": "figure",
         "children": [
           {
             "el": "div",
-            "class": "ring-wrap",
+            "class": "chart-header",
+            "part": "header",
             "children": [
               {
-                "el": "svg",
-                "class": "ring",
-                "part": "ring",
-                "attrs": {
-                  "viewBox": "0 0 100 100",
-                  "role": "img",
-                  "aria-label": "Donut chart",
-                  "preserveAspectRatio": "xMidYMid meet"
-                },
+                "el": "span",
+                "class": "title",
                 "children": [
                   {
-                    "el": "g",
-                    "class": "slices"
+                    "slot": "heading",
+                    "attrs": {
+                      "data-accepts": "text"
+                    }
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "chart-body",
+            "children": [
               {
                 "el": "div",
-                "class": "hotspots",
-                "part": "hotspots"
-              },
-              {
-                "el": "div",
-                "class": "centre",
+                "class": "ring-wrap",
                 "children": [
                   {
-                    "el": "span",
-                    "class": "value",
-                    "part": "value"
+                    "el": "svg",
+                    "class": "ring",
+                    "part": "ring",
+                    "attrs": {
+                      "viewBox": "0 0 100 100",
+                      "role": "img",
+                      "aria-label": "Donut chart",
+                      "preserveAspectRatio": "xMidYMid meet"
+                    },
+                    "children": [
+                      {
+                        "el": "g",
+                        "class": "slices"
+                      }
+                    ]
                   },
                   {
-                    "el": "span",
-                    "class": "sub",
-                    "part": "sub"
+                    "el": "div",
+                    "class": "hotspots",
+                    "part": "hotspots"
+                  },
+                  {
+                    "el": "div",
+                    "class": "centre",
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "value",
+                        "part": "value"
+                      },
+                      {
+                        "el": "span",
+                        "class": "sub",
+                        "part": "sub"
+                      }
+                    ]
                   }
                 ]
               }
@@ -184,6 +209,19 @@
     },
     {
       "$type": "prop",
+      "name": "data-legend",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "horizontal",
+        "vertical"
+      ],
+      "description": "horizontal  | vertical (beside it)"
+    },
+    {
+      "$type": "prop",
       "name": "data-over-field",
       "type": "string",
       "observed": true,
@@ -251,10 +289,19 @@
   "slots": [
     {
       "$type": "slot",
+      "name": "heading",
+      "accepts": [
+        "text"
+      ],
+      "description": "heading above the ring"
+    },
+    {
+      "$type": "slot",
       "name": "legend",
       "accepts": [
         "legend"
-      ]
+      ],
+      "description": "an optional legend: below the ring, or beside it with data-legend=\"vertical\""
     }
   ],
   "populate": {
@@ -262,6 +309,11 @@
     "description": "the slices."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "vertical",
+      "selector": ":host([data-legend=\"vertical\"])"
+    },
     {
       "$type": "state",
       "name": "pie",
@@ -289,7 +341,6 @@
     }
   ],
   "tokens": {
-    "layout.gap": "{sherpa.display-mode-space-lg}",
     "value.font-size": "{sherpa.theme-content-size-h1}",
     "value.font-weight": "{sherpa.font-weight-regular}",
     "value.line-height": "{sherpa.theme-content-line-height-h1}",

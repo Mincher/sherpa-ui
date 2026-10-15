@@ -12,7 +12,7 @@
  * - RadialSlice — One slice — an alias of the shared `ChartDatum`.
  */
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
-import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatValue, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries } from '../../core/ui/chart-parts.js';
@@ -26,6 +26,7 @@ const MIN_SHARE = 0.005;
 
 export class SherpaRadialChart extends SherpaElement {
   static override css = [
+    new URL('../../core/sherpa-chart-frame.css', import.meta.url),
     new URL('../../core/sherpa-chart-segments.css', import.meta.url),
     new URL('./sherpa-radial-chart.css', import.meta.url),
   ];
@@ -35,6 +36,7 @@ export class SherpaRadialChart extends SherpaElement {
   static override labelTarget = '.ring';
   static override props = {
     ...SUMMARY_PROPS,
+    'data-legend': SHARED_PROPS['data-legend'],
     'data-label': { type: 'string', kind: 'content' },
     'data-sublabel': { type: 'string', kind: 'content' },
     'data-type': { type: 'enum', kind: 'style', values: ['donut', 'pie'] },

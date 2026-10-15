@@ -13562,8 +13562,9 @@ Records page at 1280 with the filter panel shut (a 363px chart) is as it was.
 
 Three things that are not obvious:
 
-- **The HOST is the container, and a container cannot restyle itself.** The
-  bar, line and gauge charts put the side-by-side grid on `:host`, so the
+- **The HOST is the container, and a container cannot restyle itself.** Every
+  chart — bar, line, gauge and radial, all on the frame sheet — puts the
+  side-by-side grid on `:host`, so the
   narrow query cannot take the grid away. It re-places what is IN the grid
   instead: the plot and the legend each span both columns, and the legend
   takes a third row.
@@ -13580,7 +13581,6 @@ Three things that are not obvious:
 and Firefox — measured, by the tests below.
 
 - Site: `src/core/sherpa-chart-frame.css`
-- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `test/e2e/reforged-chart-legend-slot.spec.ts`
 

@@ -3020,6 +3020,18 @@
           "description": "centre big text"
         },
         {
+          "name": "data-legend",
+          "description": "horizontal  | vertical (beside it)",
+          "values": [
+            {
+              "name": "horizontal"
+            },
+            {
+              "name": "vertical"
+            }
+          ]
+        },
+        {
           "name": "data-over-field"
         },
         {

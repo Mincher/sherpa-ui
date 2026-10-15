@@ -2,12 +2,13 @@
    (geometry in the TS); the centre label is a sibling in the hole. */
 
 :host {
-  /* Grid, not block: the row forces the child to the host's own height, so the
-     ring's percentage sizing resolves against something real. */
+  /* Grid, not block: the body's row takes the host's own height, so the ring's
+     percentage sizing resolves against something real. The frame sheet gives a
+     vertical legend its 7:3 split, and the narrow stack. */
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  container: sherpa-chart / inline-size;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: var(--sherpa-display-mode-space-lg, 20px);
   max-block-size: 100%; /* max, not fixed — an unsized parent keeps natural size */
   min-block-size: 0;
   --_max-size: 320px; /* past ~320 it is a big empty circle. Will's number */
@@ -15,38 +16,23 @@
      arcData.innerRadius, as they also depend on donut vs pie. */
 }
 
-/* `minmax(0, Nfr)`, not a bare `fr`: a bare one floors at min-content, so a long
-   legend label would push past its share and break the ratio. */
-.layout {
+/* The ring's cell: fills its row, so `max-block-size: 100%` on the ring
+   resolves against the row and not against itself. */
+.chart-body {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-rows: minmax(0, 1fr);
   align-items: center;
   justify-items: center;
-  gap: var(--sherpa-display-mode-space-lg, 20px);
-  margin: 0;
+  justify-self: stretch;
   min-inline-size: 0;
-  /* Fills the host's height, else the grid hugs the ring and the ring's
-     `max-block-size: 100%` resolves against itself. */
+  min-block-size: 0;
   block-size: 100%;
   max-block-size: 100%;
-  min-block-size: 0;
-  /* Explicit row floored at 0 — an implicit `auto` row sizes to the ring. */
-  grid-template-rows: minmax(0, 1fr);
 }
 
-:host(:not(:state(has-legend))) .layout {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-/* NARROW: the legend goes below the ring. TRAP T-a-narrow-chart-stacks-its-legend */
-@container sherpa-chart (max-width: 22rem) {
-  :host(:state(has-legend)) .layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: var(--sherpa-display-mode-space-xs, 8px);
-  }
-  ::slotted([slot="legend"]) { --sherpa-chart-legend-columns: 1; }
-}
+/* Below the ring, a step off it; beside it, the column gap does that. */
+::slotted([slot="legend"]) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
+:host([data-legend="vertical"]) ::slotted([slot="legend"]) { margin-block-start: 0; }
 
 .ring-wrap {
   position: relative;

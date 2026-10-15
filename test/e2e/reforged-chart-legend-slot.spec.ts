@@ -16,7 +16,7 @@ import { test, expect } from './fixture';
  */
 
 const HARNESS = '/test/reforged/harness.html';
-const CHARTS = ['sherpa-barchart', 'sherpa-line-chart', 'sherpa-gauge-chart'] as const;
+const CHARTS = ['sherpa-barchart', 'sherpa-line-chart', 'sherpa-gauge-chart', 'sherpa-radial-chart'] as const;
 
 test.beforeEach(async ({ page }) => {
   await page.goto(HARNESS);
@@ -56,8 +56,8 @@ async function build(page: import('@playwright/test').Page, tag: string, orienta
         const b = el.getBoundingClientRect();
         return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) };
       };
-      // The radial chart has no .chart-body: its ring is the plot.
-      const body = chart.shadowRoot!.querySelector('.chart-body, .ring-wrap') as HTMLElement;
+      // Every chart frames its plot in a .chart-body (TODO 283, 308).
+      const body = chart.shadowRoot!.querySelector('.chart-body') as HTMLElement;
       const items = [...legend.shadowRoot!.querySelectorAll('.item')].map(r);
       return { chart: r(chart), legend: r(legend), body: r(body), items, hostDisplay: getComputedStyle(chart).display };
     },
@@ -69,7 +69,7 @@ async function build(page: import('@playwright/test').Page, tag: string, orienta
    to vertical layout as their container gets narrower. Use container queries.
    If a layout is set to vertical by default in it's template then this won't
    apply." TRAP T-a-narrow-chart-stacks-its-legend */
-for (const tag of [...CHARTS, 'sherpa-radial-chart']) {
+for (const tag of CHARTS) {
   test(`${tag}: NARROW, a legend beside the plot goes below it`, async ({ page }) => {
     const wide = await build(page, tag, 'vertical');
     expect(wide.legend.x).toBeGreaterThanOrEqual(wide.body.x + wide.body.w - 1);

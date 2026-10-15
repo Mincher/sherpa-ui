@@ -299,7 +299,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
-| 🚧 | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
+| ✅ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
 | ✅ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
 | ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
@@ -6472,7 +6472,7 @@ went. Net about −290 lines. **Not run yet:** the chart, keyboard, tooltip,
 sparkline and metric specs; Demos' live-alerts. **❓ 308** holds the one step
 left: the radial chart on the frame sheet.
 
-### `[ ]` ❓ 308 — Will: the radial chart on the chart-frame sheet?
+### `[x]` ✅ 308 — Will: the radial chart on the chart-frame sheet?
 
 The frame sheet (283) serves bar, line and gauge. The radial chart lays out its
 own `.layout` grid, 7:3, legend beside. On the frame it would gain a `heading`
@@ -6485,6 +6485,13 @@ step, so nothing you see moves.
 **✅ Will, 2026-10-15: A** — *"Sure, as long as it doesn't break component
 agnosticism."* The radial chart works alone as before; only Demos' own markup
 names `vertical`.
+
+**✅ Done 2026-10-15.** The radial adopts the frame sheet: a `heading` slot and
+`data-legend` like the others, its ring in a `.chart-body`, and the frame's 7:3
+split and narrow stack; its own `.layout` grid (and `part="layout"`) went. The
+legend now sits below by default; Demos' two donuts set `vertical`, so they look
+as before. The legend-slot test now runs every check on all four charts.
+**Not run yet.**
 
 ### `[x]` ✅ 309 — BUG: a zoneless gauge's band takes a container's grey outline
 

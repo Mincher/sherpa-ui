@@ -1,7 +1,7 @@
 /*
  * sherpa-chart-frame.css — a chart's frame: its heading, its body and where the
- * legend goes. Adopted first by the bar, line and gauge charts, then their
- * family's sheet (axes or segments), then their own.
+ * legend goes. Adopted first by the bar, line, gauge and radial charts, then
+ * their family's sheet (axes or segments), then their own.
  */
 
 :host {

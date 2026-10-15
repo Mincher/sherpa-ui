@@ -9019,6 +9019,13 @@
               }
             },
             {
+              "name": "data-legend",
+              "description": "horizontal  | vertical (beside it)",
+              "type": {
+                "text": "'horizontal' | 'vertical'"
+              }
+            },
+            {
               "name": "data-over-field",
               "type": {
                 "text": "string"
@@ -9086,16 +9093,23 @@
           ],
           "slots": [
             {
+              "name": "heading",
+              "description": "heading above the ring (accepts: text)"
+            },
+            {
               "name": "legend",
-              "description": "(accepts: legend)"
+              "description": "an optional legend: below the ring, or beside it with data-legend=\"vertical\" (accepts: legend)"
             }
           ],
           "cssParts": [
             {
-              "name": "hotspots"
+              "name": "figure"
             },
             {
-              "name": "layout"
+              "name": "header"
+            },
+            {
+              "name": "hotspots"
             },
             {
               "name": "ring"
