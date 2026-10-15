@@ -118,7 +118,7 @@
 }
 
 /* ── Selected ─────────────────────────────────────────────────────── */
-:host([data-selected]) .card {
+:host([checked]) .card {
   border-color: var(--_accent);
   box-shadow: inset 0 0 0 1px var(--_accent);
 }
@@ -128,7 +128,7 @@
   outline: none;
   box-shadow: var(--sherpa-focus-ring);
 }
-:host([data-selected]:focus-within) .card {
+:host([checked]:focus-within) .card {
   box-shadow: inset 0 0 0 1px var(--_accent), 0 0 0 2px var(--_accent);
 }
 

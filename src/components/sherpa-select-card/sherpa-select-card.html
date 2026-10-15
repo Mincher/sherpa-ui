@@ -7,7 +7,7 @@
   Public API:
     data-label        header title (used when no header slot is given)
     data-description  helper line under the title
-    data-selected     present → the card is selected (also a JS property)
+    checked           present → the card is ticked (also a JS property)
     data-select-mode  radio | checkbox — which footer control shows (default radio).
                       checkbox = multi-select (re-click toggles); radio = single-select.
     data-orientation  vertical | horizontal (footer beside the body vs below; default vertical)
@@ -21,7 +21,7 @@
     (default) — the card body / content
     footer    — footer region (falls back to the select controls)
 
-  Fires: change — detail { selected, value }
+  Fires: change — detail { checked, value }
 -->
 <template id="default">
   <div class="card" part="card">

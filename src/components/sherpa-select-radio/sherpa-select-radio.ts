@@ -43,7 +43,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.mirrorAttrs(c, MIRRORED);
     // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
     c.disabled = this.matches(':disabled');
-    c.value = this.getAttribute('value') ?? '';
+    c.value = this.getAttribute('value') ?? 'on';
     c.checked = this.hasAttribute('checked');
     this.#syncForm();
   }
@@ -101,7 +101,7 @@ export class SherpaSelectRadio extends SherpaElement {
   }
 
   get value(): string {
-    return this.#control?.value ?? this.getAttribute('value') ?? '';
+    return this.#control?.value ?? this.getAttribute('value') ?? 'on';
   }
   set value(v: string) {
     this.setAttribute('value', v);

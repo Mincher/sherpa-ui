@@ -24,12 +24,12 @@ export class SherpaSelectCard extends SherpaElement {
     'data-orientation': SHARED_PROPS['data-orientation'],
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
-    'data-selected': { type: 'boolean', kind: 'style', accessor: 'selected' },
+    'checked': { type: 'boolean', kind: 'style', accessor: 'checked' },
     'data-select-mode': { type: 'enum', kind: 'style', values: ['radio', 'checkbox'] },
   } as const;
 
   /** Installed by `define()` from the props' `accessor`. */
-  declare selected: boolean;
+  declare checked: boolean;
 
   static override observed = [
     'name',
@@ -37,17 +37,17 @@ export class SherpaSelectCard extends SherpaElement {
     'disabled',
   ];
 
-  /** Selected, it submits its value in a form: its footer controls are parts and
+  /** Checked, it submits its value in a form: its footer controls are parts and
    *  join none. TODO 214 */
   static readonly formAssociated = true;
-  /** Its first `data-selected`: what a form reset puts back. */
+  /** Its first `checked`: what a form reset puts back. */
   #resetTo = false;
 
   /** The card face a click on anywhere toggles. */
   #card: HTMLElement | null = null;
 
   override onRender(): void {
-    this.#resetTo = this.hasAttribute('data-selected');
+    this.#resetTo = this.hasAttribute('checked');
     this.#card = this.$('.card');
     if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     this.#syncRole();
@@ -64,7 +64,7 @@ export class SherpaSelectCard extends SherpaElement {
     if (name === 'data-select-mode') {
       this.#syncRole();
       this.#syncControl();
-    } else if (name === 'data-selected') {
+    } else if (name === 'checked') {
       this.#syncControl();
       this.#syncAria();
     } else this.#syncControl();
@@ -80,18 +80,18 @@ export class SherpaSelectCard extends SherpaElement {
     this.setAttribute('role', this.#isCheckbox() ? 'checkbox' : 'radio');
   }
 
-  /** Mirror name / value / disabled / selected onto BOTH footer controls. */
+  /** Mirror name / value / disabled / checked onto BOTH footer controls. */
   #syncControl(): void {
     const controls = this.$$<FooterControl>('.footer-control');
     for (const c of controls) {
       if (this.hasAttribute('name')) c.setAttribute('name', this.getAttribute('name') ?? '');
       else c.removeAttribute('name');
-      c.value = this.getAttribute('value') ?? '';
-      c.checked = this.hasAttribute('data-selected');
+      c.value = this.getAttribute('value') ?? 'on';
+      c.checked = this.hasAttribute('checked');
       // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
       c.toggleAttribute('disabled', this.matches(':disabled'));
     }
-    this.formLink.value(this.selected ? this.value || 'on' : null);
+    this.formLink.value(this.checked ? this.value : null);
   }
 
   /* Form lifecycle — called by the browser. */
@@ -101,14 +101,14 @@ export class SherpaSelectCard extends SherpaElement {
     this.#syncControl();
   }
 
-  /** A form reset puts back its first `data-selected`. */
+  /** A form reset puts back its first `checked`. */
   formResetCallback(): void {
-    this.selected = this.#resetTo;
+    this.checked = this.#resetTo;
   }
 
-  /** Keep aria-checked in step with the selected state. */
+  /** Keep aria-checked in step with the checked state. */
   #syncAria(): void {
-    this.setAttribute('aria-checked', String(this.hasAttribute('data-selected')));
+    this.setAttribute('aria-checked', String(this.hasAttribute('checked')));
   }
 
   /* ── Interaction ──────────────────────────────────────────────────── */
@@ -130,15 +130,15 @@ export class SherpaSelectCard extends SherpaElement {
 
   /** A radio selects; a checkbox flips. */
   #toggle(): void {
-    if (this.#isCheckbox()) this.#setSelected(!this.hasAttribute('data-selected'));
-    else this.#setSelected(true);
+    if (this.#isCheckbox()) this.#setChecked(!this.hasAttribute('checked'));
+    else this.#setChecked(true);
   }
 
-  /** Apply the selected state, coordinate the radio group, report it. */
-  #setSelected(next: boolean): void {
-    this.set('data-selected', next);
+  /** Apply the checked state, coordinate the radio group, report it. */
+  #setChecked(next: boolean): void {
+    this.set('checked', next);
     if (next && !this.#isCheckbox()) this.#deselectGroup();
-    this.emit('change', { selected: next, value: this.value });
+    this.emit('change', { checked: next, value: this.value });
   }
 
   /** Deselect sibling radio cards with this name — document-wide, because
@@ -150,14 +150,14 @@ export class SherpaSelectCard extends SherpaElement {
       `sherpa-select-card[name="${CSS.escape(name)}"]`
     );
     for (const card of group) {
-      if (card !== this) card.selected = false;
+      if (card !== this) card.checked = false;
     }
   }
 
   /* ── Public API ────────────────────────────────────────────────────── */
 
   get value(): string {
-    return this.getAttribute('value') ?? '';
+    return this.getAttribute('value') ?? 'on';
   }
   set value(v: string) {
     this.setAttribute('value', v);

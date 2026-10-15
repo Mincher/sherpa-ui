@@ -58,7 +58,7 @@ test('the slider, select card, calendar, file upload and transfer list submit th
     root.innerHTML = `<form><fieldset>
       <sherpa-slider name="seats" value="30"></sherpa-slider>
       <sherpa-slider name="band" data-type="range" value-start="10" value-end="90"></sherpa-slider>
-      <sherpa-select-card name="plan" value="pro" data-selected></sherpa-select-card>
+      <sherpa-select-card name="plan" value="pro" checked></sherpa-select-card>
       <sherpa-calendar name="due" data-value="2026-10-12"></sherpa-calendar>
       <sherpa-calendar name="span" data-type="range" data-value-start="2026-10-01" data-value-end="2026-10-05"></sherpa-calendar>
       <sherpa-file-upload name="docs" data-multiple></sherpa-file-upload>
@@ -73,7 +73,7 @@ test('the slider, select card, calendar, file upload and transfer list submit th
     const first = entries();
 
     (root.querySelector('sherpa-slider') as HTMLElement & { value: number }).value = 55;
-    (root.querySelector('sherpa-select-card') as HTMLElement & { selected: boolean }).selected = false;
+    (root.querySelector('sherpa-select-card') as HTMLElement & { checked: boolean }).checked = false;
     root.querySelector('sherpa-calendar')!.setAttribute('data-value', '2026-11-01');
     const drop = new DataTransfer();
     drop.items.add(new File(['a'], 'a.txt'));
@@ -91,10 +91,10 @@ test('the slider, select card, calendar, file upload and transfer list submit th
     // Inside a disabled fieldset, a press does nothing.
     root.querySelector('fieldset')!.disabled = true;
     await settle();
-    const card = root.querySelector('sherpa-select-card') as HTMLElement & { selected: boolean };
+    const card = root.querySelector('sherpa-select-card') as HTMLElement & { checked: boolean };
     card.shadowRoot!.querySelector<HTMLElement>('.card')!.click();
     const slider = root.querySelector('sherpa-slider')!;
-    return { first, changed, reset, cardAfterPress: card.selected, sliderOff: slider.shadowRoot!.querySelector<HTMLInputElement>('.range')!.disabled };
+    return { first, changed, reset, cardAfterPress: card.checked, sliderOff: slider.shadowRoot!.querySelector<HTMLInputElement>('.range')!.disabled };
   });
   expect(r.first).toEqual(['seats=30', 'band=10', 'band=90', 'plan=pro', 'due=2026-10-12', 'span=2026-10-01', 'span=2026-10-05', 'regions=emea']);
   expect(r.changed).toEqual(['seats=55', 'band=10', 'band=90', 'due=2026-11-01', 'span=2026-10-01', 'span=2026-10-05', 'docs=a.txt', 'docs=b.txt', 'regions=apac', 'regions=latam']);

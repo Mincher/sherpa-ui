@@ -6397,6 +6397,9 @@ keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
 
 - **Row 2, dismiss ✅:** `chip-remove` → `chip-dismiss`, `tag-remove` →
   `tag-dismiss`; `data-dismissible` is a declared boolean on both.
+- **Row 3, selection ✅:** select-card is `checked` (attribute, property, and
+  `change{checked}`), as checkbox, radio and switch; the default `value` is
+  `'on'` on all four.
 
 ### `[x]` ✅ 277 — Phase 4: state first
 

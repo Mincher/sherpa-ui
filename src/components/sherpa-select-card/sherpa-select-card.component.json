@@ -151,12 +151,14 @@
     },
     {
       "$type": "prop",
-      "name": "data-selected",
+      "name": "checked",
       "type": "boolean",
       "observed": true,
       "declared": true,
+      "native": true,
       "kind": "style",
-      "description": "present → the card is selected (also a JS property)"
+      "default": false,
+      "description": "present → the card is ticked (also a JS property)"
     },
     {
       "$type": "prop",
@@ -212,7 +214,7 @@
     }
   ],
   "populate": {
-    "shape": "{ description?, footer?, label?, orientation?, selectMode?, selected? }",
+    "shape": "{ description?, footer?, label?, orientation?, selectMode? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -243,11 +245,6 @@
     },
     {
       "$type": "state",
-      "name": "selected",
-      "selector": ":host([data-selected])"
-    },
-    {
-      "$type": "state",
       "name": "not-horizontal",
       "selector": ":host(:not([data-orientation=\"horizontal\"]))"
     }
@@ -256,7 +253,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (value, selected). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (value, checked). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -271,7 +268,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "selected": "boolean",
+        "checked": "boolean",
         "value": "string"
       }
     }
@@ -321,7 +318,7 @@
           "$type": "method",
           "name": "formResetCallback",
           "args": "",
-          "description": "A form reset puts back its first `data-selected`."
+          "description": "A form reset puts back its first `checked`."
         }
       ],
       "category": "control",
@@ -332,10 +329,10 @@
           "access": "read-write"
         },
         {
-          "name": "selected",
+          "name": "checked",
           "type": "boolean",
           "access": "read-write",
-          "description": "reads and toggles data-selected"
+          "description": "reads and toggles checked"
         }
       ]
     }
