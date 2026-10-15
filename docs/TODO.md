@@ -312,7 +312,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | ⬜ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
-| ⬜ | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6461,6 +6461,16 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` 🚧 321 — BUG: a Context's saved Views have two keys
+
+The outlet reads a Context's saved Views by the Context's NAME
+(`viewsOf(context)`); the provider keeps them by the definition's `id`. Equal
+in Demos and the Starter, but nothing promises it. **🚧 2026-10-15** (289's Q3,
+my pick A): the outlet now reports `outlet-view-key` when the two differ, so
+the mismatch is loud. No stored key moves. **Waits for Will:** A — the outlet
+passes its Context name to `open()` as the key, one key everywhere (a stored
+View under the old key is not found); B — keep the report only. My pick: A.
 
 ### `[x]` ✅ 289 — Phase 6: each layer its own job
 

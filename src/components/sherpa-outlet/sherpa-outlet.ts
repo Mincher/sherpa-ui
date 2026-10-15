@@ -301,6 +301,14 @@ export class SherpaOutlet extends SherpaElement {
     const definition = context.definition ? await this.#file(context.definition, 'json') as PageDefinition | null : null;
     await options.ready;
     if (token !== this.#token) return;
+    // Saved Views are kept under the page's id and read here under the Context's name. TODO 321
+    if (definition && definition.id !== name) {
+      report({
+        code: 'outlet-view-key',
+        message: "sherpa-outlet: a Context's definition id is not its name, so its saved Views are kept under one and read under the other.",
+        at: { context: name, id: definition.id },
+      });
+    }
     const source: DataSource | undefined = definition && this.#provider ? await this.#provider.open(definition, {
       stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
       session: options.session, ...(options.drafts ? { drafts: options.drafts } : {}),
