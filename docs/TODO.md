@@ -272,7 +272,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
 | ✅ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
 | ✅ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
-| ⬜ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
+| 🚧 | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
@@ -6438,6 +6438,25 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` 🚧 281 — Phase 5: toolbar and panel, one helper for each part written twice
+
+**✅ Part A, 2026-10-15.** Four parts the bar and the panel each wrote, now one
+copy in `core/ui/`: the reader's saved sets and the Saved chip (`SavedSets`,
+26 lines a side); the Filters button's face and its menu's def
+(`drawFiltersButton`); what each one-value row was told, its Apply flip and the
+re-tick of a shut menu (`OneRows`, beside `MenuDrill`); and the ⋮ menu's save
+rows (`saveRows`), page-button press (inside `pickMore`) and two switches
+(`askSwitches`). Every `emit` stays in its component — the spec reads only
+the component's own file — so a helper hands back a request or takes an `ask`.
+One dead write went: the bar's `data-search`, which `menuFor()` already sets.
+Bar −48 lines, panel −43, helpers +133 (each class member carries its doc
+line), net +42. Specs unchanged. A read-only agent planned it and a second
+checked it against the code first. **Not run yet:** the toolbar, filter-panel,
+one-filters-button, panel-filters-button and provider-saves-filters specs.
+
+⬜ Part B: `#syncResets`, organise sync, one column type and `SortDirection`,
+"ruled out" marking, the results words, saved cards, pending, reopen after ×.
 
 ### `[ ]` 🚧 285 — Phase 5: controls, containers, templates
 

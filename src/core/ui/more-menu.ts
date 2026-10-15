@@ -7,10 +7,11 @@
  * - MoreRow — One ⋮ row: what it does, what it says, and whether it is off.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all to default — off where they would change nothing.
+ * - saveRows — Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
- * - pickMore — A row was chosen: the menu hides; a page button's row hands back that button.
- * - switchesOf — The ⋮ menu's two switches, as their request: Limit, and Hide unmatching.
+ * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
+ * - askSwitches — The ⋮ menu's two switches: each that MOVED is asked for, Limit first.
  */
 
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
@@ -31,6 +32,13 @@ export function resetRows(host: HTMLElement, reset: string): MoreRow[] {
     [reset, 'Reset filters', host.hasAttribute('data-nothing-to-reset')],
     ['reset-default', 'Reset all to default', host.hasAttribute('data-at-default')],
   ];
+}
+
+/** Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves. TODO 105 */
+export function saveRows(host: HTMLElement, setOn: boolean): MoreRow[] {
+  if (!host.hasAttribute('data-saveable')) return [];
+  return [['filters-save', 'Save filters'], ['filters-save-as', 'Save filters as'],
+    ...(setOn ? [['filters-delete', 'Delete filters'] as MoreRow] : [])];
 }
 
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
@@ -76,20 +84,29 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   menu.show?.(trigger);
 }
 
-/** A row was chosen: the menu hides. A page button's row hands back that
- *  button, to press — or nothing, if it has gone; any other row, its value. */
-export function pickMore(host: HTMLElement, root: ParentNode, event: Event): string | HTMLElement | undefined {
+/** A row was chosen: the menu hides. A page button's row presses that button,
+ *  if it is still there, and hands back ''; any other row hands back its value. */
+export function pickMore(host: HTMLElement, root: ParentNode, event: Event): string {
   const value = String((event as CustomEvent).detail?.value ?? '');
   root.querySelector<SherpaMenu>('.more-menu')?.hide?.();
-  return value.startsWith(EXTRA) ? extras(host)[Number(value.slice(EXTRA.length))] : value;
+  if (!value.startsWith(EXTRA)) return value;
+  extras(host)[Number(value.slice(EXTRA.length))]?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+  return '';
 }
 
-/** The ⋮ menu's two switches, as their REQUEST — the host owns both: Limit to
- *  matching filters, and Hide unmatching filters. */
-export function switchesOf(event: Event): { limit: boolean; hide: boolean } {
+/** The ⋮ menu's two switches: each that MOVED is asked for, Limit first — the
+ *  host owns both: Limit to matching filters, and Hide unmatching filters. */
+export function askSwitches(
+  host: HTMLElement, event: Event,
+  ask: (name: 'limit-options-change' | 'hide-unmatched-change', on: boolean) => void,
+): void {
   event.stopPropagation();
   const on = ((event as CustomEvent).detail?.values ?? []) as string[];
-  return { limit: on.includes('limit-options'), hide: on.includes('hide-unmatched') };
+  const limit = on.includes('limit-options');
+  const hide = on.includes('hide-unmatched');
+  if (limit !== (host.dataset['limitOptions'] === 'on')) ask('limit-options-change', limit);
+  // Read AFTER the Limit ask: its host answers by rewriting both attributes.
+  if (hide !== (host.dataset['hideUnmatched'] === 'on')) ask('hide-unmatched-change', hide);
 }
 
 function extras(host: HTMLElement): HTMLElement[] {

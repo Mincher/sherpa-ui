@@ -18,10 +18,10 @@ import {
   drawSavedMenu, type SavedMenuHost,
 } from '../../core/ui/saved-filter-menu.js';
 import {
-  FILTERS_LABEL, MenuDrill, drawSavedChip, filtersMenuItems, setPick, type AddedFilter, type SavedSet,
+  MenuDrill, OneRows, SavedSets, drawFiltersButton, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  extraRows, folded, switchesOf, openMore, pickMore, resetRows, type MoreRow,
+  askSwitches, extraRows, folded, openMore, pickMore, resetRows, saveRows, type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP } from '../../core/data/store.js';
@@ -311,7 +311,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
     this.$('.saved-chip')?.addEventListener('quick-filter-dismiss', () => this.emit('filters-dismiss', {}));
-    this.#syncSavedChip();
+    this.#saved.draw();
     // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-has-no-fill
     for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
       this.addEventListener(type, this.#queuePending);
@@ -541,25 +541,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-saved-filters-are-every-scope
    */
   set savedSets(sets: readonly SavedSet[]) {
-    this.#savedSets = sets.map((set) => ({ ...set }));
-    this.#syncSavedChip();
+    this.#saved.set(sets);
     this.#renderAvailable();
   }
   get savedSets(): SavedSet[] {
-    return this.#savedSets.map((set) => ({ ...set }));
+    return this.#saved.all;
   }
-  /** The reader's saved sets, as the host last drew them. */
-  #savedSets: SavedSet[] = [];
-
-  /** The saved set on screen, if any. */
-  #savedOn(): SavedSet | undefined {
-    return this.#savedSets.find((set) => set.on);
-  }
-
-  /** The Saved chip says the set on screen. */
-  #syncSavedChip(): void {
-    drawSavedChip(this, this.$<SherpaQuickFilter>('.saved-chip'), this.#savedSets);
-  }
+  /** The reader's saved sets, and the Saved chip. */
+  #saved = new SavedSets(this, () => this.$<SherpaQuickFilter>('.saved-chip'));
 
   /** Steers given before `populate()` drew a chip, for `#render()` to replay in
    *  order. TRAP T-a-value-before-the-first-render-is-held */
@@ -1028,7 +1017,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncArrangement('group');
     this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();
-    if (name === 'data-saveable') this.#syncSavedChip();
+    if (name === 'data-saveable') this.#saved.draw();
     this.#syncResets();
   }
 
@@ -1322,8 +1311,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const held = allow(this.#filters.filter((f) => f.removable), this.#allowedFields);
     // A rebuilt run is folded again before it is shown, so a stale fold lists nothing.
     const folded = this.#folded.filter((c) => c.isConnected);
-    const sets = this.hasAttribute('data-saveable') ? this.#savedSets : [];
-    const any = offer.length > 0 || held.length > 0 || folded.length > 0 || sets.length > 0;
     /* IN BAR ORDER: every chip a reader can take off, and every chip folded
        away — a folded one's row opens its child menu. ONE section, not a
        second one for the folded. Will, 2026-09-25. TRAP T-one-filters-button */
@@ -1345,24 +1332,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       ...held.filter((f) => !inRun.has(f.id))
         .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
     ];
-    this.#told = new Map(added.flatMap((f) => (f.on === undefined ? [] : [[f.id, f.on] as const])));
-    add.toggleAttribute('disabled', !any);
-    if (folded.length) add.dataset['badge'] = String(folded.length);
-    else add.removeAttribute('data-badge');
-    add.querySelector('sherpa-menu')?.remove();
-    if (!any) return;
-    this.#addMenu(add, {
-      id: 'add',
-      label: FILTERS_LABEL,
-      select: 'multiple',
-      // Adding EVERY filter at once is never the answer. Will, 2026-09-25.
-      selectAll: false,
-      // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
-      // a chip, so per-tick apply rebuilds the run mid-selection.
-      commit: true,
-      options: filtersMenuItems(added, offer, sets),
-    });
-    add.querySelector<HTMLElement>('sherpa-menu')?.toggleAttribute('data-search', true);
+    this.#oneRows.tell(added);
+    const def = drawFiltersButton(add, folded.length, added, offer, this.#saved.listed);
+    if (!def) return;
+    this.#addMenu(add, def);
     this.#syncOverflowActive();
   }
 
@@ -1395,7 +1368,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#render();
     this.#renderAvailable();
     if (silent) return;
-    // ONE event for the batch — a host re-queries once.
+    // ONE event for the batch — a host re-queries once. TRAP T-add-menu-batches
     this.emit('filter-add', { ids: added.map((f) => f.id), filters: added, holds: this.heldFields });
     // AFTER the rebuild. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     void this.#settled().then(() => this.#emitChange());
@@ -1475,7 +1448,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit(act);
         break;
       case 'filters-delete':
-        this.emit('filters-delete', { id: this.#savedOn()?.id });
+        this.emit('filters-delete', { id: this.#saved.on?.id });
         break;
       case 'add':
         // sherpa-button opens its own slotted menu; nothing to do here.
@@ -1502,26 +1475,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     if (folded(act('refresh'))) view.push(['refresh', 'Refresh view']);
     // Save filters, for every scope at once. Will, TODO 105.
-    const save: MoreRow[] = this.hasAttribute('data-saveable')
-      ? [['filters-save', 'Save filters'], ['filters-save-as', 'Save filters as'],
-        ...(this.#savedOn() ? [['filters-delete', 'Delete filters'] as MoreRow] : [])]
-      : [];
+    const save = saveRows(this, !!this.#saved.on);
     openMore(this, this.root, trigger, [first, save, view]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
-  #onMoreSwitch = (event: Event): void => {
-    const { limit, hide } = switchesOf(event);
-    if (limit !== (this.dataset['limitOptions'] === 'on')) this.emit('limit-options-change', { on: limit });
-    if (hide !== (this.dataset['hideUnmatched'] === 'on')) this.emit('hide-unmatched-change', { on: hide });
-  };
+  #onMoreSwitch = (event: Event): void => askSwitches(this, event, (name, on) => this.emit(name, { on }));
 
   /** A ⋮ row was chosen: do what its folded button does. */
-  #onMore = (event: Event): void => {
-    const picked = pickMore(this, this.root, event);
-    if (typeof picked === 'string') this.#act(picked);
-    else picked?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
-  };
+  #onMore = (event: Event): void => this.#act(pickMore(this, this.root, event));
 
   /** The Add menu committed. `menu-change`: only a CHIP re-emits as quick-filter-change. */
   #onAddCommit = (event: Event): void => {
@@ -1539,20 +1501,20 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-the-add-menu-is-the-whole-list */
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
     // A saved set's row applies it, or — unticked — dismisses it. TODO 105
-    const set = setPick(want, this.#savedSets);
+    const set = this.#saved.pick(want);
     if (set.apply) this.emit('filters-apply', { id: set.apply });
     else if (set.dismiss) this.emit('filters-dismiss', {});
     // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
     let flipped = false;
-    for (const [id, was] of this.#told) {
+    for (const id of this.#oneRows.ids) {
       const on = want.has(id);
       const chip = this.#chips().find((c) => c.dataset['id'] === id);
-      if (on === was || !chip || chip.hasAttribute('data-persistent')) continue;
-      this.#told.set(id, on);
+      // `flip` LAST: it records.
+      if (!chip || chip.hasAttribute('data-persistent') || !this.#oneRows.flip(id, on)) continue;
       chip.current = on;
       flipped = true;
     }
-    const ones = this.#told;
+    const ones = this.#oneRows;
     const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
     const added = [...want].filter((id) => !held.has(id) && !ones.has(id));
     const gone = [...held].filter((id) => !want.has(id));
@@ -1574,23 +1536,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     void this.#reopenAdd();
   };
 
-  /** What each ONE-value row was told, by id: on or off. TODO 54 */
-  #told = new Map<string, boolean>();
+  /** What each ONE-value row was told. TODO 54 */
+  #oneRows = new OneRows();
 
   /** A chip turned on or off elsewhere: its row is ticked as it is, while the menu is shut. */
   #syncOneRows(): void {
     const menu = this.$('.add-btn')?.querySelector<SherpaMenu>('sherpa-menu');
-    if (!menu || menu.open || !this.#told.size) return;
-    let moved = false;
-    for (const [id, was] of this.#told) {
-      const on = !!(this.#chips().find((c) => c.dataset['id'] === id))?.current;
-      if (on === was) continue;
-      this.#told.set(id, on);
-      moved = true;
-    }
-    if (!moved) return;
-    const told = this.#told;
-    menu.values = [...(menu.values ?? []).filter((v) => !told.has(v)), ...[...told].filter(([, on]) => on).map(([id]) => id)];
+    this.#oneRows.follow(menu, (id) => !!this.#chips().find((c) => c.dataset['id'] === id)?.current);
   }
 
   /** The Filters menu was rebuilt under the reader's pointer: open it again. */

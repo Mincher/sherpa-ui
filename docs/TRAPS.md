@@ -2339,6 +2339,7 @@ should find it where they got it. Its picked values are dropped — "remove" mea
 remove, not "hide and remember".
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filters-button.ts`
 
 ### T-one-comparator-one-source
 
