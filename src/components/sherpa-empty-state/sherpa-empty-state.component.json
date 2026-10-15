@@ -78,7 +78,7 @@
           "part": "actions",
           "children": [
             {
-              "slot": "action",
+              "slot": "actions",
               "attrs": {
                 "data-accepts": "control"
               }
@@ -187,11 +187,11 @@
     },
     {
       "$type": "slot",
-      "name": "action",
+      "name": "actions",
       "accepts": [
         "control"
       ],
-      "description": "call-to-action controls (reflects has-action)"
+      "description": "call-to-action controls (reflects has-actions)"
     },
     {
       "$type": "slot",

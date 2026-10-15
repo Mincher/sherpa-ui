@@ -14,7 +14,7 @@
     data-field          the number that aggregate reads
 
   Slots:
-    title   — heading above the chart
+    heading — heading above the chart
     legend  — a <sherpa-chart-legend> for the series. Horizontal → below the plot;
               vertical → beside it.
 
@@ -23,7 +23,7 @@
 <template id="default">
   <figure class="chart-figure" part="figure">
     <figcaption class="chart-header" part="header">
-      <span class="title"><slot name="title" data-accepts="text"></slot></span>
+      <span class="title"><slot name="heading" data-accepts="text"></slot></span>
     </figcaption>
     <div class="chart-body">
       <span class="axis-label axis-label-y" part="axis-label"></span>

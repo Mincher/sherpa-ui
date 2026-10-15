@@ -18,7 +18,7 @@
   Slots:
     icon        — custom illustration (reflects has-icon; replaces the glyph)
     (default)   — custom message body (reflects has-content-slot; replaces data-description)
-    action      — call-to-action controls (reflects has-action)
+    actions     — call-to-action controls (reflects has-actions)
     small-print — custom fine-print body (reflects has-small-print; replaces data-small-print text)
 
   Fires: nothing — it's a static placeholder. Consumers wire their own actions.
@@ -41,7 +41,7 @@
     </div>
 
     <div class="actions" part="actions">
-      <slot name="action" data-accepts="control"></slot>
+      <slot name="actions" data-accepts="control"></slot>
     </div>
 
     <div class="small-print" part="small-print">

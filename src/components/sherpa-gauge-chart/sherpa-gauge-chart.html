@@ -28,7 +28,7 @@
     data-field      the number that aggregate reads
 
   Slots:
-    title    — heading above the gauge
+    heading  — heading above the gauge
     legend   — a <sherpa-chart-legend> naming the zones; the gauge fills it
                from zones that are named. Horizontal → below the gauge;
                vertical → beside it.
@@ -39,7 +39,7 @@
 <template id="default">
   <figure class="chart-figure" part="figure">
   <div class="chart-header" part="header">
-    <span class="title"><slot name="title" data-accepts="text"></slot></span>
+    <span class="title"><slot name="heading" data-accepts="text"></slot></span>
   </div>
 
   <!-- Wraps ring + scale + caption as ONE grid item, so a vertical legend can sit

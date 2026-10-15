@@ -107,7 +107,7 @@
   justify-content: center;
   gap: var(--sherpa-display-mode-space-sm, 12px);
 }
-:host(:state(has-action)) .actions { display: flex; }
+:host(:state(has-actions)) .actions { display: flex; }
 
 /* ── Small print — a muted fine-print / help line below the action.
    Hidden until data-small-print text or a slotted small-print exists. ── */

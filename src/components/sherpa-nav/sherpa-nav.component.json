@@ -44,7 +44,7 @@
                     },
                     "children": [
                       {
-                        "slot": "brand-icon",
+                        "slot": "icon",
                         "attrs": {
                           "data-accepts": "icon"
                         },
@@ -288,11 +288,10 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "brand-icon",
+      "name": "icon",
       "accepts": [
         "icon"
-      ],
-      "description": "the product mark inside the 40×40 branding tile"
+      ]
     },
     {
       "$type": "slot",

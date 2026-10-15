@@ -6406,6 +6406,11 @@ keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
   the default" would have shrunk every one. Old block `sm` (8) is `md`, `base`
   is gone (it was the default), and block `lg` (20) is `xl`. Nothing in the
   library or Demos used them but the test.
+- **Row 7, slot names ✅:** app-header and the bar, gauge and line charts'
+  `title` → `heading` (the radial chart has no title slot); data-viz-header
+  `left` → `leading`; nav `brand-icon` → `icon`; empty-state `action` →
+  `actions`, and the container's built-in empty and error states with it; the
+  `has-*` states follow.
 - **Row 4, `data-state` ⏸ held:** input-text's `data-state` is the Figma `input`
   collection's mode attribute, so the rename waits for Figma's queue.
 - **Row 5, error, empty, help ✅:** container `data-error-message` →

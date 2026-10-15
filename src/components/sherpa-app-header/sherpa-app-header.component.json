@@ -215,7 +215,7 @@
                       "part": "title"
                     },
                     {
-                      "slot": "title",
+                      "slot": "heading",
                       "attrs": {
                         "data-accepts": "text"
                       }
@@ -421,11 +421,10 @@
     },
     {
       "$type": "slot",
-      "name": "title",
+      "name": "heading",
       "accepts": [
         "text"
-      ],
-      "description": "rich Context title (overrides data-heading)"
+      ]
     },
     {
       "$type": "slot",

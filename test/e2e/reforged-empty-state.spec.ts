@@ -92,21 +92,21 @@ test('data-size scales the icon disc (sm < base < lg)', async ({ page }) => {
   expect(r.base).toBeLessThan(r.lg);
 });
 
-test('action slot presence reflects to has-action and shows the row', async ({ page }) => {
+test('action slot presence reflects to has-actions and shows the row', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
     };
     el.setAttribute('data-heading', 'x');
     const btn = document.createElement('button');
-    btn.setAttribute('slot', 'action');
+    btn.setAttribute('slot', 'actions');
     btn.textContent = 'Add item';
     el.appendChild(btn);
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasAttr: el.matches(':state(has-action)'),
+      hasAttr: el.matches(':state(has-actions)'),
       display: getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display,
     };
   });

@@ -85,7 +85,7 @@
       <sherpa-empty-state class="no-matches-default" data-illustration="search" data-size="sm"
                           data-heading="No matches">
         <span>Nothing matches these filters.</span>
-        <sherpa-button slot="action" class="clear-filters">Clear filters</sherpa-button>
+        <sherpa-button slot="actions" class="clear-filters">Clear filters</sherpa-button>
       </sherpa-empty-state>
     </slot>
     <slot name="error" class="state-error" data-accepts="content">
@@ -93,8 +93,8 @@
                           data-heading="The data could not load">
         <span class="error-message"></span>
         <!-- RETRY resolves it, so it is the CTA; Dismiss does not. -->
-        <sherpa-button slot="action" class="retry" data-look="saturated">Retry</sherpa-button>
-        <sherpa-button slot="action" class="dismiss">Dismiss</sherpa-button>
+        <sherpa-button slot="actions" class="retry" data-look="saturated">Retry</sherpa-button>
+        <sherpa-button slot="actions" class="dismiss">Dismiss</sherpa-button>
       </sherpa-empty-state>
     </slot>
   </div>

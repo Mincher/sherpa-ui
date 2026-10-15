@@ -27,7 +27,7 @@
           },
           "children": [
             {
-              "slot": "left",
+              "slot": "leading",
               "attrs": {
                 "data-accepts": "icon"
               },
@@ -127,17 +127,16 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "a glyph before the title (else the left slot)"
+      "description": "a glyph before the title (else the leading slot)"
     }
   ],
   "slots": [
     {
       "$type": "slot",
-      "name": "left",
+      "name": "leading",
       "accepts": [
         "icon"
-      ],
-      "description": "a custom leading icon"
+      ]
     },
     {
       "$type": "slot",

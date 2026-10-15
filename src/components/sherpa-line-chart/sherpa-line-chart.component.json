@@ -29,7 +29,7 @@
                 "class": "title",
                 "children": [
                   {
-                    "slot": "title",
+                    "slot": "heading",
                     "attrs": {
                       "data-accepts": "text"
                     }
@@ -279,7 +279,7 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "title",
+      "name": "heading",
       "accepts": [
         "text"
       ],
