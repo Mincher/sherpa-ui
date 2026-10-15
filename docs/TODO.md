@@ -2,9 +2,6 @@
 
 The list of open work. One file. Add to it, tick items off, do not start a second one.
 
-Status: `[ ]` open · `[~]` in progress · `[x]` done. A done item KEEPS its row
-and its section, marked ✅ — git and `docs/TRAPS.md` keep the detail.
-
 **A bug is queued like any other item.** Will, 2026-09-26: bugs do not demand
 immediate attention. Add it here, in its place in the order, and carry on.
 
@@ -12,14 +9,18 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**Open:** every ⬜, 🚧 and ❓ row below — never a hand-typed count. Reassessed 2026-09-29, after the Query (73), the provider (85)
-and the page definition (92) were built: what is left of the foundation first
-— the audit, the rename, the one builder — then the bugs, then the filter
-features, which now stand on it. Numbers are ids, not order; the table IS the
-order.
+**Open:** every ⬜, 🚧 and ❓ row below — never a hand-typed count. The work in
+hand (2026-10-15) is group L, the code review. Its plan is
+`docs/CODE-REVIEW-PLAN.md`; its section 6, "Order, size and how the work runs",
+gives the order. Numbers are ids, not order; the table IS the order.
 
 **Status:** ✅ done · 🚧 in progress · ⬜ not started · ❓ waits on a ruling from Will.
-A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
+An item's section heading says the same: `[x]` ✅ · `[~]` 🚧 · `[ ]` ⬜ · `[ ]` ❓.
+
+**A done item KEEPS its row and its section, marked ✅. Nothing is deleted**
+(Will, 2026-09-29). The section gets a `**✅ Done <date>:**` line; git and
+`docs/TRAPS.md` keep the detail. Before 2026-09-29 a done item was deleted. The
+ones restored from git are the table's last group and `✅ Done — the full record`.
 
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
@@ -346,7 +347,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | – | 44c | A heading shows an answer held at VIEW scope | bug |
 | ✅ | – | 42 | A legend toggle filters the whole view | bug |
 
-**Why this order** (reassessed 2026-09-29).
+**Why this order** (reassessed 2026-09-29, after the Query (73), the provider
+(85) and the page definition (92) were built: what was left of the foundation
+first, then the bugs, then the filter features).
 
 - **B — what is left of the foundation.** 86 first: an ASSESSMENT for Will to
   rule on, so it costs no code while he reads it. Its last step, A7, is built
@@ -379,6 +382,10 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
   settles, before new components, so they must pass it. **I**: 68 and 27 are
   one door; 67 takes over the router's `open()`. **J**: 29 dead last — it
   touches every import.
+- **K — Agentic UI** waits; each row says until when.
+- **L — The code review** (2026-10-14) is the work in hand:
+  `docs/CODE-REVIEW-PLAN.md`, ruled by Will. Its rows run in the plan's order; a
+  bug or gap found while reading joins at the end.
 
 ---
 
@@ -2378,7 +2385,7 @@ engines; a node test checks what `init` makes against both schemas, `checkApp`
 and the usage gate. `validate_page` reads an `app.json` as well, so there is
 no separate `validate_app`. Found on the way: 237. `T-a-starter-is-one-folder`
 
-### `[ ]` 223 — DEFERRED: server rendering with declarative shadow DOM
+### `[ ]` ⬜ 223 — DEFERRED: server rendering with declarative shadow DOM
 
 A `sherpa-ui/ssr` that renders `<template shadowrootmode>`, and a constructor
 that keeps a declarative root instead of re-stamping it. Needs 208. Until
@@ -5632,7 +5639,7 @@ now:
 **✅ Will, 2026-10-01: A.** The grid stays as it is; the Grouped mode was
 built already. Nothing left.
 
-### `[ ]` 170 — MAJOR, later: the data layer on the client, the server, or both
+### `[ ]` ⬜ 170 — MAJOR, later: the data layer on the client, the server, or both
 
 **Do not start this until Will says.** Everything else comes first.
 
@@ -5986,7 +5993,7 @@ all inside the Sherpa Product System's own standards. Each is a CORE, GENERIC
 system — like the data layer, or routing and template swapping — never a
 feature of one app.
 
-### `[ ]` 76 — WebMCP: agents do UI tasks through Sherpa's own contracts
+### `[ ]` ⬜ 76 — WebMCP: agents do UI tasks through Sherpa's own contracts
 
 **DEFERRED.** Will, 2026-09-30: *"we can defer the WebMCP aspect for now."*
 Not to be started in the churn; it waits for his word.
@@ -6005,7 +6012,7 @@ tier reaches a live element by name and method), the component specs
 of 73) — a filter request an agent makes is a Query, validated and compiled
 like any other, never a clause it writes itself.
 
-### `[ ]` 77 — CONTRACTED UX patterns, so a generated experience is consistent
+### `[ ]` ⬜ 77 — CONTRACTED UX patterns, so a generated experience is consistent
 
 *"We will also need well defined, contracted, UX patterns so that any
 generated experiences by agents are consistent and useful."*
@@ -6022,7 +6029,7 @@ composes, which states it has, what an agent may change. An agent composes
 patterns; it never invents a layout. The CRUD flow, Settings pages as forms,
 and the filter scopes are the first ones this repo already has in prose.
 
-### `[ ]` 78 — A node-based WORKFLOW creator
+### `[ ]` ⬜ 78 — A node-based WORKFLOW creator
 
 *"A node based workflow creator that can be used to create, edit, and view the
 core patterns, as well as any generated workflows in an app, so that we can
@@ -6041,7 +6048,7 @@ them.
 
 ## L — The code review
 
-### `[ ]` ❓ 242 — The code review of every component
+### `[x]` ✅ 242 — The code review of every component
 
 Will, 2026-10-14: *"Now is the time to do a thorough code review of all of the
 components. … Plan all of this in a markdown for review before starting."*
@@ -6286,19 +6293,6 @@ the list or table that holds the truth. PRINCIPLES' doc table gains
 ⬜ 🚧 ❓ rows, and that a done item keeps its row and section. A count measured
 on a date, as history, stays.
 
-### `[ ]` ⬜ 280 — Phase 5: the filter family's async root
-
-The plan's Phase 5 item. **Evidence, 2026-10-14:** Demos' `filters survive a
-reload and a trip away` (`reforged-records-persist.spec.ts:164`) sets Status,
-then calls `addFilters(['email'])` at once — and the rebuilt bar reports Status
-EMPTY, so the source clears it (`status: off`, 27 rows, not 4). Run 10 at a
-time it failed 6 of 10 on the build before today's work (`1a8936ca`) and 7 of
-10 on today's, so it is old, not new — it is
-`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`. In the full Demos run it
-failed once in Chromium and once in WebKit, then passed on retry. 280's fix (the
-menu keeps op and text as it keeps `want`) is what ends it; the test is its
-proof.
-
 ### `[x]` ✅ 260 — Phase 7: `sherpa-ui serve` — nothing downloads to serve a folder
 
 The starter's `npm start`, `npm run preview` and Playwright's web server each
@@ -6450,6 +6444,17 @@ already rendered showed nothing amiss. The fault is at the moment
 `menu.rendered` resolves for a chip the bar has just built: its row reads
 `{ op: '' }` — the op select has no options — and two frames later reads right.
 
+The plan's Phase 5 item. **Evidence, 2026-10-14:** Demos' `filters survive a
+reload and a trip away` (`reforged-records-persist.spec.ts:164`) sets Status,
+then calls `addFilters(['email'])` at once — and the rebuilt bar reports Status
+EMPTY, so the source clears it (`status: off`, 27 rows, not 4). Run 10 at a
+time it failed 6 of 10 on the build before today's work (`1a8936ca`) and 7 of
+10 on today's, so it is old, not new — it is
+`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`. In the full Demos run it
+failed once in Chromium and once in WebKit, then passed on retry. 280's fix (the
+menu keeps op and text as it keeps `want`) is what ends it; the test is its
+proof.
+
 **✅ Step 1.** A row keeps its `op` and `join` as data, as it keeps `want`; the
 getter, the change handler and row one's sync use them
 (`T-a-row-remembers-what-it-was-given`). The chip's start-up check lost its
@@ -6477,6 +6482,10 @@ part; a second checked each plan against the files.
   `npm run traps:write` makes it, and check:traps fails when it is stale. It is
   by code area, not by reader, so 193's "a tag on each entry by who meets it" is
   still not done.
+- **✅ Step 3, 2026-10-15:** TODO's head — one status key, and it says where the
+  work in hand is; headings use `[~]` for 🚧 and ⬜ for not started; 242's and
+  280's sections agree with the ledger. The one-line log is closed at item 200:
+  since then an item's `✅ Done` line is its record.
 
 ### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
 
@@ -6489,7 +6498,7 @@ what it hands out is read-only; B — copy both ways (every `describe()` clones
 each preset's readings; the bench's clone count rises in every act that draws a
 bar). My pick: A.
 
-### `[ ]` 🚧 321 — BUG: a Context's saved Views have two keys
+### `[~]` 🚧 321 — BUG: a Context's saved Views have two keys
 
 The outlet reads a Context's saved Views by the Context's NAME
 (`viewsOf(context)`); the provider keeps them by the definition's `id`. Equal
@@ -6535,7 +6544,7 @@ its presets with `preset()`. DATA-SOURCE-RULES §6 has one read-back table.
 `a-bar-report-never-rewrites-a-saved-filter`, which guards `export()`. Found
 reading: 319.
 
-### `[ ]` 🚧 291 — Phase 6: faster
+### `[~]` 🚧 291 — Phase 6: faster
 
 **🚧 Steps 1–6 done 2026-10-15**, each safe by reading and measured by the bench.
 1. An `ArrayStore` count copies no rows: it counts in place.
@@ -6580,7 +6589,7 @@ module and walks what `dist/data.js` loads, against the lint's own file list;
 the-package-surface, weight. **Waits for Will:** Q2, `spoofRemote` →
 `fakeRemote` (a rename outside the lexicon; my pick A).
 
-### `[ ]` 🚧 288 — Phase 6: one copy of each data helper
+### `[~]` 🚧 288 — Phase 6: one copy of each data helper
 
 **🚧 Steps 1–8a done 2026-10-15**, one commit each, each safe by reading. A
 read-only agent planned it; a second checked the plan against the code. The
@@ -6607,7 +6616,7 @@ test), 10 (`sameFilter`, order-free, at three sites). **Deferred:** 11 (one
 version counter for the applied Query), after 287.
 **Not run yet:** every step — type-check, lint and the bench only.
 
-### `[ ]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
+### `[~]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
 
 **🚧 Steps 1–5a and 6 done 2026-10-15**, one commit each, each safe by reading.
 A read-only agent planned it; a second checked the plan against the code.
@@ -6698,7 +6707,7 @@ it underlines on hover as a live crumb does. **Not run yet.**
 skip a key whose real target is a text field, a textarea, a slider or editable
 text: there an arrow moves the caret or the value. **Not run yet.**
 
-### `[ ]` 🚧 318 — A11Y: toolbars, radios and a slice's click by keyboard
+### `[~]` 🚧 318 — A11Y: toolbars, radios and a slice's click by keyboard
 
 **✅ Radios, 2026-10-15.** Each `sherpa-select-radio` has its native radio in a
 shadow root of its own, so the browser gave a group neither its one Tab stop nor
@@ -7932,7 +7941,8 @@ source.
 
 ## Done — the one-line log
 
-One line each. The detail is in git and in the trap named.
+One line each. The detail is in git and in the trap named. The highest item in
+it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its record.
 
 **2026-09-29, the component API audit (86)**
 - 16: the ★ stars the View, not its whole Context — `T-a-favourite-is-a-view`
