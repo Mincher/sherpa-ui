@@ -6,6 +6,26 @@ import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/u
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale, tickPercent } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
+import { rovingFocus, type Roving, type RovingItem } from '../../core/ui/roving-focus.js';
+
+/** Left and Right walk a line; Up and Down cross to the line above or below at
+ *  the same point; Home and End go to the line's ends. */
+const lineStep = (from: RovingItem, event: KeyboardEvent, dots: RovingItem[]): RovingItem | undefined => {
+  const s = Number(from.dataset['series']);
+  const i = Number(from.dataset['index']);
+  const at = (si: number, pi: number): RovingItem | undefined =>
+    dots.find((d) => Number(d.dataset['series']) === si && Number(d.dataset['index']) === pi);
+  const own = dots.filter((d) => Number(d.dataset['series']) === s);
+  switch (event.key) {
+    case 'ArrowRight': return at(s, i + 1) ?? from;
+    case 'ArrowLeft': return at(s, i - 1) ?? from;
+    case 'ArrowDown': return at(s + 1, i) ?? from;
+    case 'ArrowUp': return at(s - 1, i) ?? from;
+    case 'Home': return own[0];
+    case 'End': return own.at(-1);
+    default: return undefined;
+  }
+};
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
 
@@ -45,8 +65,18 @@ export class SherpaLineChart extends SherpaElement {
   #labels: string[] = [];
   /** The lines, as populated. */
   #series: Series[] = [];
+  /** One tab stop for the points; the arrows walk and cross the lines. TRAP T-one-tab-stop-per-set */
+  #roving: Roving | null = null;
 
   override onRender(): void {
+    const spots = this.$('.hotspots');
+    if (spots) {
+      this.#roving = rovingFocus(spots, {
+        items: '.hotspot',
+        key: (d) => `${d.dataset['series']}:${d.dataset['index']}`,
+        step: lineStep,
+      });
+    }
     if (this.#series.length) this.#render();
   }
 
@@ -64,8 +94,15 @@ export class SherpaLineChart extends SherpaElement {
     this.#render();
   }
 
-  /** Draw the gridlines, the x-axis and one path per series. */
+  /** Draw, keeping focus on its point. */
   #render(): void {
+    const r = this.#roving;
+    if (r) r.restamp(() => this.#draw());
+    else this.#draw();
+  }
+
+  /** Draw the gridlines, the x-axis and one path per series. */
+  #draw(): void {
     const layer = this.$('.series-layer');
     const grid = this.$('.grid');
     const hotspots = this.$('.hotspots');

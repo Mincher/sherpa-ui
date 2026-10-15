@@ -313,8 +313,8 @@ test('the centre derives the total, follows what is drawn, and yields to data-la
 /**
  * A DATUM'S FOCUS RING IS FOR THE KEYBOARD ONLY.
  *
- * A slice carries `tabindex="0"` so a reader with no pointer can reach it, so
- * CLICKING one leaves it focused and the browser paints its own ring — a 5px
+ * The ring is one tab stop, its slices reached by the arrows, so CLICKING one
+ * leaves it focused and the browser paints its own ring — a 5px
  * blue halo over the chart. `:focus` without `:focus-visible` is the mouse
  * case. TRAP T-a-datum-focus-ring-is-for-the-keyboard-only
  */

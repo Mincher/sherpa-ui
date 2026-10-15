@@ -12,6 +12,7 @@ import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/u
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
+import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
 
@@ -39,9 +40,13 @@ export class SherpaBarchart extends SherpaElement {
 
   /** The bars, as populated. */
   #data: BarDatum[] = [];
+  /** One tab stop for the bars; the arrows move between them. TRAP T-one-tab-stop-per-set */
+  #roving: Roving | null = null;
 
   override onRender(): void {
-    this.$('.bars')?.addEventListener('click', this.#onClick);
+    const bars = this.$('.bars');
+    bars?.addEventListener('click', this.#onClick);
+    if (bars) this.#roving = rovingFocus(bars, { items: '.bar-col' });
     if (this.#data.length) this.#render();
   }
 
@@ -55,8 +60,15 @@ export class SherpaBarchart extends SherpaElement {
     this.#render();
   }
 
-  /** Draw the bars, the value axis and the category labels. */
+  /** Draw, keeping focus on its bar. */
   #render(): void {
+    const r = this.#roving;
+    if (r) r.restamp(() => this.#draw());
+    else this.#draw();
+  }
+
+  /** Draw the bars, the value axis and the category labels. */
+  #draw(): void {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
     if (!bars || !tpl) return;

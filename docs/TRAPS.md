@@ -432,6 +432,9 @@ own roving tabindex.
 - Site: `src/components/sherpa-tabs/sherpa-tabs.ts`
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
+- Site: `test/e2e/reforged-chart-keyboard.spec.ts`
 
 ## Events and listeners
 

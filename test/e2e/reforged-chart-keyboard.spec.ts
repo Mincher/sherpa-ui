@@ -4,11 +4,9 @@ import { test, expect } from './harness';
  * EVERY CHART DATUM IS REACHABLE WITHOUT A POINTER.
  *
  * A tooltip carries the number; if only `:hover` reveals it, the number is
- * pointer-only. The bar and line charts already made each mark a `<button>`.
- * The donut and gauge did not: their tips were lit by `:hover` on an SVG arc
- * with no `tabindex`, so **zero** of their data was reachable — while the
- * gauge's own comment said the accessible name went "on the ARC, which is what
- * a reader reaches".
+ * pointer-only. Each chart is ONE tab stop, and the arrows move between its
+ * marks (TODO 284) — a mark named, and its tip shown on focus.
+ * TRAP T-one-tab-stop-per-set
  *
  * TRAP T-a-chart-datum-is-reachable-without-a-pointer
  */
@@ -33,6 +31,12 @@ const CHARTS = [
     mark: '.bar-col',
     expect: 2,
   },
+  {
+    tag: 'sherpa-line-chart',
+    data: { labels: ['a', 'b'], series: [[1, 2]] },
+    mark: '.hotspot',
+    expect: 2,
+  },
 ];
 
 for (const chart of CHARTS) {
@@ -50,36 +54,41 @@ for (const chart of CHARTS) {
       const sr = el.shadowRoot!;
       const marks = Array.from(sr.querySelectorAll<HTMLElement>(mark));
 
+      // ONE tab stop for the set.
+      const stops = marks.filter((m) => m.getAttribute('tabindex') === '0').length;
       // Focus the first, the way Tab would.
       marks[0]?.focus();
       await new Promise((res) => setTimeout(res, 150));
       const tip = sr.querySelector('.chart-tip[data-index="0"]') ?? sr.querySelector('.chart-tip');
+      const tipOnFocus = tip ? getComputedStyle(tip).display : 'no tip';
+      const focused = sr.activeElement === marks[0];
+      // The arrow moves to the next mark.
+      marks[0]?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
 
       return {
         marks: marks.length,
-        // A mark is reachable when it is a button or carries tabindex.
-        reachable: marks.filter(
-          (m) => m.tagName === 'BUTTON' || m.getAttribute('tabindex') === '0',
-        ).length,
+        stops,
+        moved: sr.activeElement === marks[1],
         // …and NAMES what it stands for, or a screen reader announces nothing.
         named: marks.filter(
           (m) => (m.getAttribute('aria-label') ?? m.textContent ?? '').trim().length > 0,
         ).length,
-        focused: sr.activeElement === marks[0],
+        focused,
         // The tooltip is the number; focus must reveal it, not only hover.
-        tipOnFocus: tip ? getComputedStyle(tip).display : 'no tip',
+        tipOnFocus,
       };
     }, chart);
 
     expect(r.marks).toBe(chart.expect);
-    expect(r.reachable).toBe(chart.expect);
+    expect(r.stops).toBe(1);
     expect(r.named).toBe(chart.expect);
     expect(r.focused).toBe(true);
     expect(r.tipOnFocus).not.toBe('none');
+    expect(r.moved).toBe(true);
   });
 }
 
-test('sherpa-gauge-chart: every zone takes focus and names its band', async ({ page }) => {
+test('sherpa-gauge-chart: its bands are one tab stop, named, and the arrows move', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-gauge-chart') as HTMLElement & {
       rendered?: Promise<void>; populate?: (d: unknown) => void;
@@ -95,22 +104,28 @@ test('sherpa-gauge-chart: every zone takes focus and names its band', async ({ p
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    const zones = Array.from(sr.querySelectorAll<HTMLElement>('.zone'));
+    const zones = Array.from(sr.querySelectorAll<HTMLElement>('.zone[role="img"]'));
+    const stops = zones.filter((z) => z.getAttribute('tabindex') === '0').length;
     zones[0]?.focus();
     await new Promise((res) => setTimeout(res, 150));
     const tip = sr.querySelector('.chart-tip[data-index="0"]');
+    const tipOnFocus = tip ? getComputedStyle(tip).display : 'no tip';
+    const focused = sr.activeElement === zones[0];
+    zones[0]?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
 
     return {
       zones: zones.length,
-      reachable: zones.filter((z) => z.getAttribute('tabindex') === '0').length,
+      stops,
       firstLabel: zones[0]?.getAttribute('aria-label') ?? '',
-      focused: sr.activeElement === zones[0],
-      tipOnFocus: tip ? getComputedStyle(tip).display : 'no tip',
+      focused,
+      tipOnFocus,
+      moved: sr.activeElement === zones[1],
     };
   });
 
   expect(r.zones).toBe(3);
-  expect(r.reachable).toBe(3);
+  expect(r.stops).toBe(1);
+  expect(r.moved).toBe(true);
   // The band's own range, not a bare index.
   expect(r.firstLabel).toContain('0');
   expect(r.firstLabel).toContain('60');
