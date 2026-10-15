@@ -125,14 +125,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-value",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "— current value"
-    },
-    {
-      "$type": "prop",
       "name": "data-value-end",
       "type": "string",
       "observed": true,

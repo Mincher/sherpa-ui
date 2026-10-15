@@ -104,14 +104,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-time",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
-      "description": "optional timestamp shown beside the author"
-    },
-    {
-      "$type": "prop",
       "name": "data-timestamp",
       "type": "string",
       "observed": true,

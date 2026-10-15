@@ -13228,6 +13228,12 @@ was already excluded for the same reason: `"stretch"` is a VALUE in
 Worth remembering as a shape: a guard that reads the source for evidence gets
 weaker every time the source gains a new place to spell something.
 
+
+**Used by the HOST, not by a part inside it** (2026-10-15). A public prop is a
+host attribute, so only `:host(…[data-x])` or `this.dataset…` is evidence. An
+inner element's `[data-value]` selector or `cell.dataset['value']` was counted,
+and kept a calendar's `data-value`, a slider's and a chat message's `data-time`
+in their specs for as long as the cells or an alias existed.
 - Site: `scripts/generate-component-spec.mjs`
 
 ### T-the-shared-vocabulary-is-declared-once
@@ -16195,6 +16201,7 @@ formatted string shown, not a number on a scale: the metric's number is its
 `value` property already.
 
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
+- Site: `test/unit/the-lexicon-holds.test.mjs`
 
 ### T-focus-is-delegated-by-the-platform
 

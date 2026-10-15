@@ -302,14 +302,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-value",
-      "type": "string",
-      "observed": false,
-      "kind": "behaviour",
-      "description": "selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set"
-    },
-    {
-      "$type": "prop",
       "name": "data-value-end",
       "type": "string",
       "observed": true,

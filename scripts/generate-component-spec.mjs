@@ -565,11 +565,12 @@ function generateSpec(name) {
      that is how TS spells an attribute NAME in an `observed` list. */
   const attrInUse = (nm) => {
     const camel = nm.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-    return sourceText.includes(`[${nm}`)          // CSS selector
+    const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`:host\\([^{]*\\[${esc}[\\]=~|^$*]`).test(sourceText)   // a HOST selector: an inner cell's `[data-value]` is not the host's
       || sourceText.includes(`${nm}=`)            // HTML attribute
       || sourceText.includes(`'${nm}'`)           // getAttribute / observed list
-      || sourceText.includes(`dataset['${camel}']`)
-      || sourceText.includes(`dataset.${camel}`);
+      || sourceText.includes(`this.dataset['${camel}']`)
+      || sourceText.includes(`this.dataset.${camel}`);
   };
   /* The same check on props the COMMENT produced — a wrapped prose sentence
      reads exactly like an entry, so a bare lowercase name must be found in the
