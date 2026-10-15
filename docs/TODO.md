@@ -263,7 +263,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
 | ✅ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
 | ✅ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
-| 🚧 | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
+| ✅ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ⬜ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
 | ⬜ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
 | ⬜ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
@@ -6392,7 +6392,7 @@ reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
 
-### `[ ]` 🚧 272 — Phase 8.3: `../Sherpa Gallery`
+### `[x]` ✅ 272 — Phase 8.3: `../Sherpa Gallery`
 
 The plan's 8.3: a sibling project that takes `sherpa-ui` as a consumer does —
 native pages now, CSF stories that Storybook can read later, and a fake data
@@ -6402,6 +6402,31 @@ layer.
 Context it is — `ctx` had its label, not its id — so one module could not serve
 many. The gallery has a Context per component and one module for all of them.
 `ctx.id` is its key in `app.json` now, for a Settings page too.
+
+**✅ Done 2026-10-15.** `../Sherpa Gallery` (its `4005aa1`) takes sherpa-ui
+as an app does and is a Sherpa app itself: a Context per component, in nav
+sections by category, all with one template and one module. Each component
+has a CSF file — `export default { title, component }`, stories whose
+`render` returns DOM, data through `loaders`, the order in
+`__namedExportsOrder` — so Storybook can read the same files later. Seeded
+from the specs by the gallery's own seed script, which its test runs with `--check`: the shipped example
+(271), a story per enum attribute with its values read from the spec, and a
+data story for the nine data components. The fake data layer is forty
+accounts, one page definition and a store that is local, slow or failing;
+Mode, Density and Data are page switches, kept in the session. Its tests:
+every page draws with nothing said wrong, the switches, the variants, and the
+data stories in three engines (207), and its app, page and markup pass
+sherpa-ui's own checks.
+
+What it showed first: a data story outside a CARD shows no loading or error —
+the provider writes those states on the card, by design — so each data story
+is a card. And the MCP's drive tools opened `test/reforged/harness.html`,
+which is not shipped: they open the gallery now (`SHERPA_GALLERY_URL`, or
+`http://localhost:4500/`), and wait up to 5 s for the element, since a page may
+draw after it loads.
+
+Not yet: nesting stories (inside the shell, a dialog, a panel, a grid), and
+Controls from `custom-elements.json` (295).
 
 ### `[x]` ✅ 271 — Phase 8.3: each component ships its example
 

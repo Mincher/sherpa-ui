@@ -130,8 +130,9 @@ can do by calling, and an agent is a caller with no pointer.
   calls on purpose (doing something then looking at what happened needs the same
   page), so close it when you are done
 
-Default page is `http://localhost:4000/test/reforged/harness.html`; serve one
-with `npm run preview`.
+Default page is the gallery, `http://localhost:4500/` (`npm run serve` in
+`../Sherpa Gallery`): add `?context=sherpa-data-grid` for one component's page,
+its example and its stories. `SHERPA_GALLERY_URL` points it at another.
 
 ---
 

@@ -19,7 +19,12 @@ import { getPage, closeBrowser, browserState } from "../lib/browser.js";
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
 
-const DEFAULT_URL = "http://localhost:4000/test/reforged/harness.html";
+/* The gallery: every component on its own page, `?context=<name>`. Set
+   SHERPA_GALLERY_URL to point at another. */
+const DEFAULT_URL = process.env.SHERPA_GALLERY_URL ?? "http://localhost:4500/";
+
+/** Wait, briefly, for the element: a page such as the gallery draws after it loads. */
+const drawn = (page, selector) => page.waitForSelector(selector, { state: "attached", timeout: 5000 }).catch(() => {});
 
 /** A component's callable surface, from its spec. */
 function apiOf(name) {
@@ -134,7 +139,7 @@ export function register(server) {
         selector: z.string().describe('A CSS selector for the element, e.g. "sherpa-data-grid" or "#customers".'),
         method: z.string().describe("The method to call, e.g. setColumnFilter."),
         args: z.string().optional().describe('Arguments as a JSON array, e.g. `["status", ["status","eq","active"]]`. Omit for none.'),
-        url: z.string().optional().describe(`The page (default ${DEFAULT_URL}). Localhost only.`),
+        url: z.string().optional().describe(`The page (default ${DEFAULT_URL}, the gallery — add ?context=<component> for one component's page). Localhost only.`),
         readBack: z.string().optional().describe('Properties to read afterwards, as a JSON array of names, e.g. `["selectedKeys"]`.'),
       },
     },
@@ -153,6 +158,7 @@ export function register(server) {
       const target = url ?? DEFAULT_URL;
       const { page, error } = await getPage(target);
       if (error) return err(error);
+      await drawn(page, selector);
 
       let out;
       try {
@@ -241,7 +247,7 @@ export function register(server) {
       inputSchema: {
         selector: z.string().describe('A CSS selector, e.g. "sherpa-data-grid".'),
         props: z.string().optional().describe('Properties to read, as a JSON array. Omit to list what is readable.'),
-        url: z.string().optional().describe(`The page (default ${DEFAULT_URL}). Localhost only.`),
+        url: z.string().optional().describe(`The page (default ${DEFAULT_URL}, the gallery — add ?context=<component> for one component's page). Localhost only.`),
       },
     },
     async ({ selector, props, url }) => {
@@ -253,6 +259,7 @@ export function register(server) {
       const target = url ?? DEFAULT_URL;
       const { page, error } = await getPage(target);
       if (error) return err(error);
+      await drawn(page, selector);
 
       let out;
       try {
