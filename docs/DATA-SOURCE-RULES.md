@@ -146,9 +146,14 @@ interface Store {
   update(key: unknown, values: Row): Promise<Row>;
   remove(key: unknown): Promise<void>;
   totalCount(options?: LoadOptions): Promise<number>;
+  distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
   readonly key: string;
 }
 ```
+
+`distinct()` is optional: each field's values among the matching rows, one per
+value. A store that has it is asked for a filter's values; one without it is
+read row by row.
 
 Extend `BaseStore` and you get the key handling, the schema check and the
 `change` announcement for free — you write `load` and the four mutations.

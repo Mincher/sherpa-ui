@@ -979,8 +979,9 @@ export class DataSource extends EventTarget {
 
   /**
    * Each field here that its schema says nothing of takes it from the ROWS: a
-   * set, its unique values in order; a number, its lowest and highest. One
-   * load, and only when a field needs it. TRAP T-the-data-says-what-a-field-may-hold
+   * set, its unique values in order; a number, its lowest and highest. One ask
+   * — the store's distinct() where it has one, else one load — and only when a
+   * field needs it. TRAP T-the-data-says-what-a-field-may-hold
    */
   async declareFromRows(fields: readonly string[]): Promise<void> {
     const open = fields.filter((f) => {
@@ -988,9 +989,13 @@ export class DataSource extends EventTarget {
       if (facts.type === 'number') return facts.min == null || facts.max == null;
       return facts.advanced !== 'only' && !this.#domains.has(f);
     });
-    let rows: Row[] = [];
+    let found: Record<string, unknown[]> = {};
     try {
-      if (open.length) rows = (await this.store.load({})).rows;
+      if (open.length && this.store.distinct) found = await this.store.distinct(open, {});
+      else if (open.length) {
+        const { rows } = await this.store.load({});
+        found = Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
+      }
     } catch (error) {
       /* A store that cannot answer yet must not stop the page: its fields
          offer no values, and the first load shows the failure on its card.
@@ -1003,8 +1008,7 @@ export class DataSource extends EventTarget {
     }
     for (const field of fields) {
       const facts = this.#fields.get(field) ?? {};
-      const held = open.includes(field)
-        ? rows.map((r) => readField(r, field)).filter((v) => v != null && v !== '') : [];
+      const held = open.includes(field) ? (found[field] ?? []).filter((v) => v != null && v !== '') : [];
       if (facts.type !== 'number') {
         const unique = [...new Map(held.map((v) => [valueKey(v), v])).values()];
         if (unique.length) this.declareValues(field, unique.sort((a, b) => compareValues(valueKey(a), valueKey(b))));

@@ -26,6 +26,7 @@
  * - Store — where records come from; the same interface whatever backs it
  * - StoreChangeDetail — Fired after an insert, update or remove.
  * - readField — Read a field, following dots (`'customer.name'`) into nested objects.
+ * - distinctOf — Each field's values among rows, one per value key: the last raw, in first-seen order.
  * - compareValues — Compare two field values.
  * - sortRows — Sort by specs, first wins and later ones break ties.
  * - filterFields — Every FIELD a filter touches, first-appearance order.
@@ -217,8 +218,8 @@ export interface Store extends EventTarget {
   /** What each field MAY hold — a set in order, a number's ends — as the data's
    *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
   readonly domains?: Readonly<Record<string, FieldDomain>>;
-  /** OPTIONAL: each field's distinct values among the rows a filter matches. A
-   *  store without it is read row by row. TRAP T-a-ruled-out-value-is-greyed */
+  /** OPTIONAL: each field's distinct values among the rows a filter matches, one
+   *  per value key. A store without it is read row by row. TRAP T-a-ruled-out-value-is-greyed */
   distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
 }
 
@@ -240,6 +241,18 @@ export function readField(row: Row, field: string): unknown {
     cur = (cur as Row)[part];
   }
   return cur;
+}
+
+/** Each field's values among rows, one per value key: the last raw, in first-seen order. */
+export function distinctOf(rows: readonly Row[], fields: readonly string[]): Record<string, unknown[]> {
+  return Object.fromEntries(fields.map((f) => {
+    const seen = new Map<string, unknown>();
+    for (const row of rows) {
+      const v = readField(row, f);
+      seen.set(valueKey(v), v);
+    }
+    return [f, [...seen.values()]];
+  }));
 }
 
 /* ── Comparison ────────────────────────────────────────────────────────── */

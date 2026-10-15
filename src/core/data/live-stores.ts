@@ -144,6 +144,9 @@ abstract class LiveStore extends EventTarget implements Store {
   totalCount(options?: LoadOptions): Promise<number> {
     return this.inner.totalCount(options);
   }
+  distinct(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>> {
+    return this.inner.distinct(fields, options);
+  }
 
   /** A LOCAL write — TRAP T-socket-send-refuses-rather-than-queues. */
   insert(values: Row): Promise<Row> {

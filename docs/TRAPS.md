@@ -7125,7 +7125,8 @@ never limits it, so Customer limits Region and Region limits Customer. It
 compiles the applied Query without that field's reading, so suspended
 answers, presets and "the View wins" behave as they do for rows. One pass per
 distinct limiting filter, once per applied Query; a store with `distinct()`
-is asked instead of read row by row.
+is asked instead of read row by row. `ArrayStore` and the live stores have one,
+which reads the rows in place and copies none out.
 
 **Each control is TOLD** — `drawPresent(present, scope)` on a bound bar, panel
 or grid — and passes it to `menu.present`, which greys and disables the rows
@@ -7169,6 +7170,7 @@ go.
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/stores.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
@@ -16843,8 +16845,9 @@ range — Seats — is a number's two ends.
 - **A min or max is an END only beside `number()`.** On text, the same rules
   measure a LENGTH, so `rules()` drops them there.
 - **Nothing said: the rows say it.** `source.declareFromRows(fields)` gives a
-  set its unique values, sorted, and a number its lowest and highest — one load
-  of every row, and only when a field needs it.
+  set its unique values, sorted, and a number its lowest and highest — one
+  `distinct()` ask, or one load of every row where the store has none, and only
+  when a field needs it.
 - **An array, not a set or an object**, because order carries meaning.
 
 - Site: `src/core/data/validate.ts`

@@ -16,6 +16,7 @@
  */
 import {
   absoluteDates,
+  distinctOf,
   readField,
   sameKey,
   type LoadOptions,
@@ -71,6 +72,12 @@ export class ArrayStore extends BaseStore {
   override async totalCount(options: LoadOptions = {}): Promise<number> {
     const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
     return (await this.page(this.#rows, rest)).total;
+  }
+
+  /** Each field's values among the matching rows, read in place: no row is copied out. TRAP T-a-ruled-out-value-is-greyed */
+  async distinct(fields: readonly string[], options: LoadOptions = {}): Promise<Record<string, unknown[]>> {
+    const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
+    return distinctOf((await this.page(this.#rows, rest)).rows, fields);
   }
 
   /** Where a row is, by its key field — or by the key made up for it. */

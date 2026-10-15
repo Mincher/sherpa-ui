@@ -29,6 +29,7 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
   store.addEventListener('change', (e) => {
     out.dispatchEvent(new CustomEvent('change', { detail: (e as CustomEvent).detail }));
   });
+  const inner = store.distinct?.bind(store);
   return Object.assign(out, {
     remote: true,
     key: store.key,
@@ -43,6 +44,13 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
       await wait();
       return store.totalCount(o);
     },
+    ...(inner ? {
+      async distinct(fields: readonly string[], o?: LoadOptions): Promise<Record<string, unknown[]>> {
+        await wait();
+        if (Math.random() < fail) throw new Error('spoofRemote: the fetch failed.');
+        return inner(fields, o);
+      },
+    } : {}),
     byKey: (key: unknown) => store.byKey(key),
     insert: (values: Row) => store.insert(values),
     update: (key: unknown, values: Row) => store.update(key, values),

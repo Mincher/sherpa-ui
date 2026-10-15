@@ -66,7 +66,9 @@ test('a field the schema gave is never read from the rows', async () => {
   let loads = 0;
   const store = new ArrayStore([{ id: 1, status: 'trial' }], { schema: rules({ status: oneOf(['active', 'trial']) }) });
   const load = store.load.bind(store);
+  const distinct = store.distinct.bind(store);
   store.load = (o) => { loads++; return load(o); };
+  store.distinct = (f, o) => { loads++; return distinct(f, o); };
   const source = new DataSource({ store, autoLoad: false });
   await source.declareFromRows(['status']);
   assert.equal(loads, 0);

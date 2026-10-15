@@ -124,6 +124,8 @@ test('a store that answers distinct values is asked, not read row by row', async
   };
   const source = new DataSource({ store, limitOptions: true });
   await source.declareFromRows(['customer', 'region']);
+  // declareFromRows asks distinct too: only present()'s asks count below.
+  asked.length = 0;
   const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);
   bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();

@@ -1,41 +1,41 @@
 {
   "records/open": {
-    "loads": 6,
+    "loads": 3,
     "counts": 0,
-    "distinct": 0,
-    "rows": 40050,
+    "distinct": 3,
+    "rows": 10050,
     "compiles": 15,
     "clones": 12
   },
   "records/pick": {
-    "loads": 7,
+    "loads": 2,
     "counts": 4,
-    "distinct": 0,
-    "rows": 37624,
+    "distinct": 5,
+    "rows": 2558,
     "compiles": 15,
     "clones": 7
   },
   "records/repick": {
-    "loads": 1,
+    "loads": 0,
     "counts": 0,
-    "distinct": 0,
-    "rows": 10000,
+    "distinct": 1,
+    "rows": 0,
     "compiles": 2,
     "clones": 0
   },
   "records/report": {
-    "loads": 12,
+    "loads": 2,
     "counts": 10,
-    "distinct": 0,
-    "rows": 27376,
+    "distinct": 10,
+    "rows": 2543,
     "compiles": 14,
     "clones": 13
   },
   "records/sort": {
-    "loads": 6,
+    "loads": 2,
     "counts": 10,
-    "distinct": 0,
-    "rows": 14547,
+    "distinct": 4,
+    "rows": 2543,
     "compiles": 4,
     "clones": 1
   },
@@ -48,66 +48,66 @@
     "clones": 0
   },
   "records/heading": {
-    "loads": 13,
+    "loads": 2,
     "counts": 12,
-    "distinct": 0,
-    "rows": 27292,
+    "distinct": 11,
+    "rows": 2535,
     "compiles": 11,
     "clones": 7
   },
   "records/search": {
-    "loads": 7,
+    "loads": 2,
     "counts": 12,
-    "distinct": 0,
-    "rows": 13019,
+    "distinct": 5,
+    "rows": 898,
     "compiles": 4,
     "clones": 1
   },
   "records/raise": {
-    "loads": 11,
+    "loads": 0,
     "counts": 12,
-    "distinct": 0,
-    "rows": 24891,
+    "distinct": 11,
+    "rows": 0,
     "compiles": 14,
     "clones": 16
   },
   "records/clear": {
-    "loads": 12,
+    "loads": 2,
     "counts": 11,
-    "distinct": 0,
-    "rows": 31422,
+    "distinct": 10,
+    "rows": 3520,
     "compiles": 16,
     "clones": 7
   },
   "records/reset": {
-    "loads": 4,
+    "loads": 2,
     "counts": 0,
-    "distinct": 0,
-    "rows": 23545,
+    "distinct": 2,
+    "rows": 3545,
     "compiles": 11,
     "clones": 12
   },
   "remote/open": {
-    "loads": 5,
+    "loads": 3,
     "counts": 0,
-    "distinct": 0,
-    "rows": 30050,
+    "distinct": 2,
+    "rows": 10050,
     "compiles": 10,
     "clones": 12
   },
   "remote/pick": {
-    "loads": 7,
+    "loads": 2,
     "counts": 2,
-    "distinct": 0,
-    "rows": 37624,
+    "distinct": 5,
+    "rows": 2558,
     "compiles": 13,
     "clones": 8
   },
   "remote/report": {
-    "loads": 10,
+    "loads": 2,
     "counts": 6,
-    "distinct": 0,
-    "rows": 40308,
+    "distinct": 8,
+    "rows": 2558,
     "compiles": 16,
     "clones": 12
   }
