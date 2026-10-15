@@ -301,6 +301,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
 | ❓ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
 | ⬜ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
+| ⬜ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
+| ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6504,6 +6506,24 @@ so `sherpa-ui/components/filter-panel` alone drew those bodies empty. **✅ Fixe
 the bar's and grid's own copies went. Not the menu: a text field's options menu
 must not load a calendar. `T-menu-composes-real-components`. **Not run yet.**
 
+### `[ ]` ⬜ 310 — TOOLING: the spec reader stops at a template's first nested prototype
+
+Found by 285c's checker. `scripts/lib/html-structure.mjs`' `parseTemplates`
+matches `<template id="…">` lazily up to the FIRST `</template>`, which is the
+first nested prototype's. So each spec's anatomy holds only that prototype: the
+bar, line and gauge keep only their first, input-text keeps none, and the
+manifest's parts miss the bar's. A fix nests properly; every spec regenerates,
+so it is its own commit.
+
+### `[ ]` ⬜ 311 — Phase 5: 285 part C's timing step
+
+Waits for Will's test run. Four prototypes hold custom elements: the grid's row
+(select boxes), the bar's chip, the panel's value chip and the menu's condition
+row. Through `clone()` they upgrade at clone time, not at append — the end state
+is the same by reading, and a detached menu's rows would then fill (a likely
+fix). Then the base's `upgradeClonedIcons` goes, and `clone()` calls
+`upgradeIcons` itself. Run the grid, toolbar, panel and menu specs after.
+
 ### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
 
 Found by the 281 plan agent, by reading. The panel draws a date, or a list over
@@ -6568,7 +6588,21 @@ and the checkbox's `required` was missing. Now read from the imported file.
 **Queued, not done:** a required radio-card group (the card has no group
 validity), and arrow keys between radios (284).
 
-⬜ Part B, containers. ⬜ Part C, templates.
+⬜ Part B, containers.
+
+**✅ Part C, templates, 2026-10-15** — four commits, safe by reading; a read-only
+agent planned it and a second checked the plan. `clone()` and `cloneItem()` take
+a template or a selector, and `clone()` an `inner` selector for a path an
+`<svg>` wraps. 17 hand-written copies now go through `clone()`, `cloneItem()`
+or `renderItems()` — the grid's cells and menus, step tracker, legend, menu
+rows, the panel's Send-to rows, every chart's paths and gridlines, the bar
+column, the nav section, the gauge's dots, a jump chip's rows. The nav's icon
+box and input-text's options are prototypes. Found on the way: `renderItems`'
+icon pass was dead — `data-icon` in an item prototype names a FIELD — which also
+blanked 299's breadcrumb separator (fixed); and the nav never let a page's
+slotted brand icon win (fixed). **Waits for a test run: 311**, the four sites
+that hold custom elements, where `clone()` upgrades them sooner. **Queued: 310.**
+The toast's stack stays `createElement`: it is the Phase 7 popover row's.
 
 ### `[x]` ✅ 282 — Phase 5: each component's own type, no hand-typed casts
 
