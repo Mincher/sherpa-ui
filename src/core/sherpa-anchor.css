@@ -100,3 +100,11 @@
 :is(.sherpa-anchor, .chart-mark) { anchor-name: var(--_anchor); }
 :is(.sherpa-anchor, .chart-mark):has(> :is(.sherpa-anchor-el, .chart-anchor)) { anchor-name: none; }
 :is(.sherpa-anchor-el, .chart-anchor) { anchor-name: var(--_anchor); }
+
+/* A chart's hover layer: over the plot, transparent to the pointer — only its
+   dots or segments take the hover. */
+.hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

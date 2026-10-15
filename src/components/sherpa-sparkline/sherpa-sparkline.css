@@ -156,16 +156,7 @@
 
 :host(:hover) .point { opacity: 1; }
 
-/* ── Hover dots + tooltip anchors ────────────────────────────────────────────
- * The dots are real HTML buttons, NOT SVG: an SVG element cannot be a CSS anchor
- * in Chromium — anchor-name is accepted, silently never resolves, and the tip
- * lands in the viewport corner. The layer is transparent to the pointer; only
- * the dots take the hover. */
-.hotspots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
+/* ── Hover dots: real HTML, NOT SVG — an SVG element cannot be a CSS anchor in Chromium. */
 
 .hotspot {
   /* Raw value → 0-100, identical to .shape's normalisation. */

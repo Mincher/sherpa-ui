@@ -47,3 +47,11 @@
 
   &:empty { display: none; }
 }
+
+/* A segment's anchor, polar → cartesian from the hub; the angle runs from 12
+   o'clock. --_dot-angle, NOT --_angle: the gauge's needle owns that on the host,
+   and it inherits. */
+.hotspot {
+  inset-inline-start: calc(50% + sin(var(--_dot-angle, 0deg)) * var(--_ring-r));
+  inset-block-start: calc(var(--_hub-y, 50%) - cos(var(--_dot-angle, 0deg)) * var(--_ring-r));
+}

@@ -131,23 +131,9 @@
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
-/* ── Tooltip anchors ────────────────────────────────────────────────────────
-   Zero-size, drawing nothing: an SVG element cannot be a CSS anchor in Chromium
-   (anchor-name computes but never resolves), so the tip needs an HTML box.
-   --_ring-r is the OUTER radius, so a tip pushed outward clears the ring. */
-.hotspots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  --_ring-r: 50%;
-}
-
-.hotspot {
-  /* Polar → cartesian. The JS angle starts at 12 o'clock (matching the arcs'
-     -90deg rotation), so cos drives the vertical and sin the horizontal. */
-  inset-inline-start: calc(50% + sin(var(--_angle, 0deg)) * var(--_ring-r));
-  inset-block-start: calc(50% - cos(var(--_angle, 0deg)) * var(--_ring-r));
-}
+/* ── Tooltip anchors: zero-size HTML boxes, since an SVG element cannot be a CSS
+   anchor in Chromium. The OUTER radius, so a tip pushed outward clears the ring. */
+.hotspots { --_ring-r: 50%; }
 
 /* `:has()` on the wrapper: the slice is inside <svg>, so `+`/`~` cannot reach
    the tip. Index N lights tip N.

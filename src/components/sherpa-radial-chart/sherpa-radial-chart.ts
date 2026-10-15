@@ -142,7 +142,7 @@ export class SherpaRadialChart extends SherpaElement {
         dot.dataset['index'] = String(i);
         tip.dataset['index'] = String(i);
         const mid = sweepStart + (acc + share / 2) * sweep;
-        dot.style.setProperty('--_angle', `${mid}deg`);
+        dot.style.setProperty('--_dot-angle', `${mid}deg`);
         tip.style.setProperty('--_area', radialArea(mid));
         pairAnchor(`--radial-slice-${i}`, dot, tip);
         fillTip(tip, slice.label, slice.value);

@@ -251,20 +251,10 @@
  * angles and CSS trig does the rest, so nothing is measured. The hub is the
  * BOTTOM-CENTRE of the box — hence block offsets from `100%`, not `50%`. */
 .hotspots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
   /* OUTER radius = the wrapper's full height. `cqh`, not a percentage: inline and
      block percentages resolve against different axes on a 2:1 box. */
   --_ring-r: 100cqh;
-}
-
-.hotspot {
-  /* Polar → cartesian from the hub; --_dot-angle runs from 12 o'clock. NOT
-     --_angle: that belongs to the NEEDLE, is set on the host and INHERITS, so a
-     zone missing its own value would silently sit at the needle's angle. */
-  inset-inline-start: calc(50% + sin(var(--_dot-angle, 0deg)) * var(--_ring-r));
-  inset-block-start: calc(100% - cos(var(--_dot-angle, 0deg)) * var(--_ring-r));
+  --_hub-y: 100%;
 }
 
 /* `:has()` on the wrapper, because the band lives inside <svg> and the tip does
