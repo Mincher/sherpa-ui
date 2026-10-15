@@ -286,7 +286,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
 | 🚧 | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
+| 🚧 | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ✅ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
@@ -320,6 +320,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ⬜ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
+| ⬜ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
+| ⬜ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
+| ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
+| ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6472,6 +6476,53 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[~]` 🚧 294 — Phase 8.2: a component reference, generated from the specs
+
+One page per component, written from its spec and its example, so it cannot
+drift. A read-only agent planned it; a second checked the plan against the
+specs, the generator and a prototype. The order: step 1, an attribute's default
+is a value (the generator); step 2, each event says what it means and whether a
+host may cancel it (the generator); step 3, the reference script, its gate and
+the pages; step 4, a hand-written "when to use it" in each example, in three
+batches. Picks (each A): the "when to use it" line lives in each
+`.example.json`; `docs/components/` is not shipped (GitHub renders it); the
+script is its own, with its own gate; Will reads each batch's diff after it
+lands; the CSS table shows the tokens each class's base rule reads.
+
+### `[ ]` ⬜ 328 — GAP: 5 token names no stylesheet defines
+
+`--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),
+`--sherpa-border-rounding-sm` (data-grid 1), `--sherpa-theme-content-size-md`
+(data-grid 2), `--sherpa-theme-content-size-base-1` (filter-panel 2),
+`--sherpa-border-width-sm` (quick-filter 2). Measured: 0 definitions in `src/`,
+so only each fallback draws, and density cannot move it. app-shell's
+`--sherpa-panel-area-width` and `--sherpa-panel-area-min-width` are the only
+other undefined reads, and they are hooks for a page to set. A `lint:css` rule
+could catch this kind of read.
+
+### `[ ]` ⬜ 329 — GAP: 4 slot descriptions the spec generator misses
+
+app-shell `panel-start`, `panel-end` and `overlay`: a blank line inside its
+`Slots:` block ends the parse. code-block's default slot: its header has a
+one-line `Slot:` label, and the generator reads `Slots:`. 13 more slots have
+no description in their headers.
+
+### `[ ]` ⬜ 330 — GAP: one-value enums typed as text; template pickers typed as style
+
+The generator reads an enum only from a `|` list, so button `data-type` (icon)
+and nav-item `data-type` (promo) are typed string. Also: button, input-text,
+menu and nav-item set `static variantAttrs` (it picks the template), but their
+specs say kind `style`. The schema has kind `template`, and 0 specs use it.
+Typing them changes check-usage for apps, so it waits.
+
+### `[ ]` ❓ 331 — GAP: sherpa-button submits no form
+
+sherpa-button has no `formAssociated` and no submit code, and both inner
+buttons are `type="button"`. Its Figma divergence note says "For a form SUBMIT …
+use this Button styled Saturated-Default". **For Will:** A — the note changes (a
+form's submit is a native `<button type="submit">`); B — sherpa-button gets a
+submit type. My pick: A.
 
 ### `[x]` ✅ 296 — Phase 8.4: a README front door
 
