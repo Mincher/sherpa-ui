@@ -561,6 +561,7 @@ than sorting the caller's array. That is a cross-module contract recorded
 nowhere else.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-schema-sample-cost
 
@@ -2488,11 +2489,11 @@ six-handler tangle the whole layer exists to remove.
 
 It still receives the STATE attributes (`data-sort-field` and the rest), so the
 toolbar's Sort chip and the grid's header arrow stay two views of one value.
-`#push` therefore writes every attribute BEFORE it returns early for a
+`SourceBinding.push` therefore writes every attribute BEFORE it returns early for a
 steer-only bind.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-ignore-is-the-scalpel
 
@@ -2540,8 +2541,8 @@ This is why the no-op push guard compares the ROWS ARRAY and never the adapted
 payload: an `as` adapter builds a new object every call, so comparing its output
 would never match. See `T-no-op-load-guard`.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-steering-events-are-a-closed-list
 
@@ -2700,7 +2701,7 @@ microtask. A remote source is never live: it already waits for Apply.
 
 ### T-push-writes-state-as-attributes
 
-`#push` hands the view state to the binder, which writes it as ATTRIBUTES.
+`SourceBinding.push` hands the view state to the binder, which writes it as ATTRIBUTES.
 That is what makes a shared sort visible without a JS branch anywhere: the
 grid's header arrow is drawn from `data-sort-field` / `data-sort-direction` in
 CSS, so writing them makes the toolbar's Sort chip and the grid's own header
@@ -2716,9 +2717,9 @@ change silently shrank the table with nothing to say why. `filterFields()` in
 `undefined` REMOVES an attribute rather than writing an empty one, so CSS stops
 matching.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-error-is-a-state-not-a-throw
 
@@ -6415,7 +6416,7 @@ barData.map((d) => ({ label: d.label, value: d.value, colorIndex: d.colorIndex }
 …in `dashboard.js`, a copy of a shape to itself, field for field, purely to cross a
 type boundary that should not have existed.
 
-Three names also defeat `#push`'s skip-if-unchanged guard: it compares the rows
+Three names also defeat `SourceBinding.push`'s skip-if-unchanged guard: it compares the rows
 array by IDENTITY, and an adapter that rebuilds the array to change its type never
 matches. ONE shape means a chart and its legend can share one array, and the guard
 holds.
@@ -7109,9 +7110,9 @@ went on filtering. Will, TODO 167.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-ruled-out-value-is-greyed
 
@@ -7814,7 +7815,7 @@ The chain, which took a live app to find:
    for page 1 and page 2
 3. so the no-op load guard skips the load, correctly: the question really has
    not changed
-4. and `#publish()` lives inside `load()`, so it never runs
+4. and `SourceBinding.publish()` is called from inside `load()`, so it never runs
 
 The pager moved, `data-page` on the grid stayed at 1, and the body kept
 drawing the same rows. No error, nothing in the console, and the ungrouped path
@@ -9520,7 +9521,7 @@ the swap itself keeps every answer both ways — the bar is steered on Apply,
 and the panel is refilled when it comes back. The panel open was the hole.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-shut-scope-folds-like-a-bar
 
@@ -9706,10 +9707,10 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/moved-to.test.mjs`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-restored-filter-still-needs-its-chip
 
@@ -12631,7 +12632,7 @@ A sort has TWO halves, and they belong to different things:
 every bound element's `data-*` (`T-attributes-are-the-state-channel`), so a
 component that kept its own suspended column in `data-sort-field` had it wiped
 by the very next push, one microtask later. Measured: the grid set the
-attribute, `#push` ran, `setAttr(el, 'data-sort-field', undefined)` removed it,
+attribute, `SourceBinding.push` ran, `setAttr(el, 'data-sort-field', undefined)` removed it,
 and the third click read as a clear.
 
 That is why the grid and the toolbar's Sort chip disagreed about their shared
@@ -13410,7 +13411,7 @@ is what an agent reads.
 
 | | |
 |---|---|
-| `DATA_PROPS` | the seven attributes `DataSource.#push` writes on every bound component, plus `data-locked`. A component declares one to say it READS it |
+| `DATA_PROPS` | the seven attributes `SourceBinding.push` writes on every bound component, plus `data-locked`. A component declares one to say it READS it |
 | `SHARED_PROPS` | style attributes whose shape is identical wherever they appear — `data-size`, `data-orientation`, `data-legend` |
 
 `scripts/check-ownership.mjs` reads `DATA_PROPS` out of that file rather than
@@ -16697,9 +16698,9 @@ the row's rounded end, as on a lone row.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-menu-readonly-rows.spec.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-component-part-narrows-one-component
 
@@ -16713,7 +16714,7 @@ bar chart's legend narrowed the grid, the metrics and the donut too.
 So a legend's answer is a SCOPE in the Query that `narrows` its one chart:
 `source.write(scope, field, reading, { only: el })`, which
 `bindSelection(…, { only })` calls. `compile()` keeps it out of the shared
-filter and returns it under `only[bindId]`; `#push` applies it to that
+filter and returns it under `only[bindId]`; `SourceBinding.push` applies it to that
 component's rows, and the push guard re-pushes when it changes. A bind's id is
 `bind({ id })`, else the element's own id. The component must be bound
 `rows: 'all'` — filtering one PAGE would lie about its total — so a write for a
@@ -16731,6 +16732,7 @@ applies them, which is why none of them caught it; the new test uses a real
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-chart-scope-is-its-legend-field
 

@@ -1,10 +1,23 @@
 /**
- * source-binding.ts — every component a DataSource is bound to, and how each
- * is bound. A DataSource holds one. DOM-free: a component is only a key.
+ * source-binding.ts — every component a DataSource is bound to, how each is
+ * bound, and what each is pushed and drawn. A DataSource holds one, and is its
+ * host. DOM-free: a component is only a key and the methods it has.
  *
  * Map:
  * - Bound — One bound component: how it is bound, and what it was last pushed.
+ * - BindHost — What the binding asks its source, live, at each push and draw.
  * - SourceBinding — Every bound component, by element.
+ * - .publish — Push rows and state to every bound component.
+ * - .push — Give one component the rows and the view state.
+ * - .pushTo — Push to the components bound by these ids.
+ * - .drawPanelReading — Tell each control over several scopes one field's reading in a scope.
+ * - .drawReading — Tell each control over a field's home its reading.
+ * - .drawBars — Draw every bar over one scope, as the panel draws it.
+ * - .drawEveryBar — Draw every bar over one scope each; settles when all have drawn.
+ * - .drawScopesSoon — Draw each control over several scopes WHOLE, once per moment.
+ * - .supersedeColumns — Tell each grid below the View the fields the View holds.
+ * - .supersede — Tell each bar below the View which of its fields the View holds now.
+ * - .syncPending — Tell each control over a scope its pending fields and whether it is dirty.
  * - .add — Bind a component, with the id a scope's `narrows` names it by.
  * - .remove — Let a component go, and tell its sink.
  * - .get — One component's bind, live, or undefined.
@@ -17,9 +30,11 @@
  * - .debug — Each bind, for a bug report.
  */
 import { VIEW } from './query.js';
+import { andFilter, filterRows, type Filter, type Row } from './store.js';
+import { coalesce } from './timing.js';
 import type { Populatable } from '../ui/apply-state.js';
-import type { AttachFacts, BindSink } from './data-source-types.js';
-import type { Row } from './store.js';
+import type { AttachFacts, BindSink, BoundView, ScopeDescription } from './data-source-types.js';
+import type { FieldReading } from './filter-state.js';
 
 /** One bound component: how it is bound, and what it was last pushed. */
 export interface Bound {
@@ -39,12 +54,36 @@ export interface Bound {
   sink: BindSink;
 }
 
+/** What the binding asks its source, live, at each push and draw. */
+export interface BindHost {
+  /** One scope, as a bar or panel draws it. */
+  describe(scope: string): ScopeDescription;
+  /** A scope's reader-facing name. */
+  scopeLabel(scope: string): string;
+  /** Each declared part's scope. */
+  partScopes(): Iterable<string>;
+  /** The view state every bound component is pushed. */
+  view(): BoundView;
+  /** The rows a bind is under: the page, or every row. */
+  rows(which: 'page' | 'all'): readonly Row[];
+  /** What narrows one bound component alone, by its id. */
+  only(id: string): Filter | undefined;
+  /** A component scope's own answer. */
+  scoped(scope: string): Filter | undefined;
+}
+
 /** Every bound component, by element. */
 export class SourceBinding {
   /** Every bound component, and how it is bound. */
   #bound = new Map<Populatable, Bound>();
   /** Binds made, for an id when the element has none. */
   #binds = 0;
+  /** The source this binding draws from. */
+  readonly #host: BindHost;
+
+  constructor(host: BindHost) {
+    this.#host = host;
+  }
 
   /** Bind a component, with the id a scope's `narrows` names it by. */
   add(el: Populatable, facts: AttachFacts, sink: BindSink): void {
@@ -103,6 +142,126 @@ export class SourceBinding {
   /** Is a grid or a list bound into this scope? */
   showsRows(scope: string): boolean {
     return [...this.#bound.values()].some((b) => b.scope === scope && (b.shows === 'grid' || b.shows === 'list'));
+  }
+
+  /** Push rows and state to every bound component. */
+  publish(): void {
+    for (const [el] of this.#bound) this.push(el);
+  }
+
+  /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
+  push(el: Populatable): void {
+    const entry = this.#bound.get(el);
+    if (!entry) return;
+    entry.sink.view(this.#host.view());
+
+    // …but the ROWS go only where they mean something. TRAP T-steer-only-populate-means-chips
+    if (entry.steerOnly) return;
+
+    // Skip a push that would hand over the same rows again.
+    // TRAP T-no-op-load-guard
+    // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
+    const base = this.#host.rows(entry.rows);
+    /* What narrows THIS component alone, on top of the shared query — and, for
+       a summary bound INTO a component scope, that scope's answer.
+       TRAP T-a-component-part-narrows-one-component */
+    const into = entry.rows === 'all' && typeof entry.scope === 'string' ? this.#host.scoped(entry.scope) : undefined;
+    const own = andFilter([this.#host.only(entry.id), into].filter((f): f is Filter => !!f));
+    const ownKey = JSON.stringify(own ?? null);
+    if (entry.lastRows === base && entry.lastOwn === ownKey) return;
+    entry.lastRows = base;
+    entry.lastOwn = ownKey;
+    entry.sink.rows(own ? filterRows(base, own) : base);
+  }
+
+  /** Push to the components bound by these ids. */
+  pushTo(ids: readonly string[]): void {
+    for (const [el, b] of this.#bound) if (ids.includes(b.id)) this.push(el);
+  }
+
+  /** Tell each control over several scopes one field's reading in a scope. */
+  drawPanelReading(field: string, reading: FieldReading, scope: string): void {
+    for (const [el, b] of this.#bound) if (Array.isArray(b.scope)) el.drawReading?.(field, reading, scope);
+  }
+
+  /** Tell each control over a field's home its reading. */
+  drawReading(field: string, reading: FieldReading, home: string): void {
+    for (const [el, { scope }] of this.#bound) {
+      if (scope === home || (Array.isArray(scope) && scope.includes(home))) {
+        el.drawReading?.(field, reading, home);
+      }
+    }
+  }
+
+  /** Draw every bar over one scope, as the panel draws it — after a request
+   *  that came from somewhere else (the panel) changed what it holds. */
+  drawBars(scope: string): void {
+    for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(this.#host.describe(scope));
+  }
+
+  /** Draw every bar over one scope each; settles when all have drawn. */
+  drawEveryBar(): Promise<unknown> {
+    const drawn: Array<void | Promise<void>> = [];
+    for (const [el, { scope }] of this.#bound) {
+      if (typeof scope === 'string' && el.drawScope) drawn.push(el.drawScope(this.#host.describe(scope)));
+    }
+    return Promise.all(drawn);
+  }
+
+  /** A control over several scopes — the panel — is drawn each WHOLE, once
+   *  per moment, when what a scope holds changes. TRAP T-an-open-panel-follows-the-data-layer */
+  readonly drawScopesSoon = coalesce((): void => {
+    for (const [el, { scope }] of this.#bound) {
+      // A scope this page does not have — nothing held, nothing to offer — is not drawn.
+      if (Array.isArray(scope) && el.drawScopes) {
+        // Each chart's own, between the View and the rest. Will, TODO 52.
+        const [first, ...rest] = scope as string[];
+        const asked = first === VIEW ? [VIEW, ...this.#host.partScopes(), ...rest] : [...this.#host.partScopes(), ...scope];
+        void el.drawScopes(asked.map((s) => this.#host.describe(s))
+          .filter((d) => d.scope === VIEW || d.filters.length || d.available.length));
+      }
+    }
+  });
+
+  /**
+   * Each grid below the View is told the fields the View holds, each with its
+   * answer as APPLIED — shown in its heading, read-only, so a heading cannot
+   * contradict it. TRAP T-a-view-held-heading-shows-and-refuses
+   */
+  supersedeColumns(held: Readonly<Record<string, FieldReading>>): void {
+    for (const [el, { scope }] of this.#bound) {
+      if (typeof scope === 'string' && scope !== VIEW) el.supersedeColumns?.(held, this.#host.scopeLabel(VIEW));
+    }
+  }
+
+  /**
+   * Tell each bar below the View which of its fields the View holds now — it
+   * keeps the chip, suspended, and says where it went. One whose set changed
+   * reports again: without the field raised, or with its own kept answer back.
+   * TRAP T-a-superseded-chip-suspends-it-is-never-removed
+   * TRAP T-an-inactive-chip-says-where-its-filter-went
+   */
+  supersede(above: readonly string[], report: boolean): void {
+    for (const [el, { scope }] of this.#bound) {
+      if (typeof scope !== 'string' || scope === VIEW || !el.supersede) continue;
+      const was = (el.superseded ?? []).join();
+      el.supersede(above, this.#host.scopeLabel(VIEW));
+      if (report && (el.superseded ?? []).join() !== was) el.report?.();
+    }
+  }
+
+  /**
+   * Tell each bound control over a scope which of its fields are PENDING
+   * (`data-pending`, a field list) and whether its scope is DIRTY
+   * (`data-dirty`). Attributes, as the rest of its state arrives.
+   * TRAP T-push-writes-state-as-attributes
+   */
+  syncPending(fieldsOf: (scopes: string[]) => string[], dirty: (scope: string) => boolean): void {
+    for (const [, { scope, sink }] of this.#bound) {
+      if (!scope) continue;
+      const scopes = typeof scope === 'string' ? [scope] : [...scope];
+      sink.pending(fieldsOf(scopes), scopes.some((id) => dirty(id)));
+    }
   }
 
   /** Each bind, for a bug report. */

@@ -164,7 +164,7 @@ watching it. A store that mutates silently leaves the screen lying.
 
 **Copy in and copy out.** `ArrayStore` does `{ ...row }` on both edges so a
 caller cannot reach in and mutate a stored record by holding a reference. It
-also keeps `#push`'s skip-if-unchanged guard working, which compares the rows
+also keeps `SourceBinding.push`'s skip-if-unchanged guard working, which compares the rows
 array by identity.
 
 ---

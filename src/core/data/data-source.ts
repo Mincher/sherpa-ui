@@ -118,7 +118,7 @@ import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
 } from './store.js';
 import type {
-  ApplyAt, AttachFacts, BindSink, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
+  ApplyAt, AttachFacts, BindSink, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
   FilterSet, HeldFilter, ScopeDescription, SourceState, ViewState,
 } from './data-source-types.js';
 export type {
@@ -132,8 +132,16 @@ export class DataSource extends EventTarget {
   #state: Omit<ViewState, 'filter'>;
   /** The fields a search matches, or every field. */
   #searchFields: string[] | undefined;
-  /** Every bound component, and how it is bound. */
-  readonly #binding = new SourceBinding();
+  /** Every bound component, how it is bound, and what it is pushed and drawn. */
+  readonly #binding = new SourceBinding({
+    describe: (s) => this.describe(s),
+    scopeLabel: (s) => this.scopeLabel(s),
+    partScopes: () => this.#narrowing.keys(),
+    view: () => this.#boundView(),
+    rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
+    only: (id) => this.#only[id],
+    scoped: (s) => this.#scoped[s],
+  });
   /** The last load's answer: the rows, and the total before paging. */
   #result: LoadResult = { rows: [], total: 0 };
   /**
@@ -356,14 +364,10 @@ export class DataSource extends EventTarget {
       this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
       this.#draw(field);
     }
-    const drawn: Array<void | Promise<void>> = [];
-    for (const [el, { scope }] of this.#binding.entries()) {
-      if (typeof scope === 'string' && el.drawScope) drawn.push(el.drawScope(this.describe(scope)));
-    }
-    await Promise.all(drawn);
+    await this.#binding.drawEveryBar();
     // Drawn, never reported: the Query is already the answer.
     this.#syncSuperseded(false);
-    this.#drawScopesSoon();
+    this.#binding.drawScopesSoon();
   }
 
   /** Restore a whole view state — a saved view, a deep link, a reload.
@@ -537,12 +541,12 @@ export class DataSource extends EventTarget {
     if (this.#remote && narrows.length) copyScope(this.#draft, this.#applied, scope);
     this.#recompose();
     // The shared filter did not move, so no load will push it: push it here.
-    for (const [el, b] of this.#binding.entries()) if (narrows.includes(b.id)) this.#push(el);
+    this.#binding.pushTo(narrows);
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field, scope } }));
     // A panel shows a part too, and is told as a bar is. TRAP T-one-query-one-owner
     if (this.#narrowing.has(scope)) {
       const drawn = structuredClone(this.#draft.scopes[scope]?.readings[field] ?? { picked: [] });
-      for (const [el, b] of this.#binding.entries()) if (Array.isArray(b.scope)) el.drawReading?.(field, drawn, scope);
+      this.#binding.drawPanelReading(field, drawn, scope);
     }
   }
 
@@ -557,7 +561,7 @@ export class DataSource extends EventTarget {
     else this.#narrowing.delete(scope);
     // Sent up, the View holds its field — and draws only a field it knows.
     if (part && !this.#catalogue.has(part.field)) this.declareField(part.field);
-    this.#drawScopesSoon();
+    this.#binding.drawScopesSoon();
   }
 
   /**
@@ -649,7 +653,7 @@ export class DataSource extends EventTarget {
     else if (this.#draft.scopes[scope]) delete this.#draft.scopes[scope]!.presets;
     prune(this.#draft);
     this.#recompose();
-    if (JSON.stringify(this.#draft.scopes[scope]?.presets ?? {}) !== before) this.#drawScopesSoon();
+    if (JSON.stringify(this.#draft.scopes[scope]?.presets ?? {}) !== before) this.#binding.drawScopesSoon();
   }
 
   /** A saved filter's readings, by id — the library a preset that is ON
@@ -667,7 +671,7 @@ export class DataSource extends EventTarget {
       this.#presetFacts.delete(id);
     }
     this.#recompose();
-    this.#drawScopesSoon();
+    this.#binding.drawScopesSoon();
   }
 
   /**
@@ -759,27 +763,6 @@ export class DataSource extends EventTarget {
     return this.say(this.#presets.get(id) ?? {});
   }
 
-  /** A control over several scopes — the panel — is drawn each WHOLE, once
-   *  per moment, when what a scope holds changes. TRAP T-an-open-panel-follows-the-data-layer */
-  #drawScopesSoon = coalesce((): void => {
-    for (const [el, { scope }] of this.#binding.entries()) {
-      // A scope this page does not have — nothing held, nothing to offer — is not drawn.
-      if (Array.isArray(scope) && el.drawScopes) {
-        // Each chart's own, between the View and the rest. Will, TODO 52.
-        const [first, ...rest] = scope as string[];
-        const asked = first === VIEW ? [VIEW, ...this.#narrowing.keys(), ...rest] : [...this.#narrowing.keys(), ...scope];
-        void el.drawScopes(asked.map((s) => this.describe(s))
-          .filter((d) => d.scope === VIEW || d.filters.length || d.available.length));
-      }
-    }
-  });
-
-  /** Draw every bar over one scope, as the panel draws it — after a request
-   *  that came from somewhere else (the panel) changed what it holds. */
-  #drawBars(scope: string): void {
-    for (const [el, { scope: s }] of this.#binding.entries()) if (s === scope && el.drawScope) void el.drawScope(this.describe(scope));
-  }
-
   /** Switch a scope's presets: the ids given are ON, the rest it holds OFF. */
   #setPresets(scope: string, on: readonly string[]): void {
     const entry = scopeEntry(this.#draft, scope);
@@ -809,7 +792,7 @@ export class DataSource extends EventTarget {
     /* THE BARS LAST, once every field is in. A bar draws a COPY of its scope a
        moment later: drawn mid-way through a Reset, it put back the fields the
        rest of that report then cleared. TRAP T-a-bar-is-drawn-the-scope-as-it-ends */
-    for (const scope of switched) this.#drawBars(scope);
+    for (const scope of switched) this.#binding.drawBars(scope);
     if (switched.length) this.commit();
   }
 
@@ -823,9 +806,9 @@ export class DataSource extends EventTarget {
       const entry = scopeEntry(this.#draft, scope);
       entry.presets = { ...entry.presets, ...Object.fromEntries(presets.map((id) => [id, true])) };
       this.#recompose();
-      this.#drawScopesSoon();
+      this.#binding.drawScopesSoon();
     }
-    this.#drawBars(scope);
+    this.#binding.drawBars(scope);
   }
 
   /** Remember, or forget, where a View field came up from, in both copies. */
@@ -859,7 +842,7 @@ export class DataSource extends EventTarget {
     for (const [id, scope] of eachScope(this.#draft)) {
       if (id === VIEW || id === to || !scope.holds.includes(field)) continue;
       this.hold(id, scope.holds.filter((f) => f !== field));
-      this.#drawBars(id);
+      this.#binding.drawBars(id);
     }
     // Held BELOW first, so the answer moves there and is not cleared.
     if (!part && !this.holds(to, field)) this.hold(to, [...this.scope(to), field]);
@@ -872,8 +855,8 @@ export class DataSource extends EventTarget {
     else if (answer) this.select(field, answer.picked ?? [], answer);
     this.#setCameFrom(field, undefined);
     this.commit();
-    this.#drawBars(VIEW);
-    if (!part) this.#drawBars(to);
+    this.#binding.drawBars(VIEW);
+    if (!part) this.#binding.drawBars(to);
   }
 
   /** A scope lets ONE go — a field or a preset. */
@@ -883,11 +866,11 @@ export class DataSource extends EventTarget {
       Reflect.deleteProperty(entry.presets, id);
       prune(this.#draft);
       this.#recompose();
-      this.#drawScopesSoon();
+      this.#binding.drawScopesSoon();
     } else {
       this.hold(scope, this.scope(scope).filter((f) => f !== id));
     }
-    this.#drawBars(scope);
+    this.#binding.drawBars(scope);
   }
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
@@ -1088,11 +1071,7 @@ export class DataSource extends EventTarget {
     // Its rows as the STATE reads them — an empty row is none.
     const { conditions: _raw, ...held } = answerOf(readingOf(this.#draft, field) ?? {});
     const reading = { ...held, picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
-    for (const [el, { scope }] of this.#binding.entries()) {
-      if (scope === home || (Array.isArray(scope) && scope.includes(home))) {
-        el.drawReading?.(field, reading, home);
-      }
-    }
+    this.#binding.drawReading(field, reading, home);
   }
 
   /**
@@ -1148,16 +1127,9 @@ export class DataSource extends EventTarget {
 
   /* ── The Query: one reading per field, in the scope that holds it ─── */
 
-  /**
-   * Each grid below the View is told the fields the View holds, each with its
-   * answer as APPLIED — shown in its heading, read-only, so a heading cannot
-   * contradict it. TRAP T-a-view-held-heading-shows-and-refuses
-   */
+  /** Each grid below the View is told the fields the View holds, as APPLIED. */
   #syncColumns(): void {
-    const held = viewHeldReadings(this.#applied);
-    for (const [el, { scope }] of this.#binding.entries()) {
-      if (typeof scope === 'string' && scope !== VIEW) el.supersedeColumns?.(held, this.scopeLabel(VIEW));
-    }
+    this.#binding.supersedeColumns(viewHeldReadings(this.#applied));
   }
 
   /* ── Scopes: WHICH SURFACE holds a filter ──────────────────────────── */
@@ -1206,25 +1178,13 @@ export class DataSource extends EventTarget {
     const now = homes(this.#draft);
     for (const [field, home] of now) if (was.get(field) !== home) this.#draw(field);
     if (name === VIEW) this.#syncSuperseded(true);
-    this.#drawScopesSoon();
+    this.#binding.drawScopesSoon();
   }
 
-  /**
-   * Tell each bar below the View which of its fields the View holds now — it
-   * keeps the chip, suspended, and says where it went. One whose set changed
-   * reports again: without the field raised, or with its own kept answer back.
-   * TRAP T-a-superseded-chip-suspends-it-is-never-removed
-   * TRAP T-an-inactive-chip-says-where-its-filter-went
-   */
+  /** Tell each grid and each bar below the View what the View holds now; a bar whose set changed may report again. */
   #syncSuperseded(report: boolean): void {
     this.#syncColumns();
-    const above = this.scope(VIEW);
-    for (const [el, { scope }] of this.#binding.entries()) {
-      if (typeof scope !== 'string' || scope === VIEW || !el.supersede) continue;
-      const was = (el.superseded ?? []).join();
-      el.supersede(above, this.scopeLabel(VIEW));
-      if (report && (el.superseded ?? []).join() !== was) el.report?.();
-    }
+    this.#binding.supersede(this.scope(VIEW), report);
   }
 
   /** Is this field held HERE? */
@@ -1471,23 +1431,13 @@ export class DataSource extends EventTarget {
       !== JSON.stringify(answersOf(this.#draft.scopes[id])));
   }
 
-  /**
-   * Tell each bound control over a scope which of its fields are PENDING
-   * (`data-pending`, a field list) and whether its scope is DIRTY
-   * (`data-dirty`). Attributes, as the rest of its state arrives.
-   * TRAP T-push-writes-state-as-attributes
-   */
+  /** Tell each bound control over a scope its PENDING fields and whether its scope is DIRTY. */
   #syncPending(): void {
-    for (const [, { scope, sink }] of this.#binding.entries()) {
-      if (!scope) continue;
-      const scopes = typeof scope === 'string' ? [scope] : [...scope];
-      const fields = this.#remote
-        ? [...new Set(scopes.flatMap((id) => Object.keys({
-          ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
-        })))].filter((f) => this.pending(f))
-        : [];
-      sink.pending(fields, scopes.some((id) => this.dirty(id)));
-    }
+    this.#binding.syncPending((scopes) => (this.#remote
+      ? [...new Set(scopes.flatMap((id) => Object.keys({
+        ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
+      })))].filter((f) => this.pending(f))
+      : []), (id) => this.dirty(id));
   }
 
   setSearch(term: string): void {
@@ -1510,7 +1460,7 @@ export class DataSource extends EventTarget {
        page shares one state key and the no-op guard would eat the publish.
        TRAP T-grouped-page-change-publishes-without-loading */
     if (this.#state.group) {
-      this.#publish();
+      this.#binding.publish();
       return;
     }
     this.#schedule();
@@ -1637,7 +1587,7 @@ export class DataSource extends EventTarget {
         return this.load({ force: true });
       }
 
-      this.#publish();
+      this.#binding.publish();
       this.dispatchEvent(
         new CustomEvent<DataChangeDetail>('change', {
           detail: { ...result, state: this.state },
@@ -2051,13 +2001,13 @@ export class DataSource extends EventTarget {
     this.#rescope(had);
     // A grid joined, so its scope arranges now: its bars and panel draw Group and Sort. TODO 99
     if (scope && !arranged && this.arranges(scope)) {
-      this.#drawBars(scope);
-      this.#drawScopesSoon();
+      this.#binding.drawBars(scope);
+      this.#binding.drawScopesSoon();
     }
 
     // Whatever is already loaded, so a component bound late is not blank.
-    this.#push(el);
-    if (Array.isArray(facts.scope) && el.drawScopes) this.#drawScopesSoon();
+    this.#binding.push(el);
+    if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
     if (facts.scope && (el.drawPresent || el.drawOffered) && this.#loaded) this.#presentSoon();
@@ -2128,7 +2078,7 @@ export class DataSource extends EventTarget {
     this.select(field, reading?.picked ?? [], reading ?? {});
     // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
     this.commit();
-    if (fresh) this.#drawBars(scope);
+    if (fresh) this.#binding.drawBars(scope);
   }
 
   /** Move fields into a scope — sent DOWN from the View to the one scope
@@ -2147,7 +2097,7 @@ export class DataSource extends EventTarget {
       this.write(from, part.field, undefined);
       this.select(part.field, answer.picked ?? [], answer);
       this.commit();
-      this.#drawBars(scope);
+      this.#binding.drawBars(scope);
     }
   }
 
@@ -2159,20 +2109,13 @@ export class DataSource extends EventTarget {
     if (next === this.#viewPages && clamped === this.#state.page) return;
     this.#viewPages = next;
     this.#state.page = clamped;
-    this.#publish();
+    this.#binding.publish();
   }
 
   /* ── Publishing ────────────────────────────────────────────────────── */
 
-  /** Push rows and state to every bound component. */
-  #publish(): void {
-    for (const [el] of this.#binding.entries()) this.#push(el);
-  }
-
-  /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
-  #push(el: Populatable): void {
-    const entry = this.#binding.get(el);
-    if (!entry) return;
+  /** The view state every bound component is pushed. */
+  #boundView(): BoundView {
     const { sort, group, page, pageSize, sortSuspended } = this.#state;
     const filter = this.#filter;
     const first = sort[0];
@@ -2180,7 +2123,7 @@ export class DataSource extends EventTarget {
     /* The FIELD survives a suspend; the DIRECTION says whether it is applied.
        TRAP T-a-suspended-sort-is-one-owners-job */
     const shown = first ?? sortSuspended;
-    entry.sink.view({
+    return {
       sortField: shown?.field,
       sortDirection: first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined),
       groupField: group ?? undefined,
@@ -2189,24 +2132,6 @@ export class DataSource extends EventTarget {
          control set the filter. TRAP T-a-needle-comes-from-either-direction */
       needles: [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n'),
       paging: pageSize ? { page, totalPages: this.totalPages, pageSize } : undefined,
-    });
-
-    // …but the ROWS go only where they mean something. TRAP T-steer-only-populate-means-chips
-    if (entry.steerOnly) return;
-
-    // Skip a push that would hand over the same rows again.
-    // TRAP T-no-op-load-guard
-    // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
-    const base = entry.rows === 'all' ? this.#allRows : this.#result.rows;
-    /* What narrows THIS component alone, on top of the shared query — and, for
-       a summary bound INTO a component scope, that scope's answer.
-       TRAP T-a-component-part-narrows-one-component */
-    const into = entry.rows === 'all' && typeof entry.scope === 'string' ? this.#scoped[entry.scope] : undefined;
-    const own = andFilter([this.#only[entry.id], into].filter((f): f is Filter => !!f));
-    const ownKey = JSON.stringify(own ?? null);
-    if (entry.lastRows === base && entry.lastOwn === ownKey) return;
-    entry.lastRows = base;
-    entry.lastOwn = ownKey;
-    entry.sink.rows(own ? filterRows(base, own) : base);
+    };
   }
 }
