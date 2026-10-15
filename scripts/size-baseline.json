@@ -89,7 +89,7 @@
   "src/core/data/chart-datum.ts": 74,
   "src/core/data/cycle.ts": 60,
   "src/core/data/data-source-types.ts": 246,
-  "src/core/data/data-source.ts": 2082,
+  "src/core/data/data-source.ts": 2121,
   "src/core/data/field-catalogue.ts": 173,
   "src/core/data/filter-face.ts": 204,
   "src/core/data/filter-state.ts": 563,

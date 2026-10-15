@@ -283,7 +283,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
 | ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
 | 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
+| ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
 | ⬜ | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ⬜ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
@@ -310,6 +310,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
+| ⬜ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6458,6 +6459,19 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 292 — Phase 6: one door per job, and the missing read-backs
+
+**✅ Done 2026-10-15** (no rename: 86 holds; Q3 A, Q4 A). Each irregular member
+says its job: `scope()` is `hold()`'s read-back, `scopes` every scope that holds
+a field, `rows` is LIVE (now typed `readonly Row[]`), `result` a shallow copy,
+`applyOn` fixed by the options, `limitOptions` settable. Five read-backs, each
+a copy: `contribution(key)`, `partFacts(scope)` (its `only` is the element),
+`defaultFor(scope)`, `preset(id)` and `scopeFacts(scope)`; `export()` now builds
+its presets with `preset()`. DATA-SOURCE-RULES §6 has one read-back table.
+**Not run yet:** `every-declare-reads-back`, and
+`a-bar-report-never-rewrites-a-saved-filter`, which guards `export()`. Found
+reading: 319.
 
 ### `[ ]` 🚧 291 — Phase 6: faster
 

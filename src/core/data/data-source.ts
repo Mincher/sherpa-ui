@@ -19,7 +19,7 @@
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .loaded — Has any load completed?
  * - .result — The whole of the last load's answer.
- * - .rows — the rows of the last load — one page when paged
+ * - .rows — The last load's rows, LIVE — state, query and result are copies
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
  * - .setSort — Order by one field, or stop.
@@ -30,12 +30,16 @@
  * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
  * - .write — Write ONE scope's reading of ONE field — a component's own answer.
  * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
+ * - .partFacts — What `declarePart` was told for this scope, or undefined.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
+ * - .defaultFor — A component's own default, as `declareDefault` left it — not its answer now. A copy.
  * - .reading — One scope's reading of one field, or undefined.
  * - .contributions — Every named part currently applied — the component-scope filters.
+ * - .contribution — One named part's filter, as `contribute` left it, or undefined.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
+ * - .preset — What `declarePreset` was told for this id — its label and readings — or undefined.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .say — say(readings) — a saved filter in WORDS, field by field: the source knows each field's name, type and values.
  * - .answerScopes — The panel's answer: each field it changed, and each scope's presets.
@@ -48,6 +52,7 @@
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
  * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges.
+ * - .scopeFacts — What `declareScope` was told — not the fallbacks `scopeLabel()` and `arranges()` answer with.
  * - .arranges — Does Group and Sort arrange this scope's rows?
  * - .declareSets — A scope's filter sets, in order.
  * - .sets — A scope's filter sets, as declared.
@@ -59,8 +64,8 @@
  * - .suspendSelection — Stop applying a field without forgetting it.
  * - .selection — one field's whole state, ready for any control to draw
  * - .selectedFields — Every field currently selected.
- * - .scope — The fields a scope is holding, in the order it holds them.
- * - .scopes — Every scope that has been named.
+ * - .scope — The fields a scope holds, in order — hold()'s read-back.
+ * - .scopes — Every scope that holds a field, by id.
  * - .hold — Say what a scope holds now.
  * - .holds — Is this field held HERE?
  * - .scopeOf — Which scope holds this field, or null.
@@ -70,7 +75,7 @@
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
- * - .applyOn — When a filter applies: once per act, or LIVE while its value moves — never live for a remote source.
+ * - .applyOn — Once per act, or LIVE while a value moves — never live when remote. Fixed by the options.
  * - .commit — SEND the draft — Apply, on a remote source.
  * - .discard — Put the applied answers back over the draft — Discard, on a remote source.
  * - .pending — Has this field been changed and not yet applied?
@@ -81,7 +86,7 @@
  * - .load — Re-read and push to every bound component.
  * - .results — Each answered chip's results in a scope: the rows its own answer matches.
  * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
- * - .limitOptions — Does each list field offer only the values the other answers leave?
+ * - .limitOptions — Does each list field offer only the values the other answers leave? Settable, unlike applyOn.
  * - .present — Each list field's values the rows still HOLD under the OTHER answers in its scope — a component scope's withi…
  * - .offered — What each field below the top of a SERIAL set OFFERS: the values the rows hold under the answers above it, as…
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
@@ -276,8 +281,8 @@ export class DataSource extends EventTarget {
     const presets: SourceState['presets'] = {};
     for (const scope of Object.values(query.scopes)) {
       for (const id of Object.keys(scope.presets ?? {})) {
-        const readings = this.#presets.get(id);
-        if (readings) presets[id] = { ...this.#presetFacts.get(id), readings: structuredClone(readings) as Record<string, FieldReading> };
+        const preset = this.preset(id);
+        if (preset) presets[id] = preset;
       }
     }
     return { v: 1, query, presets };
@@ -408,12 +413,13 @@ export class DataSource extends EventTarget {
     return this.#loaded;
   }
 
-  /** The whole of the last load's answer. TRAP T-result-is-the-hosts-half */
+  /** The whole of the last load's answer. A shallow copy: its `rows` is the live array. TRAP T-result-is-the-hosts-half */
   get result(): LoadResult {
     return { ...this.#result };
   }
 
-  get rows(): Row[] {
+  /** The last load's rows — one page when paged. LIVE, not a copy: read it, never change it. */
+  get rows(): readonly Row[] {
     return this.#result.rows;
   }
 
@@ -565,6 +571,12 @@ export class DataSource extends EventTarget {
     this.#binding.drawScopesSoon();
   }
 
+  /** What `declarePart` was told for this scope, or undefined. Not a `contribute` part. `only` is the element itself. */
+  partFacts(scope: string): { field: string; only: Populatable; label?: string } | undefined {
+    const part = this.#narrowing.get(scope);
+    return part ? { ...part } : undefined;
+  }
+
   /**
    * A component's OWN default filter — readings that narrow `only` it — as its
    * scope in the Query. It is put back under any Query that does not name that
@@ -591,6 +603,13 @@ export class DataSource extends EventTarget {
     else this.#defaults.delete(scope);
   }
 
+  /** A component's own default, as `declareDefault` left it, or undefined — not
+   *  its answer now, which `reading()` reads. A copy. */
+  defaultFor(scope: string): Record<string, FieldReading> | undefined {
+    const held = this.#defaults.get(scope);
+    return held ? structuredClone(held.readings) : undefined;
+  }
+
   /** One scope's reading of one field, or undefined. A copy. */
   reading(scope: string, field: string): FieldReading | undefined {
     const held = this.#draft.scopes[scope]?.readings[field];
@@ -603,6 +622,12 @@ export class DataSource extends EventTarget {
   /** Every named part currently applied — the component-scope filters. */
   get contributions(): string[] {
     return [...this.#parts.keys()];
+  }
+
+  /** One named part's filter, as `contribute` left it, or undefined. A copy. */
+  contribution(key: string): Filter | undefined {
+    const part = this.#parts.get(key);
+    return part ? structuredClone(part) : undefined;
   }
 
   /**
@@ -673,6 +698,13 @@ export class DataSource extends EventTarget {
     }
     this.#recompose();
     this.#binding.drawScopesSoon();
+  }
+
+  /** What `declarePreset` was told for this id — its label and readings — or
+   *  undefined. A copy, in the shape `export()` sends and `import()` takes. */
+  preset(id: string): SourceState['presets'][string] | undefined {
+    const readings = this.#presets.get(id);
+    return readings ? { ...this.#presetFacts.get(id), readings: structuredClone(readings) as Record<string, FieldReading> } : undefined;
   }
 
   /**
@@ -935,11 +967,17 @@ export class DataSource extends EventTarget {
     return this.#catalogue.filterDef(field);
   }
 
-
   /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
   declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {
     if (facts.label != null) this.#scopeLabels.set(scope, facts.label);
     if (facts.arranges != null) this.#arranges.set(scope, facts.arranges);
+  }
+
+  /** What `declareScope` was told — not the fallbacks `scopeLabel()` and `arranges()` answer with. */
+  scopeFacts(scope: string): { label?: string; arranges?: boolean } {
+    const label = this.#scopeLabels.get(scope);
+    const arranges = this.#arranges.get(scope);
+    return { ...(label != null ? { label } : {}), ...(arranges != null ? { arranges } : {}) };
   }
 
   /** Does Group and Sort arrange this scope's rows? As declared — else a
@@ -1137,12 +1175,12 @@ export class DataSource extends EventTarget {
    * coupled to a toolbar. Held in the Query. TRAP T-a-scope-is-a-place-not-a-reach
    */
 
-  /** The fields a scope is holding, in the order it holds them. */
+  /** The fields a scope HOLDS, in order — `hold()`'s read-back. A copy. */
   scope(name: string): string[] {
     return [...(this.#draft.scopes[name]?.holds ?? [])];
   }
 
-  /** Every scope that holds a field. */
+  /** Every scope that holds a field, by id — `scope()` reads one of them. */
   get scopes(): string[] {
     return Object.keys(this.#draft.scopes).filter((id) => this.#draft.scopes[id]!.holds.length);
   }
@@ -1348,7 +1386,8 @@ export class DataSource extends EventTarget {
   }
 
   /** When a filter applies: once per act, or LIVE while its value moves — never
-   *  live for a remote source. Will, TODO 107 */
+   *  live for a remote source. Fixed by the options; `bindSource` writes it on
+   *  each control once. Will, TODO 107 */
   get applyOn(): 'change' | 'input' {
     return this.#remote ? 'change' : this.#applyOn;
   }
@@ -1710,7 +1749,7 @@ export class DataSource extends EventTarget {
   /* ── What the other answers LEAVE — Will, TODO 174 (110 B) ─────────────
    * TRAP T-a-ruled-out-value-is-greyed */
 
-  /** Does each list field offer only the values the other answers leave? */
+  /** Does each list field offer only the values the other answers leave? Settable at any time, unlike `applyOn`. */
   get limitOptions(): boolean {
     return this.#limitOptions;
   }

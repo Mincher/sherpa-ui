@@ -236,6 +236,22 @@ Apply.
 screen and are shared by every screen showing them. A **source** is view-level,
 because a query is exactly as long-lived as the view asking it.
 
+### Reading it back
+
+Each thing you tell a source, you can ask back — one door each:
+
+| told with | read with |
+|---|---|
+| `hold(scope, fields)` | `scope(scope)` — the fields it holds; `scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
+| `declareField` · `declareValues` · `declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `sets(scope)` |
+| `declareScope` | `scopeFacts(scope)`; `scopeLabel()` and `arranges()` add their fallbacks |
+| `declarePreset` · `declarePart` · `declareDefault` | `preset(id)` · `partFacts(scope)` · `defaultFor(scope)` |
+| `contribute(key, filter)` | `contribution(key)`; `contributions` — every key |
+| `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
+
+Each read-back here is a copy — `partFacts`' `only` is the element itself — and
+`rows` is the source's own array, so never change it.
+
 ### A failed load is a STATE, not a throw
 
 Every load emits `loading` first, then `change` — or `error`. A backend being

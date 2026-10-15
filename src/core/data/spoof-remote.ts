@@ -1,9 +1,9 @@
 /**
  * spoof-remote.ts — make any store ACT remote: slow, and sometimes failing.
  *
- * There is no remote source yet, so the example and the tests borrow one. A
- * wrapped store says `remote: true`, so a source over it keeps a DRAFT and
- * waits for Apply. DOM-free. TRAP T-apply-and-discard-wait-for-a-change
+ * A stand-in, for a test or a demo: a wrapped store says `remote: true`, so a
+ * source over it keeps a DRAFT and waits for Apply. DOM-free.
+ * TRAP T-apply-and-discard-wait-for-a-change
  *
  * Map:
  * - SpoofOptions — How slow each load is, and how often one fails.
