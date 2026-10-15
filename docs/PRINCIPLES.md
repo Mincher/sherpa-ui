@@ -155,30 +155,6 @@ broken, and check that it did.
 
 ---
 
-## Open work
-
-Carried over when 16 documents were retired into this one, 2026-09-22, then
-**verified one by one** — four were already done and are struck out below.
-Each remaining item is real and reported; none is a plan.
-
-Done, verified in the running app 2026-09-22: **B4** (tooltips showed "1.2K"
-for 1,234 — fixed, they now show the value in full while the axis still
-compacts), **B7** (clicking an indeterminate group box selects all 24 rows and
-the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
-(`def.range ?? def.kind === 'number'`), **5** (Add Customer calls
-`store.insert`). And **2**, verified 2026-10-14: on Records, scrolled 300px
-sideways, the selection column keeps its pin and its place through a header
-filter change — all 27 of its cells.
-
-| | |
-|---|---|
-| **0** | No chart is keyboard-reachable — done in code by TODO 284 (each chart is one tab stop, arrows between marks; a sparkline and a gauge describe their data); closes after Will's test run |
-| **1** | Bundle the toolbar + pagination INTO `sherpa-data-grid` |
-| **3** | Sparkline sub-pixel gaps |
-| **4** | App header — another design-review pass |
-
----
-
 ## Where the docs are
 
 **The RULES are the markdown files in this table, and code reads all but this one.** The
@@ -189,7 +165,7 @@ rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 
 | File | Who reads it |
 |---|---|
-| `PRINCIPLES.md` | People. This file — the rules, the doors, the open work |
+| `PRINCIPLES.md` | People. This file — the rules and the doors. Open work is in `TODO.md` |
 | `TRAPS.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, and that entry's `Site:` list must match who cites it; `npm run traps:write` makes `TRAPS-INDEX.md`, the entries by area, from those lists |
 | `APP-GUIDE.md` | The MCP server, as `sherpa://app-guide` |
 | `DEF-TO-FIGMA-BUILD-RULES.md` | The MCP server, as `sherpa://rules` |

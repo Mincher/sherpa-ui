@@ -314,6 +314,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| ⬜ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
+| ⬜ | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ⬜ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6486,6 +6489,45 @@ part; a second checked each plan against the files.
   work in hand is; headings use `[~]` for 🚧 and ⬜ for not started; 242's and
   280's sections agree with the ledger. The one-line log is closed at item 200:
   since then an item's `✅ Done` line is its record.
+- **✅ Step 4, 2026-10-15:** PRINCIPLES' old open items 1, 3 and 4 are 322–324;
+  item 0 is 284's test run; the rest was done, and is kept below.
+
+**Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
+**verified one by one** — four were already done and are struck out below.
+Each remaining item is real and reported; none is a plan.
+
+Done, verified in the running app 2026-09-22: **B4** (tooltips showed "1.2K"
+for 1,234 — fixed, they now show the value in full while the axis still
+compacts), **B7** (clicking an indeterminate group box selects all 24 rows and
+the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
+(`def.range ?? def.kind === 'number'`), **5** (Add Customer calls
+`store.insert`). And **2**, verified 2026-10-14: on Records, scrolled 300px
+sideways, the selection column keeps its pin and its place through a header
+filter change — all 27 of its cells.
+
+### `[ ]` ⬜ 322 — The data grid holds its filter toolbar and its pager
+
+Will chose the shape in 2026-09 (HANDOVER-BACKLOG.md at 66a93734^, L245–283):
+`data-toolbar`, `data-paginated`; the grid owns sort, group, column filters,
+page, page size and selection; slots for extras; the parts stay usable alone.
+An actions bar (`data-toolbar`) was built 2026-09-10 (4d5b4ab0) and taken out
+in b17959a7. Today the grid has only the `empty` and `no-matches` slots. The
+reason was two sort states that could disagree. Measure first whether they
+still can, now that a bound grid reports and the source owns the sort.
+
+### `[ ]` ⬜ 323 — BUG: hairline gaps between the sparkline's segments
+
+Each segment is a `clip-path` polygon on a flex child of fractional width
+(`sherpa-sparkline.css`), so a hairline of background shows between neighbours.
+Will's old note said `round()` was a no-op here; `T-round-is-for-dynamic-sizes-only`
+says it works in all three engines and is for a DYNAMIC size, and a segment's
+width is one. There is no `round()` today.
+
+### `[ ]` ⬜ 324 — The app header: one more design pass, against Figma
+
+Will, 2026-09-10 (812436a2): "still not to spec". Read the Figma App Header
+node's values (fills, padding, gaps, sizes, text bindings) and diff them against
+`sherpa-app-header.css`, property by property.
 
 ### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
 
@@ -6694,6 +6736,9 @@ stand-in gained `add()` for the calendar. **My picks on the plan's questions**
 {max}"; the step tracker, breadcrumbs and transfer list keep one stop per item;
 right-to-left arrows later. **Not run yet:** the tabs, chart keyboard, radial,
 gauge and the date unit test. **Queued:** 315 (calendar), 316–318.
+
+PRINCIPLES' old open item 0 (no chart was keyboard-reachable) closes when this
+passes Will's test run.
 
 ### `[x]` ✅ 316 — A11Y: a breadcrumb with no href could not be reached
 
