@@ -2837,7 +2837,7 @@
           "slots": [
             {
               "name": "leading",
-              "description": "(accepts: icon)"
+              "description": "a custom leading icon (accepts: icon)"
             },
             {
               "name": "metadata",

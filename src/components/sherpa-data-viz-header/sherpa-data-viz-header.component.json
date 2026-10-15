@@ -136,7 +136,8 @@
       "name": "leading",
       "accepts": [
         "icon"
-      ]
+      ],
+      "description": "a custom leading icon"
     },
     {
       "$type": "slot",

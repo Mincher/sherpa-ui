@@ -31,7 +31,7 @@
   justify-content: center;
   color: var(--sherpa-style-content-secondary, #35353d);
 }
-:host(:is([data-icon], :state(has-left))) .left { display: inline-flex; }
+:host(:is([data-icon], :state(has-leading))) .left { display: inline-flex; }
 
 .labels {
   flex: 1 1 0;

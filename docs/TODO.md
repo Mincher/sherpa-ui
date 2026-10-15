@@ -303,6 +303,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
 | ⬜ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
+| ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
+| ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6523,6 +6525,23 @@ row. Through `clone()` they upgrade at clone time, not at append — the end sta
 is the same by reading, and a detached menu's rows would then fill (a likely
 fix). Then the base's `upgradeClonedIcons` goes, and `clone()` calls
 `upgradeIcons` itself. Run the grid, toolbar, panel and menu specs after.
+
+### `[x]` ✅ 312 — BUG: the data-viz header's leading icon never showed
+
+Found by 285b's checker. 279 renamed the slot `left` → `leading`, but the CSS
+still showed the icon cell on `:state(has-left)`, a state nothing sets any more.
+**✅ Fixed 2026-10-15:** `:state(has-leading)`, and its `Slots:` line. The class
+and part stay `left` (a part is public). **Not run yet.** No other renamed slot
+left a stale state (checked: `has-title`, `has-brand-icon`, `has-action`).
+
+### `[ ]` ⬜ 313 — BUG: the overlay panel's footer is inset twice
+
+Found by 285b's checker, by reading. `sherpa-overlay-panel.css` gives the
+`sherpa-container-footer` host `padding-inline: var(--_pad)` (16px), and the
+footer row adds its own 16px: 32px against the body's 16px, and the divider is
+inset too, where 8ef4f2a1 asked for a full-width one. Its comment ("Container
+Footer binds padding/none inline") is stale. The likely fix deletes those
+lines. Needs a look at the pixels first.
 
 ### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
 
