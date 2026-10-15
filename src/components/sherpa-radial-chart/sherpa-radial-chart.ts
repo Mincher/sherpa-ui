@@ -56,6 +56,12 @@ export class SherpaRadialChart extends SherpaElement {
     this.#syncCentre();
     const slices = this.$('.slices');
     slices?.addEventListener('click', this.#onClick);
+    // Enter and Space press the focused slice, as a click does. TODO 318
+    slices?.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      this.#onClick(event);
+    });
     if (slices) this.#roving = rovingFocus(slices, { items: '.slice' });
     if (this.#slices.length) this.#renderRing();
   }

@@ -309,7 +309,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.60 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
-| ⬜ | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
+| 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6491,6 +6491,19 @@ it underlines on hover as a live crumb does. **Not run yet.**
 **✅ Fixed 2026-10-15.** The menu's ArrowLeft-goes-Back and ArrowRight-drills
 skip a key whose real target is a text field, a textarea, a slider or editable
 text: there an arrow moves the caret or the value. **Not run yet.**
+
+### `[ ]` 🚧 318 — A11Y: toolbars, radios and a slice's click by keyboard
+
+**✅ Radios, 2026-10-15.** Each `sherpa-select-radio` has its native radio in a
+shadow root of its own, so the browser gave a group neither its one Tab stop nor
+its arrows. Now, by its group (`radioGroup()`): the ticked radio, else the first
+enabled one, is the group's one Tab stop, and the arrows tick the next or
+previous one and report it, as a press does. The grid's single-select rows
+follow (one stop, arrows move the selection). **✅ A slice's click:** Enter and
+Space press the focused slice. **⬜ Toolbars:** three `role="toolbar"` bars
+(`sherpa-toolbar`, `sherpa-quick-filter-toolbar`, `sherpa-layout-canvas`) have
+no arrow keys; their items are SLOTTED, which `rovingFocus()` does not reach yet.
+**Not run yet.**
 
 ### `[ ]` ⬜ 315 — Phase 5: the calendar's roving grid
 

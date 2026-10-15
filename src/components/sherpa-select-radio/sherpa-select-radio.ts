@@ -29,6 +29,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.#control = this.$<HTMLInputElement>('.control');
     this.#syncState();
     this.#control?.addEventListener('change', this.#onChange);
+    this.#control?.addEventListener('keydown', this.#onKey);
   }
 
   override onChange(): void {
@@ -63,7 +64,24 @@ export class SherpaSelectRadio extends SherpaElement {
     const missing = this.hasAttribute('required') && !this.#group().some((r) => r.checked);
     if (missing) this.formLink.validity({ valueMissing: true }, c.validationMessage || 'Select one.', c);
     else this.formLink.validity();
+    // ONE tab stop per group, as native radios have: the ticked one, else the first. TODO 318
+    const live = this.#group().filter((r) => !r.matches(':disabled'));
+    const stop = live.find((r) => r.checked) ?? live[0];
+    c.tabIndex = !stop || stop === this ? 0 : -1;
   }
+
+  /** The arrows tick the next or previous radio of the group, as native radios do. TODO 318 */
+  #onKey = (event: KeyboardEvent): void => {
+    const by = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 0;
+    if (!by || event.altKey || event.ctrlKey || event.metaKey) return;
+    const live = this.#group().filter((r) => !r.matches(':disabled'));
+    if (live.length < 2) return;
+    event.preventDefault();
+    const next = live[(live.indexOf(this) + by + live.length) % live.length]!;
+    next.focus();
+    // A press, so it ticks and reports as a reader's pick does.
+    next.#control?.click();
+  };
 
   /** Its radio group, by HTML's rule. */
   #group(): SherpaSelectRadio[] {
