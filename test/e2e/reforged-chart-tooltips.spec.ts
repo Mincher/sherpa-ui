@@ -264,7 +264,7 @@ test('sparkline dots space themselves across the box at the data heights', async
     );
     const chart = sr.querySelector('.chart')!.getBoundingClientRect();
     return {
-      // One per value, and only per value — data-len gates the rest.
+      // One per value, and only per value: the dots are stamped from the data.
       shown: shown.length,
       total: sr.querySelectorAll('.hotspot').length,
       len: getComputedStyle(el).getPropertyValue('--_len').trim(),
@@ -284,7 +284,7 @@ test('sparkline dots space themselves across the box at the data heights', async
     };
   });
 
-  expect(r.total).toBe(8); // eight fixed slots
+  expect(r.total).toBe(5); // stamped, one per value
   expect(r.shown).toBe(5); // five values
   expect(r.len).toBe('5');
   expect(r.tips).toEqual(['10', '20', '30', '40', '50']);

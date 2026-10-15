@@ -10219,12 +10219,6 @@
           "description": "a compact inline trend chart (line area or bars).",
           "attributes": [
             {
-              "name": "data-len",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
               "name": "data-type",
               "description": "— line  | bar (flat-topped columns)",
               "type": {

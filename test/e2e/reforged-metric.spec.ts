@@ -116,8 +116,8 @@ test('values feed and reveal the embedded sparkline', async ({ page }) => {
       hasValuesAttr: el.hasAttribute('data-has-values'),
       sparkVisible: getComputedStyle(el.shadowRoot!.querySelector('.spark')!).display !== 'none',
       // the sparkline received the series → its geometry bridge is populated
-      sparkV0: spark.style.getPropertyValue('--_v0').trim(),
-      sparkV3: spark.style.getPropertyValue('--_v3').trim(),
+      sparkV0: spark.shadowRoot!.querySelectorAll<HTMLElement>('.hotspot')[0]?.style.getPropertyValue('--_v') ?? '',
+      sparkV3: spark.shadowRoot!.querySelectorAll<HTMLElement>('.hotspot')[3]?.style.getPropertyValue('--_v') ?? '',
     };
   });
   expect(r.hasValuesAttr).toBe(true);

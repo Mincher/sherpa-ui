@@ -1,6 +1,6 @@
 /**
- * sherpa-sparkline.css — a CSS-only trend chart. JS writes the raw values to
- * --_v0..7 plus --_min / --_range on the host; CSS normalises and draws them.
+ * sherpa-sparkline.css — a trend chart drawn in CSS. JS stamps each shape and dot
+ * with its own raw values, and --_min / --_range on the host; CSS normalises and draws them.
  */
 
 /* No `@property` here. These are set from JS as finished strings — "5", "30%",
@@ -20,8 +20,6 @@
   --_line: var(--_status-data-viz-border, var(--sherpa-style-border-data-viz,
     var(--sherpa-data-viz-series-1, #8364c880)));
 
-  --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;
-  --_v4: 0; --_v5: 0; --_v6: 0; --_v7: 0;
   --_min: 0;
   --_range: 1;
   /* At a 28px height anything thicker reads as a bar. */
@@ -44,8 +42,13 @@
   gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
+/* The stamped shapes stay flex items of .chart. */
+.shapes { display: contents; }
+
 /* ── Shapes: one per adjacent value pair ───────────────────────────── */
 .shape {
+  --_v-start: var(--_from, 0);
+  --_v-end: var(--_to, 0);
   /* raw value → 0–100 */
   --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
   --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
@@ -53,14 +56,6 @@
   position: relative;
   flex: 1 1 0%;
   min-inline-size: 0;
-
-  &[data-index="0"] { --_v-start: var(--_v0); --_v-end: var(--_v1); }
-  &[data-index="1"] { --_v-start: var(--_v1); --_v-end: var(--_v2); }
-  &[data-index="2"] { --_v-start: var(--_v2); --_v-end: var(--_v3); }
-  &[data-index="3"] { --_v-start: var(--_v3); --_v-end: var(--_v4); }
-  &[data-index="4"] { --_v-start: var(--_v4); --_v-end: var(--_v5); }
-  &[data-index="5"] { --_v-start: var(--_v5); --_v-end: var(--_v6); }
-  &[data-index="6"] { --_v-start: var(--_v6); --_v-end: var(--_v7); }
 
   /* Pseudo so points aren't clipped. */
   &::before {
@@ -125,35 +120,6 @@
   &[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 }
 
-/* ── Data-presence collapse ────────────────────────────────────────────────
- * Hidden until the host's data-len says otherwise, so an unfed sparkline draws
- * nothing. */
-.shape,
-.point { display: none; }
-
-/* Show index N while N < len. `:is()` collapses the repeated host prefix; every
-   argument is one attribute selector, so the specificity is unchanged. */
-:host([data-len="2"]) .shape[data-index="0"],
-:host([data-len="3"]) .shape:is([data-index="0"], [data-index="1"]),
-:host([data-len="4"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"]),
-:host([data-len="5"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"]),
-:host([data-len="6"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"]),
-:host([data-len="7"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"]),
-:host([data-len="8"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"]) {
-  display: block;
-}
-
-:host([data-len="1"]) .point[data-index="0"],
-:host([data-len="2"]) .point:is([data-index="0"], [data-index="1"]),
-:host([data-len="3"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"]),
-:host([data-len="4"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"]),
-:host([data-len="5"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"]),
-:host([data-len="6"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"]),
-:host([data-len="7"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"]),
-:host([data-len="8"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"], [data-index="7"]) {
-  display: block;
-}
-
 :host(:hover) .point { opacity: 1; }
 
 /* ── Hover dots: real HTML, NOT SVG — an SVG element cannot be a CSS anchor in Chromium. */
@@ -199,43 +165,6 @@
     outline: none;
     &::after { box-shadow: var(--sherpa-focus-ring); }
   }
-
-  &[data-index="0"] { --_i: 0; --_v: var(--_v0); }
-  &[data-index="1"] { --_i: 1; --_v: var(--_v1); }
-  &[data-index="2"] { --_i: 2; --_v: var(--_v2); }
-  &[data-index="3"] { --_i: 3; --_v: var(--_v3); }
-  &[data-index="4"] { --_i: 4; --_v: var(--_v4); }
-  &[data-index="5"] { --_i: 5; --_v: var(--_v5); }
-  &[data-index="6"] { --_i: 6; --_v: var(--_v6); }
-  &[data-index="7"] { --_i: 7; --_v: var(--_v7); }
-}
-
-/* The anchor NAME, on the dot AND its tip. They are SIBLINGS — an absolute mark
-   breaks anchor positioning for a nested fixed tip — so the name is the only
-   thing joining them. */
-:is(.hotspot, .chart-tip)[data-index="0"] { --_anchor: --spark-0; }
-:is(.hotspot, .chart-tip)[data-index="1"] { --_anchor: --spark-1; }
-:is(.hotspot, .chart-tip)[data-index="2"] { --_anchor: --spark-2; }
-:is(.hotspot, .chart-tip)[data-index="3"] { --_anchor: --spark-3; }
-:is(.hotspot, .chart-tip)[data-index="4"] { --_anchor: --spark-4; }
-:is(.hotspot, .chart-tip)[data-index="5"] { --_anchor: --spark-5; }
-:is(.hotspot, .chart-tip)[data-index="6"] { --_anchor: --spark-6; }
-:is(.hotspot, .chart-tip)[data-index="7"] { --_anchor: --spark-7; }
-
-/* Hover reveal lives in core/sherpa-anchor.css — dot + tip are adjacent siblings. */
-
-/* Selected by data-INDEX, not :nth-child: dots and tips alternate as siblings,
-   so `:nth-child(-n + 2)` would match dot 0 and TIP 0, not dots 0 and 1. */
-.hotspot { display: none; }
-
-:host([data-len="2"]) .hotspot:is([data-index="0"], [data-index="1"]),
-:host([data-len="3"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"]),
-:host([data-len="4"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"]),
-:host([data-len="5"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"]),
-:host([data-len="6"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"]),
-:host([data-len="7"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"]),
-:host([data-len="8"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"], [data-index="7"]) {
-  display: block;
 }
 
 :host([data-type="bar"]) .hotspots { display: none; }

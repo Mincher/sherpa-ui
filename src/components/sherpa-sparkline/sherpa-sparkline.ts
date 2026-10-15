@@ -5,10 +5,10 @@
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { formatValue } from '../../core/data/format-tick.js';
-import { chartScale } from '../../core/data/format-tick.js';
+import { chartScale, formatValue } from '../../core/data/format-tick.js';
+import { pairAnchor } from '../../core/ui/chart-parts.js';
 
-/** Fixed point slots; SLOTS-1 segments between them. */
+/** The last SLOTS values are drawn: a trend, not a history. */
 const SLOTS = 8;
 /** TRAP T-sparkline-headroom-is-a-share-of-the-box — share of the BOX, not of the data. */
 const LINE_SHARE = 0.62;
@@ -17,10 +17,8 @@ export class SherpaSparkline extends SherpaElement {
   static override css = new URL('./sherpa-sparkline.css', import.meta.url);
   static override html = new URL('./sherpa-sparkline.html', import.meta.url);
 
-  /* Written by the component from its own point count; CSS selects on it. */
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['bar'] },
-    'data-len': { type: 'string', kind: 'style' },
     'data-values': { type: 'string', kind: 'behaviour' },
   } as const;
 
@@ -54,15 +52,30 @@ export class SherpaSparkline extends SherpaElement {
     return parsed.map(Number).filter((n) => Number.isFinite(n));
   }
 
-  /** Bridge the values into the --_* custom properties CSS reads. */
+  /** Stamp a shape per value pair and a dot per value, each with its own numbers. */
   #apply(): void {
     const values = this.#parse().slice(-SLOTS);
     const count = values.length;
+    // One value is no trend: nothing is drawn.
+    const drawn = count > 1 ? values : [];
 
-    // CSS owns which shapes show, via :host([data-len="…"]).
-    this.set('data-len', String(count));
+    this.renderItems('.shapes', 'template.shape-tpl', drawn.slice(1), {
+      after: (shape, to, i) => {
+        shape.style.setProperty('--_from', String(drawn[i]));
+        shape.style.setProperty('--_to', String(to));
+      },
+    });
+    /* Paired by NAME, placed by CSS. TRAP T-chart-tip-is-a-sibling-of-its-dot
+       The tip says the exact value. TRAP T-a-tooltip-is-not-an-axis */
+    this.renderItems('.hotspots', 'template.hotspot-tpl', drawn.map((v) => ({ text: formatValue(v) })), {
+      after: (dot, _item, i) => {
+        dot.style.setProperty('--_i', String(i));
+        dot.style.setProperty('--_v', String(drawn[i]));
+        pairAnchor(`--spark-${i}`, dot, dot.nextElementSibling as HTMLElement);
+      },
+    });
 
-    if (count === 0) return;
+    if (!drawn.length) return;
 
     /* FITS ITS OWN RANGE — a sparkline shows a SHAPE, so `zero: false`: a
        floor at zero would flatten a series that never goes near it.
@@ -78,25 +91,6 @@ export class SherpaSparkline extends SherpaElement {
     this.style.setProperty('--_min', String(paddedMin));
     this.style.setProperty('--_range', String(range));
     this.style.setProperty('--_len', String(count));
-    for (let i = 0; i < SLOTS; i++) {
-      if (i < count) this.style.setProperty(`--_v${i}`, String(values[i]));
-      else this.style.removeProperty(`--_v${i}`);
-    }
-
-    this.#applyTips(values);
-  }
-
-  /**
-   * Fill each hover dot's tooltip — the TEXT only.
-   *
-   * TRAP T-chart-tip-is-a-sibling-of-its-dot — paired by index, placed by CSS.
-   */
-  #applyTips(values: number[]): void {
-    const tips = this.$$<HTMLElement>('.chart-tip .chart-tip-value');
-    tips.forEach((tip, i) => {
-      // TRAP T-a-tooltip-is-not-an-axis.
-      tip.textContent = i < values.length ? formatValue(values[i]!) : '';
-    });
   }
 }
 

@@ -8202,7 +8202,7 @@ donut tip appeared beside its dot instead of above it. The name goes on **BOTH**
 the dot DECLARES it, the tip POINTS at it.
 
 Everything else about the placement is declarative — see `.chart-tip` in
-`core/sherpa-base.css`. Nothing here measures anything.
+`core/sherpa-anchor.css`. Nothing here measures anything.
 
 Per chart:
 
@@ -8223,9 +8223,9 @@ Per chart:
   tip OUTWARD along the slice's radius so it clears the ring rather than covering
   the data it describes. The TIP carries the slice index too, because the slice
   is inside `<svg>` and cannot be reached by a sibling selector.
-- **sparkline** — the dots position themselves in CSS off the same `--_vN`
-  bridge the line uses and are paired with their tips by index, so JS writes only
-  the tip TEXT.
+- **sparkline** — a dot is stamped per value with its own `--_v` and `--_i`
+  inline, and positions itself in CSS; dot and tip share an anchor name, so no
+  CSS rule is written per index and there is no cap in the CSS (TODO 283).
 
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 - Site: `src/core/ui/chart-parts.ts`
@@ -8471,8 +8471,8 @@ line does not touch the top edge either). At 0.62 the line uses the top ~62% of
 the box and the lowest point sits ~30% up, so roughly a third of the height is
 fill. The trend still reads clearly; a larger share would flatten it.
 
-Only the most recent `SLOTS` (8) values are kept, giving 7 segments between 8
-fixed point slots. The COUNT goes to CSS as `--_len` because CSS cannot count for
+Only the most recent `SLOTS` (8) values are kept, and one shape is stamped per
+pair, each with its own two values inline. The COUNT goes to CSS as `--_len` because CSS cannot count for
 itself, and the hover dots space themselves with `--_i / (--_len - 1)` — so that
 one number is all they need, and no per-dot x position comes from JS.
 
@@ -12808,7 +12808,7 @@ sanctioned `@media` is `forced-colors`.
 
 ### T-anchoring-is-generic
 
-The anchor-positioning machinery in `sherpa-base.css` was named `.chart-tip`,
+The anchor-positioning machinery in `sherpa-anchor.css` was named `.chart-tip`,
 `.chart-mark`, `.chart-anchor-point`. None of it is chart-specific: it is
 `position-anchor` plus `position-try-fallbacks` plus a zero-size anchor point,
 which any component could use to place a tip beside any trigger.
