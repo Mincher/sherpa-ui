@@ -102,6 +102,7 @@ import {
   sameReading, VIEW, withoutDropped,
   type CompileFacts, type Query, type QueryDefaults, type ScopeQuery, type ViewScope,
 } from './query.js';
+import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
@@ -173,15 +174,13 @@ export class DataSource extends EventTarget {
   #autoLoad: boolean;
   // TRAP T-in-flight-ticket-discards-stale — three keys, and why not one.
   /** The load in flight, as a ticket the response is checked against. */
-  #inFlight: symbol | null = null;
+  #inFlight = new Latest();
   /** The ViewState the last COMPLETED load asked for, serialised. */
   #lastLoadKey: string | null = null;
   /** Has any load completed? Until one has, nothing may be skipped. */
   #loaded = false;
   /** The key of the load currently in flight. */
   #inFlightKey: string | null = null;
-  /** A coalesced load is queued for the end of this tick — see `#schedule`. */
-  #scheduled = false;
   /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
   #parts = new Map<string, Filter>();
   /**
@@ -787,26 +786,18 @@ export class DataSource extends EventTarget {
 
   /** A control over several scopes — the panel — is drawn each WHOLE, once
    *  per moment, when what a scope holds changes. TRAP T-an-open-panel-follows-the-data-layer */
-  #drawScopesSoon(): void {
-    if (this.#drawingScopes) return;
-    this.#drawingScopes = true;
-    queueMicrotask(() => {
-      this.#drawingScopes = false;
-      for (const [el, { scope }] of this.#bound) {
-        // A scope this page does not have — nothing held, nothing to offer — is not drawn.
-        if (Array.isArray(scope) && el.drawScopes) {
-          // Each chart's own, between the View and the rest. Will, TODO 52.
-          const [first, ...rest] = scope as string[];
-          const asked = first === VIEW ? [VIEW, ...this.#narrowing.keys(), ...rest] : [...this.#narrowing.keys(), ...scope];
-          void el.drawScopes(asked.map((s) => this.describe(s))
-            .filter((d) => d.scope === VIEW || d.filters.length || d.available.length));
-        }
+  #drawScopesSoon = coalesce((): void => {
+    for (const [el, { scope }] of this.#bound) {
+      // A scope this page does not have — nothing held, nothing to offer — is not drawn.
+      if (Array.isArray(scope) && el.drawScopes) {
+        // Each chart's own, between the View and the rest. Will, TODO 52.
+        const [first, ...rest] = scope as string[];
+        const asked = first === VIEW ? [VIEW, ...this.#narrowing.keys(), ...rest] : [...this.#narrowing.keys(), ...scope];
+        void el.drawScopes(asked.map((s) => this.describe(s))
+          .filter((d) => d.scope === VIEW || d.filters.length || d.available.length));
       }
-    });
-  }
-
-  /** A redraw of every scope control is queued. */
-  #drawingScopes = false;
+    }
+  });
 
   /** Draw every bar over one scope, as the panel draws it — after a request
    *  that came from somewhere else (the panel) changed what it holds. */
@@ -1821,14 +1812,7 @@ export class DataSource extends EventTarget {
   #liveWait: ReturnType<typeof setTimeout> | undefined;
 
   /** COALESCE one tick's writes into a single load. TRAP T-coalesce-microtask-not-debounce */
-  #schedule(): void {
-    if (this.#scheduled) return;
-    this.#scheduled = true;
-    queueMicrotask(() => {
-      this.#scheduled = false;
-      void this.load();
-    });
-  }
+  #schedule = coalesce((): void => void this.load());
 
   /* ── Loading ───────────────────────────────────────────────────────── */
 
@@ -1872,7 +1856,7 @@ export class DataSource extends EventTarget {
          flight will land and overwrite the answer, so a request back to the
          last finished one must still run — skipping it lost the reader's
          filter for good. TRAP T-in-flight-ticket-discards-stale */
-      if (key === this.#lastLoadKey && this.#loaded && !this.#inFlight) return Promise.resolve(this.#result);
+      if (key === this.#lastLoadKey && this.#loaded && !this.#inFlight.busy) return Promise.resolve(this.#result);
       /* ASKED: the caller waits for THAT answer. Handed the result of the load
          BEFORE it, `await source.load()` came back with no rows while the
          first load was still out. TRAP T-an-asked-load-is-awaited */
@@ -1888,15 +1872,14 @@ export class DataSource extends EventTarget {
 
   /** Ask the store, and publish the answer if it is still the latest asked. */
   async #ask(key: string): Promise<LoadResult> {
-    const ticket = Symbol('load');
-    this.#inFlight = ticket;
+    const ticket = this.#inFlight.next();
     this.#inFlightKey = key;
     this.dispatchEvent(new CustomEvent('loading', { detail: { loading: true } }));
 
     try {
       const result = await this.store.load(this.#loadOptions());
       // Not the latest → DISCARDED, and the key recorded only by the winner.
-      if (this.#inFlight !== ticket) return this.#result;
+      if (!this.#inFlight.is(ticket)) return this.#result;
       this.#result = result;
       this.#lastLoadKey = key;
       this.#loaded = true;
@@ -1914,7 +1897,7 @@ export class DataSource extends EventTarget {
       else {
         const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
         const all = await this.store.load(viewed ? { ...rest, filter: viewed } : rest);
-        if (this.#inFlight !== ticket) return this.#result;
+        if (!this.#inFlight.is(ticket)) return this.#result;
         this.#allRows = all.rows;
       }
 
@@ -1939,12 +1922,11 @@ export class DataSource extends EventTarget {
       return result;
     } catch (error) {
       // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
-      if (this.#inFlight !== ticket) return this.#result;
+      if (!this.#inFlight.is(ticket)) return this.#result;
       this.dispatchEvent(new CustomEvent('error', { detail: { error } }));
       return this.#result;
     } finally {
-      if (this.#inFlight === ticket) {
-        this.#inFlight = null;
+      if (this.#inFlight.end(ticket)) {
         this.#inFlightKey = null;
         this.#asking = null;
         this.dispatchEvent(new CustomEvent('loading', { detail: { loading: false } }));
@@ -2025,11 +2007,11 @@ export class DataSource extends EventTarget {
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
     if (!drawn.length) return;
     this.#countedFor = JSON.stringify(this.#applied);
-    const ticket = (this.#counting = Symbol('count'));
+    const ticket = this.#counting.next();
     const byScope = new Map<string, Record<string, number>>();
     for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
       byScope.set(scope, await this.results(scope));
-      if (this.#counting !== ticket) return;
+      if (!this.#counting.is(ticket)) return;
     }
     for (const { el, scopes } of drawn) {
       for (const scope of scopes) el.drawResults?.(byScope.get(scope) ?? {}, scope);
@@ -2039,7 +2021,7 @@ export class DataSource extends EventTarget {
       if (!el.drawValueResults) continue;
       for (const scope of scopes) {
         const byValue = await this.valueResults(scope);
-        if (this.#counting !== ticket) return;
+        if (!this.#counting.is(ticket)) return;
         el.drawValueResults(byValue, scope);
       }
     }
@@ -2248,9 +2230,9 @@ export class DataSource extends EventTarget {
   /** Work out what is set aside; if it MOVED, compile again — the load that
    *  follows draws what is left. Says whether it moved. */
   async #settleSetAside(): Promise<boolean> {
-    const ticket = (this.#settling = Symbol('aside'));
+    const ticket = this.#settling.next();
     const next = await this.#setAsideNow();
-    if (this.#settling !== ticket) return true;
+    if (!this.#settling.is(ticket)) return true;
     const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
     if (key(next) === key(this.#setAside)) return false;
     this.#setAside = next;
@@ -2259,7 +2241,7 @@ export class DataSource extends EventTarget {
     return true;
   }
   /** The latest set-aside pass; an older one lands on nothing. */
-  #settling: symbol | null = null;
+  #settling = new Latest();
   /** The picks set aside, by scope then field, as value keys. */
   #setAside = new Map<string, Record<string, string[]>>();
 
@@ -2289,16 +2271,9 @@ export class DataSource extends EventTarget {
   }
 
   /** One pass this tick, however many asked. */
-  #presentSoon(): void {
-    if (this.#presentQueued) return;
-    this.#presentQueued = true;
-    queueMicrotask(() => {
-      this.#presentQueued = false;
-      void this.#settleSetAside().then((moved) => { if (!moved) void this.#drawPresent(); });
-    });
-  }
-  /** A pass is queued for the end of this tick. */
-  #presentQueued = false;
+  #presentSoon = coalesce((): void => {
+    void this.#settleSetAside().then((moved) => { if (!moved) void this.#drawPresent(); });
+  });
 
   /** Each bound control is told what each field's other answers leave — once
    *  per applied Query; a later pass wins. Off, each is told nothing is limited.
@@ -2310,13 +2285,13 @@ export class DataSource extends EventTarget {
     const key = `${this.#limitOptions}:${drawn.length}:${parts.join()}:${JSON.stringify(this.#applied)}`;
     if ((!drawn.length && !parts.length) || key === this.#presentFor) return;
     this.#presentFor = key;
-    const ticket = (this.#presenting = Symbol('present'));
+    const ticket = this.#presenting.next();
     const byScope = new Map<string, Record<string, string[]>>();
     const offers = new Map<string, Record<string, string[]>>();
     for (const scope of new Set([...drawn.flatMap((d) => d.scopes), ...parts])) {
       byScope.set(scope, await this.present(scope));
       offers.set(scope, await this.offered(scope));
-      if (this.#presenting !== ticket) return;
+      if (!this.#presenting.is(ticket)) return;
     }
     for (const { el, scopes } of drawn) {
       for (const scope of scopes) {
@@ -2327,12 +2302,12 @@ export class DataSource extends EventTarget {
     this.dispatchEvent(new CustomEvent('present', { detail: { byScope: Object.fromEntries(byScope) } }));
   }
   /** The latest pass; an older one lands on nothing. */
-  #presenting: symbol | null = null;
+  #presenting = new Latest();
   /** What the last pass was for: the setting, the controls and the applied Query. */
   #presentFor = '';
 
   /** The latest results count; an older one lands on nothing. */
-  #counting: symbol | null = null;
+  #counting = new Latest();
   /** The applied Query the chips' results were last counted for, as JSON. */
   #countedFor = '';
 

@@ -2558,8 +2558,8 @@ emits.
 ### T-in-flight-ticket-discards-stale
 
 A source is steered by controls a person can use quickly — three filter chips in
-a second — and each change starts a load. `#inFlight` holds a Symbol ticket for
-the LATEST one so a slower earlier response is DISCARDED rather than overwriting
+a second — and each change starts a load. `#inFlight` is a `Latest` from
+`timing.ts`, which holds a ticket for the LATEST one so a slower earlier response is DISCARDED rather than overwriting
 a newer one. That is the classic out-of-order bug: a slow first filter landing
 after a fast second one shows the wrong rows.
 
@@ -2589,12 +2589,13 @@ good. Found on the running page in Firefox, raising Status to the header:
     landed     status cleared         100 rows, and nothing asked again
 
 Chromium batched the two writes into one load, so only Firefox showed it. The
-shortcut is `key === #lastLoadKey && #loaded && !#inFlight` now;
+shortcut is `key === #lastLoadKey && #loaded && !#inFlight.busy` now;
 `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs` gates a load
 back to the last answer, and that a true no-op still skips.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs`
+- Site: `src/core/data/timing.ts`
 
 ### T-parts-order-must-be-stable
 
@@ -2690,6 +2691,7 @@ microtask. A remote source is never live: it already waits for Apply.
 - Site: `test/unit/a-live-filter-waits-for-the-moves-to-stop.test.mjs`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/timing.ts`
 
 ### T-push-writes-state-as-attributes
 
