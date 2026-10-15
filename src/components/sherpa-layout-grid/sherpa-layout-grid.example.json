@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-layout-grid><div data-col-span=\"medium\">One</div><div data-col-span=\"medium\">Two</div>",
     "</sherpa-layout-grid>"
-  ]
+  ],
+  "use": "For placing a page's content on the layout grid, with `data-col-span` on each child; add `data-grouped` or `data-resizable` when you need them. Without those two, a plain `<div class=\"sherpa-grid\">` works too."
 }

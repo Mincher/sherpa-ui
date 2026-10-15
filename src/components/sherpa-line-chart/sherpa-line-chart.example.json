@@ -3,6 +3,7 @@
     "<sherpa-container><sherpa-data-viz-header slot=\"header\" data-heading=\"Alerts over time\">",
     "</sherpa-data-viz-header><sherpa-line-chart data-type=\"area\"></sherpa-line-chart></sherpa-container>"
   ],
+  "use": "For one or more series of numbers along an x axis, as lines or, with `data-type=\"area\"`, as areas. For a tiny inline trend, use `sherpa-sparkline`; to compare categories, use `sherpa-barchart`.",
   "fill": [
     {
       "at": "sherpa-line-chart",

@@ -10,6 +10,10 @@ The primary application navigation rail.
 | Figma | Primary Navigation |
 | Source | [.ts](../../src/components/sherpa-nav/sherpa-nav.ts) · [.html](../../src/components/sherpa-nav/sherpa-nav.html) · [.css](../../src/components/sherpa-nav/sherpa-nav.css) · [.component.json](../../src/components/sherpa-nav/sherpa-nav.component.json) · [.example.json](../../src/components/sherpa-nav/sherpa-nav.example.json) |
 
+## When to use it
+
+For the app's side navigation rail, filled by `populate()`: an entry with `children` is an Area and never navigates, and one with an `href` is a Context. For a nav built by hand, use `sherpa-nav-item` rows.
+
 ## Example
 
 ```html

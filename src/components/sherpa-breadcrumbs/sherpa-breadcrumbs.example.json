@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-breadcrumbs></sherpa-breadcrumbs>",
+  "use": "For the \"you are here\" trail, as in the `breadcrumbs` slot of `sherpa-app-header`; the last crumb is the current page and has no link. Give each earlier crumb an `href`, so it is a real `<a href>` link.",
   "fill": [
     {
       "at": "sherpa-breadcrumbs",

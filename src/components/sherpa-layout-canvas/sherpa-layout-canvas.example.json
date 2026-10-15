@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-layout-canvas style=\"inline-size: 640px; block-size: 360px\">",
     "<div style=\"--x: 40px; --y: 40px\">A card on the canvas</div></sherpa-layout-canvas>"
-  ]
+  ],
+  "use": "For content that pans and zooms with no edge, each item placed at its `--x` and `--y`; the canvas owns its view and reports each move. For content placed on the layout grid's columns, use `sherpa-layout-grid`."
 }

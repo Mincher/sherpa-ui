@@ -9,6 +9,10 @@ A row, column or grid of controls that reads as ONE object.
 | Category | layout |
 | Source | [.ts](../../src/components/sherpa-group/sherpa-group.ts) · [.html](../../src/components/sherpa-group/sherpa-group.html) · [.css](../../src/components/sherpa-group/sherpa-group.css) · [.component.json](../../src/components/sherpa-group/sherpa-group.component.json) · [.example.json](../../src/components/sherpa-group/sherpa-group.example.json) |
 
+## When to use it
+
+For a row, column or grid of controls that reads as one object: shared edges overlap, and each child's position comes from its place, so no child needs `data-group`. For items with a gap between them, use `sherpa-stack`; for a strip with leading and trailing controls, use `sherpa-toolbar`.
+
 ## Example
 
 ```html

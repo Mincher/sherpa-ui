@@ -3,6 +3,7 @@
     "<sherpa-container><sherpa-data-viz-header slot=\"header\" data-heading=\"Customers by plan\">",
     "</sherpa-data-viz-header><sherpa-barchart></sherpa-barchart></sherpa-container>"
   ],
+  "use": "For comparing values across categories, one bar each; `data-bands` cuts a number field into a histogram. For numbers along an x axis, such as dates, use `sherpa-line-chart`; for parts of a whole, use `sherpa-radial-chart`.",
   "fill": [
     {
       "at": "sherpa-barchart",

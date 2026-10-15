@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-sparkline aria-label=\"Revenue, last 7 days\"></sherpa-sparkline>",
+  "use": "For a tiny inline trend of the last eight values, as a line or as bars (`data-type=\"bar\"`). For a chart with axes, use `sherpa-line-chart`; for a number with its trend, use `sherpa-metric`, which holds a sparkline.",
   "fill": [
     {
       "at": "sherpa-sparkline",

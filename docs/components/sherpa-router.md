@@ -8,6 +8,10 @@ The ONE owner of the URL, on the Navigation API. It draws nothing.
 |---|---|
 | Source | [.ts](../../src/components/sherpa-router/sherpa-router.ts) · [.html](../../src/components/sherpa-router/sherpa-router.html) · [.css](../../src/components/sherpa-router/sherpa-router.css) · [.component.json](../../src/components/sherpa-router/sherpa-router.component.json) · [.example.json](../../src/components/sherpa-router/sherpa-router.example.json) |
 
+## When to use it
+
+One per page owns the URL: `data-params` lists the parameters it owns, and `data-overlay` the ones that open over the page. To navigate, write a real `<a href>` (`href()` builds one) or call `go()`; nothing else calls `history.pushState`.
+
 ## Example
 
 ```html

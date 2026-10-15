@@ -10,6 +10,10 @@ A half-circle gauge for a single value on a 0–100 scale. Each band is a closed
 | Figma | Gauge Chart |
 | Source | [.ts](../../src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts) · [.html](../../src/components/sherpa-gauge-chart/sherpa-gauge-chart.html) · [.css](../../src/components/sherpa-gauge-chart/sherpa-gauge-chart.css) · [.component.json](../../src/components/sherpa-gauge-chart/sherpa-gauge-chart.component.json) · [.example.json](../../src/components/sherpa-gauge-chart/sherpa-gauge-chart.example.json) |
 
+## When to use it
+
+For one value on a scale (0–100 by default), read by a needle, with optional threshold bands in `data-zones`. For a headline number with its trend, use `sherpa-metric`; for a task as it runs, use `sherpa-progress-bar`.
+
 ## Example
 
 ```html

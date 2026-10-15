@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-metric data-label=\"Revenue\"></sherpa-metric>",
+  "use": "For a KPI tile: a headline number, its change and its trend, with an optional sparkline. For one value against zones on a scale, use `sherpa-gauge-chart`; for a trend line alone, use `sherpa-sparkline`.",
   "fill": [
     {
       "at": "sherpa-metric",

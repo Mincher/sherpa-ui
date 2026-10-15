@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-gauge-chart data-label=\"Mean risk\" data-unit=\"%\" data-caption=\"of 100\"></sherpa-gauge-chart>",
+  "use": "For one value on a scale (0–100 by default), read by a needle, with optional threshold bands in `data-zones`. For a headline number with its trend, use `sherpa-metric`; for a task as it runs, use `sherpa-progress-bar`.",
   "fill": [
     {
       "at": "sherpa-gauge-chart",

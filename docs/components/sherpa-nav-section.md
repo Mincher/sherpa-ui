@@ -10,6 +10,10 @@ A section label + rule that groups items in a nav rail.
 | Figma | Navigation Section/default |
 | Source | [.ts](../../src/components/sherpa-nav-section/sherpa-nav-section.ts) · [.html](../../src/components/sherpa-nav-section/sherpa-nav-section.html) · [.css](../../src/components/sherpa-nav-section/sherpa-nav-section.css) · [.component.json](../../src/components/sherpa-nav-section/sherpa-nav-section.component.json) · [.example.json](../../src/components/sherpa-nav-section/sherpa-nav-section.example.json) |
 
+## When to use it
+
+For a Section in a nav you build by hand: a label and a rule that do nothing. It has no slot, so put the `sherpa-nav-item` rows after it, not inside it; `sherpa-nav` draws its own sections from `populate()`.
+
 ## Example
 
 ```html

@@ -4,6 +4,7 @@
     "</sherpa-data-viz-header><sherpa-radial-chart data-sublabel=\"customers\"></sherpa-radial-chart>",
     "</sherpa-container>"
   ],
+  "use": "For parts of a whole, as a donut (the default) or a pie. For one value on a scale with zones, use `sherpa-gauge-chart`; to compare categories, use `sherpa-barchart`.",
   "fill": [
     {
       "at": "sherpa-radial-chart",

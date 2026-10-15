@@ -11,6 +11,10 @@ An AI prompt input. Auto-growing textarea. Enter submits; Shift+Enter inserts a 
 | Figma | Prompt Composer |
 | Source | [.ts](../../src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts) · [.html](../../src/components/sherpa-prompt-composer/sherpa-prompt-composer.html) · [.css](../../src/components/sherpa-prompt-composer/sherpa-prompt-composer.css) · [.component.json](../../src/components/sherpa-prompt-composer/sherpa-prompt-composer.component.json) · [.example.json](../../src/components/sherpa-prompt-composer/sherpa-prompt-composer.example.json) |
 
+## When to use it
+
+For an AI prompt: a text box that grows, where Enter sends and Shift+Enter starts a new line. For a labelled text field in a form, use `sherpa-input-text`.
+
 ## Example
 
 ```html

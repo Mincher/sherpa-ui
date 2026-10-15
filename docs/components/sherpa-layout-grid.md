@@ -9,6 +9,10 @@ The layout grid a view places its content on.
 | Category | layout |
 | Source | [.ts](../../src/components/sherpa-layout-grid/sherpa-layout-grid.ts) · [.html](../../src/components/sherpa-layout-grid/sherpa-layout-grid.html) · [.css](../../src/components/sherpa-layout-grid/sherpa-layout-grid.css) · [.component.json](../../src/components/sherpa-layout-grid/sherpa-layout-grid.component.json) · [.example.json](../../src/components/sherpa-layout-grid/sherpa-layout-grid.example.json) |
 
+## When to use it
+
+For placing a page's content on the layout grid, with `data-col-span` on each child; add `data-grouped` or `data-resizable` when you need them. Without those two, a plain `<div class="sherpa-grid">` works too.
+
 ## Example
 
 ```html

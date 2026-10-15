@@ -1,5 +1,6 @@
 {
   "html": "<sherpa-chart-legend data-orientation=\"horizontal\"></sherpa-chart-legend>",
+  "use": "For the colour key of a chart, in the chart's `legend` slot. Its rows are toggles that report `legend-item-click`; `data-readonly` makes it a key only, as for a gauge's zones.",
   "fill": [
     {
       "at": "sherpa-chart-legend",

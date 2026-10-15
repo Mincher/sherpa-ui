@@ -10,6 +10,10 @@ A legend for charts. Figma "Chart Legend" (1098:37846).
 | Figma | Chart Legend |
 | Source | [.ts](../../src/components/sherpa-chart-legend/sherpa-chart-legend.ts) · [.html](../../src/components/sherpa-chart-legend/sherpa-chart-legend.html) · [.css](../../src/components/sherpa-chart-legend/sherpa-chart-legend.css) · [.component.json](../../src/components/sherpa-chart-legend/sherpa-chart-legend.component.json) · [.example.json](../../src/components/sherpa-chart-legend/sherpa-chart-legend.example.json) |
 
+## When to use it
+
+For the colour key of a chart, in the chart's `legend` slot. Its rows are toggles that report `legend-item-click`; `data-readonly` makes it a key only, as for a gauge's zones.
+
 ## Example
 
 ```html

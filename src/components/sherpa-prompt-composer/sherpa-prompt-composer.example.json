@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-prompt-composer placeholder=\"Message the assistant…\"></sherpa-prompt-composer>"
+  "html": "<sherpa-prompt-composer placeholder=\"Message the assistant…\"></sherpa-prompt-composer>",
+  "use": "For an AI prompt: a text box that grows, where Enter sends and Shift+Enter starts a new line. For a labelled text field in a form, use `sherpa-input-text`."
 }

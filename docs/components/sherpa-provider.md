@@ -8,6 +8,10 @@ The data layer, over a SUBTREE of the page.
 |---|---|
 | Source | [.ts](../../src/components/sherpa-provider/sherpa-provider.ts) · [.html](../../src/components/sherpa-provider/sherpa-provider.html) · [.css](../../src/components/sherpa-provider/sherpa-provider.css) · [.component.json](../../src/components/sherpa-provider/sherpa-provider.component.json) · [.example.json](../../src/components/sherpa-provider/sherpa-provider.example.json) |
 
+## When to use it
+
+Put it round the part of a page whose components need data: each component inside asks, and the provider answers from the sources `provide()` gives it, or that `open()` opens from a page definition. It draws nothing.
+
 ## Example
 
 ```html

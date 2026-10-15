@@ -10,6 +10,10 @@ The top application header bar.
 | Figma | App Header |
 | Source | [.ts](../../src/components/sherpa-app-header/sherpa-app-header.ts) · [.html](../../src/components/sherpa-app-header/sherpa-app-header.html) · [.css](../../src/components/sherpa-app-header/sherpa-app-header.css) · [.component.json](../../src/components/sherpa-app-header/sherpa-app-header.component.json) · [.example.json](../../src/components/sherpa-app-header/sherpa-app-header.example.json) |
 
+## When to use it
+
+For the bar across the top of the app: the Context's title (`data-heading`), its breadcrumbs, its filters and the app's actions. `sherpa-app-shell` draws one by default; for a heading above one section of a page, use `sherpa-section-header`.
+
 ## Example
 
 ```html

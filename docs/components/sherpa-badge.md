@@ -8,6 +8,10 @@ A small count: Figma "Indicator (atom)/Type=count". The consumer pins its Style 
 |---|---|
 | Source | [.ts](../../src/components/sherpa-badge/sherpa-badge.ts) · [.html](../../src/components/sherpa-badge/sherpa-badge.html) · [.css](../../src/components/sherpa-badge/sherpa-badge.css) · [.component.json](../../src/components/sherpa-badge/sherpa-badge.component.json) · [.example.json](../../src/components/sherpa-badge/sherpa-badge.example.json) |
 
+## When to use it
+
+For a small count, such as unread items. On a `sherpa-button`, set its `data-badge` instead; for a short label in a pill, use `sherpa-tag`.
+
 ## Example
 
 ```html

@@ -11,6 +11,10 @@ A KPI tile with an optional embedded sparkline.
 | Figma | Metric |
 | Source | [.ts](../../src/components/sherpa-metric/sherpa-metric.ts) · [.html](../../src/components/sherpa-metric/sherpa-metric.html) · [.css](../../src/components/sherpa-metric/sherpa-metric.css) · [.component.json](../../src/components/sherpa-metric/sherpa-metric.component.json) · [.example.json](../../src/components/sherpa-metric/sherpa-metric.example.json) |
 
+## When to use it
+
+For a KPI tile: a headline number, its change and its trend, with an optional sparkline. For one value against zones on a scale, use `sherpa-gauge-chart`; for a trend line alone, use `sherpa-sparkline`.
+
 ## Example
 
 ```html

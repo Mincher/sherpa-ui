@@ -10,6 +10,10 @@ A compact inline trend chart (line area or bars).
 | Figma | Data Field |
 | Source | [.ts](../../src/components/sherpa-sparkline/sherpa-sparkline.ts) · [.html](../../src/components/sherpa-sparkline/sherpa-sparkline.html) · [.css](../../src/components/sherpa-sparkline/sherpa-sparkline.css) · [.component.json](../../src/components/sherpa-sparkline/sherpa-sparkline.component.json) · [.example.json](../../src/components/sherpa-sparkline/sherpa-sparkline.example.json) |
 
+## When to use it
+
+For a tiny inline trend of the last eight values, as a line or as bars (`data-type="bar"`). For a chart with axes, use `sherpa-line-chart`; for a number with its trend, use `sherpa-metric`, which holds a sparkline.
+
 ## Example
 
 ```html

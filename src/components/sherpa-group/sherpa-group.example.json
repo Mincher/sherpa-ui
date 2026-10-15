@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-group><sherpa-button>Day</sherpa-button><sherpa-button>Week</sherpa-button>",
     "<sherpa-button>Month</sherpa-button></sherpa-group>"
-  ]
+  ],
+  "use": "For a row, column or grid of controls that reads as one object: shared edges overlap, and each child's position comes from its place, so no child needs `data-group`. For items with a gap between them, use `sherpa-stack`; for a strip with leading and trailing controls, use `sherpa-toolbar`."
 }

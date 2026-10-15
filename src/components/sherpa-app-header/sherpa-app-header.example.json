@@ -3,6 +3,7 @@
     "<sherpa-app-header data-heading=\"Records\" data-icon=\"table-columns\" data-ai data-theme-toggle data-notifications data-account data-help>",
     "</sherpa-app-header>"
   ],
+  "use": "For the bar across the top of the app: the Context's title (`data-heading`), its breadcrumbs, its filters and the app's actions. `sherpa-app-shell` draws one by default; for a heading above one section of a page, use `sherpa-section-header`.",
   "fill": [
     {
       "at": "sherpa-app-header",

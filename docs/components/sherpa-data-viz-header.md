@@ -8,6 +8,10 @@ The header strip of a metric or a chart's card. Figma "Data Viz Header" (1456:30
 |---|---|
 | Source | [.ts](../../src/components/sherpa-data-viz-header/sherpa-data-viz-header.ts) · [.html](../../src/components/sherpa-data-viz-header/sherpa-data-viz-header.html) · [.css](../../src/components/sherpa-data-viz-header/sherpa-data-viz-header.css) · [.component.json](../../src/components/sherpa-data-viz-header/sherpa-data-viz-header.component.json) · [.example.json](../../src/components/sherpa-data-viz-header/sherpa-data-viz-header.example.json) |
 
+## When to use it
+
+For the header strip of a metric's or a chart's card: a small heading, a description and icon-only actions. `sherpa-metric` draws its own; for a heading above a section of a page, use `sherpa-section-header`.
+
 ## Example
 
 ```html

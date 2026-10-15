@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-badge aria-label=\"3 unread\">3</sherpa-badge>"
+  "html": "<sherpa-badge aria-label=\"3 unread\">3</sherpa-badge>",
+  "use": "For a small count, such as unread items. On a `sherpa-button`, set its `data-badge` instead; for a short label in a pill, use `sherpa-tag`."
 }

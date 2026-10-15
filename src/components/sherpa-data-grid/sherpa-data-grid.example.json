@@ -3,6 +3,7 @@
     "<div style=\"block-size: 320px\">",
     "<sherpa-data-grid data-selectable data-column-filters data-filterable></sherpa-data-grid></div>"
   ],
+  "use": "For a table of records that can be sorted, filtered, grouped and selected. It reports what the reader does, and its host owns the sort, filter, page and selection; for a plain stack of rows, use `sherpa-list`, and for label and value pairs, `sherpa-key-value-list`.",
   "fill": [
     {
       "at": "sherpa-data-grid",

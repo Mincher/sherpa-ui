@@ -10,6 +10,10 @@ A donut / pie / arc for part-to-whole data.
 | Figma | Donut Chart |
 | Source | [.ts](../../src/components/sherpa-radial-chart/sherpa-radial-chart.ts) · [.html](../../src/components/sherpa-radial-chart/sherpa-radial-chart.html) · [.css](../../src/components/sherpa-radial-chart/sherpa-radial-chart.css) · [.component.json](../../src/components/sherpa-radial-chart/sherpa-radial-chart.component.json) · [.example.json](../../src/components/sherpa-radial-chart/sherpa-radial-chart.example.json) |
 
+## When to use it
+
+For parts of a whole, as a donut (the default) or a pie. For one value on a scale with zones, use `sherpa-gauge-chart`; to compare categories, use `sherpa-barchart`.
+
 ## Example
 
 ```html

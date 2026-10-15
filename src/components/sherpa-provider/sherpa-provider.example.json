@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-provider><p>What it provides for.</p></sherpa-provider>"
+  "html": "<sherpa-provider><p>What it provides for.</p></sherpa-provider>",
+  "use": "Put it round the part of a page whose components need data: each component inside asks, and the provider answers from the sources `provide()` gives it, or that `open()` opens from a page definition. It draws nothing."
 }

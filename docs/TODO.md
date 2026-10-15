@@ -286,7 +286,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
 | 🚧 | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| 🚧 | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
+| ✅ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ✅ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
 | ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
@@ -6482,7 +6482,7 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
 
-### `[~]` 🚧 294 — Phase 8.2: a component reference, generated from the specs
+### `[x]` ✅ 294 — Phase 8.2: a component reference, generated from the specs
 
 One page per component, written from its spec and its example, so it cannot
 drift. A read-only agent planned it; a second checked the plan against the
@@ -6519,6 +6519,14 @@ lands; the CSS table shows the tokens each class's base rule reads.
   and meaning, slots, parts and the CSS custom properties each class reads.
   `check:reference` fails a commit whose pages are not what the specs make, and
   runs in the hook. Not shown yet: "When to use it" (step 4).
+- **✅ Step 4, 2026-10-15 — done:** every example says when to use its component,
+  and what to use instead (66 of 66; the schema's new `use`). The reference shows
+  it, and so does the MCP's `get_component`. A read-only agent drafted each batch
+  (19 controls, 22 containers, 25 others) from the component's own code and the
+  ruled rules, citing evidence for every claim; a second tried to refute each
+  claim and cut or rewrote what nothing backed. **For Will:** read the lines; a
+  line that reads wrong is fixed in its `.example.json`, then
+  `npm run reference`. Not run yet: the example schema test.
 ### `[ ]` ⬜ 328 — GAP: 5 token names no stylesheet defines
 
 `--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),

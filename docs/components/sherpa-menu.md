@@ -11,6 +11,10 @@ A floating list of choices or actions. Figma "Menu" SET (1156:29240), Type axis 
 | Figma | Menu |
 | Source | [.ts](../../src/components/sherpa-menu/sherpa-menu.ts) · [.html](../../src/components/sherpa-menu/sherpa-menu.html) · [.css](../../src/components/sherpa-menu/sherpa-menu.css) · [.component.json](../../src/components/sherpa-menu/sherpa-menu.component.json) · [.example.json](../../src/components/sherpa-menu/sherpa-menu.example.json) |
 
+## When to use it
+
+For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` slot, and the button opens it. Its rows stay native checkboxes, radios and buttons; for one pick from a known set in a form, use `sherpa-input-text` with `data-type="select"`.
+
 ## Example
 
 ```html

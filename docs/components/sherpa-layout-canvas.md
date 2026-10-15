@@ -8,6 +8,10 @@ An infinite canvas content area: it pans and zooms with no edge, on a crosshair 
 |---|---|
 | Source | [.ts](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts) · [.html](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.html) · [.css](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.css) · [.component.json](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.component.json) · [.example.json](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.example.json) |
 
+## When to use it
+
+For content that pans and zooms with no edge, each item placed at its `--x` and `--y`; the canvas owns its view and reports each move. For content placed on the layout grid's columns, use `sherpa-layout-grid`.
+
 ## Example
 
 ```html

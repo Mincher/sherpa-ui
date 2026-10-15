@@ -3,6 +3,7 @@
     "<div style=\"block-size: 480px\"><sherpa-filter-panel data-heading=\"Filters\" open>",
     "</sherpa-filter-panel></div>"
   ],
+  "use": "For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell`; it takes the same filter definitions as `sherpa-quick-filter-toolbar` and fires the same `quick-filter-change`. Where the shell has no room for the panel, filtering goes back to that chip row.",
   "fill": [
     {
       "at": "sherpa-filter-panel",

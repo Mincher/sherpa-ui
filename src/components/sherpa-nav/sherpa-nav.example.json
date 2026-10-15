@@ -1,5 +1,6 @@
 {
   "html": "<div style=\"block-size: 480px\"><sherpa-nav data-current-id=\"home\"></sherpa-nav></div>",
+  "use": "For the app's side navigation rail, filled by `populate()`: an entry with `children` is an Area and never navigates, and one with an `href` is a Context. For a nav built by hand, use `sherpa-nav-item` rows.",
   "fill": [
     {
       "at": "sherpa-nav",

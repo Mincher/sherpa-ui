@@ -12,6 +12,10 @@ A single navigation row. Figma "Navigation Item" (32:43138).
 | Figma | Navigation Item |
 | Source | [.ts](../../src/components/sherpa-nav-item/sherpa-nav-item.ts) · [.html](../../src/components/sherpa-nav-item/sherpa-nav-item.html) · [.css](../../src/components/sherpa-nav-item/sherpa-nav-item.css) · [.component.json](../../src/components/sherpa-nav-item/sherpa-nav-item.component.json) · [.example.json](../../src/components/sherpa-nav-item/sherpa-nav-item.example.json) |
 
+## When to use it
+
+For one row in a nav you build by hand; `sherpa-nav` makes its own rows. `data-href` makes the row a real link, and `data-expandable` makes it a parent row that toggles and never navigates.
+
 ## Example
 
 ```html

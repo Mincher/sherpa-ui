@@ -9,6 +9,10 @@ The filter toolbars, as a column.
 | Wraps | [sherpa-container](sherpa-container.md) |
 | Source | [.ts](../../src/components/sherpa-filter-panel/sherpa-filter-panel.ts) · [.html](../../src/components/sherpa-filter-panel/sherpa-filter-panel.html) · [.css](../../src/components/sherpa-filter-panel/sherpa-filter-panel.css) · [.component.json](../../src/components/sherpa-filter-panel/sherpa-filter-panel.component.json) · [.example.json](../../src/components/sherpa-filter-panel/sherpa-filter-panel.example.json) |
 
+## When to use it
+
+For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell`; it takes the same filter definitions as `sherpa-quick-filter-toolbar` and fires the same `quick-filter-change`. Where the shell has no room for the panel, filtering goes back to that chip row.
+
 ## Example
 
 ```html

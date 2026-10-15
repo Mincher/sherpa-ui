@@ -2,5 +2,6 @@
   "html": [
     "<sherpa-data-viz-header data-heading=\"Alerts by category\" data-description=\"Last 30 days\">",
     "</sherpa-data-viz-header>"
-  ]
+  ],
+  "use": "For the header strip of a metric's or a chart's card: a small heading, a description and icon-only actions. `sherpa-metric` draws its own; for a heading above a section of a page, use `sherpa-section-header`."
 }

@@ -10,6 +10,10 @@ A sortable, filterable, groupable data table.
 | Figma | Grid Cell |
 | Source | [.ts](../../src/components/sherpa-data-grid/sherpa-data-grid.ts) · [.html](../../src/components/sherpa-data-grid/sherpa-data-grid.html) · [.css](../../src/components/sherpa-data-grid/sherpa-data-grid.css) · [.component.json](../../src/components/sherpa-data-grid/sherpa-data-grid.component.json) · [.example.json](../../src/components/sherpa-data-grid/sherpa-data-grid.example.json) |
 
+## When to use it
+
+For a table of records that can be sorted, filtered, grouped and selected. It reports what the reader does, and its host owns the sort, filter, page and selection; for a plain stack of rows, use `sherpa-list`, and for label and value pairs, `sherpa-key-value-list`.
+
 ## Example
 
 ```html

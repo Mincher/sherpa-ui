@@ -8,6 +8,10 @@ Where the route's Context is drawn. It is the app's main landmark, and its light
 |---|---|
 | Source | [.ts](../../src/components/sherpa-outlet/sherpa-outlet.ts) · [.html](../../src/components/sherpa-outlet/sherpa-outlet.html) · [.css](../../src/components/sherpa-outlet/sherpa-outlet.css) · [.component.json](../../src/components/sherpa-outlet/sherpa-outlet.component.json) · [.example.json](../../src/components/sherpa-outlet/sherpa-outlet.example.json) |
 
+## When to use it
+
+Put it in the content of `sherpa-app-shell`: on each route change it loads the Context that `app.json` names and tears the last one down. Settings opens over it, in `<sherpa-dialog data-type="overlay">`, so the Context is not reloaded.
+
 ## Example
 
 ```html

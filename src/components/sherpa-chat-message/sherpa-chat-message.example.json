@@ -4,5 +4,6 @@
     "</sherpa-chat-message>",
     "<sherpa-chat-message data-type=\"user\" data-name=\"You\" data-timestamp=\"10:31\" data-message=\"Thanks.\">",
     "</sherpa-chat-message>"
-  ]
+  ],
+  "use": "For one message in a chat thread, from the assistant, the user or the system (`data-type`). It fires nothing; for the box where the reader types a prompt, use `sherpa-prompt-composer`."
 }

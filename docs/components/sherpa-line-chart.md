@@ -10,6 +10,10 @@ A line/area chart over a numeric series.
 | Figma | Data Field |
 | Source | [.ts](../../src/components/sherpa-line-chart/sherpa-line-chart.ts) · [.html](../../src/components/sherpa-line-chart/sherpa-line-chart.html) · [.css](../../src/components/sherpa-line-chart/sherpa-line-chart.css) · [.component.json](../../src/components/sherpa-line-chart/sherpa-line-chart.component.json) · [.example.json](../../src/components/sherpa-line-chart/sherpa-line-chart.example.json) |
 
+## When to use it
+
+For one or more series of numbers along an x axis, as lines or, with `data-type="area"`, as areas. For a tiny inline trend, use `sherpa-sparkline`; to compare categories, use `sherpa-barchart`.
+
 ## Example
 
 ```html

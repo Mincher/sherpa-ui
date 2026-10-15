@@ -5,6 +5,7 @@
     "<input type=\"checkbox\" value=\"emea\" /> EMEA</label><label>",
     "<input type=\"checkbox\" value=\"apac\" checked /> APAC</label></sherpa-menu>"
   ],
+  "use": "For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` slot, and the button opens it. Its rows stay native checkboxes, radios and buttons; for one pick from a known set in a form, use `sherpa-input-text` with `data-type=\"select\"`.",
   "show": "sherpa-menu",
   "anchor": ".opener"
 }

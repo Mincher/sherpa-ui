@@ -1,3 +1,4 @@
 {
-  "html": "<sherpa-outlet><h1>Records</h1><p>The Context on screen.</p></sherpa-outlet>"
+  "html": "<sherpa-outlet><h1>Records</h1><p>The Context on screen.</p></sherpa-outlet>",
+  "use": "Put it in the content of `sherpa-app-shell`: on each route change it loads the Context that `app.json` names and tears the last one down. Settings opens over it, in `<sherpa-dialog data-type=\"overlay\">`, so the Context is not reloaded."
 }

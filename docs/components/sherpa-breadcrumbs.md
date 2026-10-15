@@ -10,6 +10,10 @@ A navigation trail.
 | Figma | Breadcrumbs |
 | Source | [.ts](../../src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.ts) · [.html](../../src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.html) · [.css](../../src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.css) · [.component.json](../../src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.component.json) · [.example.json](../../src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.example.json) |
 
+## When to use it
+
+For the "you are here" trail, as in the `breadcrumbs` slot of `sherpa-app-header`; the last crumb is the current page and has no link. Give each earlier crumb an `href`, so it is a real `<a href>` link.
+
 ## Example
 
 ```html

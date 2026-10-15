@@ -10,6 +10,10 @@ A vertical bar chart for categorical comparison.
 | Figma | Data Field |
 | Source | [.ts](../../src/components/sherpa-barchart/sherpa-barchart.ts) · [.html](../../src/components/sherpa-barchart/sherpa-barchart.html) · [.css](../../src/components/sherpa-barchart/sherpa-barchart.css) · [.component.json](../../src/components/sherpa-barchart/sherpa-barchart.component.json) · [.example.json](../../src/components/sherpa-barchart/sherpa-barchart.example.json) |
 
+## When to use it
+
+For comparing values across categories, one bar each; `data-bands` cuts a number field into a histogram. For numbers along an x axis, such as dates, use `sherpa-line-chart`; for parts of a whole, use `sherpa-radial-chart`.
+
 ## Example
 
 ```html

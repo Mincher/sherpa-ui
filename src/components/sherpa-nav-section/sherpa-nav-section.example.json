@@ -3,5 +3,6 @@
     "<sherpa-nav-section data-label=\"Workspace\">",
     "<sherpa-nav-item data-icon=\"home\" data-label=\"Home\" data-href=\"?context=home\"></sherpa-nav-item>",
     "</sherpa-nav-section>"
-  ]
+  ],
+  "use": "For a Section in a nav you build by hand: a label and a rule that do nothing. It has no slot, so put the `sherpa-nav-item` rows after it, not inside it; `sherpa-nav` draws its own sections from `populate()`."
 }

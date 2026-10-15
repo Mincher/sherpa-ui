@@ -10,6 +10,10 @@ A single chat bubble for AI / messaging threads.
 | Figma | Chat Message |
 | Source | [.ts](../../src/components/sherpa-chat-message/sherpa-chat-message.ts) · [.html](../../src/components/sherpa-chat-message/sherpa-chat-message.html) · [.css](../../src/components/sherpa-chat-message/sherpa-chat-message.css) · [.component.json](../../src/components/sherpa-chat-message/sherpa-chat-message.component.json) · [.example.json](../../src/components/sherpa-chat-message/sherpa-chat-message.example.json) |
 
+## When to use it
+
+For one message in a chat thread, from the assistant, the user or the system (`data-type`). It fires nothing; for the box where the reader types a prompt, use `sherpa-prompt-composer`.
+
 ## Example
 
 ```html
