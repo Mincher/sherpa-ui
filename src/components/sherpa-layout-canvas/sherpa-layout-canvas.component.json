@@ -73,6 +73,91 @@
             ]
           }
         ]
+      },
+      {
+        "el": "span",
+        "class": "controls sherpa-group",
+        "part": "controls",
+        "attrs": {
+          "role": "toolbar",
+          "aria-label": "Canvas"
+        },
+        "children": [
+          {
+            "el": "sherpa-button",
+            "class": "pan",
+            "attrs": {
+              "data-type": "icon",
+              "data-icon-start": "diverging-arrows",
+              "aria-label": "Pan",
+              "aria-pressed": "false"
+            }
+          },
+          {
+            "el": "sherpa-button",
+            "class": "zoom-in",
+            "attrs": {
+              "data-type": "icon",
+              "data-icon-start": "plus",
+              "aria-label": "Zoom in"
+            }
+          },
+          {
+            "el": "sherpa-button",
+            "class": "zoom-out",
+            "attrs": {
+              "data-type": "icon",
+              "data-icon-start": "minus",
+              "aria-label": "Zoom out"
+            }
+          },
+          {
+            "el": "sherpa-button",
+            "class": "options",
+            "attrs": {
+              "data-type": "icon",
+              "data-icon-start": "ellipsis-horizontal",
+              "aria-label": "Canvas options",
+              "aria-haspopup": "dialog"
+            },
+            "children": [
+              {
+                "el": "sherpa-menu",
+                "attrs": {
+                  "slot": "menu",
+                  "data-align": "end"
+                },
+                "children": [
+                  {
+                    "el": "button",
+                    "attrs": {
+                      "type": "button",
+                      "value": "fit"
+                    }
+                  },
+                  {
+                    "el": "button",
+                    "attrs": {
+                      "type": "button",
+                      "value": "actual"
+                    }
+                  },
+                  {
+                    "el": "hr"
+                  },
+                  {
+                    "el": "button",
+                    "class": "minimap-toggle",
+                    "attrs": {
+                      "type": "button",
+                      "value": "minimap"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]
   },

@@ -122,6 +122,59 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "bar-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "bar-col chart-mark",
+            "attrs": {
+              "type": "button"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "bar chart-anchor",
+                "part": "bar"
+              },
+              {
+                "el": "span",
+                "class": "chart-tip",
+                "part": "tip",
+                "attrs": {
+                  "popover": "manual",
+                  "role": "tooltip"
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "chart-tip-label"
+                  },
+                  {
+                    "el": "span",
+                    "class": "chart-tip-value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "xlabel-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "bar-label sherpa-truncate",
+            "part": "bar-label",
+            "attrs": {
+              "data-text": "label"
+            }
+          }
+        ]
       }
     ]
   },

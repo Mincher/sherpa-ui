@@ -79,6 +79,19 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "connector-tpl",
+        "children": [
+          {
+            "el": "li",
+            "class": "connector",
+            "attrs": {
+              "aria-hidden": "true"
+            }
+          }
+        ]
       }
     ]
   },

@@ -126,6 +126,97 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "series-tpl",
+        "children": [
+          {
+            "el": "svg",
+            "children": [
+              {
+                "el": "g",
+                "class": "series",
+                "children": [
+                  {
+                    "el": "path",
+                    "class": "area"
+                  },
+                  {
+                    "el": "polyline",
+                    "class": "line",
+                    "attrs": {
+                      "fill": "none"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "gridline-tpl",
+        "children": [
+          {
+            "el": "svg",
+            "children": [
+              {
+                "el": "line",
+                "attrs": {
+                  "x1": "0",
+                  "x2": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "xlabel-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "x-label sherpa-truncate",
+            "attrs": {
+              "data-text": "label"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "hotspot-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "hotspot chart-mark",
+            "attrs": {
+              "type": "button",
+              "tabindex": "-1"
+            }
+          },
+          {
+            "el": "span",
+            "class": "chart-tip",
+            "attrs": {
+              "popover": "manual",
+              "role": "tooltip"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "chart-tip-label"
+              },
+              {
+                "el": "span",
+                "class": "chart-tip-value"
+              }
+            ]
+          }
+        ]
       }
     ]
   },

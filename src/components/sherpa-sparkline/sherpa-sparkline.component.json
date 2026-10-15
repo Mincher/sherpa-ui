@@ -66,6 +66,33 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "hotspot-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "hotspot chart-mark"
+          },
+          {
+            "el": "span",
+            "class": "chart-tip",
+            "attrs": {
+              "popover": "manual",
+              "role": "tooltip"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "chart-tip-value",
+                "attrs": {
+                  "data-text": "text"
+                }
+              }
+            ]
+          }
+        ]
       }
     ]
   },

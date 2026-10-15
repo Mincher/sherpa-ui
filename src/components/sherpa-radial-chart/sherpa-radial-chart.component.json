@@ -85,6 +85,34 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "hotspot-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "hotspot chart-anchor-point"
+          },
+          {
+            "el": "span",
+            "class": "chart-tip",
+            "attrs": {
+              "popover": "manual",
+              "role": "tooltip"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "chart-tip-label"
+              },
+              {
+                "el": "span",
+                "class": "chart-tip-value"
+              }
+            ]
+          }
+        ]
       }
     ]
   },

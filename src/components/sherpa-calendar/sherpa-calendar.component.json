@@ -253,6 +253,32 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "cal-cell-tpl",
+        "children": [
+          {
+            "el": "sherpa-calendar-cell",
+            "class": "cal-cell",
+            "attrs": {
+              "role": "gridcell"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "cal-row-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "cal-row",
+            "attrs": {
+              "role": "row"
+            }
+          }
+        ]
       }
     ]
   },

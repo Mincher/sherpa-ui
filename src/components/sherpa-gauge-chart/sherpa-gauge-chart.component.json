@@ -162,6 +162,38 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "hotspot-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "hotspot chart-anchor-point",
+            "attrs": {
+              "data-index": "data-index"
+            }
+          },
+          {
+            "el": "span",
+            "class": "chart-tip",
+            "attrs": {
+              "popover": "manual",
+              "role": "tooltip",
+              "data-index": "data-index"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "chart-tip-label"
+              },
+              {
+                "el": "span",
+                "class": "chart-tip-value"
+              }
+            ]
+          }
+        ]
       }
     ]
   },

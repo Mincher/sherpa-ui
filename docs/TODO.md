@@ -301,7 +301,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
 | ❓ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
 | ⬜ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
-| ⬜ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
+| ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
 | ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
@@ -6509,7 +6509,7 @@ so `sherpa-ui/components/filter-panel` alone drew those bodies empty. **✅ Fixe
 the bar's and grid's own copies went. Not the menu: a text field's options menu
 must not load a calendar. `T-menu-composes-real-components`. **Not run yet.**
 
-### `[ ]` ⬜ 310 — TOOLING: the spec reader stops at a template's first nested prototype
+### `[x]` ✅ 310 — TOOLING: the spec reader stops at a template's first nested prototype
 
 Found by 285c's checker. `scripts/lib/html-structure.mjs`' `parseTemplates`
 matches `<template id="…">` lazily up to the FIRST `</template>`, which is the
@@ -6517,6 +6517,10 @@ first nested prototype's. So each spec's anatomy holds only that prototype: the
 bar, line and gauge keep only their first, input-text keeps none, and the
 manifest's parts miss the bar's. A fix nests properly; every spec regenerates,
 so it is its own commit.
+
+**✅ Fixed 2026-10-15:** the close is found by depth. 15 specs gained the
+prototypes they had lost (additions only, 1,400 lines); all 66 still round-trip,
+which is the proof the gate gives; the manifest gains the parts it missed.
 
 ### `[ ]` ⬜ 311 — Phase 5: 285 part C's timing step
 

@@ -59,6 +59,61 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "rollup-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "rollup",
+            "children": [
+              {
+                "el": "sherpa-button",
+                "class": "rollup-menu-btn",
+                "attrs": {
+                  "data-size": "xs",
+                  "data-type": "icon",
+                  "data-icon-start": "triangle-down",
+                  "aria-label": "Breakdown",
+                  "aria-haspopup": "dialog"
+                },
+                "children": [
+                  {
+                    "el": "sherpa-menu",
+                    "class": "rollup-menu",
+                    "attrs": {
+                      "slot": "menu",
+                      "data-heading": "Breakdown",
+                      "data-commit": ""
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "rollup-row-tpl",
+        "children": [
+          {
+            "el": "label",
+            "children": [
+              {
+                "el": "input",
+                "attrs": {
+                  "type": "checkbox"
+                }
+              },
+              {
+                "el": "span",
+                "class": "rollup-row-label"
+              }
+            ]
+          }
+        ]
       }
     ]
   },

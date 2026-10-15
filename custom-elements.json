@@ -754,6 +754,12 @@
               "name": "axis-label"
             },
             {
+              "name": "bar"
+            },
+            {
+              "name": "bar-label"
+            },
+            {
               "name": "bars"
             },
             {
@@ -767,6 +773,9 @@
             },
             {
               "name": "plot"
+            },
+            {
+              "name": "tip"
             },
             {
               "name": "x-axis"
@@ -3818,6 +3827,12 @@
           ],
           "cssParts": [
             {
+              "name": "field-body"
+            },
+            {
+              "name": "field-row"
+            },
+            {
               "name": "filters"
             },
             {
@@ -4694,6 +4709,9 @@
             }
           ],
           "cssParts": [
+            {
+              "name": "controls"
+            },
             {
               "name": "minimap"
             },
@@ -5876,10 +5894,19 @@
               "name": "add-condition"
             },
             {
+              "name": "apply"
+            },
+            {
               "name": "body-number"
             },
             {
               "name": "body-range"
+            },
+            {
+              "name": "cancel"
+            },
+            {
+              "name": "clear"
             },
             {
               "name": "condition-rows"
@@ -5894,6 +5921,9 @@
               "name": "drill-trail"
             },
             {
+              "name": "footer"
+            },
+            {
               "name": "header"
             },
             {
@@ -5906,10 +5936,19 @@
               "name": "no-matches"
             },
             {
+              "name": "remove"
+            },
+            {
+              "name": "reset"
+            },
+            {
               "name": "rows"
             },
             {
               "name": "search"
+            },
+            {
+              "name": "today"
             },
             {
               "name": "use-condition"

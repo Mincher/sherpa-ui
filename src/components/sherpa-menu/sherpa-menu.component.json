@@ -175,6 +175,181 @@
                   ]
                 }
               ]
+            },
+            {
+              "el": "template",
+              "class": "menu-radio-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "radio"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-all-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row qf-all",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "checkbox"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-section-tpl",
+              "children": [
+                {
+                  "el": "p",
+                  "class": "menu-row menu-section"
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-bare-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row menu-row-bare",
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-count-tpl",
+              "children": [
+                {
+                  "el": "sherpa-badge",
+                  "class": "menu-row-count"
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-drill-tpl",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "menu-row-drill",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-right"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-remove-tpl",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "menu-row-remove",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "cross"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "sherpa-container-footer",
+              "class": "footer",
+              "part": "footer",
+              "attrs": {
+                "data-align": "end"
+              },
+              "children": [
+                {
+                  "slot": "footer",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "today",
+                  "part": "today"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "clear",
+                  "part": "clear"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "reset",
+                  "part": "reset",
+                  "attrs": {
+                    "data-icon-start": "arrow-rotate-left"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "remove",
+                  "part": "remove",
+                  "attrs": {
+                    "data-status": "critical"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "footer-spacer"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "cancel",
+                  "part": "cancel",
+                  "attrs": {
+                    "data-footer": "revert"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "apply",
+                  "part": "apply",
+                  "attrs": {
+                    "data-look": "saturated",
+                    "data-footer": "commit"
+                  }
+                }
+              ]
             }
           ]
         }
@@ -450,6 +625,189 @@
                       }
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-check-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "checkbox"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-radio-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "radio"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-all-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row qf-all",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "checkbox"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-section-tpl",
+              "children": [
+                {
+                  "el": "p",
+                  "class": "menu-row menu-section"
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-bare-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row menu-row-bare",
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-count-tpl",
+              "children": [
+                {
+                  "el": "sherpa-badge",
+                  "class": "menu-row-count"
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-drill-tpl",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "menu-row-drill",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-right"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-remove-tpl",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "menu-row-remove",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "cross"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "sherpa-container-footer",
+              "class": "footer",
+              "part": "footer",
+              "attrs": {
+                "data-align": "end"
+              },
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "today",
+                  "part": "today"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "clear",
+                  "part": "clear"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "remove",
+                  "part": "remove",
+                  "attrs": {
+                    "data-status": "critical"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "footer-spacer"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "cancel",
+                  "part": "cancel",
+                  "attrs": {
+                    "data-footer": "revert"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "apply",
+                  "part": "apply",
+                  "attrs": {
+                    "data-look": "saturated",
+                    "data-footer": "commit"
+                  }
                 }
               ]
             }

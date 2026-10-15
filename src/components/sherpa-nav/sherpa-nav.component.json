@@ -237,6 +237,37 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "brand-icon-tpl",
+        "children": [
+          {
+            "el": "i",
+            "class": "sherpa-icon-box",
+            "attrs": {
+              "aria-hidden": "true"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "item-tpl",
+        "children": [
+          {
+            "el": "li",
+            "class": "nav-row",
+            "attrs": {
+              "role": "listitem"
+            },
+            "children": [
+              {
+                "el": "sherpa-nav-item"
+              }
+            ]
+          }
+        ]
       }
     ]
   },

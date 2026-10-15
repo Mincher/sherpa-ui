@@ -29,12 +29,24 @@
 
 /* ══ parsing ═══════════════════════════════════════════════════════════════════ */
 
-/** `<template id="x">…</template>` blocks → `{ id: nodes[] }`. */
+/** `<template id="x">…</template>` blocks → `{ id: nodes[] }`. A nested
+ *  prototype is part of its template: the close is found by DEPTH, or the first
+ *  nested `</template>` cut the outer one short and every later prototype was lost. */
 export function parseTemplates(html) {
   const templates = {};
-  const re = /<template id="([^"]+)">([\s\S]*?)<\/template>/g;
+  const open = /<template id="([^"]+)">/g;
   let m;
-  while ((m = re.exec(html))) templates[m[1]] = parseNodes(m[2].trim());
+  while ((m = open.exec(html))) {
+    const start = m.index + m[0].length;
+    const tag = /<(\/?)template\b[^>]*>/g;
+    tag.lastIndex = start;
+    let depth = 1;
+    let t;
+    while (depth && (t = tag.exec(html))) depth += t[1] ? -1 : 1;
+    const end = t ? t.index : html.length;
+    templates[m[1]] = parseNodes(html.slice(start, end).trim());
+    open.lastIndex = t ? tag.lastIndex : html.length;
+  }
   return templates;
 }
 

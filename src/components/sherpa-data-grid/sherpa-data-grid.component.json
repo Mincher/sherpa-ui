@@ -237,6 +237,218 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "col-tpl",
+        "children": [
+          {
+            "el": "col",
+            "class": "col"
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "filter-cell-tpl",
+        "children": [
+          {
+            "el": "th",
+            "class": "filter-cell",
+            "attrs": {
+              "scope": "col"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "filter-field sherpa-border-edges sherpa-border-corners",
+                "children": [
+                  {
+                    "el": "input",
+                    "class": "filter-input",
+                    "attrs": {
+                      "type": "text"
+                    }
+                  },
+                  {
+                    "el": "button",
+                    "class": "filter-clear sherpa-border-corners",
+                    "attrs": {
+                      "type": "button"
+                    },
+                    "children": [
+                      {
+                        "el": "i",
+                        "class": "sherpa-icon-box",
+                        "attrs": {
+                          "data-icon": "cross",
+                          "aria-hidden": "true"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "row-tpl",
+        "children": [
+          {
+            "el": "tr",
+            "class": "row",
+            "children": [
+              {
+                "el": "td",
+                "class": "select-cell",
+                "children": [
+                  {
+                    "el": "sherpa-select-checkbox",
+                    "class": "row-select row-multi",
+                    "attrs": {
+                      "aria-label": "Select row"
+                    }
+                  },
+                  {
+                    "el": "sherpa-select-radio",
+                    "class": "row-select row-one",
+                    "attrs": {
+                      "aria-label": "Select this row"
+                    }
+                  }
+                ]
+              },
+              {
+                "el": "td",
+                "class": "actions-cell",
+                "children": [
+                  {
+                    "el": "button",
+                    "class": "actions-trigger",
+                    "attrs": {
+                      "type": "button",
+                      "aria-haspopup": "dialog",
+                      "aria-expanded": "false",
+                      "aria-label": "Row actions"
+                    },
+                    "children": [
+                      {
+                        "el": "i",
+                        "class": "sherpa-icon-box",
+                        "attrs": {
+                          "data-icon": "ellipses-vertical",
+                          "aria-hidden": "true"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "sherpa-menu",
+        "class": "actions-menu",
+        "attrs": {
+          "data-align": "end"
+        }
+      },
+      {
+        "el": "template",
+        "class": "action-item-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "action-item",
+            "attrs": {
+              "type": "button"
+            },
+            "children": [
+              {
+                "el": "i",
+                "class": "action-icon",
+                "attrs": {
+                  "aria-hidden": "true"
+                }
+              },
+              {
+                "el": "span",
+                "class": "action-label"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "group-row-tpl",
+        "children": [
+          {
+            "el": "tr",
+            "class": "group-row",
+            "children": [
+              {
+                "el": "td",
+                "class": "group-cell",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "group-inner",
+                    "children": [
+                      {
+                        "el": "sherpa-select-checkbox",
+                        "class": "group-select",
+                        "attrs": {
+                          "aria-label": "Select group"
+                        }
+                      },
+                      {
+                        "el": "button",
+                        "class": "group-toggle",
+                        "attrs": {
+                          "type": "button"
+                        },
+                        "children": [
+                          {
+                            "el": "i",
+                            "class": "sherpa-icon-box",
+                            "attrs": {
+                              "data-icon": "chevron-down",
+                              "aria-hidden": "true"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "el": "span",
+                        "class": "group-label"
+                      },
+                      {
+                        "el": "span",
+                        "class": "group-count"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "cell-tpl",
+        "children": [
+          {
+            "el": "td",
+            "class": "cell"
+          }
+        ]
       }
     ]
   },

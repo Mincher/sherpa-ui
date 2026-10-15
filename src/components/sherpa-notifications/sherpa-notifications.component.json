@@ -87,6 +87,19 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "empty-tpl",
+        "children": [
+          {
+            "el": "p",
+            "class": "empty",
+            "attrs": {
+              "role": "status"
+            }
+          }
+        ]
       }
     ]
   },

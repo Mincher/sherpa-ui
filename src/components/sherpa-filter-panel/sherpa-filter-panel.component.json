@@ -270,6 +270,300 @@
             ]
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "more-divider-tpl",
+        "children": [
+          {
+            "el": "hr",
+            "class": "more-divider"
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "more-check-tpl",
+        "children": [
+          {
+            "el": "label",
+            "class": "menu-row more-check",
+            "children": [
+              {
+                "el": "input",
+                "attrs": {
+                  "type": "checkbox",
+                  "value": "limit-options"
+                }
+              },
+              {
+                "el": "span",
+                "class": "menu-row-label"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "scope-tpl",
+        "children": [
+          {
+            "el": "sherpa-accordion",
+            "class": "scope",
+            "attrs": {
+              "open": ""
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "field-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "field",
+            "children": [
+              {
+                "el": "sherpa-section-header",
+                "class": "field-head",
+                "attrs": {
+                  "data-size": "sm",
+                  "data-divider": "none"
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "field-lead",
+                    "attrs": {
+                      "slot": "heading"
+                    },
+                    "children": [
+                      {
+                        "el": "h3",
+                        "class": "field-title sherpa-text-small"
+                      },
+                      {
+                        "el": "sherpa-badge",
+                        "class": "field-results",
+                        "attrs": {
+                          "role": "img"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "el": "span",
+                    "class": "field-acts",
+                    "attrs": {
+                      "slot": "actions"
+                    },
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "field-group sherpa-group",
+                        "children": [
+                          {
+                            "el": "sherpa-button",
+                            "class": "field-raise",
+                            "attrs": {
+                              "data-type": "icon",
+                              "data-size": "sm",
+                              "data-icon-start": "arrow-up"
+                            }
+                          },
+                          {
+                            "el": "sherpa-button",
+                            "class": "field-lower",
+                            "attrs": {
+                              "data-type": "icon",
+                              "data-size": "sm",
+                              "data-icon-start": "arrow-down"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "field-advanced",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "function",
+                          "aria-pressed": "false"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "el": "sherpa-stack",
+                "class": "field-values",
+                "attrs": {
+                  "data-direction": "inline",
+                  "data-gap": "sm",
+                  "data-wrap": "",
+                  "data-min-item": "hug",
+                  "data-align": "start"
+                }
+              },
+              {
+                "el": "div",
+                "class": "field-body",
+                "part": "field-body"
+              },
+              {
+                "el": "div",
+                "class": "field-row",
+                "part": "field-row",
+                "children": [
+                  {
+                    "el": "sherpa-button",
+                    "class": "field-add-condition",
+                    "attrs": {
+                      "data-icon-start": "plus"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "field-clear",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-icon-start": "arrow-rotate-left"
+                    }
+                  },
+                  {
+                    "el": "span",
+                    "class": "field-row-spacer"
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "field-discard",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-icon-start": "cross",
+                      "aria-label": "Discard"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "field-apply",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-icon-start": "tick",
+                      "aria-label": "Apply"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "value-tpl",
+        "children": [
+          {
+            "el": "sherpa-quick-filter",
+            "class": "value"
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "lower-menu-tpl",
+        "children": [
+          {
+            "el": "sherpa-menu",
+            "attrs": {
+              "slot": "menu",
+              "data-align": "end"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "lower-item-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "lower-item",
+            "attrs": {
+              "type": "button"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "saved-menu-tpl",
+        "children": [
+          {
+            "el": "sherpa-menu",
+            "attrs": {
+              "slot": "menu",
+              "data-no-select-all": ""
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "saved-field-tpl",
+        "children": [
+          {
+            "el": "div",
+            "children": [
+              {
+                "el": "p",
+                "class": "menu-section"
+              },
+              {
+                "el": "div",
+                "class": "saved-field",
+                "attrs": {
+                  "role": "group"
+                }
+              },
+              {
+                "el": "p",
+                "class": "menu-line"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "applied-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "field-applied sherpa-text-small",
+            "attrs": {
+              "slot": "description"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "empty-tpl",
+        "children": [
+          {
+            "el": "sherpa-section-header",
+            "class": "scope-empty",
+            "attrs": {
+              "data-size": "sm",
+              "data-divider": "none",
+              "data-heading": "No filters here yet"
+            }
+          }
+        ]
       }
     ]
   },
