@@ -92,9 +92,11 @@ never touches `.hidden`, `display` or `visibility` on a shadow node.
 **17. Every element the component will ever show is in the template.** No
 `createElement()` for structure, no structural `innerHTML`. Repeating items use
 a cloning prototype. A typed child by tag name is not structure — `menuFor()`
-building a `<sherpa-menu>` is that. Measured 2026-09-25: ten calls, not the four
-this said; two are `menuFor`'s typed children, and the other eight were not
-re-reviewed.
+building a `<sherpa-menu>` is that. Measured 2026-10-15: eight. Four are typed
+(`menuFor()`'s menu and calendar, `SherpaToast.show`, a select group's children);
+four build nothing a template could hold (the page's tokens `<link>`, the toasts'
+shared stack in `document.body`, a stored view's allow-listed tags, a match's
+`<mark>`). The nav's icon box and input-text's options are prototypes now (285).
 
 **18. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
 a `sherpa-` prefix. A re-dispatched native event keeps its native name, which

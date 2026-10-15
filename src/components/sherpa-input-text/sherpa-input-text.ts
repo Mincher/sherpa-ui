@@ -281,15 +281,17 @@ export class SherpaInputText extends SherpaElement {
     if (!(select instanceof HTMLSelectElement)) return;
     const wanted = this.#held ?? this.getAttribute('value') ?? select.value;
     this.#held = null;
+    const tpl = this.$<HTMLTemplateElement>('template.option-tpl');
     select.replaceChildren(
-      ...this.#options.map((option) => {
-        const el = document.createElement('option');
+      ...this.#options.flatMap((option) => {
+        const el = this.clone<HTMLOptionElement>(tpl);
+        if (!el) return [];
         el.value = option.value;
         el.textContent = option.label ?? option.value;
         // Listed, greyed and refused — with why, on hover. TRAP T-an-and-row-offers-what-the-rows-before-it-leave
         el.disabled = !!option.disabled;
         if (option.title) el.title = option.title;
-        return el;
+        return [el];
       }),
     );
     if (wanted && this.#options.some((o) => o.value === wanted)) select.value = wanted;

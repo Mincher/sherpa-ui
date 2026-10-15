@@ -280,6 +280,15 @@
               "part": "message"
             }
           ]
+        },
+        {
+          "el": "template",
+          "class": "option-tpl",
+          "children": [
+            {
+              "el": "option"
+            }
+          ]
         }
       ],
       "number": [

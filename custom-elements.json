@@ -6493,7 +6493,7 @@
           "slots": [
             {
               "name": "icon",
-              "description": "(accepts: icon)"
+              "description": "the product mark inside the 40×40 branding tile (accepts: icon)"
             },
             {
               "name": "actions",

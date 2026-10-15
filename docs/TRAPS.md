@@ -5714,13 +5714,15 @@ children must start hidden.
 that is correct.
 
 `writeIcon` styles the element it is GIVEN. `.brand-icon` WRAPS a
-`<slot name="brand-icon">` holding a default `<i class="fa-solid fa-cubes">`, so
-adding classes to the wrapper would leave that fallback showing BESIDE the real
-mark. The host must be emptied first, which is why this builds a child — the one
-sanctioned `createElement` in the component layer.
+`<slot name="icon">` holding a default `<i class="sherpa-icon-box" data-icon="group">`,
+so adding classes to the wrapper would leave that fallback showing BESIDE the
+real mark. The host must be emptied first, which is why this clones its child
+from `template.brand-icon-tpl`.
 
-A slotted icon still wins: `#renderBrand` only applies the config's icon when
-the wrapper holds no `[slot]` child of its own.
+A slotted icon still wins: `#renderBrand` applies the config's icon only when
+the HOST has no `[slot="icon"]` child. It looked inside the wrapper, in the shadow
+tree, where a slotted node never is — so the config's icon always won (found by
+reading, 2026-10-15).
 
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
 

@@ -260,8 +260,8 @@ export class SherpaNav extends SherpaElement {
   /** The product name and icon — a slotted icon wins. */
   #renderBrand(): void {
     const iconSlot = this.$('.brand-icon');
-    // A slotted icon wins over the configured one.
-    if (iconSlot && this.#config.product?.icon && !iconSlot.querySelector('[slot]')) {
+    // A slotted icon wins over the configured one — it is in the LIGHT DOM.
+    if (iconSlot && this.#config.product?.icon && !this.querySelector(':scope > [slot="icon"]')) {
       this.#applyIcon(iconSlot, this.#config.product.icon);
     }
     // A product name implies a full nav, which has search.
@@ -357,9 +357,8 @@ export class SherpaNav extends SherpaElement {
   #applyIcon(host: Element, value: string): void {
     host.replaceChildren();
     if (hasIcon(value)) {
-      const box = document.createElement('i');
-      box.className = 'sherpa-icon-box';
-      box.setAttribute('aria-hidden', 'true');
+      const box = this.clone('template.brand-icon-tpl');
+      if (!box) return;
       host.appendChild(box);
       renderIcon(box, value);
     } else {
