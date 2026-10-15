@@ -172,7 +172,7 @@ filter change — all 27 of its cells.
 
 | | |
 |---|---|
-| **0** | No chart is keyboard-reachable |
+| **0** | No chart is keyboard-reachable — done in code by TODO 284 (each chart is one tab stop, arrows between marks; a sparkline and a gauge describe their data); closes after Will's test run |
 | **1** | Bundle the toolbar + pagination INTO `sherpa-data-grid` |
 | **3** | Sparkline sub-pixel gaps |
 | **4** | App header — another design-review pass |

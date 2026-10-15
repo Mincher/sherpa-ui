@@ -4328,7 +4328,7 @@ A2): its `fill` is now `renderItems`' `after`. The rule stands.
 
 `renderItems` does the four steps every data-driven list repeats: clear the
 container, clone the prototype per item, fill, append. What each row then
-BECOMES is the caller's business and stays in `after` — a roving tabindex, an
+BECOMES is the caller's business and stays in `after` — an id, an
 `aria-current`, a per-column type. Only the plumbing is shared. Its clone is
 IMPORTED, as `clone()`'s is, so a component in an item upgrades at once. Its
 icons come from `data-icon` fields (`T-item-template-cannot-compute`).

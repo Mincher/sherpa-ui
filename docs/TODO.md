@@ -275,7 +275,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ✅ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
-| ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
+| ✅ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
 | ✅ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
 | ⬜ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
 | ⬜ | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
@@ -306,6 +306,10 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
 | ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
 | ✅ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
+| ⬜ | 62.60 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
+| ⬜ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
+| ⬜ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
+| ⬜ | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6455,6 +6459,39 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
 
+### `[x]` ✅ 284 — Phase 5: a roving-focus helper
+
+**✅ Done 2026-10-15**, but for the calendar (315). A read-only agent planned it
+and a second checked the plan against today's code. `rovingFocus()` in
+`core/ui/roving-focus.ts`: a set is ONE tab stop; the arrows, Home and End move
+it; a re-draw keeps focus on the same item (it read `activeElement` before
+drawing and finds the item by its key after); a handled key is prevented, and a
+menu now skips a key an inner set used. Its users: **tabs** (their own copy went,
+−26 lines); **every chart** — bar and radial were one stop per mark, the gauge
+one per band (and its `role="img"` hid their names), the line chart had none;
+now one stop each, with Left/Right along a line and Up/Down across lines. A
+**sparkline** and a **gauge** have nothing to focus for their whole reading, so
+they SAY it: the sparkline's host label names it and its trend is its
+description; the gauge describes the needle's value and its scale. The date
+stand-in gained `add()` for the calendar. **My picks on the plan's questions**
+(each was A): one stop per chart; Up/Down cross lines; the line's dot stays a
+`<button>`; the sparkline's words "Trend: {first} to {last}, low {min}, high
+{max}"; the step tracker, breadcrumbs and transfer list keep one stop per item;
+right-to-left arrows later. **Not run yet:** the tabs, chart keyboard, radial,
+gauge and the date unit test. **Queued:** 315 (calendar), 316–318.
+
+### `[ ]` ⬜ 315 — Phase 5: the calendar's roving grid
+
+Waits for a measured run. The plan: `sherpa-calendar-cell` gets
+`delegatesFocus`; each grid (days, months, years) is one tab stop with the date
+keys — arrows ±1/±7 days skipping days that cannot be picked, Home/End the week,
+PageUp/PageDown a month (Shift: a year), moving the shown month when the day
+leaves it. The open question is the engine's: with `tabindex="-1"` on a
+`delegatesFocus` host, is its inner `<button>` out of the Tab order in all three
+engines? If not, the cell takes its button out on a flag, as `sherpa-button`'s
+`data-no-tab` does. Today a pick also drops focus to `<body>` (the grid
+re-stamps), which `restamp()` fixes.
+
 ### `[x]` ✅ 283 — Phase 5: charts, one frame sheet, shared hotspots, no caps, shared axis code
 
 **✅ Done 2026-10-15**, in six commits. A read-only agent planned it, a second
@@ -6656,7 +6693,7 @@ and the checkbox's `required` was missing. Now read from the imported file.
 **Not run yet:** `reforged-select-radio`, `reforged-form-controls`,
 `reforged-forms-complete`, `reforged-select-group`, the grid's single select.
 **Queued, not done:** a required radio-card group (the card has no group
-validity), and arrow keys between radios (284).
+validity), and arrow keys between radios (318).
 
 **✅ Part B, containers, 2026-10-15** — three of its five steps. 1: chip and tag
 keep ONE template each; the × is hidden by CSS until `data-dismissible`, as the
