@@ -616,6 +616,8 @@ export class SherpaMenu extends SherpaElement {
        the reader adds now agrees with it.
        TRAP T-two-conditions-over-one-field-are-alternatives */
     if (join) join.value = seed?.join ?? 'or';
+    // The row REMEMBERS its join, as it does its op and its pick: the select has no options yet.
+    row.dataset['join'] = seed?.join ?? 'or';
 
     const ops = this.#opList();
     // A date's ops in a date's words: On, Before, After. TODO 21d
@@ -625,6 +627,9 @@ export class SherpaMenu extends SherpaElement {
     })));
     const op = seed?.op && ops.includes(seed.op) ? seed.op : (ops[0] ?? DEFAULT_OP);
     if (cond) cond.value = op;
+    /* The row REMEMBERS its op, as it does its pick (`want`): a select with no
+       options yet reads '' until it has them. TRAP T-a-row-remembers-what-it-was-given */
+    row.dataset['op'] = op;
     row.dataset['takes'] = this.#takes(op);
 
     /* `Equals` answers with a LIST of the field's own values, never a text box.
@@ -757,14 +762,27 @@ export class SherpaMenu extends SherpaElement {
     });
   }
 
+  /** A row's op: what it remembers, else what its control shows. */
+  #opOf(row: HTMLElement): FilterOp {
+    return (row.dataset['op'] || row.querySelector<FieldEl>('.condition')?.value || DEFAULT_OP) as FilterOp;
+  }
+
   /** Every row, as data. TRAP T-many-conditions-are-one-reading */
   get conditions(): FieldCondition[] {
     if (this.#heldRows) return this.#heldRows.map((row) => ({ ...row }));
-    return this.#rowEls().map((row, i) => {
-      const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
+    const rows = this.#rowEls();
+    /* No row yet: row ONE is `data-op` and `data-value` until it is drawn, so
+       a host that set them is answered at once. TRAP T-row-one-is-data-op */
+    const op = this.dataset['op'] as FilterOp | undefined;
+    if (!rows.length && this.dataset['mode'] === 'advanced' && op && !this.#typedBody() && !this.#dated()) {
+      const text = this.dataset['value'] ?? '';
+      return [(OP_TAKES[op] ?? 'list') === 'text' ? { op, text } : { op }];
+    }
+    return rows.map((row, i) => {
+      const op = this.#opOf(row);
       const takes = OP_TAKES[op] ?? 'list';
       const out: FieldCondition = { op };
-      if (i > 0) out.join = (row.querySelector<FieldEl>('.join')?.value ?? 'or') as 'and' | 'or';
+      if (i > 0) out.join = (row.dataset['join'] ?? 'or') as 'and' | 'or';
       if (this.#dated()) return { ...out, ...this.#dateRowAnswer(row, op) };
       /* A NUMBER's `=` is typed, and answers as the one number it picks —
          as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
@@ -888,9 +906,13 @@ export class SherpaMenu extends SherpaElement {
     const row = (event?.target as HTMLElement | null)?.closest?.('.condition-row');
     if (row instanceof HTMLElement) {
       this.#mirror = false;
-      const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
+      // The reader just answered, so THAT is what the row remembers now.
+      const live = row.querySelector<FieldEl>('.condition')?.value;
+      if (live) row.dataset['op'] = live;
+      const joined = row.querySelector<FieldEl>('.join')?.value;
+      if (joined) row.dataset['join'] = joined;
+      const op = this.#opOf(row);
       row.dataset['takes'] = this.#takes(op);
-      // The reader just answered, so THAT is what the row wants now.
       const picked = row.querySelector<FieldEl>('.condition-pick')?.value ?? '';
       if (picked) row.dataset['want'] = picked;
     }
@@ -900,7 +922,8 @@ export class SherpaMenu extends SherpaElement {
     // A row changed, so what each later AND row offers may have too. TODO 110.
     this.#refillPicks();
     // Row one still mirrors to the host attributes: the one-row view.
-    const op = (this.#conditionField()?.value ?? DEFAULT_OP) as FilterOp;
+    const firstRow = this.#rowEls()[0];
+    const op = firstRow ? this.#opOf(firstRow) : DEFAULT_OP;
     if (this.dataset['op'] !== op) this.set('data-op', op);
     this.set('data-takes', this.#takes(op));
     this.set('data-value', this.#valueField()?.value ?? '');
@@ -982,6 +1005,8 @@ export class SherpaMenu extends SherpaElement {
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
     const select = this.#conditionField();
     if (select && select.value !== op) select.value = op;
+    const first = this.#rowEls()[0];
+    if (first) first.dataset['op'] = op;
     if (this.dataset['op'] !== op) this.set('data-op', op);
     this.set('data-takes', this.#takes(op));
     this.#rowEls()[0]?.setAttribute('data-takes', this.#takes(op));
@@ -1804,8 +1829,7 @@ export class SherpaMenu extends SherpaElement {
     // Values came or went: each row asks again whether it picks or types — and
     // so does the host's mirror of row one, where its body is not a number's or a date's.
     for (const row of this.#rowEls()) {
-      const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
-      row.dataset['takes'] = this.#takes(op);
+      row.dataset['takes'] = this.#takes(this.#opOf(row));
     }
     if (!this.#typedBody() && this.hasAttribute('data-takes')) this.set('data-takes', this.#takes(this.op));
     const options = this.#valueOptions();

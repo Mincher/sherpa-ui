@@ -195,14 +195,11 @@ export class SherpaQuickFilter extends SherpaElement {
       if (initial.length > 1) this.set('data-count', String(initial.length));
     } else {
       /* …and a TYPED answer, which ticks nothing — asked once its menu has
-         drawn AND its rows have filled: a frame later, or a few on a busy
-         page. It only ever draws an answer, never takes one off.
-         TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-      void Promise.resolve((this.menu as { rendered?: Promise<void> } | null)?.rendered).then(async () => {
-        for (let frame = 0; frame < 4 && this.isConnected; frame++) {
-          await new Promise<void>((r) => requestAnimationFrame(() => r()));
-          if (this.#hasTypedAnswer()) return this.#drawFace();
-        }
+         rendered; its row remembers its op, so it reads at once. It only ever
+         draws an answer, never takes one off.
+         TRAP T-a-row-remembers-what-it-was-given */
+      void Promise.resolve((this.menu as { rendered?: Promise<void> } | null)?.rendered).then(() => {
+        if (this.isConnected && this.#hasTypedAnswer()) this.#drawFace();
       });
     }
   }
@@ -886,15 +883,8 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-a-silent-steer-still-redraws-its-chip
    */
   refresh(): void {
-    // A rebuilt row fills a frame late. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
-    const token = ++this.#refreshing;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (token === this.#refreshing && this.isConnected) this.#drawFace();
-    }));
+    if (this.isConnected) this.#drawFace();
   }
-
-  /** The pending `refresh()`; a later one takes over. */
-  #refreshing = 0;
 
   /** Label, tip, badge and condition, from ONE read of the menu. */
   #drawFace(): void {

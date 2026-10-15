@@ -16258,6 +16258,30 @@ generator lists the property (list-item, nav-item, select-card).
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/unit/form-control-names.test.mjs`
 
+### T-a-row-remembers-what-it-was-given
+
+**A condition row keeps its op and join as DATA** (code review 280). A rebuilt
+row's op select is filled a frame or two later, and a select with no options
+reads `''`: at the moment the menu said `rendered`, its row said `{ op: '' }`,
+and the chip, the bar and the panel each waited — on frames, up to four —
+and asked again (`T-a-rebuilt-row-reads-empty-for-a-tick`,
+`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`). The menu already kept a
+row's pick as `row.dataset.want`; it keeps `op` and `join` the same way. The
+row writes them when it is filled and when the reader answers, row one's sync
+writes them, and `conditions` reads them, falling back to the control only
+for a row that holds none. A waiter that was a guess at "the select has filled"
+can then read at once: the chip's start-up check and `refresh()` lost their
+frames.
+
+**The probe that mattered:** reading a menu the harness had already rendered
+showed nothing wrong, and a first look said the cause was gone. The wrong
+read only shows at the moment `menu.rendered` resolves for a chip the bar has
+just built.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-a-row-remembers-what-it-was-given.spec.ts`
+
 ### T-a-tooltip-is-always-in-the-top-layer
 
 **A `sherpa-tooltip` bubble is a popover that the element opens, always**

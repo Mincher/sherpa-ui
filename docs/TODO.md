@@ -271,7 +271,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
 | ✅ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
 | ✅ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
-| ⬜ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
+| 🚧 | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
 | ⬜ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ⬜ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
@@ -292,6 +292,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
 | ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
+| ⬜ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -773,6 +774,13 @@ Will, 2026-09-25:
 ---
 
 ## C — Contained bugs
+
+### `[ ]` ⬜ 301 — BUG: two small menu-item faults
+
+Will, 2026-10-15: *"The horizontal padding on menu items that don't have check
+boxes is non-existent. The hover colour of a menu item seems to be mixing the
+active colour and a grey colour. Grey for hover/focus. Active for selected.
+Only a mix when hover/focus on an active item."*
 
 ### `[x]` ✅ 300 — BUG: not every tooltip is in the top layer
 
@@ -6388,6 +6396,27 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[ ]` 🚧 280 — Phase 5: the filter family's async root
+
+The review's cause: `menu.conditions` reads a row's op and text from live
+controls that fill later, so about 20 sites wait on frames. **Measured first,
+2026-10-15, and the first look was wrong:** reading a menu the harness had
+already rendered showed nothing amiss. The fault is at the moment
+`menu.rendered` resolves for a chip the bar has just built: its row reads
+`{ op: '' }` — the op select has no options — and two frames later reads right.
+
+**✅ Step 1.** A row keeps its `op` and `join` as data, as it keeps `want`; the
+getter, the change handler and row one's sync use them
+(`T-a-row-remembers-what-it-was-given`). The chip's start-up check lost its
+four-frame loop, and `refresh()` its two frames: 945 filter-family tests pass
+in three engines, and a test reads the menu at the moment it renders.
+
+**⬜ Next:** try each remaining wait the same way — remove it, run the
+family's tests — in the chip (`#recheckConditions`), the toolbar (about 9) and
+the panel (3); keep a wait only when a test says it is still needed, and say
+why in its comment. The Demos test `panel-apply:100` (adding and applying a
+second Advanced filter) flaked once on 2026-10-15 and is the one to watch.
 
 ### `[x]` ✅ 279 — Phase 3: the lexicon's moves
 
