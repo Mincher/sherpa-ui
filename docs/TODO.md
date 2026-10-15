@@ -299,13 +299,13 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
-| ❓ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
+| 🚧 | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
 | ✅ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
 | ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
 | ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
 | ⬜ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
-| ❓ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
+| 🚧 | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6482,6 +6482,10 @@ donuts would). **A:** join — one layout rule for every chart. **B:** keep its
 own grid. My pick: **A**, with Demos' two donuts set to `vertical` in the same
 step, so nothing you see moves.
 
+**✅ Will, 2026-10-15: A** — *"Sure, as long as it doesn't break component
+agnosticism."* The radial chart works alone as before; only Demos' own markup
+names `vertical`.
+
 ### `[x]` ✅ 309 — BUG: a zoneless gauge's band takes a container's grey outline
 
 Found by 283's checker, by reading. `.chart-segment` reads `var(--_border, …)`
@@ -6566,6 +6570,9 @@ move its four rules into the regions sheet. No weight, no visible change. My
 pick: **A** ("compose, never re-implement"), after one light Figma read of the
 Dialog (1003:33675) and Panel headers to confirm they are Container Header
 instances.
+
+**Will, 2026-10-15:** *"There are already header variants designed in Figma. The
+bridge is up."* So: read the header variants in Figma first, and build to them.
 
 ### `[ ]` ⬜ 304 — BUG: a one-chip field in the panel never shows pending
 
