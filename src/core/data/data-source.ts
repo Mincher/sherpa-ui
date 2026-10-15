@@ -274,9 +274,10 @@ export class DataSource extends EventTarget {
     return structuredClone(this.#filter ? { ...this.#state, filter: this.#filter } : this.#state);
   }
 
-  /** The Query the rows are under. A copy. TRAP T-one-query-one-owner */
+  /** The Query the rows are under. A copy. On a local source the two are one
+   *  object, and so are their copies. TRAP T-one-query-one-owner */
   get query(): { applied: Query; draft: Query } {
-    return { applied: structuredClone(this.#applied), draft: structuredClone(this.#draft) };
+    return structuredClone({ applied: this.#applied, draft: this.#draft });
   }
 
   /** This source's whole question as JSON — the Query as applied, how its rows
@@ -601,7 +602,7 @@ export class DataSource extends EventTarget {
       return;
     }
     // Its OWN before the first write compiles, so a View-held field cannot set it aside.
-    this.#defaults.set(scope, structuredClone(this.#draft.scopes[scope] ?? emptyScope()));
+    this.#defaults.set(scope, emptyScope());
     for (const field of Object.keys(was)) if (!(field in readings)) this.write(scope, field, undefined);
     for (const [field, reading] of Object.entries(readings)) this.write(scope, field, reading, at);
     const written = this.#draft.scopes[scope];

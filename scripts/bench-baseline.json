@@ -5,7 +5,7 @@
     "distinct": 3,
     "rows": 10050,
     "compiles": 15,
-    "clones": 12
+    "clones": 11
   },
   "records/pick": {
     "loads": 2,
@@ -93,7 +93,7 @@
     "distinct": 2,
     "rows": 10050,
     "compiles": 10,
-    "clones": 12
+    "clones": 11
   },
   "remote/pick": {
     "loads": 2,

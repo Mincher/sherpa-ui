@@ -33,7 +33,7 @@ import {
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
-import type { DataSource, SourceState } from '../../core/data/data-source.js';
+import type { DataChangeDetail, DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
@@ -391,7 +391,7 @@ export class SherpaProvider extends SherpaElement {
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
     // The page as DEFINED, before a kept Query: what Reset all to default starts from.
-    const initial = structuredClone(source.query.applied);
+    const initial = source.query.applied;
     this.#opened = { id: definition.id, store: def.store, source, library, initial };
     // The set on screen before a reload, while it is still saved.
     const applied = loadApplied(definition.id);
@@ -779,8 +779,7 @@ export class SherpaProvider extends SherpaElement {
         else for (const c of cards(false)) c.removeAttribute('data-loading');
       }, { signal });
       source.addEventListener('change', (event) => {
-        const { total } = (event as CustomEvent).detail as { total: number };
-        const { filter, search } = source.state;
+        const { total, state: { filter, search } } = (event as CustomEvent<DataChangeDetail>).detail;
         const state = total > 0 ? null : filter || search ? 'no-matches' : 'empty';
         for (const c of cards(false)) if (c.dataset['state'] === 'error') delete c.dataset['state'];
         for (const c of cards(true)) {
