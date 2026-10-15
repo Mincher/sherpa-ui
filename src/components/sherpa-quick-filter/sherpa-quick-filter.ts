@@ -719,7 +719,6 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     this.#applySelection(values);
-    this.#recheckConditions();
     this.emit('quick-filter-change', { scope: 'chip', values });
   };
 
@@ -904,37 +903,8 @@ export class SherpaQuickFilter extends SherpaElement {
   /** A condition row changed: re-derive the face from it. */
   #onCondition = (): void => {
     this.#applySelection((this.menu?.values ?? []) as string[]);
-    this.#recheckConditions();
   };
 
-  /**
-   * Read the rows AGAIN once the menu has settled.
-   *
-   * A rebuilt row's value select is filled asynchronously — `populate()` on a
-   * composed field settles later — so a single read right after a rebuild sees
-   * an unanswered row and switches this chip OFF while it is filtering.
-   * TRAP T-a-rebuilt-row-reads-empty-for-a-tick
-   */
-  #recheckConditions(): void {
-    if (this.menu?.mode !== 'advanced') return;
-    if (this.#recheck != null) return;
-    this.#recheck = requestAnimationFrame(() => {
-      this.#recheck = null;
-      /* ONLY UP. This exists to catch a row whose answer arrived a tick late —
-         never to overrule a reader who just switched the chip off.
-         TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
-      if (this.current || !this.#hasTypedAnswer()) return;
-      this.#applySelection((this.menu?.values ?? []) as string[]);
-    });
-  }
-
-  /** The pending recheck after a condition row rebuilds. */
-  #recheck: number | null = null;
-
-  override onDisconnect(): void {
-    if (this.#recheck != null) cancelAnimationFrame(this.#recheck);
-    this.#recheck = null;
-  }
 
   /**
    * This chip's state, read off its menu.
