@@ -10,6 +10,7 @@
  * - RULED_OUT — What a value the other filters rule out says, on its chip and its menu row
  * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
+ * - VIEW_CHIP — The View chip's id: the chip a View is picked through.
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
  * - MIRRORED_CONTROL_ATTRS — Native attributes a select control mirrors onto its inner `<input>`.
@@ -38,6 +39,9 @@ export const SET_ASIDE = 'Limited by your other filters: not applied.';
 
 /** What a disabled chip says. Will, TODO 176. */
 export const NOT_AVAILABLE = 'Not available here.';
+
+/** The View chip's id: the chip a View is picked through. The same word as VIEW, the scope id, but not the same idea. */
+export const VIEW_CHIP = 'view';
 
 /**
  * The ORGANISE glyphs — grouping and the three sort states.

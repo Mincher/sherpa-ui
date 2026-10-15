@@ -23,7 +23,7 @@ import { bandEdges } from '../../core/data/threshold.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import {
-  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, viewQueryOf,
+  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewLibrary, viewOptions, viewQueryOf,
   type ViewLibrary,
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
@@ -38,6 +38,7 @@ import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
+import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and where its Query is kept. */
@@ -389,7 +390,7 @@ export class SherpaProvider extends SherpaElement {
       return undefined;
     }
     const shipped = options.views;
-    const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
+    const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
     // The page as DEFINED, before a kept Query: what Reset all to default starts from.
     const initial = source.query.applied;
     this.#opened = { id: definition.id, store: def.store, source, library, initial };
@@ -714,7 +715,7 @@ export class SherpaProvider extends SherpaElement {
       const described = source.describe(scope);
       const custom = new Set(Object.keys(loadSavedViews(opened.id)));
       const picker = scope === VIEW && library ? [{
-        id: 'view', label: 'View', persistent: true, active: true, select: 'single',
+        id: VIEW_CHIP, label: 'View', persistent: true, active: true, select: 'single',
         options: viewOptions(library(), view, custom),
       }] : [];
       // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own

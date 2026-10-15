@@ -19,6 +19,7 @@
  * - onViewPicked — Wire a View chip to a library: pick one, and the screen reconfigures.
  * - SavedViewStore — The user's own saved views for one page, keyed by id like a preset set.
  * - loadSavedViews — Read a page's user-saved views.
+ * - viewLibrary — A page's Views: the ones it ships, then the reader's saved ones.
  * - saveViewAs — Save what is on screen as a NEW named view, and hand back the whole set.
  * - viewQueryOf — What is on screen as a View's JSON: the applied Query, with the rows' arrangement.
  * - deleteSavedView — Forget one saved view.
@@ -28,6 +29,7 @@ import type { Query, QueryDefaults } from '../data/query.js';
 import type { FieldReading } from '../data/filter-state.js';
 import { whereOf, type Where } from '../data/where.js';
 import { applyState } from '../ui/apply-state.js';
+import { VIEW_CHIP } from '../ui/shared-constants.js';
 import { report } from '../data/report.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
@@ -422,7 +424,7 @@ export function onViewPicked(
     /* TRAP T-values-carries-two-shapes — the BAR'S event, not a chip's. */
     if (detail?.scope && detail.scope !== 'bar') return;
 
-    const id = detail?.values?.['view']?.[0];
+    const id = detail?.values?.[VIEW_CHIP]?.[0];
     if (!id) return;
     // SAME VIEW, different chip — nothing to re-apply.
     // TRAP T-a-persistent-chip-reports-on-every-change
@@ -454,7 +456,7 @@ export function onViewPicked(
       // The View chip SHOWS it — a pick from a link or a nav row included.
       // The element that REPORTED the pick — a host above it has no chips.
       const bar = (event.composedPath()[0] ?? event.currentTarget) as { values?: Record<string, readonly string[]> } | null;
-      if (bar?.values && bar.values['view']?.[0] !== id) bar.values = { ...bar.values, view: [id] };
+      if (bar?.values && bar.values[VIEW_CHIP]?.[0] !== id) bar.values = { ...bar.values, [VIEW_CHIP]: [id] };
       const draft = options.draft?.(id, view);
       const put = draft ? targets.source.setQuery(draft) : targets.source.setQuery(view.query, { holds: 'keep' });
       void put.then(() => {
@@ -507,6 +509,11 @@ export function loadSavedViews(page: string, options: PersistOptions = {}): Save
     storageKind(options.shared ?? true), SAVED_PREFIX + page, {},
     (v): v is SavedViewStore => isPlainObject(v),
   );
+}
+
+/** A page's Views: the ones it ships, then the reader's saved ones. TRAP T-view-library-is-one-vocabulary */
+export function viewLibrary(page: string, shipped: ViewLibrary = {}): ViewLibrary {
+  return { ...shipped, ...loadSavedViews(page) };
 }
 
 /**

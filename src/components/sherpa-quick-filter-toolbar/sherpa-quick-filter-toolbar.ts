@@ -7,7 +7,7 @@
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
@@ -717,7 +717,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // Live state wins; an untouched chip falls back to `active`.
       if (prior ? prior.on : f.active) chip.setAttribute('data-current', '');
       // The toolbar's glyph to decide, not the app's.
-      const glyph = f.id === 'view' ? SherpaQuickFilterToolbar.#icons.view : f.icon;
+      const glyph = f.id === VIEW_CHIP ? SherpaQuickFilterToolbar.#icons.view : f.icon;
       if (glyph) chip.setAttribute('data-icon-start', glyph);
       /* A selector: always on, and its body does not flip it. LOCKED for that
          reason — `data-locked` is how a chip is told the host owns its state,

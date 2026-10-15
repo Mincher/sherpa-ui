@@ -11,7 +11,8 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextInit, type ContextModule } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
-import { loadSavedViews, type ViewLibrary } from '../../core/browser/persist-view.js';
+import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
+import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { SessionStore } from '../../core/browser/session.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import type { PageDefinition } from '../../core/data/page-definition.js';
@@ -91,7 +92,7 @@ export class SherpaOutlet extends SherpaElement {
 
   /** A Context's Views: its own, then the reader's saved ones. */
   viewsOf(context: string): ViewLibrary {
-    return { ...this.#views[context], ...loadSavedViews(context) };
+    return viewLibrary(context, this.#views[context]);
   }
 
   /** Its first View, which the URL leaves out. */
@@ -268,7 +269,7 @@ export class SherpaOutlet extends SherpaElement {
     const detail = (event as CustomEvent<{ scope?: string; values?: Record<string, string[]> }>).detail;
     if (detail?.scope && detail.scope !== 'bar') return;
     const context = this.#context;
-    const id = detail?.values?.['view']?.[0];
+    const id = detail?.values?.[VIEW_CHIP]?.[0];
     if (!context || !id || !this.viewsOf(context)[id]) return;
     // REPLACE: a View pick is not a step Back should undo one by one.
     void this.#router?.go({ view: id === this.firstView(context) ? null : id }, { replace: true });
@@ -357,8 +358,8 @@ export class SherpaOutlet extends SherpaElement {
   #pickView(id: string | null): void {
     const bar = this.#header?.querySelector<ViewBar>('sherpa-quick-filter-toolbar[data-type="view"]');
     const context = this.#context;
-    if (!bar || !context || !id || !this.viewsOf(context)[id] || bar.values?.['view']?.[0] === id) return;
-    bar.setChipValues('view', [id]);
+    if (!bar || !context || !id || !this.viewsOf(context)[id] || bar.values?.[VIEW_CHIP]?.[0] === id) return;
+    bar.setChipValues(VIEW_CHIP, [id]);
     bar.report();
   }
 
