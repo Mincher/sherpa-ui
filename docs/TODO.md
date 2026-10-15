@@ -296,7 +296,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
 | ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
 | ✅ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
-| ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
+| ❓ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
 | ✅ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
@@ -6672,11 +6672,16 @@ chip, so the chip's results badge stays up while its Apply waits —
 **✅ Fixed 2026-10-15**, by reading: `#syncPending` marks the field's one chip as
 it marks its box. **Not run yet.**
 
-### `[ ]` ⬜ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
+### `[ ]` ❓ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
 
 Found by the 281 plan agent, by reading. The provider writes
 `data-hide-unmatched` only to bars and panels, and the grid's `#markPresent`
 never toggles `data-hide-unavailable` on a heading's menu. Intended, or a gap?
+
+**❓ Will:** **A** — the grid's heading menus follow the switch too (the provider
+writes the grid's `data-hide-unmatched` as it writes a bar's, and the grid marks
+its menus with `hidesUnmatched()`): one rule in every filter. **B** — a grid
+heading always shows every value. My pick: **A**.
 
 ### `[x]` ✅ 281 — Phase 5: toolbar and panel, one helper for each part written twice
 
