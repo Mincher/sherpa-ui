@@ -276,7 +276,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ✅ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
-| 🚧 | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
+| ✅ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
 | ⬜ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
 | ⬜ | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | ⬜ | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
@@ -6602,7 +6602,7 @@ filter code loads that file; the saved card's tail, `hangSavedMenu()`; and
 homes +128. Each copy is one now; the line count is not the gain. Two probable
 bugs found on the way are queued: 304, 305. Specs unchanged. **Not run yet.**
 
-### `[ ]` 🚧 285 — Phase 5: controls, containers, templates
+### `[x]` ✅ 285 — Phase 5: controls, containers, templates
 
 **✅ Part A, controls, 2026-10-15.** The review said radio grouping was written
 twice; it was three times — the grid unticked its own rows too — with three
