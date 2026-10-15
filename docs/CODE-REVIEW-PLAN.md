@@ -83,10 +83,10 @@ engine has it, a small stand-in over `Date` and `Intl` where it has not.
 
   | Earlier review | What it covered |
   |---|---|
-  | [COMPONENT-AUDIT.md](COMPONENT-AUDIT.md), 2026-09-23 | The code of 58 components. Its open items went to TODO |
-  | [FILTER-REVIEW.md](FILTER-REVIEW.md), 2026-09-25 | The filter family, and its ledger of moves |
-  | [COMPONENT-API-AUDIT.md](COMPONENT-API-AUDIT.md), 2026-09-29 | The public API: TODO 86, which closed with "the doors stay" |
-  | [CONSUMER-REVIEW.md](CONSUMER-REVIEW.md), 2026-10-01 | How people and agents build an app: TODO 183 and C2 |
+  | [COMPONENT-AUDIT.md](history/COMPONENT-AUDIT.md), 2026-09-23 | The code of 58 components. Its open items went to TODO |
+  | [FILTER-REVIEW.md](history/FILTER-REVIEW.md), 2026-09-25 | The filter family, and its ledger of moves |
+  | [COMPONENT-API-AUDIT.md](history/COMPONENT-API-AUDIT.md), 2026-09-29 | The public API: TODO 86, which closed with "the doors stay" |
+  | [CONSUMER-REVIEW.md](history/CONSUMER-REVIEW.md), 2026-10-01 | How people and agents build an app: TODO 183 and C2 |
 
 - **Rulings this plan keeps:**
   - Each component works on its own and extends `SherpaElement` only. Anything

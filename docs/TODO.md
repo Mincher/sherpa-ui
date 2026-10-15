@@ -373,7 +373,7 @@ first, then the bugs, then the filter features).
   `app.json` (190), the library parts (191), the opt-in entry (221), the outlet
   (194), the app guide (193), the MCP (192), the starter (222). 196 is XL and
   runs beside or after the app layer, as 183 chose. The re-check is
-  `docs/CONSUMER-REVIEW.md` §5–6.
+  `docs/history/CONSUMER-REVIEW.md` §5–6.
 - **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
   first, then 89 (Simple, with 38 step 4's one builder), 90 (Advanced, on
   102's two kept answers) and 21d (its date half), then 98 (the action
@@ -396,7 +396,7 @@ first, then the bugs, then the filter features).
 
 ### `[x]` ✅ 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 
-**Assessed and decided 2026-09-29 — `docs/COMPONENT-API-AUDIT.md`.** About
+**Assessed and decided 2026-09-29 — `docs/history/COMPONENT-API-AUDIT.md`.** About
 1,300 copied lines in six families; seven build steps (A1–A7), one commit
 each. Will's rulings are its §6: chip and tag stay two components; `-select`
 means picked one; meters take a number; sort and group keep their scope (with
@@ -530,7 +530,7 @@ etc.)."*
 
 Today a grid with no `key` cannot name a row: `selectedKeys` is EMPTY, and
 `selection-change` sends row POSITIONS as `selected` (left open by the API
-audit's A6, `docs/COMPONENT-API-AUDIT.md`).
+audit's A6, `docs/history/COMPONENT-API-AUDIT.md`).
 
 - **The data layer gives a keyless row a key**, so selection — and anything
   else that names a row — always works by key, and `selection-change` sends
@@ -558,7 +558,7 @@ page load: a stale one from a saved View is dropped and reported
 
 Will, 2026-09-25: *"I'm juggling bugs here between the filter panel and filter
 toolbar when the overlap is considerable so the code should be singular, and
-reused, where possible."* The full review is `docs/FILTER-REVIEW.md`.
+reused, where possible."* The full review is `docs/history/FILTER-REVIEW.md`.
 
 Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
 advanced. "Organise" is a label, never a kind.
@@ -598,7 +598,7 @@ menu, `kindOf()` and `oneChipList()` say what a filter is and whether it
 explodes, and `FilterDef`, the ⋮ menu, the saved-filter card, `MenuDrill` and
 `sherpa-filterset` are one each (196). The bar's `#addMenu` and the panel's
 `#giveMenu` both call `menuFor()`; what is left differs by host — the bar's
-chips against the panel's field boxes — not a copy. `docs/FILTER-REVIEW.md`
+chips against the panel's field boxes — not a copy. `docs/history/FILTER-REVIEW.md`
 §Step 4 measured the same: it landed at −21. Closed as Will closed 196 stage 6
 (2026-10-13: B); say so to reopen it.
 
@@ -664,7 +664,7 @@ toolbar, the panel and the chip — the filter family, built with A7 — then
 select-group, input-text and prompt-composer. The mechanism: `static config`
 widened for every component (state in `#settings`, one draw), not a family
 base class.
-Keep each component standing alone — Will's rule, `docs/COMPONENT-API-AUDIT.md`
+Keep each component standing alone — Will's rule, `docs/history/COMPONENT-API-AUDIT.md`
 §5: it extends `SherpaElement` and nothing else, no family base class.
 
 **✅ Step 1 done 2026-09-29 — `persist-view` waits.** A saved View applied to
@@ -1950,7 +1950,7 @@ dialog drops its `sherpa-list` for the plain switch.
 
 Planned 2026-10-12 from three read-only reviews: 183's problems re-checked
 against the code, and a new one for other frameworks. Findings and file:line
-evidence are `docs/CONSUMER-REVIEW.md` §5–6. Each item says what it fixes;
+evidence are `docs/history/CONSUMER-REVIEW.md` §5–6. Each item says what it fixes;
 the review holds the detail.
 
 ### `[x]` ✅ 225 — BUG: `settled()` can hang, and waits on the whole document
@@ -4295,7 +4295,7 @@ prove it. Minifying the JS and icons on demand are 199's.
 
 ### `[x]` ✅ 187 — Make the docs and the MCP text true
 
-Found by 183. `DATA-SOURCE-RULES.md` (served to agents) and a TRAPS entry say `scope: 'all'` where the option is `rows: 'all'`; a wrong call passes the type check and a chart counts one page. `PRINCIPLES.md:26` says the join is `bind()` and nothing else; the app joins through `sherpa-provider`. CLAUDE.md names a `ThemeManager` that does not exist; the README links a deleted doc; the MCP prompts use `data-variant` and read a missing file; `scaffold_def` suggests token names that do not exist. Fix each, and make `bind()` report `scope: 'all'`. `docs/CONSUMER-REVIEW.md` §3.1.
+Found by 183. `DATA-SOURCE-RULES.md` (served to agents) and a TRAPS entry say `scope: 'all'` where the option is `rows: 'all'`; a wrong call passes the type check and a chart counts one page. `PRINCIPLES.md:26` says the join is `bind()` and nothing else; the app joins through `sherpa-provider`. CLAUDE.md names a `ThemeManager` that does not exist; the README links a deleted doc; the MCP prompts use `data-variant` and read a missing file; `scaffold_def` suggests token names that do not exist. Fix each, and make `bind()` report `scope: 'all'`. `docs/history/CONSUMER-REVIEW.md` §3.1.
 
 
 **✅ Done 2026-10-01.** `DATA-SOURCE-RULES.md` and the summary trap say
@@ -4310,7 +4310,7 @@ one real now) are fixed. The `generate-sherpa-component` skill is marked out
 of date; its rewrite goes with the guide, 193.
 ### `[x]` ✅ 188 — Fix the bugs 183 found, and run the gates we have
 
-Found by reading, to be proved by a test each: `IdbStore.update` with a changed key writes a second row; Edit never saves Plan; the notification badge has three writers; `sherpa-input-text` fires `input` twice; the provider drops the keys `applyState` skipped, and its Fires block says nothing. And `npm run lint` and the node tests run in no hook. `docs/CONSUMER-REVIEW.md` §3.2.
+Found by reading, to be proved by a test each: `IdbStore.update` with a changed key writes a second row; Edit never saves Plan; the notification badge has three writers; `sherpa-input-text` fires `input` twice; the provider drops the keys `applyState` skipped, and its Fires block says nothing. And `npm run lint` and the node tests run in no hook. `docs/history/CONSUMER-REVIEW.md` §3.2.
 
 
 **✅ Done 2026-10-01**, each with a test. A changed key moves the row in both
@@ -4325,7 +4325,7 @@ and saves a changed one, and the notification source is the badge's only
 writer, so read stays read.
 ### `[x]` ✅ 189 — Readiness and a smaller download
 
-Export the harness's `__settled()` as `settled(root)`; put the eight shared sheets in SherpaElement's default so a single-component import draws right; minify the JS and strip template comments (keep a debug build); load icons on demand (314 KB today). Then the demo's 30 `whenDefined` and 32 `waitForTimeout` calls can go. `docs/CONSUMER-REVIEW.md` §3.3.
+Export the harness's `__settled()` as `settled(root)`; put the eight shared sheets in SherpaElement's default so a single-component import draws right; minify the JS and strip template comments (keep a debug build); load icons on demand (314 KB today). Then the demo's 30 `whenDefined` and 32 `waitForTimeout` calls can go. `docs/history/CONSUMER-REVIEW.md` §3.3.
 
 
 **✅ Done 2026-10-01 — the readiness half.** `settled(root?)` ships from
@@ -4367,7 +4367,7 @@ drawn; `settled()` waits for them. One button: 570 KB (JS + fetched) before
 
 ### `[x]` ✅ 190 — A Context contract and one `app.json`
 
-❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/CONSUMER-REVIEW.md` §3.4.
+❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/history/CONSUMER-REVIEW.md` §3.4.
 
 **Re-checked 2026-10-12:** still true. `index.html` is 968 lines, about 818
 of script; the Context names are hand-kept in about 25 places (17 in
@@ -4393,7 +4393,7 @@ dead `template` key is deleted. The loader itself is 194.
 
 ### `[x]` ✅ 191 — Library parts that empty `contexts/`
 
-❓ Waits on choice 1 in 183. `SherpaDialog.prompt()` and `.confirm()`; saved filters owned by the provider, as saved Views are; `data-setting="/pointer"` binds a control to the session; stores take a seed, a version and a fallback; public APIs for the three shadow-root reaches. Then Sherpa Demos sorts by kind: `stores/`, `contexts/` (page behaviour only), `views/`, `view-schemas/`. `docs/CONSUMER-REVIEW.md` §3.5.
+❓ Waits on choice 1 in 183. `SherpaDialog.prompt()` and `.confirm()`; saved filters owned by the provider, as saved Views are; `data-setting="/pointer"` binds a control to the session; stores take a seed, a version and a fallback; public APIs for the three shadow-root reaches. Then Sherpa Demos sorts by kind: `stores/`, `contexts/` (page behaviour only), `views/`, `view-schemas/`. `docs/history/CONSUMER-REVIEW.md` §3.5.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui.
 
@@ -4424,7 +4424,7 @@ did the same. Both now wait for `window.sherpa.source` too (3 of 3 each).
 
 ### `[x]` ✅ 192 — Ship the agent path
 
-❓ Waits on choice 2 in 183. The MCP imports `scripts/` and reads specs and schemas that the package does not ship, and its SDK is a devDependency. Publish it with its real dependencies and files, add an `npm pack` smoke test that calls every tool, resource and prompt, register it in both projects, and add `validate_page`. `docs/CONSUMER-REVIEW.md` §3.6.
+❓ Waits on choice 2 in 183. The MCP imports `scripts/` and reads specs and schemas that the package does not ship, and its SDK is a devDependency. Publish it with its real dependencies and files, add an `npm pack` smoke test that calls every tool, resource and prompt, register it in both projects, and add `validate_page`. `docs/history/CONSUMER-REVIEW.md` §3.6.
 
 **Re-checked 2026-10-12:** 184 shipped `schemas/` only. Six of the seven MCP
 modules import `scripts/` statically, so `sherpa-mcp` dies at load from a
@@ -4469,7 +4469,7 @@ is yours too.
 
 ### `[x]` ✅ 193 — One app guide, served to agents
 
-After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of steps with no history: the page skeleton, the shell, stores, a page definition, a template that asks, a Context module, Views and the session, and the ten or so traps an app meets. Served as `sherpa://app-guide`; each TRAPS entry tagged by who meets it. `docs/CONSUMER-REVIEW.md` §3.7.
+After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of steps with no history: the page skeleton, the shell, stores, a page definition, a template that asks, a Context module, Views and the session, and the ten or so traps an app meets. Served as `sherpa://app-guide`; each TRAPS entry tagged by who meets it. `docs/history/CONSUMER-REVIEW.md` §3.7.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — it teaches the app layer in sherpa-ui.
 
@@ -4482,7 +4482,7 @@ entries by who meets it; the guide names the ones an app meets.
 
 ### `[x]` ✅ 194 — A Context loader beside `sherpa-router`
 
-❓ Waits on choice 1 in 183. `<sherpa-outlet>` reads `app.json` and, on each route change, fetches the template, opens the provider, runs the module and tears it down with the navigation's signal; it owns the Settings overlay, the header title from the nav row, the View in the URL, and favourites and recents. `index.html` drops from about 800 lines of script to config, and a `scaffold_app` tool can emit a starter. `docs/CONSUMER-REVIEW.md` §3.8.
+❓ Waits on choice 1 in 183. `<sherpa-outlet>` reads `app.json` and, on each route change, fetches the template, opens the provider, runs the module and tears it down with the navigation's signal; it owns the Settings overlay, the header title from the nav row, the View in the URL, and favourites and recents. `index.html` drops from about 800 lines of script to config, and a `scaffold_app` tool can emit a starter. `docs/history/CONSUMER-REVIEW.md` §3.8.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui, beside `sherpa-router`.
 
@@ -4504,7 +4504,7 @@ Chromium (137 of 137). `T-an-outlet-loads-the-context` · `T-the-outlet-keeps-th
 
 ### `[x]` ✅ 195 — The spec becomes the whole contract
 
-Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/CONSUMER-REVIEW.md` §3.9.
+Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/history/CONSUMER-REVIEW.md` §3.9.
 
 **Measured 2026-10-12** (a read of the code): 135 observed attributes in 37
 components are not in `static props` — 52 read by CSS, 83 by JS only — which
@@ -4559,7 +4559,7 @@ chart, which meant the chart's name: the four charts now take a host
 
 ### `[x]` ✅ 196 — One filter surface and a smaller DataSource
 
-❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/CONSUMER-REVIEW.md` §3.10.
+❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/history/CONSUMER-REVIEW.md` §3.10.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 3) — the app layer first; this after it, or beside it.
 
@@ -4625,7 +4625,7 @@ from its template (`T-a-views-markup-lives-in-a-template`). A Demos test checks
 `views/` holds only those files and that every named template exists. Demos is
 not in git, so its half is uncommitted. **What `contexts/` is for** is
 answered by 183: about 60% is glue the library should own, and items 190, 191
-and 194 move it out — `docs/CONSUMER-REVIEW.md` §2.1.
+and 194 move it out — `docs/history/CONSUMER-REVIEW.md` §2.1.
 
 ### `[x]` ✅ 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
 
@@ -4653,7 +4653,7 @@ and doing some overdue cleanup, refactoring and optimisation of Sherpa."*
 The app moved on 2026-10-01 (37), so this may start; Sherpa Demos is the
 first consumer to learn from.
 
-**✅ Reviewed 2026-10-01** — the full report is `docs/CONSUMER-REVIEW.md`.
+**✅ Reviewed 2026-10-01** — the full report is `docs/history/CONSUMER-REVIEW.md`.
 The base is good: a template asks for its data in markup alone, there is no
 bundler and no runtime dependency, and the gates are real. But Sherpa stops at
 the PAGE. The part between "I have components" and "I have an app" is written
@@ -6491,6 +6491,9 @@ part; a second checked each plan against the files.
   since then an item's `✅ Done` line is its record.
 - **✅ Step 4, 2026-10-15:** PRINCIPLES' old open items 1, 3 and 4 are 322–324;
   item 0 is 284's test run; the rest was done, and is kept below.
+- **✅ Step 5, 2026-10-15 — part A done:** the four reviews are in
+  `docs/history/`; every path and link moved, proved by check-docs and one git
+  grep. Part B (the rules doc, and CLAUDE.md to pointers) is next.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
@@ -7522,7 +7525,7 @@ opens every page from `examples/definitions/<context>.json` through
 *"Why can't any component ask for data, a definition, a conditional query
 definition or a template from the data layer?"* — the Context Protocol
 (choice A), a provider over a subtree, and each request can subscribe. It was
-designed in `FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
+designed in `docs/history/FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
 of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
 `dashboard.js` 222 → ~50. Closes most of 37 and 38.
 
@@ -8099,7 +8102,7 @@ it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its reco
 - 110: an AND row greys the values the rows before it rule out — `T-an-and-row-offers-what-the-rows-before-it-leave`
 - 181: a saved filter's card shows each field's own menu, read-only; Edit filter edits it in place — `T-a-saved-filter-keeps-its-edit`
 - 177: cards resize from the layout grid's gutters, by drag or keys; each Context keeps its sizes — `T-a-gutter-moves-a-line`
-- 183: how a consumer and an agent build on Sherpa — `docs/CONSUMER-REVIEW.md`; its plan is items 187 to 197
+- 183: how a consumer and an agent build on Sherpa — `docs/history/CONSUMER-REVIEW.md`; its plan is items 187 to 197
 - 185: Sherpa Demos `views/` holds only `*-views.json`; each View's markup is a template the JSON names — `T-a-views-markup-lives-in-a-template`
 - 187: the docs and the MCP text say what the code does; `bind()` reports `scope: 'all'`
 - 188: a changed key moves the row in every store; one `input` per keystroke; the provider reports skipped keys; lint and the node tests are gates — `T-a-changed-key-moves-the-row`

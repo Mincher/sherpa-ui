@@ -159,9 +159,12 @@ broken, and check that it did.
 
 **The RULES are the markdown files in this table, and code reads all but this one.** The
 rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
-`PROVIDER-DESIGN`, `PAGE-DEFINITION`), the audits and reviews (`COMPONENT-AUDIT`,
-`COMPONENT-API-AUDIT`, `FILTER-REVIEW`, `CONSUMER-REVIEW`) and the ledger
-(`TODO`). Where one disagrees with the code, the code and its gate win.
+`PROVIDER-DESIGN`, `PAGE-DEFINITION`), the code review's plan
+(`CODE-REVIEW-PLAN`), the approved names (`LEXICON`), the ledger (`TODO`, the one
+list of open work) and `TRAPS-INDEX`, which is made from `TRAPS`. The four old
+reviews are in `docs/history/`: `COMPONENT-AUDIT`, `FILTER-REVIEW`,
+`COMPONENT-API-AUDIT` and `CONSUMER-REVIEW`. Where one disagrees with the code,
+the code and its gate win.
 
 | File | Who reads it |
 |---|---|

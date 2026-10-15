@@ -8,7 +8,7 @@ tempting one.
 
 > **The open work moved.** This file is the RECORD — what was measured, what
 > was found, and what each fix changed. The six findings it did not close are
-> now items in [docs/TODO.md](TODO.md), Wave 3b, alongside the other 31. One
+> now items in [docs/TODO.md](../TODO.md), Wave 3b, alongside the other 31. One
 > list to work from; this one to check why.
 
 **Each finding carries its own outcome.** A finding and what happened to it are
@@ -1668,7 +1668,7 @@ Worth stating, because the audit could read as a list of faults.
 
 ## Open work — moved to docs/TODO.md
 
-Six findings stayed open, and they now live in [docs/TODO.md](TODO.md) as
+Six findings stayed open, and they now live in [docs/TODO.md](../TODO.md) as
 Wave 3b, ordered against the other 31 items rather than in a list of their own:
 
 | | |

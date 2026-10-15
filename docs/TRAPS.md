@@ -13790,7 +13790,7 @@ can be refactored, combined, etc. You will need to update this as the final
 step of any change. 1 large file might not be the best for context & token use
 so maybe something in the file header."*
 
-**Why it is needed, measured.** §15 of `FILTER-REVIEW.md` found 207 exported
+**Why it is needed, measured.** §15 of `docs/history/FILTER-REVIEW.md` found 207 exported
 names in `src/core` that nothing indexed — and new code re-learned lessons
 that `nextSort` and `sortDirectionFrom` already carried in `cycle.ts`, three
 folders away. The map is the answer to "does this already exist?" in one
@@ -14299,7 +14299,7 @@ filter over a column it does not have, and no error.
 What it buys, unscheduled: a record with a known time can be ORDERED newest
 first without naming a column, COMPARED to itself (a metric's delta, a
 sparkline's series), and BOUNDED "as at" a date — which is what a history of
-values is. `FILTER-REVIEW.md` §7 step 4c and §19 carry the rest.
+values is. `docs/history/FILTER-REVIEW.md` §7 step 4c and §19 carry the rest.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/base-store.ts`

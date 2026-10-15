@@ -10,7 +10,7 @@ choosing the Context Protocol: *"The provider component is something I thought
 we already had. I hope this can bring drastic simplification to the codebase,
 too!"*
 
-**It was designed, never built.** `FILTER-REVIEW.md` §9.2, §10, §12 and §19
+**It was designed, never built.** `docs/history/FILTER-REVIEW.md` §9.2, §10, §12 and §19
 (2026-09-25) chose all of it: the Context Protocol, a source PROVIDED over a
 subtree, `data-source` optional, a component DECLARING what it needs, and
 aggregation folded into the data layer. None of it exists in `src/`. This
