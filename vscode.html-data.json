@@ -3204,6 +3204,11 @@
           "description": "native attributes, mirrored to the inner control"
         },
         {
+          "name": "required",
+          "description": "native attributes, mirrored to the inner control",
+          "valueSet": "v"
+        },
+        {
           "name": "value",
           "description": "submitted value when checked"
         }
@@ -3514,6 +3519,10 @@
           "name": "disabled",
           "description": "— native boolean       (reflected onto the inner input)",
           "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "— native string        (what a form submits it under)"
         },
         {
           "name": "required",

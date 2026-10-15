@@ -121,6 +121,14 @@
     },
     {
       "$type": "prop",
+      "name": "name",
+      "type": "string",
+      "observed": true,
+      "native": true,
+      "description": "— native string        (what a form submits it under)"
+    },
+    {
+      "$type": "prop",
       "name": "required",
       "type": "boolean",
       "observed": true,

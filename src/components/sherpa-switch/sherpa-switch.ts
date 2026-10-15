@@ -6,6 +6,7 @@
  * @prop {string}  value    — what it stands for when on (default "on"), as a checkbox's
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
@@ -23,12 +24,7 @@ export class SherpaSwitch extends SherpaElement {
   static override labelTarget = '.input';
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
   static readonly formAssociated = true;
-  static override observed = [
-    'checked',
-    'disabled',
-    'required',
-    'value',
-  ];
+  static override observed = ['checked', ...MIRRORED];
 
   /** The native checkbox the switch wraps. */
   #input(): HTMLInputElement | null {
@@ -89,8 +85,6 @@ export class SherpaSwitch extends SherpaElement {
   }
   set disabled(value: boolean) {
     this.toggleAttribute('disabled', value);
-    const input = this.#input();
-    if (input) input.disabled = value;
   }
 
   get value(): string {
@@ -102,15 +96,16 @@ export class SherpaSwitch extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
-  /** Mirror checked + disabled host → inner control. */
+  /** Mirror native attributes + checked host → inner control. */
   #syncState(): void {
     const input = this.#input();
     if (!input) return;
-    input.checked = this.hasAttribute('checked');
+    // The shared loop; `value` is a property, set below. TRAP T-mirroring-skips-value
+    this.mirrorAttrs(input, MIRRORED);
     // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
     input.disabled = this.matches(':disabled');
-    input.required = this.hasAttribute('required');
     input.value = this.value;
+    input.checked = this.hasAttribute('checked');
     this.#syncForm();
   }
 

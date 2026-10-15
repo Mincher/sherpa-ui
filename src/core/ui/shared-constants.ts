@@ -64,7 +64,7 @@ export const NON_VALUE_ROWS = '.qf-all';
 /**
  * Native attributes a select control mirrors onto its inner `<input>`.
  *
- * Checkbox and radio declared this identically — same four names, same comment.
+ * Checkbox, radio and switch mirror these four.
  * `sherpa-input-text` keeps its OWN longer list: a text field also mirrors
  * `placeholder`, `pattern`, `inputmode` and the length limits, which a checkbox
  * has no use for. A superset is not the same value.

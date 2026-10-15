@@ -3,6 +3,7 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
+import { radioGroup } from '../../core/ui/radio-group.js';
 
 export class SherpaSelectRadio extends SherpaElement {
   static override css = new URL('./sherpa-select-radio.css', import.meta.url);
@@ -64,12 +65,9 @@ export class SherpaSelectRadio extends SherpaElement {
     else this.formLink.validity();
   }
 
-  /** The radios sharing this `name` in its form — or its root, outside one. */
+  /** Its radio group, by HTML's rule. */
   #group(): SherpaSelectRadio[] {
-    const name = this.getAttribute('name');
-    if (!name) return [this];
-    const root = (this.formLink.form ?? this.getRootNode()) as ParentNode;
-    return [...root.querySelectorAll<SherpaSelectRadio>(`sherpa-select-radio[name="${CSS.escape(name)}"]`)];
+    return radioGroup<SherpaSelectRadio>(this, (r) => r.formLink.form);
   }
 
   /* Form lifecycle — called by the browser. */
@@ -120,7 +118,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.toggleAttribute('disabled', value);
   }
 
-  /** Native radio grouping does NOT cross shadow roots — deselect siblings here. */
+  /** Mirror the radio onto `checked`, untick its group, report it. */
   #onChange = (): void => {
     const c = this.#control;
     if (!c) return;
@@ -130,7 +128,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.emit('change', { checked: c.checked, value: this.value });
   };
 
-  /** Uncheck the other radios in its group — in its form, not the whole page. */
+  /** Untick the other radios in its group. */
   #deselectGroup(): void {
     for (const radio of this.#group()) {
       if (radio !== this) radio.checked = false;

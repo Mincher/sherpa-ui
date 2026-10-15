@@ -46,19 +46,19 @@ function checkCss(genCss, realCssAuthored) {
 }
 
 // ── TS: structural facts ───────────────────────────────────────────────────────
-function tsFacts(ts) {
+function tsFacts(ts, path) {
   const f = {};
   f.class = (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null;
   f.css = (/static override css = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
   f.html = (/static override html = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
   // Must stay the SHARED reader: a bare regex here misses comment-stripping and
   // `...SPREAD` expansion, and silently disagrees with the spec generator.
-  f.observed = parseObserved(ts);
+  f.observed = parseObserved(ts, path);
   f.define = (/(?:customElements\.)?\bdefine\('([^']+)'/.exec(ts) || [])[1] ?? null;
   return f;
 }
-function checkTs(genTs, realTs) {
-  const g = tsFacts(genTs), r = tsFacts(realTs);
+function checkTs(genTs, realTs, realPath) {
+  const g = tsFacts(genTs), r = tsFacts(realTs, realPath);
   const diffs = [];
   for (const k of ['class', 'css', 'html', 'define']) {
     if (g[k] !== r[k]) diffs.push(`TS ${k}: "${g[k]}" (gen) ≠ "${r[k]}" (real)`);
@@ -97,7 +97,7 @@ function run(name) {
 
   const htmlDiffs = checkHtml(gen.html, realHtml);
   const cssDiffs = checkCss(gen.css, realCssAuthored);
-  const tsDiffs = checkTs(gen.ts, realTs);
+  const tsDiffs = checkTs(gen.ts, realTs, join(dir, `${name}.ts`));
 
   const line = (ok, label) => `${ok ? '✅' : '❌'} ${label}`;
   console.log(`\nRound-trip guard — ${name}  (spec → specToDef → compileDef → compare on-disk)\n`);

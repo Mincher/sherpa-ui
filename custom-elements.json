@@ -9540,6 +9540,14 @@
               }
             },
             {
+              "name": "required",
+              "description": "native attributes, mirrored to the inner control",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
               "name": "value",
               "description": "submitted value when checked",
               "type": {
@@ -10415,6 +10423,13 @@
                 "text": "boolean"
               },
               "default": "false"
+            },
+            {
+              "name": "name",
+              "description": "— native string        (what a form submits it under)",
+              "type": {
+                "text": "string"
+              }
             },
             {
               "name": "required",

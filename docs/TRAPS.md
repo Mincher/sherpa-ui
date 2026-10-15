@@ -8501,17 +8501,17 @@ A `sherpa-select-card` footer holds **BOTH** pre-placed select controls — a
 `sherpa-select-radio` AND a `sherpa-select-checkbox` — and CSS shows exactly one,
 off `data-select-mode` (radio by default, checkbox for multi-select).
 
-`#syncControl()` mirrors the card's `name` / `value` / `disabled` / `selected`
+`#syncControl()` mirrors the card's `name` / `value` / `disabled` / `checked`
 onto **both**, not just the visible one. Keeping both in step means switching
 `data-select-mode` never surfaces a STALE control. When a consumer slots their
 own footer there are no `.footer-control`s at all, so the whole method is a no-op
 and that control is theirs to wire — the card still reports selection through its
 `change` event.
 
-**Radio grouping is done by hand, document-wide**, because native grouping cannot
-cross shadow roots: selecting one card queries
-`sherpa-select-card[name="…"]` (via `CSS.escape`) and deselects its siblings.
-`sherpa-select-radio` does the same thing for the same reason.
+**Radio cards group as radios do**: `radioGroup()`, by HTML's rule — the same
+tree, form and `name` (T-radios-in-shadow-roots-are-not-one-group). A
+checkbox-mode card is not a member. Document-wide, as it was, reached across
+forms and missed a shadow root.
 
 `#toggle()` follows the semantics rather than the attribute: a RADIO card's
 toggle means "select" — you cannot unselect one by re-clicking — while a CHECKBOX
@@ -8522,10 +8522,6 @@ for the same reason.
 the role, the tab stop and `aria-checked` — so a live radio inside it is a
 control nested in a control, and an unnamed one. They only SHOW the state; a
 press on one falls through to the card. TODO 117.
-
-A click that lands ON a footer control is ignored by the card's own handler
-(checked with `composedPath`), because that control already fires its own
-`change` into `#onControlChange`; without the guard the card double-toggles.
 
 - Site: `src/components/sherpa-select-card/sherpa-select-card.ts`
 
@@ -8759,9 +8755,14 @@ so the browser sees one group of one, per row — every radio stays ticked, and
 nothing warns. Setting the same `name` on all of them does not help; the name
 is only half the rule.
 
-So the HOST has to enforce single selection. The data grid's `data-select
-="single"` mode unticks the other rows itself, in the same place it clears
-`#selected`.
+So the component keeps the group, by HTML's own rule: the same tag, the same
+TREE (the host's root; a shadow root is a tree of its own), the same FORM owner
+(`ElementInternals.form`, so a `form="id"` member counts) and the same non-empty
+`name`. `radioGroup()` in `core/ui/radio-group.ts` finds it, for the radio and
+the radio-mode card (TODO 285). Not the form's subtree, which misses a `form=`
+member; not the document, which crosses forms and cannot see into a shadow
+root. The grid's single-select rows are radios in its own tree, so the radio
+unticks them; the grid only clears its own record.
 
 This was free before, which is what makes it easy to miss: the grid's rows were
 bare `<input>`s in one shadow tree, the browser did the unticking, and a comment
@@ -8770,6 +8771,7 @@ behaviour that comment described.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `src/core/ui/radio-group.ts`
 - Site: `test/e2e/reforged-form-controls.spec.ts`
 
 ### T-the-tick-needs-the-fixed-ramp
@@ -14272,19 +14274,18 @@ The camelCase → kebab mapping matches the props system: `iconStart` becomes
 ### T-mirroring-skips-value
 
 A component wrapping a real `<input>` keeps the two in step by copying native
-attributes down. Three wrote the same loop — `sherpa-select-checkbox`,
-`sherpa-select-radio` and `sherpa-input-text` — so it is now
+attributes down. Four use one loop — `sherpa-select-checkbox`,
+`sherpa-select-radio`, `sherpa-switch` and `sherpa-input-text` —
 `SherpaElement.mirrorAttrs(control, attrs)`.
 
 **`value` is skipped, deliberately.** It is a PROPERTY on a live control, and
 writing the attribute after the reader has typed puts the old text back. Each
 caller assigns `control.value` itself, with its own default: `'on'` for a
-checkbox, `''` for a radio, the typed text for an input.
+checkbox, a radio and a switch, the typed text for an input.
 
-The LIST stays with the caller. An input mirrors `placeholder`, `pattern`,
-`minlength` and `maxlength`; a checkbox mirrors four attributes. Moving the
-list would mean one component silently mirroring attributes that mean nothing
-to it.
+Checkbox, radio and switch share one list, `MIRRORED_CONTROL_ATTRS`; an input
+keeps its own longer one (`placeholder`, `pattern`, the length limits), as a
+superset is not the same value.
 
 What a wider sweep found, recorded so it is not re-run: across 58 components
 there are **110 runs of four or more identical lines shared by two or more**,
@@ -14301,6 +14302,7 @@ to fit only 8 of 28 stamp sites, and removed again.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `src/components/sherpa-switch/sherpa-switch.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 
 ### T-a-layout-read-belongs-in-a-frame

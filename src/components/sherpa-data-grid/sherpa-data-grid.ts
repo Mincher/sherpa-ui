@@ -1013,7 +1013,7 @@ export class SherpaDataGrid extends SherpaElement {
       this.upgradeClonedIcons(tr);
       tr.dataset['index'] = String(offset + i);
       // BOTH boxes are stamped; CSS shows one. TRAP T-compose-never-reimplement.
-      // The radio needs the shared per-grid NAME that unpicks the previous row.
+      // One NAME per grid: the radio's group. TRAP T-radios-in-shadow-roots-are-not-one-group
       const radio = tr.querySelector<SelectBox>('.row-one');
       if (radio) radio.setAttribute('name', this.#selectName);
       const ticked = this.#selected.has(record);
@@ -1634,15 +1634,10 @@ export class SherpaDataGrid extends SherpaElement {
     // Record the choice against the RECORD, so it survives the next re-render.
     const record = this.#recordFor(target);
     if (record) {
-      // SINGLE mode holds one, and the GRID enforces it: the radios share a
-      // `name` but each sits in its own shadow root, so the browser sees one
-      // group per row. TRAP T-radios-in-shadow-roots-are-not-one-group.
+      // SINGLE mode holds one record; the radio unticks its own group.
       if (this.#single) {
         this.#selected.clear();
         this.#wantedKeys = null;
-        for (const other of this.$$<SelectBox>('.row-one')) {
-          if (other !== target) other.checked = false;
-        }
       }
       if ((target as SelectBox).checked) this.#selected.add(record);
       else this.#selected.delete(record);

@@ -2,12 +2,12 @@
  * sherpa-select-card — a selectable card with header / content / footer slots.
  *
  * TRAP T-select-card-keeps-both-footer-controls — BOTH footer controls exist
- * and stay in sync; radio grouping is by hand, as native grouping cannot cross
- * shadow roots.
+ * and stay in sync.
  */
 import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
+import { radioGroup } from '../../core/ui/radio-group.js';
 
 /** The default footer control (a Sherpa select) — the parts JS reads/writes. */
 interface FooterControl extends HTMLElement {
@@ -141,16 +141,11 @@ export class SherpaSelectCard extends SherpaElement {
     this.emit('change', { checked: next, value: this.value });
   }
 
-  /** Deselect sibling radio cards with this name — document-wide, because
-   *  native grouping cannot cross shadow roots. */
+  /** Untick the other radio cards in its group: its tree and form, not the page.
+   *  A checkbox-mode card is not a radio, so not a member. */
   #deselectGroup(): void {
-    const name = this.getAttribute('name');
-    if (!name) return;
-    const group = document.querySelectorAll<SherpaSelectCard>(
-      `sherpa-select-card[name="${CSS.escape(name)}"]`
-    );
-    for (const card of group) {
-      if (card !== this) card.checked = false;
+    for (const card of radioGroup<SherpaSelectCard>(this, (c) => c.formLink.form)) {
+      if (card !== this && !card.#isCheckbox()) card.checked = false;
     }
   }
 

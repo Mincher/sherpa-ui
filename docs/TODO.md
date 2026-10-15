@@ -276,7 +276,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
 | ⬜ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
-| ⬜ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
+| 🚧 | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
 | ⬜ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
 | ⬜ | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | ⬜ | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
@@ -6438,6 +6438,28 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` 🚧 285 — Phase 5: controls, containers, templates
+
+**✅ Part A, controls, 2026-10-15.** The review said radio grouping was written
+twice; it was three times — the grid unticked its own rows too — with three
+reaches: the form or the root (radio), the whole document (card). Now ONE
+helper, `radioGroup()` in `core/ui/radio-group.ts`, by HTML's own rule: the same
+tag, tree, form owner and `name`. Radio and radio-mode card use it; a
+checkbox-mode card is no longer a member; the grid's loop is gone, since the
+radio unticks its own group before the grid hears it. The switch mirrors through
+`mirrorAttrs` and the shared `MIRRORED_CONTROL_ATTRS`, as checkbox and radio do,
+and its `disabled` setter no longer writes the input after the fieldset check
+(that left a switch in a disabled fieldset enabled). **And a generator gap:**
+`observed` lists spread from an IMPORT expanded to nothing, so the checkbox and
+radio specs said `name`, `value`, `required` and `disabled` were not observed,
+and the checkbox's `required` was missing. Now read from the imported file.
+**Not run yet:** `reforged-select-radio`, `reforged-form-controls`,
+`reforged-forms-complete`, `reforged-select-group`, the grid's single select.
+**Queued, not done:** a required radio-card group (the card has no group
+validity), and arrow keys between radios (284).
+
+⬜ Part B, containers. ⬜ Part C, templates.
 
 ### `[x]` ✅ 282 — Phase 5: each component's own type, no hand-typed casts
 

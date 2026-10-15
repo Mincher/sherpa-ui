@@ -476,7 +476,7 @@ function generateSpec(name) {
 
   // The TS `observed` list is the ground truth for which data-* props are
   // reactive; a prior spec's stale kind loses to it.
-  const tsObserved = parseObserved(ts);
+  const tsObserved = parseObserved(ts, join(dir, `${name}.ts`));
   // `static props` is the only honest source for `kind`, and the first for a
   // prop's type, values and default. TRAP T-kind-says-how-not-whether
   const tsDecls = parsePropDecls(ts, join(dir, `${name}.ts`));
@@ -572,7 +572,8 @@ function generateSpec(name) {
   const attrInUse = (nm) => {
     const camel = nm.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`:host\\([^{]*\\[${esc}[\\]=~|^$*]`).test(sourceText)   // a HOST selector: an inner cell's `[data-value]` is not the host's
+    return tsObserved.includes(nm)                // observed, here or through an imported list
+      || new RegExp(`:host\\([^{]*\\[${esc}[\\]=~|^$*]`).test(sourceText)   // a HOST selector: an inner cell's `[data-value]` is not the host's
       || sourceText.includes(`${nm}=`)            // HTML attribute
       || quotedAsName(nm, esc)                    // getAttribute / observed list / a props key
       || sourceText.includes(`this.dataset['${camel}']`)
@@ -819,7 +820,7 @@ function roundtripSpec(name, spec) {
   const diffs = [];
   htmlDiff(gen.html, realHtml, diffs);
   cssDiff(gen.css, authoredCss(realCss), diffs);
-  tsDiff(gen.ts, realTs, diffs);
+  tsDiff(gen.ts, realTs, diffs, join(dir, `${name}.ts`));
   return { ok: diffs.length === 0, diffs };
 }
 function cssDiff(genCss, realAuthored, diffs) {
@@ -831,13 +832,13 @@ function cssDiff(genCss, realAuthored, diffs) {
   }
 }
 function bindingsMap(list) { const o = {}; for (const b of list) o[`.${b.el} ${b.prop}`] ??= b.sherpaVar; return o; }
-function tsDiff(genTs, realTs, diffs) {
-  const fact = (ts) => ({
+function tsDiff(genTs, realTs, diffs, realPath) {
+  const fact = (ts, path) => ({
     class: (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null,
     define: (/(?:customElements\.)?\bdefine\('([^']+)'/.exec(ts) || [])[1] ?? null,
-    observed: parseObserved(ts).sort(),
+    observed: parseObserved(ts, path).sort(),
   });
-  const g = fact(genTs), r = fact(realTs);
+  const g = fact(genTs), r = fact(realTs, realPath);
   for (const k of ['class', 'define']) if (g[k] !== r[k]) diffs.push(`TS ${k}: "${g[k]}"≠"${r[k]}"`);
   if (JSON.stringify(g.observed) !== JSON.stringify(r.observed)) diffs.push(`TS observed: [${g.observed}]≠[${r.observed}]`);
 }

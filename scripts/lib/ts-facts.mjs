@@ -42,7 +42,7 @@ import ts from 'typescript';
  * WHY an attribute is reactive, which is exactly the kind of thing worth
  * writing down next to it.
  */
-export function parseObserved(ts) {
+export function parseObserved(ts, path) {
   const src = ts ?? '';
   const m = /static override observed\s*=\s*\[([\s\S]*?)\]/.exec(src);
   if (!m) return [];
@@ -53,13 +53,14 @@ export function parseObserved(ts) {
     .split(',')) {
     const tok = raw.trim().replace(/^['"]|['"]$/g, '');
     if (!tok) continue;
-    /* `...MIRRORED` spreads a const array declared above — the select controls
-       share one list of native attributes they copy onto the inner <input>.
-       Read as a literal it became an attribute called `...MIRRORED`, so both
-       components failed the round-trip for ever. Expand it from the file. */
+    /* `...MIRRORED` spreads a const array — the select controls share one
+       list of native attributes, imported from `shared-constants.ts`. Read as
+       a literal it became an attribute called `...MIRRORED`; read only from
+       this file it expanded to nothing, and four names were `observed: false`.
+       Expand it from here, or from the file it is imported from. */
     const spread = /^\.\.\.\s*([A-Za-z_$][\w$]*)$/.exec(tok);
     if (spread) {
-      out.push(...expandArrayConst(src, spread[1]));
+      out.push(...valuesNamed(spread[1], { src, path }));
       continue;
     }
     out.push(tok);
@@ -106,13 +107,18 @@ export function parsePropDecls(src, path) {
   return init && ts.isObjectLiteralExpression(init) ? entriesOf(init, { sf, src, path }) : {};
 }
 
-/** A value list by name: in this file, else in the file a relative import names. */
+/** A value list by name: in this file, else in the file a relative import
+ *  names — `import { X as NAME }` reads `X` there. */
 function valuesNamed(name, file) {
   const here = expandArrayConst(file.src, name);
   if (here.length || !file.path) return here;
-  const from = new RegExp(`import\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"](\\.{1,2}/[^'"]+)['"]`).exec(file.src)?.[1];
-  const target = from && join(dirname(file.path), from.replace(/\.js$/, '.ts'));
-  return target && existsSync(target) ? expandArrayConst(readFileSync(target, 'utf8'), name) : [];
+  for (const m of file.src.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"](\.{1,2}\/[^'"]+)['"]/g)) {
+    const entry = m[1].split(',').map((e) => e.trim().split(/\s+as\s+/)).find((e) => (e[1] ?? e[0]) === name);
+    if (!entry) continue;
+    const target = join(dirname(file.path), m[2].replace(/\.js$/, '.ts'));
+    return existsSync(target) ? expandArrayConst(readFileSync(target, 'utf8'), entry[0]) : [];
+  }
+  return [];
 }
 
 /** The shared prop lists, read once from the base class's file. */

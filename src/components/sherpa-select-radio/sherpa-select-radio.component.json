@@ -86,7 +86,7 @@
       "$type": "prop",
       "name": "disabled",
       "type": "boolean",
-      "observed": false,
+      "observed": true,
       "native": true,
       "default": false,
       "description": "native attributes, mirrored to the inner control"
@@ -95,7 +95,7 @@
       "$type": "prop",
       "name": "name",
       "type": "string",
-      "observed": false,
+      "observed": true,
       "native": true,
       "description": "native attributes, mirrored to the inner control"
     },
@@ -103,7 +103,7 @@
       "$type": "prop",
       "name": "required",
       "type": "boolean",
-      "observed": false,
+      "observed": true,
       "native": true,
       "default": false,
       "description": "native attributes, mirrored to the inner control"
@@ -112,7 +112,7 @@
       "$type": "prop",
       "name": "value",
       "type": "string",
-      "observed": false,
+      "observed": true,
       "native": true,
       "description": "submitted value when selected"
     }
