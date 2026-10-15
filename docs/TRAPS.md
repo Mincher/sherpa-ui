@@ -1413,6 +1413,7 @@ shows only then, critical — and the View chip lists the reader's under
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/unit/parity-sweep.test.mjs`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-a-range-is-bounded-by-the-data
 
@@ -1632,9 +1633,9 @@ may still add it.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/unit/a-serial-set-chains-its-fields.test.mjs`
 - Site: `test/e2e/reforged-serial-set.spec.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-filterset.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-a-view-keeps-a-draft
 
@@ -1657,7 +1658,7 @@ Four things that are not obvious:
 - **Only the READER's changes write it.** A pick and a reset write the
   source too, and heard then, the NEW View's filters were saved under the
   OLD View's name (its id changes only after the pick's async write). While
-  the provider writes (`#writing`), nothing is heard as the reader's, and it
+  the provider writes (`#writing`, in provider-page.ts), nothing is heard as the reader's, and it
   stays so for two frames, as a redrawn bar reports late.
 - **A pick FLUSHES first**: a change still waiting for its frame is written,
   under the View it was made on, before the pick's own write.
@@ -1670,6 +1671,7 @@ Four things that are not obvious:
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/browser/view-drafts.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-reset-to-default-is-the-views-own
 
@@ -1717,6 +1719,7 @@ as it goes — `setQuery` applies what it returns.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-reset-at-default.spec.ts`
 - Site: `test/unit/query.test.mjs`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-a-value-before-the-first-render-is-held
 
@@ -8930,7 +8933,7 @@ against what you last acted on, or read `picked` — which names only what
 changed — rather than `values`.
 
 - Site: `src/core/browser/persist-view.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-the-header-chips-must-reach-the-query
 
@@ -14083,6 +14086,7 @@ A page's own presets stay preset chips, applied one at a time.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-saved-filters-are-the-last-section
 
@@ -15489,6 +15493,7 @@ never been bound.
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/browser/view-files.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-navigating-sets-up-the-page
 
@@ -15605,6 +15610,7 @@ page that still wants them.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-a-component-default-outlives-a-view
 
@@ -16586,7 +16592,7 @@ lives in memory and dies with the page.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-a-heading-menu-opens-on-what-it-holds
 

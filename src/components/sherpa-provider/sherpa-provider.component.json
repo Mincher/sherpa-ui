@@ -120,7 +120,7 @@
         {
           "$type": "method",
           "name": "deleteView",
-          "args": "id = this.#view",
+          "args": "id?: string",
           "description": "Delete the reader's own View — the one on screen unless named — and go to the first. A preset is never deleted."
         },
         {
@@ -144,7 +144,7 @@
         {
           "$type": "method",
           "name": "deleteFilters",
-          "args": "id = this.#savedSet?.id",
+          "args": "id?: string",
           "description": "DELETE a saved set — the one on screen unless named. Its filters stay."
         },
         {

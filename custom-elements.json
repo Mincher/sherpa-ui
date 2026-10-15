@@ -7765,6 +7765,9 @@
               "parameters": [
                 {
                   "name": "id",
+                  "type": {
+                    "text": "string"
+                  },
                   "optional": true
                 }
               ],
@@ -7809,6 +7812,9 @@
               "parameters": [
                 {
                   "name": "id",
+                  "type": {
+                    "text": "string"
+                  },
                   "optional": true
                 }
               ],

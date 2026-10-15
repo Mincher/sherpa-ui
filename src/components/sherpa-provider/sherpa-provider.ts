@@ -21,25 +21,15 @@ import { report } from '../../core/data/report.js';
 import { summariseBanded, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
-import {
-  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewLibrary, viewOptions, viewQueryOf,
-  type ViewLibrary,
-} from '../../core/browser/persist-view.js';
-import { labelId } from '../../core/browser/web-storage.js';
-import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
-import {
-  deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, sameFilters, saveFilterAs,
-} from '../../core/browser/saved-filters.js';
-import type { SavedSet } from '../../core/ui/filters-button.js';
+import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
+import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataChangeDetail, DataSource, SourceState } from '../../core/data/data-source.js';
-import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
-import { mergeSet } from '../../core/data/query-edits.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
-import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { ProviderMode } from './provider-mode.js';
+import { ProviderPage, type Bar } from './provider-page.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and where its Query is kept. */
@@ -71,16 +61,6 @@ export interface OpenOptions {
    *  each write. None: no drafts. TRAP T-a-view-keeps-a-draft */
   drafts?: () => DraftMode;
 }
-
-/** A filter bar, as the provider draws it. */
-type Bar = HTMLElement & {
-  populate(defs: unknown[]): Promise<void> | void;
-  available?(defs: unknown[]): void;
-  organise?(def: { group?: unknown[]; sort?: unknown[] }): void;
-  groupSets?(sets: readonly unknown[]): void;
-  heldFields?: string[];
-  report?(): void;
-};
 
 /** A subtree's whole state, as JSON — each source's question and the View on
  *  screen — to send out and take back in. TRAP T-a-page-goes-out-as-json */
@@ -251,10 +231,10 @@ export class SherpaProvider extends SherpaElement {
    */
   provide(options: ProvideOptions): Promise<void> {
     // The page `open()` set up has gone, with its source.
-    if (this.#opened && !Object.values(options.sources).includes(this.#opened.source)) {
+    if (this.#pages.opened && !Object.values(options.sources).includes(this.#pages.opened.source)) {
       this.#page?.abort();
       this.#page = null;
-      this.#opened = null;
+      this.#pages.end();
     }
     this.#sources = { ...options.sources };
     for (const source of Object.values(this.#sources)) source.limitOptions = this.#limit;
@@ -263,9 +243,7 @@ export class SherpaProvider extends SherpaElement {
     this.#states = new AbortController();
     this.#watchStates(this.#states.signal);
     for (const asked of this.#asked.values()) this.#answer(asked);
-    this.#views?.abort();
-    this.#views = null;
-    this.#hear = null;
+    this.#pages.stopViews();
     /* A page with NO data has no filters: the panel shuts — not the reader's
        choice, so it opens again on the next page that has some. TRAP T-navigating-sets-up-the-page */
     if (!Object.keys(this.#sources).length) {
@@ -274,8 +252,7 @@ export class SherpaProvider extends SherpaElement {
     // The Views are over the ONE source; a subtree of several names none.
     const [source, ...more] = Object.values(this.#sources);
     if (!options.views || !source || more.length) return Promise.resolve();
-    this.#views = new AbortController();
-    return this.#openViews(source, options, this.#views.signal);
+    return this.#pages.views(source, options);
   }
 
   /**
@@ -305,44 +282,13 @@ export class SherpaProvider extends SherpaElement {
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
     // The page as DEFINED, before a kept Query: what Reset all to default starts from.
-    const initial = source.query.applied;
-    this.#opened = { id: definition.id, store: def.store, source, library, initial };
-    // The set on screen before a reload, while it is still saved.
-    const applied = loadApplied(definition.id);
-    const set = applied ? loadSavedFilters(definition.id)[applied.id] : undefined;
-    this.#savedSet = applied && set ? { id: applied.id, label: set.label, query: set.query, before: applied.before } : null;
+    this.#pages.begin({ id: definition.id, store: def.store, source, library, initial: source.query.applied });
     // A View this page does not have is the first.
     const view = options.view && library?.()[options.view] ? options.view : undefined;
     // BEFORE the Query: a kept one is drawn onto these chips.
-    await Promise.all([this.#drawBars(view), this.#configure(definition.ui ?? {})]);
+    await Promise.all([this.#pages.drawBars(view), this.#configure(definition.ui ?? {})]);
     if (page.signal.aborted) return undefined;
-    source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
-    /* After every load — a filter, a sort, a View — and every scope change,
-       which moves a filter and loads nothing; once a frame. TODO 231 */
-    let frame = 0;
-    for (const type of ['change', 'scope-change']) {
-      source.addEventListener(type, () => {
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => {
-          this.#sayResets();
-          this.#saySaved();
-        });
-      }, { signal: page.signal });
-    }
-    /* A REQUEST. A host that asks the reader first — a confirm dialog —
-       prevents it, and calls resetView() itself. TRAP T-reset-to-default-is-the-views-own */
-    this.addEventListener('view-reset', (event) => {
-      if (!event.defaultPrevented) void this.resetView();
-    }, { signal: page.signal });
-    /* REQUESTS, as Reset to default is: a saved set's row applies it, and the
-       Saved chip's cross dismisses it. TRAP T-saved-filters-are-every-scope */
-    this.addEventListener('filters-apply', (event) => {
-      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
-      if (!event.defaultPrevented && id) void this.applyFilters(id);
-    }, { signal: page.signal });
-    this.addEventListener('filters-dismiss', (event) => {
-      if (!event.defaultPrevented) void this.dismissFilters();
-    }, { signal: page.signal });
+    this.#pages.listen(page.signal);
     await this.provide({
       sources: { [definition.id]: source },
       ...(library ? {
@@ -370,52 +316,14 @@ export class SherpaProvider extends SherpaElement {
    * save before a Reset all to default.
    * TRAP T-a-view-is-json · TRAP T-a-saved-view-is-the-readers-own
    */
-  async saveView(label?: string, options: { stay?: boolean } = {}): Promise<string | undefined> {
-    const opened = this.#opened;
-    if (!opened?.library) return undefined;
-    const own = this.#view ? loadSavedViews(opened.id)[this.#view] : undefined;
-    const name = label == null ? own?.label
-      : label.trim() && uniqueViewLabel(label, Object.values(opened.library()).map((v) => v.label));
-    if (!name) return undefined;
-    this.#flush?.();
-    saveViewAs(opened.id, name, { source: opened.source });
-    /* SAVED: the filters have a home, so neither the View they were made on
-       nor the one just saved keeps a draft of them. TRAP T-a-view-keeps-a-draft */
-    if (this.#drafts) {
-      if (this.#view) clearDraft(this.#drafts.page, this.#view);
-      clearDraft(this.#drafts.page, labelId(name));
-    }
-    // Read BEFORE the redraw: a rebuilt bar's first report is empty.
-    const kept = opened.source.query.applied;
-    const id = labelId(name);
-    // The View chip lists it either way; only a plain save moves to it.
-    await this.#quietly(async () => {
-      await this.#drawBars(options.stay ? this.#view : id);
-      await opened.source.setQuery(kept);
-    });
-    // Reported, so the URL and the nav follow the View just saved.
-    if (!options.stay) this.#viewBar()?.report?.();
-    return id;
+  saveView(label?: string, options: { stay?: boolean } = {}): Promise<string | undefined> {
+    return this.#pages.saveView(label, options);
   }
 
   /** Delete the reader's own View — the one on screen unless named — and go to
    *  the first. A preset is never deleted. TRAP T-a-saved-view-is-the-readers-own */
-  async deleteView(id = this.#view): Promise<boolean> {
-    const opened = this.#opened;
-    if (!opened?.library || !id || !loadSavedViews(opened.id)[id]) return false;
-    deleteSavedView(opened.id, id);
-    if (this.#drafts) clearDraft(this.#drafts.page, id);
-    if (id !== this.#view) {
-      await this.#drawBars(this.#view);
-      return true;
-    }
-    const first = Object.keys(opened.library())[0];
-    this.#view = first;
-    await this.#drawBars(first);
-    await this.resetView();
-    this.#viewBar()?.report?.();
-    this.emit('view-change', { id: first });
-    return true;
+  deleteView(id?: string): Promise<boolean> {
+    return this.#pages.deleteView(id);
   }
 
   /**
@@ -425,112 +333,39 @@ export class SherpaProvider extends SherpaElement {
    * answers undefined. The set's id. Will, TODO 105. TRAP T-saved-filters-are-every-scope
    */
   saveFilters(label?: string): string | undefined {
-    const opened = this.#opened;
-    const name = label == null ? this.#savedSet?.label : label.trim();
-    if (!opened || !name) return undefined;
-    this.#flush?.();
-    const query = filtersOf(viewQueryOf(opened.source));
-    saveFilterAs(opened.id, name, query);
-    const id = labelId(name);
-    /* Saved, it is the set on screen. Dismiss puts back what was before the
-       set applied — or, saved from the screen, the View's own filters. */
-    this.#putOn({ id, label: name, query, before: this.#savedSet ? this.#savedSet.before : null });
-    return id;
+    return this.#pages.saveFilters(label);
   }
 
   /** APPLY a saved set: each scope it names takes its filters; Dismiss puts
    *  back what was on screen before the first one. TRAP T-saved-filters-are-every-scope */
-  async applyFilters(id: string): Promise<boolean> {
-    const opened = this.#opened;
-    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
-    if (!opened || !set) return false;
-    this.#flush?.();
-    const before = this.#savedSet ? this.#savedSet.before : opened.source.query.applied;
-    await opened.source.setQuery(mergeSet(opened.source.query.applied, set.query));
-    this.#putOn({ id, label: set.label, query: set.query, before });
-    return true;
+  applyFilters(id: string): Promise<boolean> {
+    return this.#pages.applyFilters(id);
   }
 
   /** DISMISS the set on screen: the filters go back as they were before it —
    *  or, for one saved from the screen, to the View's own. Never the sort. */
-  async dismissFilters(): Promise<void> {
-    const opened = this.#opened;
-    const on = this.#savedSet;
-    if (!opened || !on) return;
-    this.#putOn(null);
-    if (on.before) return opened.source.setQuery(on.before);
-    const view = this.#view ? opened.library?.()[this.#view] : undefined;
-    await opened.source.setQuery(structuredClone(opened.initial));
-    if (view?.query) await opened.source.setQuery(filtersOf(view.query), { holds: 'keep' });
+  dismissFilters(): Promise<void> {
+    return this.#pages.dismissFilters();
   }
 
   /** DELETE a saved set — the one on screen unless named. Its filters stay. */
-  deleteFilters(id = this.#savedSet?.id): boolean {
-    const opened = this.#opened;
-    if (!opened || !id || !loadSavedFilters(opened.id)[id]) return false;
-    deleteSavedFilter(opened.id, id);
-    if (this.#savedSet?.id === id) this.#putOn(null);
-    else this.#saySaved();
-    return true;
+  deleteFilters(id?: string): boolean {
+    return this.#pages.deleteFilters(id);
   }
 
   /** The saved set on screen — its id, name, and whether its filters have changed since. */
   get savedFilters(): { id: string; label: string; edited: boolean } | null {
-    const on = this.#savedSet;
-    return on ? { id: on.id, label: on.label, edited: this.#edited() } : null;
+    return this.#pages.savedFilters;
   }
 
   /** The page's saved sets — what a host asks before it saves over a name. */
   get savedFilterSets(): { id: string; label: string }[] {
-    const opened = this.#opened;
-    return opened ? Object.entries(loadSavedFilters(opened.id)).map(([id, { label }]) => ({ id, label })) : [];
-  }
-
-  /** The set on screen, and what Dismiss puts back. */
-  #savedSet: { id: string; label: string; query: QueryDefaults; before: Query | null } | null = null;
-
-  /** Put a set on screen — or none — remember it in this tab, and draw it. */
-  #putOn(set: { id: string; label: string; query: QueryDefaults; before: Query | null } | null): void {
-    this.#savedSet = set;
-    if (this.#opened) keepApplied(this.#opened.id, set ? { id: set.id, before: set.before } : null);
-    this.#saySaved();
-  }
-
-  /** Have the filters changed since the set on screen was applied or saved? */
-  #edited(): boolean {
-    const opened = this.#opened;
-    const on = this.#savedSet;
-    return !!opened && !!on && !sameFilters(on.query, filtersOf(viewQueryOf(opened.source)));
-  }
-
-  /** Each saving control is told the page's sets, and which is on. TODO 105 */
-  #saySaved(): void {
-    const opened = this.#opened;
-    if (!opened) return;
-    const on = this.#savedSet;
-    const edited = this.#edited();
-    const sets: SavedSet[] = Object.entries(loadSavedFilters(opened.id)).map(([id, set]) => ({
-      id, label: set.label, ...(on?.id === id ? { on: true, edited } : {}),
-    }));
-    for (const el of [...this.#bars(), ...this.#panels()] as Array<Element & { savedSets?: SavedSet[] }>) {
-      if ('savedSets' in el) el.savedSets = sets;
-    }
-  }
-
-  /** The bar over one scope. */
-  #barFor(scope: string | null): Bar | undefined {
-    return (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === scope);
+    return this.#pages.savedFilterSets;
   }
 
   /** Is the View on screen the reader's own — saved, so it can be saved over or deleted? */
   get customView(): boolean {
-    const opened = this.#opened;
-    return !!(opened && this.#view && loadSavedViews(opened.id)[this.#view]);
-  }
-
-  /** The bar over the View's own scope. */
-  #viewBar(): Bar | undefined {
-    return this.#barFor(VIEW);
+    return this.#pages.customView;
   }
 
   /**
@@ -538,45 +373,23 @@ export class SherpaProvider extends SherpaElement {
    * Query, then the View's, as a pick puts it on. A filter the reader added
    * since goes. What "Reset all to default" does. TRAP T-reset-to-default-is-the-views-own
    */
-  async resetView(): Promise<void> {
-    const opened = this.#opened;
-    if (!opened) return;
-    const view = this.#view ? opened.library?.()[this.#view] : undefined;
-    await this.#quietly(async () => {
-      await opened.source.setQuery(structuredClone(opened.initial));
-      if (view?.query) await opened.source.setQuery(view.query, { holds: 'keep' });
-    });
-    // The View's own filters are on: nothing of the reader's is left to keep.
-    if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
-    this.#settle?.();
+  resetView(): Promise<void> {
+    return this.#pages.resetView();
   }
 
-  /** Tell each bar and panel whether its Resets would change nothing: then they
-   *  are not offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
-  #sayResets(): void {
-    const opened = this.#opened;
-    if (!opened) return;
-    const view = this.#view ? opened.library?.()[this.#view] : undefined;
-    const at = opened.source.atDefault(opened.initial, view?.query);
-    for (const el of [...this.#bars(), ...this.#panels()]) el.toggleAttribute('data-at-default', at);
-    // And Reset, where nothing is left to clear: a bar's own scope, the panel's every one.
-    const asked = new Map<string | undefined, boolean>();
-    const answered = (scope?: string): boolean => {
-      if (!asked.has(scope)) asked.set(scope, opened.source.answered(scope));
-      return asked.get(scope)!;
-    };
-    for (const bar of this.#bars()) {
-      bar.toggleAttribute('data-nothing-to-reset', !answered(this.#inherited(bar, 'data-scope') ?? undefined));
-    }
-    for (const panel of this.#panels()) panel.toggleAttribute('data-nothing-to-reset', !answered());
-  }
+  /** The open page: its Views, saved sets, drafts, kept Query and Reset. */
+  readonly #pages = new ProviderPage({
+    el: this,
+    bars: () => this.#bars() as Bar[],
+    panels: () => this.#panels(),
+    scopeOf: (el) => this.#inherited(el, 'data-scope'),
+    viewChanged: (id, elements) => {
+      this.emit('view-change', { id, ...(elements ? { elements } : {}) });
+    },
+  });
 
   /** Stops the open page's listeners. */
   #page: AbortController | null = null;
-  /** The page `open()` set up. */
-  #opened: {
-    id: string; store: string; source: DataSource; library: (() => ViewLibrary) | null; initial: Query;
-  } | null = null;
 
   /** Configure each component by id, through its own API, once it is defined.
    *  TRAP T-configuration-is-not-data */
@@ -608,61 +421,18 @@ export class SherpaProvider extends SherpaElement {
     }));
   }
 
-  /** Draw every bar from its scope, as the source describes it — the View
-   *  chip first, its Group and Sort — then what it may add. */
-  async #drawBars(view?: string): Promise<void> {
-    const opened = this.#opened;
-    if (!opened) return;
-    const { source, library } = opened;
-    await Promise.all((this.#bars() as Bar[]).map(async (bar) => {
-      const scope = this.#inherited(bar, 'data-scope');
-      if (!scope) return;
-      const described = source.describe(scope);
-      const custom = new Set(Object.keys(loadSavedViews(opened.id)));
-      const picker = scope === VIEW && library ? [{
-        id: VIEW_CHIP, label: 'View', persistent: true, active: true, select: 'single',
-        options: viewOptions(library(), view, custom),
-      }] : [];
-      // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
-      if (scope === VIEW) bar.toggleAttribute('data-custom-view', !!view && custom.has(view));
-      // Its sets first, so one render draws them. TRAP T-a-filter-set-groups-or-chains
-      bar.groupSets?.(described.sets ?? []);
-      await bar.populate([...picker, ...described.filters]);
-      if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
-    }));
-    this.#offer();
-  }
-
-  /** Each bar's Add list: what its scope may still add — by the chips it HAS,
-   *  so a restore can draw a held field's chip — each noting where it lives.
-   *  And the page's saved sets. TRAP T-saved-filters-are-every-scope */
-  #offer(): void {
-    const opened = this.#opened;
-    if (!opened) return;
-    for (const bar of this.#bars() as Bar[]) {
-      const scope = this.#inherited(bar, 'data-scope');
-      if (!scope) continue;
-      bar.available?.(opened.source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })));
-    }
-    this.#saySaved();
-  }
-
   /** The View on screen. */
   get view(): string | undefined {
-    return this.#view;
+    return this.#pages.view;
   }
 
   override onDisconnect(): void {
     this.#page?.abort();
-    this.#views?.abort();
-    this.#views = null;
-    this.#hear = null;
+    this.#pages.stopViews();
     for (const asked of this.#asked.values()) asked.unbind?.();
     this.#asked.clear();
   }
 
-  /** Stops the Views' listeners when the sources change. */
-  #views: AbortController | null = null;
   /** Stops watching the sources' loading, emptiness and failure. */
   #states: AbortController | null = null;
 
@@ -720,143 +490,6 @@ export class SherpaProvider extends SherpaElement {
     }
   }
 
-  /** The View on screen. */
-  #view: string | undefined;
-
-  /**
-   * RESTORE, then HEAR and KEEP: the session's Query, only on the View it was
-   * made on — else the URL's View; a pick from the View chip, a nav row or a
-   * link puts its Query on; and the Query is kept once per frame.
-   * TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
-   */
-  async #openViews(source: DataSource, options: ProvideOptions, signal: AbortSignal): Promise<void> {
-    const { views, session, key } = options;
-    const library = (): ViewLibrary => (typeof views === 'function' ? views() : views ?? {});
-    const first = Object.keys(library())[0];
-    this.#view = options.view ?? first;
-    const kept = key ? session?.get(key) as { view?: string; query?: Query } | undefined : undefined;
-    const start = this.#view ? library()[this.#view] : undefined;
-    this.#drafts = options.drafts ? { ...options.drafts, source, library } : null;
-    // A link to a View the reader left a draft on opens on the draft.
-    const draft = this.#view ? this.#draftOf(this.#view) : undefined;
-    if (kept?.query && kept.view === this.#view) await source.setQuery(kept.query);
-    else if (draft) await source.setQuery(draft);
-    else if (this.#view !== first && start?.query) await source.setQuery(start.query, { holds: 'keep' });
-    if (signal.aborted) return;
-    this.#hear = () => this.#hearPicks(source, library, signal);
-    this.#hear();
-    // Opened on a View with cards of its own: they are drawn now, and the page told. TODO 198
-    if (typeof start?.content === 'string') this.emit('view-change', { id: this.#view });
-    if (!this.#drafts && !(key && session)) return;
-    let frame = 0;
-    const write = (): void => {
-      frame = 0;
-      if (key && session) session.set(key, { view: this.#view, query: source.query.applied });
-      this.#keepDraft();
-    };
-    /* The READER's changes only: a pick or a reset writes the source too, and
-       kept then, the new View's filters were saved under the old View's name.
-       TRAP T-a-view-keeps-a-draft */
-    const keep = (): void => {
-      if (this.#writing) return;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(write);
-    };
-    // A pick is taken: what waits for its frame is written NOW, under the View it was made on.
-    this.#flush = () => {
-      if (!frame) return;
-      cancelAnimationFrame(frame);
-      write();
-    };
-    // After a pick or a reset, the page's kept Query is the one on screen.
-    this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
-    for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
-    // A preset switched is a report, and no selection changes.
-    this.addEventListener('quick-filter-change', keep, { signal });
-    signal.addEventListener('abort', () => {
-      cancelAnimationFrame(frame);
-      this.#flush = this.#settle = null;
-      this.#drafts = null;
-    }, { once: true });
-  }
-
-  /** Drafts for the open page: where they are kept, and what to read them from. */
-  #drafts: { page: string; mode: () => DraftMode; source: DataSource; library: () => ViewLibrary } | null = null;
-  /** Write now what a reader's change left waiting for its frame. */
-  #flush: (() => void) | null = null;
-  /** Keep the Query on screen as the page's own, after the provider wrote it. */
-  #settle: (() => void) | null = null;
-  /** The PROVIDER is writing the source — a View pick, a reset — so nothing heard is the reader's. */
-  #writing = false;
-
-  /** The draft a reader left on one View, if drafts are kept. */
-  #draftOf(id: string): QueryDefaults | undefined {
-    const d = this.#drafts;
-    return d ? loadDraft(d.page, id, draftSig(d.library()[id]), d.mode()) : undefined;
-  }
-
-  /** Keep what is on screen as the draft of the View on screen. */
-  #keepDraft(): void {
-    const d = this.#drafts;
-    if (!d || !this.#view) return;
-    saveDraft(d.page, this.#view, viewQueryOf(d.source), draftSig(d.library()[this.#view]), d.mode());
-  }
-
-  /** Run a write of the provider's own, and hear nothing of it as the reader's:
-   *  a bar redrawn by it reports a frame or two later. */
-  async #quietly(work: () => Promise<void>): Promise<void> {
-    this.#writing = true;
-    try {
-      await work();
-    } finally {
-      this.#unquietSoon();
-    }
-  }
-
-  /** The reader is heard again, two frames on. */
-  #unquietSoon(): void {
-    requestAnimationFrame(() => requestAnimationFrame(() => { this.#writing = false; }));
-  }
-
-  /** Listen for View picks again, knowing the View on screen now. */
-  #hear: (() => void) | null = null;
-  /** Stops the current View-pick listener. */
-  #pickListener: AbortController | null = null;
-
-  /** A pick from the View chip, a nav row or a link puts that View's Query on. */
-  #hearPicks(source: DataSource, library: () => ViewLibrary, signal: AbortSignal): void {
-    this.#pickListener?.abort();
-    this.#pickListener = new AbortController();
-    const picks = this.#pickListener;
-    signal.addEventListener('abort', () => picks.abort(), { once: true });
-    // Whatever has an id in this subtree NOW — a View's content brings its own.
-    const byId = (): Record<string, HTMLElement> =>
-      Object.fromEntries([...this.querySelectorAll<HTMLElement>('[id]')].map((el) => [el.id, el]));
-    onViewPicked(this, library, {
-      source,
-      get elements() { return byId(); },
-    }, {
-      signal: picks.signal,
-      // The View on screen already — a first pick of it would wipe what was kept.
-      // TRAP T-a-persistent-chip-reports-on-every-change
-      applied: this.#view ?? null,
-      into: this.querySelector<HTMLElement>('[data-view-content]'),
-      // The old View's draft is written before its answers go. TRAP T-a-view-keeps-a-draft
-      before: () => {
-        this.#flush?.();
-        this.#writing = true;
-      },
-      draft: (id) => this.#draftOf(id),
-      after: ({ id, rendered }) => {
-        this.#view = id;
-        this.#settle?.();
-        this.#unquietSoon();
-        this.#viewBar()?.toggleAttribute('data-custom-view', this.customView);
-        this.emit('view-change', { id, ...(rendered ? { elements: rendered.elements } : {}) });
-      },
-    });
-  }
-
   /**
    * This subtree's whole state as JSON — each source's question, and the View
    * on screen — for a link, another service or an agent.
@@ -865,7 +498,8 @@ export class SherpaProvider extends SherpaElement {
   export(): ProviderState {
     const sources: Record<string, SourceState> = {};
     for (const [name, source] of Object.entries(this.#sources)) sources[name] = source.export();
-    return { v: 1, ...(this.#view ? { view: this.#view } : {}), sources };
+    const view = this.#pages.view;
+    return { v: 1, ...(view ? { view } : {}), sources };
   }
 
   /**
@@ -883,22 +517,7 @@ export class SherpaProvider extends SherpaElement {
       if (source) await source.import(given);
       else report({ code: 'provider-unknown-source', message: `sherpa-provider: no source "${name}" to take in.`, at: { source: name } });
     }
-    if (!state.view || state.view === this.#view) return;
-    const was = this.#view;
-    this.#view = state.view;
-    this.#showView(was, state.view);
-    this.#hear?.();
-    this.emit('view-change', { id: state.view });
-  }
-
-  /** Put a View on the chip that shows the current one — silently: its Query is on. */
-  #showView(was: string | undefined, id: string): void {
-    for (const bar of this.querySelectorAll<HTMLElement & {
-      values?: Record<string, readonly string[]>; setChipValues?: (id: string, v: string[]) => void;
-    }>('sherpa-quick-filter-toolbar')) {
-      const chip = Object.keys(bar.values ?? {}).find((k) => bar.values?.[k]?.[0] === was);
-      if (chip) bar.setChipValues?.(chip, [id]);
-    }
+    if (state.view) this.#pages.takeView(state.view);
   }
 
   /** A request from inside: the NEAREST provider answers, so it stops here. */
