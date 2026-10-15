@@ -11414,9 +11414,10 @@ named its getters differently filtered nothing.
 
 — a reader who cleared every chip and watched the table stay filtered.
 
-The clearing is per BOUND COMPONENT. `#bound` remembers the field set each
-control last reported, so two bars over one source each clear only their own
-fields; a view bar reporting three fields never wipes the grid bar's two.
+The clearing is per SCOPE. `answer(scope, …)` clears only the fields that
+scope held and the report no longer names, so two bars over one source each
+clear only their own fields; a view bar reporting three fields never wipes the
+grid bar's two.
 
 The alternative — clearing every field the source holds — is the bug this
 avoids, and it only shows up with two controls on one page.
@@ -13171,7 +13172,7 @@ page — the very bug. `bindSource()` now reports it (`scope-all`).
 Three things make it safe:
 
 - **It costs nothing when unused.** The second, unwindowed store call happens
-  only while some bind asks for it (`#wantsAllRows`), and is skipped entirely
+  only while some bind asks for it (`SourceBinding.wantsAllRows()`), and is skipped entirely
   when the query was never windowed — no `pageSize`, or grouped, where the page
   already IS everything. A node test asserts every store call still carries its
   window when no summary is bound.
@@ -13190,6 +13191,7 @@ does.
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
