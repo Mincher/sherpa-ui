@@ -90,12 +90,7 @@ export class SherpaMetric extends SherpaElement {
   /** Its name and glyph, as its header's own. */
   #syncHead(): void {
     const head = this.$<HTMLElement>('.head');
-    if (!head) return;
-    for (const [from, to] of [['label', 'heading'], ['icon', 'icon']] as const) {
-      const value = this.dataset[from];
-      if (value) head.setAttribute(`data-${to}`, value);
-      else head.removeAttribute(`data-${to}`);
-    }
+    if (head) this.mirrorAttrs(head, [['data-label', 'data-heading'], 'data-icon']);
   }
 
   /** populate(number | { value?, label?, delta?, deltaPercent?, trend?, values?, show? }) — the tile's number */

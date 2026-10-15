@@ -60,6 +60,9 @@ export interface PropDef {
   to?: string;
   /** Write EVERY match rather than the first. */
   all?: boolean;
+  /** A boolean's JS property, by this name: it reads and toggles the attribute.
+   *  TRAP T-a-flag-brings-the-base-methods */
+  accessor?: string;
   /**
    * How the value is RENDERED. Default is plain text.
    * TRAP T-icon-value-takes-two-forms — `'icon'` or an icon name prints literally.
@@ -269,6 +272,16 @@ const Base = (globalThis.HTMLElement ?? Object) as typeof HTMLElement;
  * one page — is said, not thrown. TRAP T-a-component-imports-anywhere
  */
 export function define(tag: string, cls: CustomElementConstructor): void {
+  // A declared boolean's property: the attribute, read and toggled. Its own, if the class wrote one.
+  for (const [attr, def] of Object.entries((cls as unknown as typeof SherpaElement).props ?? {})) {
+    const name = def.accessor;
+    if (!name || Object.getOwnPropertyDescriptor(cls.prototype, name)) continue;
+    Object.defineProperty(cls.prototype, name, {
+      get(this: HTMLElement): boolean { return this.hasAttribute(attr); },
+      set(this: HTMLElement, on: boolean) { this.toggleAttribute(attr, !!on); },
+      configurable: true,
+    });
+  }
   if (typeof customElements === 'undefined') return;
   const held = customElements.get(tag);
   if (!held) customElements.define(tag, cls);
@@ -367,6 +380,10 @@ export abstract class SherpaElement extends Base {
    *  and writes no `focus()`. TRAP T-focus-is-delegated-by-the-platform */
   static delegatesFocus = false;
 
+  /** Its DEFAULT role and ARIA, through `ElementInternals`: an author's own
+   *  attribute wins, so a host never overrides one. TRAP T-aria-defaults-live-in-internals */
+  static aria: Partial<ARIAMixin> = {};
+
   /**
    * What this component ASKS its provider for — the shape of its data. Asked
    * on connect and answered by the nearest `sherpa-provider`; with none above
@@ -443,7 +460,9 @@ export abstract class SherpaElement extends Base {
 
   constructor() {
     super();
-    this.root = this.attachShadow({ mode: 'open', delegatesFocus: (this.constructor as typeof SherpaElement).delegatesFocus });
+    const own = this.constructor as typeof SherpaElement;
+    this.root = this.attachShadow({ mode: 'open', delegatesFocus: own.delegatesFocus });
+    if (Object.keys(own.aria).length) Object.assign(this.internals, own.aria);
     this.rendered = new Promise((res) => (this.#resolveRendered = res));
     const Ctor = new.target as typeof SherpaElement;
     SherpaElement.#defineConfig(Ctor);
@@ -797,16 +816,18 @@ export abstract class SherpaElement extends Base {
   }
 
   /**
-   * Copy native attributes from this host onto the control it wraps.
+   * Copy attributes from this host onto the control or composed part it wraps,
+   * each as `name`, or `[from, to]` when the part calls it something else.
    * `value` is SKIPPED — setting it after the reader has typed puts the old
    * text back, so each caller assigns `control.value` itself.
    * TRAP T-mirroring-skips-value
    */
-  protected mirrorAttrs(control: Element, attrs: readonly string[]): void {
-    for (const attr of attrs) {
-      if (attr === 'value') continue;
-      if (this.hasAttribute(attr)) control.setAttribute(attr, this.getAttribute(attr) ?? '');
-      else control.removeAttribute(attr);
+  protected mirrorAttrs(control: Element, attrs: readonly (string | readonly [from: string, to: string])[]): void {
+    for (const entry of attrs) {
+      const [from, to] = typeof entry === 'string' ? [entry, entry] : entry;
+      if (from === 'value') continue;
+      if (this.hasAttribute(from)) control.setAttribute(to, this.getAttribute(from) ?? '');
+      else control.removeAttribute(to);
     }
   }
 

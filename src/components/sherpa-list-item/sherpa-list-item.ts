@@ -29,10 +29,14 @@ export class SherpaListItem extends SherpaElement {
     'data-description': { type: 'string', kind: 'content', to: '.description', all: true },
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
     /* Current-row state. Written by the row AND set by a host. */
-    'data-current': { type: 'boolean', kind: 'style' },
+    'data-current': { type: 'boolean', kind: 'style', accessor: 'current' },
     'data-expanded': { type: 'boolean', kind: 'style' },
-    'data-selected': { type: 'boolean', kind: 'style' },
+    'data-selected': { type: 'boolean', kind: 'style', accessor: 'selected' },
   } as const;
+
+  /** Installed by `define()` from the props' `accessor`. */
+  declare current: boolean;
+  declare selected: boolean;
 
   /** The event label. */
   #labelText(): string { return this.dataset['label'] ?? ''; }
@@ -51,14 +55,6 @@ export class SherpaListItem extends SherpaElement {
     if (name === 'data-expanded') this.#syncExpanded();
     else if (name === 'data-selected') this.#syncSelected();
   }
-
-  /* ── Public API ───────────────────────────────────────────────── */
-
-  get current(): boolean { return this.hasAttribute('data-current'); }
-  set current(v: boolean) { this.toggleAttribute('data-current', v); }
-
-  get selected(): boolean { return this.hasAttribute('data-selected'); }
-  set selected(v: boolean) { this.toggleAttribute('data-selected', v); }
 
   /* ── Sync ─────────────────────────────────────────────────────── */
 

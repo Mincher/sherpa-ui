@@ -261,7 +261,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (selected, value). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (value, selected). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -332,14 +332,15 @@
       "category": "control",
       "jsProps": [
         {
-          "name": "selected",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
           "name": "value",
           "type": "string",
           "access": "read-write"
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "access": "read-write",
+          "description": "reads and toggles data-selected"
         }
       ]
     }

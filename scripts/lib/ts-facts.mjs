@@ -177,6 +177,7 @@ function declOf(node, file) {
     const v = unwrap(p.initializer);
     if ((key === 'kind' || key === 'type') && ts.isStringLiteralLike(v)) out[key] = v.text;
     else if (key === 'to') to = true;
+    else if (key === 'accessor' && ts.isStringLiteralLike(v)) out.accessor = v.text;
     else if (key === 'values' && ts.isArrayLiteralExpression(v)) {
       out.values = v.elements.flatMap((e) => (ts.isStringLiteralLike(e) ? [e.text]
         : ts.isSpreadElement(e) && ts.isIdentifier(e.expression) ? valuesNamed(e.expression.text, file) : []));

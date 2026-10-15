@@ -24,9 +24,12 @@ export class SherpaSelectCard extends SherpaElement {
     'data-orientation': SHARED_PROPS['data-orientation'],
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
-    'data-selected': { type: 'boolean', kind: 'style' },
+    'data-selected': { type: 'boolean', kind: 'style', accessor: 'selected' },
     'data-select-mode': { type: 'enum', kind: 'style', values: ['radio', 'checkbox'] },
   } as const;
+
+  /** Installed by `define()` from the props' `accessor`. */
+  declare selected: boolean;
 
   static override observed = [
     'name',
@@ -152,13 +155,6 @@ export class SherpaSelectCard extends SherpaElement {
   }
 
   /* ── Public API ────────────────────────────────────────────────────── */
-
-  get selected(): boolean {
-    return this.hasAttribute('data-selected');
-  }
-  set selected(v: boolean) {
-    this.toggleAttribute('data-selected', v);
-  }
 
   get value(): string {
     return this.getAttribute('value') ?? '';

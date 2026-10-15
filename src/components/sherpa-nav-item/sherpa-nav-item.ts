@@ -35,10 +35,14 @@ export class SherpaNavItem extends SherpaElement {
     'data-badge': { type: 'string', kind: 'content' },
     'data-description': { type: 'string', kind: 'content' },
     'data-href': { type: 'string', kind: 'style' },
-    'data-current': { type: 'boolean', kind: 'style' },
+    'data-current': { type: 'boolean', kind: 'style', accessor: 'current' },
     'data-expandable': { type: 'boolean', kind: 'style' },
-    'data-expanded': { type: 'boolean', kind: 'style' },
+    'data-expanded': { type: 'boolean', kind: 'style', accessor: 'expanded' },
   } as const;
+
+  /** Installed by `define()` from the props' `accessor`. */
+  declare current: boolean;
+  declare expanded: boolean;
 
   /** `data-type` picks the tree, so a change to it must re-stamp. */
   static override variantAttrs = ['data-type'];
@@ -60,20 +64,6 @@ export class SherpaNavItem extends SherpaElement {
 
   override onChange(): void {
     this.#sync();
-  }
-
-  get current(): boolean {
-    return this.hasAttribute('data-current');
-  }
-  set current(v: boolean) {
-    this.toggleAttribute('data-current', v);
-  }
-
-  get expanded(): boolean {
-    return this.hasAttribute('data-expanded');
-  }
-  set expanded(v: boolean) {
-    this.toggleAttribute('data-expanded', v);
   }
 
   /** Write attribute state into the template. */

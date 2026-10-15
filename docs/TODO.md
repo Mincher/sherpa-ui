@@ -265,7 +265,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
 | ✅ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
 | ✅ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
-| ⬜ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
+| ✅ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
 | ⬜ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
 | ⬜ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
 | ⬜ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
@@ -6388,6 +6388,20 @@ the current shapes; one that tested a shim now checks it is gone.
 reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 274 — Phase 4: default ARIA, boolean accessors and forwarding, in the base
+
+D5. **✅ Done 2026-10-15.** `static aria` sets a component's default role and
+ARIA through `ElementInternals`, so the loader and the callout write no
+`role` attribute (an author's own wins); a test reads them by role.
+A boolean prop's `accessor` has `define()` install the property: five
+hand-written get/set pairs went (list-item, nav-item, select-card), and the
+generator lists them. `mirrorAttrs` takes `[from, to]` pairs, and the overlay
+panel's and the metric's header loops are calls to it. Not moved: the select
+card's role (it sets `aria-checked` as an attribute, so axe needs the role
+attribute beside it), and `disabled`/`checked`/`open` accessors, which each
+sync an inner part. The plan named app-header for forwarding: it has none.
+`T-aria-defaults-live-in-internals`, `T-a-flag-brings-the-base-methods`.
 
 ### `[x]` ✅ 273 — Phase 4: form plumbing and focus delegation, in the base
 

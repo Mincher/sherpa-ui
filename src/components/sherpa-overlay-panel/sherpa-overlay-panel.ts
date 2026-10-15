@@ -121,12 +121,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Mirror the panel's attributes onto the composed header. */
   #syncHeader(): void {
     const header = this.$('.header');
-    if (!header) return;
-    for (const name of ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible'] as const) {
-      const value = this.getAttribute(name);
-      if (value == null) header.removeAttribute(name);
-      else header.setAttribute(name, value);
-    }
+    if (header) this.mirrorAttrs(header, ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible']);
   }
 
   /** The close button. */

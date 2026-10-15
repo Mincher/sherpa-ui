@@ -16184,10 +16184,30 @@ leaves it off.
 
 - Site: `src/core/ui/sherpa-element.ts`
 
+### T-aria-defaults-live-in-internals
+
+**A component's DEFAULT role and ARIA are `static aria`, set through
+`ElementInternals`** (D5; TODO 274), not attributes written onto the host. The
+loader and the callout did `if (!hasAttribute('role')) setAttribute('role',
+'status')` by hand. An author's own `role="alert"` attribute still wins — the
+platform says so: internals are the default, the attribute is the author's —
+and nothing is written to the page's markup. `static aria = { role: 'status',
+ariaLive: 'polite' }`, applied in the constructor.
+
+**Read it from the internals.** The host has no `role` attribute now, so a test
+reads `internals.role`, never `getAttribute('role')`. Playwright's `getByRole`
+does not help: it works roles out from the DOM, and does not read
+`ElementInternals`; the browser's own a11y tree does. The select card
+keeps its hand-written role: it sets `aria-checked` as an ATTRIBUTE, and an
+attribute with no role attribute beside it is what axe flags.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-loader.spec.ts`
+
 ### T-a-flag-brings-the-base-methods
 
 **A platform flag a component sets brings the base's methods with it, and the
-spec lists them.** `static formAssociated = true` brings `checkValidity()` and
+spec lists them** — and a declared boolean's `accessor` brings its property. `static formAssociated = true` brings `checkValidity()` and
 `reportValidity()`; `static delegatesFocus = true`, `focus()`. They are written
 once, in `SherpaElement` (`formLink`, and a `syncFormValue()` a control
 overrides to refresh what it submits before a check), and were written by hand
@@ -16195,9 +16215,13 @@ in 5 form controls. The spec generator reads only the component's own class, so
 `parseClassApi` adds the flag's methods — or the contract would lose the
 surface a caller reaches (`form-control-names.test.mjs` holds it). The move
 gave `checkValidity()` to the four form-associated controls that had none
-(calendar, file-upload, slider, transfer-list).
+(calendar, file-upload, slider, transfer-list). A boolean prop's `accessor:
+'current'` is the same shape: `define()` installs `get`/`set` that read and
+toggle the attribute, the class says `declare current: boolean`, and the
+generator lists the property (list-item, nav-item, select-card).
 
 - Site: `scripts/lib/ts-facts.mjs`
+- Site: `scripts/generate-component-spec.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/unit/form-control-names.test.mjs`
 

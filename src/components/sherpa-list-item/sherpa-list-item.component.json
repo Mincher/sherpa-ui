@@ -466,12 +466,14 @@
         {
           "name": "current",
           "type": "boolean",
-          "access": "read-write"
+          "access": "read-write",
+          "description": "reads and toggles data-current"
         },
         {
           "name": "selected",
           "type": "boolean",
-          "access": "read-write"
+          "access": "read-write",
+          "description": "reads and toggles data-selected"
         }
       ]
     }

@@ -8,15 +8,15 @@ import { test, expect } from './harness';
  */
 
 
-test('sets status role and a polite live region on the host', async ({ page }) => {
+test('has a status role and a polite live region by default, through ElementInternals', async ({ page }) => {
+  // TRAP T-aria-defaults-live-in-internals — read from the internals; no attribute is written.
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-loader') as HTMLElement & { rendered?: Promise<void> };
+    const el = document.createElement('sherpa-loader') as HTMLElement & { rendered?: Promise<void>; internals: ElementInternals };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    return { role: el.getAttribute('role'), live: el.getAttribute('aria-live') };
+    return { role: el.internals.role, live: el.internals.ariaLive, attr: el.getAttribute('role') };
   });
-  expect(r.role).toBe('status');
-  expect(r.live).toBe('polite');
+  expect(r).toEqual({ role: 'status', live: 'polite', attr: null });
 });
 
 test('respects a caller-supplied role instead of overriding it', async ({ page }) => {

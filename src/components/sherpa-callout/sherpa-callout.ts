@@ -18,8 +18,9 @@ export class SherpaCallout extends SherpaElement {
     'data-heading': { type: 'string', kind: 'content', to: '.title' },
   } as const;
 
+  static override aria = { role: 'status' };
+
   override onRender(): void {
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'status');
     this.$('.close')?.addEventListener('button-click', this.#onDismiss);
   }
 

@@ -359,6 +359,10 @@ function parseTsJsProps(ts) {
     props.set(name, { name, ...(type?.trim() ? { type: type.trim() } : {}), description: desc.trim() });
   }
   for (const p of parseClassApi(ts).props) props.set(p.name, { ...props.get(p.name), ...p, type: props.get(p.name)?.type ?? p.type });
+  // A declared boolean's accessor: the base class installs it. TRAP T-a-flag-brings-the-base-methods
+  for (const [attr, decl] of Object.entries(parsePropDecls(ts))) {
+    if (decl.accessor) props.set(decl.accessor, { name: decl.accessor, type: 'boolean', access: 'read-write', description: `reads and toggles ${attr}` });
+  }
   for (const p of props.values()) p.type ??= 'unknown';
   return [...props.values()];
 }

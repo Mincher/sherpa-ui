@@ -507,12 +507,14 @@
         {
           "name": "current",
           "type": "boolean",
-          "access": "read-write"
+          "access": "read-write",
+          "description": "reads and toggles data-current"
         },
         {
           "name": "expanded",
           "type": "boolean",
-          "access": "read-write"
+          "access": "read-write",
+          "description": "reads and toggles data-expanded"
         }
       ]
     }

@@ -16,10 +16,7 @@ export class SherpaLoader extends SherpaElement {
     'data-size': SHARED_PROPS['data-size'],
   } as const;
 
-  override onRender(): void {
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'status');
-    if (!this.hasAttribute('aria-live')) this.setAttribute('aria-live', 'polite');
-  }
+  static override aria = { role: 'status', ariaLive: 'polite' };
 }
 
 define('sherpa-loader', SherpaLoader);
