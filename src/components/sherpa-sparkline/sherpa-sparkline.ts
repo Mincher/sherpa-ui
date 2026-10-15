@@ -13,9 +13,15 @@ const SLOTS = 8;
 /** TRAP T-sparkline-headroom-is-a-share-of-the-box — share of the BOX, not of the data. */
 const LINE_SHARE = 0.62;
 
+/** The trend in words: a sparkline has no marks to focus, so it SAYS its shape. TODO 284 */
+const trendText = (v: readonly number[]): string =>
+  `Trend: ${formatValue(v[0]!)} to ${formatValue(v.at(-1)!)}, low ${formatValue(Math.min(...v))}, high ${formatValue(Math.max(...v))}`;
+
 export class SherpaSparkline extends SherpaElement {
   static override css = new URL('./sherpa-sparkline.css', import.meta.url);
   static override html = new URL('./sherpa-sparkline.html', import.meta.url);
+  // A host's aria-label names the chart; the trend is its description. TRAP T-a-host-label-must-reach-its-control
+  static override labelTarget = '.chart';
 
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['bar'] },
@@ -75,6 +81,9 @@ export class SherpaSparkline extends SherpaElement {
       },
     });
 
+    const chart = this.$('.chart');
+    if (drawn.length) chart?.setAttribute('aria-description', trendText(drawn));
+    else chart?.removeAttribute('aria-description');
     if (!drawn.length) return;
 
     /* FITS ITS OWN RANGE — a sparkline shows a SHAPE, so `zero: false`: a

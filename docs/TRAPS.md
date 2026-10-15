@@ -15939,6 +15939,7 @@ attribute: an attribute check passes on exactly the bug.
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 
 ### T-a-canvas-owns-its-view
 

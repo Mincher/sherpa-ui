@@ -116,7 +116,9 @@ export class SherpaGaugeChart extends SherpaElement {
     if (minEl) minEl.textContent = tick(min);
     const maxEl = this.$('.max');
     if (maxEl) maxEl.textContent = tick(max);
-
+    /* The NEEDLE's reading, in words: only the needle shows it, and a gauge with
+       no zones has no mark to focus. Never " to " (a test reads that as a zone). TODO 284 */
+    this.$('.gauge')?.setAttribute('aria-description', `Value ${tick(read)}, scale ${tick(min)}–${tick(max)}`);
   }
 
   /**
