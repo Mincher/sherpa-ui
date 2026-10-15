@@ -278,8 +278,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
 | ✅ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
 | ✅ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
-| ⬜ | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| ⬜ | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
+| 🚧 | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| 🚧 | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ⬜ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
 | ⬜ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
 | ⬜ | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
@@ -6458,6 +6458,40 @@ gone: a row reads right at once now. 954 filter-family tests passed.
 
 **✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
 wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` 🚧 288 — Phase 6: one copy of each data helper
+
+**🚧 Steps 1–8a done 2026-10-15**, one commit each, each safe by reading. A
+read-only agent planned it; a second checked the plan against the code. The
+bench counts did not move.
+
+| step | what | where now |
+|---|---|---|
+| 1 | `emptyScope`, `narrowsOne`, `eachScope`, `heldInView`, `heldAbove`, `presetClauses` — 15 narrows-skip loops, 12 empty-scope literals, 5 View-hold sets, 3 preset loops | `query.ts` |
+| 2 | `answerOf`, `readingAnswered` (was `answers`), `sameReading`; `READING_KEYS` now `satisfies Record<keyof FieldReading, 0>`, so a missed key is a type error | `query.ts` |
+| 3 | `modeOf(reading, rows?)` — the mode rule written at 7 sites | `filter-state.ts` |
+| 4 | `rowsFromPicks` — the pure half of the menu's `#seedFromPicks` | `filter-state.ts` |
+| 5 | the chip's `#hasTypedAnswer` calls `rowAnswered` | — |
+| 6 | the two `canonical`s: `filterKey` (query.ts) and `sortedJson` (saved-filters) | `query.ts` |
+| 7 | `coalesce()` (3 microtask flags) and `Latest` (4 Symbol tickets) | `timing.ts` (new) |
+| 8a | `storageKind(shared)` — 2 `kindOf` copies and 3 ternaries | `web-storage.ts` |
+
+One edge, step 1: the old loops read `narrows` as truthy, compile read
+`narrows?.length`. They differ only for `narrows: []`, which only a View's JSON
+can carry; now every site reads it as compile did.
+
+**Waits for Will's next test run:** 8b (`keyedStore` for saved views, saved
+filters and drafts — an emptied set then removes its key), 9 (the op-blind row
+test), 10 (`sameFilter`, order-free, at three sites). **Deferred:** 11 (one
+version counter for the applied Query), after 287.
+**Not run yet:** every step — type-check, lint and the bench only.
+
+### `[ ]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
+
+**🚧 Step 1 done 2026-10-15.** The 15 shapes a DataSource takes and gives move to
+`data-source-types.ts`, byte for byte; `data-source.ts` re-exports them, so
+every import still works and the built `.d.ts` is the same. 2,808 → 2,582 lines
+(2,515 after 288). Steps 2–8 wait for their plan's check.
 
 ### `[x]` ✅ 286 — Phase 6: the bench
 
