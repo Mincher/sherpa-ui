@@ -271,7 +271,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
 | ✅ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
 | ✅ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
-| 🚧 | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
+| ✅ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
 | ⬜ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
 | ⬜ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
 | ⬜ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
@@ -293,6 +293,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
+| ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6409,7 +6410,7 @@ reference in seven places; each states the rule in Sherpa's own terms now, and
 names Demos only as one app built that way. A design record that names Demos
 (PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
 
-### `[ ]` 🚧 280 — Phase 5: the filter family's async root
+### `[x]` ✅ 280 — Phase 5: the filter family's async root
 
 The review's cause: `menu.conditions` reads a row's op and text from live
 controls that fill later, so about 20 sites wait on frames. **Measured first,
@@ -6424,11 +6425,20 @@ getter, the change handler and row one's sync use them
 four-frame loop, and `refresh()` its two frames: 945 filter-family tests pass
 in three engines, and a test reads the menu at the moment it renders.
 
-**⬜ Next:** try each remaining wait the same way — remove it, run the
-family's tests — in the chip (`#recheckConditions`), the toolbar (about 9) and
-the panel (3); keep a wait only when a test says it is still needed, and say
-why in its comment. The Demos test `panel-apply:100` (adding and applying a
-second Advanced filter) flaked once on 2026-10-15 and is the one to watch.
+**✅ Step 2.** The chip's `#recheckConditions` (a re-read one frame later) is
+gone: a row reads right at once now. 954 filter-family tests passed.
+
+**✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
+wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[ ]` ⬜ 302 — Phase 5: the filter family's last frame waits
+
+Waits for Will's next test run. In the toolbar: `#onConditionChanged`'s second
+report, `#keepAnswer`'s two-frame hold, the two frames after `#settled()`, and
+the `#settled()` callers; in the panel: the two frames at its apply and
+`#editFrame`. **Not** `#onResize`'s frame: that one is layout, not a wait.
+Remove one, run the filter family's tests, keep it only when a test fails, and
+say why in its comment. Watch Demos' `panel-apply:100`.
 
 ### `[x]` ✅ 279 — Phase 3: the lexicon's moves
 
