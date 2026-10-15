@@ -2471,7 +2471,7 @@
         },
         {
           "name": "data-expandable",
-          "description": "show the expand button",
+          "description": "show the maximise / minimise button",
           "valueSet": "v"
         },
         {
@@ -2486,6 +2486,11 @@
         {
           "name": "data-icon",
           "description": "a glyph before the title (shows the icon slot area)"
+        },
+        {
+          "name": "data-maximised",
+          "description": "full-overlay state: the panel fills the window and shows its breadcrumbs",
+          "valueSet": "v"
         },
         {
           "name": "data-status",

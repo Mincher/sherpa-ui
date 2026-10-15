@@ -294,7 +294,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
-| ⬜ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
+| ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6453,13 +6453,25 @@ now a quoted bare name counts only as a key, a list item or a call argument.
 JetBrains' `web-types.json` is not written: nobody asked. Not tested in an
 editor yet. `T-the-manifest-is-written-from-the-specs`.
 
-### `[ ]` ⬜ 303 — BUG: breadcrumbs belong in the overlay panel, not the app header
+### `[x]` ✅ 303 — BUG: breadcrumbs belong in the overlay panel, not the app header
 
 Will, 2026-10-15: *"The app header shows breadcrumbs when an overlay panel is
 opened (on grid row focus) but this isn't required. Breadcrumbs should be shown
 at the top of the overlay panel when it is expanded to full overlay mode. We
 need the maximise & minimise buttons added to the header to toggle these
 states."*
+
+**✅ Done 2026-10-15.** `sherpa-overlay-panel` gains `data-maximised`: the
+panel fills the window, square, with no resize edge. Its header's Expand
+button is now ONE toggle — Maximise (`fullscreen`), then Minimise
+(`fullscreen-exit`) — shown by `data-expandable` as before; it sets the state
+itself, as collapse does, and `panel-expand` says `{ maximised }`. One button,
+not two, so the header's button pair keeps its corners. A new `breadcrumbs`
+slot at the top of the panel shows only while it is maximised. Named
+`maximised`, not `expanded`: a list row's `data-expanded` already means
+"children shown". Demos: the details panel is `data-expandable`, its trail is
+its own `sherpa-breadcrumbs`, and the app header gets none. Tests written in
+both projects; **not run** — Will's next test run.
 
 ### `[ ]` ⬜ 302 — Phase 5: the filter family's last frame waits
 

@@ -1227,10 +1227,11 @@ and `stepCurrent(by)` moves to it. The panel's up and down chevrons use those,
 and each disables at an end of the page. The panel lives in `index.html`, beside
 the Assistant, and the Context fills it: the heading is the record's name, and
 the body is every DECLARED field under its label, formatted by its type. A
-drilldown is where a trail belongs, so the header's trail reads
-`Records › <name>` while it is open. Its first crumb shuts the panel. A crumb
-is a real `<a href="?…">`, so `index.html` stops the reload on the real click,
-as it does for the nav.
+drilldown has a trail, `Records › <name>`, but it is the PANEL's, in its
+`breadcrumbs` slot, shown only while it is maximised (Will, TODO 303); the app
+header shows none. Its first crumb shuts the panel. A crumb is a real
+`<a href="?…">` to the page it is on, so the router finds no change and
+nothing reloads.
 
 - Site: `test/e2e/reforged-records-details.spec.ts`
 

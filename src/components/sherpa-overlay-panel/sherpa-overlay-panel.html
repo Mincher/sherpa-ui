@@ -7,16 +7,18 @@
     data-heading      header title text (rendered into .title)
     open              native boolean (read reflects dialog.open; set → show()/close())
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
+    data-maximised    full-overlay state: the panel fills the window and shows its breadcrumbs
     data-status       status colour cascade (critical | warning | success | info | urgent)
 
   Toolbar buttons are shown by opt-in data-* flags (CSS-gated):
     data-collapsible  show the collapse toggle
-    data-expandable   show the expand button
+    data-expandable   show the maximise / minimise button
     data-external     show the external-link button
     data-dismissible  show the close button
 
   Slots:
     icon         — custom lead icon (else the data-icon glyph)
+    breadcrumbs  — a sherpa-breadcrumbs trail, shown at the top while maximised
     description  — the metadata / description row under the title (reflects has-description)
     actions      — the host's own header controls, before the view-mode pair and close
     (default)    — the panel body
@@ -26,7 +28,7 @@
 
   Fires:
     panel-collapse   (detail: { collapsed })
-    panel-expand     (detail: { })
+    panel-expand     (detail: { maximised })
     panel-external   (detail: { })
     panel-close      (detail: { })
     panel-resize     (detail: { width })  its left edge was dragged, or moved by the keys
@@ -38,6 +40,9 @@
          TRAP T-an-overlay-panel-resizes-from-its-left-edge -->
     <div class="resize" part="resize" role="separator" aria-orientation="vertical"
          aria-label="Resize panel" tabindex="0"></div>
+    <div class="trail" part="trail">
+      <slot name="breadcrumbs" data-accepts="nav"></slot>
+    </div>
     <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
          The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header" part="header">
@@ -51,7 +56,7 @@
         <span class="divider after-actions" aria-hidden="true"></span>
         <sherpa-group class="view-modes" part="view-modes">
           <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
-                         data-icon-start="fullscreen" aria-label="Expand"></sherpa-button>
+                         data-icon-start="fullscreen" aria-label="Maximise"></sherpa-button>
           <sherpa-button class="external" part="external" data-type="icon" data-size="sm"
                          data-icon-start="open-externally"
                          aria-label="Open externally"></sherpa-button>

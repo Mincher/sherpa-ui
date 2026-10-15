@@ -6879,7 +6879,7 @@
             },
             {
               "name": "data-expandable",
-              "description": "show the expand button",
+              "description": "show the maximise / minimise button",
               "type": {
                 "text": "boolean"
               }
@@ -6903,6 +6903,13 @@
               "description": "a glyph before the title (shows the icon slot area)",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-maximised",
+              "description": "full-overlay state: the panel fills the window and shows its breadcrumbs",
+              "type": {
+                "text": "boolean"
               }
             },
             {
@@ -6959,7 +6966,7 @@
             {
               "name": "panel-expand",
               "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ maximised: boolean }>"
               }
             },
             {
@@ -6982,6 +6989,10 @@
             }
           ],
           "slots": [
+            {
+              "name": "breadcrumbs",
+              "description": "a sherpa-breadcrumbs trail, shown at the top while maximised (accepts: nav)"
+            },
             {
               "name": "icon",
               "description": "custom lead icon (else the data-icon glyph) (accepts: icon)"
@@ -7027,6 +7038,9 @@
             },
             {
               "name": "toolbar"
+            },
+            {
+              "name": "trail"
             },
             {
               "name": "view-modes"

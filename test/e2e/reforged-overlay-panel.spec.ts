@@ -242,3 +242,33 @@ test('the header buttons are 24px; the pair is one object; a divider needs both 
   expect(r.bare.metadata).toBe(false);
   expect(r.bare.header[1]).toBeLessThanOrEqual(41);
 });
+
+test('maximise fills the window and shows the trail; minimise brings the panel back', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-overlay-panel') as PanelEl;
+    el.setAttribute('data-expandable', '');
+    el.innerHTML = '<sherpa-breadcrumbs slot="breadcrumbs"><a href="#a">Records</a><a>Ada</a></sherpa-breadcrumbs><p>body</p>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.show!();
+    const sr = el.shadowRoot!;
+    const read = () => ({
+      width: Math.round(sr.querySelector('.root')!.getBoundingClientRect().width),
+      trail: getComputedStyle(sr.querySelector('.trail')!).display !== 'none',
+      label: sr.querySelector('.expand')!.getAttribute('aria-label'),
+    });
+    const before = read();
+    const told: unknown[] = [];
+    el.addEventListener('panel-expand', (e) => told.push((e as CustomEvent).detail));
+    const press = () => sr.querySelector('.expand')!.shadowRoot!.querySelector('button')!.click();
+    press();
+    const maximised = { ...read(), attr: el.hasAttribute('data-maximised') };
+    press();
+    return { before, maximised, after: read(), told, window: innerWidth };
+  });
+  expect(r.before.trail).toBe(false);
+  expect(r.before.label).toBe('Maximise');
+  expect(r.maximised).toEqual({ width: r.window, trail: true, label: 'Minimise', attr: true });
+  expect(r.after).toEqual(r.before);
+  expect(r.told).toEqual([{ maximised: true }, { maximised: false }]);
+});

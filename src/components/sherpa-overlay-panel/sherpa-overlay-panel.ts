@@ -29,6 +29,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-heading': { type: 'string', kind: 'content' },
     'data-icon': { type: 'string', kind: 'content' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
+    'data-maximised': { type: 'boolean', kind: 'style' },
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
@@ -55,6 +56,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   override onRender(): void {
     this.#syncHeader();
+    this.#syncMaximise();
     if (this.hasAttribute('open')) this.#surface.show();
     this.#surface.listen();
     this.$('.header')?.addEventListener('header-collapse', this.#onCollapse);
@@ -92,6 +94,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'open') this.#surface.follow();
+    else if (name === 'data-maximised') this.#syncMaximise();
     else this.#syncHeader();
   }
 
@@ -136,9 +139,19 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.emit('panel-collapse', { collapsed });
   };
 
-  /** The expand button — full screen is the host's to do. */
+  /** The button says what a press does next: maximise, or back to a panel. */
+  #syncMaximise(): void {
+    const on = this.hasAttribute('data-maximised');
+    const button = this.$('.expand');
+    button?.setAttribute('data-icon-start', on ? 'fullscreen-exit' : 'fullscreen');
+    button?.setAttribute('aria-label', on ? 'Minimise' : 'Maximise');
+  }
+
+  /** Maximise or minimise the panel, and report it. */
   #onExpand = (): void => {
-    this.emit('panel-expand');
+    const maximised = !this.hasAttribute('data-maximised');
+    this.set('data-maximised', maximised);
+    this.emit('panel-expand', { maximised });
   };
 
   /** The open-elsewhere button — the host decides where. */

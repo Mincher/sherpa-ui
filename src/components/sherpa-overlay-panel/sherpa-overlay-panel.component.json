@@ -38,6 +38,19 @@
           }
         },
         {
+          "el": "div",
+          "class": "trail",
+          "part": "trail",
+          "children": [
+            {
+              "slot": "breadcrumbs",
+              "attrs": {
+                "data-accepts": "nav"
+              }
+            }
+          ]
+        },
+        {
           "el": "sherpa-container-header",
           "class": "header",
           "part": "header",
@@ -90,7 +103,7 @@
                         "data-type": "icon",
                         "data-size": "sm",
                         "data-icon-start": "fullscreen",
-                        "aria-label": "Expand"
+                        "aria-label": "Maximise"
                       }
                     },
                     {
@@ -184,7 +197,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the expand button"
+      "description": "show the maximise / minimise button"
     },
     {
       "$type": "prop",
@@ -215,6 +228,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-maximised",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "full-overlay state: the panel fills the window and shows its breadcrumbs"
+    },
+    {
+      "$type": "prop",
       "name": "data-status",
       "type": "string",
       "observed": false,
@@ -232,6 +254,14 @@
     }
   ],
   "slots": [
+    {
+      "$type": "slot",
+      "name": "breadcrumbs",
+      "accepts": [
+        "nav"
+      ],
+      "description": "a sherpa-breadcrumbs trail, shown at the top while maximised"
+    },
     {
       "$type": "slot",
       "name": "icon",
@@ -275,10 +305,15 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, heading?, icon? }",
+    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, heading?, icon?, maximised? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "maximised",
+      "selector": ":host([data-maximised])"
+    },
     {
       "$type": "state",
       "name": "collapsed",
@@ -331,7 +366,10 @@
       "$type": "event",
       "name": "panel-expand",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "maximised": "boolean"
+      }
     },
     {
       "$type": "event",

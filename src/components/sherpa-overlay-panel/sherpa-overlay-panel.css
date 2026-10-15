@@ -52,6 +52,22 @@
 
 .root[open] { display: flex; }
 
+/* Maximised: the whole window, square, with no edge to drag. */
+:host([data-maximised]) .root {
+  inset-inline-start: 0;
+  inline-size: auto;
+  border-radius: 0;
+}
+:host([data-maximised]) .resize { display: none; }
+
+/* The trail shows only while maximised, and only when one is given. */
+.trail {
+  display: none;
+  flex-shrink: 0;
+  padding: var(--_pad) var(--_pad) 0;
+}
+:host([data-maximised]:state(has-breadcrumbs)) .trail { display: block; }
+
 /* No backdrop — a non-modal panel leaves the page behind interactive. */
 .root::backdrop { background: transparent; }
 
