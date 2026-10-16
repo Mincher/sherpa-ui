@@ -329,7 +329,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ❓ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
-| ⬜ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
+| ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
+| ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6838,6 +6839,20 @@ quick-filter-change", and the action cluster is "DELEGATED to slotted
 content". The spec lists 19 events, and the template builds the cluster. Read
 Figma's Filter Toolbar (150:3688) and rewrite the note to what still differs,
 or drop it.
+
+**✅ Done 2026-10-16.** Read live: Figma has two slots, content (the chips) and
+right-actions; the code builds both and keeps `view` and `actions` slots for a
+host's extras. The note now says that, and names the one gap (338). A carried
+note is the one part of a spec written by hand; a regeneration keeps it.
+
+### `[ ]` ❓ 338 — GAP: the data bar's leading Switch
+
+Figma's Filter Toolbar `Type=data` starts its content with a Switch (28×16,
+on, no label), then a divider, then the chips. The code's data bar has no
+switch. Figma does not say what it switches. **For Will:** A — it turns every
+filter in the bar off and on at once, keeping their values (suspend, not
+clear); build it. B — it is not wanted; take it out of Figma. My pick: A, if
+that is what it means.
 
 ### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
 

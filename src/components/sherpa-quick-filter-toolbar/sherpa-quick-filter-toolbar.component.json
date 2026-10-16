@@ -949,7 +949,7 @@
         }
       ],
       "divergence": {
-        "note": "INTENTIONAL simplification. Figma \"Filter Toolbar\" (150:3688) is a fuller toolbar: it bakes in a leading view chip (Type=view) or a Switch (Type=data), divider-separated preset/filter chips, and a trailing ACTION CLUSTER (Add split menu, AI/brand filter, undo, refresh, favourite/star, Save-view split menu, overflow), plus view-scope events (view-menu-open / view-change / view-save / view-favorite / data-refresh / ai-filter-request). The shipped code is a deliberately SIMPLER 3-zone slot bar (view / chips / actions): the action cluster, dividers and save-view controls are DELEGATED to slotted content (the `actions` and `view` slots), not built in, and those extra Figma events are the host's responsibility, not fired here. Chips are stamped by populate(); the only event emitted is quick-filter-change. Do not expand to match Figma without a deliberate decision."
+        "note": "Checked against Figma \"Filter Toolbar\" (150:3688) on 2026-10-16. Figma has two slots, content (chips, divider-separated) and right-actions; the code builds both itself — chips stamped by populate(), the action cluster in its template — and keeps its view and actions slots for a host's extras. One gap: Figma's Type=data leads its content with a Switch (on), and the code has none. Figma's description names older events; the code's are the contract."
       },
       "jsProps": [
         {
