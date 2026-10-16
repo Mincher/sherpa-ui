@@ -328,7 +328,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
-| 🚧 | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
+| ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | 🚧 | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | | | | **✅ Done — newest first** | |
@@ -6766,7 +6766,7 @@ for any future function; B — keep them as a door. My pick: A.
 in 1. **For Will:** A — rename the five to `.sherpa-*` and drop the aliases (a
 rename: your yes); B — keep both names. My pick: A.
 
-### `[~]` 🚧 336 — DOCS: the build-figma-component skill's collection table
+### `[x]` ✅ 336 — DOCS: the build-figma-component skill's collection table
 
 Its table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match
 the export's collections (display-mode, theme, structure, style, …).
@@ -6780,6 +6780,23 @@ cut §2 to a pointer at `sherpa://rules`' Figma section. My pick: A.
 
 **Will, 2026-10-16: A.** §2 to §4b are rewritten together, because §3 and §4's
 recipes name the same old collections. Every name is read live from Figma.
+
+**✅ Done 2026-10-16.** A read-only workflow read Figma live (25 collections,
+and six built components' bindings), drafted §2 to §4b, and a checker found
+and fixed 20 wrong names or claims. The skill now has today's collection table
+(12 base, 13 override), PRINCIPLES 8 as its rule, recipes in today's names, a
+"retired" list, and a list of mistakes in the live file not to copy. Found:
+
+- 56 collections that nodes still pin are hidden from the plugin API, and all
+  18 local text styles bind into one of them (`Typography`). So the skill
+  says: bind the Theme `content/*` atoms, use no text style.
+- Live bindings to deleted variables: the Switch `Value=on` track
+  (`style-surface/dark`), the Filter Chip's badge stroke (`_old_border/base`),
+  the Container Footer buttons' radii (`structure-rounding/*`), and most
+  effects' colour (`Elevation/color`).
+- Five status glyph masters bind a REMOTE library variable.
+
+Those are Figma's to clean; the skill says not to copy them.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
