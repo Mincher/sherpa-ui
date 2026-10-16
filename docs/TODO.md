@@ -328,9 +328,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
-| ❓ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
+| 🚧 | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
-| ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
+| 🚧 | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6766,7 +6766,7 @@ for any future function; B — keep them as a door. My pick: A.
 in 1. **For Will:** A — rename the five to `.sherpa-*` and drop the aliases (a
 rename: your yes); B — keep both names. My pick: A.
 
-### `[ ]` ❓ 336 — DOCS: the build-figma-component skill's collection table
+### `[~]` 🚧 336 — DOCS: the build-figma-component skill's collection table
 
 Its table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match
 the export's collections (display-mode, theme, structure, style, …).
@@ -6777,6 +6777,9 @@ colour binds the Style name Figma binds). That is the skill an agent follows to
 build in Figma, so its doctrine is Will's call. **For Will:** A — rewrite §2 from
 the export's collections and modes, with PRINCIPLES 8 as the binding rule; B —
 cut §2 to a pointer at `sherpa://rules`' Figma section. My pick: A.
+
+**Will, 2026-10-16: A.** §2 to §4b are rewritten together, because §3 and §4's
+recipes name the same old collections. Every name is read live from Figma.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
@@ -6848,7 +6851,7 @@ right-actions; the code builds both and keeps `view` and `actions` slots for a
 host's extras. The note now says that, and names the one gap (338). A carried
 note is the one part of a spec written by hand; a regeneration keeps it.
 
-### `[ ]` ❓ 338 — GAP: the data bar's leading Switch
+### `[~]` 🚧 338 — GAP: the data bar's leading Switch
 
 Figma's Filter Toolbar `Type=data` starts its content with a Switch (28×16,
 on, no label), then a divider, then the chips. The code's data bar has no
@@ -6856,6 +6859,9 @@ switch. Figma does not say what it switches. **For Will:** A — it turns every
 filter in the bar off and on at once, keeping their values (suspend, not
 clear); build it. B — it is not wanted; take it out of Figma. My pick: A, if
 that is what it means.
+
+**Will, 2026-10-16: A.** "The switch is optional for legacy reasons. So include
+it but hide it by default. Use an attr to expose it."
 
 ### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
 
