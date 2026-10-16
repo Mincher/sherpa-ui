@@ -662,7 +662,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — data-grid
 
-## Charts (58)
+## Charts (59)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -714,6 +714,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-populate-label-not-name](TRAPS.md#t-populate-label-not-name) — metric
 - [T-readonly-legend-is-a-key-not-a-filter](TRAPS.md#t-readonly-legend-is-a-key-not-a-filter) — chart-legend
 - [T-rollup-row-has-its-own-prototype](TRAPS.md#t-rollup-row-has-its-own-prototype) — chart-legend
+- [T-round-is-for-dynamic-sizes-only](TRAPS.md#t-round-is-for-dynamic-sizes-only) — sparkline
 - [T-slot-guards-only-when-filled](TRAPS.md#t-slot-guards-only-when-filled) — gauge-chart
 - [T-sparkline-headroom-is-a-share-of-the-box](TRAPS.md#t-sparkline-headroom-is-a-share-of-the-box) — sparkline
 - [T-the-breakdown-button-shares-the-other-row](TRAPS.md#t-the-breakdown-button-shares-the-other-row) — chart-legend

@@ -67,6 +67,7 @@ export class SherpaSparkline extends SherpaElement {
 
     this.renderItems('.shapes', 'template.shape-tpl', drawn.slice(1), {
       after: (shape, to, i) => {
+        shape.style.setProperty('--_i', String(i));
         shape.style.setProperty('--_from', String(drawn[i]));
         shape.style.setProperty('--_to', String(to));
       },

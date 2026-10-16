@@ -53,8 +53,14 @@
   --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
   --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
 
+  /* Each EDGE on a whole pixel: neighbours meet with no hairline, and a vertex
+     stays within half a pixel of its dot. TRAP T-round-is-for-dynamic-sizes-only */
+  --_segs: max(1, var(--_len, 2) - 1);
+  --_edge-start: round(calc(var(--_i, 0) / var(--_segs) * 100%), 1px);
+  --_edge-end: round(calc((var(--_i, 0) + 1) / var(--_segs) * 100%), 1px);
+
   position: relative;
-  flex: 1 1 0%;
+  flex: 0 0 calc(var(--_edge-end) - var(--_edge-start));
   min-inline-size: 0;
 
   /* Pseudo so points aren't clipped. */
@@ -98,7 +104,8 @@
 }
 
 /* ── Bar variant: flat-topped columns (both corners share the end value) ─ */
-:host([data-type="bar"]) .shape { --_v-start: var(--_v-end); }
+/* The gap parts the bars, so they share no edge and keep equal widths. */
+:host([data-type="bar"]) .shape { --_v-start: var(--_v-end); flex: 1 1 0%; }
 :host([data-type="bar"]) .shape::before {
   background: currentColor;
 }

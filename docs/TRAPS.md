@@ -15264,7 +15264,13 @@ So: reach for `round()` when dynamic content produces a fractional SIZE that
 should sit on the grid. Do not wrap tokens in it, and do not wrap a measured
 offset that is deliberately sub-pixel.
 
+A sparkline's segment IS one: its width is the chart's width over the count, so
+two neighbours met on a fractional pixel and a hairline showed between them.
+Each EDGE is rounded, not each width, so no vertex drifts more than half a pixel
+from its dot (TODO 323).
+
 - Site: `src/core/sherpa-grouping.css`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.css`
 
 ### T-a-wrapping-span-hides-its-own-row
 

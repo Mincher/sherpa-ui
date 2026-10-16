@@ -315,7 +315,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ⬜ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
-| ⬜ | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ⬜ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
@@ -6790,13 +6790,21 @@ in b17959a7. Today the grid has only the `empty` and `no-matches` slots. The
 reason was two sort states that could disagree. Measure first whether they
 still can, now that a bound grid reports and the source owns the sort.
 
-### `[ ]` ⬜ 323 — BUG: hairline gaps between the sparkline's segments
+### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
 
 Each segment is a `clip-path` polygon on a flex child of fractional width
 (`sherpa-sparkline.css`), so a hairline of background shows between neighbours.
 Will's old note said `round()` was a no-op here; `T-round-is-for-dynamic-sizes-only`
 says it works in all three engines and is for a DYNAMIC size, and a segment's
 width is one. There is no `round()` today.
+
+Done in code 2026-10-16: JS gives each segment its index (`--_i`), and CSS
+rounds each segment's two EDGES to whole pixels (`round(…, 1px)`), so
+neighbours share one edge and a vertex stays within half a pixel of its dot. A
+bar keeps equal widths: its gap means no two bars share an edge. **Waits for a
+look**: Demos' records page, the metric tiles' sparklines, at a width that does
+not divide by 7. One limit: an edge is whole RELATIVE to the chart, so a chart
+that starts on a fractional pixel still seams at 1x.
 
 ### `[ ]` ⬜ 324 — The app header: one more design pass, against Figma
 
