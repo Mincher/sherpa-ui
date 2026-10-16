@@ -328,7 +328,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
-| ⬜ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
+| ❓ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6755,10 +6755,17 @@ for any future function; B — keep them as a door. My pick: A.
 in 1. **For Will:** A — rename the five to `.sherpa-*` and drop the aliases (a
 rename: your yes); B — keep both names. My pick: A.
 
-### `[ ]` ⬜ 336 — DOCS: the build-figma-component skill's collection table
+### `[ ]` ❓ 336 — DOCS: the build-figma-component skill's collection table
 
 Its table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match
 the export's collections (display-mode, theme, structure, style, …).
+
+Read 2026-10-16: the whole of its §2 is stale, and its "golden binding rule" —
+a component binds its OWN collection first — conflicts with PRINCIPLES 8 (a
+colour binds the Style name Figma binds). That is the skill an agent follows to
+build in Figma, so its doctrine is Will's call. **For Will:** A — rewrite §2 from
+the export's collections and modes, with PRINCIPLES 8 as the binding rule; B —
+cut §2 to a pointer at `sherpa://rules`' Figma section. My pick: A.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
