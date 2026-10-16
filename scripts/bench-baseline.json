@@ -104,43 +104,107 @@
     "clones": 7
   },
   "remote/open": {
-    "loads": 3,
+    "loads": 1,
     "counts": 0,
-    "distinct": 2,
-    "rows": 10050,
+    "distinct": 0,
+    "rows": 10000,
     "compiles": 10,
     "clones": 6
   },
   "remote/pick": {
-    "loads": 2,
-    "counts": 2,
-    "distinct": 5,
-    "rows": 2558,
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
     "compiles": 15,
     "clones": 2
   },
+  "remote/repick": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 5,
+    "clones": 1
+  },
+  "remote/page": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 4,
+    "clones": 1
+  },
   "remote/report": {
-    "loads": 2,
-    "counts": 6,
-    "distinct": 5,
-    "rows": 2558,
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
     "compiles": 16,
     "clones": 8
   },
   "remote/switch-off": {
-    "loads": 2,
-    "counts": 10,
-    "distinct": 5,
-    "rows": 2558,
-    "compiles": 21,
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 19,
     "clones": 13
   },
   "remote/switch-on": {
-    "loads": 2,
-    "counts": 12,
-    "distinct": 5,
-    "rows": 2558,
-    "compiles": 21,
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 19,
     "clones": 7
+  },
+  "remote/sort": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 4,
+    "clones": 1
+  },
+  "remote/heading": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 12,
+    "clones": 2
+  },
+  "remote/search": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 4,
+    "clones": 1
+  },
+  "remote/raise": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 11
+  },
+  "remote/clear": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 2
+  },
+  "remote/reset": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 7,
+    "clones": 8
   }
 }

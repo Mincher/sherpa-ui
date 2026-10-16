@@ -215,6 +215,11 @@ export interface Store extends EventTarget {
   /** Its loads reach OUTSIDE the data layer, so a filter change waits for Apply.
    *  TRAP T-apply-and-discard-wait-for-a-change */
   readonly remote?: boolean;
+  /** A load's `total` counts every match, not just the rows it sent — so a
+   *  remote store's whole set can be held. TRAP T-a-remote-source-holds-its-whole-set */
+  readonly reportsTotal?: boolean;
+  /** A read checks only its first rows against the schema: a long read's tail is unchecked. */
+  readonly sampled?: boolean;
   /** What each field MAY hold — a set in order, a number's ends — as the data's
    *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
   readonly domains?: Readonly<Record<string, FieldDomain>>;

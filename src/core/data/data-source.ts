@@ -120,6 +120,7 @@ import {
 import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
+import { HeldSet } from './held-set.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
@@ -214,6 +215,20 @@ export class DataSource extends EventTarget {
    *  TRAP T-a-chart-scope-is-its-legend-field */
   #narrowing = new Map<string, { field: string; only: BoundControl; label?: string }>();
 
+  /* ── A remote store's whole set, held. Will, TODO 340 ─────────────────
+   * TRAP T-a-remote-source-holds-its-whole-set */
+  /** Its whole set, while held: every read asks this, on the client. */
+  #held: HeldSet | null = null;
+  /** The read of it in flight, so two asks share one. */
+  #holding: Promise<void> | null = null;
+  /** Bumped when the set goes stale, so a read begun before it lands on nothing. */
+  #heldAge = 0;
+  /** The most rows it holds; 0 holds none. */
+  readonly #holdRows: number;
+  /** It could not be held — over the cap, or not provably whole — so the store
+   *  is asked, as before, until the rows change. */
+  #holdRefused = false;
+
   constructor(options: DataSourceOptions) {
     super();
     this.store = options.store;
@@ -223,6 +238,7 @@ export class DataSource extends EventTarget {
     this.#limitOptions = options.limitOptions ?? false;
     this.#applyOn = options.applyOn ?? 'change';
     this.#debounce = options.debounce ?? 300;
+    this.#holdRows = options.holdRows ?? 50_000;
     this.#searchFields = options.searchFields;
     this.#state = {
       sort: options.sort ?? [],
@@ -939,8 +955,10 @@ export class DataSource extends EventTarget {
    */
   declareFromRows(fields: readonly string[]): Promise<void> {
     return this.#catalogue.fromRows(fields, async (open) => {
-      if (this.store.distinct) return this.store.distinct(open, {});
-      const { rows } = await this.store.load({});
+      await this.#hold();
+      const reads = this.#reads;
+      if (reads.distinct) return reads.distinct(open, {});
+      const { rows } = await reads.load({});
       return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
     });
   }
@@ -1612,6 +1630,8 @@ export class DataSource extends EventTarget {
     // that MUST happen says so.
     // TRAP T-no-op-load-guard
     // TRAP T-in-flight-ticket-discards-stale — ANSWERED and ASKED are separate.
+    // FORCED: the rows may have changed, so a held set is read again.
+    if (options.force) this.#letGo();
     const key = this.#stateKey();
     if (!options.force) {
       /* ANSWERED only while nothing else is in flight. A DIFFERENT load in
@@ -1624,9 +1644,53 @@ export class DataSource extends EventTarget {
          first load was still out. TRAP T-an-asked-load-is-awaited */
       if (key === this.#inFlightKey && this.#asking) return this.#asking;
     }
+    return this.#reask(key);
+  }
+
+  /** Ask the store — or the held set — this question, even one asked before. */
+  #reask(key = this.#stateKey()): Promise<LoadResult> {
     const asking = this.#ask(key);
     this.#asking = asking;
     return asking;
+  }
+
+  /** What every read asks: the held set, else the store. */
+  get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct'> {
+    return this.#held ?? this.store;
+  }
+
+  /** Read a remote store's whole set once, where it can be held.
+   *  TRAP T-a-remote-source-holds-its-whole-set */
+  #hold(): Promise<void> {
+    if (!this.#remote || this.#held || this.#holdRefused || this.#holdRows <= 0) return Promise.resolve();
+    if (this.#holding) return this.#holding;
+    const age = this.#heldAge;
+    const holding: Promise<void> = this.store.load({ take: this.#holdRows + 1 }).then(({ rows, total, dropped, issues }) => {
+      if (age !== this.#heldAge) return;
+      const why = !this.store.reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
+        : this.store.sampled ? 'its schema checks only a sample of each read'
+          : rows.length > this.#holdRows || total !== rows.length ? `it holds more than ${this.#holdRows} rows (holdRows)` : '';
+      if (!why) {
+        this.#held = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) });
+        return;
+      }
+      this.#holdRefused = true;
+      report({
+        code: 'held-set-refused',
+        message: `This remote store's whole set is not held, so every question asks the store: ${why}.`,
+        at: { rows: rows.length, total, holdRows: this.#holdRows },
+      });
+    }).finally(() => { if (this.#holding === holding) this.#holding = null; });
+    this.#holding = holding;
+    return holding;
+  }
+
+  /** The held set is stale — the rows changed, or a refresh asks for them again. */
+  #letGo(): void {
+    this.#held = null;
+    this.#holding = null;
+    this.#holdRefused = false;
+    this.#heldAge++;
   }
 
   /** The load in flight, for a caller that asks the same question again. */
@@ -1639,7 +1703,8 @@ export class DataSource extends EventTarget {
     this.dispatchEvent(new CustomEvent('loading', { detail: { loading: true } }));
 
     try {
-      const result = await this.store.load(this.#loadOptions());
+      await this.#hold();
+      const result = await this.#reads.load(this.#loadOptions());
       // Not the latest → DISCARDED, and the key recorded only by the winner.
       if (!this.#inFlight.is(ticket)) return this.#result;
       this.#result = result;
@@ -1658,7 +1723,7 @@ export class DataSource extends EventTarget {
       else if (!windowed && !split) this.#allRows = result.rows;
       else {
         const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
-        const all = await this.store.load(viewed ? { ...rest, filter: viewed } : rest);
+        const all = await this.#reads.load(viewed ? { ...rest, filter: viewed } : rest);
         if (!this.#inFlight.is(ticket)) return this.#result;
         this.#allRows = all.rows;
       }
@@ -1670,7 +1735,7 @@ export class DataSource extends EventTarget {
       const pages = this.totalPages;
       if (!this.#state.group && this.#state.pageSize && this.#state.page > pages) {
         this.#state.page = pages;
-        return this.load({ force: true });
+        return this.#reask();
       }
 
       this.#binding.publish();
@@ -1726,7 +1791,7 @@ export class DataSource extends EventTarget {
     const out: Record<string, number> = {};
     await Promise.all(own.map(async ([id, clause]) => {
       const filter = clause && andFilter([...base, clause]);
-      if (filter) out[id] = await this.store.totalCount({ filter });
+      if (filter) out[id] = await this.#reads.totalCount({ filter });
     }));
     return out;
   }
@@ -1756,7 +1821,7 @@ export class DataSource extends EventTarget {
            TRAP T-everything-on-is-no-filter */
         const clause = readingClause({ field: f, ...(type ? { type } : {}) }, { picked: [value], range: false });
         if (!clause) return;
-        (out[f] ??= {})[valueKey(value)] = await this.store.totalCount({ filter: andFilter([...base, clause])! });
+        (out[f] ??= {})[valueKey(value)] = await this.#reads.totalCount({ filter: andFilter([...base, clause])! });
       });
     }));
     return out;
@@ -1830,7 +1895,7 @@ export class DataSource extends EventTarget {
       passes.get(key)!.fields.push(f);
     }
     const out: Record<string, string[]> = {};
-    for (const { filter, fields: some } of passes.values()) Object.assign(out, await presentUnder(this.store, some, filter));
+    for (const { filter, fields: some } of passes.values()) Object.assign(out, await presentUnder(this.#reads, some, filter));
     return out;
   }
 
@@ -1873,7 +1938,7 @@ export class DataSource extends EventTarget {
         }
         const under = below.get(`${scope}:${f}`);
         const ruling = parts.filter((p) => !p.field || !under?.has(p.field)).map((p) => p.clause);
-        const held = new Set((await presentUnder(this.store, [f], andFilter(ruling)))[f]);
+        const held = new Set((await presentUnder(this.#reads, [f], andFilter(ruling)))[f]);
         const aside = [...new Set([...(chained[f] ?? []), ...picks.map(valueKey).filter((k) => !held.has(k))])];
         if (aside.length) {
           if (!out.has(scope)) out.set(scope, {});
@@ -1899,7 +1964,7 @@ export class DataSource extends EventTarget {
         const picks = this.#applied.scopes[scope]?.readings[f]?.picked ?? [];
         let aside: string[] = [];
         if (above.length && picks.length && this.#catalogue.isList(f)) {
-          const held = new Set((await presentUnder(this.store, [f], andFilter(above)))[f]);
+          const held = new Set((await presentUnder(this.#reads, [f], andFilter(above)))[f]);
           aside = picks.map(valueKey).filter((k) => !held.has(k));
           if (aside.length) out.set(scope, { ...out.get(scope), [f]: aside });
         }
@@ -1923,7 +1988,7 @@ export class DataSource extends EventTarget {
       if (s !== scope) continue;
       const above: Filter[] = [];
       for (const f of chain) {
-        if (above.length && this.#catalogue.isList(f)) Object.assign(out, await presentUnder(this.store, [f], andFilter(above)));
+        if (above.length && this.#catalogue.isList(f)) Object.assign(out, await presentUnder(this.#reads, [f], andFilter(above)));
         const clause = clauseOf(this.#applied, this.#catalogue, scope, f, aside[f]);
         if (clause) above.push(clause);
       }
@@ -2043,16 +2108,17 @@ export class DataSource extends EventTarget {
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
     const needsAll = facts.rows === 'all' && !this.#allRows.length;
-    if (this.#autoLoad && (!this.#result.rows.length || needsAll)) {
-      void this.load({ force: needsAll });
-    }
+    // Asked again, not fetched again: the rows did not change, so a held set stays.
+    if (this.#autoLoad && needsAll) void this.#reask();
+    else if (this.#autoLoad && !this.#result.rows.length) void this.load();
   }
 
   /** Every row a bound component is under, UNPAGED — what "Select all rows"
    *  ticks on a grid that holds one page. TODO 238 · TRAP T-select-all-is-the-visible-rows */
   async allRows(el?: BoundControl): Promise<readonly Row[]> {
     const { skip: _skip, take: _take, ...options } = this.#loadOptions();
-    const { rows } = await this.store.load(options);
+    await this.#hold();
+    const { rows } = await this.#reads.load(options);
     const entry = el ? this.#binding.get(el) : undefined;
     const own = entry ? this.#only[entry.id] : undefined;
     return own ? filterRows(rows, own) : rows;

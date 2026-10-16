@@ -191,6 +191,10 @@ export interface DataSourceOptions {
   applyOn?: 'change' | 'input';
   /** How long a live filter waits after the last move, in ms. Default 300. */
   debounce?: number;
+  /** A REMOTE store's whole set is held, up to this many rows, and every
+   *  question is answered from it on the client. Default 50 000; 0 holds none.
+   *  Will, TODO 340. TRAP T-a-remote-source-holds-its-whole-set */
+  holdRows?: number;
 }
 
 /** What the binder tells the source about one component. `bindSource()` says it. */

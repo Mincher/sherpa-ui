@@ -332,7 +332,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
-| 🚧 | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
+| ✅ | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
 | ⬜ | 62.86 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
@@ -6852,7 +6852,7 @@ Found by 336's live read, 2026-10-16. In the Figma file, not the code:
 
 It is Will's file, so this waits for him: a clean-up pass, or leave it.
 
-### `[~]` 🚧 340 — DATA: toggles, cycles and the Switch are client updates
+### `[x]` ✅ 340 — DATA: toggles, cycles and the Switch are client updates
 
 Will, 2026-10-16, after 338: *"The switch will never make new server side
 requests, of filter conditions, on toggle."* Then: *"All filter chip UI
@@ -6888,6 +6888,31 @@ and current, answers every load, count and distinct read on the client, with
 the same pipeline a local store runs. It asks the store again on a refresh, a
 store `change`, or when the set is over the cap (then as today). Rows are as
 fresh as the last full read.
+
+**✅ Built 2026-10-16.** `HeldSet` (`src/core/data/held-set.ts`) holds a
+remote store's whole set, and every read the source makes — the page, the
+unpaged rows, each chip's count, Limit's distinct reads, `allRows()`,
+`declareFromRows()` — asks it while it is held, with `applyOptions` and
+`distinctOf`. Held only when provably whole: the store `reportsTotal` (new; a
+`RestStore` needs a `totalPath`), it checks every row (`sampled`, new), and it
+has at most `holdRows` rows (a source option, default 50 000). A public forced
+load (a store `change`, a Refresh) reads it again; an ask that only repeats a
+question keeps it. TRAP `T-a-remote-source-holds-its-whole-set`;
+DATA-SOURCE-RULES says what a backend must give.
+
+**Measured on the bench** (its remote page now runs all 13 acts): opening reads
+the store ONCE (was 3 loads and 2 distinct reads); every act after it — a pick,
+a page, a report, the Switch off and on, a sort, a heading, a search, raise,
+clear, reset — costs 0 loads, 0 counts and 0 distinct reads (was 2 loads, up to
+12 counts and 5 distinct reads each). `asked()` in the bench now FAILS any remote
+act that asks the store, so the rule cannot slip. A local store is unchanged: it
+never left the client.
+
+**Look at:** Demos, `?context=records&remote` — only the first load waits its
+800 ms; every toggle after it is instant. **Not run yet:** the node tests that
+count a remote source's loads (query, headless-data-layer,
+a-live-filter-waits-for-the-moves-to-stop) may need their numbers moved, when
+Will says to test.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.

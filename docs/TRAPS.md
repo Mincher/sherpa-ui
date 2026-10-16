@@ -3178,6 +3178,7 @@ This is the only path by which a schema's refusals are readable, which is why
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/held-set.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-one-collator-for-the-library
@@ -3336,6 +3337,40 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-a-remote-source-holds-its-whole-set
+
+Will's rule (TODO 340): the DATA LAYER decides whether a question goes to the
+server or is answered on the client, and a chip toggle, a Sort or Group cycle
+and the filter Switch are client updates. The client can answer only from a
+COMPLETE set it already holds, and what it holds must not depend on which
+component is bound (TODO 341).
+
+So a remote source reads its store's whole set once — `load({ take: holdRows + 1 })`,
+no filter: what the server's own shaping gives — and while it is held, every
+load, count and distinct read asks `HeldSet`, which runs `applyOptions` and
+`distinctOf`, the pipeline a local store runs. Every page comes from the one
+set, so a page cut on the client never meets one the server sorted.
+
+**Held only when provably whole:** the store `reportsTotal` (a `RestStore`
+needs a `totalPath`), its schema checks every row (`sampled` false — a raw tail
+would be filtered as if parsed), and it has at most `holdRows` rows. Otherwise
+`held-set-refused` says why, once, and the store is asked as before.
+
+**Read again only when the rows may have changed:** a store `change`, a
+Refresh — a public `load({ force: true })`. An ask that only repeats a question
+— a summary bound late, a page re-clamp — uses `#reask()` and keeps it. A read
+begun before the set went stale lands on nothing (`#heldAge`). What the schema
+refused on that read is said on every held load.
+
+The bench holds the rule: each act on its remote page after it opens must cost
+0 loads, 0 counts and 0 distinct reads (`asked()`) — a rule, never a baseline.
+
+- Site: `src/core/data/held-set.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/store.ts`
+- Site: `scripts/check-bench.mjs`
 
 ### T-the-filter-switch-keeps-what-it-turned-off
 

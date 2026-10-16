@@ -252,6 +252,33 @@ Each thing you tell a source, you can ask back — one door each:
 Each read-back here is a copy — `partFacts`' `only` is the element itself — and
 `rows` is the source's own array, so never change it.
 
+### A remote store's whole set is HELD
+
+A store with `remote: true` is read ONCE for its whole set — `load({ take })`
+with no filter, no sort and no search, so the answer is what your server's own
+shaping gives (a tenant, a permission). While that set is held, the source
+answers every load, count and distinct read on the client, with the same
+search, filter, sort and paging an in-memory store runs. A chip toggled, a sort
+cycled, the filter Switch, a page turned: none of them reaches your server.
+
+Your store must say two things for its set to be held:
+
+- **`reportsTotal`: its `total` counts every match.** A `RestStore` says so only
+  with a `totalPath`; without one, its total is the rows it sent, and a server
+  that caps a response silently would look whole.
+- **`sampled` is false: its schema checks every row it reads.**
+
+The set is also held only up to `holdRows` rows (a source option, default
+50 000; `0` holds none). Otherwise the source says why once
+(`held-set-refused`) and asks your store for every question, as before.
+
+The rows are as fresh as the last whole read. The source reads it again on a
+Refresh, or when the store announces a `change` — so a store whose rows change
+on the server should announce it (an `EventStore` or `SocketStore` does).
+
+Matching is the client's from then on, so your server and the client must agree
+on what a whole read returns, not on how to filter it.
+
 ### A failed load is a STATE, not a throw
 
 Every load emits `loading` first, then `change` — or `error`. A backend being
@@ -355,3 +382,5 @@ nothing else. Saved Views, saved filters and the session are the app layer:
 9. A component EXTENDS a view's filter; it never alters it.
 10. Stores are app-level; sources are view-level.
 11. None of it needs a browser.
+12. A remote store's whole set is held — up to `holdRows`, when it reports a
+    true total — and every question is then answered on the client.

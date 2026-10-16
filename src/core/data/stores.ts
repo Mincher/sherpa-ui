@@ -264,6 +264,11 @@ export class RestStore extends BaseStore {
     this.#options = options;
   }
 
+  /** Only a `totalPath` says how many rows match: without one, the total is the rows sent. */
+  override get reportsTotal(): boolean {
+    return !!this.#options.totalPath;
+  }
+
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     // A relative date reaches the server as the days it means today. TRAP T-a-relative-date-stays-relative
     const sent = options.filter ? { ...options, filter: absoluteDates(options.filter) } : options;

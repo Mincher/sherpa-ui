@@ -29,7 +29,7 @@ export function limitFor(applied: Query, facts: CompileFacts, scope: string, fie
 
 /** Each field's distinct values, as value keys, among the rows a filter matches. */
 export async function presentUnder(
-  store: Store, fields: readonly string[], filter: Filter | undefined,
+  store: Pick<Store, 'load' | 'distinct'>, fields: readonly string[], filter: Filter | undefined,
 ): Promise<Record<string, string[]>> {
   const options = filter ? { filter } : {};
   const keys = (values: readonly unknown[]): string[] => [...new Set(values

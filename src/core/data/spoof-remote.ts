@@ -35,6 +35,8 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
     key: store.key,
     time: store.time,
     domains: store.domains,
+    reportsTotal: store.reportsTotal ?? false,
+    sampled: store.sampled ?? false,
     async load(o?: LoadOptions): Promise<LoadResult> {
       await wait();
       if (Math.random() < fail) throw new Error('spoofRemote: the fetch failed.');

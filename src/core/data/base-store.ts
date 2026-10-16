@@ -45,6 +45,16 @@ export abstract class BaseStore extends EventTarget implements Store {
     this.sampleSize = options.sample ?? 0;
   }
 
+  /** A load's total counts every match: these stores page in memory. */
+  get reportsTotal(): boolean {
+    return true;
+  }
+
+  /** A read checks only its first rows. TRAP T-schema-sample-cost */
+  get sampled(): boolean {
+    return !!this.schema && this.sampleSize > 0;
+  }
+
   /** What each field MAY hold, as its schema says. TRAP T-the-data-says-what-a-field-may-hold */
   get domains(): Readonly<Record<string, FieldDomain>> {
     return domainsOf(this.schema);

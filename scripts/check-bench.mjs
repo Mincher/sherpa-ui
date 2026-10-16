@@ -13,6 +13,7 @@
  * Map:
  * - GATED — the costs per act that may only fall
  * - bench — open each page, run its acts in order, and count what each cost
+ * - asked — each act on the remote page, after it opens, that asked the store
  * - over — each cost above the baseline, and each act one side lacks
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -191,7 +192,7 @@ const ACTS = {
   clear: (p) => p.view.answer({}),
   reset: (p) => p.source.setQuery(structuredClone(p.initial)),
 };
-const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: ['pick', 'report', 'switch-off', 'switch-on'] } };
+const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: Object.keys(ACTS) } };
 
 /** An act has ended when no counter moves for three timer turns. */
 async function settle(name) {
@@ -239,6 +240,18 @@ export async function bench() {
   return costs;
 }
 
+/** The reads that leave the data layer. */
+const ASKS = ['loads', 'counts', 'distinct'];
+
+/** Each act on the remote page, after it opens, that asked the store: its whole
+ *  set is held, so the client answers. A rule, never a baseline — Will, TODO 340.
+ *  TRAP T-a-remote-source-holds-its-whole-set */
+export function asked(costs) {
+  return Object.entries(costs)
+    .filter(([act, c]) => act.startsWith('remote/') && act !== 'remote/open' && ASKS.some((k) => c[k] > 0))
+    .map(([act, c]) => `${act} asked the store: ${ASKS.map((k) => `${k} ${c[k]}`).join(', ')}`);
+}
+
 /** Each cost above the baseline, and each act one side lacks. */
 export function over(costs, base) {
   const out = [];
@@ -260,6 +273,12 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   }
   const costs = await bench();
   console.table(costs);
+  const asks = asked(costs);
+  if (asks.length) {
+    for (const line of asks) console.log(`  ${line}`);
+    console.log('A remote act asked the store. Its whole set is held, so the client answers it (TODO 340).');
+    process.exit(1);
+  }
   if (process.argv.includes('--update-baseline')) {
     const keep = Object.fromEntries(Object.entries(costs).map(([a, c]) => [a, Object.fromEntries(GATED.map((k) => [k, c[k]]))]));
     writeFileSync(BASELINE, `${JSON.stringify(keep, null, 2)}\n`);
