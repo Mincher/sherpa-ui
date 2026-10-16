@@ -332,6 +332,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| 🚧 | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6818,6 +6819,23 @@ Found by 336's live read, 2026-10-16. In the Figma file, not the code:
   title, description and body; the Switch `Value=on` label).
 
 It is Will's file, so this waits for him: a clean-up pass, or leave it.
+
+### `[~]` 🚧 340 — DATA: toggles, cycles and the Switch are client updates
+
+Will, 2026-10-16, after 338: *"The switch will never make new server side
+requests, of filter conditions, on toggle."* Then: *"All filter chip UI
+interactions are handled between the presentation and data layers of sherpa.
+It is the data layer that determines if a server side request for data is made
+or if a client side update is enough. The latter is enough for the switch,
+general toggling & cycling of chips etc."*
+
+Measured the same day, on the bench's fake remote store: one Switch toggle
+made 2 loads, 10–12 counts and 5 distinct reads, as any chip change does. So
+today it is not true. In scope: a chip off or on with its value kept, a saved
+filter on or off, the Switch, a Sort cycle and a Group toggle. Not in scope: a
+new value, a typed condition, a page, a search. It is the first slice of 170
+("client side handling immediate front end changes"); the rest of 170 still
+waits. A read-only workflow is planning it.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
