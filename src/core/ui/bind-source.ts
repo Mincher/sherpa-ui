@@ -221,7 +221,8 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       if (typeof bind?.scope === 'string') {
         // Its filter Switch, from a bar that shows one. TRAP T-the-filter-switch-keeps-what-it-turned-off
         const suspended = typeof detail['suspended'] === 'boolean' ? { suspended: detail['suspended'] } : {};
-        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets, ...suspended });
+        const reset = detail['reset'] === true ? { reset: true } : {};
+        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets, ...suspended, ...reset });
         return;
       }
       // An unscoped bar's report is its whole answer, saved filters too.

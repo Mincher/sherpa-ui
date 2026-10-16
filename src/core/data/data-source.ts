@@ -2090,7 +2090,11 @@ export class DataSource extends EventTarget {
     presets?: Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
     /** Its filter Switch is off — only from a bar that shows one. */
     suspended?: boolean;
+    /** A Reset: what the Switch turned off is forgotten, not brought back. */
+    reset?: boolean;
   }): void {
+    const off = this.#draft.scopes[scope]?.suspended;
+    if (answer.reset && off) this.#draft.scopes[scope]!.suspended = { fields: [], presets: [] };
     if (answer.holds) this.hold(scope, [...answer.holds]);
     const presets = answer.presets ?? {};
     for (const [id, p] of Object.entries(presets)) if (!this.#presets.has(id)) this.declarePreset(id, p.readings);
@@ -2099,6 +2103,12 @@ export class DataSource extends EventTarget {
     if (answer.suspended !== undefined) this.suspendScope(scope, answer.suspended);
     // A bar's report IS its Apply: its menus waited for it, remote.
     this.commit();
+    // A saved filter it turned on, into a scope ALREADY off, was turned off: draw
+    // that. A Switch turned off just now has drawn its bars.
+    const now = this.#draft.scopes[scope];
+    if (off && now?.suspended && Object.entries(presets).some(([id, p]) => p.on && !now.presets?.[id])) {
+      this.#binding.drawBars(scope);
+    }
   }
 
   /** A HEADING's answer is its field's, in its grid's scope — and a field no

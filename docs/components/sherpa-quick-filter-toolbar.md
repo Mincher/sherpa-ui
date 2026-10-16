@@ -121,7 +121,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; scope: 'bar'; suspended: boolean \| undefined; values: Record<string, string[]> }` | Its whole answer; `suspended` while it shows its Switch. |
+| `quick-filter-change` | `{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; reset: boolean \| undefined; scope: 'bar'; suspended: boolean \| undefined; values: Record<string, string[]> }` | Its whole answer; `suspended` while it shows its Switch, `reset` from Reset. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: 'asc' \| SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |

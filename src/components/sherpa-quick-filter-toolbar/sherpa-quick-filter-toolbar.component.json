@@ -677,7 +677,7 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
-      "description": "Its whole answer; `suspended` while it shows its Switch.",
+      "description": "Its whole answer; `suspended` while it shows its Switch, `reset` from Reset.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -685,6 +685,7 @@
         "holds": "string[]",
         "presets": "Record<string, { on: boolean; readings: Record<string, FieldReading>; }>",
         "readings": "Record<string, FieldReading & { label: string; values: string[]; }>",
+        "reset": "boolean | undefined",
         "scope": "'bar'",
         "suspended": "boolean | undefined",
         "values": "Record<string, string[]>"

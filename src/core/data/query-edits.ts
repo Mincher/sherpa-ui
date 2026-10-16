@@ -61,6 +61,22 @@ export function keepOff(query: Query): string[] {
     const off = scope.suspended;
     if (!off) continue;
     const before = JSON.stringify([off, scope.readings, scope.presets]);
+    /* A listed field that LEFT — raised, lowered, moved — leaves the Switch:
+       it is on again where it went, or listed there if that scope is off too. */
+    for (const f of off.fields) {
+      if (f in scope.readings) continue;
+      const home = homeOf(query, f);
+      const there = query.scopes[home];
+      const reading = there?.readings[f];
+      if (!there || !reading?.suspended) continue;
+      if (there.suspended) {
+        if (!there.suspended.fields.includes(f)) there.suspended.fields.push(f);
+      } else {
+        const { suspended: _off, ...on } = reading;
+        there.readings[f] = on;
+      }
+      if (!touched.includes(home)) touched.push(home);
+    }
     off.fields = off.fields.filter((f) => f in scope.readings);
     off.presets = off.presets.filter((p) => p in (scope.presets ?? {}));
     for (const [field, reading] of Object.entries(scope.readings)) {
@@ -252,7 +268,10 @@ export function definitionOf(
     for (const [field, reading] of Object.entries(scope.readings)) {
       if (!facts.carriesOver(field)) continue;
       if (Object.values(next.scopes).some((s) => field in s.readings)) continue;
-      (next.scopes[id] ??= emptyScope()).readings[field] = structuredClone(reading);
+      const copy = structuredClone(reading);
+      // The new View's Switch is on: what the old one turned off comes back on.
+      if (scope.suspended?.fields.includes(field)) delete copy.suspended;
+      (next.scopes[id] ??= emptyScope()).readings[field] = copy;
     }
   }
   for (const [id, scope] of eachScope(base)) {

@@ -25,6 +25,7 @@ import {
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
+import { readingAnswered } from '../../core/data/query.js';
 import {
   modeOf, readingRows, ruleOut, allSetAside,
   type FieldReading,
@@ -108,8 +109,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The filter defs this bar holds, in order. */
   #filters: FilterDef[] = [];
-  /** A source draws this bar's scope, so the Switch's list is the source's. */
+  /** A source has drawn this bar's scope. */
   #scoped = false;
+  /** A source owns this bar's chips — bound, or drawn by one — so the Switch's
+   *  list is the source's, from the first act. */
+  get #sourced(): boolean {
+    return this.#scoped || this.hasAttribute('data-locked');
+  }
   /** With no source: the chips its Switch turned off. TRAP T-the-filter-switch-keeps-what-it-turned-off */
   #switchedOff: string[] | null = null;
   /** The columns the Group and Sort chips offer. */
@@ -208,6 +214,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A folded chip's row asked for its child menu: drill into it. TRAP T-a-row-opens-its-child-menu */
   #onMenuDrill = (event: Event): void => {
+    // While the Switch is off, a folded chip is as still as a shown one.
+    if (this.filtersSuspended) return;
     const id = String((event as CustomEvent).detail?.value ?? '');
     const add = this.pathFind(event, '.add-btn');
     const into = add?.querySelector<SherpaMenu>('sherpa-menu');
@@ -410,6 +418,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.current = false;
       }
     }
+    this.#keepOffChips();
   }
 
   /**
@@ -439,6 +448,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          chip reading "3 Plan Enterprise…" while claiming to be off. */
       chip.values = picks;
       if (!picks.length) chip.current = false;
+      this.#keepOffChips();
       return;
     }
   }
@@ -473,6 +483,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The CHIP draws it: it knows what answers it. TRAP T-a-chip-says-its-own-answer
     const chip = this.#chips().find((c) => c.dataset['id'] === id && c.hasAttribute('data-menu'));
     if (chip) chip.reading = reading;
+    this.#keepOffChips();
   }
 
   /**
@@ -777,6 +788,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
+    this.#keepOffChips();
     this.#onResize();
 
     /* AND AGAIN once every chip has drawn ITSELF. A cloned `sherpa-quick-filter`
@@ -1026,7 +1038,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   set filtersSuspended(off: boolean) {
     // A source's scope is turned by its Switch, so a bar with none cannot.
-    if (this.#scoped && !this.#switchable) {
+    if (this.#sourced && !this.#switchable) {
       report({
         code: 'filter-switch-hidden',
         message: 'filtersSuspended was set on a bar its source draws, and it shows no Switch. Add data-switchable, or call source.suspendScope().',
@@ -1038,7 +1050,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Turn the chips — with no source — and draw it. */
   #setSwitch(off: boolean): void {
-    if (!this.#scoped) this.#switchChips(off);
+    if (!this.#sourced) this.#switchChips(off);
     this.#drawSwitch(off);
   }
 
@@ -1049,8 +1061,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#switchedOff = on.map((c) => c.dataset['id'] ?? '');
       for (const chip of on) chip.current = false;
     } else if (!off && this.#switchedOff) {
-      for (const chip of this.#chips()) if (this.#switchedOff.includes(chip.dataset['id'] ?? '')) chip.current = true;
+      // Only a chip that still answers: an emptied one would come on as a warning.
+      for (const chip of this.#chips()) {
+        const answers = chip.reading == null || readingAnswered(chip.reading);
+        if (answers && this.#switchedOff.includes(chip.dataset['id'] ?? '')) chip.current = true;
+      }
       this.#switchedOff = null;
+    }
+  }
+
+  /** With no source and the Switch off, a filter that came on goes off and is
+   *  listed — the source's keepOff, for a bar that has none. */
+  #keepOffChips(): void {
+    if (this.#sourced || !this.#switchedOff) return;
+    for (const chip of this.#chips()) {
+      if (!chip.current || chip.hasAttribute('data-persistent') || chip.hasAttribute('data-superseded')) continue;
+      chip.current = false;
+      const id = chip.dataset['id'] ?? '';
+      if (!this.#switchedOff.includes(id)) this.#switchedOff.push(id);
     }
   }
 
@@ -1080,7 +1108,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
-  #emitChange(given: { suspended?: boolean } = {}): void {
+  #emitChange(given: { suspended?: boolean; reset?: boolean } = {}): void {
+    this.#keepOffChips();
     // Its Switch only while it shows one, so a hidden Switch never turns a scope off.
     const suspended = given.suspended ?? (this.#switchable ? this.filtersSuspended : undefined);
     this.emit('quick-filter-change', {
@@ -1095,6 +1124,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // APPLIED: only ON chips — for a host that wants the ticks, the View chip's.
       values: this.values,
       suspended,
+      // A Reset: the source forgets what the Switch turned off. TRAP T-the-filter-switch-keeps-what-it-turned-off
+      reset: given.reset,
     });
     this.#syncOneRows();
   }
@@ -1280,6 +1311,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   async drawScope(scope: ScopeDescription): Promise<void> {
     this.#scoped = true;
+    // A list this bar kept before a source drew it goes to the source, below.
+    const handover = this.#switchedOff;
+    this.#switchedOff = null;
     /* The Switch FIRST, before the waits, so a report meanwhile says it. An off
        it cannot show — hidden, or the panel answering — goes back on.
        TRAP T-the-filter-switch-keeps-what-it-turned-off */
@@ -1331,6 +1365,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const on = new Set(presets.filter((f) => f.active).map((f) => f.id));
     for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, on.has(def.id));
     if (resume) this.#emitChange({ suspended: false });
+    else if (handover?.length && scope.suspended) {
+      // On again in the report, so the source's keepOff lists them as its own.
+      for (const chip of this.#chips()) if (handover.includes(chip.dataset['id'] ?? '')) chip.current = true;
+      this.#emitChange();
+    }
   }
 
   /**
@@ -1440,6 +1479,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
     const [def] = this.#filters.splice(i, 1);
+    if (this.#switchedOff) this.#switchedOff = this.#switchedOff.filter((x) => x !== id);
     const { active: _active, ...clean } = def!;
     this.#available = [...this.#available, clean as FilterDef];
     this.#render();
@@ -1559,14 +1599,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     else if (set.dismiss) this.emit('filters-dismiss', {});
     // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
     let flipped = false;
+    // While the Switch is off, a one-value row turns no chip on: its tick goes back.
+    const still = this.filtersSuspended;
     for (const id of this.#oneRows.ids) {
       const on = want.has(id);
       const chip = this.#chips().find((c) => c.dataset['id'] === id);
       // `flip` LAST: it records.
-      if (!chip || chip.hasAttribute('data-persistent') || !this.#oneRows.flip(id, on)) continue;
+      if (!chip || chip.hasAttribute('data-persistent') || still || !this.#oneRows.flip(id, on)) continue;
       chip.current = on;
       flipped = true;
     }
+    if (still) this.#syncOneRows();
     const ones = this.#oneRows;
     const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
     const added = [...want].filter((id) => !held.has(id) && !ones.has(id));
@@ -1656,7 +1699,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#emptyChip(chip);
     }
     if (organise) this.#clearOrganise();
-    this.#emitChange();
+    this.#emitChange({ reset: true });
     if (!organise) return;
     this.emit('group-change', { field: null });
     this.emit('sort-change', { field: null, direction: 'asc' });

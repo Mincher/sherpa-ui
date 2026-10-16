@@ -6929,6 +6929,17 @@ comes into force in an off scope. `source.suspendScope(scope, off)` and
 `bar.filtersSuspended` are the no-pointer ways. TRAP
 `T-the-filter-switch-keeps-what-it-turned-off`. **Not run yet.**
 
+**Reviewed 2026-10-16** (a read-only workflow: three lenses, each finding
+checked by a refuter): 10 bugs confirmed, all fixed the same day. The two high
+ones: a Reset while off turned the saved filters the Switch stopped back on
+(a Reset report now says `reset`, and the source forgets the list); and a
+bound bar not yet drawn by its source kept its own list, so ON brought nothing
+back (a `data-locked` bar never turns its own chips). Also: a field that leaves
+an off scope comes back on where it went; a carried-over field comes on in a
+new View; a saved filter added while off is redrawn off; the unbound bar has its
+own keepOff, prunes its list and restores only chips that still answer; the
+Filters menu turns no chip on while off. **Not run yet.**
+
 **❓ Two choices I made, for Will to change:**
 1. While it is off, the chips are greyed and cannot be pressed: only the Switch
    turns them back on. (B: a chip press turns everything back on, plus that

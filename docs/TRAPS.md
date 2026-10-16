@@ -3362,8 +3362,15 @@ back on.
   one in panel mode (the panel has no Switch), turns it back on and reports.
 - A scope switched off stays, even with nothing in it: `prune()` keeps it.
 - Reset, a saved filter set and a new View replace the scope, so the Switch
-  comes back on. The session and a saved View keep it.
-- With no source, the bar keeps the list itself.
+  comes back on. A Reset report says `reset`: the source FORGETS the list —
+  bringing it back would turn the saved filters it stopped on again, as a
+  Reset's `on: false` looks the same as the Switch's. The session and a saved
+  View keep it.
+- A listed field that LEAVES the scope — raised to the View, moved — leaves the
+  Switch: it is on again where it went, or listed there if that scope is off.
+- A bound bar (`data-locked`) never turns its own chips: its report goes to the
+  source, which lists them. With no source, the bar keeps the list itself, and
+  its own copy of keepOff turns off a chip that comes on while it is off.
 
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
