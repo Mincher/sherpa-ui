@@ -607,7 +607,8 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
     const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
     const read = (): Record<string, unknown> => ({
       badge: chip.dataset['count'] ?? null,
-      // A two-glyph sign at 12px is a smudge in body weight.
+      // Figma's Badge count: mono 14, regular — legible without bold.
+      size: getComputedStyle(chip.shadowRoot!.querySelector('.count')!).fontSize,
       weight: getComputedStyle(chip.shadowRoot!.querySelector('.count')!).fontWeight,
       tip: chip.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] ?? null,
     });
@@ -637,13 +638,13 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
   });
 
   // The DEFAULT names no condition — there is nothing to explain.
-  expect(r.onEq).toEqual({ badge: null, weight: '600', tip: 'Gold' });
+  expect(r.onEq).toEqual({ badge: null, size: '14px', weight: '400', tip: 'Gold' });
   /* The badge is RESULTS (TODO 60) — none here, with no source — so the TOOLTIP
      says a condition applies. The VALUE is what was TYPED: a typing condition
      is answered by its box, not by ticks left over from the list condition.
      TRAP T-one-state-per-filtered-field */
   expect(r.onCondition).toEqual({
-    badge: null, weight: '600', tip: '1 condition applied',
+    badge: null, size: '14px', weight: '400', tip: '1 condition applied',
   });
 });
 
