@@ -7,7 +7,8 @@
  *
  *   npx sherpa-ui check-usage [folder]     default: the folder it runs in
  *
- * The project names its own hooks in `sherpa-usage.json`:
+ * It reads the project's own markup — every `.html` but `node_modules` and `.git`
+ * — or the folders `sherpa-usage.json` names, with the project's own hooks:
  *   { "markup": ["app"], "own": { "sherpa-button": ["data-by"] } }
  *
  * Map:
@@ -82,8 +83,10 @@ export function usageProblems(project) {
     ? JSON.parse(readFileSync(join(project, 'sherpa-usage.json'), 'utf8')) : {};
   const problems = [];
   let tags = 0;
-  for (const root of config.markup ?? ['app']) {
-    for (const file of globSync('**/*.html', { cwd: join(project, root) })) {
+  // Not what the project installed: the package ships its own templates.
+  const skip = (p) => /(^|[\\/])(node_modules|\.git)$/.test(String(p));
+  for (const root of config.markup ?? ['.']) {
+    for (const file of globSync('**/*.html', { cwd: join(project, root), exclude: skip })) {
       const found = markupProblems(readFileSync(join(project, root, file), 'utf8'), join(root, file), config.own ?? {});
       problems.push(...found.problems);
       tags += found.tags;

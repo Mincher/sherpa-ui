@@ -318,7 +318,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ⬜ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
-| ⬜ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
+| ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
 | ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
@@ -6639,7 +6639,7 @@ the starter". In `../Sherpa Starter`: `template/mcp.json`,
 your yes); B — keep the names until you publish, and change the docs only to
 say "from the clone". My pick: A.
 
-### `[ ]` ⬜ 326 — TOOLING: check-usage reads `app/` unless told otherwise
+### `[x]` ✅ 326 — TOOLING: check-usage reads `app/` unless told otherwise
 
 `usageProblems` reads `config.markup ?? ['app']` (`scripts/check-usage.mjs`),
 but the header says the default is the folder it runs in. A project with no
@@ -6647,6 +6647,13 @@ but the header says the default is the folder it runs in. A project with no
 in its own `sherpa-usage.json`, so a default of the project itself does not
 change Demos. That default must skip `node_modules`, because the package ships
 its own `src/**/*.html`. The README leaves `check-usage` out until this lands.
+
+**✅ Done 2026-10-16.** With no `sherpa-usage.json` it reads every `.html` in the
+project but `node_modules` and `.git`. Probed in an empty folder: a typo in its
+page is found, and a page under `node_modules` is not read. Demos names `app` in
+its own config, so it still checks its 199 tags. The README still leaves it out:
+its command is `npx sherpa-ui`, which is 325's hazard. Not run yet: the
+check-usage unit test.
 
 ### `[ ]` ❓ 327 — GAP: no LICENSE file
 
