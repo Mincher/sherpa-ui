@@ -45,10 +45,9 @@
                     Written by SherpaDataSource; the grid reports back the page
                     count it arrives at and never writes data-page itself.
     data-total-pages                         how many pages the host believes there
-                    are. READ ONLY, and only to avoid re-reporting a count that has
-                    not changed — the grid never writes it. Not observed: a change
-                    to it is the ECHO of the grid's own report, and re-rendering on
-                    it would be a loop.
+                    are. The grid reads it and never writes it: a Find steps past
+                    the last page by it, and a count that has not changed is not
+                    reported again, so the echo of its own report cannot loop.
 
   JS API — what a person can do by clicking, a caller can do by calling. This is
   what lets a SAVED VIEW, a preset or an agent configure a grid:

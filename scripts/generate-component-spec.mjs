@@ -151,6 +151,12 @@ function commentDescription(comment, name) {
 }
 
 /** Parse the `Public API:` block → attrName → { type, values?, default?, native? }. */
+/** Does the template hold this node — `.class` or a tag name? */
+function templateHas(html, node) {
+  const cls = /^\.([\w-]+)$/.exec(node);
+  return cls ? new RegExp(`class="[^"]*\\b${cls[1]}\\b`).test(html) : html.includes(`<${node}`);
+}
+
 function parsePublicApi(comment) {
   const props = {};
   const lines = comment.split('\n');
@@ -776,7 +782,9 @@ function generateSpec(name) {
     if (trig) {
       ev.trigger = {};
       if (trig.on) ev.trigger.on = trig.on;
-      if (trig.node) ev.trigger.node = trig.node;
+      // Carried, so it can outlive its node: keep it only while the template has one.
+      if (trig.node && templateHas(html ?? '', trig.node)) ev.trigger.node = trig.node;
+      else if (trig.node) notes.push(`dropped trigger node "${trig.node}" of ${en} — no such node in the template`);
     }
     events.push(ev);
   }

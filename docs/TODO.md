@@ -314,7 +314,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
-| ⬜ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
+| ❓ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
@@ -329,6 +329,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ❓ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
+| ⬜ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6789,7 +6790,7 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 sideways, the selection column keeps its pin and its place through a header
 filter change — all 27 of its cells.
 
-### `[ ]` ⬜ 322 — The data grid holds its filter toolbar and its pager
+### `[ ]` ❓ 322 — The data grid holds its filter toolbar and its pager
 
 Will chose the shape in 2026-09 (HANDOVER-BACKLOG.md at 66a93734^, L245–283):
 `data-toolbar`, `data-paginated`; the grid owns sort, group, column filters,
@@ -6798,6 +6799,45 @@ An actions bar (`data-toolbar`) was built 2026-09-10 (4d5b4ab0) and taken out
 in b17959a7. Today the grid has only the `empty` and `no-matches` slots. The
 reason was two sort states that could disagree. Measure first whether they
 still can, now that a bound grid reports and the source owns the sort.
+
+**Measured by reading, 2026-10-16** (a read-only workflow: three readers, one
+checker, one planner; nothing run). Bound — through the provider, as Demos'
+Records page is — there is ONE applied sort: the source owns it and pushes it
+to every bound part, and a bound grid is locked. So the old reason is gone.
+What could still differ is what the Sort chip SHOWED: Save view as rebuilt the
+bar's Group and Sort chips OFF, and nothing re-drew them, while the grid kept
+its sort. An unbound grid and toolbar still hold two sorts, by design. Figma's
+"Data Grid (template)" frame holds cells only — no toolbar, no pager inside it.
+
+**✅ Phase A, 2026-10-16** (no new API): a rebuilt Group or Sort chip follows
+the host's arrangement at once (`#syncArrangement()`, the panel's door). Two
+wrong comments: the grid's `data-total-pages` (it is observed, and Find pages
+by it) and the pager's page-size default (25 when it is an option). The spec
+generator now drops a carried event trigger whose node has gone (pagination's
+`.pager`, 1 of 23). **Not run yet:** the Save view as steps, as a spec.
+
+**Left as it is:** a failed load leaves the source's sort and page ahead of
+what is drawn until the next good load. Pushing the view on a failure would
+move the pager to a page whose rows never came, so it trades one mismatch for
+another.
+
+**For Will — build Phase B (the grid composes the toolbar and the pager)?**
+- A: yes, as chosen in 2026-09. About 20 lines of Demos markup go. The grid
+  pulls in 8 more modules, must re-emit 9 events the page listens for, needs a
+  JS gate so a hidden part never binds, and Demos' tests reach `#qft` from the
+  document 18 times. Each of those steps needs a test run.
+- B: close 322 after Phase A. Bound, the three parts already share one owner,
+  and Figma draws the toolbar and the pager outside the grid's frame.
+- **My pick: B.**
+
+### `[ ]` ⬜ 337 — DOCS: the filter toolbar spec's stale divergence note
+
+`sherpa-quick-filter-toolbar.component.json` carries a hand-written
+`divergence` note from the prior spec: "the only event emitted is
+quick-filter-change", and the action cluster is "DELEGATED to slotted
+content". The spec lists 19 events, and the template builds the cluster. Read
+Figma's Filter Toolbar (150:3688) and rewrite the note to what still differs,
+or drop it.
 
 ### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
 

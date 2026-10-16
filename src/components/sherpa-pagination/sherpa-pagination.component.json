@@ -166,7 +166,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "active rows-per-page value (default first option)"
+      "description": "active rows-per-page value: 25 when it is an option, else the first"
     },
     {
       "$type": "prop",
@@ -226,8 +226,7 @@
         "page": "number"
       },
       "trigger": {
-        "on": "click",
-        "node": ".pager"
+        "on": "click"
       }
     },
     {

@@ -1000,9 +1000,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const chip of this.#chips()) this.#markPresent(chip);
-    for (const kind of ['group', 'sort'] as const) {
-      arrangeFrom(this, this.$<SherpaQuickFilter>(`.organise-chip[data-id="${kind}"]`), kind);
-    }
+    this.#syncArrangement();
     this.#syncFavouriteFromAttr();
     if (name === 'data-saveable') this.#saved.draw();
     syncResets(this, this.root, '.act[data-act="clear"]');
@@ -1661,13 +1659,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         SherpaQuickFilterToolbar.#icons.group, organiseOptions(group, on.group), on.group));
     }
     if (sort.length) {
-      // The MENU picks the column, the BODY cycles direction. Built OFF, so it
-      // opens with the sort-none glyph.
+      // The MENU picks the column, the BODY cycles direction. Built OFF, with
+      // the sort-none glyph, until the host's arrangement turns it on below.
       /* NO `data-direction` here. `chip.direction` answers `asc` for a chip that
          is ON with none set, so writing it is a third place that has to agree.
          TRAP T-one-cycle-for-one-value */
       zone.appendChild(this.#organiseChip('sort', 'Sort',
         SherpaQuickFilterToolbar.#icons.sortNone, organiseOptions(sort, on.sort), on.sort));
+    }
+    // Then ON, if the host is: a rebuild changes no attribute, so onChange will not.
+    this.#syncArrangement();
+  }
+
+  /** Follow the host's arrangement onto the Group and Sort chips. The chip knows how. */
+  #syncArrangement(): void {
+    for (const kind of ['group', 'sort'] as const) {
+      arrangeFrom(this, this.$<SherpaQuickFilter>(`.organise-chip[data-id="${kind}"]`), kind);
     }
   }
 

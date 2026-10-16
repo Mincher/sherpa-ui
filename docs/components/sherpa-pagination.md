@@ -26,7 +26,7 @@ To step through rows a page at a time, and to set how many rows a page holds. It
 |---|---|---|---|
 | `data-locked` | boolean |  |  |
 | `data-page` | number | `1` | current 1-based page |
-| `data-page-size` | number |  | active rows-per-page value (default first option) |
+| `data-page-size` | number |  | active rows-per-page value: 25 when it is an option, else the first |
 | `data-rows-options` | text |  | comma list of rows-per-page choices, e.g. "10,25,50" |
 | `data-total-pages` | number | `1` | total page count |
 
