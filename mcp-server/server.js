@@ -6,9 +6,9 @@
  * surfaces (this MCP + the generate-sherpa-component skill).
  *
  *   Discover  list_components · find_token · get_component
- *   Generate  scaffold_def · validate_def · compile_def · token_for
+ *   Generate  scaffold_def · validate_def · compile_def · token_for · scaffold_app
  *   Verify    audit_component · check_bindings
- *   Data      run_query · import_schema · scaffold_schema · validate_schema
+ *   Data      run_query · import_schema · scaffold_schema · validate_schema · validate_page
  *   Drive     component_api · call_component · read_component · browser_close
  *   Resources sherpa://def/{name} · sherpa://component/{name}/{ts|html|css}
  *             · sherpa://rules · sherpa://data-rules · sherpa://app-guide
@@ -17,6 +17,7 @@
  * Map:
  * - createServer — build the MCP server with every tool, resource and prompt registered
  */
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { log } from "./lib/logger.js";
@@ -33,7 +34,8 @@ export async function createServer() {
   log.info("Starting Sherpa UI MCP server (def-driven)…");
 
   const server = new McpServer(
-    { name: "sherpa-ui", version: "3.0.0" },
+    // The version a client sees is the package's own.
+    { name: "sherpa-ui", version: JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version },
     { capabilities: { resources: {}, tools: {}, prompts: {} } }
   );
 

@@ -324,7 +324,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
-| ⬜ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
+| ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
 | ⬜ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
@@ -6695,10 +6695,14 @@ part; a second checked each plan against the files.
   **for Will:** A — remove it; B — cut it to a 10-line pointer. My pick: A).
   Found reading: 332–336.
 
-### `[ ]` ⬜ 332 — TOOLING: the MCP server's version
+### `[x]` ✅ 332 — TOOLING: the MCP server's version
 
 `mcp-server/server.js` reports `{ name: "sherpa-ui", version: "3.0.0" }`; its
 package is `2.1.0-beta.0`.
+
+**✅ Done 2026-10-16.** The server reads its version from its own
+`package.json`, so the two cannot differ again. Its header's tool list also
+gains `scaffold_app` and `validate_page`. Not run yet: `npm run check:mcp-pack`.
 
 ### `[ ]` ⬜ 333 — TOOLING: `validateDef`'s false token warnings
 
