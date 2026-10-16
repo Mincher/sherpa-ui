@@ -29,6 +29,7 @@ export class SherpaNavItem extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
+    'data-type': { type: 'enum', kind: 'template', values: ['promo'] },
     'data-status-dot': { type: 'boolean', kind: 'style' },
     'data-tier': { type: 'enum', kind: 'style', values: ['2', '3'] },
     'data-icon': { type: 'string', kind: 'content' },

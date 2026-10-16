@@ -190,8 +190,14 @@ function compileTs(def, name, cls) {
   if (observed.length) L.push(`  static override observed = [${observed.map((o) => `'${o}'`).join(', ')}];`);
   L.push('');
   if (tmplProp) {
+    // An enum names its template by its value; a flag picks the one it names.
+    const ids = (def.templates ?? []).filter((t) => t !== 'default');
+    L.push(`  static override variantAttrs = ['${tmplProp.name}'];`, '');
     L.push(`  protected override get templateId(): string | null {`);
-    L.push(`    return this.hasAttribute('${tmplProp.name}') ? '${tmplProp.template}' : 'default';`);
+    if (tmplProp.type === 'enum') {
+      L.push(`    const v = this.getAttribute('${tmplProp.name}') ?? '';`);
+      L.push(`    return [${ids.map((t) => `'${t}'`).join(', ')}].includes(v) ? v : 'default';`);
+    } else L.push(`    return this.hasAttribute('${tmplProp.name}') ? '${tmplProp.template ?? ids[0] ?? 'default'}' : 'default';`);
     L.push(`  }`, '');
   }
   if (reemits.length) {

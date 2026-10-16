@@ -322,7 +322,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
 | ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
-| ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
+| ✅ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
@@ -6559,13 +6559,22 @@ ends the block only where nothing follows at its indent. The four descriptions
 are in the specs, the manifest and the reference; nothing else moved. The 13
 slots with no words in their headers still have none.
 
-### `[ ]` ⬜ 330 — GAP: one-value enums typed as text; template pickers typed as style
+### `[x]` ✅ 330 — GAP: one-value enums typed as text; template pickers typed as style
 
 The generator reads an enum only from a `|` list, so button `data-type` (icon)
 and nav-item `data-type` (promo) are typed string. Also: button, input-text,
 menu and nav-item set `static variantAttrs` (it picks the template), but their
 specs say kind `style`. The schema has kind `template`, and 0 specs use it.
 Typing them changes check-usage for apps, so it waits.
+
+**✅ Done 2026-10-16.** Measured first: every `data-type` in sherpa-ui, Demos
+and the Gallery is a valid value (68 `icon` buttons, 14 input-text types), so
+no app markup fails. `PropKind` gains `template`. Button (`icon`), nav-item
+(`promo`), menu and input-text (`data-type`, `data-multiline`) declare it, so
+their specs say enum and `template` — and `observed: true`, which the base
+class always did for a `variantAttrs` name; the specs said false. check-usage
+now flags `<sherpa-button data-type="label">`. compile-def writes an enum
+template prop's `templateId` and `variantAttrs`; it wrote `'undefined'`.
 
 ### `[ ]` ❓ 331 — GAP: sherpa-button submits no form
 

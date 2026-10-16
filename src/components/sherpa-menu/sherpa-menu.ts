@@ -140,7 +140,7 @@ export class SherpaMenu extends SherpaElement {
     'data-search': { type: 'boolean', kind: 'style' },
     'data-clearable': { type: 'boolean', kind: 'style' },
     'data-removable': { type: 'boolean', kind: 'style' },
-    'data-type': { type: 'enum', kind: 'style', values: ['list', 'calendar', 'filter'] },
+    'data-type': { type: 'enum', kind: 'template', values: ['list', 'calendar', 'filter'] },
     // The crumb text is written from this, so a change must reach #syncCrumb.
     'data-drill-from': { type: 'string', kind: 'content' },
     // Which condition is picked — a host may set it, and #sync follows.

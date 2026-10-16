@@ -321,9 +321,13 @@
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
+      "values": [
+        "promo"
+      ],
       "description": "\"promo\" for the CTA row"
     },
     {
@@ -347,7 +351,7 @@
     }
   ],
   "populate": {
-    "shape": "{ badge?, current?, description?, expandable?, expanded?, href?, icon?, label?, statusDot?, tier? }",
+    "shape": "{ badge?, current?, description?, expandable?, expanded?, href?, icon?, label?, statusDot?, tier?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

@@ -66,7 +66,8 @@ export class SherpaInputText extends SherpaElement {
     /* Written BY the field: there is something to clear. */
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
-    'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select', 'number', 'find'] },
+    'data-type': { type: 'enum', kind: 'template', values: ['minimal', 'select', 'number', 'find'] },
+    'data-multiline': { type: 'boolean', kind: 'template' },
     /* A Find offers Find & Replace. TRAP T-a-find-asks-its-host-to-step */
     'data-replace': { type: 'boolean', kind: 'style' },
     /* The VALIDATION state a host reports, styled by the token region. */

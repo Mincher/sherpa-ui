@@ -3894,14 +3894,16 @@ Highlight layer, and a caller that only wants it drawn ignores the return.
 
 ### T-declared-only-means-css-owns-it
 
-`PropKind` is the same three-way split the generated `<name>.component.json`
-uses, so the code and the contract agree:
+`PropKind` is the same split the generated `<name>.component.json` uses, so
+the code and the contract agree:
 
 | kind | meaning |
 |---|---|
 | `content` | JS writes it into the shadow DOM — the base class does it |
 | `style` | CSS selects on it; JS never reads it. DECLARED ONLY |
 | `visibility` | presence toggles a CSS rule. Declared only, like style |
+| `behaviour` | only the component's own JS reads it |
+| `template` | it picks the template; `variantAttrs` re-stamps on a change |
 
 Only `content` generates any work. `style` and `visibility` exist so the
 attribute is TYPED and observable — a JS→CSS write path (`this.set()`), and a

@@ -53,7 +53,7 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 | `data-icon-start` | text |  | leading icon glyph inside the control row (CSS-gated) |
 | `data-label` | text |  | field label (hidden when empty) |
 | `data-matches` | number |  | how many matches a Find's host found; "0" leaves nothing to step to or replace |
-| `data-multiline` | text |  | auto-growing &lt;textarea> (default style only) |
+| `data-multiline` | boolean |  | auto-growing &lt;textarea> (default style only) |
 | `data-no-clear` | boolean |  | no Clear button. A typed field shows one by itself while it holds something; a number has steppers and shows none |
 | `data-replace` | boolean |  | a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next |
 | `data-rules` | text |  | names a validation rule the platform has no idea about (e.g. "email") — see the TS for the rule set |

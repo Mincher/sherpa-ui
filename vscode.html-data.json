@@ -362,7 +362,12 @@
         },
         {
           "name": "data-type",
-          "description": "icon"
+          "description": "icon",
+          "values": [
+            {
+              "name": "icon"
+            }
+          ]
         },
         {
           "name": "disabled",
@@ -1495,7 +1500,8 @@
         },
         {
           "name": "data-multiline",
-          "description": "auto-growing <textarea> (default style only)"
+          "description": "auto-growing <textarea> (default style only)",
+          "valueSet": "v"
         },
         {
           "name": "data-no-clear",
@@ -2370,7 +2376,12 @@
         },
         {
           "name": "data-type",
-          "description": "\"promo\" for the CTA row"
+          "description": "\"promo\" for the CTA row",
+          "values": [
+            {
+              "name": "promo"
+            }
+          ]
         },
         {
           "name": "disabled",

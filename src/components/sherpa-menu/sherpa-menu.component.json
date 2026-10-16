@@ -1123,7 +1123,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "template",
       "values": [
         "list",
         "calendar",

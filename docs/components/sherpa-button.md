@@ -42,7 +42,7 @@ For an action on this page: save, add, delete, open a dialog with `commandfor`, 
 | `data-size` | `2xs` `xs` `sm` `lg` `xl` |  | 2xs \| xs \| sm \| lg \| xl (default omitted = base size) |
 | `data-status` | `critical` `warning` `success` `info` `urgent` |  | critical \| warning \| success \| info \| urgent (tints the look tier) |
 | `data-tip` | text |  | the tooltip's text. Unset: an unlabelled button's tip is its aria-label, and a labelled one has none |
-| `data-type` | text |  | icon |
+| `data-type` | `icon` |  | icon |
 | `disabled` | boolean, native | `false` | native disabled state |
 
 ## Events
@@ -83,6 +83,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip? }`
+`{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }`
 
 Its declared props by name: `label` sets data-label.

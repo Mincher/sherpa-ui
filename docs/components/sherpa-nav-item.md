@@ -36,7 +36,7 @@ For one row in a nav you build by hand; `sherpa-nav` makes its own rows. `data-h
 | `data-label` | text |  | row label text |
 | `data-status-dot` | boolean |  | render the trailing Indicator (atom) dot |
 | `data-tier` | `2` `3` |  | nesting depth 2 \| 3 — indents the row to the Figma indent tier (tier 1 is the default, no attribute needed) |
-| `data-type` | text |  | "promo" for the CTA row |
+| `data-type` | `promo` |  | "promo" for the CTA row |
 | `disabled` | boolean, native | `false` | disabled state |
 
 ## Properties
@@ -121,6 +121,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ badge?, current?, description?, expandable?, expanded?, href?, icon?, label?, statusDot?, tier? }`
+`{ badge?, current?, description?, expandable?, expanded?, href?, icon?, label?, statusDot?, tier?, type? }`
 
 Its declared props by name: `label` sets data-label.

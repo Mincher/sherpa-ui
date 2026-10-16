@@ -969,7 +969,7 @@
               "name": "data-type",
               "description": "icon",
               "type": {
-                "text": "string"
+                "text": "'icon'"
               }
             },
             {
@@ -4256,7 +4256,7 @@
               "name": "data-multiline",
               "description": "auto-growing <textarea> (default style only)",
               "type": {
-                "text": "string"
+                "text": "boolean"
               }
             },
             {
@@ -6288,7 +6288,7 @@
               "name": "data-type",
               "description": "\"promo\" for the CTA row",
               "type": {
-                "text": "string"
+                "text": "'promo'"
               }
             },
             {

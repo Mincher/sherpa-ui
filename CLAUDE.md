@@ -271,6 +271,7 @@ contract agree:
 | `style` | CSS selects on it | **nothing** — declared only |
 | `visibility` | presence toggles a CSS rule | **nothing** — declared only |
 | `behaviour` | only the component's own JS reads it | **nothing** — declared only |
+| `template` | it picks the template (also in `variantAttrs`) | re-stamps on a change |
 
 Declare the CSS-only ones too. They generate no DOM writes; the declaration gives JS a
 typed door (`this.set(attr, value)` — the JS→CSS write path) and a place to hang later

@@ -275,9 +275,13 @@
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
-      "observed": false,
-      "kind": "style",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
+      "values": [
+        "icon"
+      ],
       "description": "icon"
     },
     {
@@ -318,7 +322,7 @@
     }
   ],
   "populate": {
-    "shape": "{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip? }",
+    "shape": "{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

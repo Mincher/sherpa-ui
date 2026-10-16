@@ -58,7 +58,7 @@ define('sherpa-foo', SherpaFoo);
 - A prop's `kind` matches the spec's: `content` (the base class writes the text
   into `to`), `style` (CSS selects on it, and it gets no JS branch),
   `visibility` (presence toggles a CSS rule), `behaviour` (only the component's
-  JS reads it).
+  JS reads it), `template` (it picks the template, and is in `variantAttrs`).
 - `PropDef` options: `to`, `all` (every match), `accessor` (a boolean's JS
   property, `T-a-flag-brings-the-base-methods`), `as` (`'text'`, `'icon'` or
   `'attr'`, `T-icon-value-takes-two-forms`), `values`, `default`.
