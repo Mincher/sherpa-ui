@@ -314,7 +314,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
-| ❓ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
+| ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
@@ -6791,7 +6791,7 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 sideways, the selection column keeps its pin and its place through a header
 filter change — all 27 of its cells.
 
-### `[ ]` ❓ 322 — The data grid holds its filter toolbar and its pager
+### `[x]` ✅ 322 — The data grid holds its filter toolbar and its pager
 
 Will chose the shape in 2026-09 (HANDOVER-BACKLOG.md at 66a93734^, L245–283):
 `data-toolbar`, `data-paginated`; the grid owns sort, group, column filters,
@@ -6830,6 +6830,9 @@ another.
 - B: close 322 after Phase A. Bound, the three parts already share one owner,
   and Figma draws the toolbar and the pager outside the grid's frame.
 - **My pick: B.**
+
+**✅ Closed 2026-10-16. Will: B.** No phase B: the grid, its filter toolbar and
+its pager stay three parts that share one source.
 
 ### `[ ]` ⬜ 337 — DOCS: the filter toolbar spec's stale divergence note
 
