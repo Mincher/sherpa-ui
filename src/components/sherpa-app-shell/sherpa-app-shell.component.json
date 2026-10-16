@@ -254,7 +254,8 @@
       "name": "panel-start",
       "accepts": [
         "panel"
-      ]
+      ],
+      "description": "a panel BESIDE the Context, on the leading side — a filter panel."
     },
     {
       "$type": "slot",
@@ -269,14 +270,16 @@
       "name": "panel-end",
       "accepts": [
         "panel"
-      ]
+      ],
+      "description": "a panel on the trailing side — details, or Ask."
     },
     {
       "$type": "slot",
       "name": "overlay",
       "accepts": [
         "dialog"
-      ]
+      ],
+      "description": "covers the header and content, beside the rail — a <sherpa-dialog data-type=\"overlay\">"
     }
   ],
   "populate": {

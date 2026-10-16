@@ -539,7 +539,7 @@
             },
             {
               "name": "panel-start",
-              "description": "(accepts: panel)"
+              "description": "a panel BESIDE the Context, on the leading side — a filter panel. (accepts: panel)"
             },
             {
               "name": "",
@@ -547,11 +547,11 @@
             },
             {
               "name": "panel-end",
-              "description": "(accepts: panel)"
+              "description": "a panel on the trailing side — details, or Ask. (accepts: panel)"
             },
             {
               "name": "overlay",
-              "description": "(accepts: dialog)"
+              "description": "covers the header and content, beside the rail — a <sherpa-dialog data-type=\"overlay\"> (accepts: dialog)"
             }
           ],
           "cssParts": [
@@ -1821,7 +1821,7 @@
           "slots": [
             {
               "name": "",
-              "description": "(accepts: text)"
+              "description": "the code, when data-code is not set (accepts: text)"
             }
           ],
           "cssParts": [

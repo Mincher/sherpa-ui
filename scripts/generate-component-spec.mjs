@@ -450,7 +450,7 @@ function parseSlots(html, comment, notes) {
 function slotLines(comment) {
   const out = new Map();
   const lines = (comment ?? '').split('\n');
-  const at = lines.findIndex((l) => /^\s*Slots:\s*$/.test(l));
+  const at = lines.findIndex((l) => /^\s*Slots?:\s*$/.test(l));
   if (at < 0) return out;
   let indent = -1;
   let entry = null;
@@ -463,8 +463,15 @@ function slotLines(comment) {
     if (sentence) out.set(entry.name, sentence.replace(/[\s·—–-]+$/, ''));
     entry = null;
   };
-  for (const line of lines.slice(at + 1)) {
-    if (!line.trim()) break;
+  const rest = lines.slice(at + 1);
+  for (const [k, line] of rest.entries()) {
+    // A blank line ends the block only where no entry or note follows at its indent.
+    if (!line.trim()) {
+      const next = rest.slice(k + 1).find((l) => l.trim());
+      if (!next || indent < 0 || next.length - next.trimStart().length < indent || /^\s*[A-Z][\w ]*:\s*$/.test(next)) break;
+      close();
+      continue;
+    }
     const lead = line.length - line.trimStart().length;
     if (indent < 0) indent = lead;
     if (lead < indent || /^\s*[A-Z][\w ]*:\s*$/.test(line)) break;

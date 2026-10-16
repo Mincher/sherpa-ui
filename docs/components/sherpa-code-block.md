@@ -46,7 +46,7 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| (default) | text |  |
+| (default) | text | the code, when data-code is not set |
 
 ## Parts
 

@@ -321,7 +321,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
-| ⬜ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
+| ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
@@ -6547,12 +6547,17 @@ moves today, and compact and comfortable now move them. Note for Will: Figma's
 `style-active-border-width` is 0.5px, but the active chip draws 1px, as it did;
 say if the chip should take the Style value.
 
-### `[ ]` ⬜ 329 — GAP: 4 slot descriptions the spec generator misses
+### `[x]` ✅ 329 — GAP: 4 slot descriptions the spec generator misses
 
 app-shell `panel-start`, `panel-end` and `overlay`: a blank line inside its
 `Slots:` block ends the parse. code-block's default slot: its header has a
 one-line `Slot:` label, and the generator reads `Slots:`. 13 more slots have
 no description in their headers.
+
+**✅ Done 2026-10-16.** The generator reads a `Slot:` label too, and a blank line
+ends the block only where nothing follows at its indent. The four descriptions
+are in the specs, the manifest and the reference; nothing else moved. The 13
+slots with no words in their headers still have none.
 
 ### `[ ]` ⬜ 330 — GAP: one-value enums typed as text; template pickers typed as style
 

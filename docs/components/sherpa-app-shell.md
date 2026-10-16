@@ -71,10 +71,10 @@ Each one bubbles.
 |---|---|---|
 | `nav` | nav | replace the default &lt;[sherpa-nav](sherpa-nav.md)> |
 | `header` | header, toolbar | replace the default &lt;[sherpa-app-header](sherpa-app-header.md)> |
-| `panel-start` | panel |  |
+| `panel-start` | panel | a panel BESIDE the Context, on the leading side — a filter panel. |
 | (default) | content | the Context content |
-| `panel-end` | panel |  |
-| `overlay` | dialog |  |
+| `panel-end` | panel | a panel on the trailing side — details, or Ask. |
+| `overlay` | dialog | covers the header and content, beside the rail — a &lt;[sherpa-dialog](sherpa-dialog.md) data-type="overlay"> |
 
 ## Parts
 

@@ -125,7 +125,8 @@
       "name": "",
       "accepts": [
         "text"
-      ]
+      ],
+      "description": "the code, when data-code is not set"
     }
   ],
   "populate": {
