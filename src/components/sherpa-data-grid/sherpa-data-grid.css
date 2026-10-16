@@ -541,11 +541,11 @@
   block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
-  font-size: var(--sherpa-theme-content-size-md, 14px);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
 }
 .actions-trigger:hover {
   background: var(--sherpa-style-surface-base-1, #e8e8f64d);
@@ -578,7 +578,7 @@
   box-shadow: var(--sherpa-focus-ring);
 }
 .action-icon {
-  inline-size: var(--sherpa-theme-content-size-md, 14px);
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
   text-align: center;
   flex: none;
 }

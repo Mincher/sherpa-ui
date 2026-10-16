@@ -320,7 +320,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ⬜ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
-| ⬜ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
+| ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
 | ⬜ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
@@ -6527,7 +6527,7 @@ lands; the CSS table shows the tokens each class's base rule reads.
   claim and cut or rewrote what nothing backed. **For Will:** read the lines; a
   line that reads wrong is fixed in its `.example.json`, then
   `npm run reference`. Not run yet: the example schema test.
-### `[ ]` ⬜ 328 — GAP: 5 token names no stylesheet defines
+### `[x]` ✅ 328 — GAP: 5 token names no stylesheet defines
 
 `--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),
 `--sherpa-border-rounding-sm` (data-grid 1), `--sherpa-theme-content-size-md`
@@ -6537,6 +6537,15 @@ so only each fallback draws, and density cannot move it. app-shell's
 `--sherpa-panel-area-width` and `--sherpa-panel-area-min-width` are the only
 other undefined reads, and they are hooks for a page to set. A `lint:css` rule
 could catch this kind of read.
+
+**✅ Done 2026-10-16.** Each read now names the real token with the SAME value in
+the default density (repointed by value, never by name):
+`display-mode-space-base` (16px), `display-mode-border-rounding-base` (4px),
+`theme-content-size-base` (14px), `theme-content-size-large` (16px, the panel
+header's "one size up") and `display-mode-border-width-base` (1px). So nothing
+moves today, and compact and comfortable now move them. Note for Will: Figma's
+`style-active-border-width` is 0.5px, but the active chip draws 1px, as it did;
+say if the chip should take the Style value.
 
 ### `[ ]` ⬜ 329 — GAP: 4 slot descriptions the spec generator misses
 

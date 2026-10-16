@@ -222,13 +222,13 @@ What each class's base rule reads:
 | `--sherpa-style-border-base` | `.actions-cell` | `border-inline-start-color` |
 | `--sherpa-display-mode-size-2xl` | `.actions-trigger` | `inline-size` |
 | `--sherpa-display-mode-size-2xl` | `.actions-trigger` | `block-size` |
-| `--sherpa-border-rounding-sm` | `.actions-trigger` | `border-radius` |
+| `--sherpa-display-mode-border-rounding-base` | `.actions-trigger` | `border-radius` |
 | `--sherpa-style-content-base` | `.actions-trigger` | `color` |
-| `--sherpa-theme-content-size-md` | `.actions-trigger` | `font-size` |
+| `--sherpa-theme-content-size-base` | `.actions-trigger` | `font-size` |
 | `--sherpa-display-mode-space-sm` | `.action-item` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.action-item` | `padding` |
 | `--sherpa-style-content-base` | `.action-item` | `color` |
-| `--sherpa-theme-content-size-md` | `.action-icon` | `inline-size` |
+| `--sherpa-theme-content-size-base` | `.action-icon` | `inline-size` |
 | `--sherpa-display-mode-space-2xs` | `.group-inner` | `inset-inline-start` |
 | `--sherpa-theme-gap-md` | `.group-inner` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.group-inner` | `min-block-size` |

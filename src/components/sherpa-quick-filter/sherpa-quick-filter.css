@@ -90,13 +90,13 @@
  * NO weight change — see the trap.
  * TRAP T-an-active-chip-is-heavier-and-more-strongly-drawn */
 :host([data-current]) :is(.body, .caret) {
-  border-width: var(--sherpa-border-width-sm, 1px);
+  border-width: var(--sherpa-display-mode-border-width-base, 1px);
 }
 
 /* PENDING: changed, not yet applied — the active EDGE, and no fill (its pin
    keeps it default). TRAP T-a-pending-chip-has-no-fill */
 :host([data-pending]) :is(.body, .caret) {
-  border-width: var(--sherpa-border-width-sm, 1px);
+  border-width: var(--sherpa-display-mode-border-width-base, 1px);
   border-color: var(--sherpa-style-active-border-base-1, #c046ff);
 }
 

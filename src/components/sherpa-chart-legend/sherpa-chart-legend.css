@@ -40,7 +40,7 @@
      TRAP T-a-narrow-chart-stacks-its-legend */
   grid-template-columns: repeat(var(--sherpa-chart-legend-columns, 3), 1fr);
   justify-content: stretch;
-  column-gap: var(--sherpa-display-mode-space-md, 16px);
+  column-gap: var(--sherpa-display-mode-space-base, 16px);
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
   /* A KEY, not a row of the page: across a 12-column card the three cells sat
      a third of the page apart. Capped in rem, so it follows the text size, and

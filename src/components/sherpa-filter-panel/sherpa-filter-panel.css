@@ -116,8 +116,8 @@
    glyph and its switch read at the next step rather than the container
    default. Will, 2026-09-24. */
 .head::part(icon) {
-  inline-size: var(--sherpa-theme-content-size-base-1, 16px);
-  block-size: var(--sherpa-theme-content-size-base-1, 16px);
+  inline-size: var(--sherpa-theme-content-size-large, 16px);
+  block-size: var(--sherpa-theme-content-size-large, 16px);
 }
 
 /* Reset and its ▾, and a field's Clear and Send to: each pair one control. */
@@ -140,7 +140,7 @@
 
 /* ── Fields ──────────────────────────────────────────────────────────── */
 
-.field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
+.field + .field { margin-block-start: var(--sherpa-display-mode-space-base, 16px); }
 
 /* A FIELD: its header, then its chips or its body across the whole column —
    a condition row needs it all. The header's label, count and buttons share its
