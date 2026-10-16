@@ -325,7 +325,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
-| ⬜ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
+| ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ⬜ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
@@ -6718,12 +6718,19 @@ package is `2.1.0-beta.0`.
 `package.json`, so the two cannot differ again. Its header's tool list also
 gains `scaffold_app` and `validate_page`. Not run yet: `npm run check:mcp-pack`.
 
-### `[ ]` ⬜ 333 — TOOLING: `validateDef`'s false token warnings
+### `[x]` ✅ 333 — TOOLING: `validateDef`'s false token warnings
 
 On real specs its token check gives 12 warnings, and 10 are false: the motion
 scale (`--sherpa-motion-*`, declared in `sherpa-motion.css`: container-header,
 switch ×3, tooltip) and host-set properties (app-shell ×4, app-header ×1). The
 other 2 are 328's.
+
+**✅ Done 2026-10-16.** A token is real when tokens.css, a shared sheet or any
+component's sheet declares it — app-shell SETS the app header's
+`--sherpa-app-header-nav-menu` — or when the component's own header names it as
+a hook; app-shell's header now names both panel-area hooks. 0 token warnings on
+the 66 specs, and a made-up name still warns. `audit_component` and
+`validate_def` show the same.
 
 ### `[ ]` ❓ 334 — GAP: `--shade()` and `--tint()` have no users
 

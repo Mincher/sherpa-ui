@@ -8,7 +8,7 @@
  * Map:
  * - validateDef — check a def against its schema; the errors, or none
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadNameMap, loadComponentNames, loadCssTokenNames, PATHS } from './data.mjs';
 
@@ -41,6 +41,30 @@ function allRoots(def) {
  * alias and a component has many. Returns null rather than throwing, so a def
  * for a component that does not exist yet still validates.
  */
+/** Every `--sherpa-*` a shared or a component sheet DECLARES: the motion scale,
+ *  or a hook one component sets on another. Cached. */
+let _declared = null;
+function declaredInSheets() {
+  if (_declared) return _declared;
+  _declared = new Set();
+  const core = join(PATHS.components, '..', 'core');
+  const files = [
+    ...(existsSync(core) ? readdirSync(core).filter((f) => f.endsWith('.css')).map((f) => join(core, f)) : []),
+    ...loadComponentNames().map((c) => join(PATHS.components, c, `${c}.css`)),
+  ];
+  for (const f of files) {
+    if (!existsSync(f)) continue;
+    for (const m of readFileSync(f, 'utf8').matchAll(/(--sherpa-[a-z0-9-]+)\s*:/g)) _declared.add(m[1]);
+  }
+  return _declared;
+}
+
+/** A component's own template, for the hooks its header names, or ''. */
+function componentHtml(name) {
+  const p = join(PATHS.components, name ?? '', `${name}.html`);
+  try { return name && existsSync(p) ? readFileSync(p, 'utf8') : ''; } catch { return ''; }
+}
+
 const _cssCache = new Map();
 function componentCss(name) {
   if (!name) return null;
@@ -120,7 +144,9 @@ export function validateDef(def, opts = {}) {
           // carry a projected region today: button (structure), input-text
           // (input), nav + nav-item (navigation), switch (switch).
           if (scoped) continue;
-          out.push(warn('token', `token "${nm}" (${key}) is not declared in tokens.css, and ${def.name}.css has no projected region defining it — the name is dead`, key));
+          // Declared in a shared or a component sheet, or a hook its own header names: real.
+          if (declaredInSheets().has(`--sherpa-${nm}`) || componentHtml(def.name).includes(`--sherpa-${nm}`)) continue;
+          out.push(warn('token', `token "${nm}" (${key}) is declared in no sheet (tokens.css, a shared sheet or a component's) and named in no header — the name is dead`, key));
           continue;
         }
       }
