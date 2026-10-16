@@ -6909,10 +6909,9 @@ act that asks the store, so the rule cannot slip. A local store is unchanged: it
 never left the client.
 
 **Look at:** Demos, `?context=records&remote` — only the first load waits its
-800 ms; every toggle after it is instant. **Not run yet:** the node tests that
-count a remote source's loads (query, headless-data-layer,
-a-live-filter-waits-for-the-moves-to-stop) may need their numbers moved, when
-Will says to test.
+800 ms; every toggle after it is instant. **Run 2026-10-16** (Will's go): the
+full suite is green after it — Playwright 3049 passed, node 471 of 471, the
+remote-count node tests included.
 
 **Reviewed 2026-10-16** (a read-only workflow, each finding checked by a
 refuter): 13 confirmed, all fixed. The three high ones were one root: the
