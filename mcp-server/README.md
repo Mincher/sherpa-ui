@@ -17,12 +17,12 @@ code; if a tool is not listed here it does not exist.
 ## Setup
 
 Node 20+. It is its own package, `sherpa-ui-mcp`, and reads the `sherpa-ui`
-it is installed beside — its specs, docs, schemas, tokens and `dist/`:
+it sits beside — its specs, docs, schemas, tokens and `dist/`. It is not
+published: a client runs it from a sherpa-ui checkout with `node`.
 
-```bash
-npm install --save-dev sherpa-ui-mcp
-npx sherpa-mcp     # stdio — no output; it is launched BY a client, not run by you
-```
+**Never `npx sherpa-mcp`.** On npm, `sherpa-mcp` is another author's package,
+and a client with no terminal installs a missing one without asking (TODO 325).
+A wrong path with `node` fails; a wrong name with `npx` runs a stranger's code.
 
 From a checkout of sherpa-ui, `npm run mcp` runs it against that checkout; run
 `npm run build` once first, since the data tools read `dist/`. A tool that
@@ -38,8 +38,8 @@ packages, installs them into an empty folder and calls every tool.
 {
   "mcpServers": {
     "sherpa-ui": {
-      "command": "npx",
-      "args": ["sherpa-mcp"]
+      "command": "node",
+      "args": ["/path/to/sherpa-ui/mcp-server/index.js"]
     }
   }
 }
@@ -47,9 +47,9 @@ packages, installs them into an empty folder and calls every tool.
 
 ### VS Code / Cursor
 
-Same shape, in the client's MCP settings — `command: npx`, `args: [sherpa-mcp]`.
-A project beside a sherpa-ui checkout can run it straight from there, as Sherpa
-Demos does: `command: node`, `args: [../sherpa-ui/mcp-server/index.js]`.
+Same shape, in the client's MCP settings. A project beside a sherpa-ui checkout
+gives a relative path, as Sherpa Demos does: `command: node`,
+`args: [../sherpa-ui/mcp-server/index.js]`.
 
 ---
 

@@ -12861,31 +12861,18 @@ is the demanding case because `@import` dies there:
 Firefox discarding the rule is what makes this safe: there is nothing left to
 half-apply. All three land on the same colour to five decimal places.
 
-**What a function is FOR here.** Two of them name a step where components had
-drifted:
-
-| function | for | scale |
-|---|---|---|
-| `--shade(--surface, --amount)` | a control with a surface of its OWN | 8% hover, 16% pressed |
-| `--tint(--amount)` | one BORROWING the surface beneath it | 16% hover, 24% pressed |
-
-**Superseded for hover and down where a component binds Style** (Will's rule,
-2026-09-24): `base` / `+1` / `+2` are default / hover / down, so those bind the
-Style step and need no function. See `T-a-state-colour-binds-the-style-mode`.
-
-`--shade` replaced raw percentages that had drifted to 92%, 94% and 84%.
-`--tint` replaced four IDENTICAL close buttons — tag, chip, toast, callout —
-hovering at 22%, 18%, 22% and 14%. The function is not shorter; it is NAMED,
-which is the same reason `--sherpa-focus-ring` is a custom property rather than
-48 copies of one value (`T-one-value-one-declaration`).
+**None exists today.** `--shade()` and `--tint()` named the hover and down
+steps where components had drifted (92%, 94%, 84%; four close buttons at 22%,
+18%, 22% and 14%). Style `base` / `+1` / `+2` then became default / hover /
+down (Will, 2026-09-24, `T-a-state-colour-binds-the-style-mode`), nothing
+called them, and they were deleted with their probe (Will, TODO 334). The rule
+stands for the next one.
 
 **Why not a custom property instead?** A property holds one value. This takes
 ARGUMENTS — a different surface and a different step per call — which a
 property cannot express.
 
-- Site: `src/core/sherpa-base.css`
 - Site: `playwright.config.ts`
-- Site: `test/e2e/reforged-css-functions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 ### T-one-value-one-declaration
 

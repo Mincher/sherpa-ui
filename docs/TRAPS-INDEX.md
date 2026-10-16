@@ -727,7 +727,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (93)
+## SherpaElement and the shared sheets (92)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -738,7 +738,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-imports-anywhere](TRAPS.md#t-a-component-imports-anywhere) — sherpa-element
 - [T-a-component-with-data-icon-draws-its-own](TRAPS.md#t-a-component-with-data-icon-draws-its-own) — render-icon
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — mark-text
-- [T-a-css-function-needs-its-longhand-first](TRAPS.md#t-a-css-function-needs-its-longhand-first) — sherpa-base
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
 - [T-a-flag-brings-the-base-methods](TRAPS.md#t-a-flag-brings-the-base-methods) — sherpa-element
 - [T-a-gauge-composes-the-ring](TRAPS.md#t-a-gauge-composes-the-ring) — shared-constants

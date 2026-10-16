@@ -317,7 +317,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
-| ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
+| ✅ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
@@ -326,7 +326,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
-| ❓ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
+| ✅ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
@@ -6623,7 +6623,7 @@ selects only `auto` and `dark`; no `data-mode` is light, and `hc` selects
 nothing. APP-GUIDE links Sherpa Demos, which a reader cannot open. For 294: the
 README links the reference when the reference lands.
 
-### `[ ]` ❓ 325 — HAZARD: our package names on npm are other people's
+### `[x]` ✅ 325 — HAZARD: our package names on npm are other people's
 
 Measured 2026-10-15 with `npm view`: `sherpa-ui` is 1.8.0, by three other
 maintainers, last changed 2022-06-26. It is an Electron app with no bin, and
@@ -6651,6 +6651,17 @@ the starter". In `../Sherpa Starter`: `template/mcp.json`,
 (`@<scope>/sherpa-ui`), and move every site above in one change (a bulk rename:
 your yes); B — keep the names until you publish, and change the docs only to
 say "from the clone". My pick: A.
+
+**Will, 2026-10-16:** *"Let's not worry about shipping via npm for now. We'll
+implement locally from the repo into other projects."* So nothing is renamed
+and nothing is published; a project links sherpa-ui from the repo, as Demos
+does. The hazard stays only for someone who runs `npx sherpa-ui` where it is not
+installed.
+
+One safety fix all the same, as it is "locally from the repo": nothing an MCP
+client runs by itself names `npx sherpa-mcp` now. The MCP README's setup and
+the Starter's `template/mcp.json` run the local `index.js` with `node`, so a
+wrong path fails instead of running a stranger's package. Closed.
 
 ### `[x]` ✅ 326 — TOOLING: check-usage reads `app/` unless told otherwise
 
@@ -6752,13 +6763,18 @@ a hook; app-shell's header now names both panel-area hooks. 0 token warnings on
 the 66 specs, and a made-up name still warns. `audit_component` and
 `validate_def` show the same.
 
-### `[ ]` ❓ 334 — GAP: `--shade()` and `--tint()` have no users
+### `[x]` ✅ 334 — GAP: `--shade()` and `--tint()` have no users
 
 `sherpa-base.css` defines `--shade()`, `--tint()` and `--sherpa-shade-hover|active`,
-but no component's CSS calls them; only `test/e2e/reforged-css-functions.spec.ts`
+but no component's CSS calls them; only the e2e CSS-functions spec
 probes support. Style `+1`/`+2` replaced them for hover and down. **For Will:** A
 — delete them, and keep `T-a-css-function-needs-its-longhand-first` as the rule
 for any future function; B — keep them as a door. My pick: A.
+
+**✅ Done 2026-10-16. Will: A.** Both functions and `--sherpa-shade-*` are
+gone from `sherpa-base.css`, with the e2e spec that probed them (its second
+test asserted the function rule exists, so it would have failed). The trap
+keeps the rule for the next function; CLAUDE.md says none exists today.
 
 ### `[ ]` ❓ 335 — GAP: the `.chart-*` class aliases
 

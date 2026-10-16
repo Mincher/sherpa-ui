@@ -6,41 +6,6 @@
  * TRAP T-import-dies-in-an-adopted-sheet.
  */
 
-/* ── Functions ───────────────────────────────────────────────────────────
- * A CSS `@function` is REAL in Chromium and WebKit and absent in Firefox 155,
- * where it renders NOTHING — silently, which is why this library had none.
- * `@supports` closes that: the longhand is written first and always, and the
- * function only replaces it where the engine says it works. Measured in all
- * three engines, including inside an adopted shadow sheet: Firefox drops the
- * `@function` rule entirely and keeps the longhand.
- *
- * TRAP T-a-css-function-needs-its-longhand-first
- */
-
-/**
- * A surface shaded toward its own ink — the hover and pressed states.
- *
- * `--amount` is how far it moves, so 8% reads as "one step darker" where
- * `92%` read as "eight percent of something". The scale is 8% hover,
- * 16% pressed.
- */
-@function --shade(--surface, --amount) {
-  result: color-mix(in oklab, var(--surface) calc(100% - var(--amount)), currentColor);
-}
-
-/**
- * A TINT of the current ink over whatever is behind — for a control that sits
- * ON a coloured surface and must not hide it. A close button in a toast, a
- * tag, a chip, a callout: four of them, at 22%, 18%, 22% and 14%, which is
- * drift rather than four decisions.
- *
- * The scale is 16% hover, 24% pressed. `--shade` is for a control with a
- * surface of its own; this is for one borrowing the surface beneath it.
- */
-@function --tint(--amount) {
-  result: color-mix(in oklab, currentColor var(--amount), transparent);
-}
-
 *,
 *::before,
 *::after {
@@ -68,22 +33,6 @@
      component's own box rather than over its neighbours. 48 sites across 29
      files wrote this by hand. */
   --sherpa-focus-ring: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-
-  /* The hover and pressed surfaces, one step and two steps toward the ink.
-
-     `currentColor` resolves where the property is USED, not where it is
-     declared, so one declaration shades correctly in a component with its own
-     ink — measured identical to the longhand it replaces, in all three
-     engines.
-
-     Set `--_surface` first and these follow it; leave it and they shade the
-     base surface. This REPLACES the two-block @supports dance at each site: a
-     `color-mix()` is already the longhand, so there is no function to guard and
-     no longhand for a copy to lose.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  --_shade-base: var(--_surface, var(--sherpa-style-surface-base, #ffffff));
-  --sherpa-shade-hover: color-mix(in oklab, var(--_shade-base) 92%, currentColor);
-  --sherpa-shade-active: color-mix(in oklab, var(--_shade-base) 84%, currentColor);
 
   /* A CARD's four values — the box that holds other things. Six components had
      these four lines verbatim: accordion, container, dialog, overlay-panel,

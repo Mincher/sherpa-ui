@@ -496,7 +496,7 @@ is adopted into every shadow root — so a component imported alone is styled:
 
 | sheet | holds |
 |---|---|
-| `sherpa-base.css` | `:host` defaults, `--shade()` / `--tint()`, `.sherpa-truncate`, `.sherpa-dismiss`, `.sherpa-inert` |
+| `sherpa-base.css` | `:host` defaults, `.sherpa-truncate`, `.sherpa-dismiss`, `.sherpa-inert` |
 | `sherpa-typography.css` | **generated** — the type scale |
 | `sherpa-grouping.css` | `.sherpa-group*`, `.sherpa-border-edges`, `.sherpa-border-corners` |
 | `sherpa-icon.css` | `.sherpa-icon-box` |
@@ -587,16 +587,11 @@ Measured in all three engines, including inside an adopted shadow sheet:
 Firefox drops the `@function` rule entirely and keeps the longhand, and the
 three render the same colour to five decimal places.
 
-Two functions exist, both in `sherpa-base.css`:
-
-| function | for | scale |
-|---|---|---|
-| `--shade(--surface, --amount)` | a control with a surface of its OWN | 8% hover, 16% pressed |
-| `--tint(--amount)` | one BORROWING the surface beneath it | 16% hover, 24% pressed |
-
-Add another only with the same guard and the same three-engine proof — a
-function without its longhand is a rule that vanishes for a third of the web.
-TRAP `T-a-css-function-needs-its-longhand-first`.
+**No function exists today.** `--shade()` and `--tint()` were deleted
+2026-10-16 (Will, TODO 334): Style `base` / `+1` / `+2` replaced them for hover
+and down, and nothing called them. Add one only with the same guard and the
+same three-engine proof — a function without its longhand is a rule that
+vanishes for a third of the web. TRAP `T-a-css-function-needs-its-longhand-first`.
 
 For focus rings, always use the explicit fallback pattern — and an INSET ring, so
 the stroke is drawn INSIDE the component's own box rather than bleeding over its
