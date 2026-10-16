@@ -418,7 +418,7 @@
         "hasBadge"
       ],
       "divergence": {
-        "note": "2026-08-26: HTML-element note. Sherpa deliberately does NOT use <a role=\"button\"> — a navigating trigger stays a real link, not a button-styled anchor. For a form SUBMIT (<input type=\"submit\"> / <button type=\"submit\">), use this Button styled Saturated-Default in appearance (the Saturated look-tier, default state). i.e. the submit action of a form is a Saturated-Default Button, not a separate component."
+        "note": "2026-08-26: HTML-element note. Sherpa deliberately does NOT use <a role=\"button\"> — a navigating trigger stays a real link, not a button-styled anchor. A form SUBMIT is a native <button type=\"submit\">: sherpa-button submits no form (Will, 2026-10-16, TODO 331). It must still LOOK like this Button — Saturated, default — and follow status and look pins as one does; how it takes that look is TODO 331."
       }
     }
   }

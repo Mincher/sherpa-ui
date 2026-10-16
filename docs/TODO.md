@@ -323,7 +323,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
 | ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ✅ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
-| ❓ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
+| 🚧 | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ✅ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
@@ -6580,13 +6580,21 @@ class always did for a `variantAttrs` name; the specs said false. check-usage
 now flags `<sherpa-button data-type="label">`. compile-def writes an enum
 template prop's `templateId` and `variantAttrs`; it wrote `'undefined'`.
 
-### `[ ]` ❓ 331 — GAP: sherpa-button submits no form
+### `[~]` 🚧 331 — GAP: sherpa-button submits no form
 
 sherpa-button has no `formAssociated` and no submit code, and both inner
 buttons are `type="button"`. Its Figma divergence note says "For a form SUBMIT …
 use this Button styled Saturated-Default". **For Will:** A — the note changes (a
 form's submit is a native `<button type="submit">`); B — sherpa-button gets a
 submit type. My pick: A.
+
+**Will, 2026-10-16:** *"A but a form submit button should be able to be
+styled like a sherpa button to inherit status classes etc."* **✅ The note**
+now says a submit is a native `<button type="submit">`, and that it must look
+like a Saturated, default Button and follow status and look pins. **⬜ The
+look:** a native button has no way to wear the Button's look today — its CSS is
+in `sherpa-button`'s shadow, and its Structure sizes are projected only there.
+Next: plan one look both can wear, without a second copy of the Button's CSS.
 
 ### `[x]` ✅ 296 — Phase 8.4: a README front door
 
