@@ -34,8 +34,10 @@ import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-switch/sherpa-switch.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
+import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
@@ -71,6 +73,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-at-default': { type: 'boolean', kind: 'style' },
     'data-nothing-to-reset': { type: 'boolean', kind: 'style' },
     'data-no-actions': { type: 'boolean', kind: 'style' },
+    // Shows Figma's filter Switch, on a data bar. TRAP T-the-filter-switch-keeps-what-it-turned-off
+    'data-switchable': { type: 'boolean', kind: 'visibility' },
     /* A filter PANEL is answering for this bar, so it hides what the panel
        also carries. TRAP T-panel-mode-hides-what-the-panel-answers */
     'data-panel-mode': { type: 'boolean', kind: 'style' },
@@ -104,6 +108,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The filter defs this bar holds, in order. */
   #filters: FilterDef[] = [];
+  /** A source draws this bar's scope, so the Switch's list is the source's. */
+  #scoped = false;
+  /** With no source: the chips its Switch turned off. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+  #switchedOff: string[] | null = null;
   /** The columns the Group and Sort chips offer. */
   #organise: OrganiseDef = {};
   /** Filters the user MAY add but has not — the Add chip's menu. */
@@ -292,6 +300,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
     this.$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
+    this.$('.filters-switch')?.addEventListener('change', this.#onSwitch);
     // CAPTURE — see #onOrganiseChange.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
     this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
@@ -995,7 +1004,71 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange();
   };
 
+  /** The Switch flipped: its own act, so the bar's `change` listeners never hear it. */
+  #onSwitch = (event: Event): void => {
+    event.stopPropagation();
+    this.#setSwitch(!(event.target as SherpaSwitch).checked);
+    this.#emitChange();
+  };
+
+  /** Does this bar show its filter Switch? A data bar only, as Figma draws it. */
+  get #switchable(): boolean {
+    return this.hasAttribute('data-switchable') && this.dataset['type'] !== 'view';
+  }
+
+  /**
+   * Every filter in the bar OFF, each keeping its value, or back ON — silent,
+   * as `values =` is; `report()` says it. With a source, the source turns them:
+   * this bar draws it. TRAP T-the-filter-switch-keeps-what-it-turned-off
+   */
+  get filtersSuspended(): boolean {
+    return !(this.$<SherpaSwitch>('.filters-switch')?.checked ?? true);
+  }
+  set filtersSuspended(off: boolean) {
+    // A source's scope is turned by its Switch, so a bar with none cannot.
+    if (this.#scoped && !this.#switchable) {
+      report({
+        code: 'filter-switch-hidden',
+        message: 'filtersSuspended was set on a bar its source draws, and it shows no Switch. Add data-switchable, or call source.suspendScope().',
+      });
+      return;
+    }
+    this.#setSwitch(off);
+  }
+
+  /** Turn the chips — with no source — and draw it. */
+  #setSwitch(off: boolean): void {
+    if (!this.#scoped) this.#switchChips(off);
+    this.#drawSwitch(off);
+  }
+
+  /** With no source: turn the filter chips that are on off, listing them, or the listed ones back on. */
+  #switchChips(off: boolean): void {
+    if (off && !this.#switchedOff) {
+      const on = this.#chips().filter((c) => c.current && !c.hasAttribute('data-persistent') && !c.hasAttribute('data-superseded'));
+      this.#switchedOff = on.map((c) => c.dataset['id'] ?? '');
+      for (const chip of on) chip.current = false;
+    } else if (!off && this.#switchedOff) {
+      for (const chip of this.#chips()) if (this.#switchedOff.includes(chip.dataset['id'] ?? '')) chip.current = true;
+      this.#switchedOff = null;
+    }
+  }
+
+  /** Draw the Switch; while it is off, the chips are greyed and still. */
+  #drawSwitch(off: boolean): void {
+    const sw = this.$<SherpaSwitch>('.filters-switch');
+    if (sw) sw.checked = !off;
+    this.toggleState('filters-off', off);
+    this.$('.chips')?.toggleAttribute('inert', off);
+  }
+
   override onChange(name?: string): void {
+    // A Switch it no longer shows — hidden, or the panel answering — gives the filters back.
+    if ((name === 'data-panel-mode' || name === 'data-switchable' || name === 'data-type') && this.filtersSuspended
+      && (!this.#switchable || this.hasAttribute('data-panel-mode'))) {
+      this.#setSwitch(false);
+      this.#emitChange({ suspended: false });
+    }
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
@@ -1007,7 +1080,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
-  #emitChange(): void {
+  #emitChange(given: { suspended?: boolean } = {}): void {
+    // Its Switch only while it shows one, so a hidden Switch never turns a scope off.
+    const suspended = given.suspended ?? (this.#switchable ? this.filtersSuspended : undefined);
     this.emit('quick-filter-change', {
       // TRAP T-values-carries-two-shapes — `scope` says WHICH shape this is.
       scope: 'bar',
@@ -1019,6 +1094,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       active: this.active,
       // APPLIED: only ON chips — for a host that wants the ticks, the View chip's.
       values: this.values,
+      suspended,
     });
     this.#syncOneRows();
   }
@@ -1203,6 +1279,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
    */
   async drawScope(scope: ScopeDescription): Promise<void> {
+    this.#scoped = true;
+    /* The Switch FIRST, before the waits, so a report meanwhile says it. An off
+       it cannot show — hidden, or the panel answering — goes back on.
+       TRAP T-the-filter-switch-keeps-what-it-turned-off */
+    const resume = !!scope.suspended && (!this.#switchable || this.hasAttribute('data-panel-mode'));
+    if (resume && !this.#switchable) {
+      report({
+        code: 'filter-switch-hidden',
+        message: `Scope "${scope.scope}" is switched off, and its bar shows no Switch, so it is switched back on. Add data-switchable to offer it.`,
+        at: { scope: scope.scope },
+      });
+    }
+    this.#drawSwitch(!!scope.suspended && !resume);
     this.groupSets(scope.sets ?? []);
     // Its Group and Sort, where the scope arranges — drawn again only when they change.
     // TRAP T-group-and-sort-are-component-scope
@@ -1241,6 +1330,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     const on = new Set(presets.filter((f) => f.active).map((f) => f.id));
     for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, on.has(def.id));
+    if (resume) this.#emitChange({ suspended: false });
   }
 
   /**
@@ -1550,6 +1640,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   clearAll(options: { organise?: boolean; carry?: boolean } = {}): void {
     const organise = options.organise ?? true;
+    // A clean slate: the Switch is on, and what it turned off is forgotten.
+    this.#switchedOff = null;
+    this.#drawSwitch(false);
     for (const chip of this.#chips()) {
       // TRAP T-persistent-chip-is-a-selector — survives a reset, PICK included.
       if (chip.hasAttribute('data-persistent')) continue;

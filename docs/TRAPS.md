@@ -3370,6 +3370,8 @@ back on.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All

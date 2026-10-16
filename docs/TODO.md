@@ -330,7 +330,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
-| 🚧 | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
+| ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
@@ -6889,7 +6889,7 @@ right-actions; the code builds both and keeps `view` and `actions` slots for a
 host's extras. The note now says that, and names the one gap (338). A carried
 note is the one part of a spec written by hand; a regeneration keeps it.
 
-### `[~]` 🚧 338 — GAP: the data bar's leading Switch
+### `[~]` ❓ 338 — GAP: the data bar's leading Switch
 
 Figma's Filter Toolbar `Type=data` starts its content with a Switch (28×16,
 on, no label), then a divider, then the chips. The code's data bar has no
@@ -6900,6 +6900,23 @@ that is what it means.
 
 **Will, 2026-10-16: A.** "The switch is optional for legacy reasons. So include
 it but hide it by default. Use an attr to expose it."
+
+**✅ Built 2026-10-16** (a read-only workflow planned it: three readers, a
+designer and a critic who found ten breaks in the first design). `data-switchable`
+shows it, on a data bar only. OFF stops every filter in force in the bar — its
+answers and saved filters — and keeps each value; ON brings back exactly those,
+in the same "latest wins" order. The Query owns it (`ScopeQuery.suspended`), so
+the session and a saved View keep it, and one rule (`keepOff`) means nothing
+comes into force in an off scope. `source.suspendScope(scope, off)` and
+`bar.filtersSuspended` are the no-pointer ways. TRAP
+`T-the-filter-switch-keeps-what-it-turned-off`. **Not run yet.**
+
+**❓ Two choices I made, for Will to change:**
+1. While it is off, the chips are greyed and cannot be pressed: only the Switch
+   turns them back on. (B: a chip press turns everything back on, plus that
+   chip.) My pick: A, as built — it has no race.
+2. The panel has no Switch, so a bar the panel answers for turns its Switch
+   back on. (B: each panel section gets the Switch too.) My pick: A, as built.
 
 ### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
 

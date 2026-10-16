@@ -8106,6 +8106,13 @@
               }
             },
             {
+              "name": "data-switchable",
+              "description": "show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-type",
               "description": "data | view (view adds the ★/Save/▾ group)",
               "type": {
@@ -8144,6 +8151,13 @@
                 "text": "string[]"
               },
               "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "filtersSuspended",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "kind": "field",
@@ -8432,9 +8446,9 @@
           "events": [
             {
               "name": "quick-filter-change",
-              "description": "Its whole answer.",
+              "description": "Its whole answer; `suspended` while it shows its Switch.",
               "type": {
-                "text": "CustomEvent<{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; scope: 'bar'; values: Record<string, string[]> }>"
+                "text": "CustomEvent<{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; scope: 'bar'; suspended: boolean | undefined; values: Record<string, string[]> }>"
               }
             },
             {
@@ -8587,6 +8601,9 @@
             },
             {
               "name": "saved"
+            },
+            {
+              "name": "switch"
             },
             {
               "name": "view-zone"

@@ -47,6 +47,22 @@
           },
           {
             "el": "div",
+            "class": "switch-zone",
+            "part": "switch",
+            "children": [
+              {
+                "el": "sherpa-switch",
+                "class": "filters-switch",
+                "attrs": {
+                  "data-type": "simple",
+                  "checked": "",
+                  "aria-label": "Apply filters"
+                }
+              }
+            ]
+          },
+          {
+            "el": "div",
             "class": "saved-zone",
             "part": "saved",
             "children": [
@@ -559,6 +575,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-switchable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility",
+      "description": "show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338."
+    },
+    {
+      "$type": "prop",
       "name": "data-type",
       "type": "enum",
       "observed": true,
@@ -640,7 +665,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (active, values, savedSets, superseded, readings, presets, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (active, values, savedSets, superseded, filtersSuspended, readings, presets, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -652,7 +677,7 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
-      "description": "Its whole answer.",
+      "description": "Its whole answer; `suspended` while it shows its Switch.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -661,6 +686,7 @@
         "presets": "Record<string, { on: boolean; readings: Record<string, FieldReading>; }>",
         "readings": "Record<string, FieldReading & { label: string; values: string[]; }>",
         "scope": "'bar'",
+        "suspended": "boolean | undefined",
         "values": "Record<string, string[]>"
       }
     },
@@ -949,7 +975,7 @@
         }
       ],
       "divergence": {
-        "note": "Checked against Figma \"Filter Toolbar\" (150:3688) on 2026-10-16. Figma has two slots, content (chips, divider-separated) and right-actions; the code builds both itself — chips stamped by populate(), the action cluster in its template — and keeps its view and actions slots for a host's extras. One gap: Figma's Type=data leads its content with a Switch (on), and the code has none. Figma's description names older events; the code's are the contract."
+        "note": "Checked against Figma \"Filter Toolbar\" (150:3688) on 2026-10-16. Figma has two slots, content (chips, divider-separated) and right-actions; the code builds both itself — chips stamped by populate(), the action cluster in its template — and keeps its view and actions slots for a host's extras. Figma's Type=data leads its content with a Switch; the code builds it but hides it unless data-switchable, for legacy reasons (Will, TODO 338), and places it after Group and Sort, which lead the bar. Figma's description names older events; the code's are the contract."
       },
       "jsProps": [
         {
@@ -971,6 +997,11 @@
           "name": "superseded",
           "type": "string[]",
           "access": "read"
+        },
+        {
+          "name": "filtersSuspended",
+          "type": "boolean",
+          "access": "read-write"
         },
         {
           "name": "readings",

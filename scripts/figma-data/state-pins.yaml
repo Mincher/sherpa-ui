@@ -126,6 +126,11 @@ sherpa-accordion:
   # Accordion pins Style=default at its root.
   '&': default
 
+sherpa-quick-filter-toolbar:
+  # Its filter Switch is off: every chip it stopped reads inactive.
+  # TRAP T-the-filter-switch-keeps-what-it-turned-off
+  '&:state(filters-off) .chips': inactive
+
 sherpa-app-header:
   # The notification count is a Badge instance pinned Saturated=default.
   '& .notif-badge': saturated

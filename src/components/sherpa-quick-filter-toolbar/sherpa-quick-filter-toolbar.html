@@ -30,6 +30,9 @@
     data-panel-mode  a filter PANEL is answering for this bar: AI, Reset, the
                   panel toggle and Filters are hidden, and a `data` bar goes
                   entirely. TRAP T-panel-mode-hides-what-the-panel-answers
+    data-switchable  show Figma's leading filter Switch, on a data bar: off stops
+                  every filter in the bar and keeps its value. Hidden by
+                  default, for legacy reasons. Will, TODO 338.
     data-no-actions  hide the built-in cluster entirely (host owns the trailing end)
     data-favourite   the ★ is lit (view type) — the value, IN
     data-locked      the host owns the ★; report the click, never self-set
@@ -56,7 +59,7 @@
     actions  — host extras, placed BEFORE the built-in cluster
 
   Fires:
-    quick-filter-change  — its whole answer. detail: { scope, readings, presets, holds, active, values }
+    quick-filter-change  — its whole answer; `suspended` while it shows its Switch. detail: { scope, readings, presets, holds, active, values, suspended? }
     group-change         — detail: { field }
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. detail: { id, filter, holds }
@@ -90,6 +93,11 @@
          ARRANGED, not which rows survive, so they keep their own zone and
          divider rather than mixing into the filter run. -->
     <div class="organise-zone" part="organise"></div>
+
+    <!-- Figma's leading filter Switch: every filter off or on, each keeping its value. -->
+    <div class="switch-zone" part="switch">
+      <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
+    </div>
 
     <!-- The SAVED set on screen: its name, and a cross that dismisses it. TODO 105 -->
     <div class="saved-zone" part="saved">

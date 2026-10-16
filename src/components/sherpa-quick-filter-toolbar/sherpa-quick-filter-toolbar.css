@@ -48,26 +48,39 @@
   flex: 0 0 auto;
 }
 
-/* The 1×16 divider rectangle, in all three places it appears. `::after` on a
+/* The filter Switch, a data bar's only. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+.switch-zone { display: none; }
+:host([data-switchable]:not([data-type="view"])) .switch-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  flex: 0 0 auto;
+}
+
+/* The 1×16 divider rectangle, in all four places it appears. `::after` on a
    zone, a real element in the action cluster. */
 .act-divider,
 :host(:state(has-view)) .view-zone::after,
-:host(:state(has-organise)) .organise-zone::after {
+:host(:state(has-organise)) .organise-zone::after,
+:host([data-switchable]:not([data-type="view"])) .switch-zone::after {
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 :host(:state(has-view)) .view-zone::after,
-:host(:state(has-organise)) .organise-zone::after {
+:host(:state(has-organise)) .organise-zone::after,
+:host([data-switchable]:not([data-type="view"])) .switch-zone::after {
   content: "";
 }
 .act-divider { flex: 0 0 auto; }
 
 /* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
    as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */
-:host(:not(:state(has-organise)))
+:host(:not(:state(has-organise)):not([data-switchable]:not([data-type="view"])))
   .bar:not(:has(.chips > .chip:not([data-folded-away]))) .view-zone::after,
-.bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after {
+:host(:not([data-switchable]:not([data-type="view"])))
+  .bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after,
+.bar:not(:has(.chips > .chip:not([data-folded-away]))) .switch-zone::after {
   display: none;
 }
 /* …and in panel mode only a persistent chip is still shown. */

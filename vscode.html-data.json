@@ -2765,6 +2765,11 @@
           "description": "the field the Sort chip points at (the standard name)"
         },
         {
+          "name": "data-switchable",
+          "description": "show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338.",
+          "valueSet": "v"
+        },
+        {
           "name": "data-type",
           "description": "data | view (view adds the ★/Save/▾ group)",
           "values": [

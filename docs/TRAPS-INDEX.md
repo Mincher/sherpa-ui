@@ -290,7 +290,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
 
-## Filters (168)
+## Filters (169)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -442,6 +442,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-sort-is-tri-state](TRAPS.md#t-sort-is-tri-state) — quick-filter
 - [T-the-add-menu-is-the-whole-list](TRAPS.md#t-the-add-menu-is-the-whole-list) — filter-panel, filters-button, quick-filter-toolbar
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — quick-filter-toolbar
+- [T-the-filter-switch-keeps-what-it-turned-off](TRAPS.md#t-the-filter-switch-keeps-what-it-turned-off) — quick-filter-toolbar
 - [T-the-filters-button-is-a-door-not-a-filter](TRAPS.md#t-the-filters-button-is-a-door-not-a-filter) — filter-panel, quick-filter-toolbar
 - [T-the-fold-measures-a-chip-that-has-not-drawn-itself](TRAPS.md#t-the-fold-measures-a-chip-that-has-not-drawn-itself) — quick-filter-toolbar
 - [T-the-header-chips-must-reach-the-query](TRAPS.md#t-the-header-chips-must-reach-the-query) — quick-filter-toolbar

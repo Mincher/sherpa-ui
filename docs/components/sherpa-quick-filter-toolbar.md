@@ -74,6 +74,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
+| `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |
 | `data-type` | `view` `data` | `data` | data \| view (view adds the ★/Save/▾ group) |
 
 ## Properties
@@ -84,6 +85,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `values` | `Record<string, string[]>` | read and write |  |
 | `savedSets` | `SavedSet[]` | read and write |  |
 | `superseded` | `string[]` | read only |  |
+| `filtersSuspended` | `boolean` | read and write |  |
 | `readings` | `Record<string, FieldReading & { label: string; values: string[] }>` | read only |  |
 | `presets` | `Record<string, { on: boolean; readings: Record<string, FieldReading> }>` | read only |  |
 | `heldFields` | `string[]` | read only |  |
@@ -119,7 +121,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; scope: 'bar'; values: Record<string, string[]> }` | Its whole answer. |
+| `quick-filter-change` | `{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; scope: 'bar'; suspended: boolean \| undefined; values: Record<string, string[]> }` | Its whole answer; `suspended` while it shows its Switch. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: 'asc' \| SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |
@@ -150,7 +152,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `organise`, `saved`, `view-zone`
+`actions`, `bar`, `chips`, `organise`, `saved`, `switch`, `view-zone`
 
 ## CSS custom properties it reads
 
