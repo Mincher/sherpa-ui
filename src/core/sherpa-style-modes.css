@@ -1747,7 +1747,7 @@ sherpa-calendar-cell[data-state="range-end"] {
   --_status-icon: var(--sherpa-style-active-indicator-accent);
 }
 
-:host(sherpa-sparkline) .chart-tip {
+:host(sherpa-sparkline) .sherpa-tip {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-default-border-width);
@@ -1775,7 +1775,7 @@ sherpa-calendar-cell[data-state="range-end"] {
   --_status-icon: initial;
 }
 
-:host(sherpa-barchart) .chart-tip {
+:host(sherpa-barchart) .sherpa-tip {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-default-border-width);
@@ -1803,7 +1803,7 @@ sherpa-calendar-cell[data-state="range-end"] {
   --_status-icon: initial;
 }
 
-:host(sherpa-line-chart) .chart-tip {
+:host(sherpa-line-chart) .sherpa-tip {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-default-border-width);
@@ -1831,7 +1831,7 @@ sherpa-calendar-cell[data-state="range-end"] {
   --_status-icon: initial;
 }
 
-:host(sherpa-radial-chart) .chart-tip {
+:host(sherpa-radial-chart) .sherpa-tip {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-default-border-width);
@@ -1859,7 +1859,7 @@ sherpa-calendar-cell[data-state="range-end"] {
   --_status-icon: initial;
 }
 
-:host(sherpa-gauge-chart) .chart-tip {
+:host(sherpa-gauge-chart) .sherpa-tip {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-default-border-width);

@@ -154,7 +154,7 @@ export class SherpaRadialChart extends SherpaElement {
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
         const dot = frag.querySelector<HTMLElement>('.hotspot')!;
-        const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
+        const tip = frag.querySelector<HTMLElement>('.sherpa-tip')!;
         dot.dataset['index'] = String(i);
         tip.dataset['index'] = String(i);
         const mid = sweepStart + (acc + share / 2) * sweep;

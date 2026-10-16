@@ -8356,7 +8356,7 @@ meaningless, and the browser parks the tip wherever it likes — which is why ev
 donut tip appeared beside its dot instead of above it. The name goes on **BOTH**:
 the dot DECLARES it, the tip POINTS at it.
 
-Everything else about the placement is declarative — see `.chart-tip` in
+Everything else about the placement is declarative — see `.sherpa-tip` in
 `core/sherpa-anchor.css`. Nothing here measures anything.
 
 Per chart:
@@ -12961,11 +12961,10 @@ The anchor-positioning machinery in `sherpa-anchor.css` was named `.chart-tip`,
 `position-anchor` plus `position-try-fallbacks` plus a zero-size anchor point,
 which any component could use to place a tip beside any trigger.
 
-It now answers to `.sherpa-tip`, `.sherpa-anchor`, `.sherpa-anchor-point` and
-`.sherpa-anchor-el`, **with the `chart-*` names kept as aliases**. Not renamed
-outright: five chart components name them across ~38 sites, and one is in a
-`.component.json` that the spec round-trip gate reads — so a rename is a
-migration, and the alias is what makes it a safe one.
+It answers to `.sherpa-tip`, `.sherpa-tip-value`, `.sherpa-anchor`,
+`.sherpa-anchor-point` and `.sherpa-anchor-el`. The `chart-*` names were kept
+as aliases for a while, then renamed outright and dropped (Will, TODO 335):
+each thing has one name (`T-a-rename-drops-the-old-name`).
 
 Two constraints the machinery carries, worth knowing before reusing it:
 
@@ -16395,7 +16394,7 @@ the event is heard, so a check made at once left every tip open.
 or a gauge band is an SVG path, so no sibling selector crosses from it to its
 tip, and `:has()` needed one rule per index — radial tips stopped at 11 slices,
 gauge tips at 6 zones (TODO 283). The lift finds the tip by the segment's
-`data-index` and `.hotspots > .chart-tip:popover-open` shows it, in the segments
+`data-index` and `.hotspots > .sherpa-tip:popover-open` shows it, in the segments
 sheet. Before this, `ANCHOR` never matched a segment, so those tips were never
 lifted at all and a card could clip them (TODO 307). The cost: a re-render under
 a still pointer shows no tip until the pointer moves.
@@ -16531,7 +16530,7 @@ of the `data-anchor` box) and places it from measured coordinates: on
 inside the viewport. The side it landed on is a custom state, `side-top`,
 `side-bottom`, `side-left` or `side-right`, which the arrow reads.
 
-**The other tips were fine.** Every `.sherpa-tip` and `.chart-tip` is lifted by
+**The other tips were fine.** Every `.sherpa-tip` is lifted by
 `top-layer-tips.ts` (`T-a-tip-lives-in-the-top-layer`); a probe over all 66
 component pages found each one opens, and the charts' and the sparkline's land
 beside their marks in all three engines. A first probe that hovered the

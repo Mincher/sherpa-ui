@@ -1,11 +1,10 @@
 /**
  * sherpa-anchor.css — anchored tips. Adopted into every shadow root.
- * Any component can anchor a tip to any trigger; `.chart-*` are aliases.
+ * Any component can anchor a tip to any trigger.
  * TRAP T-anchoring-is-generic.
  */
 
-.sherpa-tip,
-.chart-tip {
+.sherpa-tip {
   position: fixed;
   /* A tip is a `popover`, LIFTED to the top layer while it shows, so no box it
      sits in clips it. The browser's own popover box is undone here, so it is
@@ -56,15 +55,14 @@
   transition: opacity 120ms ease;
 }
 
-:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) + :is(.sherpa-tip, .chart-tip),
-:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) :is(.sherpa-tip, .chart-tip) {
+.sherpa-anchor:is(:hover, :focus-visible) + .sherpa-tip,
+.sherpa-anchor:is(:hover, :focus-visible) .sherpa-tip {
   display: flex;
   opacity: 1;
 }
 
 /* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
-.sherpa-anchor-point,
-.chart-anchor-point {
+.sherpa-anchor-point {
   position: absolute;
   inline-size: 0;
   block-size: 0;
@@ -73,12 +71,10 @@
 }
 
 @supports (position-visibility: anchors-visible) {
-  .sherpa-tip,
-  .chart-tip { position-visibility: anchors-visible; }
+  .sherpa-tip { position-visibility: anchors-visible; }
 }
 
-.sherpa-tip-value,
-.chart-tip-value {
+.sherpa-tip-value {
   font-weight: var(--sherpa-font-weight-semibold, 600);
   font-variant-numeric: tabular-nums;
 }
@@ -95,11 +91,11 @@
   justify-self: end;
 }
 
-/* A chart may name a CHILD (`.chart-anchor`) when the hover target is bigger
+/* A chart may name a CHILD (`.sherpa-anchor-el`) when the hover target is bigger
    than the thing described — a bar column is the full plot height. */
-:is(.sherpa-anchor, .chart-mark) { anchor-name: var(--_anchor); }
-:is(.sherpa-anchor, .chart-mark):has(> :is(.sherpa-anchor-el, .chart-anchor)) { anchor-name: none; }
-:is(.sherpa-anchor-el, .chart-anchor) { anchor-name: var(--_anchor); }
+.sherpa-anchor { anchor-name: var(--_anchor); }
+.sherpa-anchor:has(> .sherpa-anchor-el) { anchor-name: none; }
+.sherpa-anchor-el { anchor-name: var(--_anchor); }
 
 /* A chart's hover layer: over the plot, transparent to the pointer — only its
    dots or segments take the hover. */

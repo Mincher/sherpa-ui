@@ -425,7 +425,7 @@
   "src/components/sherpa-tooltip/sherpa-tooltip.css": 109,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.css": 97,
   "src/core/sherpa-base.css": 132,
-  "src/core/sherpa-anchor.css": 111,
+  "src/core/sherpa-anchor.css": 107,
   "src/core/sherpa-grouping.css": 174,
   "src/core/sherpa-icon.css": 60,
   "src/core/sherpa-motion.css": 40,

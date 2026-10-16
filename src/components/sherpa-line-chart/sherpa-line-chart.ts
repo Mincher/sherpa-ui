@@ -171,7 +171,7 @@ export class SherpaLineChart extends SherpaElement {
         pts.forEach(([x, y], i) => {
           const frag = dotTpl.content.cloneNode(true) as DocumentFragment;
           const dot = frag.querySelector<HTMLElement>('.hotspot')!;
-          const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
+          const tip = frag.querySelector<HTMLElement>('.sherpa-tip')!;
           dot.dataset['series'] = String(si);
           dot.dataset['index'] = String(i);
           dot.style.setProperty('--_x', `${x}%`);

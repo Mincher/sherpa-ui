@@ -129,8 +129,8 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   `sherpa-typography.css`, `sherpa-grouping.css` (`.sherpa-group*`,
   `.sherpa-border-edges`, `.sherpa-border-corners` — never write the per-edge
   chain), `sherpa-icon.css`, `sherpa-group-positions.css`,
-  `sherpa-style-modes.css`, `sherpa-anchor.css` (`.chart-tip`, `.sherpa-tip`,
-  `.chart-mark`) and `sherpa-motion.css`. A family sheet is listed first in a
+  `sherpa-style-modes.css`, `sherpa-anchor.css` (`.sherpa-tip`, `.sherpa-anchor`,
+  `.sherpa-anchor-point`) and `sherpa-motion.css`. A family sheet is listed first in a
   component's `static css`: the chart frame, chart axes, chart segments and
   container regions sheets in `src/core/`.
 

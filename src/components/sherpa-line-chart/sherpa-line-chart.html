@@ -66,12 +66,12 @@
 
   <!-- Two siblings, cloned together. The tip must stay OUT of the dot and any
        positioned wrapper: an absolute ancestor breaks anchor positioning for the
-       fixed tip. `.chart-mark:hover + .chart-tip` pairs them. -->
+       fixed tip. `.sherpa-anchor:hover + .sherpa-tip` pairs them. -->
   <template class="hotspot-tpl">
-    <button class="hotspot chart-mark" type="button" tabindex="-1"></button>
-    <span class="chart-tip" popover="manual" role="tooltip">
+    <button class="hotspot sherpa-anchor" type="button" tabindex="-1"></button>
+    <span class="sherpa-tip" popover="manual" role="tooltip">
       <span class="chart-tip-label"></span>
-      <span class="chart-tip-value"></span>
+      <span class="sherpa-tip-value"></span>
     </span>
   </template>
 </template>

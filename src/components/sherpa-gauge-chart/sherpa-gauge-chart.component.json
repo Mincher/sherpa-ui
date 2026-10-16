@@ -169,14 +169,14 @@
         "children": [
           {
             "el": "span",
-            "class": "hotspot chart-anchor-point",
+            "class": "hotspot sherpa-anchor-point",
             "attrs": {
               "data-index": "data-index"
             }
           },
           {
             "el": "span",
-            "class": "chart-tip",
+            "class": "sherpa-tip",
             "attrs": {
               "popover": "manual",
               "role": "tooltip",
@@ -189,7 +189,7 @@
               },
               {
                 "el": "span",
-                "class": "chart-tip-value"
+                "class": "sherpa-tip-value"
               }
             ]
           }

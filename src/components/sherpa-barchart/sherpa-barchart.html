@@ -47,15 +47,15 @@
   </template>
 
   <!-- The tip is a CHILD of the button so one `:hover` covers target and anchor.
-       Placement is declarative — see .chart-tip in core/sherpa-anchor.css. -->
+       Placement is declarative — see .sherpa-tip in core/sherpa-anchor.css. -->
   <template class="bar-tpl">
-    <button class="bar-col chart-mark" type="button">
+    <button class="bar-col sherpa-anchor" type="button">
       <!-- The BAR is the anchor, not the column: a .bar-col is the full plot
            height, so anchoring to it puts the tip far above a short bar. -->
-      <span class="bar chart-anchor" part="bar"></span>
-      <span class="chart-tip" popover="manual" part="tip" role="tooltip">
+      <span class="bar sherpa-anchor-el" part="bar"></span>
+      <span class="sherpa-tip" popover="manual" part="tip" role="tooltip">
         <span class="chart-tip-label"></span>
-        <span class="chart-tip-value"></span>
+        <span class="sherpa-tip-value"></span>
       </span>
     </button>
   </template>

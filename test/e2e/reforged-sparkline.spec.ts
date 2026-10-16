@@ -38,7 +38,7 @@ test('populate() stamps a shape per pair and sets --_min / --_range', async ({ p
       pairs: [...sr.querySelectorAll<HTMLElement>('.shape')].map((sh) =>
         [sh.style.getPropertyValue('--_from'), sh.style.getPropertyValue('--_to')]),
       dots: [...sr.querySelectorAll<HTMLElement>('.hotspot')].map((d) => d.style.getPropertyValue('--_v')),
-      tips: [...sr.querySelectorAll('.chart-tip-value')].map((t) => t.textContent),
+      tips: [...sr.querySelectorAll('.sherpa-tip-value')].map((t) => t.textContent),
       min: el.style.getPropertyValue('--_min').trim(),
       range: el.style.getPropertyValue('--_range').trim(),
       valuesAttr: el.getAttribute('data-values'),

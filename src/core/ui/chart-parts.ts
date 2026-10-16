@@ -54,5 +54,5 @@ export function pairAnchor(name: string, ...els: HTMLElement[]): void {
  *  the axis is; text prints as given. TRAP T-a-tooltip-is-not-an-axis */
 export function fillTip(tip: ParentNode, label: string, value: number | string): void {
   tip.querySelector('.chart-tip-label')!.textContent = label;
-  tip.querySelector('.chart-tip-value')!.textContent = typeof value === 'number' ? formatValue(value) : value;
+  tip.querySelector('.sherpa-tip-value')!.textContent = typeof value === 'number' ? formatValue(value) : value;
 }

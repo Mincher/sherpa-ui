@@ -129,19 +129,19 @@
         "children": [
           {
             "el": "button",
-            "class": "bar-col chart-mark",
+            "class": "bar-col sherpa-anchor",
             "attrs": {
               "type": "button"
             },
             "children": [
               {
                 "el": "span",
-                "class": "bar chart-anchor",
+                "class": "bar sherpa-anchor-el",
                 "part": "bar"
               },
               {
                 "el": "span",
-                "class": "chart-tip",
+                "class": "sherpa-tip",
                 "part": "tip",
                 "attrs": {
                   "popover": "manual",
@@ -154,7 +154,7 @@
                   },
                   {
                     "el": "span",
-                    "class": "chart-tip-value"
+                    "class": "sherpa-tip-value"
                   }
                 ]
               }

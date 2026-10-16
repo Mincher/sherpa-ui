@@ -119,7 +119,7 @@ export class SherpaBarchart extends SherpaElement {
       pairAnchor(`--bar-mark-${i}`, col);
       fillTip(col, d.label, d.value);
       // The tip is hidden until hover, so it names nothing: the bar says it itself.
-      col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.chart-tip-value')!.textContent}`);
+      col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.sherpa-tip-value')!.textContent}`);
       bars.appendChild(col);
     }
     // A SIBLING of the plot, so it lands below the baseline.

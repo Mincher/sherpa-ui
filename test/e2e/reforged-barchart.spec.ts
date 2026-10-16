@@ -278,7 +278,7 @@ test('the tooltip shows the value in full; the axis still compacts', async ({ pa
 
     const sr = chart.shadowRoot!;
     return {
-      tips: Array.from(sr.querySelectorAll('.chart-tip-value')).map((t) => t.textContent!.trim()),
+      tips: Array.from(sr.querySelectorAll('.sherpa-tip-value')).map((t) => t.textContent!.trim()),
       axis: Array.from(sr.querySelectorAll('[class*=tick]'))
         .map((t) => t.textContent!.trim())
         .filter(Boolean),

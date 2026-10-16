@@ -118,7 +118,7 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
 
     const all = [...el.shadowRoot!.querySelectorAll('.zone')] as SVGPathElement[];
     const bands = all.filter((b) => b.dataset['rest'] === undefined);
-    const tips = [...el.shadowRoot!.querySelectorAll('.chart-tip')] as HTMLElement[];
+    const tips = [...el.shadowRoot!.querySelectorAll('.sherpa-tip')] as HTMLElement[];
 
     return {
       bands: bands.length,
@@ -239,7 +239,7 @@ test('a named zone is called the same in its tooltip and in the legend', async (
       return {
         el, legend,
         read: () => ({
-          tips: [...el.shadowRoot!.querySelectorAll('.chart-tip')].map((t) => [text(t.querySelector('.chart-tip-label')), text(t.querySelector('.chart-tip-value'))]),
+          tips: [...el.shadowRoot!.querySelectorAll('.sherpa-tip')].map((t) => [text(t.querySelector('.chart-tip-label')), text(t.querySelector('.sherpa-tip-value'))]),
           rows: [...legend.shadowRoot!.querySelectorAll('.item')].map((i) => [text(i.querySelector('.label')), text(i.querySelector('.value'))]),
           said: [...el.shadowRoot!.querySelectorAll('.zone:not([data-rest])')].map((z) => z.getAttribute('aria-label')),
         }),

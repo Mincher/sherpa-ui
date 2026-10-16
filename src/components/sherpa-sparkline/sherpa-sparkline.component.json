@@ -73,11 +73,11 @@
         "children": [
           {
             "el": "span",
-            "class": "hotspot chart-mark"
+            "class": "hotspot sherpa-anchor"
           },
           {
             "el": "span",
-            "class": "chart-tip",
+            "class": "sherpa-tip",
             "attrs": {
               "popover": "manual",
               "role": "tooltip"
@@ -85,7 +85,7 @@
             "children": [
               {
                 "el": "span",
-                "class": "chart-tip-value",
+                "class": "sherpa-tip-value",
                 "attrs": {
                   "data-text": "text"
                 }

@@ -1,7 +1,7 @@
 import { test, expect } from './harness';
 
 /**
- * Chart mark tooltips — the shared .chart-tip rules in core/sherpa-base.css.
+ * Chart mark tooltips — the shared .sherpa-tip rules in core/sherpa-base.css.
  *
  * NO JS POSITIONING. anchor-name / position-anchor tie a tip to its own mark,
  * position-area picks a preferred side and position-try-fallbacks lets the browser
@@ -24,12 +24,12 @@ test('the shared tip rules resolve: anchored, flippable, hidden until hover', as
 
     const sr = el.shadowRoot!;
     const mark = sr.querySelector<HTMLElement>('.bar-col')!;
-    const tip = mark.querySelector<HTMLElement>('.chart-tip')!;
+    const tip = mark.querySelector<HTMLElement>('.sherpa-tip')!;
     // The BAR carries the anchor name, not its column: `.bar-col` is the full
     // plot height, so a tip anchored to it would float far above a short bar.
-    // `.chart-anchor` names the child instead and the column's own name is
+    // `.sherpa-anchor-el` names the child instead and the column's own name is
     // switched off, which is what this pair asserts.
-    const anchor = mark.querySelector<HTMLElement>('.chart-anchor')!;
+    const anchor = mark.querySelector<HTMLElement>('.sherpa-anchor-el')!;
     const cs = getComputedStyle(tip);
     return {
       // The anchor declares a name and the tip points at the SAME one.
@@ -46,7 +46,7 @@ test('the shared tip rules resolve: anchored, flippable, hidden until hover', as
       // The tip must never eat the hover it depends on.
       pointerEvents: cs.pointerEvents,
       label: tip.querySelector('.chart-tip-label')!.textContent,
-      value: tip.querySelector('.chart-tip-value')!.textContent,
+      value: tip.querySelector('.sherpa-tip-value')!.textContent,
     };
   });
 
@@ -92,10 +92,10 @@ test('hovering a bar shows its tip ABOVE the bar, with a gap', async ({ page }) 
   const r = await page.evaluate(() => {
     const sr = document.querySelector('sherpa-barchart')!.shadowRoot!;
     const mark = sr.querySelectorAll<HTMLElement>('.bar-col')[1]!;
-    const tip = mark.querySelector<HTMLElement>('.chart-tip')!;
+    const tip = mark.querySelector<HTMLElement>('.sherpa-tip')!;
     // Measured against the BAR, not the column. `.bar-col` is the full plot
     // height, so the tip sits above the bar's own top edge — which is the point
-    // of naming the bar as the anchor (`.chart-anchor`).
+    // of naming the bar as the anchor (`.sherpa-anchor-el`).
     const bar = mark.querySelector<HTMLElement>('.bar')!;
     const t = tip.getBoundingClientRect();
     const m = bar.getBoundingClientRect();
@@ -166,7 +166,7 @@ test('a donut anchors its tips to invisible points, hovered from the SLICE', asy
       // The tip is the dot's next SIBLING, not its child: an absolutely-placed
       // ancestor breaks anchor positioning for a fixed tip.
       tips: dots.map((d) => d.nextElementSibling!.textContent!.replace(/\s+/g, ' ').trim()),
-      tipIsSibling: dots.every((d) => d.nextElementSibling?.classList.contains('chart-tip')),
+      tipIsSibling: dots.every((d) => d.nextElementSibling?.classList.contains('sherpa-tip')),
     };
   });
 
@@ -327,7 +327,7 @@ test('a tip ignores the status around it — it pins Style=default', async ({ pa
     return {
       status: metric.dataset['status'],
       plain: getComputedStyle(ink).color,
-      spark: bg(spark.shadowRoot!.querySelector('.chart-tip')!),
+      spark: bg(spark.shadowRoot!.querySelector('.sherpa-tip')!),
       bubble: bg(tooltip.shadowRoot!.querySelector('.bubble')!),
       trigger: getComputedStyle(tooltip.firstElementChild!).color,
     };

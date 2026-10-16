@@ -59,7 +59,7 @@ for (const chart of CHARTS) {
       // Focus the first, the way Tab would.
       marks[0]?.focus();
       await new Promise((res) => setTimeout(res, 150));
-      const tip = sr.querySelector('.chart-tip[data-index="0"]') ?? sr.querySelector('.chart-tip');
+      const tip = sr.querySelector('.sherpa-tip[data-index="0"]') ?? sr.querySelector('.sherpa-tip');
       const tipOnFocus = tip ? getComputedStyle(tip).display : 'no tip';
       const focused = sr.activeElement === marks[0];
       // The arrow moves to the next mark.
@@ -108,7 +108,7 @@ test('sherpa-gauge-chart: its bands are one tab stop, named, and the arrows move
     const stops = zones.filter((z) => z.getAttribute('tabindex') === '0').length;
     zones[0]?.focus();
     await new Promise((res) => setTimeout(res, 150));
-    const tip = sr.querySelector('.chart-tip[data-index="0"]');
+    const tip = sr.querySelector('.sherpa-tip[data-index="0"]');
     const tipOnFocus = tip ? getComputedStyle(tip).display : 'no tip';
     const focused = sr.activeElement === zones[0];
     zones[0]?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
@@ -149,7 +149,7 @@ test('a segment past the old caps still shows its tip: slice 13 of 14, zone 7 of
     const tipOf = async (sr: ShadowRoot, mark: string, i: number): Promise<{ open: boolean; display: string }> => {
       sr.querySelector<HTMLElement>(`${mark}[data-index="${i}"]`)!.focus();
       await new Promise((res) => setTimeout(res, 150));
-      const tip = sr.querySelector<HTMLElement>(`.chart-tip[data-index="${i}"]`)!;
+      const tip = sr.querySelector<HTMLElement>(`.sherpa-tip[data-index="${i}"]`)!;
       return { open: tip.matches(':popover-open'), display: getComputedStyle(tip).display };
     };
     const donut = await make('sherpa-radial-chart', () => {},

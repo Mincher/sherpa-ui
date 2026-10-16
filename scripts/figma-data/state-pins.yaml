@@ -102,19 +102,19 @@ sherpa-notifications:
 # A tip is its own surface: it pins Style=default, so a chart in a status tile
 # (a metric's sparkline) does not paint its tip in the status colour.
 sherpa-sparkline:
-  '& .chart-tip': default
+  '& .sherpa-tip': default
 
 sherpa-barchart:
-  '& .chart-tip': default
+  '& .sherpa-tip': default
 
 sherpa-line-chart:
-  '& .chart-tip': default
+  '& .sherpa-tip': default
 
 sherpa-radial-chart:
-  '& .chart-tip': default
+  '& .sherpa-tip': default
 
 sherpa-gauge-chart:
-  '& .chart-tip': default
+  '& .sherpa-tip': default
   # Figma pins Style=default on the grey remainder segment (segment-4).
   '& .zone[data-rest]': default
 

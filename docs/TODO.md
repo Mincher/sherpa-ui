@@ -327,7 +327,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ✅ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
-| ❓ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
+| ✅ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
@@ -6776,13 +6776,20 @@ gone from `sherpa-base.css`, with the e2e spec that probed them (its second
 test asserted the function rule exists, so it would have failed). The trap
 keeps the rule for the next function; CLAUDE.md says none exists today.
 
-### `[ ]` ❓ 335 — GAP: the `.chart-*` class aliases
+### `[x]` ✅ 335 — GAP: the `.chart-*` class aliases
 
 `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of the
 `.sherpa-*` names (`T-anchoring-is-generic`, `sherpa-anchor.css`), against
 `T-a-rename-drops-the-old-name`. `.chart-tip` is in 5 templates and `.sherpa-tip`
 in 1. **For Will:** A — rename the five to `.sherpa-*` and drop the aliases (a
 rename: your yes); B — keep both names. My pick: A.
+
+**✅ Done 2026-10-16. Will: A.** Five names, one each now: `.chart-tip` →
+`.sherpa-tip`, `.chart-tip-value` → `.sherpa-tip-value`, `.chart-mark` →
+`.sherpa-anchor`, `.chart-anchor-point` → `.sherpa-anchor-point`, `.chart-anchor`
+→ `.sherpa-anchor-el`. In the five charts' templates and TS, the anchor and
+segments sheets, the tip pins (re-projected), the e2e specs and the docs; the
+aliases are gone. Demos and the Gallery never named them. **Not run yet.**
 
 ### `[x]` ✅ 336 — DOCS: the build-figma-component skill's collection table
 

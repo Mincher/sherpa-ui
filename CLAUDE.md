@@ -502,7 +502,7 @@ is adopted into every shadow root — so a component imported alone is styled:
 | `sherpa-icon.css` | `.sherpa-icon-box` |
 | `sherpa-group-positions.css` | **generated** — grouping positions |
 | `sherpa-style-modes.css` | **generated** — the Style mode pins, `[data-status]` and `[data-look][data-status]` |
-| `sherpa-anchor.css` | `.chart-tip`, `.sherpa-tip`, `.chart-mark` |
+| `sherpa-anchor.css` | `.sherpa-tip`, `.sherpa-anchor`, `.sherpa-anchor-point` |
 | `sherpa-motion.css` | durations, shared keyframes |
 
 **A FAMILY sheet is the fourth kind.** A component's `static css` may be a
@@ -516,7 +516,7 @@ axes (bar, line) or `src/core/sherpa-chart-segments.css` for segmented charts
 only its family adopts it — and `lint:css` reads it as it reads a component.
 
 Reach for a shared sheet when the same rule appears in a THIRD component —
-`.chart-tip` (the five charts) got into `sherpa-anchor.css` that way. Pick the
+`.sherpa-tip` (the five charts) got into `sherpa-anchor.css` that way. Pick the
 sheet by job: `base` is what every component needs, the rest are opt-in by
 class.
 

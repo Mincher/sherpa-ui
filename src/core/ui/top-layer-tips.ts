@@ -10,8 +10,8 @@
  * - liftTips — Hear every hover and focus in the document, once, and lift the tip concerned.
  */
 
-const ANCHOR = '.sherpa-anchor, .chart-mark';
-const TIP = '.sherpa-tip, .chart-tip';
+const ANCHOR = '.sherpa-anchor, .sherpa-anchor';
+const TIP = '.sherpa-tip, .sherpa-tip';
 /** A donut slice or gauge band: an SVG path, its tip paired by index. */
 const SEGMENT = '.chart-segment[data-index]';
 
@@ -29,7 +29,7 @@ function tipOf(event: Event): { anchor: Element; tip: HTMLElement } | null {
   if (!anchor) return null;
   const next = anchor.nextElementSibling;
   const tip = segment
-    ? (segment.getRootNode() as ParentNode).querySelector(`.chart-tip[data-index="${segment.getAttribute('data-index')}"]`)
+    ? (segment.getRootNode() as ParentNode).querySelector(`.sherpa-tip[data-index="${segment.getAttribute('data-index')}"]`)
     : next?.matches(TIP) ? next : anchor.querySelector(TIP);
   return tip instanceof HTMLElement && tip.popover === 'manual' ? { anchor, tip } : null;
 }

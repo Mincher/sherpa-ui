@@ -117,5 +117,5 @@ test('a tip is lifted to the top layer, so a box that clips its button does not 
   await expect.poll(async () => (await tipOf()).open).toBe(true);
   await page.locator('#bars .bar-col').first().hover();
   await expect.poll(() => page.evaluate(() =>
-    document.getElementById('bars')!.shadowRoot!.querySelector('.bar-col .chart-tip')!.matches(':popover-open'))).toBe(true);
+    document.getElementById('bars')!.shadowRoot!.querySelector('.bar-col .sherpa-tip')!.matches(':popover-open'))).toBe(true);
 });
