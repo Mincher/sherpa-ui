@@ -331,6 +331,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | 🚧 | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
+| ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6796,7 +6797,27 @@ and fixed 20 wrong names or claims. The skill now has today's collection table
   effects' colour (`Elevation/color`).
 - Five status glyph masters bind a REMOTE library variable.
 
-Those are Figma's to clean; the skill says not to copy them.
+Those are Figma's to clean; the skill says not to copy them (339).
+
+### `[ ]` ⬜ 339 — FIGMA: dead bindings and hidden collections in the live file
+
+Found by 336's live read, 2026-10-16. In the Figma file, not the code:
+
+- Bound to deleted variables: the Switch `Value=on` track fill
+  (`Style/style-surface/dark`), the Filter Chip (atom)'s badge stroke in both
+  variants (`Theme/_old_border/base`), both Container Footer buttons' radii
+  (`Structure/structure-rounding/*`), and most effects' colour
+  (`Elevation/color`, not in Elevation's 4 variables).
+- `Transparent` and `Saturated` hold overrides for two deleted variables.
+- 56 collections that nodes pin are hidden from the plugin API (54
+  extensions, 2 bases: `Typography`, `Snapping`); 6,138 text nodes pin one, and
+  5,613 of those a mode that is gone. All 18 local text styles bind into
+  `Typography`.
+- Five status glyph masters bind a remote library variable.
+- Some text binds a Theme colour where a Style one exists (the Container's
+  title, description and body; the Switch `Value=on` label).
+
+It is Will's file, so this waits for him: a clean-up pass, or leave it.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
