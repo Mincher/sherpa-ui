@@ -109,6 +109,8 @@ function control(tag, id, holds = []) {
     setAttribute() {}, removeAttribute() {}, toggleAttribute() {},
     send(type, detail) { el.dispatchEvent(new CustomEvent(type, { detail })); },
     answer(readings, presets = el.presets) { el.readings = readings; el.presets = presets; el.report(); },
+    // The bar's filter Switch, as a reader flips it.
+    switchOff(off) { el.suspended = off; el.report(); },
   });
   for (const m of [...(spec.$extensions?.sherpa?.methods ?? []).map((x) => x.name), 'populate']) {
     if (!(m in el)) el[m] = () => { counters.draws++; };
@@ -131,6 +133,7 @@ function control(tag, id, holds = []) {
       el.holds = filters.filter((f) => !f.readings).map((f) => f.id);
       el.presets = Object.fromEntries(filters.filter((f) => f.readings).map((f) => [f.id, { on: !!f.active, readings: f.readings }]));
       el.readings = Object.fromEntries(filters.filter((f) => !f.readings && f.state).map((f) => [f.id, f.state]));
+      if ('suspended' in el) el.suspended = !!d?.suspended;
     };
   }
   // EVERY chip it holds, answered or not, as the toolbar's `readings` does.
@@ -140,7 +143,8 @@ function control(tag, id, holds = []) {
         const r = el.readings[f];
         return [f, r ? { ...r, suspended: !!r.suspended } : { picked: [], suspended: true }];
       }));
-      el.send('quick-filter-change', { readings, presets: el.presets, holds: el.holds });
+      el.send('quick-filter-change', { readings, presets: el.presets, holds: el.holds,
+        ...('suspended' in el ? { suspended: el.suspended } : {}) });
     };
   }
   return el;
@@ -178,6 +182,8 @@ const ACTS = {
   // While the rows still fill many pages: after the report they fit on one.
   page: (p) => p.grid.send('page-change', { page: 2 }),
   report: (p) => p.data.answer(REPORT, AT_RISK),
+  'switch-off': (p) => p.data.switchOff(true),
+  'switch-on': (p) => p.data.switchOff(false),
   sort: (p) => p.grid.send('sort-change', { field: 'customer', direction: 'asc' }),
   heading: (p) => p.grid.send('column-filter-change', { field: 'tier', reading: { picked: ['gold'] } }),
   search: (p) => p.data.send('search-change', { value: 'owner 1' }),
@@ -185,7 +191,7 @@ const ACTS = {
   clear: (p) => p.view.answer({}),
   reset: (p) => p.source.setQuery(structuredClone(p.initial)),
 };
-const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: ['pick', 'report'] } };
+const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: ['pick', 'report', 'switch-off', 'switch-on'] } };
 
 /** An act has ended when no counter moves for three timer turns. */
 async function settle(name) {

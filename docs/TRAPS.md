@@ -3336,6 +3336,40 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-the-filter-switch-keeps-what-it-turned-off
+
+Figma's data Filter Toolbar starts with a Switch. It is optional, for legacy
+reasons, so a bar shows it only with `data-switchable` (Will, TODO 338). OFF
+stops every filter in the bar at once and keeps each one's value; ON brings back
+exactly the ones it stopped.
+
+**The Query owns it**, not the bar: `ScopeQuery.suspended` lists the fields and
+saved filters the Switch turned off. Its presence IS "off". One flag would not
+do: a chip that was already off before the Switch must stay off after it, so the
+Switch has to remember which ones IT turned off. The bar never works the Switch
+out from its chips.
+
+**While a scope is off, nothing comes into force there.** `keepOff()` runs in
+every recompose: an answer or a saved filter in force in an off scope is turned
+off and added to the list. That one rule closes every race — a late report, a
+heading pick, a View that names a field — so no reader needs a second check. The
+bar greys its chips and makes them inert while off: only the Switch turns them
+back on.
+
+- A bar sends `suspended` only while it shows the Switch, so a hidden Switch
+  never turns a scope off. A bar told to draw an off scope it cannot show, or
+  one in panel mode (the panel has no Switch), turns it back on and reports.
+- A scope switched off stays, even with nothing in it: `prune()` keeps it.
+- Reset, a saved filter set and a new View replace the scope, so the Switch
+  comes back on. The session and a saved View keep it.
+- With no source, the bar keeps the list itself.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/ui/bind-source.ts`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All

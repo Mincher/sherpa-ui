@@ -219,7 +219,9 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       /* A SCOPED bar answers in the Query: its saved filters are presets, on
          or off, and their readings go to the library. TRAP T-one-query-one-owner */
       if (typeof bind?.scope === 'string') {
-        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets });
+        // Its filter Switch, from a bar that shows one. TRAP T-the-filter-switch-keeps-what-it-turned-off
+        const suspended = typeof detail['suspended'] === 'boolean' ? { suspended: detail['suspended'] } : {};
+        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets, ...suspended });
         return;
       }
       // An unscoped bar's report is its whole answer, saved filters too.

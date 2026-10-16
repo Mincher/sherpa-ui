@@ -149,6 +149,8 @@ export interface ScopeDescription {
   groupField?: string;
   sortField?: string;
   sortDirection?: SortDirection;
+  /** Its bar's filter Switch is OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+  suspended?: boolean;
 }
 
 export interface ViewState {

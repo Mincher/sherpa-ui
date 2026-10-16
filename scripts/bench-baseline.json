@@ -39,6 +39,22 @@
     "compiles": 17,
     "clones": 7
   },
+  "records/switch-off": {
+    "loads": 2,
+    "counts": 10,
+    "distinct": 5,
+    "rows": 2558,
+    "compiles": 19,
+    "clones": 11
+  },
+  "records/switch-on": {
+    "loads": 2,
+    "counts": 17,
+    "distinct": 14,
+    "rows": 2543,
+    "compiles": 20,
+    "clones": 5
+  },
   "records/sort": {
     "loads": 2,
     "counts": 10,
@@ -106,9 +122,25 @@
   "remote/report": {
     "loads": 2,
     "counts": 6,
-    "distinct": 8,
+    "distinct": 5,
     "rows": 2558,
     "compiles": 16,
-    "clones": 6
+    "clones": 8
+  },
+  "remote/switch-off": {
+    "loads": 2,
+    "counts": 10,
+    "distinct": 5,
+    "rows": 2558,
+    "compiles": 21,
+    "clones": 13
+  },
+  "remote/switch-on": {
+    "loads": 2,
+    "counts": 12,
+    "distinct": 5,
+    "rows": 2558,
+    "compiles": 21,
+    "clones": 7
   }
 }

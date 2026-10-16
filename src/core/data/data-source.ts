@@ -61,6 +61,7 @@
  * - .valuesFor — What `declareValues` was told, as the data holds it.
  * - .select — Select values for a FIELD — the VIEW scope.
  * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
+ * - .suspendScope — A bar's filter Switch: OFF stops every filter in force in a scope, keeping each; ON brings them back.
  * - .suspendSelection — Stop applying a field without forgetting it.
  * - .selection — one field's whole state, ready for any control to draw
  * - .selectedFields — Every field currently selected.
@@ -114,7 +115,7 @@ import {
 } from './query.js';
 import {
   answerIn, answersOf, cameFrom, clearReadings, copyField, copyScope, definitionOf, holderOf, holdsField, homeOf, homes,
-  moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings, type Arrange,
+  keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings, type Arrange,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
@@ -766,6 +767,7 @@ export class DataSource extends EventTarget {
     const out: ScopeDescription = {
       scope, label: this.scopeLabel(scope), ...(shows ? { shows } : {}), filters: [...presets, ...fields],
       available: [...this.addable(scope), ...offered], ...(sets.length ? { sets } : {}),
+      ...(q.suspended ? { suspended: true } : {}),
     };
     /* HOW its rows are arranged — only in a scope that arranges, and its own
        arrangement only. TRAP T-group-and-sort-are-component-scope */
@@ -1144,6 +1146,43 @@ export class DataSource extends EventTarget {
     return groupSummaries(rows, field);
   }
 
+  /**
+   * A bar's filter Switch. OFF stops every answer and saved filter in force in
+   * this scope, keeping each; ON brings back exactly those. While it is off,
+   * nothing comes into force there. TRAP T-the-filter-switch-keeps-what-it-turned-off
+   */
+  suspendScope(scope: string, suspended = true): void {
+    if (suspended === !!this.#draft.scopes[scope]?.suspended) return;
+    const entry = scopeEntry(this.#draft, scope);
+    // Which answer came latest stays as it was, so Limit sets aside the same picks.
+    const stamps = [...this.#recency].filter(([id]) => id.startsWith(`${scope}:`));
+    let fields: string[];
+    if (suspended) {
+      entry.suspended = { fields: [], presets: [] };
+      this.#recompose();
+      fields = [...entry.suspended.fields];
+    } else {
+      const off = entry.suspended!;
+      delete entry.suspended;
+      fields = off.fields.filter((f) => f in entry.readings);
+      for (const f of fields) {
+        const { suspended: _off, ...on } = entry.readings[f]!;
+        entry.readings[f] = on;
+      }
+      for (const id of off.presets) if (entry.presets && id in entry.presets) entry.presets[id] = true;
+      prune(this.#draft);
+      this.#recompose();
+    }
+    // The Switch is its scope's Apply, remote too.
+    this.commit({ scope });
+    for (const [id, n] of stamps) if (this.#recency.has(id)) this.#recency.set(id, n);
+    for (const field of fields) {
+      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+      this.#draw(field);
+    }
+    this.#binding.drawBars(scope);
+  }
+
   /** Stop applying a field without forgetting it. TRAP T-grid-suspend-is-not-clear */
   suspendSelection(field: string, suspended = true): void {
     const held = readingOf(this.#draft, field);
@@ -1342,6 +1381,10 @@ export class DataSource extends EventTarget {
   /** Compile the Query under every named part, and load. The ONE place the
    *  filter is made. TRAP T-one-query-one-owner */
   #recompose(): void {
+    // An answer that came into force in a scope switched off is switched off too.
+    const off = keepOff(this.#draft);
+    if (this.#applied !== this.#draft) keepOff(this.#applied);
+    if (off.length) this.#binding.drawScopesSoon();
     this.#noteRecency();
     const { filter, view, scoped, only } = compile(this.#applied, this.#compileFacts());
     const parts = [...this.#parts.values()];
@@ -2045,11 +2088,15 @@ export class DataSource extends EventTarget {
     holds?: readonly string[];
     readings: Record<string, FieldReading>;
     presets?: Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
+    /** Its filter Switch is off — only from a bar that shows one. */
+    suspended?: boolean;
   }): void {
     if (answer.holds) this.hold(scope, [...answer.holds]);
     const presets = answer.presets ?? {};
     for (const [id, p] of Object.entries(presets)) if (!this.#presets.has(id)) this.declarePreset(id, p.readings);
     this.answer(scope, answer.readings, Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
+    // The answer first, then the Switch: OFF lists what that answer has in force.
+    if (answer.suspended !== undefined) this.suspendScope(scope, answer.suspended);
     // A bar's report IS its Apply: its menus waited for it, remote.
     this.commit();
   }

@@ -57,6 +57,9 @@ export interface ScopeQuery {
   /** The View's only: the scope each field it holds came UP from, so "Return to"
    *  outlives a reload. TODO 235 · TRAP T-send-to-view-filters */
   from?: Record<string, string>;
+  /** Its bar's filter Switch is OFF: the fields and saved filters it switched
+   *  off, so ON brings back exactly those. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+  suspended?: { fields: string[]; presets: string[] };
   /** How this scope arranges its rows. One scope on a source says it. */
   sort?: SortSpec[];
   group?: string | null;

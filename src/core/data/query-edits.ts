@@ -7,6 +7,7 @@
  * - Arrange — How a definition arranges the rows — only what it names.
  * - scopeEntry — One scope's entry, made when first written.
  * - prune — Forget a scope that holds nothing and answers nothing.
+ * - keepOff — A scope switched OFF applies nothing: what comes into force there is switched off and listed.
  * - holdsField — Is this field held in this scope?
  * - holderOf — Which scope holds this field, or null — the View first, when it does.
  * - homeOf — Where a field's reading lives: its holder, else the View.
@@ -27,7 +28,7 @@
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
  * - answersOf — A scope's answers and its saved filters, as one comparable value.
  */
-import { answerOf, eachScope, emptyScope, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
+import { answerOf, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
 import type { SortSpec } from './store.js';
 import type { Where } from './where.js';
@@ -43,10 +44,38 @@ export function scopeEntry(query: Query, id: string): ScopeQuery {
 /** Forget a scope that holds nothing and answers nothing. */
 export function prune(query: Query): void {
   for (const [id, scope] of Object.entries(query.scopes)) {
-    if (!scope.holds.length && !Object.keys(scope.readings).length && !Object.keys(scope.presets ?? {}).length) {
+    // A scope switched off is kept: its Switch is still OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off
+    if (!scope.holds.length && !Object.keys(scope.readings).length && !Object.keys(scope.presets ?? {}).length
+      && !scope.suspended) {
       Reflect.deleteProperty(query.scopes, id);
     }
   }
+}
+
+/** A scope switched OFF applies nothing: an answer or saved filter in force
+ *  there is switched off and listed, and a listed one that left is forgotten.
+ *  The scopes it changed. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+export function keepOff(query: Query): string[] {
+  const touched: string[] = [];
+  for (const [id, scope] of Object.entries(query.scopes)) {
+    const off = scope.suspended;
+    if (!off) continue;
+    const before = JSON.stringify([off, scope.readings, scope.presets]);
+    off.fields = off.fields.filter((f) => f in scope.readings);
+    off.presets = off.presets.filter((p) => p in (scope.presets ?? {}));
+    for (const [field, reading] of Object.entries(scope.readings)) {
+      if (reading.suspended || !readingAnswered(reading)) continue;
+      scope.readings[field] = { ...reading, suspended: true };
+      if (!off.fields.includes(field)) off.fields.push(field);
+    }
+    for (const [preset, on] of Object.entries(scope.presets ?? {})) {
+      if (!on) continue;
+      scope.presets![preset] = false;
+      if (!off.presets.includes(preset)) off.presets.push(preset);
+    }
+    if (JSON.stringify([off, scope.readings, scope.presets]) !== before) touched.push(id);
+  }
+  return touched;
 }
 
 /** Is this field held in this scope? */
