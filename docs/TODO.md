@@ -333,6 +333,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | 🚧 | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
+| ⬜ | 62.86 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -6866,7 +6867,27 @@ today it is not true. In scope: a chip off or on with its value kept, a saved
 filter on or off, the Switch, a Sort cycle and a Group toggle. Not in scope: a
 new value, a typed condition, a page, a search. It is the first slice of 170
 ("client side handling immediate front end changes"); the rest of 170 still
-waits. A read-only workflow is planning it.
+waits.
+
+**Planned 2026-10-16** (a read-only workflow: three readers, a designer, a
+critic who found 13 holes). The client can answer only from a COMPLETE,
+UNPAGED set it already holds; today it holds one only while a summary binds
+`rows: 'all'`. **Will's answers:**
+
+1. *"Charts and metrics are just visual representations of data. The
+   definition of a 'chart' or 'metric', or any other UI component, should only
+   exist in the data layer as a type. They shouldn't be terms in the
+   formatting of data in the data layer."* So what the source holds does not
+   depend on which component is bound (and 341 for the rest).
+2. Hold the WIDER set: the rows under the server's own shaping, before any
+   View filter, so View chips, their counts and Limit never ask either.
+
+**The model that follows:** a remote source reads its whole set once — what
+the store gives for no filter, up to a cap — and, while that set is complete
+and current, answers every load, count and distinct read on the client, with
+the same pipeline a local store runs. It asks the store again on a refresh, a
+store `change`, or when the set is over the cap (then as today). Rows are as
+fresh as the last full read.
 
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
@@ -6880,6 +6901,18 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 `store.insert`). And **2**, verified 2026-10-14: on Records, scrolled 300px
 sideways, the selection column keeps its pin and its place through a header
 filter change — all 27 of its cells.
+
+### `[ ]` ⬜ 341 — DATA: a component is only a TYPE in the data layer
+
+Will, 2026-10-16: *"Charts and metrics are just visual representations of
+data. The definition of a 'chart' or 'metric', or any other UI component,
+should only exist in the data layer as a type. They shouldn't be terms in the
+formatting of data in the data layer."* Today `src/core/data` decides with
+component words: `shows: 'grid' | 'list' | 'chart'`, `showsRows`, a scope
+that `arranges` because a grid or list is bound, "a summary binds to all the
+rows", a chart's legend scope. Measure every such decision, and plan how each
+becomes a data shape (rows, one page, all rows, a count) that any component
+may ask for.
 
 ### `[x]` ✅ 322 — The data grid holds its filter toolbar and its pager
 
