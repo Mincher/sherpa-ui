@@ -7,6 +7,8 @@
       <sherpa-outlet id="context-root"></sherpa-outlet>
       outlet.start({ app, base, session, stores: () => ({ … }) });
 
+  Public API: none — the JS API below drives it.
+
   JS API:
     start(options)      read app.json, load each Context's Views, then the route's Context
     context             the Context on screen
