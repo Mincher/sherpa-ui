@@ -6597,6 +6597,36 @@ look:** a native button has no way to wear the Button's look today — its CSS i
 in `sherpa-button`'s shadow, and its Structure sizes are projected only there.
 Next: plan one look both can wear, without a second copy of the Button's CSS.
 
+**Planned 2026-10-16** (a read-only workflow: three readers, a designer, a
+critic who found seven breaks). The design:
+
+- **One class, `.sherpa-button`**, on a native `<button>`, with the Button's
+  own names: `data-size`, `data-look`, `data-type="icon"`, `data-status`,
+  `aria-pressed`, `disabled` (read as `:disabled`, so a disabled fieldset counts).
+- **One sheet, `src/core/sherpa-button-look.css`**, in `sharedStyles` (class
+  rules only, no `:host`): the face, hover, down, focus and the switches. The
+  Button's own `.trigger` wears the class, so there is ONE copy of the look.
+  It leaves `display`, `margin` and `vertical-align` to the slot owner, and
+  joins the shared edge and corner classes rather than writing them again.
+- **Sizes** keep the `--sherpa-button-*` names (input-text sets them); the
+  projector also writes `.sherpa-button[data-size]` blocks for a native.
+- **Pins:** a class key in state-pins.yaml, put on its twin pin's selector list
+  so no new block is written (else every import grows ~15 KB). The Button's
+  pressed and disabled pins move to its control.
+- **The page copy:** the build writes `dist/styles/button.css` from the same
+  sheet, exported as `sherpa-ui/css/button`.
+- **Its spec** keeps its token table: the generator reads the look sheet's
+  bindings for a node that wears the class.
+- check-usage checks a native's `data-size`, `data-type` and `data-look`, and
+  flags an icon one with no name. A forced-colours focus ring is added.
+
+**My picks, for Will to change:** 1 — A: the page links `sherpa-ui/css/button`
+beside the tokens (an embedding app leaves `page.css` out). 2 — A: the four
+hand-made copies of the look (code-block copy, grid actions, nav search-clear,
+the chip caret) are queued, one pixel check each, since each one's focus ring
+changes. Building it is test-free; proving every Button looks the same, in
+each size, look and state, needs a run.
+
 ### `[x]` ✅ 296 — Phase 8.4: a README front door
 
 **✅ Done 2026-10-15.** The README is the front door for a developer who meets
