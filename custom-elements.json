@@ -348,7 +348,7 @@
             },
             {
               "name": "heading",
-              "description": "(accepts: text)"
+              "description": "rich Context title (overrides data-heading) (accepts: text)"
             },
             {
               "name": "filters",

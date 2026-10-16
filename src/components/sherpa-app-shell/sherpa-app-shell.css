@@ -223,7 +223,7 @@
   }
 }
 @keyframes sherpa-header-lift {
-  to { --_header-shadow: var(--sherpa-shadow-md); }
+  to { --_header-shadow: var(--sherpa-shadow-lg); }
 }
 
 /* THE SHELL ALWAYS FITS THE VIEWPORT. The CONTENT decides whether it scrolls

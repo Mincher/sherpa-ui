@@ -135,7 +135,7 @@
                           }
                         },
                         {
-                          "el": "span",
+                          "el": "sherpa-badge",
                           "class": "notif-badge",
                           "part": "notif-badge",
                           "attrs": {
@@ -211,7 +211,7 @@
                     },
                     {
                       "el": "h1",
-                      "class": "title sherpa-truncate",
+                      "class": "title sherpa-truncate sherpa-text-large",
                       "part": "title"
                     },
                     {
@@ -424,7 +424,8 @@
       "name": "heading",
       "accepts": [
         "text"
-      ]
+      ],
+      "description": "rich Context title (overrides data-heading)"
     },
     {
       "$type": "slot",
@@ -567,36 +568,22 @@
   ],
   "tokens": {
     "content.gap": "{sherpa.display-mode-space-sm}",
-    "content.padding": "{sherpa.display-mode-space-xs}",
+    "content.padding": "{sherpa.theme-gap-md}",
     "row-history.gap": "{sherpa.display-mode-space-xs}",
     "row-history.min-block-size": "{sherpa.display-mode-size-lg}",
     "history.gap": "{sherpa.display-mode-space-2xs}",
     "actions.gap": "{sherpa.display-mode-space-xs}",
-    "divider.inline-size": "{sherpa.display-mode-border-width-base}",
-    "divider.block-size": "{sherpa.display-mode-size-sm}",
-    "divider.background": "{sherpa.style-border-base}",
-    "notif-badge.inset-block-end": "{sherpa.display-mode-space-sm}",
-    "notif-badge.inset-inline-start": "{sherpa.display-mode-space-2xs}",
-    "notif-badge.min-inline-size": "{sherpa.display-mode-size-sm}",
-    "notif-badge.block-size": "{sherpa.display-mode-size-sm}",
-    "notif-badge.padding-inline": "{sherpa.display-mode-space-3xs}",
+    "divider.block-size": "{sherpa.display-mode-size-xs}",
+    "divider.border-inline-start": "{sherpa.display-mode-border-width-sm}",
+    "notif-badge.inset-block-start": "{sherpa.display-mode-space-3xs}",
     "notif-badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
-    "notif-badge.background": "{sherpa.style-surface-base}",
-    "notif-badge.color": "{sherpa.style-content-base}",
-    "notif-badge.font-family": "{sherpa.font-family-mono}",
-    "notif-badge.font-size": "{sherpa.theme-content-size-base}",
-    "notif-badge.font-weight": "{sherpa.font-weight-regular}",
-    "notif-badge.line-height": "{sherpa.theme-content-line-height-base}",
-    "notif-badge.box-shadow": "{sherpa.display-mode-size-2xs}",
+    "notif-badge.box-shadow": "{sherpa.shadow-lg}",
     "row-context.gap": "{sherpa.display-mode-space-2xs}",
     "title-row.gap": "{sherpa.display-mode-space-xs}",
     "title-row.min-block-size": "{sherpa.display-mode-size-lg}",
-    "context-icon.--_icon-size": "{sherpa.theme-size-icon-xs}",
+    "context-icon.--_icon-size": "{sherpa.theme-size-icon-sm}",
     "context-icon.color": "{sherpa.style-content-base}",
     "nav-menu.display": "{sherpa.app-header-nav-menu}",
-    "title.font-size": "{sherpa.font-size-body-large}",
-    "title.font-weight": "{sherpa.font-weight-regular}",
-    "title.line-height": "{sherpa.theme-content-line-height-large}",
     "title.color": "{sherpa.theme-content-body-1}",
     "loading-bar.block-size": "{sherpa.display-mode-border-width-lg}",
     "loading-fill.background": "{sherpa.theme-surface-active-2}"

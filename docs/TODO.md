@@ -316,7 +316,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ⬜ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
-| ⬜ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
+| ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ❓ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
 | ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
@@ -6806,11 +6806,32 @@ look**: Demos' records page, the metric tiles' sparklines, at a width that does
 not divide by 7. One limit: an edge is whole RELATIVE to the chart, so a chart
 that starts on a fractional pixel still seams at 1x.
 
-### `[ ]` ⬜ 324 — The app header: one more design pass, against Figma
+### `[x]` ✅ 324 — The app header: one more design pass, against Figma
 
 Will, 2026-09-10 (812436a2): "still not to spec". Read the Figma App Header
 node's values (fills, padding, gaps, sizes, text bindings) and diff them against
 `sherpa-app-header.css`, property by property.
+
+**✅ Done 2026-10-16**, read live from App Header 150:3690. Gaps, row heights,
+the buttons' sizes and looks, and the fill already matched. Changed:
+
+- **Badge:** Figma's is a Badge instance; ours was a span copying its values.
+  It is now a real `sherpa-badge`, centred under the bell (Figma x 194 of a bell
+  at 189). The Badge itself drew 12/16 semibold where every Figma Badge count
+  draws JetBrains Mono 14/20 regular; it now wears `.sherpa-text-mono-base`, so
+  menu row counts, filter-panel results and button badges change too.
+- **Dividers:** a 0.5px stroke, 12 tall (Figma); was a 1×16 fill.
+- **Padding** binds Theme `gap/md`, as Figma does (same 8px).
+- **Title** wears `.sherpa-text-large` — font, size, line-height, weight and
+  letter-spacing, as Figma binds; it set three of the five.
+- **Context icon:** 16, `size/icon/sm`, the title's size (Figma 16); was 14.
+- **Shadow:** Figma pins Elevation=lg on the header, in the App Shell too. The
+  header's stuck shadow (2 2 16 -8) and the shell's lift (`shadow-md`) are now
+  `--sherpa-shadow-lg` (8 8 32 -8). It still shows only once something scrolls
+  under.
+- Its `Slots:` named `title`; the slot is `heading`.
+
+**Look at:** Demos, any page — the header, the bell's count, the dividers.
 
 ### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
 

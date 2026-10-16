@@ -8,6 +8,7 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 // Every action is a composed sherpa-button. TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-badge/sherpa-badge.js';
 import type { SherpaQuickFilterToolbar } from '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 
 interface Crumb { label: string; href?: string }

@@ -23,7 +23,7 @@
   Slots:
     breadcrumbs  the breadcrumb trail (row 1, left)
     actions      extra buttons before the standard action set
-    title        rich Context title (overrides data-heading)
+    heading      rich Context title (overrides data-heading)
     filters      the quick-filter toolbar (row 2)
 
   Fires:
@@ -83,7 +83,7 @@
             <sherpa-button class="notif-btn" part="notif-btn" data-type="icon" data-size="sm"
                            data-look="transparent" data-icon-start="notifications"
                            aria-label="Notifications"></sherpa-button>
-            <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
+            <sherpa-badge class="notif-badge" part="notif-badge" aria-hidden="true"></sherpa-badge>
           </span>
           <sherpa-button class="account" part="account" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="user-settings"
@@ -104,7 +104,7 @@
       <div class="row-context" part="row-context">
         <div class="title-row" part="title-row">
           <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
-          <h1 class="title sherpa-truncate" part="title"></h1>
+          <h1 class="title sherpa-truncate sherpa-text-large" part="title"></h1>
           <slot name="heading" data-accepts="text"></slot>
           <!-- Where the SHELL says its rail is gone. TRAP T-the-nav-is-a-menu-on-a-phone -->
           <sherpa-button class="nav-menu" part="nav-menu" data-type="icon" data-size="sm"

@@ -90,7 +90,7 @@ Each one bubbles.
 |---|---|---|
 | `breadcrumbs` | nav | the breadcrumb trail (row 1, left) |
 | `actions` | control | extra buttons before the standard action set |
-| `heading` | text |  |
+| `heading` | text | rich Context title (overrides data-heading) |
 | `filters` | toolbar | the quick-filter toolbar (row 2) |
 
 ## Parts
@@ -106,36 +106,22 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-display-mode-space-sm` | `.content` | `gap` |
-| `--sherpa-display-mode-space-xs` | `.content` | `padding` |
+| `--sherpa-theme-gap-md` | `.content` | `padding` |
 | `--sherpa-display-mode-space-xs` | `.row-history` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.row-history` | `min-block-size` |
 | `--sherpa-display-mode-space-2xs` | `.history` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions` | `gap` |
-| `--sherpa-display-mode-border-width-base` | `.divider` | `inline-size` |
-| `--sherpa-display-mode-size-sm` | `.divider` | `block-size` |
-| `--sherpa-style-border-base` | `.divider` | `background` |
-| `--sherpa-display-mode-space-sm` | `.notif-badge` | `inset-block-end` |
-| `--sherpa-display-mode-space-2xs` | `.notif-badge` | `inset-inline-start` |
-| `--sherpa-display-mode-size-sm` | `.notif-badge` | `min-inline-size` |
-| `--sherpa-display-mode-size-sm` | `.notif-badge` | `block-size` |
-| `--sherpa-display-mode-space-3xs` | `.notif-badge` | `padding-inline` |
+| `--sherpa-display-mode-size-xs` | `.divider` | `block-size` |
+| `--sherpa-display-mode-border-width-sm` | `.divider` | `border-inline-start` |
+| `--sherpa-display-mode-space-3xs` | `.notif-badge` | `inset-block-start` |
 | `--sherpa-display-mode-border-rounding-sm` | `.notif-badge` | `border-radius` |
-| `--sherpa-style-surface-base` | `.notif-badge` | `background` |
-| `--sherpa-style-content-base` | `.notif-badge` | `color` |
-| `--sherpa-font-family-mono` | `.notif-badge` | `font-family` |
-| `--sherpa-theme-content-size-base` | `.notif-badge` | `font-size` |
-| `--sherpa-font-weight-regular` | `.notif-badge` | `font-weight` |
-| `--sherpa-theme-content-line-height-base` | `.notif-badge` | `line-height` |
-| `--sherpa-display-mode-size-2xs` | `.notif-badge` | `box-shadow` |
+| `--sherpa-shadow-lg` | `.notif-badge` | `box-shadow` |
 | `--sherpa-display-mode-space-2xs` | `.row-context` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.title-row` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.title-row` | `min-block-size` |
-| `--sherpa-theme-size-icon-xs` | `.context-icon` | `--_icon-size` |
+| `--sherpa-theme-size-icon-sm` | `.context-icon` | `--_icon-size` |
 | `--sherpa-style-content-base` | `.context-icon` | `color` |
 | `--sherpa-app-header-nav-menu` | `.nav-menu` | `display` |
-| `--sherpa-font-size-body-large` | `.title` | `font-size` |
-| `--sherpa-font-weight-regular` | `.title` | `font-weight` |
-| `--sherpa-theme-content-line-height-large` | `.title` | `line-height` |
 | `--sherpa-theme-content-body-1` | `.title` | `color` |
 | `--sherpa-display-mode-border-width-lg` | `.loading-bar` | `block-size` |
 | `--sherpa-theme-surface-active-2` | `.loading-fill` | `background` |
