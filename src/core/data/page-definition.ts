@@ -40,6 +40,9 @@ export interface SourceDefinition {
   /** `input`: its filters apply live, debounced. Will, TODO 107 */
   applyOn?: 'change' | 'input';
   debounce?: number;
+  /** A remote store's whole set is held up to this many rows; 0 holds none.
+   *  TRAP T-a-remote-source-holds-its-whole-set */
+  holdRows?: number;
   search?: readonly string[];
   fields?: Readonly<Record<string, FieldDeclaration>>;
   scopes?: Readonly<Record<string, ScopeDefinition>>;
@@ -66,6 +69,7 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
     ...(def.pageSize ? { pageSize: def.pageSize } : {}),
     ...(def.applyOn ? { applyOn: def.applyOn } : {}),
     ...(def.debounce != null ? { debounce: def.debounce } : {}),
+    ...(def.holdRows != null ? { holdRows: def.holdRows } : {}),
     ...(def.search ? { searchFields: [...def.search] } : {}),
   });
   const fields = Object.keys(def.fields ?? {});

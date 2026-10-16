@@ -225,9 +225,13 @@ export class DataSource extends EventTarget {
   #heldAge = 0;
   /** The most rows it holds; 0 holds none. */
   readonly #holdRows: number;
-  /** It could not be held — over the cap, or not provably whole — so the store
-   *  is asked, as before, until the rows change. */
+  /** It can never be held — no true total, a sampled schema, too many rows, a
+   *  capped response — so the store is asked, as before, for good. */
+  #holdNever = false;
+  /** The whole read FAILED: the store is asked, as before, until a Refresh. */
   #holdRefused = false;
+  /** Why it is not held has been said: once per source. */
+  #refusalSaid = false;
 
   constructor(options: DataSourceOptions) {
     super();
@@ -1659,36 +1663,71 @@ export class DataSource extends EventTarget {
     return this.#held ?? this.store;
   }
 
-  /** Read a remote store's whole set once, where it can be held.
-   *  TRAP T-a-remote-source-holds-its-whole-set */
-  #hold(): Promise<void> {
-    if (!this.#remote || this.#held || this.#holdRefused || this.#holdRows <= 0) return Promise.resolve();
-    if (this.#holding) return this.#holding;
+  /** Hold a remote store's whole set, where it can be: one read, shared, and one
+   *  more if the rows changed while it was out. TRAP T-a-remote-source-holds-its-whole-set */
+  async #hold(): Promise<void> {
+    while (this.#mayHold()) {
+      const age = this.#heldAge;
+      this.#holding ??= this.#readWhole();
+      await this.#holding;
+      if (this.#held || age === this.#heldAge) return;
+    }
+  }
+
+  /** May it be held? The store's own facts first, so one that never can is never sent the whole read. */
+  #mayHold(): boolean {
+    if (!this.#remote || this.#held || this.#holdNever || this.#holdRefused || this.#holdRows <= 0) return false;
+    const why = !this.store.reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
+      : this.store.sampled ? 'its schema checks only a sample of each read' : '';
+    if (why) this.#refuse(why);
+    return !why;
+  }
+
+  /** The whole read: held, refused for good, or — failed — left to the store until a Refresh. */
+  async #readWhole(): Promise<void> {
     const age = this.#heldAge;
-    const holding: Promise<void> = this.store.load({ take: this.#holdRows + 1 }).then(({ rows, total, dropped, issues }) => {
+    try {
+      const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: this.#holdRows + 1 });
       if (age !== this.#heldAge) return;
-      const why = !this.store.reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
-        : this.store.sampled ? 'its schema checks only a sample of each read'
-          : rows.length > this.#holdRows || total !== rows.length ? `it holds more than ${this.#holdRows} rows (holdRows)` : '';
-      if (!why) {
-        this.#held = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) });
+      const why = totalUnknown ? 'its totalPath read no number, so its total is only the rows it sent'
+        : total > this.#holdRows || rows.length > this.#holdRows ? `it holds ${total} rows, more than ${this.#holdRows} (holdRows)`
+          : total !== rows.length ? `it sent ${rows.length} of its ${total} rows — does the server cap a response, or ignore take?` : '';
+      if (why) {
+        this.#refuse(why, { rows: rows.length, total });
         return;
       }
+      this.#held = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) });
+    } catch (error) {
+      if (age !== this.#heldAge) return;
+      // A failed whole read is not a failed source: each question asks the store, as before.
       this.#holdRefused = true;
-      report({
-        code: 'held-set-refused',
-        message: `This remote store's whole set is not held, so every question asks the store: ${why}.`,
-        at: { rows: rows.length, total, holdRows: this.#holdRows },
-      });
-    }).finally(() => { if (this.#holding === holding) this.#holding = null; });
-    this.#holding = holding;
-    return holding;
+      this.#sayNotHeld(`the whole read failed (${error instanceof Error ? error.message : String(error)})`);
+    } finally {
+      this.#holding = null;
+    }
+  }
+
+  /** It can never be held: say why, once. */
+  #refuse(why: string, at: Record<string, number> = {}): void {
+    this.#holdNever = true;
+    this.#sayNotHeld(why, at);
+  }
+
+  /** Why the whole set is not held — once per source. */
+  #sayNotHeld(why: string, at: Record<string, number> = {}): void {
+    if (this.#refusalSaid) return;
+    this.#refusalSaid = true;
+    report({
+      code: 'held-set-refused',
+      message: `This remote store's whole set is not held, so every question asks the store: ${why}.`,
+      at: { ...at, holdRows: this.#holdRows },
+    });
   }
 
   /** The held set is stale — the rows changed, or a refresh asks for them again. */
   #letGo(): void {
+    // A read in flight is not dropped: #hold reads ONCE more when it lands, however many changes came.
     this.#held = null;
-    this.#holding = null;
     this.#holdRefused = false;
     this.#heldAge++;
   }
@@ -1704,6 +1743,8 @@ export class DataSource extends EventTarget {
 
     try {
       await this.#hold();
+      // Overtaken while it waited: the newer ask answers, and this one asks no one.
+      if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
       const result = await this.#reads.load(this.#loadOptions());
       // Not the latest → DISCARDED, and the key recorded only by the winner.
       if (!this.#inFlight.is(ticket)) return this.#result;
@@ -1773,6 +1814,8 @@ export class DataSource extends EventTarget {
    * TRAP T-a-chip-counts-its-own-results
    */
   async results(scope: string): Promise<Record<string, number>> {
+    // While a whole set is read again, wait for it: a count asks it, not the store.
+    await this.#hold();
     const q = this.#applied.scopes[scope];
     if (!q) return {};
     const field = (f: string): Omit<FieldFacts, 'field'> => this.#catalogue.facts(f);
@@ -1804,6 +1847,7 @@ export class DataSource extends EventTarget {
    * TRAP T-a-chip-counts-its-own-results
    */
   async valueResults(scope: string): Promise<Record<string, Record<string, number>>> {
+    await this.#hold();
     const q = this.#applied.scopes[scope];
     if (!q) return {};
     const { view } = compile(this.#applied, this.#compileFacts());
@@ -1879,6 +1923,7 @@ export class DataSource extends EventTarget {
    */
   async present(scope: string): Promise<Record<string, string[]>> {
     if (!this.#limitOptions) return {};
+    await this.#hold();
     const q = this.#applied.scopes[scope];
     const above = heldAbove(this.#applied, scope);
     // A chart's own scope answers its legend's one field.
@@ -1982,6 +2027,7 @@ export class DataSource extends EventTarget {
    * TRAP T-a-filter-set-groups-or-chains
    */
   async offered(scope: string): Promise<Record<string, string[]>> {
+    await this.#hold();
     const out: Record<string, string[]> = {};
     const aside = this.#setAside.get(scope) ?? {};
     for (const [s, chain] of serialChains(this.#applied, this.#sets)) {
@@ -2000,6 +2046,7 @@ export class DataSource extends EventTarget {
    *  follows draws what is left. Says whether it moved. */
   async #settleSetAside(): Promise<boolean> {
     const ticket = this.#settling.next();
+    await this.#hold();
     const next = await this.#setAsideNow();
     if (!this.#settling.is(ticket)) return true;
     const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());

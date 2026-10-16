@@ -268,9 +268,14 @@ Your store must say two things for its set to be held:
   that caps a response silently would look whole.
 - **`sampled` is false: its schema checks every row it reads.**
 
-The set is also held only up to `holdRows` rows (a source option, default
-50 000; `0` holds none). Otherwise the source says why once
-(`held-set-refused`) and asks your store for every question, as before.
+The source checks those two before it reads anything. Then the whole read must
+come back whole: a total that is a number (a numeric string is read as one), at
+most `holdRows` rows (a source option or a page definition's, default 50 000;
+`0` holds none), and every row it counts — a server that caps a response
+silently is refused. Otherwise the source says why once (`held-set-refused`)
+and asks your store for every question, as before. A whole read that FAILS —
+a 400 for the big `take`, a timeout — is caught: the source asks your store as
+before until a Refresh.
 
 The rows are as fresh as the last whole read. The source reads it again on a
 Refresh, or when the store announces a `change` — so a store whose rows change

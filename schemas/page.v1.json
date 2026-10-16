@@ -30,6 +30,7 @@
         "pageSize": { "type": "integer", "minimum": 1 },
         "applyOn": { "description": "change: a filter applies once per act. input: LIVE, while its value moves, debounce ms after the last move. A remote source always waits for Apply.", "enum": ["change", "input"] },
         "debounce": { "description": "How long a live filter waits after the last move, in ms. Default 300.", "type": "integer", "minimum": 0 },
+        "holdRows": { "description": "A remote store's whole set is held up to this many rows, and every question is answered from it on the client. 0 holds none. Default 50 000.", "type": "integer", "minimum": 0 },
         "search": { "description": "The fields a free-text search looks at.", "type": "array", "items": { "type": "string" } },
         "fields": {
           "description": "Every field a filter may ask of. No field lists its values: the store's schema says them, or the rows do.",

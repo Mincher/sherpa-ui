@@ -1,18 +1,18 @@
 {
   "records/open": {
-    "loads": 3,
+    "loads": 2,
     "counts": 0,
     "distinct": 3,
-    "rows": 10050,
+    "rows": 10025,
     "compiles": 15,
     "clones": 6
   },
   "records/pick": {
     "loads": 2,
-    "counts": 4,
+    "counts": 3,
     "distinct": 5,
     "rows": 2558,
-    "compiles": 17,
+    "compiles": 16,
     "clones": 1
   },
   "records/repick": {
@@ -89,10 +89,10 @@
   },
   "records/clear": {
     "loads": 2,
-    "counts": 12,
+    "counts": 11,
     "distinct": 10,
     "rows": 3520,
-    "compiles": 19,
+    "compiles": 18,
     "clones": 1
   },
   "records/reset": {

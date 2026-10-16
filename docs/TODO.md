@@ -6914,6 +6914,18 @@ count a remote source's loads (query, headless-data-layer,
 a-live-filter-waits-for-the-moves-to-stop) may need their numbers moved, when
 Will says to test.
 
+**Reviewed 2026-10-16** (a read-only workflow, each finding checked by a
+refuter): 13 confirmed, all fixed. The three high ones were one root: the
+whole read went out before the store's own facts were checked, and a failed
+whole read had no fallback, so a backend that rejects or times out on
+`take=50001` never loaded again. Now: the facts are read first (a store that
+can never be held is never sent the big read); a refusal for a fixed reason
+lasts and is said once; a failed whole read falls back to the store until a
+Refresh; changes during a read cost one more read, not one each; an overtaken
+ask asks no one; counts and Limit wait for the hold; a `RestStore` whose
+`totalPath` reads no number says `totalUnknown`; a search reads an object's
+values, never its keys; a page definition sets `holdRows`.
+
 **Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
 **verified one by one** — four were already done and are struck out below.
 Each remaining item is real and reported; none is a plan.

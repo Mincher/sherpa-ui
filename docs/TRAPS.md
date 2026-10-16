@@ -3366,16 +3366,27 @@ load, count and distinct read asks `HeldSet`, which runs `applyOptions` and
 `distinctOf`, the pipeline a local store runs. Every page comes from the one
 set, so a page cut on the client never meets one the server sorted.
 
-**Held only when provably whole:** the store `reportsTotal` (a `RestStore`
-needs a `totalPath`), its schema checks every row (`sampled` false — a raw tail
-would be filtered as if parsed), and it has at most `holdRows` rows. Otherwise
-`held-set-refused` says why, once, and the store is asked as before.
+**Held only when provably whole.** The store's own facts are read FIRST, so a
+store that never can be held is never sent the whole read: it `reportsTotal`
+(a `RestStore` needs a `totalPath`) and checks every row (`sampled` false — a
+raw tail would be filtered as if parsed). Then the read must come back whole:
+a total that is a number (`totalUnknown` says when a `totalPath` read none), at
+most `holdRows` rows, and every one of them (a server that caps a response
+sends fewer than its total). Any of these refuses it for good; `held-set-refused`
+says which, ONCE per source, and the store is asked as before.
+
+**A failed whole read is not a failed source.** It is caught: every question
+asks the store, as before, until a Refresh or a store change tries again — a
+backend that rejects `take=50001`, or times out on it, still pages.
 
 **Read again only when the rows may have changed:** a store `change`, a
-Refresh — a public `load({ force: true })`. An ask that only repeats a question
-— a summary bound late, a page re-clamp — uses `#reask()` and keeps it. A read
-begun before the set went stale lands on nothing (`#heldAge`). What the schema
-refused on that read is said on every held load.
+Refresh — a public `load({ force: true })`. A read in flight is kept, and
+`#hold()` reads ONCE more when it lands, however many changes came: twenty
+saves cost two whole reads, not twenty. An ask that only repeats a question — a
+summary bound late, a page re-clamp — uses `#reask()` and keeps the set. An ask
+overtaken while it waited asks no one. Counts, Limit and the set-aside wait for
+the hold as a load does. What the schema refused on the read is said on every
+held load. A page definition sets `holdRows` (`0` holds none).
 
 The bench holds the rule: each act on its remote page after it opens must cost
 0 loads, 0 counts and 0 distinct reads (`asked()`) — a rule, never a baseline.
@@ -3384,6 +3395,7 @@ The bench holds the rule: each act on its remote page after it opens must cost
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/store.ts`
+- Site: `src/core/data/page-definition.ts`
 - Site: `scripts/check-bench.mjs`
 
 ### T-the-filter-switch-keeps-what-it-turned-off

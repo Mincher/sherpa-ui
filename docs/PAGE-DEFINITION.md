@@ -81,6 +81,10 @@ One JSON document per page. The same rule as a View: **a definition is data**
   not wait for Apply, and a value reports while it moves. The source loads
   `debounce` ms (default 300) after the last move. The default, `"change"`,
   applies once per act. A remote source always waits for Apply (TODO 107).
+- **`holdRows`** caps the whole set a REMOTE source holds and answers every
+  question from on the client (default 50 000; `0` holds none, so every
+  question asks the store). See DATA-SOURCE-RULES, "A remote store's whole
+  set is HELD" (TODO 340).
 - **`ui`** — each component's configuration, by id, set through its own API
   before it is answered — as a View's `ui` is. The grid's columns live here.
 - **Its Views** are filed under its `id`: the ones it ships, and a reader's

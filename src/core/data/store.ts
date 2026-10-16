@@ -188,6 +188,9 @@ export interface LoadResult {
   total: number;
   /** Rows the schema REFUSED. TRAP T-dropped-rows-must-be-countable */
   dropped?: number;
+  /** The store could not read a total, so `total` is only the rows it sent.
+   *  TRAP T-a-remote-source-holds-its-whole-set */
+  totalUnknown?: boolean;
   /** Why the dropped rows were refused — the FIRST FEW only. */
   issues?: ReadonlyArray<{ readonly message: string; readonly path?: ReadonlyArray<PropertyKey> }>;
 }
@@ -508,8 +511,18 @@ export function searchRows(rows: readonly Row[], term: string, fields?: readonly
   if (!needle) return [...rows];
   return rows.filter((row) => {
     const values = fields?.length ? fields.map((f) => readField(row, f)) : Object.values(row);
-    return values.some((v) => text(v).includes(needle));
+    return values.some((v) => leaves(v).some((leaf) => leaf.includes(needle)));
   });
+}
+
+/** What a search reads in a value: each leaf, lower-case — an object's VALUES,
+ *  never its keys or its braces; a date as its ISO day and time. */
+function leaves(v: unknown): string[] {
+  if (v == null) return [];
+  if (v instanceof Date) return [v.toISOString().toLowerCase()];
+  if (Array.isArray(v)) return v.flatMap(leaves);
+  if (typeof v === 'object') return Object.values(v).flatMap(leaves);
+  return [String(v).toLowerCase()];
 }
 
 /* ── Grouping ──────────────────────────────────────────────────────────── */

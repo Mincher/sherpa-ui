@@ -279,10 +279,14 @@ export class RestStore extends BaseStore {
     // A reported total is believed; otherwise the page length —
     // TRAP T-rest-update-is-patch-not-put
     const reported = this.#options.totalPath ? readPath(body, this.#options.totalPath) : undefined;
-    const total = typeof reported === 'number' ? reported : rows.length;
+    const counted = typeof reported === 'string' && reported.trim() !== '' ? Number(reported) : reported;
+    const known = typeof counted === 'number' && Number.isFinite(counted);
+    const total = known ? counted : rows.length;
     // A bad read DROPS the row; a bad write throws —
     // TRAP T-read-check-drops-where-a-write-throws
-    return this.checkRows({ rows, total });
+    const checked = await this.checkRows({ rows, total });
+    // A totalPath that read no number: say so, so the whole set is never held from it.
+    return this.#options.totalPath && !known ? { ...checked, totalUnknown: true } : checked;
   }
 
   /** One record's URL. Three methods built this, which is three chances to
