@@ -3338,6 +3338,20 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
+### T-an-svg-with-a-focus-listener-is-a-tab-stop
+
+In Chromium, an SVG element that has a `focusin` (or focus) listener becomes
+keyboard focusable, with no `tabindex`. `rovingFocus()` listens for `focusin`
+on its container, and the radial chart's container is an SVG `<g>`: Tab from
+the page landed on the GROUP, not its first slice, and no ring drew. Firefox
+and WebKit do not do it, so only Chromium failed. An HTML container (the bar
+and line charts' `.plot`) is not touched by this.
+
+So an SVG container gets `tabindex="-1"`: focusable by script, out of the Tab
+order, and its items keep their own `0` / `-1`.
+
+- Site: `src/core/ui/roving-focus.ts`
+
 ### T-a-remote-source-holds-its-whole-set
 
 Will's rule (TODO 340): the DATA LAYER decides whether a question goes to the

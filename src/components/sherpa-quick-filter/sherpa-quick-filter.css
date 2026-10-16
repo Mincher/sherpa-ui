@@ -128,12 +128,9 @@
   pointer-events: none;
 }
 
-/* SEMIBOLD: `fx` at 12px in body weight is a grey smudge. On `.count`
-   itself, so it does not depend on the badge being shown. */
-.count {
-  display: none;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-}
+/* A Badge count, as Figma draws it: its text is the template's
+   .sherpa-text-mono-base, as sherpa-badge's is. */
+.count { display: none; }
 :host([data-count]) .count {
   display: inline-flex;
   align-items: center;
@@ -150,8 +147,6 @@
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-style-content-base, #0c0b11);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 
 /* The value tooltip is a composed <sherpa-tooltip> in FLOATING mode: nothing to

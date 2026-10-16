@@ -46,6 +46,7 @@ test('a host aria-label names each chart, over its default name', async ({ page 
   });
   await expect(page.getByRole('group', { name: 'Devices per band', exact: true })).toHaveCount(1);
   await expect(page.getByRole('group', { name: 'Alerts over time', exact: true })).toHaveCount(1);
-  await expect(page.getByRole('img', { name: 'Devices by status', exact: true })).toHaveCount(1);
-  await expect(page.getByRole('img', { name: 'Risk score', exact: true })).toHaveCount(1);
+  // Groups since 284: their slices and bands are each a stop, arrows between them.
+  await expect(page.getByRole('group', { name: 'Devices by status', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('group', { name: 'Risk score', exact: true })).toHaveCount(1);
 });

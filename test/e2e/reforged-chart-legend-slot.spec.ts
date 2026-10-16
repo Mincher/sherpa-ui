@@ -131,15 +131,18 @@ for (const tag of CHARTS) {
       root.appendChild(box);
       await chart.rendered;
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const body = chart.shadowRoot!.querySelector('.chart-body')!.getBoundingClientRect();
       return {
-        display: getComputedStyle(chart).display,
+        bodyW: body.width,
+        chartW: chart.getBoundingClientRect().width,
         hasLegend: chart.matches(':state(has-legend)'),
       };
     }, tag);
     expect(r.hasLegend).toBe(false);
-    // No 30% column reserved for a legend that is not there: the host stays a
-    // flex column rather than becoming the two-track grid.
-    expect(r.display).toBe('flex');
+    // No 30% column reserved for a legend that is not there: the plot's cell
+    // spans the chart. (A radial host is a one-column grid, so its ring has a
+    // real row height — the width is the fact, not the display.)
+    expect(r.bodyW).toBeGreaterThan(r.chartW * 0.95);
   });
 }
 

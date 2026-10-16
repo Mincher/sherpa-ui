@@ -45,6 +45,9 @@ const PREV = ['ArrowLeft', 'ArrowUp'];
 export function rovingFocus(container: Element, options: RovingOptions): Roving {
   const keyOf = options.key ?? ((i: RovingItem): string | undefined => i.dataset['index']);
   let last: string | undefined;
+  // An SVG container with a focus listener is a tab stop in Chromium: keep it out.
+  // TRAP T-an-svg-with-a-focus-listener-is-a-tab-stop
+  if (container instanceof SVGElement && !container.hasAttribute('tabindex')) container.setAttribute('tabindex', '-1');
 
   const all = (): RovingItem[] => [...container.querySelectorAll<RovingItem>(options.items)];
   const live = (items = all()): RovingItem[] => items.filter((i) => !i.matches(OFF));

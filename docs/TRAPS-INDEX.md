@@ -728,7 +728,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (92)
+## SherpaElement and the shared sheets (93)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -765,6 +765,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-icon-loads-when-first-drawn](TRAPS.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
 - [T-an-inactive-chip-says-where-its-filter-went](TRAPS.md#t-an-inactive-chip-says-where-its-filter-went) — shared-constants
 - [T-an-inner-event-stops-at-its-host](TRAPS.md#t-an-inner-event-stops-at-its-host) — sherpa-element
+- [T-an-svg-with-a-focus-listener-is-a-tab-stop](TRAPS.md#t-an-svg-with-a-focus-listener-is-a-tab-stop) — roving-focus
 - [T-anchoring-is-generic](TRAPS.md#t-anchoring-is-generic) — sherpa-anchor
 - [T-any-component-can-be-bound](TRAPS.md#t-any-component-can-be-bound) — sherpa-element
 - [T-aria-defaults-live-in-internals](TRAPS.md#t-aria-defaults-live-in-internals) — sherpa-element

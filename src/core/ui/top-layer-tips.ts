@@ -10,8 +10,8 @@
  * - liftTips — Hear every hover and focus in the document, once, and lift the tip concerned.
  */
 
-const ANCHOR = '.sherpa-anchor, .sherpa-anchor';
-const TIP = '.sherpa-tip, .sherpa-tip';
+const ANCHOR = '.sherpa-anchor';
+const TIP = '.sherpa-tip';
 /** A donut slice or gauge band: an SVG path, its tip paired by index. */
 const SEGMENT = '.chart-segment[data-index]';
 

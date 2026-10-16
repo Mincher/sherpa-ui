@@ -118,7 +118,6 @@ What each class's base rule reads:
 | `--sherpa-font-size-body-base` | `.body` | `font-size` |
 | `--sherpa-font-weight-regular` | `.body` | `font-weight` |
 | `--sherpa-theme-content-line-height-base` | `.body` | `line-height` |
-| `--sherpa-font-weight-semibold` | `.count` | `font-weight` |
 | `--sherpa-display-mode-size-lg` | `.caret` | `min-inline-size` |
 | `--sherpa-display-mode-space-2xs` | `.caret` | `gap` |
 | `--sherpa-border-rounding-top-right` | `.caret` | `border-start-end-radius` |

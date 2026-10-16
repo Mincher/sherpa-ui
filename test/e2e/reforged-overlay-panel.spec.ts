@@ -251,6 +251,8 @@ test('maximise fills the window and shows the trail; minimise brings the panel b
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.show!();
+    // Its composed buttons render after it: wait, then press.
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const sr = el.shadowRoot!;
     const read = () => ({
       width: Math.round(sr.querySelector('.root')!.getBoundingClientRect().width),

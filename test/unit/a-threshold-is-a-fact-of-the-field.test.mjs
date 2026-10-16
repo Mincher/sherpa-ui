@@ -50,7 +50,7 @@ test('a histogram cut at the bands is named by them', () => {
   assert.deepEqual(cut.map((d) => [d.label, d.value]), [['At risk', 2], ['Watch', 1], ['Healthy', 2]]);
 });
 
-test('a summary takes its field's bands from the field: a segments cut, and a gauge's zones', () => {
+test("a summary takes its field's bands from the field: a segments cut, and a gauge's zones", () => {
   const rows = [10, 59, 60, 85, 100].map((storage) => ({ storage, health: storage }));
   const bands = () => ({ thresholds: HEALTH, min: 0 });
   const cut = summariseBanded(rows, { shape: 'segments', segment: 'storage' }, undefined, bands);
