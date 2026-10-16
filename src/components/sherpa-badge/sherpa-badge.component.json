@@ -15,7 +15,7 @@
   "anatomy": {
     "root": {
       "el": "span",
-      "class": "box sherpa-border-edges",
+      "class": "box sherpa-border-edges sherpa-text-mono-base",
       "part": "box",
       "children": [
         {
@@ -44,9 +44,6 @@
     "box.border-color": "{sherpa.style-border-base}",
     "box.border-radius": "{sherpa.display-mode-border-rounding-sm}",
     "box.background": "{sherpa.style-surface-base}",
-    "box.color": "{sherpa.style-content-base}",
-    "box.font-size": "{sherpa.font-size-body-small}",
-    "box.font-weight": "{sherpa.font-weight-semibold}",
-    "box.line-height": "{sherpa.theme-content-line-height-small}"
+    "box.color": "{sherpa.style-content-base}"
   }
 }

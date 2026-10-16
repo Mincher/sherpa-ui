@@ -43,6 +43,3 @@ What each class's base rule reads:
 | `--sherpa-display-mode-border-rounding-sm` | `.box` | `border-radius` |
 | `--sherpa-style-surface-base` | `.box` | `background` |
 | `--sherpa-style-content-base` | `.box` | `color` |
-| `--sherpa-font-size-body-small` | `.box` | `font-size` |
-| `--sherpa-font-weight-semibold` | `.box` | `font-weight` |
-| `--sherpa-theme-content-line-height-small` | `.box` | `line-height` |
