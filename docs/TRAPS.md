@@ -1328,7 +1328,12 @@ card's own — its overlay goes, the last data stays.
 `loading`, `change` and `error` — BEFORE it answers anyone, as an answer
 binds and a bind starts the first load — and writes the card of every
 component it answers. Loading shows only after 300 ms, so a quick load never
-flashes. Loading and a failure reach every data component's card; empty and
+flashes. **A page OPENING is a load too** (TODO 343): `openSource()` reads a
+remote store's whole set before the provider holds the source, so no
+`loading` event reaches it. So `open()` marks every data card itself after
+300 ms, and when the page is provided hands the cards the source draws to its
+own loading; the rest are cleared. A page left while it opens ends at once,
+so its timer never marks the next page's cards. Loading and a failure reach every data component's card; empty and
 no matches a ROWS component's only, as a chart under the View alone still has
 its rows. It answers `data-refresh` (a card's Retry, a bar's Refresh) with a
 forced load, and `filters-clear` by resetting every bar. A store that cannot
@@ -1350,6 +1355,7 @@ failure would have no banner.
 - Site: `src/components/sherpa-container/sherpa-container.html`
 - Site: `src/components/sherpa-container/sherpa-container.css`
 - Site: `test/e2e/reforged-container.spec.ts`
+- Site: `test/e2e/reforged-provider-opening.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/core/data/data-source.ts`

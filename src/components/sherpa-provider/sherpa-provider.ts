@@ -273,31 +273,39 @@ export class SherpaProvider extends SherpaElement {
         at: { store: def.store },
       });
     }
-    const source = def && store ? await openSource(def, store) : undefined;
-    if (page.signal.aborted) return undefined;
-    if (!source || !def) {
-      await this.provide({ sources: {} });
-      return undefined;
+    const opening = def && store ? this.#opening(page.signal) : null;
+    let opened: DataSource | undefined;
+    try {
+      const source = def && store ? await openSource(def, store) : undefined;
+      opening?.stop();
+      if (page.signal.aborted) return undefined;
+      if (!source || !def) {
+        await this.provide({ sources: {} });
+        return undefined;
+      }
+      const shipped = options.views;
+      const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
+      // The page as DEFINED, before a kept Query: what Reset all to default starts from.
+      this.#pages.begin({ id: definition.id, store: def.store, source, library, initial: source.query.applied });
+      // A View this page does not have is the first.
+      const view = options.view && library?.()[options.view] ? options.view : undefined;
+      // BEFORE the Query: a kept one is drawn onto these chips.
+      await Promise.all([this.#pages.drawBars(view), this.#configure(definition.ui ?? {})]);
+      if (page.signal.aborted) return undefined;
+      this.#pages.listen(page.signal);
+      await this.provide({
+        sources: { [definition.id]: source },
+        ...(library ? {
+          views: library, ...(view ? { view } : {}),
+          ...(options.session ? { session: options.session } : {}), key: `/filters/${definition.id}`,
+          ...(options.drafts ? { drafts: { page: definition.id, mode: options.drafts } } : {}),
+        } : {}),
+      });
+      if (!page.signal.aborted) opened = source;
+      return opened;
+    } finally {
+      opening?.end(opened);
     }
-    const shipped = options.views;
-    const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
-    // The page as DEFINED, before a kept Query: what Reset all to default starts from.
-    this.#pages.begin({ id: definition.id, store: def.store, source, library, initial: source.query.applied });
-    // A View this page does not have is the first.
-    const view = options.view && library?.()[options.view] ? options.view : undefined;
-    // BEFORE the Query: a kept one is drawn onto these chips.
-    await Promise.all([this.#pages.drawBars(view), this.#configure(definition.ui ?? {})]);
-    if (page.signal.aborted) return undefined;
-    this.#pages.listen(page.signal);
-    await this.provide({
-      sources: { [definition.id]: source },
-      ...(library ? {
-        views: library, ...(view ? { view } : {}),
-        ...(options.session ? { session: options.session } : {}), key: `/filters/${definition.id}`,
-        ...(options.drafts ? { drafts: { page: definition.id, mode: options.drafts } } : {}),
-      } : {}),
-    });
-    return page.signal.aborted ? undefined : source;
   }
 
   /** Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. */
@@ -445,13 +453,7 @@ export class SherpaProvider extends SherpaElement {
    */
   #watchStates(signal: AbortSignal): void {
     for (const source of Object.values(this.#sources)) {
-      const cards = (rowsOnly: boolean): HTMLElement[] => [...new Set([...this.#asked.keys()]
-        .filter((el) => {
-          if (this.#resolve(el) !== source) return false;
-          const shape = ((el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' }).shape;
-          return rowsOnly ? shape === 'rows' : shape !== 'scope' && shape !== 'state';
-        })
-        .map(containerOf).filter((c): c is HTMLElement => !!c))].map((c) => this.#keep(c));
+      const cards = (rowsOnly: boolean): HTMLElement[] => this.#cardsOf((el) => this.#resolve(el) === source, rowsOnly);
       let slow: ReturnType<typeof setTimeout> | undefined;
       source.addEventListener('loading', (event) => {
         clearTimeout(slow);
@@ -476,6 +478,43 @@ export class SherpaProvider extends SherpaElement {
       }, { signal });
     }
   }
+  /** The cards of the components that asked for data and pass `which` — ROWS ones only, or any. */
+  #cardsOf(which: (el: Element) => boolean, rowsOnly = false): HTMLElement[] {
+    return [...new Set([...this.#asked.keys()]
+      .filter((el) => {
+        if (!which(el)) return false;
+        const shape = ((el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' }).shape;
+        return rowsOnly ? shape === 'rows' : shape !== 'scope' && shape !== 'state';
+      })
+      .map(containerOf).filter((c): c is HTMLElement => !!c))].map((c) => this.#keep(c));
+  }
+
+  /**
+   * A page OPENING is a load: its source reads the store before anyone can hear
+   * it, so every data card says so after SLOW_LOAD. `stop` when the source is
+   * open; `end` hands the cards it draws to its own loading and clears the rest.
+   * A page left while it opens ends at once, so it never marks the next page.
+   * TRAP T-a-container-shows-its-datas-state
+   */
+  #opening(signal: AbortSignal): { stop(): void; end(source?: DataSource): void } {
+    const marked: HTMLElement[] = [];
+    const slow = setTimeout(() => {
+      for (const c of this.#cardsOf(() => true)) {
+        c.toggleAttribute('data-loading', true);
+        marked.push(c);
+      }
+    }, SLOW_LOAD);
+    const end = (source?: DataSource): void => {
+      clearTimeout(slow);
+      signal.removeEventListener('abort', left);
+      const handed = new Set(source ? this.#cardsOf((el) => this.#resolve(el) === source) : []);
+      for (const c of marked.splice(0)) if (!handed.has(c)) c.removeAttribute('data-loading');
+    };
+    const left = (): void => end();
+    signal.addEventListener('abort', left);
+    return { stop: () => clearTimeout(slow), end };
+  }
+
   /** A card shows its state as this provider says: kept content, or an overlay. */
   #keep(card: HTMLElement): HTMLElement {
     card.toggleAttribute('data-keep-content', this.hasAttribute('data-keep-content'));

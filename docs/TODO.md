@@ -335,6 +335,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
 | ⬜ | 62.86 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
 | ✅ | 62.87 | 342 | The "No matches" banner above a kept card goes (Will: never asked for) | fix |
+| ✅ | 62.88 | 343 | A slow page opening shows its cards loading again — 340's whole read had hidden it | fix |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -7012,6 +7013,20 @@ for a banner on a failure or no data only. **✅ 2026-10-17:** the callout and
 its CSS are gone; a kept card with no matches shows no banner, and its grid
 says "No rows to display.". The overlay (58) keeps its No matches and Clear
 filters. `T-a-container-shows-its-datas-state`
+
+### `[x]` ✅ 343 — A slow page opening shows its cards loading
+
+Found 2026-10-17 by Demos' `reforged-card-data-states.spec.ts`: the two
+slow-load tests (`?remote=1`) failed in all three engines. A regression from
+340. `openSource()` awaits `declareFromRows()`, which now does the remote
+store's whole read (800 ms), BEFORE the provider holds the source and hears its
+`loading`. The first load after it comes from the held set, under 300 ms, so
+no card ever showed loading.
+
+**✅ 2026-10-17:** the provider's `open()` treats the opening as a load. After
+300 ms it marks every data card `data-loading` (a bar under kept content, else
+the overlay). When the page is provided, the cards the source draws go to the
+source's own loading; the rest are cleared. `T-a-container-shows-its-datas-state`
 
 ### `[x]` ✅ 322 — The data grid holds its filter toolbar and its pager
 
