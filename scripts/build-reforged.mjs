@@ -134,6 +134,18 @@ async function minifyFiles(dir) {
   return `${Math.round(before / 1024)} KB → ${Math.round(after / 1024)} KB`;
 }
 
+/* A PAGE's copy of the Button look — the sheet every shadow root adopts — layered
+   so a page's own rules win, and naming the layer order so it is right linked
+   before tokens.css too. Before the inline step takes the file away.
+   TRAP T-a-native-wears-the-button-class */
+function writeButtonPage() {
+  const look = readFileSync(join(OUT, 'core/sherpa-button-look.css'), 'utf8');
+  const order = /^@layer [^{;]+;/m.exec(readFileSync(join(OUT, 'styles/tokens/tokens.css'), 'utf8'))?.[0] ?? '';
+  writeFileSync(join(OUT, 'styles/button.css'), `${order}\n@layer components {\n${look}\n}\n`);
+}
+writeButtonPage();
+console.log('✓ dist/styles/button.css — the Button look, for a page');
+
 if (!DEV) {
   console.log('› inline the templates and sheets into the JS');
   const inlinedAssets = new Set();
@@ -160,6 +172,7 @@ if (WATCH) {
     for (const f of files) {
       try {
         await copyOne(f);
+        if (f.endsWith('sherpa-button-look.css')) writeButtonPage();
         console.log(`› asset ${relative(ROOT, f)}`);
       } catch (e) {
         console.error(`✗ ${relative(ROOT, f)}: ${e.message}`);

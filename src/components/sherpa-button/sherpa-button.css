@@ -76,71 +76,24 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-
-  /* The Style names Figma binds. A look, the open state and disabled are PINS
-     (scripts/figma-data/state-pins.yaml) that re-point them.
-     TRAP T-a-state-colour-binds-the-style-mode */
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_content: var(--sherpa-style-content-base, #0c0b11);
-  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
-  /* Per-edge widths, so a [data-group] position can drop just the shared edge. */
-  --_border-top: var(--sherpa-border-top, 0.5px);
-  --_border-bottom: var(--sherpa-border-bottom, 0.5px);
-  --_border-left: var(--sherpa-border-left, 0.5px);
-  --_border-right: var(--sherpa-border-right, 0.5px);
 }
 
+/* Its face, states and switches are the shared .sherpa-button look the control
+   wears; only how it fills the host is here. TRAP T-a-native-wears-the-button-class */
 .trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--sherpa-button-space-gap, 8px);
   inline-size: 100%;
-  min-block-size: var(--sherpa-button-size-height, 32px);
-  padding-inline: var(--sherpa-button-space-padding, 8px);
-  border-style: solid;
-  border-color: var(--_border);
-  border-block-start-width: var(--_border-top);
-  border-block-end-width: var(--_border-bottom);
-  border-inline-start-width: var(--_border-left);
-  border-inline-end-width: var(--_border-right);
-  border-radius: inherit;
   margin: 0;
-  font-family: inherit;
-  font-size: var(--sherpa-button-font-size, 14px);
-  font-weight: var(--sherpa-structure-font-weight, 400);
-  line-height: var(--sherpa-button-font-line-height, 20px);
-  color: var(--_content);
-  background: var(--_surface);
-  cursor: pointer;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    color 120ms ease;
-
-  /* States derived from the seed — mode-safe via currentColor. */
-  /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
-  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
-  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
-
-  &:focus-visible {
-    outline: none;
-    /* Gap ring in style-surface/base, then the accent ring. The token must be a
-       REAL one — a missing token silently draws the fallback, a white halo in dark. */
-    box-shadow:
-      0 0 0 2px var(--sherpa-style-surface-base, #ffffff),
-      0 0 0 4px var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-  }
 }
 
 /* ── Appearance-mode refinements ─────────────────────────────────────────── */
 
-:host([data-look="transparent"]) {
-  /* Removed by WIDTH: the Transparent tier still carries the default border colour. */
-  --_border-top: var(--sherpa-display-mode-border-width-none, 0px);
-  --_border-bottom: var(--sherpa-display-mode-border-width-none, 0px);
-  --_border-left: var(--sherpa-display-mode-border-width-none, 0px);
-  --_border-right: var(--sherpa-display-mode-border-width-none, 0px);
+:host([data-look="transparent"]) .trigger {
+  /* The host carries the look; the control does not. Removed by WIDTH. */
+  border-width: var(--sherpa-display-mode-border-width-none, 0px);
 }
 
 :host(:focus-visible) { outline: none; }
@@ -150,14 +103,6 @@
  * the ring is drawn from here instead.
  */
 :host([data-open]) .trigger { box-shadow: var(--sherpa-focus-ring); }
-
-/* ── Icon-only (square) ─────────────────────────────────────────────────── */
-
-:host([data-type="icon"]) .trigger {
-  padding-inline: 0;
-  aspect-ratio: 1;
-  min-inline-size: var(--sherpa-button-size-height, 32px);
-}
 
 /* ── Icons: CSS owns visibility; JS only sets the glyph value ────────────── */
 
@@ -173,31 +118,22 @@
   font-style: normal;
   line-height: 1;
   text-align: center;
-  color: var(--_content);
+  color: var(--sherpa-style-content-base, #0c0b11);
 }
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end]) .icon-end { display: inline-flex; }
 
 .label { display: inline-flex; }
-:host([data-type="icon"]) .label { display: none; }
 
 /* ── Trailing badge — CSS-gated on the value attr OR slotted content ─────── */
 
 .badge {
   display: none;
   align-items: center;
-  color: var(--_content);
+  color: var(--sherpa-style-content-base, #0c0b11);
 }
 :host([data-badge]) .badge,
 :host(:state(has-badge)) .badge { display: inline-flex; }
-:host([data-type="icon"]) .badge { display: none; }
-
-/* ── Disabled — the INACTIVE mode of its own look, pinned in state-pins.yaml;
-   never opacity. ───────────────────────────────────────────────────────── */
-:host([disabled]) .trigger {
-  cursor: not-allowed;
-  pointer-events: none;
-}
 
 
 /* The menu popover paints in the top layer; `display: contents` keeps this span

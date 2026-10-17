@@ -53,6 +53,12 @@ Plus the app's stores, and its Views as JSON.
 - `sherpa-ui` is everything. `sherpa-ui/components` is the components alone,
   `sherpa-ui/app` the app layer, `sherpa-ui/data` the data layer with no DOM.
   `T-the-app-layer-is-opt-in`
+- **A form's submit is a native `<button type="submit">`** — `sherpa-button`
+  submits no form. Give it the Button's look with `class="sherpa-button"` and
+  the Button's own names (`data-look="saturated"`, `data-size`, `data-status`,
+  `disabled`). Link `dist/styles/button.css` beside `tokens.css` for a native in
+  the page; one inside a component's template has it already. An unlayered
+  `button {}` reset of your own beats it. `T-a-native-wears-the-button-class`
 
 ## 2. The shell
 

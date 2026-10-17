@@ -38,3 +38,24 @@ test('bindSettings draws each control from the session, writes its change back, 
     afterAbort: { checked: true, size: 50 },
   });
 });
+
+/* A NEW switch — its key holds no value yet — still writes a boolean, never its
+   `value` "on": an app's `=== true` read it as off. TODO 331's Demos setting. */
+test('a switch whose key holds nothing yet writes true and false', async ({ page }) => {
+  await page.goto('/test/reforged/harness.html');
+  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  const r = await page.evaluate(`(async () => {
+    const { SessionStore, bindSettings } = await import('/dist/index.js');
+    const root = document.getElementById('root');
+    root.innerHTML = '<sherpa-switch data-setting="/fresh/flag"></sherpa-switch>';
+    const sw = root.firstElementChild;
+    await sw.rendered;
+    const session = new SessionStore({});
+    bindSettings(root, session);
+    sw.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { checked: true, value: 'on' } }));
+    const on = session.get('/fresh/flag');
+    sw.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { checked: false, value: 'on' } }));
+    return { on, off: session.get('/fresh/flag') };
+  })()`) as Record<string, unknown>;
+  expect(r).toEqual({ on: true, off: false });
+});

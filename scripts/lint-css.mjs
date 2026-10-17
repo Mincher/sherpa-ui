@@ -235,6 +235,9 @@ for (const name of readdirSync(join(ROOT, 'src', 'core')).filter((f) => /^sherpa
   fileCount++;
   lintFile(`src/core/${name}`, readFileSync(join(ROOT, 'src', 'core', name), 'utf8'));
 }
+// A shared LOOK a node wears by class: linted as a sheet of its own. TRAP T-a-native-wears-the-button-class
+fileCount++;
+lintFile('src/core/sherpa-button-look.css', readFileSync(join(ROOT, 'src', 'core', 'sherpa-button-look.css'), 'utf8'));
 
 const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')) : {};
 const themeTotal = Object.values(themeReads).reduce((a, b) => a + b, 0);

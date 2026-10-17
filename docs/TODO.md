@@ -323,7 +323,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
 | ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ✅ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
-| 🚧 | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
+| ✅ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
 | ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
 | ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
 | ✅ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
@@ -6581,7 +6581,7 @@ class always did for a `variantAttrs` name; the specs said false. check-usage
 now flags `<sherpa-button data-type="label">`. compile-def writes an enum
 template prop's `templateId` and `variantAttrs`; it wrote `'undefined'`.
 
-### `[~]` 🚧 331 — GAP: sherpa-button submits no form
+### `[x]` ✅ 331 — GAP: sherpa-button submits no form
 
 sherpa-button has no `formAssociated` and no submit code, and both inner
 buttons are `type="button"`. Its Figma divergence note says "For a form SUBMIT …
@@ -6626,6 +6626,26 @@ hand-made copies of the look (code-block copy, grid actions, nav search-clear,
 the chip caret) are queued, one pixel check each, since each one's focus ring
 changes. Building it is test-free; proving every Button looks the same, in
 each size, look and state, needs a run.
+
+**✅ Built 2026-10-17, Will: A (both picks).** `src/core/sherpa-button-look.css`
+holds the face, states and switches once; the Button's control wears
+`.sherpa-button`, and so can a native. The projector writes the native's size
+blocks into the sheet and puts its eight pins on the Button's own blocks (no new
+block); the spec generator reads the look for the node that wears it, so the
+Button's spec keeps its bindings; the build writes `dist/styles/button.css`,
+exported as `sherpa-ui/css/button`; check-usage checks a native's `data-size`
+and `data-type`, and an unnamed icon one. TRAP `T-a-native-wears-the-button-class`.
+**Proved by a run:** a new spec matches a native to the Button in six looks,
+sizes and states, in a disabled fieldset, and inside a shadow root, in three
+engines; every button spec passes; the full suite passes (3044, 17 flaky — all
+page-setup timeouts under load). Weight: about 5 KB more per import, the one
+shared sheet, recorded on purpose. **Queued, as Will chose:** the four
+hand-made copies of the look (code-block copy, grid actions, nav search-clear,
+the chip caret), one pixel check each.
+
+Also found and fixed: `bindSettings` stored a NEW switch's `value` ("on"), not
+a boolean, so a fresh `data-setting` switch read as off. A switch now always
+writes `true` / `false` (a test holds it).
 
 ### `[x]` ✅ 296 — Phase 8.4: a README front door
 

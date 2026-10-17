@@ -261,7 +261,7 @@
     },
     {
       "name": "sherpa-button",
-      "description": "the primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square).",
+      "description": "the primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square). A native <button class=\"sherpa-button\"> wears the same look: a form's submit.",
       "attributes": [
         {
           "name": "command",

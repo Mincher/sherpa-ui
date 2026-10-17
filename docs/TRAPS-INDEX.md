@@ -728,7 +728,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (93)
+## SherpaElement and the shared sheets (95)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -749,11 +749,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-layout-read-belongs-in-a-frame](TRAPS.md#t-a-layout-read-belongs-in-a-frame) — sherpa-element
 - [T-a-list-takes-its-children-as-data](TRAPS.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-native-control-brings-its-own-margin](TRAPS.md#t-a-native-control-brings-its-own-margin) — sherpa-base
+- [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — sherpa-button-look
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — mark-text
 - [T-a-property-set-before-upgrade-shadows-its-accessor](TRAPS.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — shared-constants
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — sherpa-element
+- [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — sherpa-button-look
 - [T-a-sub-pixel-border-reads-back-as-1px](TRAPS.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — sherpa-element
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
@@ -824,7 +826,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (102)
+## Other components (103)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -852,6 +854,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-host-cannot-hold-aria-expanded](TRAPS.md#t-a-host-cannot-hold-aria-expanded) — button
 - [T-a-host-label-must-reach-its-control](TRAPS.md#t-a-host-label-must-reach-its-control) — button, input-text, select-checkbox, select-radio, switch
 - [T-a-native-name-where-a-native-element-does-the-job](TRAPS.md#t-a-native-name-where-a-native-element-does-the-job) — slider
+- [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — button
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
@@ -859,7 +862,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shadow-reach-is-a-missing-door](TRAPS.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — button
-- [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — badge, button, calendar-cell, chip, list-item, nav-item, tabs
+- [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — button
 - [T-a-trigger-shows-what-it-opened](TRAPS.md#t-a-trigger-shows-what-it-opened) — app-header
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — input-text, prompt-composer
@@ -929,7 +932,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (57)
+## Build, tools and the MCP (58)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -951,6 +954,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-host-attribute-is-declared-once](TRAPS.md#t-a-host-attribute-is-declared-once) — check-props, check-usage
 - [T-a-look-override-is-not-on-the-variable](TRAPS.md#t-a-look-override-is-not-on-the-variable) — project-tokens
 - [T-a-metric-condenses-by-wrapping](TRAPS.md#t-a-metric-condenses-by-wrapping) — project-tokens
+- [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — build-reforged, check-usage, generate-component-spec, lint-css, project-tokens
 - [T-a-read-is-public-api-a-write-is-not](TRAPS.md#t-a-read-is-public-api-a-write-is-not) — check-props
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — check-bench
 - [T-a-setting-is-a-pointer](TRAPS.md#t-a-setting-is-a-pointer) — check-usage

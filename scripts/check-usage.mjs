@@ -74,6 +74,27 @@ export function markupProblems(html, where = 'markup', own = {}) {
       }
     }
   }
+  /* A native <button class="sherpa-button"> takes the Button's names: its size
+     and type are checked against the Button's spec, and one with no text needs a
+     name. Its other data-* are the app's own. TRAP T-a-native-wears-the-button-class */
+  const button = specsOf().get('sherpa-button');
+  for (const m of code.matchAll(/<button\b([^>]*\bclass="[^"]*\bsherpa-button\b[^"]*"[^>]*)>/g)) {
+    const attrs = m[1];
+    // The Button's own control: it takes its host's names, and its host's name.
+    if (/\spart="[^"]*\btrigger\b/.test(attrs)) continue;
+    const line = code.slice(0, m.index).split('\n').length;
+    tags++;
+    for (const name of ['data-size', 'data-type']) {
+      const value = new RegExp(`\\s${name}="([^"]*)"`).exec(attrs)?.[1];
+      const p = button?.get(name);
+      if (value !== undefined && p?.values?.length && !p.values.includes(value)) {
+        problems.push(`${where}:${line}  <button class="sherpa-button" ${name}="${value}"> — it takes ${p.values.map((v) => `"${v}"`).join(', ')}`);
+      }
+    }
+    if (/\sdata-type="icon"/.test(attrs) && !/\saria-label(ledby)?="[^"]+"/.test(attrs)) {
+      problems.push(`${where}:${line}  <button class="sherpa-button" data-type="icon"> has no aria-label: an icon says nothing to a reader`);
+    }
+  }
   return { problems, tags };
 }
 

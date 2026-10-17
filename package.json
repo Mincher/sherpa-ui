@@ -28,6 +28,7 @@
     },
     "./css": "./dist/styles/tokens/tokens.css",
     "./css/page": "./dist/styles/tokens/page.css",
+    "./css/button": "./dist/styles/button.css",
     "./components/*.js": {
       "types": "./dist/components/*.d.ts",
       "default": "./dist/components/*.js"

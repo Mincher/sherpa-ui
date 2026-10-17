@@ -51,6 +51,23 @@ const NATIVE_ATTRS = new Set([
 
 // ══ file loading ═══════════════════════════════════════════════════════════════
 function readIf(p) { return existsSync(p) ? readFileSync(p, 'utf8') : null; }
+
+/** A shared LOOK a template node wears by class, by that class. */
+const LOOKS = { 'sherpa-button': 'src/core/sherpa-button-look.css' };
+/** A component's CSS with each look its nodes wear, renamed to the node's own
+ *  class — so its spec keeps the bindings the node draws with.
+ *  TRAP T-a-native-wears-the-button-class */
+function withLooks(css, html) {
+  if (!css || !html) return css;
+  let out = css;
+  for (const [cls, file] of Object.entries(LOOKS)) {
+    const node = new RegExp(`class="([\\w-]+)[^"]*\\b${cls}\\b`).exec(html);
+    if (!node || node[1] === cls) continue;
+    const look = authoredCss(readFileSync(join(ROOT, file), 'utf8'));
+    out += `\n${look.replaceAll(`.${cls}`, `.${node[1]}`)}`;
+  }
+  return out;
+}
 function loadTokens() { try { return JSON.parse(readFileSync(TOKENS_PATH, 'utf8')); } catch { return null; } }
 function loadElementMap() {
   try { return yaml.load(readFileSync(ELEMENT_MAP_PATH, 'utf8'))?.elements ?? {}; }
@@ -792,7 +809,7 @@ function generateSpec(name) {
   // ── tokens (authored CSS bindings) ────────────────────────────────────────────
   const tokens = {};
   if (css) {
-    for (const { el, prop, sherpaVar } of extractBindings(authoredCss(css))) {
+    for (const { el, prop, sherpaVar } of extractBindings(authoredCss(withLooks(css, html)))) {
       tokens[`${el}.${prop}`] = varToRef(sherpaVar, name, generateSpec._tokens);
     }
   }
@@ -817,7 +834,7 @@ function generateSpec(name) {
   }
 
   // ── states (best-effort) ──────────────────────────────────────────────────────
-  const states = css ? parseStates(authoredCss(css)).map((s) => ({ $type: 'state', ...s })) : [];
+  const states = css ? parseStates(authoredCss(withLooks(css, html))).map((s) => ({ $type: 'state', ...s })) : [];
 
   // ── capabilities + jsProps (best-effort) ──────────────────────────────────────
   const jsProps = ts ? parseTsJsProps(ts) : [];
@@ -930,7 +947,7 @@ function roundtripSpec(name, spec) {
   if (!realHtml || !realCss || !realTs) return { ok: false, reason: 'missing source', diffs: ['component lacks .html/.css/.ts'] };
   const diffs = [];
   htmlDiff(gen.html, realHtml, diffs);
-  cssDiff(gen.css, authoredCss(realCss), diffs);
+  cssDiff(gen.css, authoredCss(withLooks(realCss, realHtml)), diffs);
   tsDiff(gen.ts, realTs, diffs, join(dir, `${name}.ts`));
   return { ok: diffs.length === 0, diffs };
 }

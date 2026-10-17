@@ -26,7 +26,9 @@ export function bindSettings(root: ParentNode, session: SessionStore, options: {
     el.addEventListener('change', (event) => {
       const detail = (event as CustomEvent<{ checked?: boolean; value?: unknown } | null>).detail ?? {};
       const was = session.get(pointer);
-      let next: unknown = typeof was === 'boolean' ? (detail.checked ?? el.checked) : (detail.value ?? el.value);
+      // A switch is a boolean even before its key holds one: else it stores its `value`, "on".
+      const flag = typeof was === 'boolean' || el.localName === 'sherpa-switch';
+      let next: unknown = flag ? (detail.checked ?? el.checked) : (detail.value ?? el.value);
       if (typeof was === 'number') next = Number(next);
       if (next === undefined || next === was || (typeof next === 'number' && !Number.isFinite(next))) return;
       session.set(pointer, next);

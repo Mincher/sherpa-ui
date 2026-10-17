@@ -243,6 +243,7 @@ export abstract class SherpaElement extends Base {
     new URL('../sherpa-typography.css', import.meta.url),
     new URL('../sherpa-grouping.css', import.meta.url),
     new URL('../sherpa-icon.css', import.meta.url),
+    new URL('../sherpa-button-look.css', import.meta.url),
     new URL('../sherpa-group-positions.css', import.meta.url),
     new URL('../sherpa-style-modes.css', import.meta.url),
     new URL('../sherpa-anchor.css', import.meta.url),

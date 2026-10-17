@@ -500,6 +500,7 @@ is adopted into every shadow root — so a component imported alone is styled:
 | `sherpa-typography.css` | **generated** — the type scale |
 | `sherpa-grouping.css` | `.sherpa-group*`, `.sherpa-border-edges`, `.sherpa-border-corners` |
 | `sherpa-icon.css` | `.sherpa-icon-box` |
+| `sherpa-button-look.css` | `.sherpa-button` — the Button's look, worn by its control and by a native `<button>`; copied to `sherpa-ui/css/button` for a page |
 | `sherpa-group-positions.css` | **generated** — grouping positions |
 | `sherpa-style-modes.css` | **generated** — the Style mode pins, `[data-status]` and `[data-look][data-status]` |
 | `sherpa-anchor.css` | `.sherpa-tip`, `.sherpa-anchor`, `.sherpa-anchor-point` |

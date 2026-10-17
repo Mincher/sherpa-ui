@@ -126,7 +126,8 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   `lint:css` exempts borders, 1px and below, `999px`, and a px inside
   `var(--token, 12px)`. A drawn glyph opts out with `/* off-grid-ok */`.
 - **Shared sheets** are adopted by every shadow root: `sherpa-base.css`,
-  `sherpa-typography.css`, `sherpa-grouping.css` (`.sherpa-group*`,
+  `sherpa-typography.css`, `sherpa-button-look.css` (`.sherpa-button`, the
+  Button's look a native button wears too), `sherpa-grouping.css` (`.sherpa-group*`,
   `.sherpa-border-edges`, `.sherpa-border-corners` — never write the per-edge
   chain), `sherpa-icon.css`, `sherpa-group-positions.css`,
   `sherpa-style-modes.css`, `sherpa-anchor.css` (`.sherpa-tip`, `.sherpa-anchor`,

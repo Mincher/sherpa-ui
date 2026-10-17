@@ -86,7 +86,12 @@ const ROUTING = {
   // Shared control geometry. Projected into Button's partial (remapped onto its
   // public var names) AND kept global, so input/nav/container get the geometry too.
   structure: {
-    target: { scoped: 'sherpa-button', alsoGlobal: 'structure' },
+    // …and once more for a native <button class="sherpa-button">, but never the
+    // Button's own control, which takes its host's. TRAP T-a-native-wears-the-button-class
+    target: {
+      scoped: 'sherpa-button', alsoGlobal: 'structure',
+      alsoClass: { file: 'src/core/sherpa-button-look.css', selector: '.sherpa-button:not([part~="trigger"])' },
+    },
     attr: 'data-size',
     renameMap: {
       'structure/height': 'sherpa-button-size-height',
@@ -418,6 +423,7 @@ const GLOBAL_LAYERS = ['core', 'display-mode', 'theme', 'layout', 'structure', '
 const layers = {};
 for (const name of GLOBAL_LAYERS) layers[name] = { root: [], rootDark: [], modeBlocks: [] };
 const scopedPartials = []; // { comp, css }
+const classPartials = []; // { path, css } — a scoped partial on a class, in a shared sheet
 /** [data-group] position blocks — adopted, not linked. */
 const groupPositionBlocks = [];
 
@@ -504,9 +510,17 @@ for (const slug of Object.keys(doc)) {
         );
       }
     }
-    scopedPartials.push(
-      buildScopedPartial(slug, route.target.scoped, route.attr, leaves, route.renameMap),
-    );
+    const partial = buildScopedPartial(slug, route.target.scoped, route.attr, leaves, route.renameMap);
+    scopedPartials.push(partial);
+    const cls = route.target.alsoClass;
+    if (cls) {
+      // The same values, on the class: `:host` is the element that wears it.
+      const css = partial.css
+        .replace(/:host\(\[/g, `${cls.selector}[`).replace(/\]\) \{/g, '] {')
+        .replace(/:host \{/g, `${cls.selector} {`)
+        .replace("The component's own", 'The class');
+      classPartials.push({ path: join(ROOT, cls.file), css });
+    }
     continue;
   }
 
@@ -952,8 +966,14 @@ const statePinBlocks = [];
 const statePinHostBlocks = [];
 if (existsSync(STATE_PINS)) {
   const pins = yaml.load(readFileSync(STATE_PINS, 'utf8')) ?? {};
+  /* A CLASS key — a native wearing a component's look — goes on the selector
+     list of its TWIN, the component's host pin with the same look and mode, so it
+     costs no new block. TRAP T-a-native-wears-the-button-class */
+  const twins = new Map();
+  const addSelector = (block, sel) => block.replace(/^ {2}([^\n]*) \{/, (_m, first) => `  ${first},\n  ${sel} {`);
   for (const [tag, rules] of Object.entries(pins)) {
-    if (!existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);
+    const isClass = tag.startsWith('.');
+    if (!isClass && !existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);
     for (const [selector, spec] of Object.entries(rules ?? {})) {
       const m = /^&(\S*)(.*)$/.exec(selector);
       const parts = String(spec).split('/');
@@ -964,10 +984,36 @@ if (existsSync(STATE_PINS)) {
         continue;
       }
       const onPart = m[2].trim() !== '';
+      const body = `${look ?? ''}/${mode}`;
+      if (isClass) {
+        if (onPart) {
+          warn(`state-pins: ${tag} "${selector}": a class key pins the element, not a part`);
+          continue;
+        }
+        // Never the component's own control, which takes its host's state.
+        const sel = `:where(${tag}:not([part~="trigger"]))${m[1]}`;
+        // Its own component's block first, so the two read side by side.
+        const twin = twins.get(`${tag.slice(1)}|${body}`) ?? twins.get(body);
+        if (twin) {
+          statePinBlocks[twin.all] = addSelector(statePinBlocks[twin.all], sel);
+          statePinHostBlocks[twin.host] = addSelector(statePinHostBlocks[twin.host], sel);
+          continue;
+        }
+        const own = pinBlock(sel, mode, look);
+        if (!own) continue;
+        statePinBlocks.push(own);
+        statePinHostBlocks.push(own);
+        continue;
+      }
       const block = pinBlock(onPart ? `:host(${tag}${m[1]})${m[2]}` : `${tag}${m[1]}`, mode, look);
       if (!block) continue;
       statePinBlocks.push(block);
-      if (!onPart) statePinHostBlocks.push(block);
+      if (!onPart) {
+        statePinHostBlocks.push(block);
+        const at = { all: statePinBlocks.length - 1, host: statePinHostBlocks.length - 1 };
+        if (!twins.has(body)) twins.set(body, at);
+        if (!twins.has(`${tag}|${body}`)) twins.set(`${tag}|${body}`, at);
+      }
     }
   }
 }
@@ -1862,6 +1908,16 @@ for (const { comp, css: region } of scopedPartials) {
   const existing = readFileSync(cssPath, 'utf8');
   const next = spliceTokenRegion(existing, region);
   if (next !== existing) writeFileSync(cssPath, next);
+  wrote++;
+}
+for (const { path, css: region } of classPartials) {
+  if (!existsSync(path)) {
+    warn(`class token sheet missing: ${path}`);
+    continue;
+  }
+  const existing = readFileSync(path, 'utf8');
+  const next = spliceTokenRegion(existing, region);
+  if (next !== existing) writeFileSync(path, next);
   wrote++;
 }
 

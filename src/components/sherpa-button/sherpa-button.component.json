@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-button",
-  "$description": "the primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square).",
+  "$description": "the primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square). A native <button class=\"sherpa-button\"> wears the same look: a form's submit.",
   "element": {
     "$type": "element",
     "tag": "button",
@@ -26,7 +26,7 @@
       "default": [
         {
           "el": "button",
-          "class": "trigger sherpa-anchor",
+          "class": "trigger sherpa-anchor sherpa-button",
           "part": "trigger",
           "attrs": {
             "type": "button"
@@ -103,10 +103,11 @@
       "icon": [
         {
           "el": "button",
-          "class": "trigger sherpa-anchor",
+          "class": "trigger sherpa-anchor sherpa-button",
           "part": "trigger",
           "attrs": {
-            "type": "button"
+            "type": "button",
+            "data-type": "icon"
           },
           "children": [
             {
@@ -338,11 +339,6 @@
     },
     {
       "$type": "state",
-      "name": "icon",
-      "selector": ":host([data-type=\"icon\"])"
-    },
-    {
-      "$type": "state",
       "name": "icon-start",
       "selector": ":host([data-icon-start])"
     },
@@ -360,11 +356,6 @@
       "$type": "state",
       "name": "no-tip",
       "selector": ":host([data-no-tip])"
-    },
-    {
-      "$type": "state",
-      "name": "disabled",
-      "selector": ":host([disabled])"
     },
     {
       "$type": "state",
@@ -386,12 +377,25 @@
   ],
   "tokens": {
     "trigger.gap": "{sherpa.button-space-gap}",
+    "icon.--_icon-size": "{sherpa.button-size-icon}",
+    "icon.color": "{sherpa.style-content-base}",
+    "badge.color": "{sherpa.style-content-base}",
     "trigger.min-block-size": "{sherpa.button-size-height}",
     "trigger.padding-inline": "{sherpa.button-space-padding}",
+    "trigger.border-color": "{sherpa.style-border-base-1}",
+    "trigger.border-block-start-width": "{sherpa.border-top}",
+    "trigger.border-block-end-width": "{sherpa.border-bottom}",
+    "trigger.border-inline-start-width": "{sherpa.border-left}",
+    "trigger.border-inline-end-width": "{sherpa.border-right}",
+    "trigger.border-start-start-radius": "{sherpa.border-rounding-top-left}",
+    "trigger.border-start-end-radius": "{sherpa.border-rounding-top-right}",
+    "trigger.border-end-start-radius": "{sherpa.border-rounding-bottom-left}",
+    "trigger.border-end-end-radius": "{sherpa.border-rounding-bottom-right}",
     "trigger.font-size": "{sherpa.button-font-size}",
     "trigger.font-weight": "{sherpa.structure-font-weight}",
     "trigger.line-height": "{sherpa.button-font-line-height}",
-    "icon.--_icon-size": "{sherpa.button-size-icon}"
+    "trigger.color": "{sherpa.style-content-base}",
+    "trigger.background": "{sherpa.style-surface-base}"
   },
   "$extensions": {
     "sherpa": {

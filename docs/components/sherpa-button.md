@@ -2,7 +2,7 @@
 
 # sherpa-button
 
-The primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square).
+The primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label), icon (square). A native &lt;button class="sherpa-button"> wears the same look: a form's submit.
 
 |  |  |
 |---|---|
@@ -74,12 +74,25 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-button-space-gap` | `.trigger` | `gap` |
+| `--sherpa-button-size-icon` | `.icon` | `--_icon-size` |
+| `--sherpa-style-content-base` | `.icon` | `color` |
+| `--sherpa-style-content-base` | `.badge` | `color` |
 | `--sherpa-button-size-height` | `.trigger` | `min-block-size` |
 | `--sherpa-button-space-padding` | `.trigger` | `padding-inline` |
+| `--sherpa-style-border-base-1` | `.trigger` | `border-color` |
+| `--sherpa-border-top` | `.trigger` | `border-block-start-width` |
+| `--sherpa-border-bottom` | `.trigger` | `border-block-end-width` |
+| `--sherpa-border-left` | `.trigger` | `border-inline-start-width` |
+| `--sherpa-border-right` | `.trigger` | `border-inline-end-width` |
+| `--sherpa-border-rounding-top-left` | `.trigger` | `border-start-start-radius` |
+| `--sherpa-border-rounding-top-right` | `.trigger` | `border-start-end-radius` |
+| `--sherpa-border-rounding-bottom-left` | `.trigger` | `border-end-start-radius` |
+| `--sherpa-border-rounding-bottom-right` | `.trigger` | `border-end-end-radius` |
 | `--sherpa-button-font-size` | `.trigger` | `font-size` |
 | `--sherpa-structure-font-weight` | `.trigger` | `font-weight` |
 | `--sherpa-button-font-line-height` | `.trigger` | `line-height` |
-| `--sherpa-button-size-icon` | `.icon` | `--_icon-size` |
+| `--sherpa-style-content-base` | `.trigger` | `color` |
+| `--sherpa-style-surface-base` | `.trigger` | `background` |
 
 ## populate()
 

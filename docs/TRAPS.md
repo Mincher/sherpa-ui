@@ -146,7 +146,7 @@ light, 264 of 264 in dark.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
-- Site: `src/components/sherpa-button/sherpa-button.css`
+- Site: `src/core/sherpa-button-look.css`
 - Site: `src/components/sherpa-tabs/sherpa-tabs.css`
 - Site: `src/components/sherpa-list-item/sherpa-list-item.css`
 - Site: `src/components/sherpa-calendar-cell/sherpa-calendar-cell.css`
@@ -3337,6 +3337,42 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-a-native-wears-the-button-class
+
+A form's submit is a native `<button type="submit">`: `sherpa-button` submits no
+form. Will, TODO 331: it must still look like the Button and follow status and
+look pins. So the Button's look is ONE sheet, `sherpa-button-look.css`, on one
+class, `.sherpa-button`, worn by the Button's own control AND by any native
+button. It is in `sharedStyles`, so a SherpaElement shadow root has it, and the
+build copies it to `sherpa-ui/css/button` for a page (layered, and naming the
+layer order, so a page's own rules win and the link order does not matter).
+
+- **The face sets no `display`, `margin` or `vertical-align`.** A rule in the
+  tree beats a slot owner's `::slotted()` (`T-a-tree-rule-beats-slotted`), so a
+  slotted native would never fold or lap. The Button's control keeps those in
+  `sherpa-button.css`.
+- **A native takes the Button's names:** `data-size`, `data-look`,
+  `data-type="icon"`, `data-status`, `aria-pressed`, and `:disabled` — so a
+  disabled fieldset counts. Its sizes are projected onto the class too.
+- **Its pins are the Button's, on the same blocks** — a class key in
+  `state-pins.yaml` joins its twin's selector list, so no block is written
+  again (one block is ~1.8 KB, in every import).
+- **The Button's own control is left out** (`:not([part~="trigger"])`): it
+  takes its host's look, size and state, which the host's pins re-point.
+- The spec generator reads the look for a node that wears it, renamed to the
+  node's own class, so the Button's spec keeps its bindings.
+- A non-Sherpa shadow root adopts neither sheet: it adopts this one and
+  `sherpa-style-modes.css` itself.
+
+- Site: `src/core/sherpa-button-look.css`
+- Site: `src/components/sherpa-button/sherpa-button.css`
+- Site: `scripts/project-tokens.mjs`
+- Site: `scripts/generate-component-spec.mjs`
+- Site: `scripts/build-reforged.mjs`
+- Site: `scripts/lint-css.mjs`
+- Site: `scripts/check-usage.mjs`
+- Site: `test/e2e/reforged-native-button.spec.ts`
 
 ### T-an-svg-with-a-focus-listener-is-a-tab-stop
 

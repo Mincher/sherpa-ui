@@ -60,6 +60,18 @@ sherpa-button:
   # The badge is a Badge instance pinned Style=default — never the button's tint.
   '& .badge-value': default
 
+# A native <button class="sherpa-button"> wears the Button's look, so it takes the
+# Button's pins — on the same blocks, never its own. TRAP T-a-native-wears-the-button-class
+.sherpa-button:
+  '&[data-look="transparent"]': transparent
+  '&[data-look="saturated"]': saturated
+  '&[aria-pressed="true"]': active
+  '&[aria-pressed="true"][data-look="transparent"]': transparent/active
+  '&[aria-pressed="true"][data-look="saturated"]': saturated/active
+  '&:disabled': inactive
+  '&:disabled[data-look="transparent"]': transparent/inactive
+  '&:disabled[data-look="saturated"]': saturated/inactive
+
 sherpa-nav-item:
   # Navigation Item pins Transparent=default at its root. A promo is its own
   # bordered card, in the default look.

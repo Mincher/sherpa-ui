@@ -1,6 +1,7 @@
 <!--
   sherpa-button — the primary interactive trigger.
   Two templates, selected by data-type: default (icon(s) + label), icon (square).
+  A native <button class="sherpa-button"> wears the same look: a form's submit.
 
   Public API (data-* + native):
     data-look      saturated (primary) | transparent (tertiary)
@@ -28,7 +29,7 @@
   Fires: button-click
 -->
 <template id="default">
-  <button class="trigger sherpa-anchor" part="trigger" type="button">
+  <button class="trigger sherpa-anchor sherpa-button" part="trigger" type="button">
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
     <span class="label"><slot data-accepts="text,icon"></slot></span>
     <i class="icon sherpa-icon-box icon-end" aria-hidden="true"></i>
@@ -41,7 +42,7 @@
 </template>
 
 <template id="icon">
-  <button class="trigger sherpa-anchor" part="trigger" type="button">
+  <button class="trigger sherpa-anchor sherpa-button" part="trigger" type="button" data-type="icon">
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
     <!-- An icon button opens a slotted MENU too — the legend's Other row is one.
          Without the slot the menu had nowhere to render. TRAP T-an-icon-button-still-slots-its-menu -->

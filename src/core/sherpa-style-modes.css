@@ -947,7 +947,8 @@ sherpa-menu {
   --_status-icon: initial;
 }
 
-sherpa-button[data-look="transparent"] {
+sherpa-button[data-look="transparent"],
+:where(.sherpa-button:not([part~="trigger"]))[data-look="transparent"] {
   --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-transparent-border-width);
@@ -971,7 +972,8 @@ sherpa-button[data-look="transparent"] {
   --_status-icon: var(--sherpa-style-transparent-indicator-accent);
 }
 
-sherpa-button[data-look="saturated"] {
+sherpa-button[data-look="saturated"],
+:where(.sherpa-button:not([part~="trigger"]))[data-look="saturated"] {
   --sherpa-style-border-base: var(--sherpa-style-saturated-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-saturated-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-saturated-border-width);
@@ -995,7 +997,8 @@ sherpa-button[data-look="saturated"] {
   --_status-icon: var(--sherpa-style-saturated-indicator-accent);
 }
 
-sherpa-button[aria-pressed="true"] {
+sherpa-button[aria-pressed="true"],
+:where(.sherpa-button:not([part~="trigger"]))[aria-pressed="true"] {
   --sherpa-style-border-base: var(--sherpa-style-active-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-active-border-width);
@@ -1023,7 +1026,8 @@ sherpa-button[aria-pressed="true"] {
   --_status-icon: var(--sherpa-style-active-indicator-accent);
 }
 
-sherpa-button[aria-pressed="true"][data-look="transparent"] {
+sherpa-button[aria-pressed="true"][data-look="transparent"],
+:where(.sherpa-button:not([part~="trigger"]))[aria-pressed="true"][data-look="transparent"] {
   --sherpa-style-border-base: var(--sherpa-style-transparent-active-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-transparent-active-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-transparent-active-border-width);
@@ -1047,7 +1051,8 @@ sherpa-button[aria-pressed="true"][data-look="transparent"] {
   --_status-icon: var(--sherpa-style-transparent-active-indicator-accent);
 }
 
-sherpa-button[aria-pressed="true"][data-look="saturated"] {
+sherpa-button[aria-pressed="true"][data-look="saturated"],
+:where(.sherpa-button:not([part~="trigger"]))[aria-pressed="true"][data-look="saturated"] {
   --sherpa-style-border-base: var(--sherpa-style-saturated-active-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-saturated-active-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-saturated-active-border-width);
@@ -1147,7 +1152,8 @@ sherpa-button[data-open][data-look="saturated"] {
   --_status-icon: var(--sherpa-style-saturated-active-indicator-accent);
 }
 
-sherpa-button[disabled] {
+sherpa-button[disabled],
+:where(.sherpa-button:not([part~="trigger"])):disabled {
   --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
@@ -1175,7 +1181,8 @@ sherpa-button[disabled] {
   --_status-icon: var(--sherpa-style-inactive-indicator-accent);
 }
 
-sherpa-button[disabled][data-look="transparent"] {
+sherpa-button[disabled][data-look="transparent"],
+:where(.sherpa-button:not([part~="trigger"])):disabled[data-look="transparent"] {
   --sherpa-style-border-base: var(--sherpa-style-transparent-inactive-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-transparent-inactive-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-transparent-inactive-border-width);
@@ -1199,7 +1206,8 @@ sherpa-button[disabled][data-look="transparent"] {
   --_status-icon: var(--sherpa-style-transparent-inactive-indicator-accent);
 }
 
-sherpa-button[disabled][data-look="saturated"] {
+sherpa-button[disabled][data-look="saturated"],
+:where(.sherpa-button:not([part~="trigger"])):disabled[data-look="saturated"] {
   --sherpa-style-border-base: var(--sherpa-style-saturated-inactive-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-saturated-inactive-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-saturated-inactive-border-width);
