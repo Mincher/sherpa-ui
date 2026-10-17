@@ -810,7 +810,7 @@
         },
         {
           "name": "data-keep-content",
-          "description": "a state never replaces the body: loading is a bar under the header and the body is locked; a state is a banner above it. Written by the provider. Will, TODO 59.",
+          "description": "a state never replaces the body: loading is a bar under the header and the body is locked; a failure or no data is a banner above it, and no matches has none. Written by the provider. Will, TODO 59.",
           "valueSet": "v"
         },
         {

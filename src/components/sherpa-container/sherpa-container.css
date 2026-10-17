@@ -153,8 +153,8 @@
 :host([data-state="no-matches"]) .empty-default { display: none; }
 
 /* ── KEEP THE CONTENT — Will, TODO 59. Loading is a bar along the header's
-   bottom edge and locks the body; a state is a banner above the body. The
-   overlay never shows. TRAP T-a-container-shows-its-datas-state ── */
+   bottom edge and locks the body; a failure or no data is a banner above the
+   body, no matches none. The overlay never shows. TRAP T-a-container-shows-its-datas-state ── */
 .body { position: relative; }
 .loading-bar,
 .banner,
@@ -169,14 +169,13 @@
 /* flex, as the bar's own host is: as a block its <progress> sits on a text line, 14px down. */
 :host([data-keep-content][data-loading]) .loading-bar { display: flex; }
 :host([data-keep-content][data-loading]) .body { pointer-events: none; }
-:host([data-keep-content][data-state]) .banner {
+:host([data-keep-content]:is([data-state="error"], [data-state="empty"])) .banner {
   display: block;
   padding-block-start: var(--_pad);
   padding-inline: var(--_pad-inline, var(--_pad));
 }
 :host([data-keep-content][data-state="error"]) .banner-error,
-:host([data-keep-content][data-state="empty"]) .banner-empty,
-:host([data-keep-content][data-state="no-matches"]) .banner-no-matches { display: block; }
+:host([data-keep-content][data-state="empty"]) .banner-empty { display: block; }
 .banner-actions {
   display: flex;
   gap: var(--sherpa-display-mode-space-xs, 8px);

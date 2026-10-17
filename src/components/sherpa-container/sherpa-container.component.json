@@ -84,32 +84,6 @@
                 "el": "span"
               }
             ]
-          },
-          {
-            "el": "sherpa-callout",
-            "class": "banner-no-matches",
-            "attrs": {
-              "data-status": "info",
-              "data-heading": "No matches"
-            },
-            "children": [
-              {
-                "el": "span"
-              },
-              {
-                "el": "span",
-                "class": "banner-actions",
-                "children": [
-                  {
-                    "el": "sherpa-button",
-                    "class": "clear-filters",
-                    "attrs": {
-                      "data-size": "sm"
-                    }
-                  }
-                ]
-              }
-            ]
           }
         ]
       },
@@ -304,7 +278,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a state never replaces the body: loading is a bar under the header and the body is locked; a state is a banner above it. Written by the provider. Will, TODO 59."
+      "description": "a state never replaces the body: loading is a bar under the header and the body is locked; a failure or no data is a banner above it, and no matches has none. Written by the provider. Will, TODO 59."
     },
     {
       "$type": "prop",

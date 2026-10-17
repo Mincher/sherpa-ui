@@ -1339,8 +1339,10 @@ answer at `openSource()` no longer stops the page: `declareFromRows` reports
 Settings › Experiments. The provider's `data-keep-content` goes onto every
 card it draws a state on. Then nothing replaces the body: loading is an
 indeterminate bar along the header's bottom edge, and the body takes no
-pointer; a state is a `sherpa-callout` banner above the body, with the same
-Retry, Dismiss and Clear filters. The overlay never shows. Its own buttons,
+pointer; a failure or no data is a `sherpa-callout` banner above the body,
+with the same Retry and Dismiss. NO MATCHES HAS NO BANNER — Will, 2026-10-17,
+TODO 342: he never asked for one, and the kept grid says it has no rows. The
+overlay never shows. Its own buttons,
 not the callout's close: a callout REMOVES itself on dismiss, and the next
 failure would have no banner.
 

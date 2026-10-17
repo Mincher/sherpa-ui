@@ -9,8 +9,8 @@
                     the body. Written by the provider. TRAP T-a-container-shows-its-datas-state
     data-error          the error's own words, under its heading
     data-keep-content  a state never replaces the body: loading is a bar under the
-                    header and the body is locked; a state is a banner above it.
-                    Written by the provider. Will, TODO 59.
+                    header and the body is locked; a failure or no data is a banner
+                    above it, and no matches has none. Written by the provider. Will, TODO 59.
     data-padding    none | sm | md | lg | xl — one scale on both axes; unset is the card's own (lg)
     data-row-span       1–12 — a FIXED height of N layout-grid rows.
                     The body's content fills it, so a chart draws into the whole
@@ -43,7 +43,7 @@
     <slot name="header" data-accepts="header"></slot>
   </header>
 
-  <!-- KEEP THE CONTENT: each state as a banner, the body still shown. TODO 59 -->
+  <!-- KEEP THE CONTENT: a failure or no data as a banner, the body still shown. TODO 59 -->
   <div class="banner" part="banner">
     <sherpa-callout class="banner-error" data-status="critical" data-heading="The data could not load">
       <span><span class="error-message"></span> The last data is still shown.</span>
@@ -54,12 +54,6 @@
     </sherpa-callout>
     <sherpa-callout class="banner-empty" data-status="info" data-heading="No data yet">
       <span>There is nothing here yet.</span>
-    </sherpa-callout>
-    <sherpa-callout class="banner-no-matches" data-status="info" data-heading="No matches">
-      <span>Nothing matches these filters.</span>
-      <span class="banner-actions">
-        <sherpa-button class="clear-filters" data-size="sm">Clear filters</sherpa-button>
-      </span>
     </sherpa-callout>
   </div>
 

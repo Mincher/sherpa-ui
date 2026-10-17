@@ -334,6 +334,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | ✅ | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
 | ⬜ | 62.86 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| ✅ | 62.87 | 342 | The "No matches" banner above a kept card goes (Will: never asked for) | fix |
 | | | | **✅ Done — newest first** | |
 | ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
 | ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
@@ -5038,7 +5039,8 @@ the same three states.
 content: a slow load shows an indeterminate bar along the bottom of the card
 header, and the body takes no clicks until it ends; a failure is a red banner
 above the body — "The data could not load", the error's words, "The last data
-is still shown.", Retry and Dismiss. No data and No matches are banners too.
+is still shown.", Retry and Dismiss. No data is a banner too. (A No matches
+banner was added as well, unasked; it went in 342.)
 The overlay from 58 never shows. The provider carries it
 (`data-keep-content`), so no page sets it card by card.
 `T-a-container-shows-its-datas-state`
@@ -6999,6 +7001,17 @@ that `arranges` because a grid or list is bound, "a summary binds to all the
 rows", a chart's legend scope. Measure every such decision, and plan how each
 becomes a data shape (rows, one page, all rows, a count) that any component
 may ask for.
+
+### `[x]` ✅ 342 — The "No matches" banner goes
+
+Will, 2026-10-17: *"I don't like the weird 'no matches' banner/callout that
+you added to the data grid. I never asked for this to be added."* It was the
+container's `banner-no-matches` callout, shown above the Records grid when
+Settings › Experiments › "Keep the content while data loads" is on. 59 asked
+for a banner on a failure or no data only. **✅ 2026-10-17:** the callout and
+its CSS are gone; a kept card with no matches shows no banner, and its grid
+says "No rows to display.". The overlay (58) keeps its No matches and Clear
+filters. `T-a-container-shows-its-datas-state`
 
 ### `[x]` ✅ 322 — The data grid holds its filter toolbar and its pager
 

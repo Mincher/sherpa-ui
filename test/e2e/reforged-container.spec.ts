@@ -192,3 +192,31 @@ test('each data state shows its own default, and its buttons ask or dismiss', as
   expect(r['dismissed']).toEqual({ state: null, body: false });
   expect(r['heard']).toEqual(['filters-clear', 'data-refresh', 'state-dismiss']);
 });
+
+/** KEPT CONTENT — TODO 59, 342: a failure or no data is a banner; no matches has none. */
+test('a kept card shows a banner for a failure and no data, and none for no matches', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    el.toggleAttribute('data-keep-content', true);
+    el.innerHTML = '<p>body</p>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const sr = el.shadowRoot!;
+    const on = (sel: string) => !!sr.querySelector<HTMLElement>(sel)?.checkVisibility();
+    const out: Record<string, unknown> = {};
+    for (const state of ['error', 'empty', 'no-matches']) {
+      el.populate({ state, message: 'The server did not answer.' });
+      await settle();
+      out[state] = { banner: on('.banner'), error: on('.banner-error'), empty: on('.banner-empty'), overlay: on('.state') };
+    }
+    out['gone'] = !sr.querySelector('.banner-no-matches');
+    return out;
+  });
+  expect(r['error']).toEqual({ banner: true, error: true, empty: false, overlay: false });
+  expect(r['empty']).toEqual({ banner: true, error: false, empty: true, overlay: false });
+  expect(r['no-matches']).toEqual({ banner: false, error: false, empty: false, overlay: false });
+  expect(r['gone']).toBe(true);
+});

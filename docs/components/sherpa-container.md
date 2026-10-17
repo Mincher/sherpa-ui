@@ -27,7 +27,7 @@ For a standalone card with a header, a body and a footer; it shows its data's lo
 | `data-elevation` | `none` `sm` `md` `lg` | `none` | none \| sm \| md \| lg |
 | `data-error` | text |  | the error's own words, under its heading |
 | `data-fill` | boolean |  | with data-row-span AND several body children: only the child marked data-grow takes the spare height; the rest keep their natural size. A records card is a toolbar, a filter bar, the GRID, then the pager — the grid grows, the pager stays put. Not needed for the common one-child card. Slotting empty / error shows that overlay too, via the base class reflecting a `has-<slot>` state; a slotted one replaces the default content. |
-| `data-keep-content` | boolean |  | a state never replaces the body: loading is a bar under the header and the body is locked; a state is a banner above it. Written by the provider. Will, TODO 59. |
+| `data-keep-content` | boolean |  | a state never replaces the body: loading is a bar under the header and the body is locked; a failure or no data is a banner above it, and no matches has none. Written by the provider. Will, TODO 59. |
 | `data-loading` | boolean | `false` | show the loading overlay (ratified boolean-verb state) |
 | `data-padding` | `none` `sm` `md` `lg` `xl` |  | none \| sm \| md \| lg \| xl — one scale on both axes; unset is the card's own (lg) |
 | `data-padding-inline` | `none` `sm` `md` `lg` `xl` |  |  |
