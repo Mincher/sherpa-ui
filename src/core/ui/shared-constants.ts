@@ -34,7 +34,7 @@ export function movedTo(scope?: string | null): string {
 export const RULED_OUT = 'Limited by your other filters: no matches.';
 
 /** What a PICKED value a later filter rules out says: kept, not applied.
- *  Will, TODO 180. TRAP T-a-later-answer-sets-an-earlier-pick-aside */
+ *  Will, TODO 180. TRAP T-a-ruled-out-value-is-greyed */
 export const SET_ASIDE = 'Limited by your other filters: not applied.';
 
 /** What a disabled chip says. Will, TODO 176. */

@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { ArrayStore } from '../../dist/data.js';
-import { walkInOrder } from '../../dist/core/data/walk.js';
+import { holdsKey, walkInOrder } from '../../dist/core/data/walk.js';
 import { answerOrder, planWalk, walkStepwise } from '../../dist/core/data/source-counts.js';
 import { absoluteDates, matchesFilter, readField, valueKey } from '../../dist/core/data/store.js';
 
@@ -105,13 +105,23 @@ test('Limit on: an earlier pick limits a later field, never the other way', () =
   assert.equal(all.ends.view, 3);
 });
 
-test('a set-aside is exact under loose matching: the rows are scanned again with what is left', () => {
-  // "emea" matches EMEA rows loosely, but is not a value key the rows hold: set aside.
-  const q = query({ view: { holds: ['region'], readings: { region: { picked: ['emea', 'APAC'] } } } });
+test('a pick that matches rows as the filter compares — case aside — is never set aside', () => {
+  // "emea" matches the EMEA rows, so nothing rules it out.
+  const q = query({ view: { holds: ['customer', 'region'], readings: { customer: { picked: ['Tailspin'] }, region: { picked: ['amer', 'APAC'] } } } });
   const w = walk(q);
-  assert.deepEqual(w.aside.view, { region: ['emea'] });
-  assert.equal(w.ends.view, 3);
-  assert.deepEqual(w.results.view, { region: 3 });
+  // Tailspin is in AMER and LATAM: "amer" stays, APAC goes.
+  assert.deepEqual(w.aside.view, { region: ['APAC'] });
+  assert.deepEqual(w.results.view, { customer: 2, region: 1 });
+  assert.equal(w.ends.view, 1);
+});
+
+test('Limit off, an empty View: a component pick in another case is not set aside', () => {
+  const rows = [{ id: 1, plan: 'Free' }, { id: 2, plan: 'Free' }, { id: 3, plan: 'Pro' }, { id: 4, plan: 'Starter' }];
+  const q = query({ data: { holds: ['plan'], readings: { plan: { picked: ['free'] } } } });
+  const w = walkInOrder(rows, planWalk(q, facts({ limit: false, isList: () => true, fields: () => ['plan'] })));
+  assert.deepEqual(w.aside.data, {});
+  assert.deepEqual(w.results.data, { plan: 2 });
+  assert.equal(w.ends.data, 2);
 });
 
 test('Limit off: the View limits nothing; a component scope is ruled by the View\'s end', () => {
@@ -217,7 +227,7 @@ function referenceWalk(rows, plan) {
       const tally = step.field ? keysOf(reach, step.field) : [];
       if (sc.setsAside && step.on && test && step.picks?.length && step.less) {
         const ruled = step.ruler === 'here' ? tally : step.ruler === 'start' ? keysOf(start, step.field) : null;
-        const out2 = step.picks.filter((k) => (ruled && !ruled.includes(k)) || (step.offers && narrowed && !tally.includes(k)));
+        const out2 = step.picks.filter((k) => (ruled && !holdsKey(ruled, k)) || (step.offers && narrowed && !holdsKey(tally, k)));
         if (out2.length) { aside[step.field] = out2; test = step.less(out2); }
       }
       if (step.field && step.each?.length) values[step.field] = Object.fromEntries(step.each.map(([k, c]) => [k, match(reach, c).length]));

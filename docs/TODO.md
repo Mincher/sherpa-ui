@@ -912,6 +912,17 @@ OFF chip counts. The TRAP changes with it.
     the walk. Bench: counts → 0 on every act; `records/report` scans 32 → 25,
     compiles 16 → 11. TRAP renamed `T-a-chip-counts-within-the-filters-before-it`.
     Limits still come from the old pass until C6.
+  - ✅ **C6** — limits from the walk too (347, 349; D4 A, D5 A, Q1 A, Q2 A): the
+    filters BEFORE a field grey it and set its picks aside, one way; with Limit
+    off the View still limits a component scope and a legend; a serial chain sees
+    every filter before it. Set aside BEFORE the load where the walk asks no
+    store, so one load. The newest-first pass (`#setAsideNow`, `#chainAside`,
+    `#recency`, `limitFor`, `serialChains`, `heldAbove`) is deleted; a pick that
+    matches rows case aside is never set aside (the C1 review). Bench:
+    `records/report` scans 25 → 3, distinct 10 → 0, compiles 11 → 5; `aside`
+    stays 1 load. **For Will to see:** a later pick no longer sets an earlier one
+    aside — the earlier limits the later; with Limit off, a data-bar pick the
+    View leaves no rows for is set aside (greyed, kept, not applied).
 
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 

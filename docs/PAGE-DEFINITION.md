@@ -68,7 +68,11 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **A scope's `sets`** draw fields as one group:
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
-  Customers. `parallel`, the default, only groups (`T-a-filter-set-groups-or-chains`).
+  Customers, and of every filter before it. `parallel`, the default, only
+  groups (`T-a-filter-set-groups-or-chains`). Either way a chip counts, and
+  Limit greys it, within the filters BEFORE it: the saved filters, then the
+  fields in the scope's order, each set together
+  (`T-one-walk-counts-and-limits-in-order`).
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope over a grid or a list does, and the View does not
   (`T-group-and-sort-are-component-scope`).

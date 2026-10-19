@@ -1,8 +1,9 @@
 /**
- * WHAT THE OTHER ANSWERS LEAVE — TODO 174, with 110's ruling B. With
+ * WHAT THE FILTERS BEFORE IT LEAVE — TODO 174, then 349 (Will, D4 A). With
  * `limitOptions` on, each list field's values are the ones the rows still hold
- * under the OTHER answers in its scope; a component scope's are within the
- * View's too. A field's own answer never limits it.
+ * under its scopes and the filters BEFORE it — one way only; a component
+ * scope's are within the View's too. A field's own answer never limits it. Off,
+ * only the View limits a component scope (347).
  *
  *   node --test test/unit/present-limits-each-field.test.mjs
  *
@@ -11,7 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, spoofRemote, VIEW } from '../../dist/data.js';
 
 /** The customers each region holds. */
 const REGION_ORGS = {
@@ -65,6 +66,15 @@ test('off, nothing is limited', async () => {
   assert.deepEqual(await source.present(VIEW), {});
 });
 
+test('off, only the View limits a component scope: a pick it leaves no row for is set aside', async () => {
+  const { source } = await setup({ view: { customer: { picked: ['Litware'] } }, data: { status: { picked: ['active'] } }, limit: false });
+  assert.deepEqual(sorted(await source.present('data')).status, ['trial']);
+  assert.deepEqual(await source.present(VIEW), {});
+  // Litware's one row is a trial: "active" leaves the filter, and the row shows.
+  assert.equal(source.debugState().total, 1);
+  assert.deepEqual(source.debugState().aside, { data: { status: ['active'] } });
+});
+
 test('a Customer pick limits Region; its own answer never limits Customer', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Adventure Works'] } } });
   const p = sorted(await source.present(VIEW));
@@ -72,23 +82,22 @@ test('a Customer pick limits Region; its own answer never limits Customer', asyn
   assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
 });
 
-test('both ways: Region limits Customer, and Customer limits Region', async () => {
+test('one way: Customer limits the Region after it; Region never limits the Customer before it', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Contoso'] }, region: { picked: ['LATAM'] } } });
   const p = sorted(await source.present(VIEW));
-  assert.deepEqual(p.customer, ['Contoso', 'Tailspin']);
+  assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
   const q = sorted((await setup({ view: { customer: { picked: ['Tailspin'] } } }).then(({ source: s }) => s.present(VIEW))));
   assert.deepEqual(q.region, ['AMER', 'LATAM']);
 });
 
-test('two answers that share no rows: the later one stands, the earlier is set aside', async () => {
+test('two answers that share no rows: the earlier stands, and the later is set aside', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } } });
-  // Region is the later answer: LATAM stands, so every LATAM row shows.
-  assert.equal(source.debugState().total, 2);
+  // Customer is before Region: Adventure Works stands, and LATAM — none of its rows — is set aside.
+  assert.equal(source.debugState().total, 3);
   const p = sorted(await source.present(VIEW));
-  assert.deepEqual(p.customer, ['Contoso', 'Tailspin']);
-  // Adventure Works applies nothing, so Region is not limited by it.
-  assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
+  assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
+  assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA']);
 });
 
 test('the View limits a component scope, never the other way round', async () => {
@@ -114,31 +123,55 @@ test('each bound bar is drawn what is left in its scope; turned off, it is told 
   assert.deepEqual(bar.drawn.at(-1), { scope: VIEW, present: {} });
 });
 
-test('a store that answers distinct values is asked, not read row by row', async () => {
-  const store = new ArrayStore(ROWS, { key: 'id' });
-  const asked = [];
-  store.distinct = async (fields, options) => {
-    asked.push(fields);
-    const { rows } = await store.load(options);
-    return Object.fromEntries(fields.map((f) => [f, rows.map((r) => r[f])]));
-  };
+test('the rows are read ONCE per store change; a store with no scan is loaded, not asked per field', async () => {
+  const inner = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
+  const whole = [];
+  // A store with no scan and no distinct: the walk loads it, once.
+  const store = Object.assign(new EventTarget(), {
+    key: 'id', reportsTotal: true,
+    load: (o = {}) => { if (!o.filter && o.take == null) whole.push(o); return inner.load(o); },
+    totalCount: (o) => inner.totalCount(o), byKey: (k) => inner.byKey(k),
+    insert: async (v) => { const r = await inner.insert(v); store.dispatchEvent(new CustomEvent('change', { detail: { type: 'insert' } })); return r; },
+    update: (k, v) => inner.update(k, v), remove: (k) => inner.remove(k),
+  });
   const source = new DataSource({ store, limitOptions: true });
   await source.declareFromRows(['customer', 'region']);
-  // declareFromRows asks distinct too: only present()'s asks count below.
+  const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);
+  bindSource(source, bar, { steerOnly: true, scope: VIEW });
+  bar.report();
+  await source.load();
+  for (let i = 0; i < 6; i++) await tick();
+  whole.length = 0;
+  assert.deepEqual(sorted(await source.present(VIEW)).region, ['AMER', 'LATAM']);
+  assert.deepEqual(sorted(await source.present(VIEW)).customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
+  assert.equal(whole.length, 0, 'the walk reads the rows it holds');
+  await store.insert({ id: 99, region: 'APAC', customer: 'Tailspin', status: 'active' });
+  for (let i = 0; i < 6; i++) await tick();
+  assert.deepEqual(sorted(await source.present(VIEW)).region, ['AMER', 'APAC', 'LATAM']);
+  assert.equal(whole.length, 1, 'one load after the change');
+});
+
+test('a remote store not held is asked step by step: its distinct values, per field', async () => {
+  const inner = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
+  const asked = [];
+  const distinct = inner.distinct.bind(inner);
+  inner.distinct = (fields, o) => { asked.push(fields); return distinct(fields, o); };
+  const source = new DataSource({ store: spoofRemote(inner, { delay: 0 }), limitOptions: true, holdRows: 0 });
+  await source.declareFromRows(['customer', 'region']);
   asked.length = 0;
   const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);
   bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();
+  source.commit?.();
   await source.load();
   assert.deepEqual(sorted(await source.present(VIEW)).region, ['AMER', 'LATAM']);
   assert.ok(asked.some((f) => f.includes('region')));
 });
 
-/* TODO 180 — Will: "Customer A is selected but made unviable by Region C
-   being activated … possible if Customer B makes Region C viable again." The
-   LATER answer wins: the earlier pick is set aside — kept, not applied.
-   TRAP T-a-later-answer-sets-an-earlier-pick-aside */
-test('a later answer sets aside an earlier pick it rules out; the rows leave it out', async () => {
+/* TODO 180 asked that a LATER answer set an earlier pick aside; Will's D4 A
+   (TODOs 347–349) put every limit in ONE order: the earlier pick stands, and
+   limits the later. TRAP T-a-ruled-out-value-is-greyed */
+test('a later answer never sets an earlier pick aside: the earlier limits it', async () => {
   // Adventure Works has no LATAM rows; Contoso has.
   const { source, bar } = await setup({ view: { customer: { picked: ['Adventure Works', 'Contoso'] } } });
   await tick(); await tick();
@@ -150,12 +183,12 @@ test('a later answer sets aside an earlier pick it rules out; the rows leave it 
   bar.report();
   await source.load();
   for (let i = 0; i < 6; i++) await tick();
-  // Contoso's LATAM row only: Adventure Works is set aside, not applied.
+  // Contoso makes LATAM viable, so it stands: Contoso's LATAM row.
   assert.equal(source.debugState().total, 1);
-  // The reader's picks are KEPT in the Query.
+  assert.deepEqual(source.debugState().aside, {});
   assert.deepEqual(source.query.applied.scopes.view.readings.customer.picked, ['Adventure Works', 'Contoso']);
-  // And what is left says so: Adventure Works is no longer present.
-  assert.ok(!(await source.present(VIEW)).customer.includes('Adventure Works'));
+  // Region is after Customer: it limits nothing before it.
+  assert.ok((await source.present(VIEW)).customer.includes('Adventure Works'));
 
   // Region let go: Adventure Works is back in force.
   bar.held = { customer: { picked: ['Adventure Works', 'Contoso'] } };

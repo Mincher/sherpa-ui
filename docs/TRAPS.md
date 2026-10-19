@@ -617,6 +617,9 @@ on one, and a page change clamps and loads nothing. A change to the fixture, the
 rows, an act or a fake's spec moves the baseline: record it on purpose. Will,
 2026-10-15: it runs in the hook on data-layer commits.
 
+The walk's one pass over a scope's rows (`passOver`, TODOs 347–349) counts as a
+scan; reading the rows for it (`scan()`, a held set) does not.
+
 - Site: `scripts/check-bench.mjs`
 - Site: `test/unit/bench.test.mjs`
 
@@ -1776,18 +1779,20 @@ itself. Figma has no chart glyph of its own yet, so a chart's section wears
 **A filter SET is fields a scope draws as one group** — Will, TODO 99. It is
 in the page definition, `"sets": [{ "id", "label", "mode", "fields" }]` on a
 scope, so the markup and the definition say one thing. `parallel`, the
-default, only groups. `serial` CHAINS: each field offers only the values the
-rows hold under the answers of the fields ABOVE it in the set — never a
-filter outside the set, and never one below. Every filter is parallel without
-a set, as before.
+default, only groups. `serial` CHAINS: each field below the top offers only
+the values the rows hold at its place — under its scopes and every filter
+BEFORE it in the one order, once anything before it narrows (Will, Q2 A, TODO
+349) — never one after it. A component scope's chain starts inside the View.
+The TOP is never cut: Limit greys it, or the View for a component scope. Every
+filter is parallel without a set, as before.
 
 `source.offered(scope)` says what each chained field offers, and a bound
 control is told it (`drawOffered`). A value the chain does not offer is
 REMOVED — serial exists to offer less, and the way back is the field above —
-but a PICK it rules out stays, set aside as 180 sets one aside: kept in the
-Query, out of the rows, drawn inactive. A field is never ruled out by one
-BELOW it in its chain, so with Limit on the chain beats "the later answer
-wins". This runs whatever Limit says.
+but a PICK it rules out stays, set aside (`T-a-ruled-out-value-is-greyed`):
+kept in the Query, out of the rows, drawn inactive. This runs whatever Limit
+says. The source gathers a set's fields in `describe()`, in the one order
+(`T-one-walk-counts-and-limits-in-order`).
 
 **A set is only an ORDER on screen** — Will, TODO 240 and 241: *"I don't
 like the 'Account' and link icon before Customer and Region filters in the
@@ -3465,6 +3470,7 @@ range, not an empty result. The two ends are swapped into order before the
 comparison rather than rejected.
 
 - Site: `src/core/data/store.ts`
+- Site: `src/core/data/walk.ts`
 
 ### T-pipeline-order-and-no-grouping
 
@@ -3647,7 +3653,8 @@ public `load({ force: true })`. A read in flight is kept, and
 saves cost two whole reads, not twenty. An ask that only repeats a question — a
 summary bound late, a page re-clamp — uses `#reask()` and keeps the set. An ask
 overtaken while it waited asks no one. Counts, Limit and the set-aside wait for
-the hold as a load does. What the schema refused on the read is said on every
+the hold as a load does, and walk the held set in place
+(`T-one-walk-counts-and-limits-in-order`). What the schema refused on the read is said on every
 held load. A page definition sets `holdRows` (`0` holds none).
 
 The bench holds the rule: each act on its remote page after it opens must cost
@@ -7887,22 +7894,33 @@ went on filtering. Will, TODO 167.
 
 ### T-a-ruled-out-value-is-greyed
 
-**A value the other filters rule out stays in its list, greyed out, and
-cannot be picked** — Will, TODO 174, choosing 110's B. A value already picked
-stays ticked, greyed, and free to untick — set aside and not applied
-(`T-a-later-answer-sets-an-earlier-pick-aside`). Only while the source's
-`limitOptions` is on (Settings › Application, off by default); off, nothing
-is limited.
+**A value the filters BEFORE it rule out stays in its list, greyed out, and
+cannot be picked** — Will, TODO 174 (110's B), made ONE WAY by TODO 349 (D4 A):
+a field's scopes and the filters before it in the one order limit it, never
+the ones after. A value already picked stays ticked, greyed and free to untick
+— SET ASIDE: kept in the reading (a saved View, a draft and the URL keep it),
+left out of the compiled filter (`CompileFacts.drop`). Let the earlier filter
+go and it is back. (Until 349 a LATER answer set an earlier pick aside —
+TODO 180, newest first; the one order replaced it.)
 
-**The SOURCE says what is left** — `source.present(scope)`: each list field's
-values the rows still hold under the OTHER answers in its scope, and a
-component scope's within the View's (the trickle down). A field's own answer
-never limits it, so Customer limits Region and Region limits Customer. It
-compiles the applied Query without that field's reading, so suspended
-answers, presets and "the View wins" behave as they do for rows. One pass per
-distinct limiting filter, once per applied Query; a store with `distinct()`
-is asked instead of read row by row. `ArrayStore` and the live stores have one,
-which reads the rows in place and copies none out.
+**What rules a field** (`T-one-walk-counts-and-limits-in-order`): with
+`limitOptions` on (Settings › Application, off by default), the rows at its
+place. Off, a component scope's field is ruled by the View's subset (347) and
+the View's by nothing — the View always limits a component scope. A chart part
+is greyed by its host the same way, and its pick is never set aside (Q1 A).
+
+**The SOURCE says what is left** — `source.present(scope)`, from the walk: each
+list field's values as value keys; a field no chip holds is tallied where it
+would stand. Compared as a filter compares, case aside (`holdsKey`, `ruleOut`):
+a pick that matches rows is never ruled out. Only Simple list picks are set
+aside; a range, a date or Advanced rows stay whole. The set-aside is taken
+BEFORE the load where the walk asks no store (a held set, a store with `scan`,
+rows kept since the last change), so the first load is right; a store asked
+step by step is walked after, and loads again only if that moved the rows.
+
+A chip whose every pick is set aside is greyed too, and says so. Off and ruled
+out, a value chip is refused; on, it may be let go. A chip with a menu always
+opens it.
 
 **Each control is TOLD** — `drawPresent(present, scope)` on a bound bar, panel
 or grid — and passes it to `menu.present`, which greys and disables the rows
@@ -7947,6 +7965,8 @@ go.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/stores.ts`
+- Site: `src/core/data/query.ts`
+- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
@@ -7967,39 +7987,6 @@ in `filter-state.ts`, run against a one-field row with the store's own
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-
-### T-a-later-answer-sets-an-earlier-pick-aside
-
-**A later answer wins** — Will, TODO 180: *"Customer A is selected but made
-unviable by Region C being activated … possible if Customer B makes Region C
-viable again."* Customer A and B are picked; B makes Region C viable; the
-reader picks C; A has no C rows. A is SET ASIDE: it stays in the reading (a
-saved View, a draft and the URL keep it), it leaves the compiled filter, and
-it is drawn greyed — still ticked, free to untick. B stays in force. Let C go
-and A is back.
-
-**Newest first, so it settles.** The source keeps the order fields CHANGED in
-(`#recency`). Newest first, each list field keeps the picks the rows still
-hold under the answers after it; the rest are set aside, and the next older
-field is limited by what was kept. The View first, then each component scope
-under the View's kept answers. It depends only on the readings, that order and
-the rows — never on what was set aside before — so a second pass gives the
-same answer and nothing loops: when it MOVES, the source compiles again
-(`CompileFacts.drop`) and the load that follows draws the rest.
-
-Only Simple list answers can be set aside; a range, a date or Advanced rows
-stay whole and limit the older fields as they are. Only while `limitOptions`
-is on.
-
-A chip whose every pick is set aside is greyed too, and says "Limited by your other
-filters: not applied." Off and ruled out, a value chip is refused;
-on, it may be let go. A chip with a menu always opens it.
-
-- Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/query.ts`
-- Site: `src/core/ui/shared-constants.ts`
-- Site: `test/unit/present-limits-each-field.test.mjs`
-- Site: `src/core/data/filter-state.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -16692,6 +16679,11 @@ version of this fix made `page` a component scope nobody drew: the View
 filtered nothing. `compile()` now takes `components` (the scopes a bound
 component answers); only those stay apart. A bind or unbind that changes the
 set recompiles, when the scope answers anything.
+
+**Counts, menus and chains trickle down too** (TODOs 347–349): a component
+chip counts within the View's subset, its menu is greyed by it — with Limit off
+as well — and its serial chain starts inside it
+(`T-one-walk-counts-and-limits-in-order`).
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`

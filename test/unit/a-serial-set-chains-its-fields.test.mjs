@@ -1,7 +1,8 @@
 /**
- * A SERIAL filter set chains its fields — TODO 99. Each field offers only the
- * values the rows hold under the answers of the fields ABOVE it, and a pick
- * the chain rules out is set aside. Whatever `limitOptions` says.
+ * A SERIAL filter set chains its fields — TODO 99, then 349 (Q2 A). Each field
+ * below the top offers only the values the rows hold at its place — under every
+ * filter before it, once one narrows — and a pick the chain rules out is set
+ * aside. The top is never cut. Whatever `limitOptions` says.
  *
  *   node --test test/unit/a-serial-set-chains-its-fields.test.mjs
  *
@@ -67,8 +68,31 @@ test('a pick the chain rules out is SET ASIDE: kept in the Query, out of the row
 
 test('a field is never ruled out by one BELOW it — even with Limit on, and Region the later answer', async () => {
   const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } }, { limit: true });
-  // In parallel, LATAM would win and Adventure Works go (TODO 180). The chain keeps Customer.
+  // Customer is before Region: it stands, and LATAM goes.
   assert.equal(source.debugState().total, 3);
+});
+
+test('a filter before the set limits the chain, though the top is unanswered', async () => {
+  const { source } = await setup({});
+  source.contribute('part', ['region', 'in', ['EMEA', 'AMER']]);
+  await source.load();
+  assert.deepEqual(sorted(await source.offered(VIEW)), { region: ['AMER', 'EMEA'] });
+});
+
+test('a component scope\'s chain starts inside the View', async () => {
+  const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  await source.declareFromRows(['customer', 'region']);
+  source.offer('data', ['customer', 'region']);
+  source.declareSets('data', [{ id: 'acct', mode: 'serial', fields: ['customer', 'region'] }]);
+  bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
+  await source.setQuery({ v: 1, scopes: {
+    view: { holds: [], readings: {} },
+    data: { holds: ['customer', 'region'], readings: {} },
+  } });
+  // What the View leaves — here a part — narrows the chain, though its top is unanswered.
+  source.contribute('view-part', ['customer', 'eq', 'Tailspin']);
+  await source.load();
+  assert.deepEqual(sorted(await source.offered('data')), { region: ['AMER', 'LATAM'] });
 });
 
 test('a PARALLEL set only groups: it offers no less, and sets nothing aside', async () => {

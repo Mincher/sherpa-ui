@@ -10,6 +10,7 @@
  * - WalkScope — One scope's walk: where it starts, its steps and its taps.
  * - WalkPlan — Every scope's walk, the View first, and the moment its dates are read at.
  * - Walk — What a walk gives, by scope.
+ * - holdsKey — Does a tally hold a value key, compared as a filter compares — case aside?
  * - emptyWalk — A walk that found nothing.
  * - Scan — One scope's scan: its tests, and what it gathers at each step.
  * - passOver — One scan of rows through a scope's steps, from one step on.
@@ -78,8 +79,16 @@ export interface Walk {
   aside: Record<string, Record<string, string[]>>;
   /** The tapped fields with no value left. */
   spent: Record<string, string[]>;
-  /** The rows each scope ends with. */
+  /** The rows each scope ends with — a walk over rows only: step by step, the load's total is that number. */
   ends: Record<string, number>;
+}
+
+/** Does a tally hold a value key, compared as a filter compares — case aside?
+ *  A pick that matches rows is never ruled out. TRAP T-loose-equal-is-case-insensitive */
+export function holdsKey(keys: Iterable<string>, key: string): boolean {
+  const low = key.toLowerCase();
+  for (const k of keys) if (k === key || k.toLowerCase() === low) return true;
+  return false;
 }
 
 /** A walk that found nothing. */
@@ -225,7 +234,7 @@ export function walkInOrder(rows: readonly Row[], plan: WalkPlan): Walk {
         if (!inForce(j) || !step.picks?.length || !step.less || !step.field) continue;
         const ruled = step.ruler === 'here' ? scan.tally[j] : step.ruler === 'start' ? scan.start.get(step.field) ?? new Set() : null;
         const offered = step.offers && narrowedAt(j) ? scan.tally[j] : null;
-        const ruledOut = step.picks.filter((k) => (ruled && !ruled.has(k)) || (offered && !offered.has(k)));
+        const ruledOut = step.picks.filter((k) => (ruled && !holdsKey(ruled, k)) || (offered && !holdsKey(offered, k)));
         if (!ruledOut.length) continue;
         aside[step.field] = ruledOut;
         const less = step.less(ruledOut);

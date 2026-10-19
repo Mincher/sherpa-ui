@@ -238,21 +238,25 @@ export function rowAnswered(row: FieldCondition): boolean {
 /** Why the source rules a value out: its chain does not offer it, or the other answers leave none of it. */
 export type RuledOut = 'unoffered' | 'unmatched' | null;
 
-/** A field's limits as one test: what its chain OFFERS first, then what the other
- *  answers LEAVE. A null list limits nothing. TRAP T-a-ruled-out-value-is-greyed */
+/** A field's limits as one test: what its chain OFFERS first, then what the
+ *  filters before it LEAVE — compared as a filter compares, case aside, so it
+ *  agrees with the source's walk. A null list limits nothing. TRAP T-a-ruled-out-value-is-greyed */
 export function ruleOut(present: Iterable<string> | null | undefined, offered?: Iterable<string> | null): (value: string) => RuledOut {
-  const left = asSet(present);
-  const offers = asSet(offered);
-  return (value) => (offers && !offers.has(value) ? 'unoffered' : left && !left.has(value) ? 'unmatched' : null);
+  const left = looseSet(present);
+  const offers = looseSet(offered);
+  return (value) => (offers && !offers(value) ? 'unoffered' : left && !left(value) ? 'unmatched' : null);
 }
 
-/** A list as a Set: one it is given is used as it is, not copied. */
-function asSet(list: Iterable<string> | null | undefined): ReadonlySet<string> | null {
-  return list instanceof Set ? list : list ? new Set(list) : null;
+/** A list of value keys as a test, case aside. */
+function looseSet(list: Iterable<string> | null | undefined): ((value: string) => boolean) | null {
+  if (!list) return null;
+  const keys = new Set<string>();
+  for (const key of list) keys.add(key.toLowerCase());
+  return (value) => keys.has(value.toLowerCase());
 }
 
 /** Every pick a chip holds is ruled out: it is set aside, kept and not applied.
- *  TRAP T-a-later-answer-sets-an-earlier-pick-aside */
+ *  TRAP T-a-ruled-out-value-is-greyed */
 export function allSetAside(picks: readonly string[], out: (value: string) => RuledOut): boolean {
   return picks.length > 0 && picks.every((v) => out(v) !== null);
 }

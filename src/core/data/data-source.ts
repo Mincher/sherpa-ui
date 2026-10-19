@@ -110,12 +110,11 @@ import {
 import { readingClause, stateClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
-import { answerOrder, belowIn, clauseOf, limitFor, planWalk, presentUnder, serialChains, walkStepwise } from './source-counts.js';
+import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, type Walk, type WalkPlan } from './walk.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
-  answerOf, compile, eachScope, emptyScope, filterKey, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
-  sameReading, VIEW, withoutDropped,
+  answerOf, compile, eachScope, emptyScope, filterKey, readingAnswered, sameReading, VIEW,
   type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -128,7 +127,7 @@ import { report } from './report.js';
 import { cacheOf, type StoreCache } from './store-cache.js';
 import { planRead, type Plan } from './read-plan.js';
 import { failureOf, unreached, type Failure } from './failure.js';
-import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
+import type { FieldReading, FilterState } from './filter-state.js';
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
 } from './store.js';
@@ -181,6 +180,8 @@ export class DataSource extends EventTarget {
   #loaded = false;
   /** The key of the load currently in flight. */
   #inFlightKey: string | null = null;
+  /** The key the load in flight was ASKED with, before the walk set picks aside. */
+  #inFlightAsked: string | null = null;
   /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
   #parts = new Map<string, Filter>();
   /**
@@ -1190,8 +1191,6 @@ export class DataSource extends EventTarget {
   suspendScope(scope: string, suspended = true): void {
     if (suspended === !!this.#draft.scopes[scope]?.suspended) return;
     const entry = scopeEntry(this.#draft, scope);
-    // Which answer came latest stays as it was, so Limit sets aside the same picks.
-    const stamps = [...this.#recency].filter(([id]) => id.startsWith(`${scope}:`));
     let fields: string[];
     if (suspended) {
       entry.suspended = { fields: [], presets: [] };
@@ -1211,7 +1210,6 @@ export class DataSource extends EventTarget {
     }
     // The Switch is its scope's Apply, remote too.
     this.commit({ scope });
-    for (const [id, n] of stamps) if (this.#recency.has(id)) this.#recency.set(id, n);
     for (const field of fields) {
       this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
       this.#draw(field);
@@ -1333,6 +1331,8 @@ export class DataSource extends EventTarget {
     if (next.length) this.#offers.set(name, next);
     else this.#offers.delete(name);
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
+    // What its menus may add moved: the walk tallies it.
+    if (this.#loaded) this.#walkSoon();
   }
 
   /**
@@ -1414,6 +1414,8 @@ export class DataSource extends EventTarget {
       // How it answers, and whether its store can be reached. TRAP T-a-read-is-planned
       plan: this.#plan,
       reach: this.reach,
+      // The picks the filters before them rule out, by scope. TRAP T-one-walk-counts-and-limits-in-order
+      aside: Object.fromEntries(this.#setAside),
       ...(this.#cache ? { held: { rows: this.#cache.set?.size ?? null, gen: this.#cache.gen, due: this.#cache.due, failure: this.#cache.failure } } : {}),
     };
   }
@@ -1425,13 +1427,24 @@ export class DataSource extends EventTarget {
     const off = keepOff(this.#draft);
     if (this.#applied !== this.#draft) keepOff(this.#applied);
     if (off.length) this.#binding.drawScopesSoon();
-    this.#noteRecency();
+    /* A DRAFT edit on a remote source changes nothing applied: no load, and
+       the page stays where it is. It only changes what is pending. */
+    const { still, same } = this.#compileNow();
+    this.#syncPending();
+    if (!same) this.#requery(this.applyOn === 'input');
+    /* The rows did not move, so no load will count again — yet an answer that
+       is OFF, or one chart's own, changed, and its badge wears a number.
+       TRAP T-a-chip-counts-within-the-filters-before-it */
+    if (still && this.#loaded) this.#walkSoon();
+  }
+
+  /** Compile the applied Query under every part. Says whether the SHARED filter
+   *  stood still, and — remote — whether nothing a load reads moved. */
+  #compileNow(): { still: boolean; same: boolean } {
     const { filter, view, scoped, only } = compile(this.#applied, this.#compileFacts());
     const parts = [...this.#parts.values()];
     const next = andFilter([...parts, ...(filter ? [filter] : [])]);
     const viewed = andFilter([...parts, ...(view ? [view] : [])]);
-    /* A DRAFT edit on a remote source changes nothing applied: no load, and
-       the page stays where it is. It only changes what is pending. */
     // The SHARED filter stood still: no load follows, whatever one component's own did.
     const still = JSON.stringify(next) === JSON.stringify(this.#filter);
     const same = this.#remote && still && JSON.stringify(only) === JSON.stringify(this.#only);
@@ -1439,17 +1452,11 @@ export class DataSource extends EventTarget {
     this.#filter = next;
     this.#viewFilter = viewed;
     this.#scoped = scoped;
-    this.#syncPending();
-    if (!same) this.#requery(this.applyOn === 'input');
-    /* The rows did not move, so no load will count again — yet an answer that
-       is OFF, or one chart's own, changed, and its badge wears a number.
-       TRAP T-a-chip-counts-within-the-filters-before-it */
-    if (still && this.#loaded) void this.#drawResults();
-    if (still && this.#loaded) this.#presentSoon();
+    return { still, same };
   }
 
   /** What compiling needs: each field's facts, the saved filters, the
-   *  component scopes, and the picks a later answer set aside. */
+   *  component scopes, and the picks the filters before them rule out. */
   #compileFacts(): CompileFacts {
     return {
       field: (f) => this.#catalogue.facts(f),
@@ -1668,7 +1675,7 @@ export class DataSource extends EventTarget {
       /* ASKED: the caller waits for THAT answer. Handed the result of the load
          BEFORE it, `await source.load()` came back with no rows while the
          first load was still out. TRAP T-an-asked-load-is-awaited */
-      if (key === this.#inFlightKey && this.#asking) return this.#asking;
+      if ((key === this.#inFlightKey || key === this.#inFlightAsked) && this.#asking) return this.#asking;
     }
     return this.#reask(key);
   }
@@ -1679,7 +1686,6 @@ export class DataSource extends EventTarget {
   #onStoreChange = (): void => {
     this.#age++;
     this.#rowsAge++;
-    this.#presentFor = '';
     void (this.#cache ? this.#reask() : this.load({ force: true }));
   };
 
@@ -1811,15 +1817,28 @@ export class DataSource extends EventTarget {
   #asking: Promise<LoadResult> | null = null;
 
   /** Ask the store, and publish the answer if it is still the latest asked. */
-  async #ask(key: string): Promise<LoadResult> {
+  async #ask(asked: string): Promise<LoadResult> {
+    let key = asked;
     const ticket = this.#inFlight.next();
     this.#inFlightKey = key;
+    this.#inFlightAsked = key;
     this.dispatchEvent(new CustomEvent('loading', { detail: { loading: true } }));
 
     try {
       await this.#hold();
       // Overtaken while it waited: the newer ask answers, and this one asks no one.
       if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
+      /* What the filters before each pick rule out is set aside BEFORE the load,
+         where the walk asks no store: ONE load, right first time.
+         TRAP T-one-walk-counts-and-limits-in-order */
+      if (this.#walkIsCheap()) {
+        const walk = await this.#walked();
+        if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
+        if (this.#takeAside(walk)) this.#compileNow();
+        // Whoever set them aside — this ask, or a walk beside it — the load asks what stands now.
+        key = this.#stateKey();
+        this.#inFlightKey = key;
+      }
       const result = await this.#reads.load(this.#loadOptions());
       // Not the latest → DISCARDED, and the key recorded only by the winner.
       if (!this.#inFlight.is(ticket)) return this.#result;
@@ -1872,8 +1891,7 @@ export class DataSource extends EventTarget {
           detail: { ...result, state: this.state, ...(emptiness ? { emptiness } : {}), ...(stale ? { stale: true as const } : {}) },
         }),
       );
-      void this.#drawResults();
-      this.#presentSoon();
+      void this.#rewalk();
       return result;
     } catch (error) {
       // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
@@ -1886,6 +1904,7 @@ export class DataSource extends EventTarget {
     } finally {
       if (this.#inFlight.end(ticket)) {
         this.#inFlightKey = null;
+        this.#inFlightAsked = null;
         this.#asking = null;
         this.dispatchEvent(new CustomEvent('loading', { detail: { loading: false } }));
       }
@@ -1925,7 +1944,7 @@ export class DataSource extends EventTarget {
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
     return JSON.stringify([this.#age, this.#limitOptions, this.#applied, [...this.#parts],
       this.#viewFilter === null ? this.#filter ?? null : null, components, [...this.#defaults.keys()].sort(), parts,
-      [...this.#offers], [...this.#setAside]]);
+      [...this.#offers]]);
   }
 
   /** The component scope a chart part's element is bound into, if any. */
@@ -1934,15 +1953,13 @@ export class DataSource extends EventTarget {
     return typeof scope === 'string' && scope !== VIEW ? scope : undefined;
   }
 
-  /** The walk's plan, from the applied Query. Until the walk limits too (C6), it
-   *  only counts: the picks the newest-first pass set aside are handed in, and it
-   *  tallies nothing. */
+  /** The walk's plan, from the applied Query. */
   #planWalk(): WalkPlan {
     const narrowing = new Map([...this.#narrowing].map(([s, p]) => {
       const host = this.#hostOf(p.only);
       return [s, { field: p.field, ...(host ? { host } : {}) }] as const;
     }));
-    const plan = planWalk(this.#applied, {
+    return planWalk(this.#applied, {
       field: (f) => this.#catalogue.facts(f),
       isList: (f) => this.#catalogue.isList(f),
       plainPicks: (f, reading) => {
@@ -1960,14 +1977,6 @@ export class DataSource extends EventTarget {
       limit: this.#limitOptions,
       now: new Date(),
     });
-    return { ...plan, scopes: plan.scopes.map((sc) => ({ ...sc, setsAside: false, taps: [], steps: sc.steps.map((step) => {
-      const { ruler: _r, offers: _o, ...counting } = step;
-      const given = step.field ? this.#setAside.get(sc.scope)?.[step.field] : undefined;
-      if (!given?.length || !step.less || !step.on) return counting;
-      const { clause: _was, ...rest } = counting;
-      const clause = step.less(given);
-      return { ...rest, ...(clause ? { clause } : {}), on: !!clause, counts: !!clause };
-    }) })) };
   }
 
   /** The rows a walk reads, as the plan says: the held set, in place; a local
@@ -2006,7 +2015,10 @@ export class DataSource extends EventTarget {
         if (this.#walkKey() === key) this.#walk = { key, walk: out };
         return out;
       } catch {
-        return this.#walk?.walk ?? emptyWalk();
+        // The last walk stays drawn, and nothing is set aside from it. It never stops a load.
+        const kept = { ...(this.#walk?.walk ?? emptyWalk()) };
+        this.#unwalked.add(kept);
+        return kept;
       } finally {
         if (this.#walking === entry) this.#walking = null;
       }
@@ -2016,6 +2028,8 @@ export class DataSource extends EventTarget {
   }
   /** The last walk, and what it was for. */
   #walk: { key: string; walk: Walk } | null = null;
+  /** A walk that failed, standing in for the last one. */
+  #unwalked = new WeakSet<Walk>();
   /** The walk in flight, and what it is for. */
   #walking: { key: string; walk: Promise<Walk> } | null = null;
   /** Moves each time the rows may have changed. */
@@ -2023,32 +2037,85 @@ export class DataSource extends EventTarget {
   /** A store with no scan, loaded once per change. */
   #rowsCache: { age: number; rows: readonly Row[] } | null = null;
 
-  /** Each bound bar — and the panel, scope by scope — is drawn its chips'
-   *  results, off the load that just landed; a later load's count wins.
-   *  TRAP T-a-chip-counts-within-the-filters-before-it */
-  async #drawResults(): Promise<void> {
-    // A control over several scopes — the panel — draws each chart's own too.
-    const drawn = [...this.#binding.entries()].flatMap(([el, b]) => ((el.drawResults || el.drawValueResults) && b.scope
-      ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
-    if (!drawn.length) return;
-    // Drawn already, for this walk and these controls: a sort, a page or a search moves no count.
-    const key = JSON.stringify([this.#walkKey(), drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes])]);
-    if (key === this.#countedFor) return;
-    this.#countedFor = key;
-    const ticket = this.#counting.next();
+  /** Can the walk run without asking the store — a held set, a store that
+   *  scans, or rows kept since the last change? Then it runs before the load. */
+  #walkIsCheap(): boolean {
+    const reads = this.#reads;
+    if (this.#remote && reads === this.store) return false;
+    return !!reads.scan || this.#rowsCache?.age === this.#rowsAge;
+  }
+
+  /** Take the walk's set-aside picks. Says whether they moved. */
+  #takeAside(walk: Walk): boolean {
+    if (this.#unwalked.has(walk)) return false;
+    const next = new Map(Object.entries(walk.aside).filter(([, fields]) => Object.keys(fields).length));
+    const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
+    if (key(next) === key(this.#setAside)) return false;
+    this.#setAside = next;
+    return true;
+  }
+
+  /** Walk, and set aside what it rules out — compiling again, and asking again
+   *  only when that moved what a load reads — then draw what it gives. */
+  async #rewalk(): Promise<void> {
     const walk = await this.#walked();
-    if (!this.#counting.is(ticket)) return;
-    for (const { el, scopes } of drawn) {
-      for (const scope of scopes) el.drawResults?.({ ...walk.results[scope] }, scope);
-    }
-    // A control that draws a chip per VALUE is told each picked value's own too.
-    for (const { el, scopes } of drawn) {
-      if (!el.drawValueResults) continue;
-      for (const scope of scopes) {
-        el.drawValueResults(Object.fromEntries(Object.entries(walk.values[scope] ?? {}).map(([f, v]) => [f, { ...v }])), scope);
+    if (this.#takeAside(walk)) {
+      const { still, same } = this.#compileNow();
+      this.#syncPending();
+      if (!same && !(still && !this.#remote)) {
+        this.#requery(this.applyOn === 'input');
+        return;
       }
     }
+    void this.#drawWalk();
   }
+
+  /** One walk this tick, however many asked. */
+  #walkSoon = coalesce((): void => {
+    void this.#rewalk();
+  });
+
+  /** The picks set aside, by scope then field, as value keys. */
+  #setAside = new Map<string, Record<string, string[]>>();
+
+  /** Each bound control is drawn what the walk gives its scopes — each chip's
+   *  results, each value's, what each list field's ruler leaves, what each
+   *  serial field offers — once per walk and set of controls; a later walk
+   *  wins. A chart part's goes out as `present`, for its legend (179).
+   *  TRAP T-one-walk-counts-and-limits-in-order */
+  async #drawWalk(): Promise<void> {
+    // A control over several scopes — the panel — draws each chart's own too.
+    const drawn = [...this.#binding.entries()].flatMap(([el, b]) => (
+      (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && b.scope
+        ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
+    const parts = [...this.#narrowing.keys()];
+    if (!drawn.length && !parts.length) return;
+    // Drawn already, for this walk and these controls: a sort, a page or a search moves nothing.
+    const key = JSON.stringify([this.#walkKey(), drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes]), parts]);
+    if (key === this.#drawnFor) return;
+    this.#drawnFor = key;
+    const ticket = this.#drawing.next();
+    const walk = await this.#walked();
+    if (!this.#drawing.is(ticket)) return;
+    const lists = (of: Record<string, string[]> | undefined): Record<string, string[]> =>
+      Object.fromEntries(Object.entries(of ?? {}).map(([f, keys]) => [f, [...keys]]));
+    for (const { el, scopes } of drawn) {
+      for (const scope of scopes) {
+        el.drawResults?.({ ...walk.results[scope] }, scope);
+        // A control that draws a chip per VALUE is told each picked value's own too.
+        el.drawValueResults?.(Object.fromEntries(Object.entries(walk.values[scope] ?? {}).map(([f, v]) => [f, { ...v }])), scope);
+        el.drawPresent?.(lists(walk.present[scope]), scope);
+        el.drawOffered?.(lists(walk.offered[scope]), scope);
+      }
+    }
+    const byScope = Object.fromEntries([...new Set([...drawn.flatMap((d) => d.scopes), ...parts])]
+      .map((scope) => [scope, lists(walk.present[scope])]));
+    this.dispatchEvent(new CustomEvent('present', { detail: { byScope } }));
+  }
+  /** The latest draw; an older one lands on nothing. */
+  #drawing = new Latest();
+  /** What the controls were last drawn for: the walk and the controls. */
+  #drawnFor = '';
 
   /* ── What the other answers LEAVE — Will, TODO 174 (110 B) ─────────────
    * TRAP T-a-ruled-out-value-is-greyed */
@@ -2060,230 +2127,32 @@ export class DataSource extends EventTarget {
   set limitOptions(on: boolean) {
     if (on === this.#limitOptions) return;
     this.#limitOptions = on;
-    this.#presentFor = '';
-    this.#presentSoon();
+    this.#walkSoon();
   }
   /** The setting: does each list field offer only what the others leave? */
   #limitOptions = false;
 
   /**
-   * Each list field's values the rows still HOLD under the OTHER answers in its
-   * scope — a component scope's within the View's — as value keys. A field's
-   * own answer never limits it. Nothing while `limitOptions` is off.
+   * Each list field's values its RULER leaves in a scope, as value keys: with
+   * Limit, the rows at its place — its scopes and the filters BEFORE it; without,
+   * a component scope's the View's subset (347), and the View's nothing. A field
+   * no chip holds is tallied where it would stand (349).
+   * TRAP T-a-ruled-out-value-is-greyed
    */
   async present(scope: string): Promise<Record<string, string[]>> {
-    if (!this.#limitOptions) return {};
-    await this.#hold();
-    const q = this.#applied.scopes[scope];
-    const above = heldAbove(this.#applied, scope);
-    // A chart's own scope answers its legend's one field.
-    const part = this.#narrowing.get(scope)?.field;
-    const fields = [...new Set([...(q?.holds ?? []), ...(scope === VIEW ? [] : this.fields(scope)), ...(part ? [part] : [])])]
-      .filter((f) => !above.has(f) && this.#catalogue.isList(f));
-    // Fields limited by the same filter share one pass over the rows.
-    const passes = new Map<string, { filter: Filter | undefined; fields: string[] }>();
-    const facts = this.#compileFacts();
-    for (const f of fields) {
-      const filter = limitFor(this.#applied, facts, scope, f);
-      const key = JSON.stringify(filter ?? null);
-      if (!passes.has(key)) passes.set(key, { filter, fields: [] });
-      passes.get(key)!.fields.push(f);
-    }
-    const out: Record<string, string[]> = {};
-    for (const { filter, fields: some } of passes.values()) Object.assign(out, await presentUnder(this.#reads, some, filter));
-    return out;
-  }
-
-  /**
-   * A LATER answer wins (Will, TODO 180): newest first, each list field keeps
-   * the picks the rows still hold under the answers after it, and the rest are
-   * SET ASIDE — kept in the reading, left out of the filter, drawn inactive. The
-   * View first; a component scope's under the View's. Off, nothing is set aside
-   * but what a serial set's chain rules out — and a field is never ruled out by
-   * one BELOW it in its chain.
-   * TRAP T-a-later-answer-sets-an-earlier-pick-aside · TRAP T-a-filter-set-groups-or-chains
-   */
-  async #setAsideNow(): Promise<Map<string, Record<string, string[]>>> {
-    const out = await this.#chainAside();
-    if (!this.#limitOptions) return out;
-    const facts = (f: string): Omit<FieldFacts, 'field'> => this.#catalogue.facts(f);
-    const viewHolds = heldInView(this.#applied);
-    const below = belowIn(serialChains(this.#applied, this.#sets));
-    type Part = { field?: string; clause: Filter };
-    const run = async (scope: string, base: readonly Part[]): Promise<Part[]> => {
-      const q = this.#applied.scopes[scope];
-      const parts = [...base];
-      if (!q || narrowsOne(q)) return parts;
-      for (const [id, on] of Object.entries(q.presets ?? {})) {
-        if (!on) continue;
-        for (const clause of presetClauses(this.#presets.get(id) ?? {}, facts)) parts.push({ clause });
-      }
-      const chained = out.get(scope) ?? {};
-      const newest = Object.keys(q.readings)
-        .sort((a, b) => (this.#recency.get(`${scope}:${b}`) ?? -1) - (this.#recency.get(`${scope}:${a}`) ?? -1));
-      for (const f of newest) {
-        const reading = q.readings[f]!;
-        if (reading.suspended || (scope !== VIEW && viewHolds.has(f))) continue;
-        const state = this.#catalogue.stateFor(f, reading);
-        const picks = reading.picked ?? [];
-        if (!this.#catalogue.isList(f) || state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP || !picks.length) {
-          const clause = readingClause({ field: f, ...facts(f) }, reading);
-          if (clause) parts.push({ field: f, clause });
-          continue;
-        }
-        const under = below.get(`${scope}:${f}`);
-        const ruling = parts.filter((p) => !p.field || !under?.has(p.field)).map((p) => p.clause);
-        const held = new Set((await presentUnder(this.#reads, [f], andFilter(ruling)))[f]);
-        const aside = [...new Set([...(chained[f] ?? []), ...picks.map(valueKey).filter((k) => !held.has(k))])];
-        if (aside.length) {
-          if (!out.has(scope)) out.set(scope, {});
-          out.get(scope)![f] = aside;
-        }
-        const clause = readingClause({ field: f, ...facts(f) }, withoutDropped(reading, aside));
-        if (clause) parts.push({ field: f, clause });
-      }
-      return parts;
-    };
-    const viewed = await run(VIEW, [...this.#parts.values()].map((clause) => ({ clause })));
-    for (const scope of Object.keys(this.#applied.scopes)) if (scope !== VIEW) await run(scope, viewed);
-    return out;
-  }
-
-  /** Down each serial chain: a list field keeps the picks the rows hold under
-   *  the answers ABOVE it, and the rest are set aside. TRAP T-a-filter-set-groups-or-chains */
-  async #chainAside(): Promise<Map<string, Record<string, string[]>>> {
-    const out = new Map<string, Record<string, string[]>>();
-    for (const [scope, chain] of serialChains(this.#applied, this.#sets)) {
-      const above: Filter[] = [];
-      for (const f of chain) {
-        const picks = this.#applied.scopes[scope]?.readings[f]?.picked ?? [];
-        let aside: string[] = [];
-        if (above.length && picks.length && this.#catalogue.isList(f)) {
-          const held = new Set((await presentUnder(this.#reads, [f], andFilter(above)))[f]);
-          aside = picks.map(valueKey).filter((k) => !held.has(k));
-          if (aside.length) out.set(scope, { ...out.get(scope), [f]: aside });
-        }
-        const clause = clauseOf(this.#applied, this.#catalogue, scope, f, aside);
-        if (clause) above.push(clause);
-      }
-    }
-    return out;
+    return Object.fromEntries(Object.entries((await this.#walked()).present[scope] ?? {}).map(([f, keys]) => [f, [...keys]]));
   }
 
   /**
    * What each field below the top of a SERIAL set OFFERS: the values the rows
-   * hold under the answers above it, as value keys. A control REMOVES the rest
-   * — but a pick it holds stays, set aside. Whatever `limitOptions` says.
-   * TRAP T-a-filter-set-groups-or-chains
+   * hold at its place, once anything before it narrows, as value keys. A control
+   * REMOVES the rest — but a pick it holds stays, set aside. Whatever
+   * `limitOptions` says. TRAP T-a-filter-set-groups-or-chains
    */
   async offered(scope: string): Promise<Record<string, string[]>> {
-    await this.#hold();
-    const out: Record<string, string[]> = {};
-    const aside = this.#setAside.get(scope) ?? {};
-    for (const [s, chain] of serialChains(this.#applied, this.#sets)) {
-      if (s !== scope) continue;
-      const above: Filter[] = [];
-      for (const f of chain) {
-        if (above.length && this.#catalogue.isList(f)) Object.assign(out, await presentUnder(this.#reads, [f], andFilter(above)));
-        const clause = clauseOf(this.#applied, this.#catalogue, scope, f, aside[f]);
-        if (clause) above.push(clause);
-      }
-    }
-    return out;
+    return Object.fromEntries(Object.entries((await this.#walked()).offered[scope] ?? {}).map(([f, keys]) => [f, [...keys]]));
   }
 
-  /** Work out what is set aside; if it MOVED, compile again — the load that
-   *  follows draws what is left. Says whether it moved. */
-  async #settleSetAside(): Promise<boolean> {
-    // Worked out already for this Query over these rows. TODO 348 W1
-    const asked = JSON.stringify([this.#age, this.#limitOptions, this.#applied]);
-    if (asked === this.#settledFor) return false;
-    this.#settledFor = asked;
-    const ticket = this.#settling.next();
-    await this.#hold();
-    const next = await this.#setAsideNow();
-    if (!this.#settling.is(ticket)) return true;
-    const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
-    if (key(next) === key(this.#setAside)) return false;
-    this.#setAside = next;
-    this.#presentFor = '';
-    this.#recompose();
-    return true;
-  }
-  /** The latest set-aside pass; an older one lands on nothing. */
-  #settling = new Latest();
-  /** What the last set-aside pass was worked out for. */
-  #settledFor = '';
-  /** The picks set aside, by scope then field, as value keys. */
-  #setAside = new Map<string, Record<string, string[]>>();
-
-  /** Each answered field's last change as a number — `scope:field`; higher is newer. */
-  #recency = new Map<string, number>();
-  /** How many changes have been noted; each takes the next number. */
-  #noted = 0;
-  /** Each reading as last seen, so a CHANGE moves its field to the end. */
-  #lastSeen = new Map<string, string>();
-
-  /** Move each field whose reading changed to the newest place. */
-  #noteRecency(): void {
-    const seen = new Set<string>();
-    for (const [scope, q] of Object.entries(this.#applied.scopes)) {
-      for (const [f, reading] of Object.entries(q.readings)) {
-        const id = `${scope}:${f}`;
-        seen.add(id);
-        const now = JSON.stringify(reading.picked ?? []) + JSON.stringify(reading.suspended ?? false);
-        if (this.#lastSeen.get(id) === now) continue;
-        this.#lastSeen.set(id, now);
-        this.#recency.set(id, ++this.#noted);
-      }
-    }
-    for (const id of [...this.#lastSeen.keys()]) {
-      if (seen.has(id)) continue;
-      this.#lastSeen.delete(id);
-      this.#recency.delete(id);
-    }
-  }
-
-  /** One pass this tick, however many asked. */
-  #presentSoon = coalesce((): void => {
-    void this.#settleSetAside().then((moved) => { if (!moved) void this.#drawPresent(); });
-  });
-
-  /** Each bound control is told what each field's other answers leave — once
-   *  per applied Query; a later pass wins. Off, each is told nothing is limited.
-   *  A chart's own scope too, announced as `present` for its legend (179). */
-  async #drawPresent(): Promise<void> {
-    const drawn = [...this.#binding.entries()].flatMap(([el, b]) => ((el.drawPresent || el.drawOffered) && b.scope
-      ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
-    const parts = [...this.#narrowing.keys()];
-    const key = `${this.#age}:${this.#limitOptions}:${drawn.length}:${parts.join()}:${JSON.stringify(this.#applied)}`;
-    if ((!drawn.length && !parts.length) || key === this.#presentFor) return;
-    this.#presentFor = key;
-    const ticket = this.#presenting.next();
-    const byScope = new Map<string, Record<string, string[]>>();
-    const offers = new Map<string, Record<string, string[]>>();
-    for (const scope of new Set([...drawn.flatMap((d) => d.scopes), ...parts])) {
-      byScope.set(scope, await this.present(scope));
-      offers.set(scope, await this.offered(scope));
-      if (!this.#presenting.is(ticket)) return;
-    }
-    for (const { el, scopes } of drawn) {
-      for (const scope of scopes) {
-        el.drawPresent?.(byScope.get(scope) ?? {}, scope);
-        el.drawOffered?.(offers.get(scope) ?? {}, scope);
-      }
-    }
-    this.dispatchEvent(new CustomEvent('present', { detail: { byScope: Object.fromEntries(byScope) } }));
-  }
-  /** The latest pass; an older one lands on nothing. */
-  #presenting = new Latest();
-  /** What the last pass was for: the setting, the controls and the applied Query. */
-  #presentFor = '';
-
-  /** The latest results count; an older one lands on nothing. */
-  #counting = new Latest();
-  /** What the chips' results were last counted for: the rows, the Query, what is set aside, the controls. */
-  #countedFor = '';
   /** Moves each time what a count reads may have changed beside the Query: the
    *  rows, a field's facts or values, a saved filter, a part, a set. */
   #age = 0;
@@ -2311,9 +2180,8 @@ export class DataSource extends EventTarget {
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
-    if (facts.scope && (el.drawPresent || el.drawOffered) && this.#loaded) this.#presentSoon();
     // …and its chips' counts. TRAP T-a-chip-counts-within-the-filters-before-it
-    if (facts.scope && (el.drawResults || el.drawValueResults) && this.#loaded) void this.#drawResults();
+    if (facts.scope && (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && this.#loaded) this.#walkSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */

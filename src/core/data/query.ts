@@ -21,7 +21,6 @@
  * - narrowsOne — Does this scope narrow only the components it names?
  * - eachScope — Each scope that answers for the page, by id, as a copy.
  * - heldInView — The fields the View holds, which are answered there alone.
- * - heldAbove — The fields held above a scope: the View's, or none for the View itself.
  * - presetClauses — A saved filter's readings as clauses.
  * - answerOf — The ANSWER keys of a reading only, not its label or the values it offers.
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
@@ -99,8 +98,8 @@ export interface CompileFacts {
   /** A component's OWN scopes — its `data-where` — which are what it IS, not a
    *  chip: a field the View holds never sets them aside. TRAP T-a-component-default-outlives-a-view */
   fixed?: ReadonlySet<string>;
-  /** The picked values a LATER answer rules out, as value keys: they stay in the
-   *  reading and leave the filter. TRAP T-a-later-answer-sets-an-earlier-pick-aside */
+  /** The picked values the filters BEFORE them rule out, as value keys: they stay
+   *  in the reading and leave the filter. TRAP T-a-ruled-out-value-is-greyed */
   drop?: (scope: string, field: string) => readonly string[] | undefined;
 }
 
@@ -148,11 +147,6 @@ export function eachScope(query: Query): Array<[string, ScopeQuery]> {
 /** The fields the View holds, which are answered there alone. TRAP T-a-view-held-heading-shows-and-refuses */
 export function heldInView(query: Query): ReadonlySet<string> {
   return new Set(query.scopes[VIEW]?.holds ?? []);
-}
-
-/** The fields held above a scope: the View's, or none for the View itself. */
-export function heldAbove(query: Query, scope: string): ReadonlySet<string> {
-  return scope === VIEW ? new Set<string>() : heldInView(query);
 }
 
 /** A saved filter's readings as clauses. A reading that answers nothing gives none. */

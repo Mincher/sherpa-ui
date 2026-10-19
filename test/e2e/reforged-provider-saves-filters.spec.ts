@@ -111,8 +111,9 @@ test('a set applies from the Filters menu, its cross dismisses it, and a reload 
       plan: again.query.applied.scopes.data.readings.plan?.picked, chip: chip(panel) } };
   })()`) as Record<string, any>;
   expect(r['listed']).toEqual(['silver']);
-  // It sets the scope it names, and leaves the other as it was.
-  expect(r['applied']).toEqual({ tier: ['silver'], plan: ['Free'], total: 0, chip: { shown: true, says: 'Silver', warning: false } });
+  // It sets the scope it names, and leaves the other as it was. Free has no silver row: the
+  // View sets it aside, so the silver row shows (347). TRAP T-a-ruled-out-value-is-greyed
+  expect(r['applied']).toEqual({ tier: ['silver'], plan: ['Free'], total: 1, chip: { shown: true, says: 'Silver', warning: false } });
   expect(r['kept']).toEqual({ chip: { shown: true, says: 'Silver', warning: false }, read: { id: 'silver', label: 'Silver', edited: false } });
   expect(r['dismissed']).toEqual({ tier: [], plan: ['Free'], chip: { shown: false, says: 'Silver', warning: false } });
 });

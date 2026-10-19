@@ -277,6 +277,10 @@ shaping gives (a tenant, a permission). While that set is held, the source
 answers every load, count and distinct read on the client, with the same
 search, filter, sort and paging an in-memory store runs. A chip toggled, a sort
 cycled, the filter Switch, a page turned: none of them reaches your server.
+Every chip's count, and what Limit greys and sets aside, comes from ONE walk
+over the held set, in place. A set NOT held is asked step by step instead: one
+`totalCount` per count and one `distinct` (or load) per list it tallies, sent
+together.
 
 Your store must say two things for its set to be held:
 
