@@ -35,6 +35,13 @@ import type { SherpaInputText } from '../sherpa-input-text/sherpa-input-text.js'
 import type { SherpaSlider } from '../sherpa-slider/sherpa-slider.js';
 import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
+/** Is a list of value keys the set held already — or both nothing? */
+function sameKeys(held: ReadonlySet<string> | null, next: readonly string[] | null): boolean {
+  if (!held || !next) return !held && !next;
+  const keys = new Set(next);
+  return keys.size === held.size && [...keys].every((k) => held.has(k));
+}
+
 /** One item a menu draws for itself. */
 export interface MenuItem {
   value: string;
@@ -1309,6 +1316,8 @@ export class SherpaMenu extends SherpaElement {
    * limits nothing. Silent: no event. TRAP T-a-ruled-out-value-is-greyed
    */
   set present(values: readonly string[] | null) {
+    // The same list does nothing: a draw tells every chip's menu each time.
+    if (sameKeys(this.#present, values)) return;
     this.#present = values ? new Set(values) : null;
     this.#markPresent();
     this.#refillRows();
@@ -1322,6 +1331,7 @@ export class SherpaMenu extends SherpaElement {
   /** What a serial set's chain OFFERS; a row it does not is removed, unless
    *  ticked. `null` is everything. TRAP T-a-filter-set-groups-or-chains */
   set offered(values: readonly string[] | null) {
+    if (sameKeys(this.#offered, values)) return;
     this.#offered = values ? new Set(values) : null;
     this.#markPresent();
     this.#refillRows();

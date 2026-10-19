@@ -930,6 +930,12 @@ OFF chip counts. The TRAP changes with it.
     never the row's own pick.
   - ✅ **C9** — the Add list (bar and panel) greys a SPENT field — one the filters
     before it leave no value for — and hides it while Hide unmatching is on.
+  - ✅ **C10** — a menu's `present` / `offered` and a chip's `results` do nothing for
+    the same value. **INP at 4x after the walk** (Demos Records, Chromium,
+    Toolbars, median of 5, load ~11): tick a value 104 ms (355: 104); a second
+    value 112 (88); a saved filter on 176 (176); a View pick 96 (80). Every act
+    is under 200 ms. For 350: `perf/inp.mjs` has no panel-mode acts (its acts
+    click the bar, which panel mode hides) — it hangs; give it the panel's own.
 
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 

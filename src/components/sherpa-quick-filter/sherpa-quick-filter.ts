@@ -936,6 +936,7 @@ export class SherpaQuickFilter extends SherpaElement {
     return this.#results ?? null;
   }
   set results(n: number | null) {
+    if (n === this.#results) return;
     this.#results = n;
     this.#syncBadge();
   }
