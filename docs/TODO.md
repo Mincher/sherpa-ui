@@ -696,8 +696,27 @@ against the code). The full plan, with every file:line, is
   gain is "recount only when a field the count uses changed"; 348 replaces the
   counting with one ordered pass (plan-346-349 W3–W5), so the History plugs into
   that pass. Built first, it would be rewritten. Phase 4 goes next.
-- 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner: a
-  read-only design pass first (two designs, a judge, a checker).
+- 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner.
+  Designed 2026-10-19 (two designs, a judge, a checker):
+  `docs/history/plan-345-phase-4.md`. Seven commits: 4.1 failure kinds and a
+  spoof that fails later (and ONE spoof wrapper — Demos made one per Context
+  open, and its relay listener kept every one: the 351 note that it was not a
+  leak was wrong); 4.2 one cache per store; 4.3 the read plan, a reopen shows
+  its data at once and checks behind; 4.4 a failed read keeps the last set,
+  reach is a state; 4.5 the provider reports the page's reach; 4.6 the banner;
+  4.7 the IndexedDB keep.
+
+  **Decisions for Will** (neither blocks 4.1–4.5):
+  - ❓ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
+    floats over the top of the content area and takes no room — CLS stays 0;
+    while shown it covers about 60 px (Records' data bar) until Dismiss or
+    recovery. **B:** it sits in the flow and pushes the Context down — covers
+    nothing, but the page moves each time it shows or goes.
+  - ❓ **W2 — a kept copy, on a reload while ONLINE.** **A (pick):** draw the
+    kept rows at once and check behind them — a faster first paint (an LCP
+    gain), but rows can change about one round trip later. **B:** wait for the
+    read, and use the kept rows only if it fails — always current, offline
+    still works, no LCP gain.
 
 ### `[x]` ✅ 346 — One "Send to <component>" on a View field
 
