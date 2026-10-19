@@ -49,38 +49,35 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
   and a View, and a UI component (sections 7 to 10). Every diagram renders
   (checked with `mermaid@11.4.1` in a Playwright page).
 
-## TODO 345 — explored; waits on Will
+## Where the work stands (2026-10-19, evening)
 
-Will doubts 340's "a remote source reads its whole set once" (up to 50,000 rows
-on open). His design notes are in the TODO 345 section: the decision after
-`compile()` is a SERIES (held? current? reachable?), the store keeps a History
-table of delta times and field bitmaps, and the History starts again every
-session ("ground zero").
+**Done today, each with tests, a TRAP, and both full suites green:**
 
-Explored 2026-10-19 (read only). The plan, in nine phases with every
-file:line, is `docs/history/plan-345.md`; the TODO 345 section has the summary.
-It waits on Will for **D1** (how a remote store's History reaches the browser)
-and **D2** (does the cache keep data in IndexedDB too), and for a go to build.
+| Item | What it gave | TRAP |
+|---|---|---|
+| 345 ph. 1–2, 351 | A page's source closes; a keyed save is patched into the held set | `T-a-closed-source-hears-nothing`, `T-a-held-set-takes-a-change-in-place` |
+| 345 ph. 4.1–4.7 | Failure kinds; ONE held set per store; `planRead()`; a reopen shows at once and checks behind; a failed read keeps the set; `provider.reach`; the "Unable to reach data" banner (floats, CLS 0); `keepCache()` in IndexedDB | `T-a-failure-has-a-kind`, `T-a-store-has-one-cache`, `T-a-read-is-planned`, `T-a-failed-read-keeps-the-last-set`, `T-the-provider-says-the-pages-reach`, `T-a-reach-banner-takes-no-room`, `T-a-kept-set-is-checked-each-session` |
+| 352 | Panel mode no longer shifts the page (CLS 0.554 → 0.013) | `T-the-filter-mode-is-set-before-the-page-paints` |
+| 355 | The grid keeps its heading: INP at 4x tick 216 → 104 ms, saved filter 320 → 176, View pick 200 → 80 | `T-a-grid-draws-once-per-moment`, `T-a-heading-cell-is-kept` |
+| 346, 353, 354, 356, 357 | One Send to; green chips everywhere; two filter races; favourites named after their View | `T-send-to-view-filters`, `T-a-pin-a-page-can-re-point`, `T-a-stale-draw-keeps-the-bars-own-change` |
+| 348 W0–W1 | The bench counts scans; counts run only when something moved | — |
 
-**Phase 1 is done as TODO 351** (2026-10-19, `1a2268e3`): a page's source is
-now closed when the page goes. Before, every Context visit left one more source
-reloading on each store change. TRAP `T-a-closed-source-hears-nothing`.
+**Will's decisions, all recorded in `docs/TODO.md`:** 345 D1 A, D2 B, W1 A, W2 A;
+346–349 D1–D5 A; 355 G1 A; the walk's Q1, Q2 A.
 
-## Then: TODO 346–349 — filters (Will, 2026-10-19)
+**Next:**
+1. Read-only reviews of 355 C5 and 345 4.3–4.7 (agents hit a session limit at
+   16:30; they reset at 17:30).
+2. The walk (347–349): designed in `docs/history/plan-347-349-walk.md`, NOT yet
+   checked against the code. Check it, then build it in its small commits.
+3. 345 phases 3, 5, 6, 8, 9 (History after the walk; values on demand;
+   always-fetch fields; the decision series widened; remote History).
+4. 350 (performance): the leftovers from 355, and LCP (6.18 s at 4x when Will
+   measured; 1.0–1.5 s in the probe here).
 
-One "Send to <component>" on a View field (346); the View scope first, and a
-component scope only within its subset (347); a chip's count, and a menu's
-viable fields and values, from that subset — its scopes and the filters BEFORE
-it (348, 349). Each section says what the code does today and what to settle
-with Will.
-
-## After that: TODO 350 — performance (Will, 2026-10-19)
-
-Sherpa is slow under 4x CPU throttling. Measure what costs, find the fixes and
-the options, and look for redundant, legacy and convoluted code and composition
-bottlenecks. Deferred until 345–349 are done, as they may help. Will measured
-the worst: an INP of about 600 ms, from the quick filter toolbar. **While doing
-345–349, fix any performance issue that is in reach** — 350 still runs on its own.
+**Probes:** Demos `perf/inp.mjs`, `perf/cls.mjs`, `perf/profile.mjs` (against
+:4200, Chromium, 4x). `node scripts/build-reforged.mjs --no-minify` for a
+readable profile.
 
 ## Waiting on Will (❓ and looks)
 
