@@ -204,7 +204,7 @@ function registeredClass(sf, src) {
 
 /** The base class's contract with a subclass — never a component's own API. */
 const LIFECYCLE = new Set([
-  'onRender', 'onConnect', 'onDisconnect', 'onChange', 'renderData', 'constructor',
+  'onRender', 'onConnect', 'onDisconnect', 'onChange', 'renderData', 'populate', 'constructor',
   'connectedCallback', 'disconnectedCallback', 'attributeChangedCallback', 'adoptedCallback',
 ]);
 

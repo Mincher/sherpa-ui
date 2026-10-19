@@ -36,6 +36,7 @@ import {
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
 import { sameReading } from '../../core/data/query.js';
+import { coalesce } from '../../core/data/timing.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { isStaleKey, keyRow, rowKey } from '../../core/data/row-key.js';
@@ -255,11 +256,45 @@ export class SherpaDataGrid extends SherpaElement {
   override onChange(): void {
     this.#syncNeedles();
     this.#syncColumnValues();
-    if (this.#columns.length) this.#render();
+    this.#invalidate();
+  }
+
+  /** The rows are on their way: what the attributes ask for is drawn with them, once. */
+  override populate(data: unknown): Promise<void> {
+    this.#awaitingData = true;
+    return super.populate(data).finally(() => {
+      this.#awaitingData = false;
+      if (this.#dirty) this.#schedule();
+    });
+  }
+
+  /* ── One render per moment. TODO 355 · TRAP T-a-grid-draws-once-per-moment ── */
+
+  /** A render is owed. */
+  #dirty = false;
+  /** Rows were given, and are drawn soon: a render owed now waits for them. */
+  #awaitingData = false;
+
+  /** Something drawn changed: render once, however many attributes moved. */
+  #invalidate(): void {
+    this.#dirty = true;
+    this.#schedule();
+  }
+
+  /** The owed render, at the end of this moment. */
+  #schedule = coalesce((): void => {
+    if (!this.#awaitingData) this.#flush();
+  });
+
+  /** The owed render NOW — before a read of what is drawn. */
+  #flush(): void {
+    if (this.#dirty && this.#columns.length) this.#render();
+    this.#dirty = false;
   }
 
   /** populate({ columns, rows }) — the rows, over the configuration the page set. */
   protected override renderData(data: unknown): void {
+    this.#awaitingData = false;
     const cfg = (data ?? {}) as Partial<GridConfig>;
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
@@ -285,6 +320,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Draw the head and the body. */
   #render(): void {
+    this.#dirty = false;
     this.toggleState('empty', this.#rows.length === 0);
     // "Select all" of nothing is a control that does nothing.
     const advanced = this.#rows.length > 0;
@@ -866,6 +902,7 @@ export class SherpaDataGrid extends SherpaElement {
    * T-grid-toolbar-chip-borrows-the-menu — one menu serves both.
    */
   openColumnFilter(field: string, anchor?: HTMLElement): void {
+    this.#flush();
     const chip = this.$<SherpaQuickFilter>(
       `.head-cell[data-field="${CSS.escape(field)}"] .head-filter`,
     );
@@ -1085,6 +1122,7 @@ export class SherpaDataGrid extends SherpaElement {
    * page: `{ index, count }`, `index` -1 while a page loads.
    */
   findStep(direction: 1 | -1 = 1): { index: number; count: number } {
+    this.#flush();
     const marks = this.#marks();
     const at = marks.findIndex((m) => m.hasAttribute('data-current'));
     let next = at < 0 ? (direction > 0 ? 0 : marks.length - 1) : at + direction;
@@ -1417,7 +1455,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!this.hasAttribute('data-locked')) {
       this.set('data-sort-field', next.field ?? null);
       this.set('data-sort-direction', sortDirectionAttr(next) ?? null);
-      this.#render();
+      this.#flush();
     }
 
     // The INTENT, always. `field: null` on a suspend is what the query hears;

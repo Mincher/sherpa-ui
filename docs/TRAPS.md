@@ -16039,6 +16039,28 @@ the bar's slot fold away at narrow widths, as the old switch did.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 
+### T-a-grid-draws-once-per-moment
+
+TODO 355 C2. `sherpa-data-grid`'s `onChange()` ran a FULL `#render()` on every
+observed attribute, and a bound publish writes several (`writeView`: the sort,
+the page, the total…) and then the rows — so one filter click drew the grid,
+heading and body, four or five times, building each heading cell's chips and
+menu again each time.
+
+Now an attribute change only marks a render OWED (`#invalidate`), drawn once
+at the end of the moment (`coalesce`, `T-coalesce-microtask-not-debounce`). And
+`populate()` says rows are coming: an owed render waits for them, and
+`renderData` draws everything once. If no rows come (the same rows), the owed
+render draws. What must read the drawn DOM first calls `#flush()`: the header
+click's own sort (still synchronous), `openColumnFilter`, `findStep`.
+`renderData` stays synchronous, so `await populate()` still sees the DOM.
+
+Overriding `populate()` is not a new method: `ts-facts.mjs` lists it with the
+base's lifecycle, so the grid's spec does not change.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
+
 ### T-a-stale-draw-keeps-the-bars-own-change
 
 TODO 356. A bar's `drawScope(description)` reads the scope, then WAITS — its
