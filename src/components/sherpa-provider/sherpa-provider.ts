@@ -238,6 +238,7 @@ export class SherpaProvider extends SherpaElement {
     }
     this.#sources = { ...options.sources };
     for (const source of Object.values(this.#sources)) source.limitOptions = this.#limit;
+    for (const made of this.#made) if (!this.#provides(made)) this.#closeMade(made);
     // BEFORE answering: an answer binds, and a bind starts the first load.
     this.#states?.abort();
     this.#states = new AbortController();
@@ -275,8 +276,10 @@ export class SherpaProvider extends SherpaElement {
     }
     const opening = def && store ? this.#opening(page.signal) : null;
     let opened: DataSource | undefined;
+    let made: DataSource | undefined;
     try {
-      const source = def && store ? await openSource(def, store) : undefined;
+      const source = (made = def && store ? await openSource(def, store) : undefined);
+      if (source) this.#made.add(source);
       opening?.stop();
       if (page.signal.aborted) return undefined;
       if (!source || !def) {
@@ -305,7 +308,23 @@ export class SherpaProvider extends SherpaElement {
       return opened;
     } finally {
       opening?.end(opened);
+      // Left before it was provided: nothing else will close it.
+      if (made && !this.#provides(made)) this.#closeMade(made);
     }
+  }
+
+  /** The sources `open()` made. Each is closed when it is no longer provided. TRAP T-a-closed-source-hears-nothing */
+  #made = new Set<DataSource>();
+
+  /** Is this source one this subtree is given now? */
+  #provides(source: DataSource): boolean {
+    return Object.values(this.#sources).includes(source);
+  }
+
+  /** Close a source `open()` made, and forget it. */
+  #closeMade(source: DataSource): void {
+    source.close();
+    this.#made.delete(source);
   }
 
   /** Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. */

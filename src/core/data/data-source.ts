@@ -85,6 +85,7 @@
  * - .setPage — which page to show
  * - .setPageSize — rows per page, or null for all
  * - .load — Re-read and push to every bound component.
+ * - .close — Let the store go: a change no longer reloads it, and its held set is dropped.
  * - .results — Each answered chip's results in a scope: the rows its own answer matches.
  * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
  * - .limitOptions — Does each list field offer only the values the other answers leave? Settable, unlike applyOn.
@@ -252,11 +253,7 @@ export class DataSource extends EventTarget {
       pageSize: options.pageSize ?? null,
     };
     this.#filter = options.filter;
-    // FORCED: the rows changed under an identical ViewState — and so may the values they hold.
-    this.store.addEventListener('change', () => {
-      this.#presentFor = '';
-      void this.load({ force: true });
-    });
+    this.store.addEventListener('change', this.#onStoreChange);
     /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
        Nothing downstream has to know the dataset calls it `created`.
        TRAP T-a-record-has-a-time-of-its-own */
@@ -1651,6 +1648,27 @@ export class DataSource extends EventTarget {
     return this.#reask(key);
   }
 
+  /** FORCED: the rows changed under an identical ViewState — and so may the values they hold. */
+  #onStoreChange = (): void => {
+    this.#presentFor = '';
+    void this.load({ force: true });
+  };
+
+  /** Closed: it no longer hears its store, and holds nothing. */
+  #closed = false;
+
+  /**
+   * Let the store go: a change no longer reloads it, and its held set is
+   * dropped. It can still be asked. A page's source is closed when the page
+   * goes, or every visit leaves one more listening. TRAP T-a-closed-source-hears-nothing
+   */
+  close(): void {
+    this.#closed = true;
+    this.store.removeEventListener('change', this.#onStoreChange);
+    clearTimeout(this.#liveWait);
+    this.#letGo();
+  }
+
   /** Ask the store — or the held set — this question, even one asked before. */
   #reask(key = this.#stateKey()): Promise<LoadResult> {
     const asking = this.#ask(key);
@@ -1676,7 +1694,7 @@ export class DataSource extends EventTarget {
 
   /** May it be held? The store's own facts first, so one that never can is never sent the whole read. */
   #mayHold(): boolean {
-    if (!this.#remote || this.#held || this.#holdNever || this.#holdRefused || this.#holdRows <= 0) return false;
+    if (this.#closed || !this.#remote || this.#held || this.#holdNever || this.#holdRefused || this.#holdRows <= 0) return false;
     const why = !this.store.reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
       : this.store.sampled ? 'its schema checks only a sample of each read' : '';
     if (why) this.#refuse(why);

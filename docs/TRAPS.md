@@ -3585,6 +3585,32 @@ The bench holds the rule: each act on its remote page after it opens must cost
 - Site: `src/core/data/page-definition.ts`
 - Site: `scripts/check-bench.mjs`
 
+### T-a-closed-source-hears-nothing
+
+A `DataSource` listens for its store's `change`, and reloads on each. The
+provider makes a NEW source every time a page opens (`openSource()` in
+`open()`), over the app's one store. Before TODO 351 nothing removed the old
+listener, so every visit left one more source listening: each save reloaded
+them all (a whole read each on a remote store), and none was ever freed.
+
+**`close()` lets the store go:** it removes the listener, stops a live load
+waiting, and drops the held set; a closed source never holds again. It can
+still be asked — a caller that kept it gets an answer from the store.
+
+**The provider closes what it made, and only that.** `#made` holds each source
+`open()` built. One is closed when a `provide()` no longer gives it (the next
+page, `close()`), or when its open is overtaken before it was provided. A
+source the APP passes to `provide()` is the app's: the provider never closes it.
+A provider taken out of the page closes nothing — moved, it must still work.
+
+`spoofRemote` adds a listener it never removes too, but it is called once per
+store and lives as long as the store: that one is not a leak.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/unit/a-closed-source-hears-nothing.test.mjs`
+- Site: `test/e2e/reforged-provider-closes-its-sources.spec.ts`
+
 ### T-the-filter-switch-keeps-what-it-turned-off
 
 Figma's data Filter Toolbar starts with a Switch. It is optional, for legacy

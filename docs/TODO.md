@@ -32,7 +32,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
 | ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
-| ⬜ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
+| ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -782,7 +782,7 @@ How to measure: Playwright's CDP session can throttle (`Emulation.setCPUThrottli
 rate 4) and record a trace, so a slow path becomes a repeatable number in a gate,
 as `check:bench` does for the data layer.
 
-### `[ ]` ⬜ 351 — BUG: a closed page's DataSource still hears its store
+### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 
 Found by 345's exploration (2026-10-19), checked in the code. A `DataSource`
 adds a `change` listener to its store (`data-source.ts:256`) and never removes it
@@ -796,6 +796,17 @@ never freed. `spoofRemote` leaks its own listener the same way
 `DataSource.close()` removes it and drops the held set, and the provider closes
 the old source in `open()` and `close()`. Proof: two opens over one store, the
 first closed, one insert — one load, not two. A 350 lead, too.
+
+**✅ Done 2026-10-19.** `DataSource.close()` removes the listener, stops a live
+load waiting and drops the held set; a closed source never holds again, but can
+still be asked. The provider keeps `#made`, the sources `open()` built, and
+closes one when `provide()` no longer gives it (the next page, `close()`) or
+when its open is overtaken first. A source the app passes to `provide()` is
+never closed. `spoofRemote` is NOT a leak: Demos calls it once per store, and it
+lives as long as the store. Proof: `test/unit/a-closed-source-hears-nothing.test.mjs`
+(2) and `test/e2e/reforged-provider-closes-its-sources.spec.ts` (3 × 3 engines):
+the old source starts 0 loads on an insert, and one close per page that goes.
+TRAP `T-a-closed-source-hears-nothing`.
 
 ---
 
