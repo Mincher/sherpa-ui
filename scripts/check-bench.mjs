@@ -220,6 +220,11 @@ const ACTS = {
     p.source.close();
     Object.assign(p, await page(p.L, p.def, p.store));
   },
+  // A pick the filters before it leave no row for is SET ASIDE: under Customer 01, paused,
+  // free and gold hold 3 rows — Owners 03, 04 and 21 — so Owner 01 goes. TRAP T-one-walk-counts-and-limits-in-order
+  narrow: (p) => p.view.answer({ customer: { picked: ['Customer 01'] } }),
+  aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
+    owner: { picked: ['Owner 03', 'Owner 01'] } }),
 };
 const PAGES = {
   records: { remote: false, acts: Object.keys(ACTS) },

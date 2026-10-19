@@ -152,6 +152,24 @@
     "clones": 7,
     "scans": 8
   },
+  "records/narrow": {
+    "loads": 2,
+    "counts": 2,
+    "distinct": 5,
+    "rows": 272,
+    "compiles": 14,
+    "clones": 1,
+    "scans": 14
+  },
+  "records/aside": {
+    "loads": 1,
+    "counts": 11,
+    "distinct": 12,
+    "rows": 1,
+    "compiles": 15,
+    "clones": 1,
+    "scans": 36
+  },
   "remote/open": {
     "loads": 1,
     "counts": 0,
@@ -305,6 +323,24 @@
     "clones": 7,
     "scans": 6
   },
+  "remote/narrow": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 15,
+    "clones": 2,
+    "scans": 14
+  },
+  "remote/aside": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 2,
+    "scans": 36
+  },
   "rest/open": {
     "loads": 1,
     "counts": 0,
@@ -457,5 +493,23 @@
     "compiles": 16,
     "clones": 8,
     "scans": 11
+  },
+  "rest/narrow": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 15,
+    "clones": 2,
+    "scans": 14
+  },
+  "rest/aside": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 2,
+    "scans": 36
   }
 }

@@ -962,7 +962,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (65)
+## Build, tools and the MCP (66)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -1016,6 +1016,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-motion-is-owned-here](TRAPS.md#t-motion-is-owned-here) — lint-css
 - [T-no-attribute-is-the-default-variant](TRAPS.md#t-no-attribute-is-the-default-variant) — project-tokens
 - [T-nothing-downloads-to-serve](TRAPS.md#t-nothing-downloads-to-serve) — playwright.config, sherpa-ui
+- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — check-bench
 - [T-private-state-is-a-custom-state](TRAPS.md#t-private-state-is-a-custom-state) — check-props
 - [T-snap-vscode-breaks-webkit](TRAPS.md#t-snap-vscode-breaks-webkit) — playwright.config
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — check-weight

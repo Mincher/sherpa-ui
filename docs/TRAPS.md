@@ -1859,6 +1859,7 @@ filter added on the bar lands after the other saved filters; a field at the end.
 - Site: `test/e2e/reforged-filterset.spec.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/a-store-scan-reads-in-place.test.mjs`
+- Site: `scripts/check-bench.mjs`
 
 ### T-a-view-keeps-a-draft
 
