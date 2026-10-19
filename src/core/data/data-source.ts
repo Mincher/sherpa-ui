@@ -124,7 +124,7 @@ import { report } from './report.js';
 import { HeldSet } from './held-set.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
+  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store, StoreChangeDetail,
 } from './store.js';
 import type {
   ApplyAt, AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
@@ -1648,9 +1648,17 @@ export class DataSource extends EventTarget {
     return this.#reask(key);
   }
 
-  /** FORCED: the rows changed under an identical ViewState — and so may the values they hold. */
-  #onStoreChange = (): void => {
+  /** The rows changed under an identical ViewState. A held set takes a keyed
+   *  change in place and is asked again; anything else is FORCED — read again.
+   *  TRAP T-a-held-set-takes-a-change-in-place */
+  #onStoreChange = (event: Event): void => {
     this.#presentFor = '';
+    const held = this.#held;
+    const change = (event as CustomEvent<StoreChangeDetail | undefined>).detail;
+    if (held && change && held.patch(change, this.store) && held.size <= this.#holdRows) {
+      void this.#reask();
+      return;
+    }
     void this.load({ force: true });
   };
 

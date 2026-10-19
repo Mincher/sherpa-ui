@@ -162,6 +162,14 @@ Extend `BaseStore` and you get the key handling, the schema check and the
 tells a bound `DataSource` to re-query, which is what redraws every component
 watching it. A store that mutates silently leaves the screen lying.
 
+**Name the row.** `key` is the row's key — on an update, the key it had BEFORE
+the change — and `row` is the WHOLE row as saved; leave `row` out when you do
+not know it (a server that replied with nothing). A cap that removes rows with
+an insert lists their keys in `trimmed`. Say `rowOrder` — `'insertion'` or
+`'key'` — when a load asked no sort returns rows in that order. A held set then
+takes the change in place, with no whole read; a change with no `key` means any
+row may have changed, and the whole set is read again.
+
 **Copy in and copy out.** `ArrayStore` does `{ ...row }` on both edges so a
 caller cannot reach in and mutate a stored record by holding a reference. It
 also keeps `SourceBinding.push`'s skip-if-unchanged guard working, which compares the rows
@@ -277,9 +285,11 @@ and asks your store for every question, as before. A whole read that FAILS —
 a 400 for the big `take`, a timeout — is caught: the source asks your store as
 before until a Refresh.
 
-The rows are as fresh as the last whole read. The source reads it again on a
-Refresh, or when the store announces a `change` — so a store whose rows change
-on the server should announce it (an `EventStore` or `SocketStore` does).
+The rows are as fresh as the last whole read and the changes announced since.
+A `change` that names its row is taken into the held set in place; one that
+does not — or names a row the set does not hold — reads the whole set again, as
+a Refresh does. So a store whose rows change on the server should announce it
+(an `EventStore` or `SocketStore` does).
 
 Matching is the client's from then on, so your server and the client must agree
 on what a whole read returns, not on how to filter it.

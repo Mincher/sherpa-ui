@@ -10,6 +10,7 @@ import { test, expect } from './harness';
  * TRAP T-idb-is-the-only-real-local-store
  * TRAP T-idb-index-narrows-it-never-answers-it
  * TRAP T-idb-bulk-is-one-transaction
+ * TRAP T-a-held-set-takes-a-change-in-place
  */
 
 /** A fresh database per test, so one test's records cannot be another's. */
@@ -253,6 +254,8 @@ test('maxRows keeps a local cache bounded, oldest out', async ({ page }) => {
     await store.putAll(Array.from({ length: 12 }, (_, i) => ({ id: i + 1 })));
     const after = await store.load();
 
+    let trimmed: unknown;
+    store.addEventListener('change', (e: Event) => { trimmed = (e as CustomEvent).detail.trimmed; });
     await store.insert({ id: 99 });
     const afterInsert = await store.load();
 
@@ -260,12 +263,15 @@ test('maxRows keeps a local cache bounded, oldest out', async ({ page }) => {
     return {
       kept: after.rows.map((row: Record<string, unknown>) => row['id']),
       afterInsert: afterInsert.rows.map((row: Record<string, unknown>) => row['id']),
+      trimmed,
     };
   }, freshDb());
 
   expect(r.kept).toEqual([8, 9, 10, 11, 12]);
   // A single insert holds the cap too, not just a bulk write.
   expect(r.afterInsert).toEqual([9, 10, 11, 12, 99]);
+  // …and says which rows the cap took, so a held set drops them too.
+  expect(r.trimmed).toEqual([8]);
 });
 
 test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({ page }) => {

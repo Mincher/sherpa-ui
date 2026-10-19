@@ -24,6 +24,7 @@
  * - LoadOptions — What a caller asks a store for.
  * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
  * - Store — where records come from; the same interface whatever backs it
+ * - RowOrder — The order a whole read returns rows in, asked no sort.
  * - StoreChangeDetail — Fired after an insert, update or remove.
  * - readField — Read a field, following dots (`'customer.name'`) into nested objects.
  * - distinctOf — Each field's values among rows, one per value key: the last raw, in first-seen order.
@@ -223,6 +224,9 @@ export interface Store extends EventTarget {
   readonly reportsTotal?: boolean;
   /** A read checks only its first rows against the schema: a long read's tail is unchecked. */
   readonly sampled?: boolean;
+  /** The order a whole read returns its rows in, asked no sort: as inserted, or by
+   *  key (IndexedDB). Unsaid, a held set reads again on an insert. TRAP T-a-held-set-takes-a-change-in-place */
+  readonly rowOrder?: RowOrder;
   /** What each field MAY hold — a set in order, a number's ends — as the data's
    *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
   readonly domains?: Readonly<Record<string, FieldDomain>>;
@@ -231,11 +235,18 @@ export interface Store extends EventTarget {
   distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
 }
 
-/** Fired after an insert, update or remove. A DataSource just RELOADS. */
+/** The order a whole read returns rows in, asked no sort. */
+export type RowOrder = 'insertion' | 'key';
+
+/** Fired after an insert, update or remove. With no key, every row may have changed. */
 export interface StoreChangeDetail {
   type: 'insert' | 'update' | 'remove';
+  /** The row's key — on an update, the key it had BEFORE. */
   key?: unknown;
+  /** The WHOLE row as saved; left out when the store does not know it (a RestStore with no reply). */
   row?: Row;
+  /** The keys a cap (`maxRows`) removed with this insert. TRAP T-a-held-set-takes-a-change-in-place */
+  trimmed?: readonly unknown[];
 }
 
 /* ── Value access ──────────────────────────────────────────────────────── */

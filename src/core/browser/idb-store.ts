@@ -89,6 +89,8 @@ export function localRecords(options: LocalRecordsOptions): { store: IdbStore | 
 
 /** Records in IndexedDB — the real local store. */
 export class IdbStore extends BaseStore {
+  /** A whole read returns its rows by key. */
+  readonly rowOrder = 'key' as const;
   /** Which database and store, and its version. */
   readonly #options: IdbStoreOptions;
   /** The row cap, oldest out first; 0 for none. */
@@ -215,8 +217,8 @@ export class IdbStore extends BaseStore {
     const row = { ...(await this.check(values)) };
     const db = await this.#db();
     await promised(this.#tx(db, 'readwrite').add(row));
-    await this.#trim();
-    this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
+    const trimmed = await this.#trim();
+    this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row }, ...(trimmed.length ? { trimmed } : {}) });
     return { ...row };
   }
 
@@ -356,27 +358,28 @@ export class IdbStore extends BaseStore {
   }
 
   /** Drop rows past `maxRows`, OLDEST first — pair it with an ascending key, not a uuid.
-   *  TRAP T-max-rows-is-oldest-out-by-insertion */
-  async #trim(): Promise<void> {
-    if (!this.#maxRows) return;
+   *  The keys it dropped. TRAP T-max-rows-is-oldest-out-by-insertion */
+  async #trim(): Promise<unknown[]> {
+    const trimmed: unknown[] = [];
+    if (!this.#maxRows) return trimmed;
     const db = await this.#db();
     const count = await promised<number>(this.#tx(db, 'readonly').count());
-    if (count <= this.#maxRows) return;
+    if (count <= this.#maxRows) return trimmed;
 
     const excess = count - this.#maxRows;
     const store = this.#tx(db, 'readwrite');
     await new Promise<void>((resolve, reject) => {
-      let dropped = 0;
       const request = store.openCursor();
       request.onsuccess = () => {
         const cursor = request.result;
-        if (!cursor || dropped >= excess) { resolve(); return; }
+        if (!cursor || trimmed.length >= excess) { resolve(); return; }
+        trimmed.push(cursor.primaryKey);
         cursor.delete();
-        dropped += 1;
         cursor.continue();
       };
       request.onerror = () => reject(request.error ?? new Error('IdbStore: trim failed'));
     });
+    return trimmed;
   }
 
 }

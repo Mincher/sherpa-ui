@@ -33,6 +33,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
+| ⬜ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
+| ⬜ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -675,6 +677,19 @@ against the code). The full plan, with every file:line, is
   there is nothing to show. A `sherpa-callout`, placed by the app layer, not by
   a card.
 
+**Progress:**
+
+- ✅ **Phase 1** — done as TODO 351 (`1a2268e3`): a page's source is closed when the page goes.
+- ✅ **Phase 2** (2026-10-19) — a keyed store change is taken into the held set in
+  place (`HeldSet.patch`), so a save reads nothing again: the bench's remote
+  `add`, `save` and `delete` went from 1 load of 10,001 rows each to 0. Each row
+  is keyed as a whole read keys it; an update's row is the whole saved row; a new
+  row goes where the store's `rowOrder` says (`insertion` or `key`); a cap names
+  the rows it trimmed; a RestStore with no reply announces no row. Anything not
+  certain is read whole, as before. A review (3 lenses, 11 findings, all
+  confirmed) found the key, merge and order faults, fixed before the commit.
+  TRAP `T-a-held-set-takes-a-change-in-place`.
+
 ### `[ ]` ⬜ 346 — One "Send to <component>" on a View field
 
 Will, 2026-10-19: *"We only need 1 'Send to ComponentName' option when
@@ -811,6 +826,50 @@ lives as long as the store. Proof: `test/unit/a-closed-source-hears-nothing.test
 (2) and `test/e2e/reforged-provider-closes-its-sources.spec.ts` (3 × 3 engines):
 the old source starts 0 loads on an insert, and one close per page that goes.
 TRAP `T-a-closed-source-hears-nothing`.
+
+### `[ ]` ⬜ 352 — PERF: Panel mode draws the bars, then shifts to the panel
+
+Will, 2026-10-19: *"the CLS increases if the Filter Panel is loaded instead of
+the Filter Toolbars. I think the mode needs to be set right at the start of the
+view load cycle so that the content area isn't drawn, then redrawn, when the
+filter presentation mode is applied."*
+
+What the code does today (read, not yet measured): the provider keeps the mode
+(`provider-mode.ts`), and Demos sets it from the session at start
+(`provider.filterMode = …`, Demos `app/index.html:285`). But a bar or panel
+takes the mode only when it JOINS — when it asks the provider, after its own
+first render (`sherpa-provider.ts` `#modes.join(el)`). So in Panel mode a data
+bar is drawn, then gets `data-panel-mode` and hides
+(`sherpa-quick-filter-toolbar.css:223`), and the panel in the shell's
+`panel-start` slot is opened by `show()` — the content area moves twice. Measure
+it first (a Playwright `PerformanceObserver('layout-shift')` at 4x, both
+modes), then make the mode known before the first paint — for example the
+provider reflects it as an attribute that the page's CSS reads, and a panel
+that is wanted opens as it is drawn. Target: CLS in Panel mode as low as in
+Toolbar mode (0.01 at 4x).
+
+### `[ ]` ⬜ 353 — BUG: a column heading's Advanced filter button is not green
+
+Will, 2026-10-19: *"The advanced filter button, in a data grid column header,
+is still the active styling rather than success styling. We can fix this with
+the filter work."*
+
+Why (read, not yet run): Settings › Filtering › "Show active filters in green"
+is Demos CSS. It re-points the Style `active` names to the theme's success
+colours inside `sherpa-quick-filter-toolbar` and `sherpa-filter-panel` ONLY
+(Demos `app/index.html:21`). The heading's filter and sort are ALREADY
+icon-only chips — `sherpa-quick-filter.head-filter` and `.head-sort`
+(`sherpa-data-grid.html:156-162`), not buttons. But they sit in the grid's
+shadow root, and a page selector cannot reach in; only an inherited custom
+property can. Adding the grid to the selector would turn EVERY active thing in
+the grid green (a current row, the sort).
+
+Will asked (2026-10-19) why this cannot be set on the filter chip's own scope.
+It can, and that is the fix: the chip reads its ON colours through its own
+inherited properties, which fall back to the Style `active` ones. The app sets
+those once, at the top of the page, and every chip goes green — bar, panel and
+grid heading — with nothing else in the grid touched. Demos stops re-pointing
+Sherpa's `--sherpa-style-active-*` names. Do it with 346–349.
 
 ---
 

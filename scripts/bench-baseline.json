@@ -103,6 +103,30 @@
     "compiles": 11,
     "clones": 7
   },
+  "records/add": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 2,
+    "rows": 3546,
+    "compiles": 10,
+    "clones": 1
+  },
+  "records/save": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 2,
+    "rows": 3546,
+    "compiles": 10,
+    "clones": 1
+  },
+  "records/delete": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 2,
+    "rows": 3545,
+    "compiles": 10,
+    "clones": 1
+  },
   "remote/open": {
     "loads": 1,
     "counts": 0,
@@ -206,5 +230,29 @@
     "rows": 0,
     "compiles": 7,
     "clones": 8
+  },
+  "remote/add": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 6,
+    "clones": 1
+  },
+  "remote/save": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 6,
+    "clones": 1
+  },
+  "remote/delete": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 6,
+    "clones": 1
   }
 }

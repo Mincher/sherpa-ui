@@ -2238,6 +2238,7 @@ rather than restore the wrong rows. The grid selects by key always now, and
 
 - Site: `src/core/data/row-key.ts`
 - Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/held-set.ts`
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/a-keyless-row-gets-a-key.test.mjs`
@@ -3225,9 +3226,10 @@ and sorting, filtering, grouping and paging belong to the `DataSource`.
 What belongs here is the part that surprises. Every store extends `EventTarget`, so "tell everyone the records changed" is the
 platform's own `dispatchEvent` rather than a subscriber list written by hand. A
 `change` detail names what happened so a listener can be cheap about it, but a
-DataSource simply RELOADS: deciding whether a changed row still matches the
-current filter, and where it now sorts, is exactly the work the source already
-does, and re-deriving is cheaper than getting that wrong.
+DataSource never decides alone whether a changed row still matches the current
+filter, or where it now sorts: it asks again. A held set takes a keyed change
+in place first (`T-a-held-set-takes-a-change-in-place`); anything else is read
+again, because re-deriving is cheaper than getting that wrong.
 
 - Site: `src/core/data/store.ts`
 
@@ -3566,8 +3568,9 @@ says which, ONCE per source, and the store is asked as before.
 asks the store, as before, until a Refresh or a store change tries again — a
 backend that rejects `take=50001`, or times out on it, still pages.
 
-**Read again only when the rows may have changed:** a store `change`, a
-Refresh — a public `load({ force: true })`. A read in flight is kept, and
+**Read again only when the rows may have changed:** a store `change` the set
+cannot take in place (`T-a-held-set-takes-a-change-in-place`), a Refresh — a
+public `load({ force: true })`. A read in flight is kept, and
 `#hold()` reads ONCE more when it lands, however many changes came: twenty
 saves cost two whole reads, not twenty. An ask that only repeats a question — a
 summary bound late, a page re-clamp — uses `#reask()` and keeps the set. An ask
@@ -3585,9 +3588,62 @@ The bench holds the rule: each act on its remote page after it opens must cost
 - Site: `src/core/data/page-definition.ts`
 - Site: `scripts/check-bench.mjs`
 
+### T-a-held-set-takes-a-change-in-place
+
+345 phase 2. A held remote set was read again — whole — on EVERY store
+`change`: each save on Demos `?remote` waited 800 ms, and the bench's remote
+save read all 10,001 rows. A change that names its row is now taken in place by
+`HeldSet.patch()`, and the source asks the set again with `#reask()` — not
+`load({ force })`, which drops the set, and not `load()`, which skips a question
+it has answered.
+
+- **insert** — placed where the store's whole read would put it, and the rows
+  a cap removed with it (`trimmed`) dropped.
+- **update** — found by the announced key, which is the key BEFORE the change,
+  and REPLACED by the row announced, which is the whole saved row: a field a
+  whole read would not have is gone. A changed key moves the row
+  (`T-a-changed-key-moves-the-row`).
+- **remove** — spliced out.
+
+**Each row is keyed as a whole read keys it** — by its own key field — so a grid
+keeps a new or renamed row by the same key. Only `ArrayStore` keys the row it
+announces; the patch keys every one.
+
+**Where a new row goes is the store's to say:** `Store.rowOrder` is the order a
+whole read returns rows in, asked no sort — `insertion` (ArrayStore, LocalStore,
+JsonStore) or `key` (IdbStore, IndexedDB's order). A RestStore says it only
+with its `rowOrder` option, and `spoofRemote` passes it on. Unsaid, an insert or
+a changed key reads the whole set again: in an unsorted, paged view a guessed
+place is a row on the wrong page.
+
+**Anything it is not certain of reads the whole set again**, as before: a
+change with no key (`setRows`, `putAll`, IdbStore `clear`), no row (a RestStore
+whose server sent no reply announces none: the saved row is not known), a row
+without its key field (an envelope), a row it does not hold, a key another row
+has, a place it cannot tell, or a set grown past `holdRows`. A wrong patch is a
+screen that lies, so the rule is: place it only when it is certain.
+
+**A cap must say what it trimmed.** `ArrayStore` and `IdbStore` drop the oldest
+rows past `maxRows` on an insert, silently; the held set kept them until the
+next whole read. Both now list the keys in the insert's `trimmed`. A custom
+store with a cap must do the same, or announce with no key.
+
+A patched row can be one the server's own shaping would not send — another
+tenant's, say. The next whole read (a Refresh) puts that right.
+
+The bench's `add`, `save` and `delete` acts hold it: on the remote page each
+asks the store nothing.
+
+- Site: `src/core/data/held-set.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
+
 ### T-a-closed-source-hears-nothing
 
-A `DataSource` listens for its store's `change`, and reloads on each. The
+A `DataSource` listens for its store's `change`, and asks again on each. The
 provider makes a NEW source every time a page opens (`openSource()` in
 `open()`), over the app's one store. Before TODO 351 nothing removed the old
 listener, so every visit left one more source listening: each save reloaded

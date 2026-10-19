@@ -155,7 +155,8 @@ function control(tag, id, holds = []) {
 async function open(L, remote) {
   const def = JSON.parse(readFileSync(PAGE, 'utf8')).source;
   const store = counted(new L.ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id', time: 'created' }));
-  const source = await L.openSource(def, remote ? L.spoofRemote(store, { delay: 0 }) : store);
+  const seen = remote ? L.spoofRemote(store, { delay: 0 }) : store;
+  const source = await L.openSource(def, seen);
   source.limitOptions = true;
   // As the provider keeps it.
   const initial = structuredClone(source.query.applied);
@@ -170,7 +171,7 @@ async function open(L, remote) {
   L.bindSource(source, grid, { scope: 'data', shows: 'grid' });
   L.bindSource(source, chart, { readonly: true, rows: 'all' });
   L.bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
-  return { source, initial, view, data, grid, chart, panel };
+  return { store: seen, source, initial, view, data, grid, chart, panel };
 }
 
 const REPORT = { status: { picked: ['active', 'trial'] }, owner: { picked: ['Owner 01'] }, plan: { picked: ['pro'] } };
@@ -191,6 +192,10 @@ const ACTS = {
   raise: (p) => p.panel.send('filter-add', { scope: 'view', ids: ['status'], from: 'data' }),
   clear: (p) => p.view.answer({}),
   reset: (p) => p.source.setQuery(structuredClone(p.initial)),
+  // A reader's own writes: each names its row, so a held set takes it in place.
+  add: (p) => p.store.insert({ ...ROWS[0], id: N + 1, name: 'Person new', email: 'new@example.com' }),
+  save: (p) => p.store.update(17, { owner: 'Owner 02' }),
+  delete: (p) => p.store.remove(N + 1),
 };
 const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: Object.keys(ACTS) } };
 

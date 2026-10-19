@@ -22,6 +22,7 @@ import {
   type LoadOptions,
   type LoadResult,
   type Row,
+  type RowOrder,
   type StoreChangeDetail,
 } from './store.js';
 // Its own module so IdbStore reaches it too.
@@ -39,6 +40,8 @@ export { ValidationError } from './validate.js';
 
 /** Records held in memory. TRAP T-array-store-copies-both-ways */
 export class ArrayStore extends BaseStore {
+  /** A whole read returns its rows as inserted. */
+  readonly rowOrder = 'insertion' as const;
   /** The records, in insertion order. */
   #rows: Row[];
   /** 0 or absent means no cap. */
@@ -97,8 +100,10 @@ export class ArrayStore extends BaseStore {
     const row = this.keyed({ ...(await this.check(values)) });
     this.#rows.push(row);
     // Cap held BEFORE the announce — TRAP T-max-rows-is-oldest-out-by-insertion.
-    this.#rows = this.#trim(this.#rows);
-    this.announce({ type: 'insert', key: readField(row, this.key) ?? rowKey(row), row: this.keyed({ ...row }, row) });
+    const kept = this.#trim(this.#rows);
+    const trimmed = this.#rows.slice(0, this.#rows.length - kept.length).map((r) => readField(r, this.key) ?? rowKey(r));
+    this.#rows = kept;
+    this.announce({ type: 'insert', key: readField(row, this.key) ?? rowKey(row), row: this.keyed({ ...row }, row), ...(trimmed.length ? { trimmed } : {}) });
     return this.keyed({ ...row }, row);
   }
 
@@ -145,6 +150,8 @@ export interface JsonStoreOptions extends StoreOptions {
  * is shared by callers arriving mid-flight — three components, one request.
  */
 export class JsonStore extends BaseStore {
+  /** Its rows are an ArrayStore's: as inserted. */
+  readonly rowOrder = 'insertion' as const;
   /** Holds the rows once fetched; every query runs over it. */
   #inner: ArrayStore;
   /** Where the JSON lives, and how to read it. */
@@ -247,6 +254,8 @@ export interface RestStoreOptions extends StoreOptions {
   timeout?: number;
   /** Load options → query parameters. Override to match your server's names. */
   buildQuery?: (options: LoadOptions) => URLSearchParams;
+  /** The order the server lists rows in, asked no sort, when it is one of these. TRAP T-a-held-set-takes-a-change-in-place */
+  rowOrder?: RowOrder;
 }
 
 /**
@@ -267,6 +276,11 @@ export class RestStore extends BaseStore {
   /** Only a `totalPath` says how many rows match: without one, the total is the rows sent. */
   override get reportsTotal(): boolean {
     return !!this.#options.totalPath;
+  }
+
+  /** The server's order, when the app says it. */
+  get rowOrder(): RowOrder | undefined {
+    return this.#options.rowOrder;
   }
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
@@ -317,7 +331,8 @@ export class RestStore extends BaseStore {
     });
     // The server's row wins when it sends one — it may have filled in an id.
     const saved = row ? await this.check(row) : checked;
-    this.announce({ type: 'insert', key: readField(saved, this.key), row: saved });
+    // With no reply the saved row is not known, so none is announced.
+    this.announce({ type: 'insert', key: readField(saved, this.key), ...(row ? { row: saved } : {}) });
     return saved;
   }
 
@@ -332,7 +347,7 @@ export class RestStore extends BaseStore {
     // The RESPONSE is checked, the patch is not —
     // TRAP T-rest-update-is-patch-not-put
     const saved = row ? await this.check(row) : values;
-    this.announce({ type: 'update', key, row: saved });
+    this.announce({ type: 'update', key, ...(row ? { row: saved } : {}) });
     return saved;
   }
 
@@ -409,6 +424,8 @@ export interface LocalStoreOptions extends StoreOptions {
  * TRAP T-local-store-is-not-for-bulk-data
  */
 export class LocalStore extends BaseStore {
+  /** A whole read returns its rows as inserted. */
+  readonly rowOrder = 'insertion' as const;
   /** The storage key, and local vs session. */
   #options: LocalStoreOptions;
 
