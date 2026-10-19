@@ -36,7 +36,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
 | ✅ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
-| ⬜ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
+| ✅ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
 | ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
 | ⬜ | 0m | 357 | BUG — a favourited View is named after its Context in the nav's Favorites ("Records"), not the View ("All customers") (Will) | bug |
 | | | | **B — The foundation: what is left** | |
@@ -1038,7 +1038,7 @@ set in those frames, was cleared by it. With the bar skipping a chip it changed
 after a draw began, the test passed 10 of 10 in Chromium and 24 of 24 across
 three engines at a load average of 11–16 (it failed 5 of 10 before).
 
-### `[ ]` ⬜ 355 — PERF: a filter click rebuilds the grid's whole heading
+### `[x]` ✅ 355 — PERF: a filter click rebuilds the grid's whole heading
 
 Found 2026-10-19 by profiling the click at 4x (Chromium CPU profile, Demos
 Records, a build with `--no-minify`). Turning a saved filter on: 493 ms busy,
@@ -1092,6 +1092,11 @@ about 120–190 ms.
   a saved filter on 320 → **176**; a View pick 200 → **80**. Every act is under
   the 200 ms target on this machine. Full suites: sherpa-ui 3130 passed, Demos
   426 passed.
+- **Left for 350** (the design's §5): the body is still redrawn — 50 select
+  components per page, and one of a tick's two body draws is spent on old rows;
+  the provider works out `filterDef` for every field on each push; `#pageRecords`
+  sorts once per row. The probes are in Demos `perf/` (`inp.mjs`, `cls.mjs`,
+  `profile.mjs`).
 
 ### `[x]` ✅ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
 
