@@ -1810,6 +1810,45 @@ may still add it.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 
+### T-one-walk-counts-and-limits-in-order
+
+TODOs 347–349 — Will: a chip counts its matches *"from the filtered subset. So
+scopes and preceding filters will affect this"*, and *"the above also goes for
+viable field and value options in menus"*; the View first, a component scope
+within it. Rulings D1–D5 A, Q1 A, Q2 A (`docs/history/plan-347-349-walk.md`).
+
+**One order** (`answerOrder`): a scope's saved filters first, in the order it
+keeps them; then the fields it holds, each filter set gathered where its first
+held field stands; then a reading no chip holds. A serial set's held fields that
+the View does not hold are its chain: the first is its top, the rest below.
+
+**One plan** (`planWalk`), from the APPLIED Query: the View first, from every row,
+behind a base step of the parts (`contribute`) and the page's own scopes; then
+each other scope from the View's end; then each chart part from its host's. A
+step counts the rows that REACH it and match its answer — OFF counts and narrows
+nothing (123); a saved filter counts only while ON (166); each plain pick counts
+its own (172). A list field is RULED — what greys it and sets its picks aside —
+by the rows at its place with Limit on; with Limit off, a component scope's by
+the View's end (347), the View's by nothing (D5 A). A chain's lower field offers
+only what the rows at its place hold, once anything before it narrows (Q2 A). A
+list field no chip holds is TAPPED where it would stand; one with no value left
+is SPENT.
+
+**One pass** (`walkInOrder`, `walk.ts`): each row runs the steps in order and
+stops at the first in force it fails. A pick its ruler rules out is set aside,
+and the rows from that step are scanned AGAIN with what is left — exact,
+whatever loose matching (`in`, `T-loose-equal-is-case-insensitive`) does. Dates
+are made absolute once, at the plan's `now`. A chart part's pick is never set
+aside (Q1 A).
+
+**A set not held** is asked step by step (`walkStepwise`): the same plan, as
+`presentUnder` and `totalCount` requests. The property test holds all three —
+the walk, a plain walk, and step by step — to one answer.
+
+- Site: `src/core/data/walk.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `test/unit/filters-limit-in-order.test.mjs`
+
 ### T-a-view-keeps-a-draft
 
 **A View keeps a DRAFT: the filters a reader left on it, unsaved** — Will,
@@ -14303,6 +14342,7 @@ that follows is what makes it read as unset.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/source-counts.ts`
 - Site: `src/core/data/data-source.ts`
 ### T-a-breakdown-pick-is-a-legend-pick
 
