@@ -382,3 +382,17 @@ test('a removable preset: its tick is its on/off, its × removes it, and a stale
   // A press on the × is never a tick.
   expect(r.ticked).toBe(true);
 });
+
+/* 349: a field the filters before it leave no value for is SPENT — greyed in the
+   panel's Filters list. TRAP T-the-add-menu-is-the-whole-list */
+test('a spent field is greyed in the panel\'s Filters list', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const plan = () => [...menu().querySelectorAll('.menu-row')].find((r) => r.querySelector('input')?.value === 'data:plan');
+    const before = plan()?.hasAttribute('data-unavailable');
+    el.drawPresent({ plan: [] }, 'data');
+    await settle(); await window.__settled();
+    return { before, after: plan()?.hasAttribute('data-unavailable') };
+  })()`);
+  expect(r).toEqual({ before: false, after: true });
+});

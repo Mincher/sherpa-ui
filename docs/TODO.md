@@ -928,6 +928,8 @@ OFF chip counts. The TRAP changes with it.
   - ✅ **C8** — a grid heading draws what its serial chain offers (`drawOffered`), and
     an Advanced row's values grey what the filters before the field rule out —
     never the row's own pick.
+  - ✅ **C9** — the Add list (bar and panel) greys a SPENT field — one the filters
+    before it leave no value for — and hides it while Hide unmatching is on.
 
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 

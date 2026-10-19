@@ -415,7 +415,18 @@ export class SherpaFilterPanel extends SherpaElement {
   drawPresent(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
     this.#presentBy.set(scope, present);
     for (const held of this.#held.values()) if (held.scope === scope) this.#markPresent(held);
+    // The Filters list is drawn again only when a field's being spent moved.
+    if (this.#spentKey() !== this.#spentFor) this.#fillFilters();
   }
+
+  /** Each scope's offered fields spent now, as one string. */
+  #spentKey(): string {
+    return this.#scopes.flatMap((scope) => (this.#lists.get(scope.scope)?.offers ?? [])
+      .filter((f) => !f.readings && this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0)
+      .map((f) => `${scope.scope}:${f.id}`)).join();
+  }
+  /** What the Filters list was last drawn spent for. */
+  #spentFor = '';
   /** What the filters before each field leave, by scope, as last drawn. */
   #presentBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
 
@@ -999,19 +1010,23 @@ export class SherpaFilterPanel extends SherpaElement {
       for (const f of this.#lists.get(scope.scope)?.offers ?? []) {
         if (taken.has(f.id)) continue;
         taken.add(f.id);
+        // A field the filters before it leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
+        const spent = !f.readings && this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0;
         offer.push({
           id: row(scope.scope, f.id), label: f.label, note: scope.label,
-          ...(f.readings ? { readings: f.readings } : {}),
+          ...(f.readings ? { readings: f.readings } : {}), ...(spent ? { spent: true } : {}),
         });
       }
     }
 
     this.#oneRows.tell(added);
+    this.#spentFor = this.#spentKey();
     const def = drawFiltersButton(btn, hides, added, offer, this.#saved.listed);
     if (!def) return;
 
     const { menu, items } = menuFor(this.root, def);
     menu.setAttribute('data-align', 'end');
+    menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     btn.append(menu);
     menu.items?.(items);
     this.#syncFilters();

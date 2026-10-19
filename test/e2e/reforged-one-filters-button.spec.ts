@@ -287,3 +287,30 @@ test('an added on/off filter: its tick is its on/off; its × takes it off and th
   // Back in Available filters.
   expect(r.offered).toBe(true);
 });
+
+/* 349: a field the filters before it leave no value for is SPENT — greyed in the
+   list, and gone while Hide unmatching is on. A held chip is never greyed.
+   TRAP T-the-add-menu-is-the-whole-list */
+test('a spent field is greyed in the Filters list, and hidden with Hide unmatching', async ({ page }) => {
+  await mount(page, 2000);
+  const tier = () => page.evaluate(() => {
+    const bar = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const row = [...bar.shadowRoot!.querySelectorAll<HTMLElement>('.add-btn sherpa-menu .menu-row')]
+      .find((r) => r.querySelector('input')?.value === 'tier');
+    return row ? { greyed: row.hasAttribute('data-unavailable'), shown: getComputedStyle(row).display !== 'none' } : null;
+  });
+  expect(await tier()).toEqual({ greyed: false, shown: true });
+  await page.evaluate(async () => {
+    const bar = document.querySelector('sherpa-quick-filter-toolbar') as HTMLElement & { drawPresent(p: unknown): void };
+    bar.drawPresent({ tier: [], region: ['a'] });
+    await window.__settled();
+  });
+  expect(await tier()).toEqual({ greyed: true, shown: true });
+  await page.evaluate(async () => {
+    const bar = document.querySelector('sherpa-quick-filter-toolbar') as HTMLElement;
+    bar.dataset['limitOptions'] = 'on';
+    bar.dataset['hideUnmatched'] = 'on';
+    await window.__settled();
+  });
+  expect((await tier())?.shown).toBe(false);
+});

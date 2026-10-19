@@ -11880,6 +11880,13 @@ filter, so removing it from its own menu is where a reader looks; the panel is
 a list of them, so the list is where they are managed. Will's ruling
 2026-09-24.
 
+
+**A SPENT field is greyed** (TODO 349): one the filters before it leave no value
+for — the source tallies a field no chip holds where it would stand
+(`T-one-walk-counts-and-limits-in-order`), and an empty list is spent. Greyed
+and refused in the list; gone while "Hide unmatching filters" is on. A held
+row is never greyed. The bar and the panel draw the list again only when what
+is spent moved.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -11887,6 +11894,8 @@ a list of them, so the list is where they are managed. Will's ruling
 - Site: `src/core/ui/filters-button.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-one-filters-button.spec.ts`
+- Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
 ### T-the-field-type-decides-the-clause
 

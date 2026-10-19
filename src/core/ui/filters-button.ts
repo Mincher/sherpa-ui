@@ -53,6 +53,9 @@ export interface ListedFilter {
   note?: string | undefined;
   /** A SAVED filter carries its answer. */
   readings?: unknown;
+  /** No value is left under the filters before it: greyed — hidden while Hide
+   *  unmatching is on. TRAP T-the-add-menu-is-the-whole-list */
+  spent?: boolean;
 }
 
 /** One saved set of filters, as the menu and the Saved chip draw it: the one
@@ -103,6 +106,7 @@ function filtersMenuItems(
     })),
     ...offer.filter((f) => !f.readings).map((f) => ({
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
+      ...(f.spent ? { available: false } : {}),
     })),
     ...offer.filter((f) => f.readings)
       .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: SAVED_SECTION })),

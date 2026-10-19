@@ -528,6 +528,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
     this.#present = present;
     for (const chip of this.#chips()) this.#markPresent(chip);
+    // The Add list is drawn again only when a field's being spent moved.
+    if (this.#spentKey() !== this.#spentFor) this.#renderAvailable();
   }
 
   /** drawOffered(offered) — what each serial-set field OFFERS: its menu
@@ -1100,7 +1102,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
-    if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const chip of this.#chips()) this.#markPresent(chip);
+    if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
+      for (const chip of this.#chips()) this.#markPresent(chip);
+      this.$('.add-btn sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
+    }
     this.#syncArrangement();
     if (name === 'data-saveable') this.#saved.draw();
     syncResets(this, this.root, '.act[data-act="clear"]');
@@ -1411,7 +1416,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #renderAvailable(): void {
     const add = this.$<HTMLElement>('.add-btn');
     if (!add) return;
-    const offer = allow(this.#available, this.#allowedFields);
+    // A field the filters before it leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
+    const offer = allow(this.#available, this.#allowedFields)
+      .map((f) => (!f.readings && this.#spent(f) ? { ...f, spent: true } : f));
+    this.#spentFor = this.#spentKey();
     /* THE WHOLE LIST, not what is LEFT. Ticked is held: a tick adds a chip and
        an untick removes it, so a reader never hunts for where a filter goes.
        Only a REMOVABLE chip is listed — a tick that cannot be cleared is a lie.
@@ -1444,8 +1452,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const def = drawFiltersButton(add, folded.length, added, offer, this.#saved.listed);
     if (!def) return;
     this.#addMenu(add, def);
+    add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     this.#syncOverflowActive();
   }
+
+  /** Is an offered field spent — the source tallied it, and found no value left? */
+  #spent(def: FilterDef): boolean {
+    return this.#present[def.field ?? def.id]?.length === 0;
+  }
+
+  /** The offered fields spent now, as one string. */
+  #spentKey(): string {
+    return this.#available.filter((f) => !f.readings && this.#spent(f)).map((f) => f.id).join();
+  }
+  /** What the Add list was last drawn spent for. */
+  #spentFor = '';
 
   /** The chips in the source's ONE order (D2 A): the View and any chip that
    *  answers no field first, as they stand, then the scope's own. Drawn again
