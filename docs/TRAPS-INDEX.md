@@ -224,7 +224,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (68)
+## The join and the app layer (69)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -285,6 +285,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-state-value-may-be-a-call-list](TRAPS.md#t-state-value-may-be-a-call-list) — apply-state
 - [T-steering-events-are-a-closed-list](TRAPS.md#t-steering-events-are-a-closed-list) — bind-source
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — app
+- [T-the-filter-mode-is-set-before-the-page-paints](TRAPS.md#t-the-filter-mode-is-set-before-the-page-paints) — outlet, provider
 - [T-the-filter-switch-keeps-what-it-turned-off](TRAPS.md#t-the-filter-switch-keeps-what-it-turned-off) — bind-source
 - [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — provider
 - [T-the-outlet-keeps-the-nav](TRAPS.md#t-the-outlet-keeps-the-nav) — outlet

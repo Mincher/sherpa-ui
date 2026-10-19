@@ -284,21 +284,25 @@ export class SherpaOutlet extends SherpaElement {
     const token = ++this.#token;
     // Read BEFORE init: populating the header reports its first View, and the URL follows.
     const view = this.#router?.route['view'] ?? null;
-    this.#leave();
+    this.#leave({ next: true });
     this.#context = name;
     this.emit('context-change', { context: name, view });
     this.#nav?.changed();
     await this.#viewsReady;
-    const markup = await this.#file(context.template, 'text');
+    const [markup, definition] = await Promise.all([
+      this.#file(context.template, 'text'),
+      context.definition ? this.#file(context.definition, 'json') as Promise<PageDefinition | null> : null,
+    ]);
     if (token !== this.#token) return;
     this.#syncHeader(name);
     this.#shell?.toggleAttribute('data-no-header', context.chrome?.header === false);
+    // Its filter mode BEFORE it paints. TRAP T-the-filter-mode-is-set-before-the-page-paints
+    this.#provider?.prepare(definition);
     this.innerHTML = String(markup ?? '');
     const waits: Promise<unknown>[] = [];
     this.emit('context-markup', { context: name, root: this, waitUntil: (work: Promise<unknown>) => void waits.push(work) });
     await Promise.all(waits);
     const module = context.module ? (await import(this.#url(context.module))) as Partial<ContextModule> : null;
-    const definition = context.definition ? await this.#file(context.definition, 'json') as PageDefinition | null : null;
     await options.ready;
     if (token !== this.#token) return;
     // Saved Views are kept under the page's id and read here under the Context's name. TODO 321
@@ -334,7 +338,8 @@ export class SherpaOutlet extends SherpaElement {
   }
 
   /** Tear the Context on screen down: its own teardown, its signal, its page. */
-  #leave(): void {
+  /** `next`: another Context follows at once. */
+  #leave(options: { next?: boolean } = {}): void {
     const teardown = this.#teardown;
     this.#teardown = null;
     try {
@@ -348,7 +353,7 @@ export class SherpaOutlet extends SherpaElement {
     }
     this.#leaving?.abort();
     this.#leaving = null;
-    this.#provider?.close();
+    this.#provider?.close(options);
   }
 
   /** The header says the Context's own row: its name and its icon. */

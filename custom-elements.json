@@ -7801,9 +7801,30 @@
             },
             {
               "kind": "method",
+              "name": "prepare",
+              "parameters": [
+                {
+                  "name": "definition",
+                  "type": {
+                    "text": "PageDefinition | null"
+                  }
+                }
+              ],
+              "description": "A page is about to be drawn from this definition, or from none: take its filter mode NOW — the panel open or shut — so its content is never drawn twice. `open()` follows."
+            },
+            {
+              "kind": "method",
               "name": "close",
-              "parameters": [],
-              "description": "Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it."
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "text": "{ next?: boolean }"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. `next`: another page follows at once, and says whether the panel stays."
             },
             {
               "kind": "method",

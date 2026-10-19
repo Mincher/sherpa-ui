@@ -7,6 +7,7 @@
  * - ProviderMode — The panel or the bars, for one provider.
  * - .mode — What the panel and bars show now.
  * - .want — The app or the reader asks for a mode.
+ * - .page — A page is about to be drawn: its filters open the wanted panel, and none shuts it.
  * - .join — A bar or a panel that joins takes the mode.
  * - .closed — Every close reports; a reader's is a choice worth keeping.
  * - .room — The shell lost room for the panel, or has it again.
@@ -18,6 +19,8 @@ export interface ModeHost {
   bars(): Element[];
   /** Every panel that asked. */
   panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }>;
+  /** Every panel in the subtree, asked or not: one asks only once drawn, after the first paint. */
+  found(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }>;
   /** A fresh mode button from the provider's template — the panel's or the bars' — or null before it has drawn. */
   button(kind: 'panel' | 'bars'): HTMLElement | null;
   /** Settles once the provider has drawn its template. */
@@ -52,6 +55,23 @@ export class ProviderMode {
   want(mode: 'toolbars' | 'panel'): void {
     this.#wanted = mode;
     this.#setMode(mode);
+    this.#early();
+  }
+
+  /** A page is about to be drawn: one with filters opens the panel the reader
+   *  wants, one with none shuts it — before it paints. TRAP T-the-filter-mode-is-set-before-the-page-paints */
+  page(filters: boolean): void {
+    if (!filters) for (const panel of this.#host.found()) panel.hide?.('page');
+    else if (this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
+    if (filters) this.#early();
+  }
+
+  /** A panel that has not asked yet is opened as it is: the shell's panel area
+   *  is then there at the first paint. It takes the mode in full when it asks.
+   *  TRAP T-the-filter-mode-is-set-before-the-page-paints */
+  #early(): void {
+    if (this.#wanted !== 'panel' || !this.#room || this.#host.panels().length) return;
+    for (const panel of this.#host.found()) panel.show?.();
   }
 
   /** A bar or a panel that joins takes the mode — a page loaded later too. */

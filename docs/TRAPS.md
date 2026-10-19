@@ -15946,6 +15946,42 @@ the bar's slot fold away at narrow widths, as the old switch did.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 
+### T-the-filter-mode-is-set-before-the-page-paints
+
+TODO 352 (Will, 2026-10-19). Demos Records opened in Panel mode had a CLS of
+**0.55** at 4x CPU throttling, against 0.01 in Toolbar mode: the content area
+was drawn full width, then the panel opened and pushed it 464 px aside.
+
+The mode reached a panel or a bar only when it was ANSWERED — after its page's
+source was open, which waits for the data. A component asks only once it has
+drawn (after its icons load), which is after the first paint. So three things
+now set the mode before the page paints:
+
+- **A wanted panel opens before it asks.** `want('panel')` and `prepare()` open
+  every panel in the provider's subtree (`found()`, read from the DOM by its
+  `drawScopes`) while none has asked yet. The shell's panel area is there at the
+  first paint; the panel takes the mode in full when it asks.
+- **`provider.prepare(definition)`** — the outlet calls it after it has the
+  Context's markup and definition (now fetched together) and BEFORE it draws
+  the markup. A page with a `source` opens the panel the reader wants; one with
+  none shuts it (`'page'`, not the reader's choice).
+- **A bar or panel joins the mode as it ASKS**, not only when its data comes —
+  a bar steps back with no source yet. It joins again when answered, so the
+  next page with data opens the panel a page with none shut.
+
+**`close({ next: true })` keeps the panel.** The outlet leaves a Context before
+it loads the next; a plain `close()` shuts the panel (a page with no data), so
+every navigation shut it and opened it again. With `next`, the next page's
+`prepare()` decides.
+
+Measured after (Playwright, Chromium, 4x, 1440 × 900): Panel 0.013, Toolbars
+0.011. A Demos test holds both under 0.05.
+
+- Site: `src/components/sherpa-provider/provider-mode.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `test/e2e/reforged-provider-mode-before-paint.spec.ts`
+
 ### T-the-provider-owns-the-panel-mode
 
 **TOOLBARS or PANEL is the provider's, for every page in its subtree.** TODO

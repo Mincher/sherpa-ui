@@ -97,7 +97,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (provide, open, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, resetView, export, import). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (provide, open, prepare, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, resetView, export, import). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -140,9 +140,15 @@
         },
         {
           "$type": "method",
+          "name": "prepare",
+          "args": "definition: PageDefinition | null",
+          "description": "A page is about to be drawn from this definition, or from none: take its filter mode NOW — the panel open or shut — so its content is never drawn twice. `open()` follows."
+        },
+        {
+          "$type": "method",
           "name": "close",
-          "args": "",
-          "description": "Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it."
+          "args": "options: { next?: boolean } = {}",
+          "description": "Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. `next`: another page follows at once, and says whether the panel stays."
         },
         {
           "$type": "method",

@@ -33,7 +33,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
-| ⬜ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
+| ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ⬜ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -827,7 +827,7 @@ lives as long as the store. Proof: `test/unit/a-closed-source-hears-nothing.test
 the old source starts 0 loads on an insert, and one close per page that goes.
 TRAP `T-a-closed-source-hears-nothing`.
 
-### `[ ]` ⬜ 352 — PERF: Panel mode draws the bars, then shifts to the panel
+### `[x]` ✅ 352 — PERF: Panel mode draws the bars, then shifts to the panel
 
 Will, 2026-10-19: *"the CLS increases if the Filter Panel is loaded instead of
 the Filter Toolbars. I think the mode needs to be set right at the start of the
@@ -847,6 +847,18 @@ modes), then make the mode known before the first paint — for example the
 provider reflects it as an attribute that the page's CSS reads, and a panel
 that is wanted opens as it is drawn. Target: CLS in Panel mode as low as in
 Toolbar mode (0.01 at 4x).
+
+**✅ Done 2026-10-19.** Measured first (Playwright, Chromium, 4x, 1440 × 900,
+Records): Toolbars 0.011, **Panel 0.554** — the content area was drawn full
+width, then the panel opened and pushed it 464 px aside. The panel and the bars
+ask their provider only once drawn, after the first paint, and the mode reached
+them only with the page's data. Now: a wanted panel opens before it asks; the
+outlet calls `provider.prepare(definition)` before it draws a Context's markup
+(markup and definition are fetched together); a bar steps back as it asks; and
+`close({ next: true })` keeps the panel open between two pages. After: Panel
+**0.013**, Toolbars 0.011. Tests: `test/e2e/reforged-provider-mode-before-paint.spec.ts`
+(4 × 3 engines) and Demos `reforged-panel-mode-does-not-shift.spec.ts` (both
+modes under 0.05, Chromium). TRAP `T-the-filter-mode-is-set-before-the-page-paints`.
 
 ### `[ ]` ⬜ 353 — BUG: a column heading's Advanced filter button is not green
 

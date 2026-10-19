@@ -174,6 +174,8 @@ export class SherpaProvider extends SherpaElement {
   readonly #modes = new ProviderMode({
     bars: () => this.#bars(),
     panels: () => this.#panels(),
+    found: () => [...this.querySelectorAll(':defined')]
+      .filter((el) => 'drawScopes' in el && el.closest(this.localName) === this) as never,
     button: (kind) => this.clone(`template.mode-${kind}-tpl`) as HTMLElement | null,
     rendered: () => this.rendered,
     changed: (mode) => {
@@ -230,6 +232,11 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-a-provider-keeps-the-views
    */
   provide(options: ProvideOptions): Promise<void> {
+    return this.#provide(options, true);
+  }
+
+  /** `provide()`; `shut`: a page with no data shuts the panel. */
+  #provide(options: ProvideOptions, shut: boolean): Promise<void> {
     // The page `open()` set up has gone, with its source.
     if (this.#pages.opened && !Object.values(options.sources).includes(this.#pages.opened.source)) {
       this.#page?.abort();
@@ -247,7 +254,7 @@ export class SherpaProvider extends SherpaElement {
     this.#pages.stopViews();
     /* A page with NO data has no filters: the panel shuts — not the reader's
        choice, so it opens again on the next page that has some. TRAP T-navigating-sets-up-the-page */
-    if (!Object.keys(this.#sources).length) {
+    if (shut && !Object.keys(this.#sources).length) {
       for (const panel of this.#panels()) panel.hide?.('page');
     }
     // The Views are over the ONE source; a subtree of several names none.
@@ -327,11 +334,22 @@ export class SherpaProvider extends SherpaElement {
     this.#made.delete(source);
   }
 
-  /** Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. */
-  close(): void {
+  /**
+   * A page is about to be drawn from this definition, or from none: take its
+   * filter mode NOW — the panel open or shut — so its content is never drawn
+   * twice. `open()` follows. TRAP T-the-filter-mode-is-set-before-the-page-paints
+   */
+  prepare(definition: PageDefinition | null): void {
+    this.#modes.page(!!definition?.source);
+  }
+
+  /** Leave the page, or one still opening: its source goes, and nothing in the
+   *  subtree reaches it. `next`: another page follows at once, and says
+   *  whether the panel stays. TRAP T-the-filter-mode-is-set-before-the-page-paints */
+  close(options: { next?: boolean } = {}): void {
     this.#page?.abort();
     this.#page = null;
-    void this.provide({ sources: {} });
+    void this.#provide({ sources: {} }, !options.next);
   }
 
   /**
@@ -596,6 +614,10 @@ export class SherpaProvider extends SherpaElement {
     this.#asked.get(request.contextTarget)?.unbind?.();
     const asked: Asked = { request };
     this.#asked.set(request.contextTarget, asked);
+    // A bar or a panel takes the mode as it asks, before it paints — not when
+    // its data comes. TRAP T-the-filter-mode-is-set-before-the-page-paints
+    const el = request.contextTarget;
+    if ((el.constructor as { asks?: DataAsk }).asks?.shape === 'scope') this.#modes.join(el);
     this.#answer(asked);
   };
 
@@ -659,7 +681,7 @@ export class SherpaProvider extends SherpaElement {
     };
     // No rows ever come, so it is handed its way out now.
     if (asks.shape === 'state' || asks.shape === 'scope') callback(undefined, leave);
-    // A bar or a panel that joins takes the mode — a page loaded later too.
+    // …and again when answered: the next page with data opens the panel again.
     if (asks.shape === 'scope') {
       this.#modes.join(el);
       this.#offerLimit(el);

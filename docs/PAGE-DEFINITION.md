@@ -127,6 +127,9 @@ range will be between the min and max values."*
 The ROUTER hands the definition to the PROVIDER on every navigation:
 
 ```js
+provider.close({ next: true });   // leave the last page; the next one decides the panel
+provider.prepare(definition);     // its filter mode BEFORE its markup is drawn, so nothing shifts
+contextRoot.innerHTML = markup;
 const source = await provider.open(definition, { stores, views, view, session });
 cleanup = await mod.init(contextRoot, { session, view, source });
 ```
