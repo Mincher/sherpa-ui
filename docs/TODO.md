@@ -689,6 +689,20 @@ filter toolbar** — the reason 350 sits after the data layer and filter work.
 **Will's rule while 345–349 are built:** where a performance fix is in reach
 of that work, make it then. 350 is still done as its own exercise.
 
+**Page load, measured by Will (2026-10-19):** opening Demos' Records › All
+customers gives a Largest Contentful Paint (LCP) of **6.18 s** — rated poor.
+*"Definitely lots of work to do regarding optimisation."* (Whether this was at
+4x throttling too is not stated.) Leads to measure first, not yet proven:
+
+- Demos imports `sherpa-ui` as `/dist/index.js`, which pulls **143 modules,
+  963 KB** of JS before any icon (counted 2026-10-19, static imports only), each
+  its own request: nothing is bundled.
+- The Records Context waits for the store's seed (`ready`), then `openSource()`
+  reads the rows and their values before any component is answered.
+- Each element parses its template and adopts up to nine shared sheets, plus
+  family sheets, and the Records page draws a bar, a panel, charts, metrics and
+  a grid of 25 rows.
+
 In scope, as Will named it:
 
 - what costs time, measured under 4x throttling, not guessed;
