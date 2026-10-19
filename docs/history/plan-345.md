@@ -177,6 +177,11 @@ Rules for every phase:
 
 ## 5. Decisions for Will
 
+**Will's answers, 2026-10-19: D1 — A. D2 — B.** And: when the store cannot be
+reached, an "Unable to reach data" warning or critical banner at the top of the
+content area. That replaces "There is no new banner" in section 2 (the Loading
+and stale UI row).
+
 Neither decision blocks phases 1–3 or 5–8.
 
 **D1: How does a remote store's History reach the browser? (phase 9)**

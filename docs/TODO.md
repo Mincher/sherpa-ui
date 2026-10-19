@@ -26,7 +26,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 |:-:|---:|---:|---|---|
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
-| ❓ | 0a | 345 | EXPLORE — a remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Explored; plan in `docs/history/plan-345.md`; D1, D2 and a go wait on Will | explore |
+| 🚧 | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. Building, phase by phase | explore |
 | ⬜ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
 | ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
@@ -493,7 +493,7 @@ has a stale navigation token region; the outlet writes Context markup by plain
 the Starter template asks npm for `sherpa-ui@^2.1.0-beta.0`, another person's
 package.
 
-### `[ ]` ❓ 345 — EXPLORE: fetch each field's values on demand, and cache them
+### `[ ]` 🚧 345 — EXPLORE: fetch each field's values on demand, and cache them
 
 Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
 *"I think this has serious performance implications."* What he wants instead:
@@ -658,18 +658,22 @@ against the code). The full plan, with every file:line, is
 - **What stays true:** a toggle asks nothing; the data layer has no DOM; no
   component words in it; an old store works as today.
 
-**Decisions for Will** (neither blocks phases 1–3 or 5–8):
+**Will's decisions (2026-10-19):**
 
-- ❓ **D1 — how a remote store's History reaches the browser (phase 9).**
-  **A (Claude's pick):** never inside a toggle — from a change feed beside the
-  RestStore, on tab focus, on a timer, or with a fetch that goes anyway; a toggle
-  can show data one step old, and 340's rule stays. **B:** each toggle first asks
-  "changes since" (no rows); always current, but each toggle waits a round trip.
-- ❓ **D2 — what the cache keeps when the store does not answer (phase 4).**
-  **A (Claude's pick):** memory only, for the session; a reload while offline
-  shows the error state. **B:** IndexedDB too, opt-in per remote store; a reload
-  offline shows the last data, marked stale; more code, and data that outlives
-  the session.
+- ✅ **D1 — A.** A remote store's History never reaches the browser inside a
+  toggle: it comes from a change feed beside the RestStore, on tab focus, on a
+  timer, or with a fetch that goes anyway. A toggle can show data one step old,
+  and 340's rule stays (phase 9).
+- ✅ **D2 — B.** The cache keeps data in IndexedDB too, opt-in per remote store:
+  a reload while offline shows the last data, marked stale (phase 4). The code
+  goes in `src/core/browser`; the History still starts again each session.
+- ✅ **And a banner** (Will): *"Unable to reach data warning/critical banner
+  under the app header (or at top of the content area actually)."* So the
+  plan's "no new banner" is wrong. When the store cannot be reached, a banner
+  shows at the TOP OF THE CONTENT AREA. Claude's reading, to confirm by eye: a
+  **warning** while the last data is still shown (stale), a **critical** when
+  there is nothing to show. A `sherpa-callout`, placed by the app layer, not by
+  a card.
 
 ### `[ ]` ⬜ 346 — One "Send to <component>" on a View field
 
