@@ -35,7 +35,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
-| ⬜ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
+| ✅ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
 | ⬜ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
 | ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
 | | | | **B — The foundation: what is left** | |
@@ -967,7 +967,7 @@ chip turns green — bar, panel and grid heading — while the sort chip beside 
 does not. The pending edge reads the same hook. Test: Demos
 `reforged-filter-chips-green.spec.ts` (3 engines). TRAP `T-a-pin-a-page-can-re-point`.
 
-### `[ ]` ⬜ 354 — FLAKE: a second Advanced filter sometimes drops the first
+### `[x]` ✅ 354 — FLAKE: a second Advanced filter sometimes drops the first
 
 Found 2026-10-19 while checking 348 W1. Demos
 `test/e2e/reforged-panel-apply.spec.ts:100` ("adding and applying a second
@@ -982,6 +982,12 @@ out. The same test once found "10 rows went back to 100"
 coming back: a rebuilt chip reads unanswered for one tick, and its report
 clears Owner (`sherpa-a-composed-field-fills-async`). Next: reproduce it with
 4x CPU throttling and trace the report that clears Owner.
+
+**✅ Fixed by 356 (`798fd439`), 2026-10-19.** The same race: adding the Email
+chip starts a bar draw that waits two frames, and the test's Owner condition,
+set in those frames, was cleared by it. With the bar skipping a chip it changed
+after a draw began, the test passed 10 of 10 in Chromium and 24 of 24 across
+three engines at a load average of 11–16 (it failed 5 of 10 before).
 
 ### `[ ]` ⬜ 355 — PERF: a filter click rebuilds the grid's whole heading
 
