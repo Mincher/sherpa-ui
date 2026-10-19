@@ -4,7 +4,7 @@
   The wrapper owns the bookkeeping. Children stay as they are: no per-item
   `data-group`, and a re-order, insert or delete needs nothing from anyone.
   Position is DERIVED — `:first-child` / `:last-child` for a row or column, and
-  `sibling-index()` for a grid.
+  `sibling-index()` for a grid. A child marked `data-grow` takes the spare room.
 
   Public API:
     data-direction  row (default) | column | grid

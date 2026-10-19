@@ -11,10 +11,9 @@ import { test, expect } from './harness';
  * Every assertion here guards a boundary that has already failed once:
  *
  *   - the stepper is PROJECTED into the menu's light DOM, so no rule inside
- *     sherpa-calendar's shadow root reaches it. It read back `display: block`,
- *     `gap: normal` and sat 4px apart until sherpa-menu.css styled the slot.
- *   - `[data-snap]` lives in tokens.css, a DOCUMENT sheet, so it never reaches
- *     a button in a shadow root. The corner variables must be written directly.
+ *     sherpa-calendar's shadow root reaches it. It is a `<sherpa-group>`, whose
+ *     own sheet shapes its buttons in any tree (TODO 344); the menu only makes
+ *     it block-level, so the month fills the card.
  *   - a nested calendar used to draw a SECOND header and footer inside the
  *     menu's own.
  */
@@ -52,6 +51,8 @@ async function openCalendarMenu(page: import('@playwright/test').Page) {
 
     return {
       projected: !!stepper,
+      stepperTag: stepper?.localName ?? null,
+      inlineStyle: btns.some((b) => b.hasAttribute('style')),
       stepperDisplay: stepper ? getComputedStyle(stepper).display : null,
       tags: btns.map((b) => b.localName),
       boxes: btns.map(box),
@@ -75,6 +76,8 @@ test('the calendar menu header is a composed, snapped sherpa-button group', asyn
   // child of the slot's host, which is why this lives beside the calendar and
   // not inside it.
   expect(r.projected).toBe(true);
+  expect(r.stepperTag).toBe('sherpa-group');
+  expect(r.inlineStyle).toBe(false);
 
   // Three COMPOSED buttons, not hand-rolled <button>s. This is the assertion
   // that fails the moment someone re-implements the stepper.

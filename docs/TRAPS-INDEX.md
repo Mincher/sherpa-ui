@@ -833,7 +833,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (105)
+## Other components (104)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -899,7 +899,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-embedded-footer-needs-a-public-verb](TRAPS.md#t-embedded-footer-needs-a-public-verb) — calendar
 - [T-every-button-says-its-action](TRAPS.md#t-every-button-says-its-action) — button
 - [T-fit-is-a-desktop-mode](TRAPS.md#t-fit-is-a-desktop-mode) — layout-grid
-- [T-grouping-is-an-attribute-and-a-class](TRAPS.md#t-grouping-is-an-attribute-and-a-class) — group, input-text
+- [T-grouping-is-an-attribute-and-a-class](TRAPS.md#t-grouping-is-an-attribute-and-a-class) — calendar, group, input-text
 - [T-header-actions-are-composed-buttons](TRAPS.md#t-header-actions-are-composed-buttons) — app-header
 - [T-header-owns-the-filter-bar-surface](TRAPS.md#t-header-owns-the-filter-bar-surface) — app-header
 - [T-input-icon-sink-is-data-glyph](TRAPS.md#t-input-icon-sink-is-data-glyph) — input-text
@@ -925,7 +925,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-scroll-state-is-chromium-only](TRAPS.md#t-scroll-state-is-chromium-only) — app-header
 - [T-select-card-keeps-both-footer-controls](TRAPS.md#t-select-card-keeps-both-footer-controls) — select-card
 - [T-shadow-input-needs-element-internals](TRAPS.md#t-shadow-input-needs-element-internals) — input-text, select-checkbox, select-radio, switch
-- [T-sherpa-runs-under-a-strict-csp](TRAPS.md#t-sherpa-runs-under-a-strict-csp) — calendar
 - [T-signal-not-a-teardown-list](TRAPS.md#t-signal-not-a-teardown-list) — layout-grid
 - [T-slider-second-thumb-is-revealed-not-built](TRAPS.md#t-slider-second-thumb-is-revealed-not-built) — slider
 - [T-slot-assigns-direct-children-only](TRAPS.md#t-slot-assigns-direct-children-only) — calendar

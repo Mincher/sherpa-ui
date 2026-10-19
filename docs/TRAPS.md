@@ -13381,6 +13381,11 @@ of `"end"`, `"mid"` or `"solo"` would have silently restyled that row's borders.
 It is now `data-group-key`, which is internal — 8 `dataset` sites plus one CSS
 selector in a test, and nothing outside the component reads it.
 
+A row that lands in ANOTHER component's light DOM is a `<sherpa-group>`: its
+`::slotted()` rules travel with it, where a class's rules cannot reach (the
+calendar's projected stepper, TODO 344).
+
+- Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/core/sherpa-group-positions.css`
 - Site: `src/core/sherpa-grouping.css`
@@ -17171,16 +17176,14 @@ may set (TODO 215). Two things broke it:
   `sherpa-ui-view` for a View's markup, so a page can allow each by name
   (`trusted-types sherpa-ui sherpa-ui-view`). A page that names neither gets a
   `trusted-types-policy` report, not a silent blank.
-- **`style` attributes** are refused without `'unsafe-inline'`. The calendar's
-  header clone carried three, because it lands in its host's light DOM where
-  no rule of the calendar reaches; it sets them through the CSSOM
-  (`style.setProperty`), which a CSP allows. A template must carry no `style=""`.
+- **`style` attributes** are refused without `'unsafe-inline'`. A template must
+  carry no `style=""`, and nothing needs one: the calendar's projected stepper
+  is a `sherpa-group`, shaped by its own sheet in any tree (TODO 344).
 
 Constructed sheets (`replaceSync`) need no `'unsafe-inline'`. A test page with
 the strict CSP (`test/reforged/csp.html`) records every refusal.
 
 - Site: `src/core/ui/trusted-html.ts`
-- Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
 - Site: `test/e2e/reforged-strict-csp.spec.ts`
 
 ### T-false-is-off

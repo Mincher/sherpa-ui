@@ -74,19 +74,17 @@
     </sherpa-container-footer>
   </div>
 
-  <!--
-    The stepper as a LIGHT-DOM clone for data-embedded. Same three classes as the
-    shadow header, so one set of listeners and one label sync serve both.
-  -->
+  <!-- The stepper as a LIGHT-DOM clone for data-embedded: a sherpa-group, so its
+       corners, edges and lap are the group's in any tree. Same three classes as
+       the shadow header, so one set of listeners and one label sync serve both. -->
   <template class="cal-header-tpl">
-    <!-- Its outer corners are set by the calendar as it lands: see #projectHeader. -->
-    <div class="cal-header cal-header-projected" slot="header">
-      <sherpa-button class="cal-nav cal-prev" data-type="icon" data-group="start"
+    <sherpa-group class="cal-header cal-header-projected" slot="header">
+      <sherpa-button class="cal-nav cal-prev" data-type="icon"
                      data-icon-start="chevron-left" aria-label="Previous"></sherpa-button>
-      <sherpa-button class="cal-label" data-group="mid" aria-live="polite"></sherpa-button>
-      <sherpa-button class="cal-nav cal-next" data-type="icon" data-group="end"
+      <sherpa-button class="cal-label" data-grow aria-live="polite"></sherpa-button>
+      <sherpa-button class="cal-nav cal-next" data-type="icon"
                      data-icon-start="chevron-right" aria-label="Next"></sherpa-button>
-    </div>
+    </sherpa-group>
   </template>
 
   <!-- Cloned per day/month/year by JS, never rendered directly. -->

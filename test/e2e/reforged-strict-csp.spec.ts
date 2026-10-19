@@ -33,12 +33,14 @@ test('templates, icons, an embedded calendar and a View\'s markup draw, and noth
       trustedTypes: typeof (window as unknown as { trustedTypes?: unknown }).trustedTypes !== 'undefined',
       button: (button.shadowRoot?.childElementCount ?? 0) > 0,
       icon: (button.shadowRoot?.querySelector('svg')?.childElementCount ?? 0) > 0,
-      corner: prev?.style.getPropertyValue('--sherpa-border-rounding-top-left') ?? null,
+      corner: prev ? getComputedStyle(prev).getPropertyValue('--sherpa-border-rounding-top-left').trim() : null,
+      styled: prev?.getAttribute('style') ?? null,
       badge: (root.querySelector('sherpa-badge')?.shadowRoot?.childElementCount ?? 0) > 0,
       violations: (window as unknown as { __violations: string[] }).__violations,
     };
   });
   expect(r).toMatchObject({ button: true, icon: true, badge: true, violations: [] });
-  expect(r.corner).toContain('--sherpa-display-mode-border-rounding-base');
+  expect(r.corner).toBe('4px');
+  expect(r.styled).toBeNull();
   expect(errors).toEqual([]);
 });

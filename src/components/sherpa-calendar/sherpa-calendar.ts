@@ -8,6 +8,7 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-group/sherpa-group.js';
 // Temporal, or its stand-in on an engine without it. TRAP T-temporal-is-the-date-model
 import { plainDate, plainYearMonth, today, type PlainDateLike, type PlainYearMonthLike } from '../../core/ui/temporal.js';
 
@@ -157,26 +158,11 @@ export class SherpaCalendar extends SherpaElement {
 
   /** Stepper into the HOST's header, not this element, or the slot never assigns it. */
   #projectHeader(): void {
-    const header = this.clone('template.cal-header-tpl');
-    if (!header) return;
-    /* Its outer corners and spacing, through the CSSOM: it lands in the host's
-       LIGHT DOM, which no rule here reaches — ::slotted() cannot reach a slotted
-       element's children — and a strict CSP refuses a `style` attribute.
-       TRAP T-sherpa-runs-under-a-strict-csp */
-    const round = 'var(--sherpa-display-mode-border-rounding-base, 4px)';
-    const snapped = 'var(--sherpa-structure-space-snapped, 0px)';
-    const style: Array<[string, Record<string, string>]> = [
-      ['.cal-prev', { '--sherpa-border-rounding-top-left': round, '--sherpa-border-rounding-bottom-left': round }],
-      ['.cal-label', { 'margin-inline-start': snapped, flex: '1 1 auto' }],
-      ['.cal-next', { 'margin-inline-start': snapped, '--sherpa-border-rounding-top-right': round, '--sherpa-border-rounding-bottom-right': round }],
-    ];
-    for (const [sel, props] of style) {
-      const el = header.querySelector<HTMLElement>(sel);
-      for (const [name, value] of Object.entries(props)) el?.style.setProperty(name, value);
-    }
     const host = this.parentElement ?? this;
     if (host.querySelector(':scope > .cal-header-projected')) return;
-    host.appendChild(header);
+    // A sherpa-group: its own sheet shapes it in the host's light DOM. TRAP T-grouping-is-an-attribute-and-a-class
+    const header = this.clone('template.cal-header-tpl');
+    if (header) host.appendChild(header);
   }
 
   /** Draw the header label and the grid for the current view. */

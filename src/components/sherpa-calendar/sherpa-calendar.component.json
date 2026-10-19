@@ -216,7 +216,7 @@
         "class": "cal-header-tpl",
         "children": [
           {
-            "el": "div",
+            "el": "sherpa-group",
             "class": "cal-header cal-header-projected",
             "attrs": {
               "slot": "header"
@@ -227,7 +227,6 @@
                 "class": "cal-nav cal-prev",
                 "attrs": {
                   "data-type": "icon",
-                  "data-group": "start",
                   "data-icon-start": "chevron-left",
                   "aria-label": "Previous"
                 }
@@ -236,7 +235,7 @@
                 "el": "sherpa-button",
                 "class": "cal-label",
                 "attrs": {
-                  "data-group": "mid",
+                  "data-grow": "",
                   "aria-live": "polite"
                 }
               },
@@ -245,7 +244,6 @@
                 "class": "cal-nav cal-next",
                 "attrs": {
                   "data-type": "icon",
-                  "data-group": "end",
                   "data-icon-start": "chevron-right",
                   "aria-label": "Next"
                 }

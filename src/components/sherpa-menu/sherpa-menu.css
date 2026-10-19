@@ -297,28 +297,9 @@
 /* The trail REPLACES the heading — the last crumb IS the heading. */
 :host([data-drill]) .heading { display: none; }
 
-/* ── A slotted stepper is a SNAPPED group, and only this file can say so ──
- * The buttons are slotted, so they sit in the MENU's light DOM — outside
- * sherpa-calendar's shadow root, where its own `.cal-header` rules cannot
- * reach them. ::slotted() cannot match a slotted element's CHILDREN, so the
- * row is laid out here and the corner variables INHERIT down to the buttons;
- * a custom property crosses a shadow boundary where a selector does not. */
-.header ::slotted(.cal-header) {
-  display: flex;
-  align-items: center;
-  /* Spans the card so the flexible month button stretches between the arrows.
-     The stretch itself is on the month clone in sherpa-calendar.html. */
-  justify-content: stretch;
-  /* NO gap: the borders OVERLAP so the seam reads as one stroke, and `gap`
-     cannot be negative — the negative margin is inline on the clone. */
-  gap: 0;
-
-  /* Squared all round; the ends take their outer corners back on the clone. */
-  --sherpa-border-rounding-top-left: 0px;
-  --sherpa-border-rounding-top-right: 0px;
-  --sherpa-border-rounding-bottom-left: 0px;
-  --sherpa-border-rounding-bottom-right: 0px;
-}
+/* A slotted stepper is a sherpa-group: its corners and lap are its own.
+   Block-level here, so the month fills the card. */
+.header ::slotted(.cal-header) { display: flex; }
 
 /* Heading node 1144:28554: size small 12 / line-height 16, regular, TITLE case,
    and NO inline padding on its parent frame. */

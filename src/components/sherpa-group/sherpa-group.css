@@ -41,6 +41,9 @@
   --sherpa-border-rounding-bottom-right: 0px;
 }
 
+/* A child marked `data-grow` takes the spare room — a stepper's month. */
+::slotted([data-grow]) { flex: 1 1 auto; }
+
 /* The snapped lap, from the Figma Structure collection. */
 :host(:not([data-direction='grid'])) ::slotted(:not(:first-child)) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
