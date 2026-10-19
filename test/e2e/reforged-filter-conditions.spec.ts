@@ -920,3 +920,37 @@ test('an AND row greys the values the rows before it rule out; an OR row offers 
   expect(r.or).toEqual(['gold', 'silver']);
   expect(r.and).toEqual(['gold [off: No matches with the rows above.]', 'silver']);
 });
+
+/* 349: an Advanced row's values follow the source too — a value the filters
+   before the field rule out is greyed, never the row's own pick.
+   TRAP T-a-ruled-out-value-is-greyed */
+test('an Advanced row greys a value the filters before its field rule out, never its own pick', async ({ page }) => {
+  await bar(page);
+  const r = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const menu = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement & { present: readonly string[] | null };
+    const sr = menu.shadowRoot!;
+    const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
+    const set = (field: Element, value: string): void => {
+      (field as HTMLElement & { value: string }).value = value;
+      field.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    };
+    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
+    await wait();
+    set(sr.querySelector('.condition-row .condition-pick')!, 'gold');
+    await wait();
+    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    await wait();
+    set(sr.querySelectorAll('.condition-row')[1]!.querySelector('.join')!, 'or');
+    await wait();
+    // The source: the filters before Tier leave only silver.
+    menu.present = ['silver'];
+    await wait();
+    const offer = (i: number) => [...(sr.querySelectorAll('.condition-row')[i]!.querySelector('.condition-pick') as HTMLElement)
+      .shadowRoot!.querySelectorAll('option')].filter((o) => o.value).map((o) => `${o.value}${o.disabled ? ` [off: ${o.title}]` : ''}`);
+    return { first: offer(0), second: offer(1) };
+  });
+  // Row one picked gold: its own pick is never greyed.
+  expect(r.first).toEqual(['gold', 'silver']);
+  expect(r.second).toEqual(['gold [off: Limited by the filters before it: no matches.]', 'silver']);
+});

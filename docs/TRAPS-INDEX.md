@@ -597,7 +597,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (89)
+## The data grid (90)
 
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
 - [T-a-cloned-prototype-needs-its-icons-upgraded](TRAPS.md#t-a-cloned-prototype-needs-its-icons-upgraded) — data-grid
@@ -606,6 +606,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — data-grid
 - [T-a-conditioned-chip-reads-as-active](TRAPS.md#t-a-conditioned-chip-reads-as-active) — data-grid
 - [T-a-default-is-not-an-override](TRAPS.md#t-a-default-is-not-an-override) — data-grid
+- [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — data-grid
 - [T-a-find-asks-its-host-to-step](TRAPS.md#t-a-find-asks-its-host-to-step) — data-grid
 - [T-a-grid-draws-once-per-moment](TRAPS.md#t-a-grid-draws-once-per-moment) — data-grid
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — data-grid

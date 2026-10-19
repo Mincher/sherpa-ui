@@ -65,6 +65,30 @@ test('the bar tells a chip\'s menu what its chain offers', async ({ page }) => {
   expect(r.shown).toEqual(['APAC']);
 });
 
+test('the grid tells a heading\'s menu what its chain offers, and greys a pick it set aside (349)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const grid = await window.__mount<HTMLElement & {
+      populate(d: unknown): Promise<void>; drawOffered(o: Offered): void; openColumnFilter(f: string): void;
+    }>('sherpa-data-grid', undefined, { 'data-column-filters': '' });
+    await grid.populate({ columns: [{ field: 'name', header: 'Name' }, { field: 'region', header: 'Region' }],
+      rows: ['AMER', 'EMEA', 'APAC'].map((region, i) => ({ name: `n${i}`, region })) });
+    await window.__settled();
+    const menu = grid.shadowRoot!.querySelector<HTMLElement & { offered: readonly string[] | null; values: string[] }>(
+      '.head-cell[data-field="region"] sherpa-menu')!;
+    menu.values = ['EMEA'];
+    grid.drawOffered({ region: ['APAC'] });
+    await window.__settled();
+    const chip = grid.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="region"] .head-filter')!;
+    return { offered: menu.offered, shown: [...menu.querySelectorAll<HTMLElement>('.menu-row:not(.qf-all)')]
+      .filter((row) => getComputedStyle(row).display !== 'none').map((row) => row.querySelector('input')!.value),
+    setAside: chip.hasAttribute('data-unavailable') };
+  });
+  expect(r.offered).toEqual(['APAC']);
+  // EMEA is the pick: it stays, set aside; AMER is not offered, so it goes.
+  expect([...r.shown].sort()).toEqual(['APAC', 'EMEA']);
+  expect(r.setAside).toBe(true);
+});
+
 test('the panel removes a value chip its chain does not offer, and keeps one that is on', async ({ page }) => {
   const r = await page.evaluate(async (options) => {
     const panel = await window.__mount<HTMLElement & {

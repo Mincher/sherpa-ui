@@ -673,7 +673,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (drawPresent, setColumnFilter, supersedeColumns, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (drawPresent, drawOffered, setColumnFilter, supersedeColumns, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -888,6 +888,12 @@
           "name": "drawPresent",
           "args": "present: Readonly<Record<string, readonly string[]>>",
           "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited."
+        },
+        {
+          "$type": "method",
+          "name": "drawOffered",
+          "args": "offered: Readonly<Record<string, readonly string[]>>",
+          "description": "drawOffered(offered) — what each serial-set field OFFERS: a heading's menu removes the rest, but keeps a pick."
         },
         {
           "$type": "method",

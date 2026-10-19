@@ -735,16 +735,27 @@ export class SherpaDataGrid extends SherpaElement {
     for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
   }
 
-  /** One heading's menu, told what the filters before its field leave — and its
-   *  chip greyed when every pick it holds is set aside. */
+  /** drawOffered(offered) — what each serial-set field OFFERS: a heading's menu
+   *  removes the rest, but keeps a pick. TRAP T-a-filter-set-groups-or-chains */
+  drawOffered(offered: Readonly<Record<string, readonly string[]>>): void {
+    this.#offered = offered;
+    for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
+  }
+  /** What each chained field offers, as last drawn. */
+  #offered: Readonly<Record<string, readonly string[]>> = {};
+
+  /** One heading's menu, told what the filters before its field leave and what
+   *  its chain offers — and its chip greyed when every pick it holds is set aside. */
   #markPresent(cell: HTMLElement): void {
     const field = cell.dataset['field']!;
     const chip = cell.querySelector<HTMLElement>('.head-filter');
     const menu = chip?.querySelector<SherpaMenu>('sherpa-menu');
     if (!chip || !menu || this.#superseded.has(field)) return;
     const left = this.#present[field] ?? null;
+    const offered = this.#offered[field] ?? null;
     menu.present = left;
-    chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left)));
+    menu.offered = offered;
+    chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left, offered)));
   }
   /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};

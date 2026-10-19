@@ -2476,6 +2476,19 @@
             },
             {
               "kind": "method",
+              "name": "drawOffered",
+              "parameters": [
+                {
+                  "name": "offered",
+                  "type": {
+                    "text": "Readonly<Record<string, readonly string[]>>"
+                  }
+                }
+              ],
+              "description": "drawOffered(offered) — what each serial-set field OFFERS: a heading's menu removes the rest, but keeps a pick."
+            },
+            {
+              "kind": "method",
               "name": "setColumnFilter",
               "parameters": [
                 {

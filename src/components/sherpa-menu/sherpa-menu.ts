@@ -1311,6 +1311,7 @@ export class SherpaMenu extends SherpaElement {
   set present(values: readonly string[] | null) {
     this.#present = values ? new Set(values) : null;
     this.#markPresent();
+    this.#refillRows();
   }
   get present(): readonly string[] | null {
     return this.#present ? [...this.#present] : null;
@@ -1323,6 +1324,7 @@ export class SherpaMenu extends SherpaElement {
   set offered(values: readonly string[] | null) {
     this.#offered = values ? new Set(values) : null;
     this.#markPresent();
+    this.#refillRows();
   }
   get offered(): readonly string[] | null {
     return this.#offered ? [...this.#offered] : null;
@@ -1831,6 +1833,8 @@ export class SherpaMenu extends SherpaElement {
     if (!options.length) return;
     const rows = this.conditions;
     const values = options.map((o) => o.value).filter(Boolean);
+    // What the source's filters before this field rule out, too (349). TRAP T-a-ruled-out-value-is-greyed
+    const limit = ruleOut(this.#present, this.#offered);
     this.#rowEls().forEach((row, i) => {
       const pick = row.querySelector<SherpaInputText>('.condition-pick');
       if (!pick) return;
@@ -1840,12 +1844,18 @@ export class SherpaMenu extends SherpaElement {
          greyed and refused — never the row's own pick. Will, TODO 110 (B).
          TRAP T-an-and-row-offers-what-the-rows-before-it-leave */
       const left = rowOffer(rows, i, values);
-      const offered = options.map((o) => (!o.value || left.has(o.value) || o.value === held
-        ? o : { ...o, disabled: true, title: SherpaMenu.NOT_AFTER }));
+      const offered = options.map((o) => (!o.value || o.value === held ? o
+        : limit(o.value) ? { ...o, disabled: true, title: RULED_OUT }
+          : left.has(o.value) ? o : { ...o, disabled: true, title: SherpaMenu.NOT_AFTER }));
       void Promise.resolve(pick.populate?.(offered)).then(() => {
         if (held && options.some((o) => o.value === held)) pick.value = held;
       });
     });
+  }
+
+  /** Advanced rows on show are offered again: what the source rules out moved. */
+  #refillRows(): void {
+    if (this.mode === 'advanced' && this.#rowEls().length) this.#refillPicks();
   }
 
   /** Why an AND row greys a value. TRAP T-an-and-row-offers-what-the-rows-before-it-leave */

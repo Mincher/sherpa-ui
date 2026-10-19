@@ -925,6 +925,9 @@ OFF chip counts. The TRAP changes with it.
     View leaves no rows for is set aside (greyed, kept, not applied).
   - ✅ **C7** — the words: "Limited by the filters before it: no matches." / "…:
     not applied.", in the code, the JSDoc, the reference and Demos' Settings.
+  - ✅ **C8** — a grid heading draws what its serial chain offers (`drawOffered`), and
+    an Advanced row's values grey what the filters before the field rule out —
+    never the row's own pick.
 
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 

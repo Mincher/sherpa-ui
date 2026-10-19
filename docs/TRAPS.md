@@ -1821,6 +1821,7 @@ may still add it.
 - Site: `test/e2e/reforged-filterset.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-one-walk-counts-and-limits-in-order
 
@@ -7903,8 +7904,8 @@ left out of the compiled filter (`CompileFacts.drop`). Let the earlier filter
 go and it is back. (Until 349 a LATER answer set an earlier pick aside —
 TODO 180, newest first; the one order replaced it.)
 
-**What rules a field** (`T-one-walk-counts-and-limits-in-order`): with
-`limitOptions` on (Settings › Application, off by default), the rows at its
+**What rules a field** (`T-one-walk-counts-and-limits-in-order`) — a
+grid heading and an Advanced row's values too: with `limitOptions` on (Settings › Application, off by default), the rows at its
 place. Off, a component scope's field is ruled by the View's subset (347) and
 the View's by nothing — the View always limits a component scope. A chart part
 is greyed by its host the same way, and its pick is never set aside (Q1 A).
@@ -7967,6 +7968,7 @@ go.
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
