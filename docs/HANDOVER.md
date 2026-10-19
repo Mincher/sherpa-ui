@@ -28,57 +28,26 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 - A peer session (`sherpa-demos-a7`) may exist. Never stash. Stage only your
   own files, and only when `git diff --cached` is empty.
 
-## In hand: TODO 344 — markup, default variants and text come from the `.html` and `.css`
+## Done since the first handover: TODO 344 and the stock-take
 
-Will, 2026-10-19: JS/TS must not provide a component's markup, default
-variants or fixed text; the `.html` and `.css` do, and `SherpaElement` provides
-the mechanism. Seven groups are done and tested; four are left. The TODO 344
-section lists each with its commit. The plans — one per group, each checked by
-a second agent, with exact code — are in `docs/history/plan-344/`.
-
-**New base mechanisms, all in `src/core/ui/sherpa-element.ts`** (read their TRAPs):
+- **TODO 344 is ✅** (2026-10-19): a component's markup, default variants and
+  text come from its `.html` and `.css`, never from TS. Every group passed its
+  focused specs in three engines; its section in `docs/TODO.md` lists each
+  commit. The base mechanisms, each with a TRAP:
 
 | Mechanism | TRAP |
 |---|---|
-| A `content` prop's default is its target's own text in the template; `PropDef.default` is gone | `T-the-templates-text-is-the-default` |
-| `data-swap-on` / `data-swap-*`: a value that follows a host attribute, written in the markup (`src/core/ui/swap.ts`) | `T-a-swapped-label-is-in-the-markup` |
-| `<template class="words">` + `this.word(key)`: a fixed word the code hands on as data | `T-a-word-is-in-the-markup` |
-| No attribute is the default variant; the projector's `unset` for the nav | `T-no-attribute-is-the-default-variant` |
+| A `content` prop's default is its target's own text in the template | `T-the-templates-text-is-the-default` |
+| `data-swap-on` / `data-swap-*`: a value that follows a host attribute (`src/core/ui/swap.ts`) | `T-a-swapped-label-is-in-the-markup` |
+| `<template class="words">` + `this.word(key)` | `T-a-word-is-in-the-markup` |
+| No attribute is the default variant; the projector's `unset` | `T-no-attribute-is-the-default-variant` |
+| `static html` as a LIST: family markup (`src/core/sherpa-filter-menu.html`, `src/core/sherpa-filter-more.html`) | `T-a-family-shares-markup` |
+| `static pageCss`: a sheet adopted into the document (the toast stack) | `T-a-page-sheet-is-for-what-a-component-puts-in-the-page` |
 
-**Left, in this order:**
-
-1. **1b** nav-item's search highlight — `docs/history/plan-344/group-1-css-and-structure.md` (b).
-2. **1c** the calendar's projected header as a `<sherpa-group>` — the same file, (c).
-3. **1d + 3b(a)** helper-owned markup: the ⋮ menu rows (`src/core/ui/more-menu.ts`)
-   and `menuFor()`'s menu and date calendar (`src/core/ui/filter-menu.ts`). The
-   two plans (`group-1…` (d) and `group-3b…` (a)) propose two mechanisms. Use
-   ONE: `static html` as a LIST of family files, as `static css` already is.
-4. **1a** the toast stack: `static pageCss` adopted into the document, and
-   `:state(stacked)` — `group-1…` (a).
-5. Then: PRINCIPLES rule 17's exceptions, recounted; the TODO 344 row ✅.
-
-After each: `node scripts/generate-component-spec.mjs <name>`, `npm run manifest`,
-`npm run reference`, `npm run traps:write` (a TRAP's `Site:` must list every file
-that cites it), `npm run map:write <file>`, then `npm run check:size -- --update-baseline`
-if a file grew on purpose. At the end, `npm run check:weight -- --update-baseline`.
-
-## Also asked for, not done: the stock-take
-
-`docs/history/STOCKTAKE-2026-10-19.md` is Will's overview, with Mermaid
-diagrams. He asked for two things:
-
-1. **Update it with what 344 changed** once 344 is done: the new mechanisms
-   above, the component diagram, and anything it says that is no longer true.
-2. **Add Mermaid diagrams of how an APP, a VIEW and a UI COMPONENT are created
-   at run time**, showing exactly how JSON, HTML, CSS and JS interact as
-   contracts, templates and definitions. Drafts, each checked once against the
-   code, are in `docs/history/stocktake-runtime-drafts/` (`app.md`, `view.md`,
-   `component.md`). They were written while 344 was under way, so bring the
-   component draft up to date.
-
-Check every diagram renders before you commit: load
-`mermaid@11.4.1` from cdn.jsdelivr.net in a Playwright page and call
-`mermaid.render()` on each block. Will reads the file in Obsidian.
+- **The stock-take** (`docs/history/STOCKTAKE-2026-10-19.md`) is updated for
+  344, and has Will's run-time diagrams: the kinds of file, an app, a Context
+  and a View, and a UI component (sections 7 to 10). Every diagram renders
+  (checked with `mermaid@11.4.1` in a Playwright page).
 
 ## Next: TODO 345 — fetch each field's values on demand, with a cache
 
