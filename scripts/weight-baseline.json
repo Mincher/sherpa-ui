@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 836551,
+    "js": 836712,
     "files": 106,
     "fetched": 216124
   },
@@ -245,7 +245,7 @@
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 462244,
+    "js": 462405,
     "files": 45,
     "fetched": 0
   },
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 966402,
+    "js": 966563,
     "files": 143,
     "fetched": 216124
   }

@@ -15959,6 +15959,22 @@ the bar's slot fold away at narrow widths, as the old switch did.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 
+### T-a-stale-draw-keeps-the-bars-own-change
+
+TODO 356. A bar's `drawScope(description)` reads the scope, then WAITS — its
+menus stamp, then two frames — and only then draws each chip from that
+description. A chip the bar changes meanwhile (a reader's tick, or
+`setChipReading()` + `report()`) is NEWER than the description, and the draw
+cleared it: the source kept the filter (100 → 24 rows) while the chip read off.
+A grid bound late redraws its scope's bars, so a page that was still binding hit
+it; Firefox's later frames made it show there first.
+
+So the bar counts its own changes (`#edited(id)`), and a draw skips any chip
+changed after it began: its picks, its emptying, a saved filter's on/off. The
+bar has reported that change, so the source holds it; the next draw draws it.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
 ### T-a-pin-a-page-can-re-point
 
 TODO 353 (Will, 2026-10-19). Demos' "Show active filters in green" re-pointed

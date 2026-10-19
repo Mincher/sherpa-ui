@@ -296,7 +296,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
 
-## Filters (172)
+## Filters (173)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -362,6 +362,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-silent-write-still-needs-a-way-to-report](TRAPS.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
 - [T-a-slotted-rows-css-follows-the-menu-not-the-chip](TRAPS.md#t-a-slotted-rows-css-follows-the-menu-not-the-chip) — filter-panel
+- [T-a-stale-draw-keeps-the-bars-own-change](TRAPS.md#t-a-stale-draw-keeps-the-bars-own-change) — quick-filter-toolbar
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — quick-filter
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — quick-filter, quick-filter-toolbar
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — filter-panel

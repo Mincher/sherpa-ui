@@ -474,6 +474,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-conditioned-chip-answers-with-its-clause
    */
   setChipReading(id: string, reading: FieldReading): void {
+    this.#edited(id);
     if (!this.#chips().length) {
       this.#held.chips.set(id, { reading: { ...reading } });
       return;
@@ -1105,6 +1106,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     syncResets(this, this.root, '.act[data-act="clear"]');
   }
 
+  /** How many chip changes this bar has made itself. */
+  #edits = 0;
+  /** Each chip's last change by this bar, as that count. */
+  #editedAt = new Map<string, number>();
+
+  /** This bar changed a chip itself: a draw begun before is older than it. */
+  #edited(id: string): void {
+    this.#editedAt.set(id, ++this.#edits);
+  }
+
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
   #emitChange(given: { suspended?: boolean; reset?: boolean } = {}): void {
     this.#keepOffChips();
@@ -1309,6 +1320,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   async drawScope(scope: ScopeDescription): Promise<void> {
     this.#scoped = true;
+    // A chip this bar changes while this draw waits is newer than the draw. TRAP T-a-stale-draw-keeps-the-bars-own-change
+    const began = this.#edits;
+    const newer = (id: string): boolean => (this.#editedAt.get(id) ?? 0) > began;
     // A list this bar kept before a source drew it goes to the source, below.
     const handover = this.#switchedOff;
     this.#switchedOff = null;
@@ -1350,18 +1364,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (!state) continue;
       const id = this.#idOf(field);
       answered.add(id);
-      if (!persistent.has(id)) this.#drawChip(id, state);
+      if (!persistent.has(id) && !newer(id)) this.#drawChip(id, state);
     }
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
     for (const def of this.#filters) {
       const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
-      if (!chip || answered.has(def.id) || persistent.has(def.id) || def.readings) continue;
+      if (!chip || answered.has(def.id) || persistent.has(def.id) || def.readings || newer(def.id)) continue;
       if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
     const on = new Set(presets.filter((f) => f.active).map((f) => f.id));
-    for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, on.has(def.id));
+    for (const def of this.#filters) if (def.readings && !newer(def.id)) this.#setChipActive(def.id, on.has(def.id));
     if (resume) this.#emitChange({ suspended: false });
     else if (handover?.length && scope.suspended) {
       // On again in the report, so the source's keepOff lists them as its own.
@@ -1837,6 +1851,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       );
       if (filterChip) {
         event.stopImmediatePropagation();
+        this.#edited(filterChip.dataset['id'] ?? '');
         /* The chip's OWN answer: `values` reports only chips already ON, so an
            off chip could never commit itself on — every date chip's first pick.
            A TYPED condition is an answer too, so this cannot read ticked rows

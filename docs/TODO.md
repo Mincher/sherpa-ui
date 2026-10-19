@@ -37,7 +37,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
 | ⬜ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
 | ⬜ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
-| ⬜ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
+| ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1004,7 +1004,7 @@ The fix to design: keep each heading cell by field and update it in place
 column or its filter def changes; one render per tick, not one per attribute;
 and read layout once. Measure with `inp.mjs` before and after.
 
-### `[ ]` ⬜ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
+### `[x]` ✅ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
 
 Found 2026-10-19 while testing 353. On Demos Records, calling the data bar's
 `setChipReading('status', { picked: ['active'] })` then `report()` applies the
@@ -1014,6 +1014,14 @@ keep it on, and a reader's real clicks keep it on in all three. Likely the
 chip's own menu fills late and reports its unticked rows
 (`sherpa-a-composed-field-fills-async`). `setChipReading` is public, so a
 caller with no pointer must get the same result as a click.
+
+**✅ Done 2026-10-19.** Traced in Firefox: a grid bound late redrew the bar
+(`attach` → `drawBars` → `drawScope`), and `drawScope` draws its chips from the
+description it was given only after waiting two frames — so a chip set in those
+frames was cleared. The bar now counts its own changes, and a draw skips any
+chip changed after it began. A reader's tick in those frames was at risk too.
+Test: Demos `reforged-a-stale-draw-keeps-the-bars-own-change.spec.ts` (fails
+without the fix). TRAP `T-a-stale-draw-keeps-the-bars-own-change`.
 
 ---
 
