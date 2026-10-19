@@ -394,6 +394,7 @@ CSS nesting with `&` inside `:host {}` also desugars to the broken chained form.
 - All elements the component will ever show **must exist in the HTML template from the start**. Never use `createElement()` or structural `innerHTML`.
 - Data-driven repeating items use cloning prototypes: `<template class="item-tpl">` (no `id` — prevents SherpaElement's multi-template parser from picking them up).
 - Multi-variant: add `<template id="other">` blocks; JS selects via `get templateId()`.
+- A value that follows a host attribute — a toggle's name, its icon, `aria-pressed` — is written in the markup: `data-swap-on="data-x"` (or `data-x=value`) and `data-swap-<name>="…"` (`text` for its text). The base writes it while the host matches, and puts the template's own back after (TRAP `T-a-swapped-label-is-in-the-markup`).
 
 ### Token architecture
 
@@ -769,6 +770,7 @@ Components use `@container` for responsive adaptation — **no viewport `@media`
 | `element.hidden = bool` on shadow internals | CSS `:host([data-*]) .el { display: … }` |
 | `element.style.display = '…'` | CSS attribute selectors |
 | `classList.add/remove/toggle` for visual state | `data-*` attributes + CSS |
+| `setAttribute('aria-label', on ? 'A' : 'B')` | `data-swap-*` in the template |
 | `createElement()` / structural `innerHTML` | HTML template + cloning prototypes |
 | `--core-*` in component CSS | `--sherpa-*` with hardcoded fallback |
 | `opacity` for disabled | Inactive tokens per property |

@@ -26,6 +26,7 @@ import {
 import { report } from '../data/report.js';
 import { ownHtml } from './trusted-html.js';
 import { FormValue } from './form-value.js';
+import { applySwaps, readSwaps, type Swap } from './swap.js';
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
@@ -507,6 +508,7 @@ export abstract class SherpaElement extends Base {
     // A declared prop re-syncs itself; onChange still fires afterwards.
     const def = Ctor.props[name];
     if (def) this.#syncProp(name, def);
+    applySwaps(this, this.#swaps, name);
     if (name === 'aria-label' || name === 'aria-pressed') this.#syncLabel();
     if (Ctor.asks && (name in SUMMARY_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
     this.onChange(name, oldVal, newVal);
@@ -928,9 +930,11 @@ export abstract class SherpaElement extends Base {
     this.#stampedTemplate = id;
     this.#hasRendered = true;
     this.#readOwn();
+    this.#swaps = readSwaps(this.root);
     // Props and icons BEFORE onRender, so a component's setup reads a
     // populated tree. A template `data-icon` draws nothing until upgraded.
     this.#syncAllProps();
+    applySwaps(this, this.#swaps);
     this.#syncLabel();
     upgradeIcons(this.root);
     this.onRender();
@@ -1034,6 +1038,9 @@ export abstract class SherpaElement extends Base {
   }
 
   /* ── Private — declared-prop sync ────────────────────────────────────── */
+
+  /** This stamp's swaps. TRAP T-a-swapped-label-is-in-the-markup */
+  #swaps: Swap[] = [];
 
   /** Each `content` target's own value, as this stamp wrote it. TRAP T-the-templates-text-is-the-default */
   #own = new WeakMap<Element, string | null>();

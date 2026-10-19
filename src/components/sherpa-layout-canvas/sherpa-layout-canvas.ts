@@ -85,7 +85,6 @@ export class SherpaLayoutCanvas extends SherpaElement {
     if (name === 'data-zoom' && value != null && Number(value) !== SherpaLayoutCanvas.#round(this.#zoom)) {
       this.zoomTo(coerceNum(value, this.#zoom));
     } else if (name === 'data-no-minimap') {
-      this.#syncMinimapToggle();
       this.#drawMinimap();
     }
   }
@@ -241,12 +240,6 @@ export class SherpaLayoutCanvas extends SherpaElement {
     else if (value === 'actual') this.zoomTo(1);
     else if (value === 'minimap') this.toggleAttribute('data-no-minimap');
   };
-
-  /** Its row says what it will do. */
-  #syncMinimapToggle(): void {
-    const row = this.$('.minimap-toggle');
-    if (row) row.textContent = this.hasAttribute('data-no-minimap') ? 'Show minimap' : 'Hide minimap';
-  }
 
   /* ── The minimap ──────────────────────────────────────────────────────── */
 

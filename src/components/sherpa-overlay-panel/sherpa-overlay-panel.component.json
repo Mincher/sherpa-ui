@@ -103,7 +103,10 @@
                         "data-type": "icon",
                         "data-size": "sm",
                         "data-icon-start": "fullscreen",
-                        "aria-label": "Maximise"
+                        "aria-label": "Maximise",
+                        "data-swap-on": "data-maximised",
+                        "data-swap-data-icon-start": "fullscreen-exit",
+                        "data-swap-aria-label": "Minimise"
                       }
                     },
                     {

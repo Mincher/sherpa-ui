@@ -185,7 +185,12 @@
                       "data-group": "start",
                       "data-icon-start": "star",
                       "aria-label": "Add to Favorites",
-                      "aria-pressed": "false"
+                      "aria-pressed": "false",
+                      "data-swap-on": "data-favourite",
+                      "data-swap-data-icon-start": "star-filled",
+                      "data-swap-aria-label": "Remove from Favorites",
+                      "data-swap-aria-pressed": "true",
+                      "data-swap-data-status": "active"
                     }
                   },
                   {

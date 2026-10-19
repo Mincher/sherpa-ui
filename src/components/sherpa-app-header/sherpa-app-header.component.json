@@ -107,7 +107,10 @@
                         "data-size": "sm",
                         "data-look": "transparent",
                         "data-icon-start": "moon",
-                        "aria-label": "Toggle theme"
+                        "aria-label": "Switch to dark mode",
+                        "data-swap-on": "data-theme-mode=dark",
+                        "data-swap-data-icon-start": "sun",
+                        "data-swap-aria-label": "Switch to light mode"
                       }
                     },
                     {

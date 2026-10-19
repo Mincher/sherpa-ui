@@ -91,6 +91,9 @@ define('sherpa-foo', SherpaFoo);
   `Slots:` and `Fires:`, one entry per line. A `Fires:` entry's first sentence is
   the event's meaning in the spec; the names come from the code.
 - Every slot carries `data-accepts` (PRINCIPLES 12).
+- Default text is the template's own: a `content` prop's target holds it
+  (`T-the-templates-text-is-the-default`). A label that swaps with a host
+  attribute holds both values, as `data-swap-*` (`T-a-swapped-label-is-in-the-markup`).
 
 ## The CSS
 

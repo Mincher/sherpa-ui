@@ -105,6 +105,19 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   }
 }
 
+/* A swap follows a host attribute; one it does not hear never swaps.
+   TRAP T-a-swapped-label-is-in-the-markup */
+for (const file of globSync('src/components/*/*.html', { cwd: ROOT })) {
+  const tsPath = join(ROOT, file.replace(/\.html$/, '.ts'));
+  let ts;
+  try { ts = readFileSync(tsPath, 'utf8'); } catch { continue; }
+  const heard = new Set([...declaredIn(ts, tsPath), ...parseObserved(ts, tsPath)]);
+  const html = readFileSync(join(ROOT, file), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+  for (const m of html.matchAll(/\sdata-swap-on="([^"=]+)/g)) {
+    if (!heard.has(m[1])) problems.push(`${file}  data-swap-on="${m[1]}" follows an attribute ${file.split('/')[2]} does not observe`);
+  }
+}
+
 if (problems.length) {
   console.error(`check-props: ${problems.length} problem(s)\n`);
   for (const p of problems) console.error(`  ✗ ${p}\n`);

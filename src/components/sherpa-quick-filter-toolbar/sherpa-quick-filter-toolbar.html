@@ -151,9 +151,14 @@
       <!-- THE VIEW GROUP — Figma's "Frame 1": three controls snapped into one
            box. Shown only for data-type="view". -->
       <span class="view-group sherpa-group">
+        <!-- Two drawings, so the star fills: TRAP T-favourite-star-swaps-its-glyph.
+             "active" is a Style mode: TRAP T-tokens-css-never-reaches-shadow -->
         <sherpa-button class="act" data-size="sm" data-act="favourite" data-type="icon"
                        data-group="start" data-icon-start="star"
-                       aria-label="Add to Favorites" aria-pressed="false"></sherpa-button>
+                       aria-label="Add to Favorites" aria-pressed="false"
+                       data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
+                       data-swap-aria-label="Remove from Favorites" data-swap-aria-pressed="true"
+                       data-swap-data-status="active"></sherpa-button>
         <sherpa-button class="act" data-size="sm" data-act="save"
                        data-group="mid" data-icon-start="upload">Save</sherpa-button>
         <sherpa-button class="act view-more" data-size="sm" data-act="view-menu" data-type="icon"

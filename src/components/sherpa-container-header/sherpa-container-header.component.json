@@ -45,7 +45,10 @@
                 "data-look": "transparent",
                 "data-icon-start": "chevron-up",
                 "aria-expanded": "true",
-                "aria-label": "Collapse"
+                "aria-label": "Collapse",
+                "data-swap-on": "data-collapsed",
+                "data-swap-aria-expanded": "false",
+                "data-swap-aria-label": "Expand"
               }
             },
             {

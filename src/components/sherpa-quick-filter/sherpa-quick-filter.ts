@@ -113,7 +113,6 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#writeTip();
     this.#paintSwatch();
     this.#syncPressed();
-    this.#syncDismiss();
     this.$('.body')?.addEventListener('click', this.#onClick);
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
@@ -185,7 +184,6 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onChange(name: string): void {
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent'].includes(name)) this.#syncPressed();
-    if (name === 'data-dismiss') this.#syncDismiss();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
@@ -216,16 +214,6 @@ export class SherpaQuickFilter extends SherpaElement {
     if (Number.isFinite(n)) return paintSeries(swatch, n - 1, n);
     swatch.style.setProperty('--_hue', statusVar(given));
     swatch.style.setProperty('--_border', statusBorderVar(given));
-  }
-
-  /** A dismissing chip's right button says what it does, and opens nothing. */
-  #syncDismiss(): void {
-    const caret = this.$('.caret');
-    if (!caret) return;
-    const dismiss = this.hasAttribute('data-dismiss');
-    caret.setAttribute('aria-label', dismiss ? 'Dismiss' : 'Choose values');
-    if (dismiss) caret.removeAttribute('aria-haspopup');
-    else caret.setAttribute('aria-haspopup', 'dialog');
   }
 
   /** A toggle says whether it is on. A jump, a selector and a key are no toggle.

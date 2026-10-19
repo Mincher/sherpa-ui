@@ -41,7 +41,9 @@
                      aria-label="Drag to reorder"></sherpa-button>
       <sherpa-button class="toggle" part="toggle" data-type="icon" data-size="sm"
                      data-look="transparent" data-icon-start="chevron-up"
-                     aria-expanded="true" aria-label="Collapse"></sherpa-button>
+                     aria-expanded="true" aria-label="Collapse"
+                     data-swap-on="data-collapsed" data-swap-aria-expanded="false"
+                     data-swap-aria-label="Expand"></sherpa-button>
       <span class="icon" part="icon" aria-hidden="true"><span class="glyph"></span><slot name="icon" data-accepts="icon"></slot></span>
     </span>
 

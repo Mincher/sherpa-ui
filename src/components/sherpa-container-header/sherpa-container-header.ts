@@ -25,23 +25,10 @@ export class SherpaContainerHeader extends SherpaElement {
   } as const;
 
   override onRender(): void {
-    this.#syncCollapsed();
     // `button-click`, not `click` — a disabled sherpa-button suppresses its own event.
     this.$('.close')?.addEventListener('button-click', this.#onDismiss);
     this.$('.toggle')?.addEventListener('button-click', this.#onToggle);
     this.$('.drag')?.addEventListener('pointerdown', this.#onDrag);
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-collapsed') this.#syncCollapsed();
-  }
-
-  /** Reflect collapsed onto the toggle's aria-expanded / label. */
-  #syncCollapsed(): void {
-    const collapsed = this.hasAttribute('data-collapsed');
-    const toggle = this.$('.toggle');
-    toggle?.setAttribute('aria-expanded', String(!collapsed));
-    toggle?.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
   }
 
   /** The dismiss button. */

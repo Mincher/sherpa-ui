@@ -6,6 +6,7 @@
  * Map:
  * - TemplateMap — `<template id>` → its markup; null for one flat template.
  * - OwnFiles — the files a consumer gives a component.
+ * - inlined — a file's text, carried in the JS by the build, so it is never fetched.
  * - useTemplate — draw a component from your own markup, and add your sheets after its own.
  * - filesFor — the markup and sheets a component is drawn from now.
  * - loadTemplates — a markup file, fetched once and split by `<template id>`.
@@ -15,7 +16,6 @@
  * - reloadFiles — fetch files again; a sheet changes in place, and each listener hears what else changed.
  * - onReload — hear which files a reload changed, so their elements draw again.
  * - checkOwnTemplate — report what a consumer's markup lacks that the component reaches for.
- * - inlined — a file's text, carried in the JS by the build, so it is never fetched.
  */
 import { report } from '../data/report.js';
 import { ownHtml } from './trusted-html.js';
@@ -211,7 +211,7 @@ export function onReload(listener: (changed: ReadonlySet<string>) => void): () =
 
 /**
  * A consumer's markup must keep what the component's code reaches for: each
- * template id, part, slot name and class of its own. What it lacks is
+ * template id, part, slot name, class and swap of its own. What it lacks is
  * REPORTED, once per file. TRAP T-a-broken-assumption-reports
  */
 export async function checkOwnTemplate(tag: string, given: string, ownUrl: string): Promise<void> {
@@ -250,6 +250,8 @@ function anatomy(markup: string): Set<string> {
     for (const part of (el.getAttribute('part') ?? '').split(/\s+/).filter(Boolean)) out.add(`part=${part}`);
     if (el.localName === 'slot') out.add(`slot=${el.getAttribute('name') ?? ''}`);
     for (const cls of el.classList) out.add(`.${cls}`);
+    const swap = el.getAttribute('data-swap-on');
+    if (swap) out.add(`swap=${swap}`);
   }
   return out;
 }

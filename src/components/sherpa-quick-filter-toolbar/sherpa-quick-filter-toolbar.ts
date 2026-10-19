@@ -335,8 +335,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
-    // onChange never fires for an attribute set before the first render.
-    this.#syncFavouriteFromAttr();
     syncResets(this, this.root, '.act[data-act="clear"]');
 
     // CLICK, not hover: a passing pointer would drill the list out from under it.
@@ -1102,7 +1100,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-pending') this.#syncPending();
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const chip of this.#chips()) this.#markPresent(chip);
     this.#syncArrangement();
-    this.#syncFavouriteFromAttr();
     if (name === 'data-saveable') this.#saved.draw();
     syncResets(this, this.root, '.act[data-act="clear"]');
   }
@@ -1650,28 +1647,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #toggleFavourite(): void {
     const on = !this.hasAttribute('data-favourite');
-    if (!this.hasAttribute('data-locked')) {
-      this.set('data-favourite', on);
-      this.#syncFavouriteFromAttr();
-    }
+    // Its swaps paint the star. TRAP T-a-swapped-label-is-in-the-markup
+    if (!this.hasAttribute('data-locked')) this.set('data-favourite', on);
     this.emit('view-favorite', { favourite: on });
-  }
-
-  /** Paint the star from the attribute.
-   *  TRAP T-favourite-star-swaps-its-glyph — colour alone cannot carry it. */
-  #syncFavouriteFromAttr(): void {
-    const btn = this.$<HTMLElement>('.act[data-act="favourite"]');
-    if (!btn) return;
-    const on = this.hasAttribute('data-favourite');
-    // `active` is a real Style MODE; the adopted style-modes sheet paints it.
-    // TRAP T-tokens-css-never-reaches-shadow
-    if (on) btn.setAttribute('data-status', 'active');
-    else btn.removeAttribute('data-status');
-    // Two drawings, so the star fills. TRAP T-favourite-star-swaps-its-glyph
-    btn.setAttribute('data-icon-start', on ? 'star-filled' : 'star');
-    btn.setAttribute('aria-pressed', String(on));
-    // The name and its tip say what a press DOES. Will, 2026-09-26.
-    btn.setAttribute('aria-label', on ? 'Remove from Favorites' : 'Add to Favorites');
   }
 
   /**

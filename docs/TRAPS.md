@@ -96,7 +96,7 @@ A bare `[data-look]` is **left out** of that sheet. It sets the look's DEFAULT
 mode, so inside a status parent it would reset the status passed down. In the
 page, `tokens.css` still does exactly that — a known gap, not a model.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/core/sherpa-style-modes.css`
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
@@ -1359,6 +1359,38 @@ failure would have no banner.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/core/data/data-source.ts`
+
+### T-a-swapped-label-is-in-the-markup
+
+**A value that follows a host attribute is written in the markup, both ways**
+(Will, TODO 344: no fixed UI text in TS). A toggle's name, its icon, its
+`aria-pressed`:
+
+```html
+<sherpa-button aria-label="Collapse" aria-expanded="true"
+               data-swap-on="data-collapsed" data-swap-aria-label="Expand"
+               data-swap-aria-expanded="false"></sherpa-button>
+```
+
+`data-swap-on="data-x"` follows the host's `data-x` being present;
+`data-swap-on="data-x=value"` follows one value. Each `data-swap-<name>` is the
+value while it matches, and the template's own comes back after. `text` is the
+element's text, so use it only on a text-only element. `swap.ts` reads the
+swaps in `#stamp`, before any prop writes, and `attributeChangedCallback`
+applies them before `onChange`; a re-stamp reads them again. There is no
+"remove": ARIA's `false` token says it (`aria-haspopup="false"`).
+
+Only text, `title`, ARIA and `data-*` are written — never a script's text, a
+style or a URL, and never another `data-swap-*`. The followed attribute must be
+one the component observes, or it never swaps: `check:props` holds that. The
+TS must never also write a swapped attribute: one owner.
+
+- Site: `src/core/ui/swap.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `scripts/check-props.mjs`
+- Site: `scripts/check-usage.mjs`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-swaps.spec.ts`
 
 ### T-no-attribute-is-the-default-variant
 
@@ -7603,16 +7635,17 @@ For three months it swapped NOTHING. The two states were written as
 and `regular` as weight tokens before resolving — so both spellings resolved to
 the one `star` drawing. The attribute changed on every click and the path never
 did. The icons are Figma's, and the set holds `star` AND `star-filled` as two
-separate drawings, so the fix is to NAME them:
+separate drawings, so the fix is to NAME them — in the star's markup, as a swap
+(`T-a-swapped-label-is-in-the-markup`):
 
-```ts
-btn.setAttribute('data-icon-start', on ? 'star-filled' : 'star');
+```html
+data-icon-start="star" data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
 ```
 
 A test that reads `data-icon-start` cannot catch this. The test reads the
 rendered `<path d>`.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Test: `test/e2e/reforged-nav-favorites-recents.spec.ts`
 
@@ -7632,7 +7665,7 @@ So the split is the standard one:
 
 | | |
 |---|---|
-| `data-favourite` | the value, IN — observed, and `#syncFavouriteFromAttr` paints it |
+| `data-favourite` | the value, IN — observed, and the star's `data-swap-*` paint it |
 | `view-favorite` | the INTENT, out — a request, not a notification |
 | `data-locked` | the host owns the list; the bar reports and never self-sets |
 

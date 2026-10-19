@@ -155,13 +155,9 @@ export class SherpaAppHeader extends SherpaElement {
     await Promise.resolve(el.populate?.(data));
   }
 
-  /** Write the icon, the badge and the open state. */
+  /** Write the badge and the open state. */
   #sync(): void {
     this.#syncOpen();
-    const dark = this.dataset['themeMode'] === 'dark';
-    const theme = this.$('.theme-toggle');
-    theme?.setAttribute('data-icon-start', dark ? 'sun' : 'moon');
-    theme?.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
 
     // CSS shows/hides the badge via [data-notifications].
     const count = this.dataset['notifications'];

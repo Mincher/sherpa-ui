@@ -64,7 +64,9 @@ export function markupProblems(html, where = 'markup', own = {}) {
       const p = props.get(name);
       if (!p) {
         const placed = /^data-col-span-\d+$/.test(name);
-        if (!placed && !EVERYWHERE.includes(name) && !(own[tag] ?? []).includes(name)) {
+        // A template directive the base class reads. TRAP T-a-swapped-label-is-in-the-markup
+        const directive = name.startsWith('data-swap-');
+        if (!placed && !directive && !EVERYWHERE.includes(name) && !(own[tag] ?? []).includes(name)) {
           problems.push(`${where}:${line}  <${tag} ${name}> — ${tag} has no such attribute`);
         }
         continue;

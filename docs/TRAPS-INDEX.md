@@ -291,7 +291,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
 
-## Filters (169)
+## Filters (170)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -359,6 +359,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — quick-filter, quick-filter-toolbar
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — filter-panel
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — quick-filter
+- [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — quick-filter-toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — quick-filter-toolbar
@@ -728,7 +729,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (96)
+## SherpaElement and the shared sheets (97)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -758,6 +759,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — sherpa-button-look
 - [T-a-sub-pixel-border-reads-back-as-1px](TRAPS.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — sherpa-element
+- [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-anchor, sherpa-element
 - [T-a-tree-rule-beats-slotted](TRAPS.md#t-a-tree-rule-beats-slotted) — sherpa-base
@@ -934,7 +936,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (60)
+## Build, tools and the MCP (61)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -967,6 +969,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-starter-is-one-folder](TRAPS.md#t-a-starter-is-one-folder) — check-mcp-pack, generate
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — generate, lint-css, project-tokens
 - [T-a-stranded-container-fills-its-row](TRAPS.md#t-a-stranded-container-fills-its-row) — project-tokens
+- [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — check-props, check-usage
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](TRAPS.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
 - [T-an-event-name-is-not-always-a-literal](TRAPS.md#t-an-event-name-is-not-always-a-literal) — generate-component-spec, ts-facts
 - [T-an-icon-loads-when-first-drawn](TRAPS.md#t-an-icon-loads-when-first-drawn) — generate-icons

@@ -150,7 +150,9 @@
                     "class": "minimap-toggle",
                     "attrs": {
                       "type": "button",
-                      "value": "minimap"
+                      "value": "minimap",
+                      "data-swap-on": "data-no-minimap",
+                      "data-swap-text": "Show minimap"
                     }
                   }
                 ]
