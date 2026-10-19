@@ -27,10 +27,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | 🚧 | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. Building, phase by phase | explore |
-| ⬜ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
+| ❓ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
 | ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
-| ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
-| ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
+| ❓ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
+| ❓ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
@@ -702,6 +702,48 @@ first, and the panel draws a "Send to <scope>" for each
 (`data-source.ts` `describe()`, `T-send-to-view-filters`). Make it one. Which
 one — the scope it came up from, else the page's main component scope — is to
 confirm with Will when it is built.
+
+**Explored 2026-10-19** (read only: four explorers, a planner, a checker).
+The plan for 346–349, with every file:line and the checker's corrections, is
+`docs/history/plan-346-349.md`. 346 builds with Claude's pick for D1 (A and B
+give the same answer on Records). 347, and the counting fixes that need no
+choice (W0 measure, W1 stop recounts that change nothing), build without one.
+348 and 349 wait for D2–D5.
+
+**Decisions for Will** (2 options each, Claude's pick first):
+
+- ❓ **D1 (346) — which scope the one "Send to" names, for a field that did
+  not come up from a scope.** (One that came up always goes back: "Return to X".)
+  **A (pick):** the first scope in the page definition that offers the field —
+  today's order, no new idea. **B:** the scope over the grid or list, else A.
+  On Records both give "Customer records".
+- ❓ **D2 (348) — what "before" means.** **A (pick):** ONE order the source
+  owns — saved filters first, then fields as the scope holds them, each set kept
+  together; the bar and the panel draw the same order, and a new saved filter
+  lands after the other saved filters. **B:** whatever the bar shows; the bar
+  reports its order and the panel copies it.
+- ❓ **D3 (348) — a chip switched OFF.** **A (pick):** it does not narrow the
+  chips after it; its own badge still counts what it would match within the
+  filters before it (keeps TODO 123). **B:** it shows no badge while off.
+- ❓ **D4 (348 + 349) — one order for everything?** **A (pick):** yes — counts,
+  greying, setting a pick aside and serial sets all go by position. A later
+  Region pick no longer sets an earlier Customer pick aside (the TODO 180 rule
+  goes); Customer limits Region's menu instead. One pass over the rows, less
+  code. **B:** position for counts and greying only; setting aside stays
+  newest-first (180) — two orders in one bar, and its second load stays.
+- ❓ **D5 (349) — does "Limit to matching filters" stay an opt-in?**
+  **A (pick):** yes — on, the filters before a field grey its values and set
+  picks aside; always, the View limits a component scope (347), serial sets
+  chain, and counts follow the order (348). **B:** no — ordered limits are
+  always on, and "Hide unmatching filters" is the only switch (it needs a new
+  place; the Limit setting goes).
+
+**Performance in reach** (the plan's §3): sort, page and search recount every
+chip though no count changes (sort: 10 counts + 4 distinct reads for nothing);
+each chip, value, limit and chained field is one full pass over the rows (a bar
+report: 29 passes, one walk after 348); and a report runs `select()` →
+`#recompose()` → draw once PER FIELD on the click's own stack — the likeliest
+part of the toolbar's 600 ms INP. An INP probe at 4x is measured first.
 
 ### `[ ]` ⬜ 347 — The View scope first; a component scope within its subset
 
