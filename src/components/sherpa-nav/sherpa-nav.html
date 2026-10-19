@@ -8,11 +8,12 @@
   populate(config):
     {
       product?:          { name?, icon? },
-      quickItems?:       NavEntry[],   // defaults to Home · Recent · Favorites
+      quickItems?:       QuickEntry[], // defaults to Home · Recent · Favorites, below
       sections?:         [{ label?, items: NavEntry[] }],
       settingsSections?: [{ label?, items: NavEntry[] }],  // shown in SETTINGS mode
     }
-  where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier?, children? }.
+  where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier?, children? },
+  and a QuickEntry's label may be left out: it is then the default row of that id.
 
   Terms (CLAUDE.md "Navigation terms"): a SECTION is a label and divider only.
   An entry with `children` is an AREA — it expands, never navigates. An entry
@@ -104,6 +105,14 @@
     <li class="nav-row" role="listitem">
       <sherpa-nav-item></sherpa-nav-item>
     </li>
+  </template>
+
+  <!-- The quick rows a nav opens with, unless config.quickItems names its own;
+       a quick row given only an id takes its words and glyph from here. -->
+  <template class="quick-default-tpl">
+    <li data-id="home" data-icon="home">Home</li>
+    <li data-id="recent" data-icon="ccw-circle-arrow-w-clock">Recent</li>
+    <li data-id="favorites" data-icon="star">Favorites</li>
   </template>
 
   <!-- The words its code writes. TRAP T-a-word-is-in-the-markup -->

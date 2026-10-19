@@ -271,6 +271,33 @@
       },
       {
         "el": "template",
+        "class": "quick-default-tpl",
+        "children": [
+          {
+            "el": "li",
+            "attrs": {
+              "data-id": "home",
+              "data-icon": "home"
+            }
+          },
+          {
+            "el": "li",
+            "attrs": {
+              "data-id": "recent",
+              "data-icon": "ccw-circle-arrow-w-clock"
+            }
+          },
+          {
+            "el": "li",
+            "attrs": {
+              "data-id": "favorites",
+              "data-icon": "star"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "words",
         "children": [
           {

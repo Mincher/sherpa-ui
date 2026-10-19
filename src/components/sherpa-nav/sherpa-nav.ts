@@ -8,12 +8,14 @@
  * - NavRowInfo — What a stamped row shows.
  * - NavEntry — An AREA when it has `children` (it toggles, never navigates); a CONTEXT when it has an `href`.
  * - NavSection — A SECTION: a label and divider over its entries.
+ * - QuickEntry — A quick row: a NavEntry whose label may be left out — it is then the nav's own default row of that id.
  * - NavConfig — the whole nav as data: product, quick items, sections, and the Settings sections
  * - NavState — The five Figma Navigation modes.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';
 import '../sherpa-nav-item/sherpa-nav-item.js';
+import { report } from '../../core/data/report.js';
 import '../sherpa-button/sherpa-button.js';
 
 /** What a stamped row shows. `icon` is undefined on a child row. */
@@ -46,9 +48,12 @@ export interface NavSection {
   items: NavEntry[];
 }
 
+/** A quick row: a NavEntry whose label may be left out — it is then the nav's own default row of that id. */
+export type QuickEntry = Omit<NavEntry, 'label'> & { label?: string };
+
 export interface NavConfig {
   product?: { name?: string; icon?: string };
-  quickItems?: NavEntry[];
+  quickItems?: QuickEntry[];
   sections?: NavSection[];
   /** Shown instead of `sections` in SETTINGS mode. Omit it to keep the main list. */
   settingsSections?: NavSection[];
@@ -57,12 +62,6 @@ export interface NavConfig {
 /** The five Figma Navigation modes. */
 export type NavState = 'collapsed' | 'hover' | 'default' | 'pinned' | 'settings';
 
-/** The quick rows a nav opens with, unless config.quickItems overrides them. */
-const DEFAULT_QUICK: NavEntry[] = [
-  { id: 'home', label: 'Home', icon: 'home' },
-  { id: 'recent', label: 'Recent', icon: 'ccw-circle-arrow-w-clock' },
-  { id: 'favorites', label: 'Favorites', icon: 'star' },
-];
 
 /** Modes in which the rail is open, i.e. not the 40px icon rail. */
 const OPEN: ReadonlySet<string> = new Set<NavState>(['hover', 'default', 'pinned', 'settings']);
@@ -272,8 +271,22 @@ export class SherpaNav extends SherpaElement {
     if (!list) return;
     list.replaceChildren();
     if (this.state === 'settings') return;
-    const quick = this.#config.quickItems ?? DEFAULT_QUICK;
+    const defaults = this.#defaultQuick();
+    // A quick row of only an id takes its default's words and glyph.
+    const quick = this.#config.quickItems?.map((e): NavEntry => {
+      if (e.label != null) return e as NavEntry;
+      const base = defaults.find((d) => d.id === e.id);
+      if (!base) report({ code: 'nav-row-unnamed', message: `sherpa-nav: quick row "${e.id}" has no label and no default.`, at: { id: e.id } });
+      const icon = e.icon ?? base?.icon;
+      return { ...e, ...(icon ? { icon } : {}), label: base?.label ?? '' };
+    }) ?? defaults;
     for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
+  }
+
+  /** The quick rows its markup holds, as data. */
+  #defaultQuick(): NavEntry[] {
+    const rows = this.$<HTMLTemplateElement>('template.quick-default-tpl')?.content.querySelectorAll<HTMLElement>('[data-id]') ?? [];
+    return [...rows].map((r) => ({ id: r.dataset['id']!, label: r.textContent?.trim() ?? '', ...(r.dataset['icon'] ? { icon: r.dataset['icon'] } : {}) }));
   }
 
   /** Stamp each section and its rows, keeping any hand-authored content. */

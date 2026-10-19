@@ -457,6 +457,26 @@ test('the default quick items are Home · Recent · Favorites', async ({ page })
   expect(labels).toEqual(['Home', 'Recent', 'Favorites']);
 });
 
+/** The default rows are the nav's MARKUP; a quick row of only an id borrows one. TODO 344 */
+test('a quick row given only an id takes the nav\'s own words and glyph', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onReport } = await import('/dist/index.js') as unknown as { onReport(f: (x: { code: string }) => void): () => void };
+    const seen: string[] = [];
+    const undo = onReport((x) => seen.push(x.code));
+    const nav = document.createElement('sherpa-nav') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({ product: { name: 'Sherpa' }, quickItems: [{ id: 'recent' }, { id: 'home', label: 'Start' }, { id: 'nope' }] });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    undo();
+    const items = [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.quick sherpa-nav-item')];
+    return { labels: items.map((el) => el.dataset['label']), icon: items[0]?.dataset['icon'] ?? items[0]?.dataset['iconStart'], seen };
+  });
+  expect(r.labels).toEqual(['Recent', 'Start', '']);
+  expect(r.icon).toBe('ccw-circle-arrow-w-clock');
+  expect(r.seen).toContain('nav-row-unnamed');
+});
+
 /* ── Nesting: children, chevrons, icons and the collapsed rail ───────────── */
 
 /** A config with a two-deep branch, so tier 1, 2 and 3 are all exercised. */

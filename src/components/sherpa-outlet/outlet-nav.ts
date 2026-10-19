@@ -17,7 +17,7 @@
 import type { AppDefinition } from '../../core/data/app-definition.js';
 import type { SessionList, SessionStore } from '../../core/browser/session.js';
 import type { SherpaRouter } from '../sherpa-router/sherpa-router.js';
-import type { NavConfig, NavEntry, NavState } from '../sherpa-nav/sherpa-nav.js';
+import type { NavConfig, NavEntry, NavState, QuickEntry } from '../sherpa-nav/sherpa-nav.js';
 
 /** What the nav asks of its outlet: the Context, the Settings page, the Views. */
 export interface NavHost {
@@ -170,8 +170,8 @@ export class OutletNav {
       ...(app.product ? { product: app.product } : {}),
       quickItems: [
         row('home', app.default),
-        { id: 'recent', label: 'Recent', icon: 'ccw-circle-arrow-w-clock' },
-        { id: 'favorites', label: 'Favorites', icon: 'star' },
+        // The nav's own Recent and Favorites rows: their words are its markup's.
+        { id: 'recent' }, { id: 'favorites' },
       ],
       sections: (app.sections ?? []).map(({ label, contexts }) => ({
         ...(label ? { label } : {}), items: contexts.map((name) => row(`context-${name}`, name)),
@@ -184,7 +184,7 @@ export class OutletNav {
   }
 
   /** Every configured row — not their children: a Favorites copy of Records must not out-rank the real row. */
-  #rows(): NavEntry[] {
+  #rows(): QuickEntry[] {
     const config = this.#config;
     return [
       ...(config.quickItems ?? []),
@@ -193,7 +193,7 @@ export class OutletNav {
   }
 
   /** A Context's own row, read from the HREF, so Home routes too. */
-  #rowFor(context: string): NavEntry | undefined {
+  #rowFor(context: string): QuickEntry | undefined {
     return this.#rows().find((r) => this.#contextOf(r.href) === context);
   }
 
@@ -236,7 +236,7 @@ export class OutletNav {
   }
 
   /** A Context's Views as its child rows, each naming its View. */
-  #viewRows(row: NavEntry, context: string): NavEntry[] {
+  #viewRows(row: { id: string }, context: string): NavEntry[] {
     return Object.entries(this.#host.viewsOf(context)).map(([id, view]) => (
       { id: `${row.id}:${id}`, label: view.label, href: this.#href(context, id) }));
   }
