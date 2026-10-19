@@ -232,7 +232,16 @@ export class OutletNav {
   /** A stored row as an Area's child. Its id is the Area's and its own, never the
    *  Context row's. No icon: TRAP T-nav-child-rows-carry-no-icon */
   #child(area: string, kept: Kept): NavEntry {
-    return { id: `${area}:${kept.key ?? kept.context}`, label: kept.label, href: this.#href(kept.context, kept.view ?? null) };
+    const label = area === 'favorites' ? this.#viewLabel(kept) : kept.label;
+    return { id: `${area}:${kept.key ?? kept.context}`, label, href: this.#href(kept.context, kept.view ?? null) };
+  }
+
+  /** A favourite is a VIEW, so it is named after the View — its first View's too
+   *  ("All customers", not "Records") — read when drawn, so one starred before
+   *  reads right. A View gone since keeps the name it was kept with. Will, TODO 357 */
+  #viewLabel(kept: Kept): string {
+    const view = kept.view ?? this.#host.firstView(kept.context);
+    return (view && this.#host.viewsOf(kept.context)[view]?.label) || kept.label;
   }
 
   /** A Context's Views as its child rows, each naming its View. */
