@@ -689,6 +689,12 @@ against the code). The full plan, with every file:line, is
   certain is read whole, as before. A review (3 lenses, 11 findings, all
   confirmed) found the key, merge and order faults, fixed before the commit.
   TRAP `T-a-held-set-takes-a-change-in-place`.
+- ⏸️ **Phase 3 (History) moves after 348's walk** (Claude, 2026-10-19). Its
+  gain is "recount only when a field the count uses changed"; 348 replaces the
+  counting with one ordered pass (plan-346-349 W3–W5), so the History plugs into
+  that pass. Built first, it would be rewritten. Phase 4 goes next.
+- 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner: a
+  read-only design pass first (two designs, a judge, a checker).
 
 ### `[ ]` ⬜ 346 — One "Send to <component>" on a View field
 
