@@ -16088,6 +16088,13 @@ again when shown. The `<col>`s are stamped again only when the shown columns
 change, or the widths `#measure` shared out would be lost. Pinning the select
 cells is writes only, on every draw (`#pinSelects`).
 
+**Each attribute redraws only its part** (C3). `onChange(name)` routes: a page
+or the needles redraw the BODY; the column values the HEADING; the sort both;
+`data-filter-fields` lights the chips in place; the total pages, the lock and
+the CSS-only flags draw nothing; anything else draws all. Only after C4, as a
+part drawn alone still pins its select cells and measures — a heading drawn
+alone would otherwise lose the shared widths, and a body the frozen column.
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
 

@@ -254,10 +254,35 @@ export class SherpaDataGrid extends SherpaElement {
     if (this.#columns.length) this.#render();
   }
 
-  override onChange(): void {
-    this.#syncNeedles();
-    this.#syncColumnValues();
-    this.#invalidate();
+  /** Each attribute redraws only what it draws. TODO 355 C3 · TRAP T-a-grid-draws-once-per-moment */
+  override onChange(name: string): void {
+    switch (name) {
+      case 'data-filter-fields':
+        this.#syncColumnFilterStatus();
+        return;
+      // Read when asked, or drawn by CSS.
+      case 'data-total-pages': case 'data-locked': case 'data-column-filters': case 'data-filterable':
+        return;
+      case 'data-needles':
+        this.#syncNeedles();
+        this.#invalidate('body');
+        return;
+      case 'data-page': case 'data-page-size':
+        this.#invalidate('body');
+        return;
+      case 'data-column-values':
+        this.#syncColumnValues();
+        this.#invalidate('head');
+        return;
+      case 'data-sort-field': case 'data-sort-direction':
+        this.#invalidate('head');
+        this.#invalidate('body');
+        return;
+      default:
+        this.#syncNeedles();
+        this.#syncColumnValues();
+        this.#invalidate('all');
+    }
   }
 
   /** The rows are on their way: what the attributes ask for is drawn with them, once. */
@@ -265,20 +290,20 @@ export class SherpaDataGrid extends SherpaElement {
     this.#awaitingData = true;
     return super.populate(data).finally(() => {
       this.#awaitingData = false;
-      if (this.#dirty) this.#schedule();
+      if (this.#dirty.size) this.#schedule();
     });
   }
 
   /* ── One render per moment. TODO 355 · TRAP T-a-grid-draws-once-per-moment ── */
 
-  /** A render is owed. */
-  #dirty = false;
+  /** What is owed a redraw: all of it, or the heading, or the body. */
+  #dirty = new Set<'all' | 'head' | 'body'>();
   /** Rows were given, and are drawn soon: a render owed now waits for them. */
   #awaitingData = false;
 
   /** Something drawn changed: render once, however many attributes moved. */
-  #invalidate(): void {
-    this.#dirty = true;
+  #invalidate(part: 'all' | 'head' | 'body'): void {
+    this.#dirty.add(part);
     this.#schedule();
   }
 
@@ -287,10 +312,30 @@ export class SherpaDataGrid extends SherpaElement {
     if (!this.#awaitingData) this.#flush();
   });
 
-  /** The owed render NOW — before a read of what is drawn. */
+  /** The owed render NOW — before a read of what is drawn. Only the part owed:
+   *  a page turned draws the rows, not the heading. */
   #flush(): void {
-    if (this.#dirty && this.#columns.length) this.#render();
-    this.#dirty = false;
+    const dirty = this.#dirty;
+    if (!dirty.size) return;
+    if (!this.#columns.length) {
+      dirty.clear();
+      return;
+    }
+    if (dirty.has('all') || (dirty.has('head') && dirty.has('body'))) {
+      this.#render();
+      return;
+    }
+    const head = dirty.has('head');
+    dirty.clear();
+    if (head) this.#renderHead();
+    else {
+      this.#renderBody();
+      this.#syncSelected();
+      this.#syncGroupSelects();
+      this.#syncCurrent();
+    }
+    this.#pinSelects();
+    this.#measure();
   }
 
   /** populate({ columns, rows }) — the rows, over the configuration the page set. */
@@ -321,7 +366,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Draw the head and the body. */
   #render(): void {
-    this.#dirty = false;
+    this.#dirty.clear();
     this.toggleState('empty', this.#rows.length === 0);
     // "Select all" of nothing is a control that does nothing.
     const advanced = this.#rows.length > 0;
