@@ -836,6 +836,21 @@ OFF chip counts. The TRAP changes with it.
   page 6 → 1 and 1 load fewer; report 45 → 32 and 1 load fewer; raise 52 → 36.
   **INP unchanged** (216 / 328 / 200): W1 cuts the work after the click, as the
   plan foretold; the click's own stack is next (a profile, then P1).
+- 🚧 **The walk designed** (2026-10-19; two designs and a judge — the checker
+  stopped at a session limit, so check each file:line before building):
+  `docs/history/plan-347-349-walk.md`. One ordered pass per scope gives every
+  count, value count, grey, set-aside and serial offer; a bar report goes from
+  32 scans to about 4. 347 (the View first) is folded into it.
+  - ❓ **Q1 — a chart legend's own scope, with Limit off.** **A (pick):** it sits
+    under its host like any component scope: the View greys the legend values
+    it leaves no rows for; a legend pick is never set aside. **B:** greyed only
+    while Limit is on, as today.
+  - ❓ **Q2 — the TOP field of a serial set, when filters stand before it.**
+    **A (pick):** the top is never cut — greyed only by Limit, or by the View
+    for a component scope; the fields below lose what everything before them
+    rules out. **B:** the top also removes what the filters before the set rule
+    out, so a declared value with no rows vanishes from the first menu. On
+    Records both give the same answer.
 
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 
