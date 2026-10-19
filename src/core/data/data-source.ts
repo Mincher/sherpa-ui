@@ -760,7 +760,7 @@ export class DataSource extends EventTarget {
     // EVERY field it holds, declared or not: one left out still filters. TRAP T-a-broken-assumption-reports
     const fields: HeldFilter[] = q.holds.map((f) => {
       const reading = q.readings[f];
-      const down = scope === VIEW ? this.#lowerTo(f) : [];
+      const down = scope === VIEW ? this.#sendTo(f) : undefined;
       const from = cameFrom(this.#draft, f);
       return {
         ...this.filterDef(f), removable: true,
@@ -768,9 +768,9 @@ export class DataSource extends EventTarget {
         ...(scope === VIEW && this.#catalogue.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
-        ...(down.length ? { sendTo: down.map((to) => ({
-          scope: to, label: this.#narrowing.get(to)?.label ?? this.scopeLabel(to), ...(to === from ? { origin: true } : {}),
-        })) } : {}),
+        ...(down ? { sendTo: {
+          scope: down, label: this.#narrowing.get(down)?.label ?? this.scopeLabel(down), ...(down === from ? { origin: true } : {}),
+        } } : {}),
       };
     });
     // Below the View, a saved filter it does not hold is offered too.
@@ -868,16 +868,15 @@ export class DataSource extends EventTarget {
     for (const query of new Set([this.#draft, this.#applied])) setCameFrom(query, field, from);
   }
 
-  /** Each scope a View field may be sent down to — a component's that has it,
-   *  or a chart's own — the one it came UP from first. The reader picks where
-   *  there is more than one: the source does not guess, and does not rely on
-   *  what it remembers, which a reload forgets. TRAP T-send-to-view-filters */
-  #lowerTo(field: string): string[] {
+  /** The ONE scope a View field is sent down to: the one it came UP from,
+   *  while that still has it, else the first that has it — a component's, in
+   *  the page's order, then a chart's own. Will, TODO 346. TRAP T-send-to-view-filters */
+  #sendTo(field: string): string | undefined {
     const has = (scope: string): boolean =>
-      this.#narrowing.get(scope)?.field === field || this.canHold(scope, field);
-    const all = [...this.#offers.keys(), ...this.#narrowing.keys()].filter((s) => s !== VIEW && has(s));
+      scope !== VIEW && (this.#narrowing.get(scope)?.field === field || this.canHold(scope, field));
     const from = cameFrom(this.#draft, field);
-    return from && all.includes(from) ? [from, ...all.filter((s) => s !== from)] : all;
+    if (from && has(from)) return from;
+    return [...this.#offers.keys(), ...this.#narrowing.keys()].find(has);
   }
 
   /** SEND a View field DOWN: the View lets go of it, and its answer goes to

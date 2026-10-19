@@ -27,7 +27,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | 🚧 | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. Building, phase by phase | explore |
-| ⬜ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
+| ✅ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
 | ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
 | ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
@@ -696,7 +696,7 @@ against the code). The full plan, with every file:line, is
 - 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner: a
   read-only design pass first (two designs, a judge, a checker).
 
-### `[ ]` ⬜ 346 — One "Send to <component>" on a View field
+### `[x]` ✅ 346 — One "Send to <component>" on a View field
 
 Will, 2026-10-19: *"We only need 1 'Send to ComponentName' option when
 removing from the view scope. No need to cater for all possible routing of
@@ -708,6 +708,15 @@ first, and the panel draws a "Send to <scope>" for each
 (`data-source.ts` `describe()`, `T-send-to-view-filters`). Make it one. Which
 one — the scope it came up from, else the page's main component scope — is to
 confirm with Will when it is built.
+
+**✅ Done 2026-10-19** (D1 A). `sendTo` is ONE object, not a list: the scope
+the field came up from (a "Return"), else the first scope that has it — a
+component's offer in the page definition's order, then a chart's own
+(`#sendTo`, which replaces `#lowerTo`). The panel lost its Send to menu
+(`lower-menu-tpl`, `lower-item-tpl`, `#onSendTo`); its button always sends.
+`request()` and `filter-add` still take any scope. Tests: `send-down.test.mjs`
+(5), Demos `reforged-send-to-view-filters` (grid → View → back to the grid; a
+chart's field returns to its chart after a reload). TRAP `T-send-to-view-filters`.
 
 **Explored 2026-10-19** (read only: four explorers, a planner, a checker).
 The plan for 346–349, with every file:line and the checker's corrections, is

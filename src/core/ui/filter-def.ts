@@ -97,7 +97,7 @@ export interface FilterDef extends OffersAdvanced {
   /** The panel's: a scope ABOVE holds it now. It keeps its heading here, and
    *  draws no values. TRAP T-a-panel-asks-for-its-scopes */
   appliedAt?: string;
-  /** The panel's: where a View field may be SENT DOWN — `origin` is the scope
-   *  it came UP from. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string; origin?: boolean }[];
+  /** The panel's: the ONE scope a View field is SENT DOWN to — `origin` when
+   *  it came UP from there. TRAP T-send-to-view-filters */
+  sendTo?: { scope: string; label: string; origin?: boolean };
 }

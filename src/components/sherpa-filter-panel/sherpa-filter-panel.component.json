@@ -416,32 +416,6 @@
       },
       {
         "el": "template",
-        "class": "lower-menu-tpl",
-        "children": [
-          {
-            "el": "sherpa-menu",
-            "attrs": {
-              "slot": "menu",
-              "data-align": "end"
-            }
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "lower-item-tpl",
-        "children": [
-          {
-            "el": "button",
-            "class": "lower-item",
-            "attrs": {
-              "type": "button"
-            }
-          }
-        ]
-      },
-      {
-        "el": "template",
         "class": "saved-menu-tpl",
         "children": [
           {

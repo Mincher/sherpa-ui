@@ -1636,24 +1636,20 @@ scope at a time. Then the answer is written AGAIN, whole: the bar below is freed
 the View lets go, and reports the answer it kept from before the field went
 up — an old one, which put a filter sent down in Advanced back to Simple.
 
-The SOURCE names the scopes (`describe('view')` → `sendTo`, a list), never
-the panel: each scope that has the field — a component's offer, or a chart's
-own scope — the one it came up from first. ONE, and the button sends it and
-says where. MORE, and the button opens a menu of them: the reader picks. The
-source does not guess, and a guess would move a reader's filter to a
-component they did not mean.
-
-It first offered a button only for ONE scope, or for where the field came up
-from — which it remembers for a session. On Records a chart's field is the
-grid's too, so after a reload there were two scopes, no memory, and no way
-down: Will, TODO 158.
+**ONE Send to** (Will, TODO 346: *"We only need 1 'Send to ComponentName'
+option … No need to cater for all possible routing"*). The SOURCE names it
+(`describe('view')` → `sendTo`, one object), never the panel: the scope the
+field came UP from, while that scope still has it; else the FIRST scope that
+has it — a component's offer, in the page definition's order, then a chart's
+own. The button sends it and says where. (TODO 158 once offered a menu of every
+scope; 346 took it out.)
 
 **The scope it came UP from is a RETURN** (Will, 2026-10-12, TODO 234). The
-source marks that entry of `sendTo` with `origin`, and the panel words it
-"Return to X" and lists it first, apart from the other scopes. The source
-keeps it IN the Query — the View scope's `from` — so the kept Query and a
-View's draft carry it through a reload (TODO 235); sent back down, it is
-forgotten.
+source marks `sendTo` with `origin`, and the panel words it "Return X to Y".
+The source keeps it IN the Query — the View scope's `from` — so the kept Query
+and a View's draft carry it through a reload (TODO 235); sent back down, it is
+forgotten. `request()` and the `filter-add` request still take ANY scope, so a
+caller with no pointer can send a field anywhere, and the 168 rule holds.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`

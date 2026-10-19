@@ -184,7 +184,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
-    this.$('.scopes')?.addEventListener('menu-select', this.#onSendTo);
     // Rows and bodies change their answer without a chip click.
     for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
@@ -810,8 +809,8 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
     if (!box.hasAttribute('data-raisable')) box.querySelector('.field-raise')?.remove();
     // A View field, SENT DOWN to a scope that has it. TRAP T-send-to-view-filters
-    const targets = isPresets || organise ? [] : def.sendTo ?? [];
-    if (!targets.length) box.querySelector('.field-lower')?.remove();
+    const target = isPresets || organise ? undefined : def.sendTo;
+    if (!target) box.querySelector('.field-lower')?.remove();
 
     const head = box.querySelector('.field-head');
     const title = box.querySelector('.field-title');
@@ -819,7 +818,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const name = def.label;
     box.querySelector('.field-clear')?.setAttribute('aria-label', `Reset ${name}`);
     head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
-    this.#drawLower(head?.querySelector<HTMLElement>('.field-lower') ?? null, name, targets);
+    this.#drawLower(head?.querySelector<HTMLElement>('.field-lower') ?? null, name, target);
     box.querySelector('.field-advanced')?.setAttribute('aria-label', `Advanced ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
@@ -1365,8 +1364,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const lower = this.pathFind(event, '.field-lower');
     if (lower) {
       const down = this.#fieldOf(lower);
-      // More than one: the button opens its menu, and the pick sends it.
-      if (down?.def.sendTo?.length === 1) this.#sendDown(down, down.def.sendTo[0]!.scope);
+      if (down?.def.sendTo) this.#sendDown(down, down.def.sendTo.scope);
       return;
     }
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
@@ -1490,47 +1488,16 @@ export class SherpaFilterPanel extends SherpaElement {
       .find((f) => !f.preset && (f.field ?? f.id) === field);
   }
 
-  /** A Send to menu's pick: the scope the field goes down to. */
-  #onSendTo = (event: Event): void => {
-    const value = (event as CustomEvent).detail?.value;
-    const lower = this.pathFind(event, '.field-lower');
-    const down = lower && this.#fieldOf(lower);
-    if (down && typeof value === 'string' && down.def.sendTo?.some((t) => t.scope === value)) {
-      event.stopPropagation();
-      this.#sendDown(down, value);
-    }
-  };
-
   /** Ask the source to send a View field DOWN to one scope. */
   #sendDown(held: Held, scope: string): void {
     this.emit('filter-add', { scope, ids: [held.def.field ?? held.def.id], from: held.scope });
   }
 
-  /** The Send down button: one scope, and it says which; more, and it opens
-   *  a menu of them. TRAP T-send-to-view-filters */
-  #drawLower(button: HTMLElement | null, name: string, targets: readonly { scope: string; label: string; origin?: boolean }[]): void {
-    if (!button || !targets.length) return;
-    /* The scope it came UP from is a RETURN, and leads — told apart from the
-       others. Will, TODO 234. TRAP T-send-to-view-filters */
-    if (targets.length === 1) {
-      const { label, origin } = targets[0]!;
-      button.setAttribute('aria-label', origin ? `Return ${name} to ${label}` : `Send ${name} to ${label}`);
-      return;
-    }
-    button.setAttribute('aria-label', `Send ${name} to a scope`);
-    button.setAttribute('aria-haspopup', 'dialog');
-    const menu = this.clone('template.lower-menu-tpl');
-    const row = this.$<HTMLTemplateElement>('template.lower-item-tpl');
-    if (!menu || !row) return;
-    for (const { scope, label, origin } of targets) {
-      // `return`, not `break`: an empty prototype appends no empty menu.
-      const item = this.clone<HTMLButtonElement>(row);
-      if (!item) return;
-      item.value = scope;
-      item.textContent = origin ? `Return to ${label}` : `Send to ${label}`;
-      menu.append(item);
-    }
-    button.append(menu);
+  /** The Send down button says the ONE scope it sends to — a RETURN where the
+   *  field came up from (Will, TODO 234). TRAP T-send-to-view-filters */
+  #drawLower(button: HTMLElement | null, name: string, target: { label: string; origin?: boolean } | undefined): void {
+    if (!button || !target) return;
+    button.setAttribute('aria-label', target.origin ? `Return ${name} to ${target.label}` : `Send ${name} to ${target.label}`);
   }
 
   /** Untick a field's values and clear its conditions. */

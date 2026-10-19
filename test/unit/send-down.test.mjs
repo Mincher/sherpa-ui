@@ -1,7 +1,7 @@
 /**
  * SEND A VIEW FILTER DOWN — TODO 120, the other way of "Send to view filters".
  * The View lets go of a field, and its answer goes to ONE scope: where it came
- * up from, or the only one that has it.
+ * up from, else the first that has it (Will, TODO 346).
  *
  * TRAP T-send-to-view-filters
  *
@@ -50,14 +50,16 @@ async function setup() {
   return { source, seen, chart, send, sendTo };
 }
 
-test('a View field names each scope it may go down to — and the reader picks where there are two', async () => {
+test('a View field names ONE scope to go down to: the first that has it, a component\'s before a chart\'s', async () => {
   const { source, chart, sendTo } = await setup();
-  assert.deepEqual(sendTo('region'), [{ scope: 'data', label: 'Customer records' }]);
-  // A chart's own scope has the field too: both are offered, and the source does not guess.
+  assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
+  // A chart's own scope has the field too: still one, the page's first. Will, TODO 346.
   source.declarePart('picks:bar', { field: 'region', only: chart, label: 'By region' });
-  assert.deepEqual(sendTo('region'), [
-    { scope: 'data', label: 'Customer records' }, { scope: 'picks:bar', label: 'By region' },
-  ]);
+  assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
+  // In the page's order: a scope offered first is named first.
+  source.declareScope('other', { label: 'Other records' });
+  source.offer('other', ['region']);
+  assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // A field no scope below has: nowhere to send it.
   source.declareField('owner', { label: 'Owner' });
   source.hold('view', ['region', 'owner']);
@@ -86,8 +88,8 @@ test('a field goes back down to where it CAME UP from — a chart\'s own scope �
   send('view', 'plan', 'picks:bar');
   await tick();
   assert.deepEqual(seen.get('grid'), [1, 3]);
-  // Where it came UP from leads, and says so — a RETURN. Will, TODO 234.
-  assert.deepEqual(sendTo('plan'), [{ scope: 'picks:bar', label: 'By plan', origin: true }, { scope: 'data', label: 'Customer records' }]);
+  // Where it came UP from is the one, and says so — a RETURN. Will, TODO 234, 346.
+  assert.deepEqual(sendTo('plan'), { scope: 'picks:bar', label: 'By plan', origin: true });
 
   send('picks:bar', 'plan', 'view');
   await tick();
@@ -138,7 +140,7 @@ test('where a View field came up from is in the Query, so a reload still returns
   const again = await setup();
   again.source.declarePart('picks:bar', { field: 'plan', only: again.chart, label: 'By plan' });
   await again.source.setQuery(kept);
-  assert.deepEqual(again.sendTo('plan')[0], { scope: 'picks:bar', label: 'By plan', origin: true });
+  assert.deepEqual(again.sendTo('plan'), { scope: 'picks:bar', label: 'By plan', origin: true });
 
   // Sent back down, it is forgotten.
   again.send('picks:bar', 'plan', 'view');

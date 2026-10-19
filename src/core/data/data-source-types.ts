@@ -105,9 +105,9 @@ export interface HeldFilter extends FieldFilter {
    *  and its `state` is this scope's own answer: kept, not in force.
    *  TRAP T-a-superseded-chip-suspends-it-is-never-removed */
   appliedAt?: string;
-  /** Where a View field may be SENT DOWN: each scope that has it, the one it
-   *  came up from (`origin`) first. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string; origin?: boolean }[];
+  /** The ONE scope a View field is SENT DOWN to: the one it came up from
+   *  (`origin`), else the first that has it. TRAP T-send-to-view-filters */
+  sendTo?: { scope: string; label: string; origin?: boolean };
 }
 
 /** What a scope's filters narrow: the View, or the content one component shows. */
