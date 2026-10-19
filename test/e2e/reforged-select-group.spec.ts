@@ -153,3 +153,29 @@ test('a value set before the options arrive, and a tick, both survive populate()
   expect(r.picked).toBe('c');
   expect(r.kept).toBe('c');
 });
+
+/** Options are CLONED from the template's prototypes (TODO 344); an author's own stay. */
+test('options come from the prototypes: multiple swaps them, and an author-written option stays', async ({ page }) => {
+  const r = await page.evaluate(async (options) => {
+    const el = document.createElement('sherpa-select-group') as unknown as GroupEl;
+    el.innerHTML = '<sherpa-select-radio slot="options" value="own" data-label="Own"></sherpa-select-radio>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(options);
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    await settle();
+    const radios = [...el.querySelectorAll('sherpa-select-radio')].map((c) => c.getAttribute('value'));
+    const left = [...el.querySelectorAll('sherpa-select-radio:not([value="own"])')].map((c) => [...c.attributes].map((a) => a.name).filter((n) => n.startsWith('data-attr-')));
+    el.setAttribute('multiple', '');
+    await settle();
+    return {
+      radios, left,
+      checkboxes: [...el.querySelectorAll('sherpa-select-checkbox')].map((c) => c.getAttribute('value')),
+      own: !!el.querySelector('sherpa-select-radio[value="own"]'),
+    };
+  }, OPTIONS);
+  expect(r.radios).toEqual(['own', 'a', 'b', 'c']);
+  expect(r.left.flat()).toEqual([]);
+  expect(r.checkboxes).toEqual(['a', 'b', 'c']);
+  expect(r.own).toBe(true);
+});

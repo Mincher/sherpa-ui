@@ -116,24 +116,19 @@ export class SherpaSelectGroup extends SherpaElement {
     );
   }
 
-  /** Created by TAG: these are design-system components, not structural DOM. */
+  /** One option per item, cloned into the LIGHT DOM. TRAP T-clone-item-is-for-two-destinations */
   #render(): void {
-    const tag = this.#childTag();
+    const tpl = this.$<HTMLTemplateElement>(this.#multiple ? 'template.checkbox-tpl' : 'template.radio-tpl');
     const disabled = this.hasAttribute('disabled');
+    const childName = this.#childName;
 
     for (const prev of this.#stamped) prev.remove();
     this.#stamped = [];
 
     for (const opt of this.#options) {
-      const child = document.createElement(tag);
-      child.setAttribute('slot', 'options');
-      child.setAttribute('value', String(opt.value));
-      if (opt.label != null) child.setAttribute('data-label', String(opt.label));
-      if (opt.description != null) {
-        child.setAttribute('data-description', String(opt.description));
-      }
+      const child = this.cloneItem(tpl, opt);
+      if (!child) break;
       if (opt.disabled || disabled) child.setAttribute('disabled', '');
-      const childName = this.#childName;
       if (childName) child.setAttribute('name', childName);
       this.appendChild(child);
       this.#stamped.push(child);

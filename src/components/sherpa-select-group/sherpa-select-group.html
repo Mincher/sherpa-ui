@@ -1,7 +1,7 @@
 <!--
   sherpa-select-group — a labelled group of checkbox or radio options.
 
-  populate() stamps option children into LIGHT DOM, not the shadow root.
+  populate() clones each option from a prototype below into the LIGHT DOM.
 
   Public API:
     data-label        group heading (hidden when empty)
@@ -31,4 +31,14 @@
     </div>
     <p class="validation" part="validation" role="alert"></p>
   </fieldset>
+
+  <!-- One option each, cloned into the LIGHT DOM: checkboxes when `multiple`, else radios. -->
+  <template class="checkbox-tpl">
+    <sherpa-select-checkbox slot="options" data-attr-value="value"
+      data-attr-data-label="label" data-attr-data-description="description"></sherpa-select-checkbox>
+  </template>
+  <template class="radio-tpl">
+    <sherpa-select-radio slot="options" data-attr-value="value"
+      data-attr-data-label="label" data-attr-data-description="description"></sherpa-select-radio>
+  </template>
 </template>

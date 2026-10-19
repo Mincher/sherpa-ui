@@ -15,62 +15,94 @@
     "default"
   ],
   "anatomy": {
-    "root": {
-      "el": "fieldset",
-      "class": "group",
-      "part": "group",
-      "children": [
-        {
-          "el": "legend",
-          "class": "legend",
-          "part": "legend",
-          "children": [
-            {
-              "el": "span",
-              "class": "label",
-              "part": "label"
-            },
-            {
-              "el": "span",
-              "class": "description",
-              "part": "description"
-            }
-          ]
-        },
-        {
-          "el": "hr",
-          "class": "divider",
-          "part": "divider",
-          "attrs": {
-            "aria-hidden": "true"
-          }
-        },
-        {
-          "el": "div",
-          "class": "options",
-          "part": "options",
-          "attrs": {
-            "role": "group"
-          },
-          "children": [
-            {
-              "slot": "options",
-              "attrs": {
-                "data-accepts": "input"
+    "roots": [
+      {
+        "el": "fieldset",
+        "class": "group",
+        "part": "group",
+        "children": [
+          {
+            "el": "legend",
+            "class": "legend",
+            "part": "legend",
+            "children": [
+              {
+                "el": "span",
+                "class": "label",
+                "part": "label"
+              },
+              {
+                "el": "span",
+                "class": "description",
+                "part": "description"
               }
+            ]
+          },
+          {
+            "el": "hr",
+            "class": "divider",
+            "part": "divider",
+            "attrs": {
+              "aria-hidden": "true"
             }
-          ]
-        },
-        {
-          "el": "p",
-          "class": "validation",
-          "part": "validation",
-          "attrs": {
-            "role": "alert"
+          },
+          {
+            "el": "div",
+            "class": "options",
+            "part": "options",
+            "attrs": {
+              "role": "group"
+            },
+            "children": [
+              {
+                "slot": "options",
+                "attrs": {
+                  "data-accepts": "input"
+                }
+              }
+            ]
+          },
+          {
+            "el": "p",
+            "class": "validation",
+            "part": "validation",
+            "attrs": {
+              "role": "alert"
+            }
           }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "checkbox-tpl",
+        "children": [
+          {
+            "el": "sherpa-select-checkbox",
+            "attrs": {
+              "slot": "options",
+              "data-attr-value": "value",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "radio-tpl",
+        "children": [
+          {
+            "el": "sherpa-select-radio",
+            "attrs": {
+              "slot": "options",
+              "data-attr-value": "value",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      }
+    ]
   },
   "props": [
     {

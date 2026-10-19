@@ -8160,7 +8160,8 @@ Three reasons use it today, each about WHERE an item goes, never what it says:
   stamped between two steps, so the steps share their container with another
   prototype;
 - **a container outside the shadow root** — a jump chip (`sherpa-quick-filter`):
-  its rows go into its slotted menu, which `renderItems`' selector cannot reach.
+  its rows go into its slotted menu, which `renderItems`' selector cannot reach;
+  and a select group's options go into its own light DOM (TODO 344).
 
 The row's FIELDS are still declared on the prototype (`T-item-template-cannot-compute`);
 only the CHOICE OF PARENT stays in code. A fourth reason that is not about the
@@ -8168,6 +8169,7 @@ parent would mean the declarative vocabulary is missing something.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-select-group/sherpa-select-group.ts`
 
 ### T-persist-view-returns-a-teardown
 

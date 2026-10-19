@@ -826,7 +826,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (103)
+## Other components (104)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -885,6 +885,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-cell-state-is-the-only-paint](TRAPS.md#t-cell-state-is-the-only-paint) — calendar
 - [T-checkbox-rounding-is-flat-sm](TRAPS.md#t-checkbox-rounding-is-flat-sm) — select-checkbox
 - [T-checkbox-stroke-is-sm](TRAPS.md#t-checkbox-stroke-is-sm) — select-checkbox
+- [T-clone-item-is-for-two-destinations](TRAPS.md#t-clone-item-is-for-two-destinations) — select-group
 - [T-custom-highlight-not-painted-in-shadow](TRAPS.md#t-custom-highlight-not-painted-in-shadow) — nav-item
 - [T-describedby-must-not-be-a-live-region](TRAPS.md#t-describedby-must-not-be-a-live-region) — input-text
 - [T-embedded-footer-needs-a-public-verb](TRAPS.md#t-embedded-footer-needs-a-public-verb) — calendar
