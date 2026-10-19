@@ -102,7 +102,7 @@ Each one bubbles.
 | `menu-apply` | `{ values: string[] }` | Apply was clicked. |
 | `menu-cancel` |  | Cancel was clicked; the values are already restored. |
 | `menu-clear` |  | Clear was clicked; the selection is already empty. |
-| `menu-select` | `{ label: 'Remove' \| string; value: 'remove' \| string }` | An action row was clicked. |
+| `menu-select` | `{ label: string; value: 'remove' \| string }` | An action row was clicked. |
 | `menu-drill` | `{ value: string }` | A row's child-menu caret. |
 | `menu-open` |  |  |
 | `menu-close` |  |  |

@@ -88,6 +88,9 @@ const ITEM_INDEX = 'data-index';
 const ITEM_ATTR = 'data-attr-';
 const ITEM_WHEN = 'data-when-';
 
+/** Words a component's markup lacks, said once each. */
+const MISSING_WORDS = new Set<string>();
+
 /**
  * What `DataSource.#push` writes onto every component it binds, plus the guard.
  * Declaring one says this component READS it; writing one without a
@@ -807,6 +810,24 @@ export abstract class SherpaElement extends Base {
       if (first) opts?.after?.(first, item, index);
       container.appendChild(frag);
     });
+  }
+
+  /**
+   * A word from its markup — a `[data-word]` in a `<template>` of the stamped
+   * tree — for text it hands on as data, or writes as an attribute.
+   * TRAP T-a-word-is-in-the-markup
+   */
+  protected word(key: string): string {
+    for (const tpl of this.$$<HTMLTemplateElement>('template')) {
+      const hit = tpl.content.querySelector(`[data-word="${key}"]`);
+      if (hit) return hit.textContent?.trim() ?? '';
+    }
+    const said = `${this.localName}:${key}`;
+    if (!MISSING_WORDS.has(said)) {
+      MISSING_WORDS.add(said);
+      report({ code: 'word-missing', message: `<${this.localName}>'s markup has no word "${key}".`, at: { tag: this.localName, key } });
+    }
+    return '';
   }
 
   /**

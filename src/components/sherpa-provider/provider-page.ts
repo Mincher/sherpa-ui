@@ -12,21 +12,21 @@
  * - .begin — Take a page `open()` set up, and the saved set it had on.
  * - .end — The page has gone, with its source.
  * - .listen — The open page's own listeners: Resets, saved sets, and what the bars offer.
- * - .drawBars — Draw every bar from its scope, as the source describes it.
- * - .views — Open the Views over one source: restore, then hear and keep.
- * - .stopViews — Stop the Views' listeners.
- * - .takeView — A state taken in names a View: show it, and hear its next pick.
- * - .view — The View on screen.
- * - .customView — Is the View on screen the reader's own?
- * - .savedFilters — The saved set on screen, and whether its filters have changed since.
- * - .savedFilterSets — The page's saved sets.
  * - .saveView — Save what is on screen as a View of the open page.
  * - .deleteView — Delete the reader's own View, and go to the first.
  * - .saveFilters — Save every scope's filters under one name.
  * - .applyFilters — Apply a saved set.
  * - .dismissFilters — Dismiss the set on screen: the filters go back as they were.
  * - .deleteFilters — Delete a saved set; its filters stay.
+ * - .savedFilters — The saved set on screen, and whether its filters have changed since.
+ * - .savedFilterSets — The page's saved sets.
+ * - .customView — Is the View on screen the reader's own?
  * - .resetView — Put the filters back as the View on screen defines them.
+ * - .drawBars — Draw every bar from its scope, as the source describes it.
+ * - .view — The View on screen.
+ * - .views — Open the Views over one source: restore, then hear and keep.
+ * - .stopViews — Stop the Views' listeners.
+ * - .takeView — A state taken in names a View: show it, and hear its next pick.
  */
 import {
   deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, viewQueryOf,
@@ -75,6 +75,8 @@ export interface PageHost {
   scopeOf(el: Element): string | null;
   /** The View on screen changed. */
   viewChanged(id: string | undefined, elements?: Record<string, HTMLElement>): void;
+  /** A word from the provider's markup, once it has drawn. TRAP T-a-word-is-in-the-markup */
+  word(key: string): Promise<string>;
 }
 
 /** The open page's Views, saved sets, drafts, kept Query and Reset. */
@@ -349,7 +351,7 @@ export class ProviderPage {
       const described = source.describe(scope);
       const custom = new Set(Object.keys(loadSavedViews(opened.id)));
       const picker = scope === VIEW && library ? [{
-        id: VIEW_CHIP, label: 'View', persistent: true, active: true, select: 'single',
+        id: VIEW_CHIP, label: await this.#host.word('view'), persistent: true, active: true, select: 'single',
         options: viewOptions(library(), view, custom),
       }] : [];
       // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own

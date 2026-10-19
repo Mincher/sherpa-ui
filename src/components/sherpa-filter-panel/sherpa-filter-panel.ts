@@ -551,11 +551,11 @@ export class SherpaFilterPanel extends SherpaElement {
       const organised = ([['group', scope.group], ['sort', scope.sort]] as const)
         .filter(([, cols]) => cols?.length);
       if (organised.length) {
-        const section = this.#drawSection('organise', 'Organise');
+        const section = this.#drawSection('organise', this.word('organise'));
         for (const [kind, cols] of organised) {
           const on = kind === 'group' ? scope.groupField : scope.sortField;
           const chip = this.#fieldChip({
-            id: kind, label: kind === 'group' ? 'Group by' : 'Sort by',
+            id: kind, label: this.word(kind),
             select: 'single',
             /* The SAME glyphs the toolbar draws — one constant, so the two
                views of one control cannot drift. A Sort opens on `sort-none`
@@ -581,7 +581,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
       if (presets.length) {
         box.append(this.#drawField({
-          id: 'presets', label: 'Presets', options: presets.map((p) => ({
+          id: 'presets', label: this.word('presets'), options: presets.map((p) => ({
             value: p.id, label: p.label, selected: !!p.active,
             // A preset that carries its answer wears fx. TRAP T-a-saved-filter-is-its-readings
             ...(kindOf(p) === 'advanced' ? { kind: 'advanced' as const } : {}),

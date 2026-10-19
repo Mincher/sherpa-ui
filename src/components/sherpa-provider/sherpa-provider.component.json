@@ -17,7 +17,7 @@
       },
       {
         "el": "template",
-        "class": "mode-toggle-tpl",
+        "class": "mode-panel-tpl",
         "children": [
           {
             "el": "sherpa-button",
@@ -25,7 +25,38 @@
               "slot": "actions",
               "data-type": "icon",
               "data-size": "sm",
-              "data-filter-mode": ""
+              "data-filter-mode": "",
+              "data-icon-start": "sidebar",
+              "aria-label": "View as filter panel"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "mode-bars-tpl",
+        "children": [
+          {
+            "el": "sherpa-button",
+            "attrs": {
+              "slot": "actions",
+              "data-type": "icon",
+              "data-size": "sm",
+              "data-filter-mode": "",
+              "data-icon-start": "fullscreen-exit",
+              "aria-label": "Filter in the toolbars instead"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "words",
+        "children": [
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "view"
             }
           }
         ]

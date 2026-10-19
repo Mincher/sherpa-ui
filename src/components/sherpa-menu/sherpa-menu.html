@@ -252,6 +252,11 @@
       <sherpa-button class="apply" part="apply" data-look="saturated" data-footer="commit">Apply</sherpa-button>
     </sherpa-container-footer>
   </div>
+  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="menu">Menu</span>
+    <span data-word="select">Select…</span>
+  </template>
 </template>
 
 <template id="filter">
@@ -333,7 +338,7 @@
     <template class="condition-row-tpl">
       <div class="condition-row sherpa-group">
         <sherpa-input-text class="join" data-type="select" data-size="sm"
-                           aria-label="Join"></sherpa-input-text>
+                           aria-label="Join"><option value="and">And</option><option value="or">Or</option></sherpa-input-text>
         <sherpa-input-text class="condition" data-type="select"
                            aria-label="Condition"></sherpa-input-text>
         <!-- A picking op answers with a SELECT of the field's own values; a
@@ -420,4 +425,9 @@
       <sherpa-button class="apply" part="apply" data-look="saturated" data-footer="commit">Apply</sherpa-button>
     </sherpa-container-footer>
   </div>
+  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="menu">Menu</span>
+    <span data-word="select">Select…</span>
+  </template>
 </template>

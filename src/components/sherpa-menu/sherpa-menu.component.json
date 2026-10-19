@@ -352,6 +352,24 @@
               ]
             }
           ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "menu"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "select"
+              }
+            }
+          ]
         }
       ],
       "filter": [
@@ -539,7 +557,21 @@
                         "data-type": "select",
                         "data-size": "sm",
                         "aria-label": "Join"
-                      }
+                      },
+                      "children": [
+                        {
+                          "el": "option",
+                          "attrs": {
+                            "value": "and"
+                          }
+                        },
+                        {
+                          "el": "option",
+                          "attrs": {
+                            "value": "or"
+                          }
+                        }
+                      ]
                     },
                     {
                       "el": "sherpa-input-text",
@@ -810,6 +842,24 @@
                   }
                 }
               ]
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "menu"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "select"
+              }
             }
           ]
         }
@@ -1324,7 +1374,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "label": "'Remove' | string",
+        "label": "string",
         "value": "'remove' | string"
       }
     },

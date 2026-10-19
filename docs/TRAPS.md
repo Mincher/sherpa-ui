@@ -1360,6 +1360,35 @@ failure would have no banner.
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/core/data/data-source.ts`
 
+### T-a-word-is-in-the-markup
+
+**A fixed word the TS hands on as data is in the component's markup** (Will,
+TODO 344): a section title, a menu's empty choice, a chip's label, a
+placeholder. It sits in a `<template class="words">` of the stamped template —
+never cloned, so it is never shown —
+
+```html
+<template class="words"><span data-word="presets">Presets</span></template>
+```
+
+and the code reads it with `this.word('presets')`. A word belongs to the
+TEMPLATE it is in, so a component with several templates puts it in each one
+that needs it: input-text's `number` and `find` each have their own
+`placeholder`. A missing word is REPORTED once (`word-missing`), never thrown.
+A host without its own shadow root asks its element (the provider's page code
+awaits `rendered`). A consumer's `useTemplate()` markup can retext every word.
+
+A word with DATA inside it (`Reset ${name}`) is not one: it stays where its
+data is.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-nav/sherpa-nav.html`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.html`
+
 ### T-a-swapped-label-is-in-the-markup
 
 **A value that follows a host attribute is written in the markup, both ways**
@@ -4828,8 +4857,8 @@ ONE TOO HIGH with everything ticked.
 Its LABEL never moves either: the row used to say "Clear all" once everything
 was on, which made it both the select-all control AND the menu's clear — a
 second place to do what the footer's Clear button does, and one that moved
-under the reader depending on what was ticked. `ALL_LABEL` is "Select all",
-always.
+under the reader depending on what was ticked. The row's words are its
+template's, "Select all", and nothing rewrites them (TODO 344).
 
 A list of FILTERS has none: `data-no-select-all`, from a def's
 `selectAll: false`. Adding every filter at once is never the answer, and under

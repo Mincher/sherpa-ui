@@ -174,7 +174,7 @@ export class SherpaProvider extends SherpaElement {
   readonly #modes = new ProviderMode({
     bars: () => this.#bars(),
     panels: () => this.#panels(),
-    button: () => this.clone('template.mode-toggle-tpl') as HTMLElement | null,
+    button: (kind) => this.clone(`template.mode-${kind}-tpl`) as HTMLElement | null,
     rendered: () => this.rendered,
     changed: (mode) => {
       this.emit('filter-mode-change', { mode });
@@ -393,6 +393,11 @@ export class SherpaProvider extends SherpaElement {
     scopeOf: (el) => this.#inherited(el, 'data-scope'),
     viewChanged: (id, elements) => {
       this.emit('view-change', { id, ...(elements ? { elements } : {}) });
+    },
+    // Asked only for a View bar, which means this provider is connected and drawing.
+    word: async (key) => {
+      await this.rendered;
+      return this.word(key);
     },
   });
 

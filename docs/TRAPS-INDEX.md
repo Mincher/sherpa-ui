@@ -222,7 +222,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (66)
+## The join and the app layer (67)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -251,6 +251,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-threshold-is-a-fact-of-the-field](TRAPS.md#t-a-threshold-is-a-fact-of-the-field) — context, provider
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — provider
 - [T-a-view-keeps-a-draft](TRAPS.md#t-a-view-keeps-a-draft) — provider
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — provider
 - [T-adapter-lives-at-the-binding](TRAPS.md#t-adapter-lives-at-the-binding) — bind-source
 - [T-aggregation-is-data](TRAPS.md#t-aggregation-is-data) — provider
 - [T-an-app-is-its-definition](TRAPS.md#t-an-app-is-its-definition) — app
@@ -291,7 +292,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
 
-## Filters (170)
+## Filters (171)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -363,6 +364,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — quick-filter-toolbar
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — filter-panel
 - [T-actions-were-a-slot](TRAPS.md#t-actions-were-a-slot) — quick-filter-toolbar
 - [T-add-menu-batches](TRAPS.md#t-add-menu-batches) — filters-button, quick-filter-toolbar
 - [T-an-accordion-action-is-not-a-toggle](TRAPS.md#t-an-accordion-action-is-not-a-toggle) — filter-panel
@@ -464,7 +466,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (111)
+## Menus, tips and overlays (112)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](TRAPS.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -507,6 +509,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — menu
 - [T-a-value-select-waits-for-the-rows](TRAPS.md#t-a-value-select-waits-for-the-rows) — menu
 - [T-a-view-held-heading-shows-and-refuses](TRAPS.md#t-a-view-held-heading-shows-and-refuses) — menu
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — menu
 - [T-abort-controller-per-connect](TRAPS.md#t-abort-controller-per-connect) — dialog, tooltip
 - [T-add-condition-sits-below-the-rows](TRAPS.md#t-add-condition-sits-below-the-rows) — menu
 - [T-an-action-row-can-keep-its-menu-open](TRAPS.md#t-an-action-row-can-keep-its-menu-open) — menu
@@ -729,7 +732,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (97)
+## SherpaElement and the shared sheets (98)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -763,6 +766,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-anchor, sherpa-element
 - [T-a-tree-rule-beats-slotted](TRAPS.md#t-a-tree-rule-beats-slotted) — sherpa-base
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — sherpa-element
 - [T-a-wrapping-span-hides-its-own-row](TRAPS.md#t-a-wrapping-span-hides-its-own-row) — components
 - [T-abort-controller-per-connect](TRAPS.md#t-abort-controller-per-connect) — sherpa-element
 - [T-an-edge-resizes-its-box](TRAPS.md#t-an-edge-resizes-its-box) — edge-resize
@@ -829,7 +833,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (104)
+## Other components (105)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -870,6 +874,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-trigger-shows-what-it-opened](TRAPS.md#t-a-trigger-shows-what-it-opened) — app-header
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — input-text, prompt-composer
 - [T-a-value-is-data-the-ticks-are-drawn](TRAPS.md#t-a-value-is-data-the-ticks-are-drawn) — file-upload, select-group
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — input-text, nav
 - [T-a-wrapping-span-hides-its-own-row](TRAPS.md#t-a-wrapping-span-hides-its-own-row) — layout-grid
 - [T-abort-controller-per-connect](TRAPS.md#t-abort-controller-per-connect) — layout-grid, slider
 - [T-advanced-checkbox-is-a-snapped-pair](TRAPS.md#t-advanced-checkbox-is-a-snapped-pair) — select-checkbox

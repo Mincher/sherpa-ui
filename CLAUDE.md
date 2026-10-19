@@ -394,6 +394,7 @@ CSS nesting with `&` inside `:host {}` also desugars to the broken chained form.
 - All elements the component will ever show **must exist in the HTML template from the start**. Never use `createElement()` or structural `innerHTML`.
 - Data-driven repeating items use cloning prototypes: `<template class="item-tpl">` (no `id` — prevents SherpaElement's multi-template parser from picking them up).
 - Multi-variant: add `<template id="other">` blocks; JS selects via `get templateId()`.
+- A fixed word the code hands on as data — a section title, a placeholder — is in a `<template class="words">` (`<span data-word="x">…</span>`), read with `this.word('x')` (TRAP `T-a-word-is-in-the-markup`).
 - A value that follows a host attribute — a toggle's name, its icon, `aria-pressed` — is written in the markup: `data-swap-on="data-x"` (or `data-x=value`) and `data-swap-<name>="…"` (`text` for its text). The base writes it while the host matches, and puts the template's own back after (TRAP `T-a-swapped-label-is-in-the-markup`).
 
 ### Token architecture

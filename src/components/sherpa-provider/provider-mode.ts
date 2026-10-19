@@ -18,8 +18,8 @@ export interface ModeHost {
   bars(): Element[];
   /** Every panel that asked. */
   panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }>;
-  /** A fresh mode button from the provider's template, or null before it has drawn. */
-  button(): HTMLElement | null;
+  /** A fresh mode button from the provider's template — the panel's or the bars' — or null before it has drawn. */
+  button(kind: 'panel' | 'bars'): HTMLElement | null;
   /** Settles once the provider has drawn its template. */
   rendered(): Promise<void>;
   /** The reader switched the mode. */
@@ -111,26 +111,24 @@ export class ProviderMode {
         this.#toggles.delete(bar);
         continue;
       }
-      toggle ??= this.#toggle(bar, 'sidebar', 'View as filter panel');
+      toggle ??= this.#toggle(bar, 'panel');
       if (!toggle) continue;
       if (this.#mode === 'panel') toggle.remove();
       else if (!toggle.isConnected) bar.append(toggle);
     }
     for (const panel of panels) {
-      if (!this.#toggles.has(panel)) this.#toggle(panel, 'fullscreen-exit', 'Filter in the toolbars instead');
+      if (!this.#toggles.has(panel)) this.#toggle(panel, 'bars');
     }
   }
 
   /** One mode button, from the template, into its host's `actions` slot — or,
    *  before the provider has drawn its template, once it has. */
-  #toggle(host: Element, icon: string, label: string): HTMLElement | undefined {
-    const button = this.#host.button();
+  #toggle(host: Element, kind: 'panel' | 'bars'): HTMLElement | undefined {
+    const button = this.#host.button(kind);
     if (!button) {
       void this.#host.rendered().then(() => this.#giveToggles());
       return undefined;
     }
-    button.dataset['iconStart'] = icon;
-    button.setAttribute('aria-label', label);
     button.addEventListener('button-click', this.#onConfigure);
     host.append(button);
     this.#toggles.set(host, button);

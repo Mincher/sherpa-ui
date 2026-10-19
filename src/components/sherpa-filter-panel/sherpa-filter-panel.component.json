@@ -565,6 +565,36 @@
             }
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "words",
+        "children": [
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "organise"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "group"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "sort"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "presets"
+            }
+          }
+        ]
       }
     ]
   },

@@ -588,10 +588,6 @@ export class SherpaMenu extends SherpaElement {
     const pick = row.querySelector<SherpaInputText>('.condition-pick');
     const text = row.querySelector<SherpaInputText>('.condition-value');
 
-    void join?.populate?.([
-      { value: 'and', label: 'And' },
-      { value: 'or', label: 'Or' },
-    ]);
     /* OR, not AND. Two rows over ONE field are alternatives — `eq Dana` AND
        `eq Ravi` matches nobody, every time, and that is what a second row
        produced. `#seedFromPicks` already joins carried picks with `or`; a row
@@ -719,7 +715,7 @@ export class SherpaMenu extends SherpaElement {
    */
   #valueOptions(): { value: string; label: string }[] {
     const values = this.#fieldValues();
-    return values.length ? [{ value: '', label: 'Select…' }, ...values] : [];
+    return values.length ? [{ value: '', label: this.word('select') }, ...values] : [];
   }
 
   /** The field's own values, read from the menu's rows. */
@@ -1567,7 +1563,7 @@ export class SherpaMenu extends SherpaElement {
     // TRAP T-calendar-header-has-no-heading
     // ALWAYS named: the card is a dialog, and a dialog with no name is a failure.
     // TRAP T-a-menu-is-a-dialog-of-native-controls
-    this.#card()?.setAttribute('aria-label', this.dataset['heading'] || this.getAttribute('aria-label') || 'Menu');
+    this.#card()?.setAttribute('aria-label', this.dataset['heading'] || this.getAttribute('aria-label') || this.word('menu'));
 
     // A shared name makes the browser enforce "one at a time".
     if (this.dataset['select'] === 'single') {
@@ -1758,8 +1754,6 @@ export class SherpaMenu extends SherpaElement {
     clearTimeout(this.#hoverTimer);
   }
 
-  static readonly ALL_LABEL = 'Select all';
-
   /** The select-all control (class `qf-all`). */
   #allRow(): HTMLInputElement | null {
     return this.#own<HTMLInputElement>('.qf-all input')[0] ?? null;
@@ -1790,8 +1784,6 @@ export class SherpaMenu extends SherpaElement {
     const on = boxes.filter((b) => b.checked).length;
     all.checked = boxes.length > 0 && on === boxes.length;
     all.indeterminate = on > 0 && on < boxes.length;
-    const label = all.parentElement?.querySelector('.qf-row-label');
-    if (label) label.textContent = SherpaMenu.ALL_LABEL;
   }
 
   /** Rows changed — re-read select-all, re-place next frame. */
@@ -2033,7 +2025,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** Remove — the footer-button form of a `<button value="remove">` row. */
   #onRemove = (): void => {
-    this.emit('menu-select', { value: 'remove', label: 'Remove' });
+    this.emit('menu-select', { value: 'remove', label: this.$('.remove')?.textContent?.trim() ?? '' });
     this.hide();
   };
 

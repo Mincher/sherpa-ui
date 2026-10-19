@@ -5870,7 +5870,7 @@
               "name": "menu-select",
               "description": "An action row was clicked.",
               "type": {
-                "text": "CustomEvent<{ label: 'Remove' | string; value: 'remove' | string }>"
+                "text": "CustomEvent<{ label: string; value: 'remove' | string }>"
               }
             },
             {

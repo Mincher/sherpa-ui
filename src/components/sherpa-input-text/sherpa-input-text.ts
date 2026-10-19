@@ -37,10 +37,6 @@ const MIRRORED = [
   'step',
 ] as const;
 
-/** What an empty number field says. Will, 2026-09-30. */
-const NUMBER_PLACEHOLDER = 'Enter a value';
-/** What an empty Find says. */
-const FIND_PLACEHOLDER = 'Find';
 
 /** The composed pieces a Find reaches for. */
 type Popover = HTMLElement & { open?: boolean; show(trigger?: HTMLElement): void; hide(): void };
@@ -462,12 +458,12 @@ export class SherpaInputText extends SherpaElement {
     if (this.dataset['type'] === 'number') {
       c.setAttribute('type', 'number');
       if (!this.hasAttribute('inputmode')) c.setAttribute('inputmode', 'decimal');
-      if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', NUMBER_PLACEHOLDER);
+      if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', this.word('placeholder'));
     }
     // A Find says what it is for; its type is the template's.
     if (this.dataset['type'] === 'find') {
       c.setAttribute('type', 'text');
-      if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', FIND_PLACEHOLDER);
+      if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', this.word('placeholder'));
     }
     if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
     // `min`, `max`, `disabled` or the value moved: so may what a stepper can do.

@@ -192,7 +192,7 @@ export class SherpaNav extends SherpaElement {
     const product = this.$('.product');
     if (product) {
       product.textContent =
-        state === 'settings' ? 'Settings' : (this.#config.product?.name ?? '');
+        state === 'settings' ? this.word('settings') : (this.#config.product?.name ?? '');
     }
     this.$('.rail')?.setAttribute('aria-expanded', String(OPEN.has(state)));
   }

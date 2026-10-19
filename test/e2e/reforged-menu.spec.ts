@@ -465,7 +465,7 @@ test('the select-all row cycles ALL → NONE, and reads the set rather than the 
     // The select-all row is the same label+checkbox shape as a value row, marked
     // `qf-all`. Exactly what a host stamps above the values.
     menu.innerHTML =
-      '<label class="qf-all"><input type="checkbox" /><span class="qf-row-label"></span></label>' +
+      '<label class="qf-all"><input type="checkbox" /><span class="qf-row-label">Select all</span></label>' +
       ['a', 'b', 'c']
         .map((v) => `<label><input type="checkbox" value="${v}" /><span>${v}</span></label>`)
         .join('');
