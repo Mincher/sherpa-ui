@@ -164,3 +164,50 @@ test('an open heading menu survives a push, with its search and its draft', asyn
   })()`);
   expect(r).toEqual({ same: true, open: true, search: 'act', draft: ['active'], total: 20 });
 });
+
+/* A KEPT menu must not tick a cleared answer back: Clear, then Escape; and Remove. */
+for (const how of ['clear', 'remove'] as const) {
+  test(`a heading's ${how} stays cleared when its kept menu closes`, async ({ page }) => {
+    await page.evaluate(`(async () => {
+      ${SETUP}
+      grid.setAttribute('data-column-filters', '');
+      const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+      source.declareValues('status', ['active', 'trial']);
+      bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
+      source.select('status', ['active']);
+      await source.load();
+      await settle();
+      window.__source = source;
+      grid.openColumnFilter('status');
+      await settle();
+    })()`);
+    const menu = page.locator('sherpa-data-grid .head-cell[data-field="status"] sherpa-menu');
+    await menu.locator(`sherpa-button.${how}`).click();
+    if (how === 'clear') await page.keyboard.press('Escape');
+    const r = await page.evaluate(`(async () => {
+      await window.__settled();
+      await new Promise((done) => setTimeout(done, 50));
+      const grid = document.querySelector('sherpa-data-grid');
+      const menu = grid.shadowRoot.querySelector('.head-cell[data-field="status"] sherpa-menu');
+      return { open: !!menu.open, values: menu.values, total: window.__source.total };
+    })()`);
+    expect(r).toEqual({ open: false, values: [], total: 40 });
+  });
+}
+
+/* Every row's selection cell is drawn frozen, whoever draws the body. */
+test('a group fold that only changes the page count keeps each row\'s selection cell frozen', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    grid.setAttribute('data-selectable', '');
+    grid.setAttribute('data-group-field', 'status');
+    grid.setAttribute('data-page-size', '15');
+    await grid.populate({ columns, rows });
+    await settle();
+    grid.shadowRoot.querySelector('.group-row')?.click();
+    await settle();
+    const cells = [...grid.shadowRoot.querySelectorAll('.row > .select-cell')];
+    return { rows: cells.length > 0, unpinned: cells.filter((c) => !c.hasAttribute('data-pinned')).length };
+  })()`);
+  expect(r).toEqual({ rows: true, unpinned: 0 });
+});

@@ -820,6 +820,8 @@ export class SherpaDataGrid extends SherpaElement {
         if (fm?.getAttribute('data-type') === 'filter') fm.setAttribute('data-value', '');
         // The MENU empties its own answer, whatever its body: ticks, rows, a number, a day.
         if (fm) fm.reading = {};
+        // And Cancel's answer with it: a kept menu that closes must not tick the old answer back. TRAP T-a-heading-cell-is-kept
+        fm?.takeBaseline();
       }
     }
 
@@ -1194,6 +1196,8 @@ export class SherpaDataGrid extends SherpaElement {
     // honest across the cut. TRAP T-grid-collapsed-group-is-one-slot.
     const { rows, offset, pages } = this.#pageWindow(all);
     let lastGroup: string | null = null;
+    // Each row's selection cell is drawn frozen: no caller has to pin it after.
+    const selectable = this.hasAttribute('data-selectable');
 
     rows.forEach((record, i) => {
       if (group) {
@@ -1220,6 +1224,8 @@ export class SherpaDataGrid extends SherpaElement {
       const ticked = this.#selected.has(record);
       for (const box of tr.querySelectorAll<SelectBox>('.row-select')) box.checked = ticked;
       tr.toggleAttribute('data-selected', ticked);
+      const select = tr.querySelector<HTMLElement>('.select-cell');
+      if (selectable && select) this.#markPinned(select, false);
       // Its group, so CSS hides it when that group is shut — no `display` write.
       if (group && lastGroup !== null) tr.dataset['groupKey'] = lastGroup;
       columns.forEach((col, c) => {

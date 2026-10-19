@@ -1124,6 +1124,12 @@ about 120–190 ms.
   a saved filter on 320 → **176**; a View pick 200 → **80**. Every act is under
   the 200 ms target on this machine. Full suites: sherpa-ui 3130 passed, Demos
   426 passed.
+- ✅ **Review** (read-only, 2026-10-19; 2 faults confirmed, both fixed): Clear or
+  Remove on a KEPT heading menu ticked the old answer back as the menu closed —
+  the menu now takes its Cancel answer as it is cleared; and each row's selection
+  cell is drawn frozen by `#renderBody` itself, so a group fold that moves only
+  the page count keeps it frozen. Three tests in `reforged-grid-keeps-its-heading`
+  (each fails without its fix).
 - **Left for 350** (the design's §5): the body is still redrawn — 50 select
   components per page, and one of a tick's two body draws is spent on old rows;
   the provider works out `filterDef` for every field on each push; `#pageRecords`
