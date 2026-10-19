@@ -20,6 +20,9 @@
   Slots:
     (default)   the Context's markup, put there by the outlet
 
+  Parts:
+    reach       the "Unable to reach data" banner over the top of the content
+
   Fires:
     context-change — detail: { context, view }
     context-markup — detail: { context, root, waitUntil }
@@ -28,5 +31,29 @@
     settings-close — detail: { }
 -->
 <template id="default">
+  <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
+       it never moves the Context (Will, W1 A). TRAP T-a-reach-banner-takes-no-room -->
+  <div class="reach" part="reach">
+    <sherpa-callout class="reach-unreached" data-status="warning" data-heading="Unable to reach data">
+      <span>The last data is still shown, and may be out of date. <span class="reach-why"></span></span>
+      <span class="reach-actions">
+        <sherpa-button class="retry" data-size="sm" data-label="Retry"></sherpa-button>
+        <sherpa-button class="dismiss" data-size="sm" data-look="transparent" data-label="Dismiss"></sherpa-button>
+      </span>
+    </sherpa-callout>
+    <sherpa-callout class="reach-down" data-status="critical" role="alert" data-heading="Unable to reach data">
+      <span>There is no data to show until it can be reached. <span class="reach-why"></span></span>
+      <span class="reach-actions">
+        <sherpa-button class="retry" data-size="sm" data-label="Retry"></sherpa-button>
+        <sherpa-button class="dismiss" data-size="sm" data-look="transparent" data-label="Dismiss"></sherpa-button>
+      </span>
+    </sherpa-callout>
+  </div>
   <slot data-accepts="content"></slot>
+  <!-- Why it could not be reached, by the failure's kind. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="offline">The network could not be reached.</span>
+    <span data-word="timeout">The server took too long to answer.</span>
+    <span data-word="server">The server had a problem.</span>
+  </template>
 </template>

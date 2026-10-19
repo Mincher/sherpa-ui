@@ -4,16 +4,139 @@
   "$type": "component",
   "$name": "sherpa-outlet",
   "$description": "where the route's Context is drawn. It is the app's main landmark, and its light DOM IS the Context: on each route change it loads the one app.json names, runs it, and tears the last one down. TRAP T-an-outlet-loads-the-context",
+  "element": {
+    "$type": "element",
+    "tag": "div",
+    "provides": []
+  },
   "templates": [
     "default"
   ],
   "anatomy": {
-    "root": {
-      "slot": "",
-      "attrs": {
-        "data-accepts": "content"
+    "roots": [
+      {
+        "el": "div",
+        "class": "reach",
+        "part": "reach",
+        "children": [
+          {
+            "el": "sherpa-callout",
+            "class": "reach-unreached",
+            "attrs": {
+              "data-status": "warning",
+              "data-heading": "Unable to reach data"
+            },
+            "children": [
+              {
+                "el": "span",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "reach-why"
+                  }
+                ]
+              },
+              {
+                "el": "span",
+                "class": "reach-actions",
+                "children": [
+                  {
+                    "el": "sherpa-button",
+                    "class": "retry",
+                    "attrs": {
+                      "data-size": "sm",
+                      "data-label": "Retry"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "dismiss",
+                    "attrs": {
+                      "data-size": "sm",
+                      "data-look": "transparent",
+                      "data-label": "Dismiss"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "el": "sherpa-callout",
+            "class": "reach-down",
+            "attrs": {
+              "data-status": "critical",
+              "role": "alert",
+              "data-heading": "Unable to reach data"
+            },
+            "children": [
+              {
+                "el": "span",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "reach-why"
+                  }
+                ]
+              },
+              {
+                "el": "span",
+                "class": "reach-actions",
+                "children": [
+                  {
+                    "el": "sherpa-button",
+                    "class": "retry",
+                    "attrs": {
+                      "data-size": "sm",
+                      "data-label": "Retry"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "dismiss",
+                    "attrs": {
+                      "data-size": "sm",
+                      "data-look": "transparent",
+                      "data-label": "Dismiss"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slot": "",
+        "attrs": {
+          "data-accepts": "content"
+        }
+      },
+      {
+        "el": "template",
+        "class": "words",
+        "children": [
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "offline"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "timeout"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "server"
+            }
+          }
+        ]
       }
-    }
+    ]
   },
   "slots": [
     {
@@ -85,6 +208,10 @@
       "composed": true
     }
   ],
+  "tokens": {
+    "reach-actions.gap": "{sherpa.space-2xs}",
+    "reach-actions.margin-inline-start": "{sherpa.space-xs}"
+  },
   "$extensions": {
     "sherpa": {
       "methods": [

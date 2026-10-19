@@ -6935,6 +6935,11 @@
               "name": "",
               "description": "the Context's markup, put there by the outlet (accepts: content)"
             }
+          ],
+          "cssParts": [
+            {
+              "name": "reach"
+            }
           ]
         }
       ],

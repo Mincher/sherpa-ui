@@ -22,6 +22,7 @@ import type { Route } from '../../core/browser/route.js';
 import type { RouteChange, SherpaRouter } from '../sherpa-router/sherpa-router.js';
 import type { SherpaProvider } from '../sherpa-provider/sherpa-provider.js';
 import { OutletNav } from './outlet-nav.js';
+import '../sherpa-callout/sherpa-callout.js';
 
 /** What an app hands its outlet: app.json, where it lives, the session and the stores. */
 export interface OutletOptions {
@@ -118,6 +119,12 @@ export class SherpaOutlet extends SherpaElement {
       router.dataset['params'] = [`context=${options.app.default}`, ...rest].join(' ');
       this.on(router, 'route-change', this.#onRoute);
     }
+    // The page's data out of reach: a banner over the content. TRAP T-a-reach-banner-takes-no-room
+    const provider = this.#provider;
+    if (provider) {
+      this.on(provider, 'reach-change', this.#onReach);
+      this.#drawReach(provider.reach);
+    }
     const header = this.#header;
     if (header) this.on(header, 'quick-filter-change', this.#onViewPick);
     /* Settings' back arrow and ESC are INTENTS: each asks the router, and the
@@ -161,6 +168,37 @@ export class SherpaOutlet extends SherpaElement {
   get #provider(): SherpaProvider | null {
     return this.closest<SherpaProvider>('sherpa-provider');
   }
+
+  override onRender(): void {
+    this.$('.reach')?.addEventListener('button-click', this.#onReachAct);
+  }
+
+  /** The reach last drawn: a new one shows again what Dismiss hid. */
+  #reachNow = 'ok';
+
+  /** The provider says the page's reach moved. */
+  #onReach = (event: Event): void => {
+    this.#drawReach((event as CustomEvent<SherpaProvider['reach']>).detail);
+  };
+
+  /** Show the banner for the page's reach — warning while the last rows are
+   *  shown, critical with nothing to show — and say why. TRAP T-a-reach-banner-takes-no-room */
+  #drawReach(reach: SherpaProvider['reach']): void {
+    if (reach.reach !== this.#reachNow) this.toggleState('reach-dismissed', false);
+    this.#reachNow = reach.reach;
+    this.toggleState('reach-unreached', reach.reach === 'unreached');
+    this.toggleState('reach-down', reach.reach === 'down');
+    // After the state, so a reader hears a change inside a live region already shown.
+    const kind = reach.failure?.kind;
+    const why = kind === 'offline' || kind === 'timeout' || kind === 'server' ? this.word(kind) : '';
+    for (const el of this.$$('.reach-why')) el.textContent = why;
+  }
+
+  /** Retry asks the provider to try again; Dismiss hides the banner until the reach moves. */
+  #onReachAct = (event: Event): void => {
+    if (this.pathFind(event, '.retry')) this.#provider?.recheck();
+    else if (this.pathFind(event, '.dismiss')) this.toggleState('reach-dismissed', true);
+  };
 
   /** The app shell it sits in. */
   get #shell(): HTMLElement | null {

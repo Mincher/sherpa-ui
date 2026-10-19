@@ -228,7 +228,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (70)
+## The join and the app layer (71)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -248,6 +248,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — bind-source
 - [T-a-persistent-chip-reports-on-every-change](TRAPS.md#t-a-persistent-chip-reports-on-every-change) — provider
 - [T-a-provider-keeps-the-views](TRAPS.md#t-a-provider-keeps-the-views) — provider
+- [T-a-reach-banner-takes-no-room](TRAPS.md#t-a-reach-banner-takes-no-room) — outlet
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — provider
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — provider
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — provider
@@ -258,7 +259,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-threshold-is-a-fact-of-the-field](TRAPS.md#t-a-threshold-is-a-fact-of-the-field) — context, provider
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — provider
 - [T-a-view-keeps-a-draft](TRAPS.md#t-a-view-keeps-a-draft) — provider
-- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — provider
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — outlet, provider
 - [T-adapter-lives-at-the-binding](TRAPS.md#t-adapter-lives-at-the-binding) — bind-source
 - [T-aggregation-is-data](TRAPS.md#t-aggregation-is-data) — provider
 - [T-an-app-is-its-definition](TRAPS.md#t-an-app-is-its-definition) — app

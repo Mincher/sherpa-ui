@@ -738,6 +738,14 @@ against the code). The full plan, with every file:line, is
     `reach-change`, `provider.recheck()`, which runs on `online` and a tab
     shown; kept across `close({ next: true })`. TRAP `T-the-provider-says-the-pages-reach`.
 
+  - ✅ **4.6** (2026-10-19) — the "Unable to reach data" banner (W1 A): the
+    outlet floats a WARNING (last rows shown) or a CRITICAL (nothing to show)
+    over the top of the content area, in a zero-height sticky row, so nothing
+    moves; Retry rechecks, Dismiss hides it until the reach moves. Demos
+    `reforged-reach-banner` (3 engines; layout shift 0 in Chromium). **For Will
+    to look at by eye:** Demos `?context=records&remote`, then Settings › debug
+    fail, then Refresh — or `?context=records&fail=1`. TRAP `T-a-reach-banner-takes-no-room`.
+
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

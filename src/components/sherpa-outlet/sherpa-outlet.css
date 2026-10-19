@@ -7,3 +7,32 @@
   display: block;
   min-block-size: 0;
 }
+
+/* UNABLE TO REACH DATA: a row of NO height, sticky at the top of the scrolling
+   content, its callout floating in it — shown or gone, nothing moves (CLS 0).
+   Will, W1 A. TRAP T-a-reach-banner-takes-no-room */
+.reach {
+  display: none;
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 0;
+  z-index: 3;
+}
+:host(:is(:state(reach-unreached), :state(reach-down)):not(:state(reach-dismissed))) .reach { display: block; }
+.reach > sherpa-callout {
+  display: none;
+  position: absolute;
+  inset-block-start: var(--sherpa-layout-grid-padding, 16px);
+  inset-inline: var(--sherpa-layout-grid-padding, 16px);
+  box-shadow: var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #0000001f);
+}
+:host(:state(reach-unreached)) .reach-unreached,
+:host(:state(reach-down)) .reach-down { display: block; }
+.reach-actions {
+  display: inline-flex;
+  gap: var(--sherpa-space-2xs, 8px);
+  margin-inline-start: var(--sherpa-space-xs, 8px);
+  vertical-align: middle;
+}
+

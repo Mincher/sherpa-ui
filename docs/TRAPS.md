@@ -1385,6 +1385,7 @@ awaits `rendered`). A consumer's `useTemplate()` markup can retext every word.
 A word with DATA inside it (`Reset ${name}`) is not one: it stays where its
 data is.
 
+- Site: `src/components/sherpa-outlet/sherpa-outlet.html`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
@@ -3658,6 +3659,34 @@ asks the store nothing.
 - Site: `src/core/data/stores.ts`
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
+
+### T-a-reach-banner-takes-no-room
+
+345 phase 4.6 — Will: *"Unable to reach data warning/critical banner under the
+app header (or at top of the content area actually)"*, and W1 A: it FLOATS over
+the top of the content area and takes no room.
+
+The outlet owns it: it is the content area's one block, and it hears the
+provider's `reach-change` (`T-the-provider-says-the-pages-reach`), reading
+`provider.reach` once at `start()`. Its template holds both callouts and their
+words; a private state shows one — `reach-unreached` a WARNING ("The last data
+is still shown, and may be out of date."), `reach-down` a CRITICAL with
+`role="alert"` ("There is no data to show until it can be reached."). Why — by
+the failure's kind — is a word in the markup (`T-a-word-is-in-the-markup`),
+written AFTER the state, so a reader hears it inside a live region already
+shown.
+
+**No room:** `.reach` is a sticky row of ZERO height at the top of the
+scrolling content; its callout is absolute inside it. Shown or gone, nothing
+moves — Chromium's layout-shift sum is 0 (`reforged-panel-mode-does-not-shift`
+and Demos `reforged-reach-banner` hold it). It covers the top of the page (on
+Records, the metric row) while shown: **Dismiss** hides it until the reach
+moves; **Retry** is `provider.recheck()`. A card keeps its own error state
+beside a critical banner; a stale answer gives a card no state at all.
+
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.html`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.css`
 
 ### T-the-provider-says-the-pages-reach
 
