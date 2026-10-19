@@ -442,6 +442,44 @@ template and sheet in its own files, and the build only copies their text into
 5. **Class lists in TS:** input-text's icon classes, chart-legend's
    `rollup-toggle`, layout-grid's `sherpa-grid`.
 
+**Progress, 2026-10-19** (plans: `docs/history/plan-344/`, one per group,
+each checked by a second agent; handover: `docs/HANDOVER.md`):
+
+- ✅ Group 2, default variants (dc28fa30; Demos 650f35e). The rail rests
+  collapsed with no attribute (projector `unset`). TRAP `T-no-attribute-is-the-default-variant`.
+- ✅ Group 5, class lists (bfcf5373; Demos c4ecb86). Includes the Find glyph,
+  the grid selector `:is(.sherpa-grid, sherpa-layout-grid)`, and the Group and
+  Sort chip prototypes.
+- ✅ Group 4, select group options are prototypes (81bfebb9).
+- ✅ Group 3a, a content prop's default is its template's text;
+  `PropDef.default` is gone (97b29607). TRAP `T-the-templates-text-is-the-default`.
+- ✅ Group 3b, swaps: `data-swap-on` / `data-swap-*` (2f3f5b17). TRAP `T-a-swapped-label-is-in-the-markup`.
+- ✅ Group 3c, words: `<template class="words">` + `this.word()` (4a8e80d5). TRAP `T-a-word-is-in-the-markup`.
+- ✅ Group 3d, the nav's default rows are markup; `QuickEntry` (3350c7a0).
+- ⬜ 1b, nav-item's `::highlight()`: one shared `sherpa-nav-match` Highlight,
+  its rule static in `sherpa-nav-item.css` (plan group 1 (b)).
+- ⬜ 1c, the calendar's projected header: a `<sherpa-group>` with `data-grow`
+  on the month (plan group 1 (c)).
+- ⬜ 1d + 3b(a), helper-owned markup: the ⋮ menu rows (`more-menu.ts`) and
+  `menuFor()`'s menu and date calendar. Two plans proposed two mechanisms
+  (`static html` as a list of family files, or `clonesFrom` + `cloneFromFile`);
+  use ONE — family markup, as `static css` already takes a list.
+- ⬜ 1a, the toast stack: a page-level sheet (`static pageCss`) and
+  `:state(stacked)`. `show()` keeps `createElement('sherpa-toast')`: one
+  component, no structure (Claude's pick; Will may overrule).
+- ⬜ PRINCIPLES 17's "typed child" exceptions, recounted once the rest land.
+- Kept on purpose: labels with data inside (`Reset ${name}`) stay in TS — the
+  sweep classed them as data.
+
+**Found in passing** (not fixed, reading only): `sherpa-select-group`
+`#syncDisabled` re-enables an option its data disabled; `data-grouped` inside a
+Context probably keeps its gutters (a document rule wins); `sherpa-layout-grid`
+`:host([hidden])` loses to the document `display: grid`; `sherpa-nav-item.css`
+has a stale navigation token region; the outlet writes Context markup by plain
+`innerHTML` (no Trusted Types policy); a missing views file stops every Context;
+the Starter template asks npm for `sherpa-ui@^2.1.0-beta.0`, another person's
+package.
+
 ### `[ ]` ⬜ 345 — EXPLORE: fetch each field's values on demand, and cache them
 
 Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
