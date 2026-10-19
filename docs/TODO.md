@@ -1192,6 +1192,12 @@ View's name alone — "At risk", where it read "Records › At risk" (Claude's c
 for one rule; say if the Context prefix should stay). A Context with no Views
 keeps its own name. Demos `reforged-nav-favorites-recents` (48 in 3 engines).
 
+**Review fix, 2026-10-19:** two favourites of one name — two Contexts' Views both
+called "Overview" — read the same, with no icon to tell them apart. Each now
+says its Context ("Home › My view", "Records › My view"), and only when the
+names clash; every other favourite stays its View's name alone. Demos test
+"two favourites of one name each say their Context".
+
 ---
 
 ## B — The foundation: what is left

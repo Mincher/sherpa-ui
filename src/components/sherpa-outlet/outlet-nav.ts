@@ -100,7 +100,7 @@ export class OutletNav {
     for (const row of this.#rows()) {
       const list = row.id === 'recent' ? this.#recents : row.id === 'favorites' ? this.#favorites : null;
       const context = this.#contextOf(row.href);
-      const children = list ? list.all.map((kept) => this.#child(row.id, kept))
+      const children = list ? this.#children(row.id, list.all)
         : hierarchy && context ? this.#viewRows(row, context) : [];
       // A parent with no children is a plain row, not an empty expander.
       if (children.length) {
@@ -229,11 +229,20 @@ export class OutletNav {
     return this.#router ? new URL(this.#router.href({ context, view, settings: null })).search : `?context=${context}`;
   }
 
-  /** A stored row as an Area's child. Its id is the Area's and its own, never the
+  /** Stored rows as an Area's children. Its id is the Area's and its own, never the
    *  Context row's. No icon: TRAP T-nav-child-rows-carry-no-icon */
-  #child(area: string, kept: Kept): NavEntry {
-    const label = area === 'favorites' ? this.#viewLabel(kept) : kept.label;
-    return { id: `${area}:${kept.key ?? kept.context}`, label, href: this.#href(kept.context, kept.view ?? null) };
+  #children(area: string, all: readonly Kept[]): NavEntry[] {
+    const labels = all.map((kept) => (area === 'favorites' ? this.#viewLabel(kept) : kept.label));
+    return all.map((kept, i) => {
+      const label = labels[i] ?? kept.label;
+      // Two favourites of one name: each says its Context, so they read apart.
+      const shared = area === 'favorites' && labels.indexOf(label) !== labels.lastIndexOf(label);
+      return {
+        id: `${area}:${kept.key ?? kept.context}`,
+        label: shared ? `${this.#app.contexts[kept.context]?.label ?? kept.context} › ${label}` : label,
+        href: this.#href(kept.context, kept.view ?? null),
+      };
+    });
   }
 
   /** A favourite is a VIEW, so it is named after the View — its first View's too
