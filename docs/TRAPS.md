@@ -4456,8 +4456,9 @@ is the whole failure this rule prevents.
 
 ### T-empty-write-lets-css-collapse
 
-Writing a declared `content` prop treats ABSENT, EMPTY and A MISSING TARGET as
-the same thing: write `''`.
+Writing a declared `content` prop treats EMPTY and A MISSING TARGET as the same
+thing: write `''`. ABSENT writes the template's own text, and `''` where the
+template has none (`T-the-templates-text-is-the-default`).
 
 That is what lets the component's own `:empty` / `data-has-*` CSS collapse the
 node. **The base class never hides anything itself** — CSS owns visibility, so
@@ -4468,6 +4469,29 @@ A `number` prop whose parse fails resolves to `NaN`, and `'NaN'` is written as
 does not.
 
 - Site: `src/core/ui/sherpa-element.ts`
+
+### T-the-templates-text-is-the-default
+
+**What a `content` prop's target holds in the `.html` is its default** (Will,
+TODO 344: default text is the template's, never a string in TS). `#stamp` reads
+each target's own text — or, with `as: 'attr'`, its own attribute — BEFORE any
+prop writes, and `#syncProp` writes it back whenever the attribute is absent or
+removed. So `PropDef.default` is gone: `<h3 class="pane-heading">Available</h3>`
+is the transfer list's default heading.
+
+The read is TRIMMED, and blank counts as none: the inlined build strips indents
+and a dev build does not, so an untrimmed read differed between them, and a
+blank-but-indented target would stop matching `:empty`. It runs on EVERY stamp
+(a re-stamp is a new tree), and never inside a `<template>` prototype. A
+consumer's `useTemplate()` markup sets its own defaults the same way.
+
+The spec reads the same place: `generate-component-spec.mjs` takes a prop's
+default from its `to` target in the default template (`nodeAt`), then from the
+header's `(default …)` mark, and notes it when the two disagree.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `scripts/generate-component-spec.mjs`
+- Site: `test/e2e/reforged-num-coercion.spec.ts`
 
 ### T-composed-path-not-target
 
@@ -10231,8 +10255,10 @@ it — and text replaces every child it has.
 deleted the search field slotted inside it. Nothing errored: the header still
 said Filters, and the search was simply gone.
 
-So a composed child takes an ATTRIBUTE. Declare the prop `kind: 'style'` and
-pass it along in a sync method.
+So a composed child takes an ATTRIBUTE. Declare it `kind: 'content'` with
+`as: 'attr'`: the base passes the attribute on, and the template's own is its
+default (`data-heading="Filters"` on the panel's header). Dialog, panel and
+the filter panel do.
 
 `kind: 'content'` is for a plain node the component owns — a `<span>`, a
 `<p>` — where there is nothing else in it to lose.

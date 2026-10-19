@@ -133,7 +133,7 @@ export class SherpaNotifications extends SherpaElement {
       for (const node of this.$$('.menu > .notification, .menu > .empty')) node.remove();
       const empty = this.clone('template.empty-tpl');
       if (empty) {
-        empty.textContent = this.dataset['empty'] ?? 'No notifications';
+        empty.textContent = this.dataset['empty'] ?? empty.textContent;
         menu.appendChild(empty);
       }
       return;

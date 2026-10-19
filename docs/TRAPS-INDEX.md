@@ -728,7 +728,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (95)
+## SherpaElement and the shared sheets (96)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -821,6 +821,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — components, index
 - [T-the-base-class-names-nothing-visual](TRAPS.md#t-the-base-class-names-nothing-visual) — sherpa-element
 - [T-the-shared-vocabulary-is-declared-once](TRAPS.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
+- [T-the-templates-text-is-the-default](TRAPS.md#t-the-templates-text-is-the-default) — sherpa-element
 - [T-the-text-is-in-the-js](TRAPS.md#t-the-text-is-in-the-js) — templater
 - [T-tokens-css-never-reaches-shadow](TRAPS.md#t-tokens-css-never-reaches-shadow) — sherpa-element, sherpa-style-modes
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
@@ -933,7 +934,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (59)
+## Build, tools and the MCP (60)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -990,6 +991,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-manifest-is-written-from-the-specs](TRAPS.md#t-the-manifest-is-written-from-the-specs) — write-manifest, write-reference
 - [T-the-mcp-reads-sherpa-ui-through-one-door](TRAPS.md#t-the-mcp-reads-sherpa-ui-through-one-door) — check-mcp-pack, data, sherpa, vendor
 - [T-the-shared-vocabulary-is-declared-once](TRAPS.md#t-the-shared-vocabulary-is-declared-once) — check-ownership
+- [T-the-templates-text-is-the-default](TRAPS.md#t-the-templates-text-is-the-default) — generate-component-spec
 - [T-the-text-is-in-the-js](TRAPS.md#t-the-text-is-in-the-js) — build-reforged, check-weight
 - [T-tokens-are-safe-to-embed](TRAPS.md#t-tokens-are-safe-to-embed) — project-tokens
 - [T-tokens-css-never-reaches-shadow](TRAPS.md#t-tokens-css-never-reaches-shadow) — project-tokens

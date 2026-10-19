@@ -31,7 +31,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
-import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
+import { parseTemplates, htmlDiff, nodeAt } from './lib/html-structure.mjs';
 import { parseClassApi, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -734,11 +734,14 @@ function generateSpec(name) {
       else if (fromPrior.values && fromPrior.values.length) p.values = fromPrior.values;
       else { p.values = []; notes.push(`prop ${nm}: enum with NO parseable values (Public API comment lacks them) — NEEDS HAND-FINISHING`); }
     }
-    /* A default is a VALUE: the declaration's stands; otherwise the header's
-       mark, then the comment's boolean false, then the prior spec's — each kept
-       only if it is a value of the merged type. */
+    /* A default is a VALUE: the template's own text (or, `as: 'attr'`, its
+       attribute) stands; otherwise the header's mark, then the comment's boolean
+       false, then the prior spec's — each kept only if it is a value of the
+       merged type. TRAP T-the-templates-text-is-the-default */
     const mark = fromApi.defaultMark;
-    let def = decl.default;
+    const target = decl.to && defaultTree ? nodeAt(defaultTree, decl.to) : undefined;
+    let def = (decl.as === 'attr' ? target?.attrs?.[nm] : decl.as === 'icon' ? undefined : target?.text) || undefined;
+    if (def !== undefined && mark && !mark.none && defaultValue(mark.value, p) !== def) notes.push(`prop ${nm}: the header says ${mark.paren}, the template says "${def}"`);
     if (def === undefined && !mark?.none) {
       for (const c of [mark?.value, fromApi.default, fromPrior.default]) {
         def = defaultValue(c, p);

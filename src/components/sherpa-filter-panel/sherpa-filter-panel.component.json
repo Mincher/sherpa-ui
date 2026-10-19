@@ -31,7 +31,8 @@
             "part": "head",
             "attrs": {
               "slot": "header",
-              "data-icon": "filter"
+              "data-icon": "filter",
+              "data-heading": "Filters"
             },
             "children": [
               {
@@ -613,7 +614,7 @@
       "type": "string",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "content",
       "default": "Filters",
       "description": "the panel's own title"
     },

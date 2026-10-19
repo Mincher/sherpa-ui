@@ -24,6 +24,7 @@
  *
  * Map:
  * - parseTemplates — `<template id="x">…</template>` blocks → `{ id: nodes[] }`.
+ * - nodeAt — The first node down a `.a .b` class chain, as `querySelector` finds it.
  * - htmlDiff — Compare every `<template>` in two documents.
  */
 
@@ -116,6 +117,29 @@ function findMatchingClose(src, from, tag, endTag) {
   return src.length;
 }
 
+/** An element's own text, tags and comments removed, its spaces folded. */
+function textOf(src) {
+  return src.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+/** The first node down a `.a .b` class chain, as `querySelector` finds it — never inside a `<template>` prototype; undefined for any other selector. */
+export function nodeAt(nodes, selector) {
+  const chain = selector.trim().split(/\s+/);
+  if (!chain.every((s) => /^\.[\w-]+$/.test(s))) return undefined;
+  const has = (n, c) => (n.attrs?.class ?? '').split(/\s+/).includes(c.slice(1));
+  const walk = (list, i) => {
+    for (const n of list) {
+      if (n.tag === 'template') continue;
+      const j = has(n, chain[i]) ? i + 1 : i;
+      if (j === chain.length) return n;
+      const hit = walk(n.children ?? [], j);
+      if (hit) return hit;
+    }
+    return undefined;
+  };
+  return walk(nodes, 0);
+}
+
 function parseNodes(src) {
   const nodes = [];
   let i = 0;
@@ -142,7 +166,7 @@ function parseNodes(src) {
     const endTag = `</${tag}>`;
     const endIdx = findMatchingClose(src, i, tag, endTag);
     const childSrc = src.slice(i, endIdx);
-    nodes.push({ tag, attrs, children: parseNodes(childSrc) });
+    nodes.push({ tag, attrs, children: parseNodes(childSrc), text: textOf(childSrc) });
     i = endIdx + endTag.length;
   }
   return nodes;

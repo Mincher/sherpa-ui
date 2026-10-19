@@ -315,6 +315,39 @@ test('props: a declared prop re-syncs when the attribute changes', async ({ page
   expect(got).toEqual({ before: 'first', after: 'second' });
 });
 
+/** The template's own text is the default, and comes back when the attribute goes.
+ *  TRAP T-the-templates-text-is-the-default */
+test("props: the template's own text is the default, and comes back when the attribute goes", async ({ page }) => {
+  const got = await page.evaluate(async () => {
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const list = document.createElement('sherpa-transfer-list') as HTMLElement & { rendered?: Promise<void> };
+    const panel = document.createElement('sherpa-filter-panel') as HTMLElement & { rendered?: Promise<void> };
+    root.append(list, panel);
+    await list.rendered;
+    await panel.rendered;
+    const heading = () => list.shadowRoot!.querySelector('.source .pane-heading')!.textContent;
+    const head = () => panel.shadowRoot!.querySelector('.head')!.getAttribute('data-heading');
+    const bare = { list: heading(), panel: head() };
+    list.setAttribute('data-source-heading', 'Pool');
+    panel.setAttribute('data-heading', 'Refine');
+    await settle();
+    const set = { list: heading(), panel: head() };
+    list.removeAttribute('data-source-heading');
+    panel.removeAttribute('data-heading');
+    await settle();
+    const removed = { list: heading(), panel: head() };
+    list.setAttribute('data-source-heading', '');
+    await settle();
+    return { bare, set, removed, empty: heading() };
+  });
+  expect(got.bare).toEqual({ list: 'Available', panel: 'Filters' });
+  expect(got.set).toEqual({ list: 'Pool', panel: 'Refine' });
+  expect(got.removed).toEqual({ list: 'Available', panel: 'Filters' });
+  expect(got.empty).toBe('');
+});
+
 test('props: `all` writes EVERY matching node, not just the first', async ({ page }) => {
   // sherpa-list-item repeats .title — once inside the <button>, once in the static
   // content span — so a first-match-only write would leave one of them blank.

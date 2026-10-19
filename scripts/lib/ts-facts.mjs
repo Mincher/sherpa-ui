@@ -12,7 +12,7 @@
  * Map:
  * - parseObserved — The `static override observed` list, as names.
  * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
- * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and default.
+ * - parsePropDecls — Each prop `static override props` declares: its kind, type, values, `to` and `as`.
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
  * - parseEmits — Each `this.emit()` event, named and typed by the checker; which are cancelable; and what it cannot name.
@@ -88,7 +88,7 @@ export function expandArrayConst(src, name) {
 
 
 /**
- * Each prop `static override props` declares: its kind, type, values and default.
+ * Each prop `static override props` declares: its kind, type, values, `to` and `as`.
  *
  * The only honest source for `kind` — inferred from the observed list, a
  * CSS-only attribute was written into 39 specs as `content`. TRAP T-kind-says-how-not-whether
@@ -96,7 +96,7 @@ export function expandArrayConst(src, name) {
  * (`SHARED_PROPS['data-size']`) resolve into `sherpa-element.ts`. An entry
  * with a `to:` selector and no kind IS content: that is what `to` means.
  *
- * @returns {Record<string, { kind?: string, type?: string, values?: string[], default?: unknown }>}
+ * @returns {Record<string, { kind?: string, type?: string, values?: string[], to?: string, as?: string }>}
  */
 export function parsePropDecls(src, path) {
   const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
@@ -182,15 +182,12 @@ function declOf(node, file) {
     const key = p.name.getText(file.sf);
     const v = unwrap(p.initializer);
     if ((key === 'kind' || key === 'type') && ts.isStringLiteralLike(v)) out[key] = v.text;
-    else if (key === 'to') to = true;
+    else if (key === 'to') { to = true; if (ts.isStringLiteralLike(v)) out.to = v.text; }
+    else if (key === 'as' && ts.isStringLiteralLike(v)) out.as = v.text;
     else if (key === 'accessor' && ts.isStringLiteralLike(v)) out.accessor = v.text;
     else if (key === 'values' && ts.isArrayLiteralExpression(v)) {
       out.values = v.elements.flatMap((e) => (ts.isStringLiteralLike(e) ? [e.text]
         : ts.isSpreadElement(e) && ts.isIdentifier(e.expression) ? valuesNamed(e.expression.text, file) : []));
-    } else if (key === 'default') {
-      if (ts.isStringLiteralLike(v)) out.default = v.text;
-      else if (ts.isNumericLiteral(v)) out.default = Number(v.text);
-      else if (v.kind === ts.SyntaxKind.TrueKeyword || v.kind === ts.SyntaxKind.FalseKeyword) out.default = v.kind === ts.SyntaxKind.TrueKeyword;
     }
   }
   if (!out.kind && to) out.kind = 'content';

@@ -70,8 +70,6 @@ export interface PropDef {
   as?: 'text' | 'icon' | 'attr';
   /** Allowed values for an `enum`. Spec parity only; not enforced at runtime. */
   values?: readonly string[];
-  /** Used when the attribute is absent. Numbers go through coerceNum. */
-  default?: string | number | boolean;
 }
 
 /** A component's whole declared attribute surface. */
@@ -365,7 +363,7 @@ export abstract class SherpaElement extends Base {
 
   #resolveRendered!: () => void;
 
-  /** Has `onRender` run — it fires exactly once. */
+  /** Has the first stamp run. `onRender` runs again on a re-stamp or a reload. */
   #hasRendered = false;
 
   /** Has the first render run? `rendered` is the promise; this is the answer now. */
@@ -929,6 +927,7 @@ export abstract class SherpaElement extends Base {
     this.root.innerHTML = ownHtml(body);
     this.#stampedTemplate = id;
     this.#hasRendered = true;
+    this.#readOwn();
     // Props and icons BEFORE onRender, so a component's setup reads a
     // populated tree. A template `data-icon` draws nothing until upgraded.
     this.#syncAllProps();
@@ -1036,32 +1035,42 @@ export abstract class SherpaElement extends Base {
 
   /* ── Private — declared-prop sync ────────────────────────────────────── */
 
+  /** Each `content` target's own value, as this stamp wrote it. TRAP T-the-templates-text-is-the-default */
+  #own = new WeakMap<Element, string | null>();
+
+  /** Read what the template put in each `content` target, before any prop writes. */
+  #readOwn(): void {
+    for (const [name, def] of Object.entries((this.constructor as typeof SherpaElement).props)) {
+      if (def.kind !== 'content' || !def.to || def.as === 'icon') continue;
+      // Trimmed: the build strips indents. Blank is none, so `:empty` still collapses.
+      for (const el of this.$$(def.to)) this.#own.set(el, def.as === 'attr' ? el.getAttribute(name) : el.textContent?.trim() || null);
+    }
+  }
+
   /**
    * Write one declared `content` prop into the shadow DOM.
    * TRAP T-empty-write-lets-css-collapse — CSS owns the collapsing.
    */
   #syncProp(name: string, def: PropDef): void {
     if (def.kind !== 'content' || !def.to) return;
-
     const raw = this.getAttribute(name);
-    const fallback = def.default === undefined ? '' : String(def.default);
-    const text =
-      def.type === 'number'
-        ? String(coerceNum(raw, typeof def.default === 'number' ? def.default : NaN))
-        : (raw ?? fallback);
-
     // Never a box that holds a <slot>: the text would erase it. TRAP T-slot-guards-only-when-filled
     for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
       if (!el) continue;
+      // Absent: the template's own comes back. TRAP T-the-templates-text-is-the-default
+      const value = raw ?? this.#own.get(el) ?? null;
       if (def.as === 'attr') {
-        if (raw == null) el.removeAttribute(name);
-        else el.setAttribute(name, raw);
-      } else if (def.as === 'icon') this.writeIcon(el, text);
+        if (value == null) el.removeAttribute(name);
+        else el.setAttribute(name, value);
+        continue;
+      }
+      const text = raw != null && def.type === 'number' ? String(coerceNum(raw, NaN)) : (value ?? '');
+      if (def.as === 'icon') this.writeIcon(el, text);
       else el.textContent = text === 'NaN' ? '' : text;
     }
   }
 
-  /** Write every declared `content` prop. Runs once after the first render. */
+  /** Write every declared `content` prop. Runs on each stamp. */
   #syncAllProps(): void {
     const Ctor = this.constructor as typeof SherpaElement;
     for (const [name, def] of Object.entries(Ctor.props)) this.#syncProp(name, def);

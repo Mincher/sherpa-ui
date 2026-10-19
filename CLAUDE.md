@@ -252,7 +252,7 @@ one whose control is inside sets `static delegatesFocus = true` and writes no `f
 
 Shadow root queries: `this.$('.sel')` (querySelector) and `this.$$('.sel')` (querySelectorAll). Never use `this.shadowRoot.querySelector` directly.
 
-`onRender()` is guarded by a `#rendered` flag — it fires exactly once. Event listeners registered there will not double-bind.
+`onRender()` runs after each stamp: the first render, a variant re-stamp and a live reload. Host listeners registered there do not double-bind, because each is a stable arrow field and `addEventListener` drops a repeat (TRAP `T-restamp-does-not-abort`).
 
 ### Declared attributes — `static props`
 
@@ -278,13 +278,16 @@ typed door (`this.set(attr, value)` — the JS→CSS write path) and a place to 
 use. **`kind: style` must stay CSS-only in behaviour** — declaring `data-status` is not
 licence to add a JS status branch.
 
-Two options exist to preserve real behaviour. Do not add a third without evidence of
+One option exists to preserve real behaviour. Do not add another without evidence of
 three or more uses:
 
 | Option | For |
 |---|---|
 | `all` | the target repeats in the template (list-item writes `.title` twice) |
-| `default` | a real default string (`'Available'`, `'Ask N-zo'`) |
+
+**The template's text is the default.** What a `to` target holds in the `.html`
+(or, with `as: 'attr'`, its own attribute) shows while the attribute is absent,
+and comes back when it is removed (TRAP `T-the-templates-text-is-the-default`).
 
 A `to` target never holds a `<slot>`: the write would erase it. Put the text in a
 span BESIDE the slot, and let CSS hide it on `:state(has-<slot>)` — slotted content wins,

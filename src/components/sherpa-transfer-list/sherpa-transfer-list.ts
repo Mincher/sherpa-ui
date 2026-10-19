@@ -24,8 +24,8 @@ export class SherpaTransferList extends SherpaElement {
   static override css = new URL('./sherpa-transfer-list.css', import.meta.url);
   static override html = new URL('./sherpa-transfer-list.html', import.meta.url);
   static override props = {
-    'data-source-heading': { type: 'string', kind: 'content', to: '.source .pane-heading', default: 'Available' },
-    'data-target-heading': { type: 'string', kind: 'content', to: '.target .pane-heading', default: 'Selected' },
+    'data-source-heading': { type: 'string', kind: 'content', to: '.source .pane-heading' },
+    'data-target-heading': { type: 'string', kind: 'content', to: '.target .pane-heading' },
   } as const;
 
   static override observed = ['name', 'disabled'];

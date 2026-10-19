@@ -121,11 +121,9 @@ export class SherpaFilterPanel extends SherpaElement {
        offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
     'data-at-default': { type: 'boolean', kind: 'style' },
     'data-nothing-to-reset': { type: 'boolean', kind: 'style' },
-    /* NOT `kind: content`. The header is a COMPOSED component with its own
-       children — a slotted search among them — and writing text into it
-       replaces every one. `#syncHeading` passes the attribute along instead.
-       TRAP T-a-composed-child-takes-an-attribute-not-text */
-    'data-heading': { type: 'string', kind: 'style' },
+    /* An ATTRIBUTE, passed to the composed header: text would replace its
+       children. Its default is the template's. TRAP T-a-composed-child-takes-an-attribute-not-text */
+    'data-heading': { type: 'string', kind: 'content', to: '.head', as: 'attr' },
     'data-locked': { type: 'boolean', kind: 'style' },
     /* Set by a bound source: a change waits for its field's Apply, and which
        FIELDS have one waiting. TRAP T-apply-and-discard-wait-for-a-change */
@@ -214,13 +212,11 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const type of ['group-change', 'sort-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onArrange);
     }
-    this.#syncHeading();
     if (this.#scopes.length) this.#draw();
   }
 
   override onChange(name: string): void {
     if (name === 'data-at-default' || name === 'data-nothing-to-reset') syncResets(this, this.root, '.reset-all');
-    else if (name === 'data-heading') this.#syncHeading();
     else if (name === 'data-saveable') this.#saved.draw();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
@@ -510,10 +506,6 @@ export class SherpaFilterPanel extends SherpaElement {
   /* ── Drawing ──────────────────────────────────────────────────────── */
 
   /** Pass the heading to the panel's header component. */
-  #syncHeading(): void {
-    this.$('.head')?.setAttribute('data-heading', this.dataset['heading'] ?? 'Filters');
-  }
-
   /** Redraw every scope from `#scopes`. */
   #draw(): void {
     const region = this.$('.scopes');

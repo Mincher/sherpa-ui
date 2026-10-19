@@ -61,7 +61,8 @@ define('sherpa-foo', SherpaFoo);
   JS reads it), `template` (it picks the template, and is in `variantAttrs`).
 - `PropDef` options: `to`, `all` (every match), `accessor` (a boolean's JS
   property, `T-a-flag-brings-the-base-methods`), `as` (`'text'`, `'icon'` or
-  `'attr'`, `T-icon-value-takes-two-forms`), `values`, `default`.
+  `'attr'`, `T-icon-value-takes-two-forms`), `values`. A `content` prop's default
+  is its target's own text in the template (`T-the-templates-text-is-the-default`).
 - An attribute more than one component declares is in the shared vocabulary in
   `sherpa-element.ts` (`T-the-shared-vocabulary-is-declared-once`). Spread it;
   do not declare it again.
@@ -150,8 +151,9 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   `T-a-constructed-event-is-not-a-dispatched-one`). An event's detail is typed
   by TypeScript's checker (`T-a-detail-is-typed-by-the-checker`).
 - Props: a bare (non-`data-*`) `Public API:` name must be used in the code
-  (`T-a-bare-name-must-be-used-not-mentioned`). A default is read where the
-  header marks it — `md (default)` — and kept only if it is a value of the type.
+  (`T-a-bare-name-must-be-used-not-mentioned`). A default is read from a
+  `content` prop's `to` target in the default template, else where the header
+  marks it — `md (default)` — and kept only if it is a value of the type.
 - Anatomy has three forms: `root`, `roots` (two or more sibling roots) and
   `byTemplate` (templates that are different trees). A composed child is a node
   whose `el` is a `sherpa-*` tag.
