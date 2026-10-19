@@ -1043,6 +1043,21 @@ The fix to design: keep each heading cell by field and update it in place
 column or its filter def changes; one render per tick, not one per attribute;
 and read layout once. Measure with `inp.mjs` before and after.
 
+**Designed 2026-10-19** (two explorers, a designer, a checker):
+`docs/history/plan-355.md`. Five commits — C1 guards (`drawReading` skips the
+same reading; `#filterDef` stops working out values it throws away); C2 one
+render per tick, and one per publish; C4 layout read once, only when a layout
+input moved; C3 each attribute redraws only what it needs (after C4: the
+checker found C3 alone loses the pinned select column and the shared width);
+C5 heading cells kept by field and updated in place. Expected: the click's
+`#bootstrap → #stamp` 260 ms → under 60, layout reads 49 ms → about 0, INP
+about 120–190 ms.
+
+- ❓ **G1 — a heading menu is OPEN, and another control changes the same field.**
+  **A (pick):** the new answer is written and the menu stays open; its draft is
+  replaced, as today, minus the close (the menu re-takes its Cancel baseline).
+  **B:** the open menu keeps the reader's draft. (Today the rebuild CLOSES it.)
+
 ### `[x]` ✅ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
 
 Found 2026-10-19 while testing 353. On Demos Records, calling the data bar's

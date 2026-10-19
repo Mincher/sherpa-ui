@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 836712,
+    "js": 836805,
     "files": 106,
     "fetched": 216124
   },
@@ -95,8 +95,8 @@
     "fetched": 0
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "js": 475160,
-    "files": 46,
+    "js": 477826,
+    "files": 47,
     "fetched": 0
   },
   "components/sherpa-data-viz-header/sherpa-data-viz-header.js": {
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 968395,
+    "js": 968488,
     "files": 145,
     "fetched": 216124
   }

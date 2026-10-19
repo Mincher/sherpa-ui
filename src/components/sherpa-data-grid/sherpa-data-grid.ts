@@ -35,6 +35,7 @@ import {
   type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
+import { sameReading } from '../../core/data/query.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { isStaleKey, keyRow, rowKey } from '../../core/data/row-key.js';
@@ -506,13 +507,15 @@ export class SherpaDataGrid extends SherpaElement {
   #filterDef(col: GridColumn, held: FieldReading | undefined): FilterMenuDef {
     const kind = col.type ?? 'text';
     const given = this.#givenFilters[col.field];
-    const values = this.#columnValues.get(col.field) ?? this.#presentValues(col.field).sort();
+    // Its values only where a list shows them: the work is not done to be thrown away. TODO 355
+    const listed = !given && kind === 'text' && kindOf(col) !== 'advanced';
+    const values = listed ? this.#columnValues.get(col.field) ?? this.#presentValues(col.field).sort() : [];
     const own: FilterMenuDef = given ? { ...given } : {
       // No offer is Advanced too, for a text column.
       ...(kind === 'text'
         ? { advanced: col.advanced ?? true, ...(col.op ? { op: col.op } : {}) }
         : { kind: kind as 'number' | 'date', ...(col.advanced != null ? { advanced: col.advanced } : {}) }),
-      ...(kind === 'text' && kindOf(col) !== 'advanced' ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
+      ...(listed ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
     };
     /* A NUMBER's slider spans the values it HAS: the 0..100 default crushes a
        spend column at the far left. `reduceRows`, as `null` coerces to 0.
@@ -822,6 +825,8 @@ export class SherpaDataGrid extends SherpaElement {
       this.clearColumnFilter(field);
       return;
     }
+    // The answer it holds already: nothing to draw. TODO 355
+    if (sameReading(this.#columnFilters.get(field), reading)) return;
     // Kept even before the columns arrive — a restore draws first.
     this.#columnFilters.set(field, { ...reading });
     this.#renderHead();
