@@ -50,7 +50,8 @@ export function planRead({ need, held, history, reach }: PlanInputs): { plan: Pl
   if (set.due && !failed) return { plan: 'fetch', behind: false };
   // The store could not give it again: the last set, unconfirmed.
   if (failed) return { plan: 'held-stale', behind: !reach.tried };
-  // Held before this page, over a store that may miss a writer: shown at once, checked behind.
-  if (!history.announcesAll && set.gen <= history.since) return { plan: 'held-stale', behind: !reach.tried };
+  /* A copy kept from an earlier session (gen 0), or a set held before this page
+     over a store that may miss a writer: shown at once, checked behind. */
+  if (set.gen === 0 || (!history.announcesAll && set.gen <= history.since)) return { plan: 'held-stale', behind: !reach.tried };
   return { plan: 'held', behind: false };
 }

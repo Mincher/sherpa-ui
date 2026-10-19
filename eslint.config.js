@@ -88,7 +88,7 @@ export default [
     /* HEADLESS-SAFE but not storage-free: each reaches storage behind a guard
        (LocalStore's and web-storage's try/catch, IdbStore.available), so in Node it degrades. The
        DOM ban applies; the storage ban does not. */
-    files: ['src/core/data/stores.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/view-sync.ts', 'src/core/browser/web-storage.ts'],
+    files: ['src/core/data/stores.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/view-sync.ts', 'src/core/browser/web-storage.ts', 'src/core/browser/cache-keep.ts'],
     rules: {
       'no-restricted-globals': ['error',
         noDom('document', 'This module must run with NO DOM — it is imported by tests, servers and MCP tools.'),

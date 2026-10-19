@@ -155,6 +155,10 @@ export const { store: customerStore, ready: customersReady } = localRecords({
   (nothing to show), and `reach-change` fires when it moves; `recheck()` tries
   again (it does on `online` and a tab shown). The outlet draws a banner for it;
   a page with no outlet listens itself. `T-the-provider-says-the-pages-reach`
+- **Keep a remote store's rows on the device** with
+  `keepCache(store, { name: 'customers:' + tenant })`: a reload shows them at
+  once, offline too, and checks them behind. Call `clearKept()` at sign-out.
+  `T-a-kept-set-is-checked-each-session`
 
 ## 5. A page definition
 

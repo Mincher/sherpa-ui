@@ -49,6 +49,8 @@ const KNOWN = {
   'sherpa-data-grid.selectedRecords': 'ok: select(keys) — derived from the same set',
   'sherpa-data-grid.current': 'ok: currentKey = key — the record that key names',
   'sherpa-router.route': 'ok: go(changes) — the URL is the value, and go() writes it',
+  // Whether its stores answer is theirs to say; a caller asks again. TRAP T-the-provider-says-the-pages-reach
+  'sherpa-provider.reach': 'ok: recheck() — the stores say it; recheck() asks them again',
   /* A group or sort chip's arrangement. Both are DECLARED props, so a host
      writes them and the chip draws itself from them.
      TRAP T-a-chip-knows-what-kind-it-is */

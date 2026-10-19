@@ -332,6 +332,12 @@ dropped, so nothing held is shown to someone no longer allowed to see it.
 when its tab is shown. Never `navigator.onLine` — a store's own failures say
 whether it answers.
 
+**Kept on the device, if you ask.** `keepCache(store, { name })` keeps a remote
+store's held set in IndexedDB, so a reload shows the last rows at once —
+offline too — marked stale, and reads them again behind. Put the user or
+tenant in `name`, bump `version` when the rows' shape changes, and call
+`clearKept()` at sign-out: the rows outlive the session.
+
 ### The filter is NAMED PARTS, not one value
 
 Several controls narrow one query at once — a toolbar's chips, a grid's column

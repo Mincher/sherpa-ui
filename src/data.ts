@@ -232,6 +232,7 @@ export { bandCondition, bandEdges, type Threshold } from './core/data/threshold.
    real one. TRAP T-apply-and-discard-wait-for-a-change */
 export { spoofRemote, type SpoofOptions } from './core/data/spoof-remote.js';
 export { failureOf, unreached, type Failure, type FailureKind } from './core/data/failure.js';
+export { keepCache, clearKept, type KeepOptions } from './core/browser/cache-keep.js';
 
 /* ONE CHANNEL for "your assumption was wrong" — a host routes it, silences it
    or lets it warn. TRAP T-a-broken-assumption-reports */

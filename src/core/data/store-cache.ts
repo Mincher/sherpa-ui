@@ -6,6 +6,8 @@
  *
  * Map:
  * - CacheChangeDetail — A store change, as the cache passes it on: did the set take it in place?
+ * - KeptSet — A set as it is kept beyond the session: its rows, and what the schema refused.
+ * - CacheKeep — Where a store's set is kept beyond the session — IndexedDB, in a browser.
  * - StoreCache — A remote store's whole set, held once for every source over it.
  * - .store — The store it holds.
  * - .set — The held set, or null.
@@ -17,6 +19,8 @@
  * - .never — The store's own facts forbid holding it.
  * - .over — The largest cap a set was refused at, for its size.
  * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
+ * - .keep — Keep the set beyond the session, and start from the copy kept last time.
+ * - .drop — Hold nothing; `forget`, and the kept copy goes too.
  * - .hold — Hold the whole set, up to a cap: one shared read, waited for.
  * - .retry — A new page tries a failed whole read once more.
  * - .letGo — A Refresh: the set is due, and read again before it is used.
@@ -25,12 +29,35 @@
 import { HeldSet } from './held-set.js';
 import { report } from './report.js';
 import { failureOf, unreached, type Failure } from './failure.js';
-import type { Store, StoreChangeDetail } from './store.js';
+import { readField, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
+import { keyRow } from './row-key.js';
 
 /** A store change, as the cache passes it on: did the set take it in place? */
 export interface CacheChangeDetail {
   taken: boolean;
 }
+
+/** A set as it is kept beyond the session: its rows, and what the schema refused. */
+export interface KeptSet {
+  rows: readonly Row[];
+  dropped?: LoadResult['dropped'];
+  issues?: LoadResult['issues'];
+}
+
+/** Where a store's set is kept beyond the session (`keepCache`, IndexedDB in a
+ *  browser). The cache reads it once, and asks it to write after a read or a
+ *  save; when, and whether, is the port's. TRAP T-a-kept-set-is-checked-each-session */
+export interface CacheKeep {
+  /** The copy kept last time, or null. */
+  read(): Promise<KeptSet | null>;
+  /** Write soon: `take` gives the set as it is then, or null for none. */
+  write(take: () => KeptSet | null): void;
+  /** No copy any more. */
+  forget(): Promise<void>;
+}
+
+/** How long a page waits for a kept copy before it reads the store. */
+const KEPT_WAIT = 1000;
 
 /** A remote store's whole set, held once for every source over it. Fires
  *  `change` (CacheChangeDetail) on each store change, and `set` when a set lands. */
@@ -59,6 +86,12 @@ export class StoreCache extends EventTarget {
   #age = 0;
   /** Why it is not held has been said: once per store. */
   #said = false;
+  /** Where the set is kept beyond the session, if anywhere. */
+  #keep: CacheKeep | null = null;
+  /** The kept copy being read, which a first hold waits for — not long. */
+  #restoring: Promise<void> | null = null;
+  /** A change was heard: a copy that lands after it is out of date. */
+  #heard = false;
 
   constructor(store: Store) {
     super();
@@ -119,11 +152,55 @@ export class StoreCache extends EventTarget {
     });
   }
 
+  /** Keep the set beyond the session (D2 B), and start from the copy kept last
+   *  time: shown at once — gen 0, so unconfirmed — and read again behind it.
+   *  TRAP T-a-kept-set-is-checked-each-session */
+  keep(port: CacheKeep): void {
+    this.#keep = port;
+    this.#restoring = port.read().then((kept) => {
+      if (!kept || this.#set) return;
+      // Its keys are rebuilt: a row's key lives beside it, and a copy drops it.
+      const rows = kept.rows.map((row) => {
+        const copy = { ...row };
+        keyRow(copy, readField(copy, this.store.key));
+        return copy;
+      });
+      this.#set = new HeldSet(rows, { ...(kept.dropped ? { dropped: kept.dropped } : {}), ...(kept.issues ? { issues: kept.issues } : {}) });
+      // A change heard while it was read: the copy is out of date.
+      if (this.#heard) this.#due = true;
+      this.dispatchEvent(new Event('set'));
+    }, () => undefined).finally(() => {
+      this.#restoring = null;
+    });
+    // Written once a set is confirmed this session.
+    if (this.#gen > 0) this.#write();
+  }
+
+  /** Hold nothing; `forget`, and the kept copy goes too — a sign-out. */
+  drop(options: { forget?: boolean } = {}): void {
+    this.#set = null;
+    this.#due = false;
+    this.#age++;
+    if (options.forget) void this.#keep?.forget();
+  }
+
+  /** Ask the keep to write the set as it stands — a confirmed one only. */
+  #write(): void {
+    this.#keep?.write(() => (this.#set && this.#gen > 0 && !this.#due
+      ? { rows: this.#set.rows, ...this.#set.refused } : null));
+  }
+
   /** Hold the whole set, up to `cap` rows: one read, shared by every source that
    *  asks — sent at the largest cap asked — and one more if the rows changed
    *  while it was out. Never rejects. */
   async hold(cap: number): Promise<void> {
     this.#widest = Math.max(this.#widest, cap);
+    // A kept copy on its way is worth a moment: not long.
+    if (this.#restoring) {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      await Promise.race([this.#restoring, new Promise((r) => { timer = setTimeout(r, KEPT_WAIT); })]);
+      clearTimeout(timer);
+    }
     while (this.#wants(cap)) {
       if (!this.#reading) {
         /* Cleared by WHO it is, after it is kept: a load that throws at once
@@ -182,6 +259,7 @@ export class StoreCache extends EventTarget {
       if (total > cap || rows.length > cap) {
         // Too many for THIS cap: a page with a larger one may still hold it.
         this.#over = Math.max(this.#over, cap);
+        if (cap >= this.#widest) void this.#keep?.forget();
         return this.#say(`it holds ${total} rows, more than ${cap} (holdRows)`, cap, counted);
       }
       if (total !== rows.length) {
@@ -193,6 +271,7 @@ export class StoreCache extends EventTarget {
       this.#failedAt = 0;
       this.#failure = null;
       this.#gen++;
+      this.#write();
       this.dispatchEvent(new Event('set'));
     } catch (error) {
       if (age !== this.#age) return;
@@ -209,7 +288,11 @@ export class StoreCache extends EventTarget {
     const was = this.#failure;
     this.#failedAt = cap;
     this.#failure = failure;
-    if (!unreached(failure)) this.#set = null;
+    if (!unreached(failure)) {
+      this.#set = null;
+      // Refused: the copy on the device goes too.
+      if (failure.kind === 'refused') void this.#keep?.forget();
+    }
     else if (this.#set && (!was || !unreached(was))) {
       // Said once per flip, with the store's own words.
       report({
@@ -230,6 +313,8 @@ export class StoreCache extends EventTarget {
     const change = (event as CustomEvent<StoreChangeDetail | undefined>).detail;
     // While the store cannot be reached, the last set still takes a change it can place.
     const taken = !!this.#set && (!this.#due || this.#failedAt > 0) && !!change && this.#set.patch(change, this.store);
+    this.#heard = true;
+    if (taken) this.#write();
     if (!taken) {
       this.#due = true;
       // A change the store announced: it answers again, so a failed read is tried again.

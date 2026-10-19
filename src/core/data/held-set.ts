@@ -6,6 +6,8 @@
  * Map:
  * - HeldSet — A remote store's whole set, asked on the client; its rows go out as copies.
  * - .size — How many rows it holds.
+ * - .rows — Every row it holds, in place — to keep a copy, never to change.
+ * - .refused — What the schema refused when the set was read.
  * - .patch — Take one store change in place; false when it cannot, and the set must be read again.
  * - .load — What a load asks, each row a copy keyed as its original, so a host's edit never reaches the set.
  * - .totalCount — The matches, unpaged and unsorted.
@@ -31,6 +33,16 @@ export class HeldSet {
   /** How many rows it holds. */
   get size(): number {
     return this.#rows.length;
+  }
+
+  /** Every row it holds, in place — to keep a copy, never to change. */
+  get rows(): readonly Row[] {
+    return this.#rows;
+  }
+
+  /** What the schema refused when the set was read. */
+  get refused(): Pick<LoadResult, 'dropped' | 'issues'> {
+    return this.#refused;
   }
 
   /**

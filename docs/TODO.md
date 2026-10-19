@@ -746,6 +746,12 @@ against the code). The full plan, with every file:line, is
     to look at by eye:** Demos `?context=records&remote`, then Settings › debug
     fail, then Refresh — or `?context=records&fail=1`. TRAP `T-a-reach-banner-takes-no-room`.
 
+  - ✅ **4.7** (2026-10-19) — `keepCache(store, { name })` keeps a remote
+    store's set in IndexedDB (D2 B); a reload draws it at once, unconfirmed,
+    and checks behind (W2 A) — offline it shows it with the warning banner.
+    `clearKept()` at sign-out. Demos keeps `?remote`'s customers. TRAP
+    `T-a-kept-set-is-checked-each-session`. **Phase 4 is done.**
+
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

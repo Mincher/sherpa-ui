@@ -3660,6 +3660,42 @@ asks the store nothing.
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-a-kept-set-is-checked-each-session
+
+345 phase 4.7 — Will's D2 B (the held set kept in IndexedDB, opt-in per remote
+store) and W2 A (on a reload ONLINE, draw the kept rows at once and check behind).
+
+`keepCache(store, { name, version?, maxAge?, maxRows? })` is the opt-in, in the
+app's code where it makes the store — not a page definition (two pages could
+disagree) and not a provider option (it would work only under one). One record
+per store in its OWN database (`sherpa-cache`, object store `sets`), so an app's
+`version` never moves it. `clearKept()` empties every one — and each set held in
+memory — at sign-out. The `name` must carry the user or tenant: the rows outlive
+the session.
+
+- **Read at the start**, and a first hold waits for it — at most 1 s. The copy is
+  gen 0: ALWAYS unconfirmed (`T-a-read-is-planned`), so the first page that uses
+  the store draws it at once, `held-stale`, and reads behind it — the "checked
+  again when the session starts" that keeps ground zero. A change heard while
+  it was read marks it due. Its rows are KEYED again (`keyRow`): a key lives
+  beside a row, and a copy drops it.
+- **Written** only for a set confirmed this session (gen ≥ 1, not due): after a
+  whole read lands, after a change it takes — once quiet for 2 s, in idle time.
+  Not over `maxRows` (50,000). A refusal (401) forgets it; so does a refusal for
+  size; a full device forgets it, says `cache-keep-full` once and stops writing.
+- **Dropped when stale in kind**: another `version`, another key field, or older
+  than `maxAge` (7 days).
+- **No IndexedDB** (Node, a blocked browser): `cache-keep-unavailable`, once —
+  memory only. A store that is never held: `cache-keep-never-held`.
+
+Demos keeps `remoteCustomers` (`?remote`): a reload draws the last rows before
+the 800 ms read could, and offline it shows them with the warning banner.
+
+- Site: `src/core/data/store-cache.ts`
+- Site: `src/core/browser/cache-keep.ts`
+- Site: `test/e2e/reforged-a-kept-set-survives-a-reload.spec.ts`
+- Site: `test/unit/a-kept-set-in-node-is-a-miss.test.mjs`
+
 ### T-a-reach-banner-takes-no-room
 
 345 phase 4.6 — Will: *"Unable to reach data warning/critical banner under the
@@ -3706,6 +3742,7 @@ failure, as `provider.reach`, and fires `reach-change` when it moves.
   data layer.
 - A refusal (401) is not a reach failure: the store answered.
 
+- Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider-reach.spec.ts`
 
@@ -7337,6 +7374,10 @@ headless test proves every method rejects rather than resolving to a lie.
 
 A failed open is **not cached** — one rejection in a private window must not
 poison a session that is later granted storage.
+
+**A CACHE is the exception** (`keepCache`, `T-a-kept-set-is-checked-each-session`):
+it is never the only copy, so no IndexedDB is a miss — memory only, said once —
+never an error, and never a fallback to Web Storage.
 
 - Site: `src/core/browser/idb-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
