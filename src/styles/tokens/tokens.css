@@ -737,7 +737,7 @@
 
   /* The narrowest band, for a Context: its own width, never the viewport's. */
   @container sherpa-context (min-width: 0px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       --sherpa-layout-grid-columns: 4;
       --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
       --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
@@ -759,7 +759,7 @@
     }
   }
   @container sherpa-context (min-width: 728px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       --sherpa-layout-grid-columns: 8;
       --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
       --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
@@ -781,7 +781,7 @@
     }
   }
   @container sherpa-context (min-width: 1240px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       --sherpa-layout-grid-columns: 12;
       --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
       --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
@@ -803,7 +803,7 @@
     }
   }
   @container sherpa-context (min-width: 1880px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       --sherpa-layout-grid-columns: 12;
       --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
       --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
@@ -816,7 +816,7 @@
   /* Layout grid — the track system views place their content on.
      `columns` is a COUNT, so it must project unitless (see COUNT_PATHS); as
      `4px` the repeat() was invalid and the whole grid silently did nothing. */
-  .sherpa-grid {
+  :is(.sherpa-grid, sherpa-layout-grid) {
     display: grid;
     grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
     column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
@@ -853,33 +853,33 @@
   /* Column and row COUNTS — override the breakpoint's own track counts. A
      column count also re-scales every named span, since a span is stated
      against the 12-column system. */
-  .sherpa-grid[data-col-count] {
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count] {
     grid-template-columns: repeat(var(--_col-count), minmax(0, 1fr));
   }
-  .sherpa-grid[data-col-count='1'] { --_col-count: 1; }
-  .sherpa-grid[data-col-count='2'] { --_col-count: 2; }
-  .sherpa-grid[data-col-count='3'] { --_col-count: 3; }
-  .sherpa-grid[data-col-count='4'] { --_col-count: 4; }
-  .sherpa-grid[data-col-count='5'] { --_col-count: 5; }
-  .sherpa-grid[data-col-count='6'] { --_col-count: 6; }
-  .sherpa-grid[data-col-count='8'] { --_col-count: 8; }
-  .sherpa-grid[data-col-count='10'] { --_col-count: 10; }
-  .sherpa-grid[data-col-count='12'] { --_col-count: 12; }
-  .sherpa-grid[data-row-count]:not([data-rows='fit']) {
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='1'] { --_col-count: 1; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='2'] { --_col-count: 2; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='3'] { --_col-count: 3; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='4'] { --_col-count: 4; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='5'] { --_col-count: 5; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='6'] { --_col-count: 6; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='8'] { --_col-count: 8; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='10'] { --_col-count: 10; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='12'] { --_col-count: 12; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count]:not([data-rows='fit']) {
     grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
   }
-  .sherpa-grid[data-row-count='1'] { --_row-count: 1; }
-  .sherpa-grid[data-row-count='2'] { --_row-count: 2; }
-  .sherpa-grid[data-row-count='3'] { --_row-count: 3; }
-  .sherpa-grid[data-row-count='4'] { --_row-count: 4; }
-  .sherpa-grid[data-row-count='5'] { --_row-count: 5; }
-  .sherpa-grid[data-row-count='6'] { --_row-count: 6; }
-  .sherpa-grid[data-row-count='7'] { --_row-count: 7; }
-  .sherpa-grid[data-row-count='8'] { --_row-count: 8; }
-  .sherpa-grid[data-row-count='9'] { --_row-count: 9; }
-  .sherpa-grid[data-row-count='10'] { --_row-count: 10; }
-  .sherpa-grid[data-row-count='11'] { --_row-count: 11; }
-  .sherpa-grid[data-row-count='12'] { --_row-count: 12; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='1'] { --_row-count: 1; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='2'] { --_row-count: 2; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='3'] { --_row-count: 3; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='4'] { --_row-count: 4; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='5'] { --_row-count: 5; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='6'] { --_row-count: 6; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='7'] { --_row-count: 7; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='8'] { --_row-count: 8; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='9'] { --_row-count: 9; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='10'] { --_row-count: 10; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='11'] { --_row-count: 11; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='12'] { --_row-count: 12; }
 
   /* Column spans — a child says what it IS; the breakpoint blocks above turn
      that into a span. The table and the reasoning live with COL_SPANS in
@@ -889,18 +889,18 @@
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-  .sherpa-grid > [data-row-span='1']  { grid-row: span 1; }
-  .sherpa-grid > [data-row-span='2']  { grid-row: span 2; }
-  .sherpa-grid > [data-row-span='3']  { grid-row: span 3; }
-  .sherpa-grid > [data-row-span='4']  { grid-row: span 4; }
-  .sherpa-grid > [data-row-span='5']  { grid-row: span 5; }
-  .sherpa-grid > [data-row-span='6']  { grid-row: span 6; }
-  .sherpa-grid > [data-row-span='7']  { grid-row: span 7; }
-  .sherpa-grid > [data-row-span='8']  { grid-row: span 8; }
-  .sherpa-grid > [data-row-span='9']  { grid-row: span 9; }
-  .sherpa-grid > [data-row-span='10'] { grid-row: span 10; }
-  .sherpa-grid > [data-row-span='11'] { grid-row: span 11; }
-  .sherpa-grid > [data-row-span='12'] { grid-row: span 12; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='1']  { grid-row: span 1; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='2']  { grid-row: span 2; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='3']  { grid-row: span 3; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='4']  { grid-row: span 4; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='5']  { grid-row: span 5; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='6']  { grid-row: span 6; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='7']  { grid-row: span 7; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='8']  { grid-row: span 8; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='9']  { grid-row: span 9; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='10'] { grid-row: span 10; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='11'] { grid-row: span 11; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='12'] { grid-row: span 12; }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -911,7 +911,7 @@
 
      block-size: 100% is what makes overflow mean anything: without it the grid
      grew to 656px inside a 500px parent and scrolled nothing. */
-  .sherpa-grid[data-rows='fixed'] {
+  :is(.sherpa-grid, sherpa-layout-grid)[data-rows='fixed'] {
     grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
     block-size: 100%;
     min-block-size: 0;
@@ -928,7 +928,7 @@
      DESKTOP AND UP ONLY. At tablet and mobile a view is read by scrolling, so
      below 1280 the grid behaves as the default does. TRAP T-fit-is-a-desktop-mode */
   @media (min-width: 1280px) {
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'] {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'] {
       /* Read by the grid's JS, which never asks the viewport. */
       --_grid-fit: 1;
       block-size: 100%;
@@ -938,20 +938,20 @@
       overflow-y: auto;
       grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
     }
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'][data-row-count] {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'][data-row-count] {
       grid-template-rows:
         repeat(calc(var(--_row-count) - 1), var(--sherpa-layout-grid-row-height, 88px))
         1fr;
     }
     /* repeat(0, …) is invalid, and would drop the whole template. */
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'][data-row-count='1'] {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'][data-row-count='1'] {
       grid-template-rows: 1fr;
     }
     /* The filler, named by data-grow; with none, the LAST child fills.
        Its FLOOR is two grid rows: below that there is no room for a header and
        a line of content, so scrolling is the honest answer. */
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'] > [data-grow],
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'] > [data-grow],
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
       min-block-size: calc(
         2 * var(--sherpa-layout-grid-row-height, 88px)
         + var(--sherpa-layout-grid-gap-vertical, 16px)
@@ -960,7 +960,7 @@
     }
   }
   @container sherpa-context (min-width: 1240px) {
-    .sherpa-grid[data-rows='fit'] {
+    :is(.sherpa-grid, sherpa-layout-grid)[data-rows='fit'] {
       /* Read by the grid's JS, which never asks the viewport. */
       --_grid-fit: 1;
       block-size: 100%;
@@ -970,20 +970,20 @@
       overflow-y: auto;
       grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
     }
-    .sherpa-grid[data-rows='fit'][data-row-count] {
+    :is(.sherpa-grid, sherpa-layout-grid)[data-rows='fit'][data-row-count] {
       grid-template-rows:
         repeat(calc(var(--_row-count) - 1), var(--sherpa-layout-grid-row-height, 88px))
         1fr;
     }
     /* repeat(0, …) is invalid, and would drop the whole template. */
-    .sherpa-grid[data-rows='fit'][data-row-count='1'] {
+    :is(.sherpa-grid, sherpa-layout-grid)[data-rows='fit'][data-row-count='1'] {
       grid-template-rows: 1fr;
     }
     /* The filler, named by data-grow; with none, the LAST child fills.
        Its FLOOR is two grid rows: below that there is no room for a header and
        a line of content, so scrolling is the honest answer. */
-    .sherpa-grid[data-rows='fit'] > [data-grow],
-    .sherpa-grid[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
+    :is(.sherpa-grid, sherpa-layout-grid)[data-rows='fit'] > [data-grow],
+    :is(.sherpa-grid, sherpa-layout-grid)[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
       min-block-size: calc(
         2 * var(--sherpa-layout-grid-row-height, 88px)
         + var(--sherpa-layout-grid-gap-vertical, 16px)
@@ -993,7 +993,7 @@
   }
 
   @media (min-width: 0px) and (max-width: 767.98px) {
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 4; }
       & > [data-col-span='reading'] { grid-column: span 4; }
       & > [data-col-span='large'] { grid-column: span 4; }
@@ -1005,7 +1005,7 @@
   }
 
   @media (min-width: 768px) and (max-width: 1279.98px) {
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 8; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 8; }
@@ -1039,7 +1039,7 @@
   }
 
   @media (min-width: 1280px) and (max-width: 1919.98px) {
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 6; }
@@ -1078,7 +1078,7 @@
   }
 
   @media (min-width: 1920px) {
-    .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 6; }
@@ -1117,7 +1117,7 @@
   }
 
   @container sherpa-context (min-width: 0px) and (max-width: 727.98px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       & > [data-col-span='full'] { grid-column: span 4; }
       & > [data-col-span='reading'] { grid-column: span 4; }
       & > [data-col-span='large'] { grid-column: span 4; }
@@ -1129,7 +1129,7 @@
   }
 
   @container sherpa-context (min-width: 728px) and (max-width: 1239.98px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       & > [data-col-span='full'] { grid-column: span 8; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 8; }
@@ -1163,7 +1163,7 @@
   }
 
   @container sherpa-context (min-width: 1240px) and (max-width: 1879.98px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 6; }
@@ -1202,7 +1202,7 @@
   }
 
   @container sherpa-context (min-width: 1880px) {
-    .sherpa-grid {
+    :is(.sherpa-grid, sherpa-layout-grid) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 6; }

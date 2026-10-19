@@ -262,7 +262,6 @@ export class SherpaChartLegend extends SherpaElement {
       if (!isRollup) return void list.appendChild(cell);
       const wrapper = this.clone('template.rollup-tpl');
       if (!wrapper) return;
-      cell.classList.add('rollup-toggle');
       wrapper.prepend(cell);
       this.#buildBreakdown(wrapper);
       list.appendChild(wrapper);
@@ -294,7 +293,7 @@ export class SherpaChartLegend extends SherpaElement {
       const on = new Set(values.map(Number));
       this.#rolledActive = on;
       // Applying a suspended group's breakdown turns the row back on.
-      wrapper.querySelector('.rollup-toggle .entry')?.toggleAttribute('data-current', on.size > 0);
+      wrapper.querySelector(':scope > .item .entry')?.toggleAttribute('data-current', on.size > 0);
 
       /* THE OFF-SET IS THE ONE ANSWER. Unticking a folded row used to emit and
          nothing else — `off` never learnt about it, so the binding reading it

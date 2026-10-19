@@ -262,7 +262,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
 
     const sr = el.shadowRoot!;
     const rollup = sr.querySelector<HTMLElement>('.rollup')!;
-    const toggle = rollup.querySelector<HTMLElement>('.rollup-toggle')!;
+    const toggle = rollup.querySelector<HTMLElement>(':scope > .item')!;
     const button = rollup.querySelector<HTMLElement>('.rollup-menu-btn')!;
     const menu = rollup.querySelector<HTMLElement & { toggle?: (t?: HTMLElement) => void }>(
       '.rollup-menu',
@@ -466,7 +466,7 @@ test('a ROLL-UP row records the real labels it folded, not "Other"', async ({ pa
     })));
     await settle();
 
-    const other = el.shadowRoot!.querySelector<HTMLElement>('.rollup-toggle');
+    const other = el.shadowRoot!.querySelector<HTMLElement>('.rollup > .item');
     const label = other?.querySelector('.label')?.textContent;
     other?.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await settle();
@@ -807,7 +807,7 @@ test('the breakdown button sits ON the Other row, after its value', async ({ pag
     return {
       tracks: getComputedStyle(sr.querySelector('.legend')!).gridTemplateColumns.split(' ').length,
       rows: rows.map((n) => n.textContent!.trim().replace(/\s+/g, ' ').slice(0, 10)),
-      value: at('.rollup-toggle .value'),
+      value: at('.rollup > .item .value'),
       button: at('.rollup-menu-btn'),
     };
   });

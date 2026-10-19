@@ -4240,10 +4240,9 @@ Toast, callout and the quick-filter caret picked their icon in CSS off
 `[data-status]`. All members are now stamped and CSS reveals ONE, so the choice
 stays CSS-owned and no JS branches on the status.
 
-**A component that rewrites `className` erases the class.** `sherpa-input-text`
-rebuilds its icon's whole class list in `#syncIcon`, so the shared box class has
-to be restated in that string; the template alone is not enough. It failed as a
-16px icon in a 14px box, with the CSS looking correct.
+**Never rewrite an icon element's `className`: it erases the box class.** It
+failed once as a 16px icon in a 14px box, with the CSS looking correct. The
+template carries the classes; nothing in TS writes them (TODO 344).
 
 **An unknown name draws NOTHING, deliberately** — an empty wrapper is visible to
 a test, where `T-fa-pro-icons-fail-silently` was not. That is why the tests
@@ -4256,7 +4255,6 @@ measure the PATH: the wrapper is its full size either way.
 - Site: `test/e2e/reforged-num-coercion.spec.ts`
 - Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/sherpa-icon.css`
-- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-icon-sizes.spec.ts`
 
 ### T-icon-value-takes-two-forms
@@ -5696,8 +5694,8 @@ The key chip paints it: `data-swatch` takes a series number or a status name
 The LAST row of a capped legend needs a second control beside its key chip.
 A menu button nested inside the chip's button is invalid HTML, and the browser
 un-nests it. So `template.rollup-tpl` is a WRAPPER holding the menu button, and
-the row — an ordinary `template.item-tpl` clone, marked `.rollup-toggle` — goes
-in front of it (TODO 149).
+the row — an ordinary `template.item-tpl` clone, found as `.rollup > .item` —
+goes in front of it (TODO 149). Nothing in TS marks it with a class (TODO 344).
 
 The legend hears only its chips' `quick-filter-click`, so a click on the menu
 button toggles nothing and needs no `stopPropagation()`.
@@ -13126,10 +13124,12 @@ The split between the two folders is the rule to keep: **`src/styles/` is what
 the APP links, `src/core/` is what a COMPONENT adopts.** A class belongs in
 `core`; a token belongs in `styles`.
 
+A page rule reaches a host by its TAG, never by a class its TS adds: the
+projected grid rules select `:is(.sherpa-grid, sherpa-layout-grid)` (TODO 344).
+
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/core/sherpa-typography.css`
 - Site: `src/core/sherpa-group-positions.css`
-- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 - Site: `src/components/sherpa-group/sherpa-group.css`
@@ -15462,7 +15462,7 @@ other direction: a document rule reaches the HOST of a shadow root perfectly
 well, and outranks what that root adopts.
 
 `sherpa-layout-grid` hits it because its tracks come from `.sherpa-grid` in the
-generated `tokens.css`, which the host WEARS. `data-grouped` therefore cannot
+generated `tokens.css`, which names the element. `data-grouped` therefore cannot
 set `column-gap: 0` from the component's own sheet. It re-points what the
 document rule READS instead:
 
@@ -15474,7 +15474,7 @@ document rule READS instead:
 ```
 
 A custom property inherits, so the document rule resolves it at the host and
-the gutters go. Whenever a component wears a document class, the property is
+the gutters go. Whenever a document rule selects a host, the property is
 the only lever it has.
 
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.css`

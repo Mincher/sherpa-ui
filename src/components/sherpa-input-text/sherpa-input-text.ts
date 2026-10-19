@@ -426,9 +426,7 @@ export class SherpaInputText extends SherpaElement {
 
   /** The two icons; the label, description and error are declared props. */
   #syncIcons(): void {
-    // A Find's glyph is the search one, unless the host names another.
-    this.#syncIcon('.icon-start', this.dataset['iconStart']
-      ?? (this.dataset['type'] === 'find' ? 'magnifying-glass' : undefined));
+    this.#syncIcon('.icon-start', this.dataset['iconStart']);
     this.#syncIcon('.icon-end', this.dataset['iconEnd']);
   }
 
@@ -437,11 +435,8 @@ export class SherpaInputText extends SherpaElement {
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
     if (!el) return;
-    // TRAP T-icon-box-is-not-the-glyph — rewriting className erases the shared
-    // box class, so it is restated here; and a NAME must be drawn, never left
-    // as classes, which paint nothing now the icons are SVG.
-    const side = sel === '.icon-start' ? 'icon-start' : 'icon-end';
-    el.className = `icon sherpa-icon-box ${side}`;
+    // None given: the template's own glyph (a Find's search one), else none.
+    value ??= el.dataset['icon'];
     el.replaceChildren();
     if (value && hasIcon(value)) {
       el.removeAttribute('data-glyph');

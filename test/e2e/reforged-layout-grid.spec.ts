@@ -384,9 +384,9 @@ test('col and row counts override the breakpoint tracks', async ({ page }) => {
 
 /**
  * The tracks are NOT in the component. They are `.sherpa-grid` in the generated
- * tokens.css, and the host WEARS that class — copying the rules into a shadow
- * sheet would fork the Figma projection, and a document class cannot reach a
- * shadow root anyway. TRAP T-a-document-class-cannot-reach-a-shadow-root
+ * tokens.css, and the projected rule names the element too — copying the rules
+ * into a shadow sheet would fork the Figma projection, and a document class
+ * cannot reach a shadow root anyway. TRAP T-a-document-class-cannot-reach-a-shadow-root
  */
 
 const mount = async (page: import('@playwright/test').Page, html: string, attrs = '') =>
@@ -418,17 +418,17 @@ const read = (page: import('@playwright/test').Page) =>
       display: cs.display,
       columns: cs.gridTemplateColumns.split(' ').length,
       columnGap: cs.columnGap,
-      // The CSS CLASS keeps Figma's name; only the ELEMENT is sherpa-layout-grid.
-      wearsClass: g.classList.contains('sherpa-grid'),
+      // The CSS CLASS keeps Figma's name; the rule names the ELEMENT too. TODO 344
+      hasClass: g.classList.contains('sherpa-grid'),
       spans: [...g.children].map((c) => getComputedStyle(c).gridColumn),
     };
   });
 
-test('the host wears the projected class, so the tokens reach it unchanged', async ({ page }) => {
+test('the projected rule names the element, so the tokens reach it with no class', async ({ page }) => {
   await mount(page, '<div data-col-span="medium">a</div><div data-col-span="small">b</div>');
   const r = await read(page);
 
-  expect(r.wearsClass).toBe(true);
+  expect(r.hasClass).toBe(false);
   expect(r.display).toBe('grid');
   // 12 tracks and a real gap prove the DOCUMENT rule applied to the host.
   expect(r.columns).toBe(12);

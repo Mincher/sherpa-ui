@@ -192,6 +192,14 @@
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>
   </template>
 
+  <!-- The Group and Sort chips: not a `.chip`, so the filter code passes them by. -->
+  <template class="organise-group-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="group" data-kind="group" data-label="Group"></sherpa-quick-filter>
+  </template>
+  <template class="organise-sort-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
+  </template>
+
   <!-- A chip's value menu, cloned when its definition carries `options`. -->
   <!-- A DATE body stays SLOTTED: the calendar projects its stepper into the
        menu's `header` slot, and slot assignment only reaches a host's LIGHT

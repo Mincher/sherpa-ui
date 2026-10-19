@@ -826,7 +826,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (104)
+## Other components (103)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -893,7 +893,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-grouping-is-an-attribute-and-a-class](TRAPS.md#t-grouping-is-an-attribute-and-a-class) — group, input-text
 - [T-header-actions-are-composed-buttons](TRAPS.md#t-header-actions-are-composed-buttons) — app-header
 - [T-header-owns-the-filter-bar-surface](TRAPS.md#t-header-owns-the-filter-bar-surface) — app-header
-- [T-icon-box-is-not-the-glyph](TRAPS.md#t-icon-box-is-not-the-glyph) — input-text
 - [T-input-icon-sink-is-data-glyph](TRAPS.md#t-input-icon-sink-is-data-glyph) — input-text
 - [T-item-template-cannot-compute](TRAPS.md#t-item-template-cannot-compute) — breadcrumbs
 - [T-mirroring-skips-value](TRAPS.md#t-mirroring-skips-value) — input-text, select-checkbox, select-radio, switch

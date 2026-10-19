@@ -1,7 +1,8 @@
 /**
  * sherpa-layout-grid — the layout grid, with its grouped positions measured.
  *
- * The tracks are CSS (`.sherpa-grid`, projected from Figma). This file supplies
+ * The tracks are CSS: tokens.css selects `.sherpa-grid` and this element by name,
+ * projected from Figma. This file supplies
  * only each child's `data-group`, which `data-grouped` cannot work out in CSS.
  *
  * Fires: layout-change — a child was resized from a gutter. detail: { layout }
@@ -38,13 +39,6 @@ export class SherpaLayoutGrid extends SherpaElement {
     /** A handle in each gutter resizes the children. TRAP T-a-gutter-moves-a-line */
     'data-resizable': { type: 'boolean', kind: 'visibility' },
   } as const;
-
-  override onRender(): void {
-    /* The host WEARS the document class, so every projected rule — the tracks,
-       the gaps, the named spans on its children — applies with no copy here.
-       TRAP T-a-document-class-cannot-reach-a-shadow-root */
-    this.classList.add('sherpa-grid');
-  }
 
   /* onConnect, NOT onRender: `signal` is a fresh AbortController on every
      re-connect, and onRender fires once. Bound in onRender, a grid that a

@@ -1469,7 +1469,9 @@ const COL_SPANS = {
 const CONTEXT = 'sherpa-context';
 const NAV_INSET = 40;
 const IN_CONTEXT = 'sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *';
-const GRID = { media: `.sherpa-grid:where(:not(${IN_CONTEXT}))`, container: '.sherpa-grid' };
+// The element by NAME too, so its host wears no class from TS. TODO 344
+const GRID_SEL = ':is(.sherpa-grid, sherpa-layout-grid)';
+const GRID = { media: `${GRID_SEL}:where(:not(${IN_CONTEXT}))`, container: GRID_SEL };
 const at = (kind, query) => (kind === 'media' ? '@media ' : `@container ${CONTEXT} `) + query;
 const ranged = (kind, min, max) => {
   const lo = kind === 'container' && min > 0 ? min - NAV_INSET : min;
@@ -1531,7 +1533,7 @@ const layoutBreakpointBlocks = (() => {
     .map(([name, v]) => `      ${name}: ${v};`);
   const first = primary.length
     ? [`  /* The narrowest band, for a Context: its own width, never the viewport's. */\n`
-      + `  ${at('container', '(min-width: 0px)')} {\n    .sherpa-grid {\n${primary.join('\n')}\n    }\n  }`]
+      + `  ${at('container', '(min-width: 0px)')} {\n    ${GRID_SEL} {\n${primary.join('\n')}\n    }\n  }`]
     : [];
   return [...first, ...modes.map(({ mode, min }) => {
     const lines = [];
@@ -1547,7 +1549,7 @@ const layoutBreakpointBlocks = (() => {
     if (!lines.length) return null;
     return `  /* ${mode} — the Layout collection's own mode, as its breakpoint. */\n` +
       `  @media (min-width: ${min}px) {\n    :root {\n${lines.join('\n')}\n    }\n  }\n` +
-      `  ${at('container', ranged('container', min))} {\n    .sherpa-grid {\n${lines.join('\n')}\n    }\n  }`;
+      `  ${at('container', ranged('container', min))} {\n    ${GRID_SEL} {\n${lines.join('\n')}\n    }\n  }`;
   }).filter(Boolean)];
 })();
 
@@ -1626,7 +1628,7 @@ const fitBlock = (kind) => `  ${at(kind, ranged(kind, 1280))} {
 const gridUtilityBlock = `  /* Layout grid — the track system views place their content on.
      \`columns\` is a COUNT, so it must project unitless (see COUNT_PATHS); as
      \`4px\` the repeat() was invalid and the whole grid silently did nothing. */
-  .sherpa-grid {
+  ${GRID_SEL} {
     display: grid;
     grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
     column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
@@ -1663,22 +1665,22 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   /* Column and row COUNTS — override the breakpoint's own track counts. A
      column count also re-scales every named span, since a span is stated
      against the 12-column system. */
-  .sherpa-grid[data-col-count] {
+  ${GRID_SEL}[data-col-count] {
     grid-template-columns: repeat(var(--_col-count), minmax(0, 1fr));
   }
-  .sherpa-grid[data-col-count='1'] { --_col-count: 1; }
-  .sherpa-grid[data-col-count='2'] { --_col-count: 2; }
-  .sherpa-grid[data-col-count='3'] { --_col-count: 3; }
-  .sherpa-grid[data-col-count='4'] { --_col-count: 4; }
-  .sherpa-grid[data-col-count='5'] { --_col-count: 5; }
-  .sherpa-grid[data-col-count='6'] { --_col-count: 6; }
-  .sherpa-grid[data-col-count='8'] { --_col-count: 8; }
-  .sherpa-grid[data-col-count='10'] { --_col-count: 10; }
-  .sherpa-grid[data-col-count='12'] { --_col-count: 12; }
-  .sherpa-grid[data-row-count]:not([data-rows='fit']) {
+  ${GRID_SEL}[data-col-count='1'] { --_col-count: 1; }
+  ${GRID_SEL}[data-col-count='2'] { --_col-count: 2; }
+  ${GRID_SEL}[data-col-count='3'] { --_col-count: 3; }
+  ${GRID_SEL}[data-col-count='4'] { --_col-count: 4; }
+  ${GRID_SEL}[data-col-count='5'] { --_col-count: 5; }
+  ${GRID_SEL}[data-col-count='6'] { --_col-count: 6; }
+  ${GRID_SEL}[data-col-count='8'] { --_col-count: 8; }
+  ${GRID_SEL}[data-col-count='10'] { --_col-count: 10; }
+  ${GRID_SEL}[data-col-count='12'] { --_col-count: 12; }
+  ${GRID_SEL}[data-row-count]:not([data-rows='fit']) {
     grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
   }
-${Array.from({ length: 12 }, (_, i) => `  .sherpa-grid[data-row-count='${i + 1}'] { --_row-count: ${i + 1}; }`).join('\n')}
+${Array.from({ length: 12 }, (_, i) => `  ${GRID_SEL}[data-row-count='${i + 1}'] { --_row-count: ${i + 1}; }`).join('\n')}
 
   /* Column spans — a child says what it IS; the breakpoint blocks above turn
      that into a span. The table and the reasoning live with COL_SPANS in
@@ -1688,7 +1690,7 @@ ${Array.from({ length: 12 }, (_, i) => `  .sherpa-grid[data-row-count='${i + 1}'
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-${Array.from({ length: 12 }, (_, i) => `  .sherpa-grid > [data-row-span='${i + 1}']${i < 9 ? ' ' : ''} { grid-row: span ${i + 1}; }`).join('\n')}
+${Array.from({ length: 12 }, (_, i) => `  ${GRID_SEL} > [data-row-span='${i + 1}']${i < 9 ? ' ' : ''} { grid-row: span ${i + 1}; }`).join('\n')}
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -1699,7 +1701,7 @@ ${Array.from({ length: 12 }, (_, i) => `  .sherpa-grid > [data-row-span='${i + 1
 
      block-size: 100% is what makes overflow mean anything: without it the grid
      grew to 656px inside a 500px parent and scrolled nothing. */
-  .sherpa-grid[data-rows='fixed'] {
+  ${GRID_SEL}[data-rows='fixed'] {
     grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
     block-size: 100%;
     min-block-size: 0;

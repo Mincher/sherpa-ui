@@ -115,7 +115,7 @@
   min-inline-size: 0;
   column-gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-:host([data-orientation="horizontal"]) .rollup-toggle { flex: 1 1 auto; }
+:host([data-orientation="horizontal"]) .rollup > .item { flex: 1 1 auto; }
 
 /* The breakdown button sits after the value, and hugs. */
 .rollup-menu-btn {

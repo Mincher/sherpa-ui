@@ -1776,8 +1776,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Stamp the Group and Sort chips into the organise zone. Both single-select. */
   #renderOrganise(): void {
     const zone = this.$('.organise-zone');
-    const chipTpl = this.$<HTMLTemplateElement>('template.qf-tpl');
-    if (!zone || !chipTpl) return;
+    if (!zone) return;
 
     const group = this.#organise.group ?? [];
     const sort = this.#organise.sort ?? [];
@@ -1791,7 +1790,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        waiting for a second pass to tick it. */
     const on = { group: this.dataset['groupField'] ?? '', sort: this.dataset['sortField'] ?? '' };
     if (group.length) {
-      zone.appendChild(this.#organiseChip('group', 'Group',
+      zone.appendChild(this.#organiseChip('group',
         SherpaQuickFilterToolbar.#icons.group, organiseOptions(group, on.group), on.group));
     }
     if (sort.length) {
@@ -1800,7 +1799,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* NO `data-direction` here. `chip.direction` answers `asc` for a chip that
          is ON with none set, so writing it is a third place that has to agree.
          TRAP T-one-cycle-for-one-value */
-      zone.appendChild(this.#organiseChip('sort', 'Sort',
+      zone.appendChild(this.#organiseChip('sort',
         SherpaQuickFilterToolbar.#icons.sortNone, organiseOptions(sort, on.sort), on.sort));
     }
     // Then ON, if the host is: a rebuild changes no attribute, so onChange will not.
@@ -1814,28 +1813,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   }
 
-  /** One organise chip: a menu chip with single-select rows. */
+  /** One organise chip, from its own prototype: a menu chip with single-select rows. */
   #organiseChip(
-    id: string,
-    label: string,
+    id: 'group' | 'sort',
     icon: string,
     options: FilterOption[],
     column = '',
   ): HTMLElement {
-    const chip = this.clone('template.qf-tpl');
-    if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.qf-tpl is missing or empty');
-    chip.classList.remove('chip');
-    chip.classList.add('organise-chip');
+    const chip = this.clone(`template.organise-${id}-tpl`);
+    if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
     /* THE CHIP KNOWS WHAT IT IS, and owns its own gesture: group toggles,
        sort cycles. This bar only places it and hears what it reports.
        "Organise" is the zone it sits in, not a kind.
        TRAP T-a-chip-knows-what-kind-it-is */
-    chip.dataset['kind'] = id;
-    chip.dataset['id'] = id;
     if (column) chip.dataset['column'] = column;
-    chip.setAttribute('data-label', label);
     chip.setAttribute('data-icon-start', icon);
-    this.#addMenu(chip, { id, label, select: 'single', options });
+    this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options });
     return chip;
   }
 

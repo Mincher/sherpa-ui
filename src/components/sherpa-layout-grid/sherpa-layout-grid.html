@@ -2,8 +2,8 @@
   sherpa-layout-grid — the layout grid a view places its content on.
 
   The TRACKS are the projected Figma layout tokens, which live in tokens.css as
-  `.sherpa-grid` — the host wears that class rather than copying the rules, so a
-  re-projection reaches the component with no code change.
+  `.sherpa-grid` — the projected rule names this element too, rather than copying
+  the rules, so a re-projection reaches the component with no code change.
   TRAP T-a-document-class-cannot-reach-a-shadow-root
 
   Children stay in the LIGHT DOM, so every `.sherpa-grid > [data-col-span]` rule

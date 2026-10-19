@@ -339,6 +339,36 @@
       },
       {
         "el": "template",
+        "class": "organise-group-tpl",
+        "children": [
+          {
+            "el": "sherpa-quick-filter",
+            "class": "organise-chip",
+            "attrs": {
+              "data-id": "group",
+              "data-kind": "group",
+              "data-label": "Group"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "organise-sort-tpl",
+        "children": [
+          {
+            "el": "sherpa-quick-filter",
+            "class": "organise-chip",
+            "attrs": {
+              "data-id": "sort",
+              "data-kind": "sort",
+              "data-label": "Sort"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "qf-saved-menu-tpl",
         "children": [
           {
