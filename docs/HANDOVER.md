@@ -88,6 +88,14 @@ on open). His design notes are in the TODO 345 section: the decision after
 table of delta times and field bitmaps, and the History starts again every
 session ("ground zero"). It is EXPLORE: plan with Will before building.
 
+## Then: TODO 346–349 — filters (Will, 2026-10-19)
+
+One "Send to <component>" on a View field (346); the View scope first, and a
+component scope only within its subset (347); a chip's count, and a menu's
+viable fields and values, from that subset — its scopes and the filters BEFORE
+it (348, 349). Each section says what the code does today and what to settle
+with Will.
+
 ## Waiting on Will (❓ and looks)
 
 305, 319, 321, 327, 338 (two UX choices), 293 (CLAUDE.md cut, old skill), 339
