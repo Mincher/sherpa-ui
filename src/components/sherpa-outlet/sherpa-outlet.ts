@@ -30,7 +30,9 @@ export interface OutletOptions {
   /** Where app.json is: every path in it is relative to this. */
   base: string | URL;
   session: SessionStore;
-  /** The app's stores by name, asked at each load: a debug switch may swap one. */
+  /** The app's stores by name, asked at each load: a debug switch may swap one.
+   *  Hand back the SAME object for a store each time — each new one is a store
+   *  of its own to the data layer, with its own listeners and held rows. */
   stores(): Record<string, Store>;
   /** Settles before a Context opens its data: its stores are seeded. */
   ready?: Promise<unknown>;

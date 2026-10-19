@@ -3649,6 +3649,37 @@ asks the store nothing.
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-a-failure-has-a-kind
+
+345 phase 4.1. A failed read is not one thing: a page keeps showing what it held
+when the store could not be REACHED, and must not when the store REFUSED (a
+401 is "you may not see this"). `failureOf(error)` reads the KIND from the
+error's shape — an `HttpError`'s `status`, a platform name — and imports
+nothing, so any store's errors count:
+
+| Shape | Kind |
+|---|---|
+| `TimeoutError` (`AbortSignal.timeout`); status 408, 504, 524 | timeout |
+| status 429, any other 5xx | server |
+| status 401, 403, 407 | refused |
+| any other status; `ValidationError`, `SyntaxError` | invalid |
+| `TypeError` (fetch's network failure; a blocked CORS request too) | offline |
+| anything else, `AbortError` too | unknown |
+
+`unreached()` is offline, timeout or server. **Never `navigator.onLine`**: it
+says the machine has a network, not that the store answers, and the lint bans
+`navigator` in the DOM-free data layer. A `TypeError` from a bug in a custom
+store reads as offline — the message is kept, so it can be told apart.
+
+`spoofRemote` fails as fetch does, with a `TypeError`, and its `totalCount`
+fails too. Its `delay` and `fail` may be functions, read at each load, so one
+wrapper serves an app while a debug setting changes.
+
+- Site: `src/core/data/failure.ts`
+- Site: `src/core/data/spoof-remote.ts`
+- Site: `test/unit/a-failure-has-a-kind.test.mjs`
+- Site: `test/unit/a-spoof-fails-when-told.test.mjs`
+
 ### T-a-closed-source-hears-nothing
 
 A `DataSource` listens for its store's `change`, and asks again on each. The
@@ -3667,10 +3698,17 @@ page, `close()`), or when its open is overtaken before it was provided. A
 source the APP passes to `provide()` is the app's: the provider never closes it.
 A provider taken out of the page closes nothing — moved, it must still work.
 
-`spoofRemote` adds a listener it never removes too, but it is called once per
-store and lives as long as the store: that one is not a leak.
+**A wrapper made per open leaked too** (corrected 2026-10-19, 345 phase 4.1).
+This note once said `spoofRemote`'s listener was no leak, as it was made once
+per store. It was not: Demos' `stores()` made a NEW wrapper at every Context
+open, and each one's relay on the inner store kept it — and everything it held
+— alive. Now the relay holds its wrapper through a `WeakRef` and removes itself
+at the first change after the wrapper is gone, and Demos makes ONE wrapper for
+the app's life. An app hands its outlet the SAME store object each time
+(`OutletOptions.stores`).
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/spoof-remote.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-closed-source-hears-nothing.test.mjs`
 - Site: `test/e2e/reforged-provider-closes-its-sources.spec.ts`

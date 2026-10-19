@@ -706,6 +706,12 @@ against the code). The full plan, with every file:line, is
   reach is a state; 4.5 the provider reports the page's reach; 4.6 the banner;
   4.7 the IndexedDB keep.
 
+  - ✅ **4.1** (2026-10-19) — `failureOf()` / `unreached()` (`failure.ts`, in
+    `sherpa-ui/data`); `navigator` banned in the data layer; `spoofRemote` takes
+    `delay` and `fail` as functions, fails as fetch does (a `TypeError`), fails
+    a count too, and relays through a `WeakRef` (100 dropped wrappers: 100
+    relays removed); Demos makes ONE wrapper. TRAP `T-a-failure-has-a-kind`.
+
   **Decisions for Will** (neither blocks 4.1–4.5):
   - ❓ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;
@@ -916,8 +922,9 @@ load waiting and drops the held set; a closed source never holds again, but can
 still be asked. The provider keeps `#made`, the sources `open()` built, and
 closes one when `provide()` no longer gives it (the next page, `close()`) or
 when its open is overtaken first. A source the app passes to `provide()` is
-never closed. `spoofRemote` is NOT a leak: Demos calls it once per store, and it
-lives as long as the store. Proof: `test/unit/a-closed-source-hears-nothing.test.mjs`
+never closed. ~~`spoofRemote` is NOT a leak~~ — WRONG, corrected 2026-10-19 by
+345 phase 4.1: Demos made a new wrapper at each Context open, and each relay
+kept its wrapper; the relay is weak now, and Demos makes one. Proof: `test/unit/a-closed-source-hears-nothing.test.mjs`
 (2) and `test/e2e/reforged-provider-closes-its-sources.spec.ts` (3 × 3 engines):
 the old source starts 0 loads on an insert, and one close per page that goes.
 TRAP `T-a-closed-source-hears-nothing`.

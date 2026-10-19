@@ -64,6 +64,7 @@ export default [
         noDom('indexedDB', 'This module must run with NO DOM. IndexedDB belongs in idb-store.ts, which guards every access behind IdbStore.available.'),
         noDom('getComputedStyle'),
         noDom('requestAnimationFrame', 'This module must run with NO DOM. Use a microtask or a timer if the work must be deferred.'),
+        noDom('navigator', 'This module must run with NO DOM. Whether a store can be reached is read from its own failures (failure.ts), never navigator.onLine.'),
       ],
     },
   },
