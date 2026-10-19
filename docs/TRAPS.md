@@ -3659,6 +3659,27 @@ asks the store nothing.
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-the-provider-says-the-pages-reach
+
+345 phase 4.5. Each source knows its own `reach`
+(`T-a-failed-read-keeps-the-last-set`); a PAGE needs one answer, so the provider
+gives the WORST of its sources' — `down` over `unreached` over `ok` — with the
+failure, as `provider.reach`, and fires `reach-change` when it moves.
+
+- **Read from state**, after each source's `change` and `error`, never from the
+  event alone. A source that has not answered yet says nothing, so a new page's
+  source does not read `ok` before its first load: two opens over one store that
+  cannot be reached say nothing between them. `close({ next: true })` keeps the
+  reach for the next page; a page with no data (`prepare(null)`, a plain
+  `close()`) clears it.
+- **`recheck()`** tries every source that is not `ok`. The provider calls it on
+  `online` and when the tab is shown again — a DOM event, so here and not in the
+  data layer.
+- A refusal (401) is not a reach failure: the store answered.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider-reach.spec.ts`
+
 ### T-a-failed-read-keeps-the-last-set
 
 345 phase 4.4 (D2 groundwork). A whole read that failed dropped the held set and

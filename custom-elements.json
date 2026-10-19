@@ -7743,6 +7743,14 @@
             },
             {
               "kind": "field",
+              "name": "reach",
+              "type": {
+                "text": "{ reach: 'ok' | 'unreached' | 'down'; failure?: Failure }"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "savedFilters",
               "type": {
                 "text": "{ id: string; label: string; edited: boolean } | null"
@@ -7817,6 +7825,12 @@
                 }
               ],
               "description": "A page is about to be drawn from this definition, or from none: take its filter mode NOW — the panel open or shut — so its content is never drawn twice. `open()` follows."
+            },
+            {
+              "kind": "method",
+              "name": "recheck",
+              "parameters": [],
+              "description": "Try every source that cannot reach its store again — a page's Retry."
             },
             {
               "kind": "method",
@@ -7953,6 +7967,13 @@
               "description": "A View was picked, opened or saved.",
               "type": {
                 "text": "CustomEvent<{ elements: Record<string, HTMLElement> | undefined; id: string | undefined }>"
+              }
+            },
+            {
+              "name": "reach-change",
+              "description": "Whether the page's data can be reached changed.",
+              "type": {
+                "text": "CustomEvent<{ failure: Failure; reach: 'down' | 'ok' | 'unreached' }>"
               }
             }
           ],

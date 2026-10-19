@@ -734,6 +734,10 @@ against the code). The full plan, with every file:line, is
     `unreached`, `down`), `source.failure`, `source.recheck()`; the `error`
     event carries `failure`. TRAP `T-a-failed-read-keeps-the-last-set`.
 
+  - ✅ **4.5** (2026-10-19) — `provider.reach` (the worst of its sources'),
+    `reach-change`, `provider.recheck()`, which runs on `online` and a tab
+    shown; kept across `close({ next: true })`. TRAP `T-the-provider-says-the-pages-reach`.
+
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

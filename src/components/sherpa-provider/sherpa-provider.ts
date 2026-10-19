@@ -24,6 +24,7 @@ import { valueKey, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
+import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, SourceState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
@@ -250,6 +251,8 @@ export class SherpaProvider extends SherpaElement {
     this.#states?.abort();
     this.#states = new AbortController();
     this.#watchStates(this.#states.signal);
+    // Leaving for the next page keeps the page's reach: the banner does not flicker between two.
+    if (shut || Object.keys(this.#sources).length) this.#syncReach();
     for (const asked of this.#asked.values()) this.#answer(asked);
     this.#pages.stopViews();
     /* A page with NO data has no filters: the panel shuts — not the reader's
@@ -341,7 +344,56 @@ export class SherpaProvider extends SherpaElement {
    */
   prepare(definition: PageDefinition | null): void {
     this.#modes.page(!!definition?.source);
+    // A page with no data has nothing to reach.
+    if (!definition?.source) this.#setReach({ reach: 'ok' });
   }
+
+  /**
+   * Can the page's data be reached? The worst of its sources': `ok`;
+   * `unreached` — the last rows are shown, unconfirmed; `down` — nothing to
+   * show. With why, while it is not ok. `reach-change` says when it moves.
+   * TRAP T-the-provider-says-the-pages-reach
+   */
+  get reach(): { reach: 'ok' | 'unreached' | 'down'; failure?: Failure } {
+    return { ...this.#reach };
+  }
+
+  /** Try every source that cannot reach its store again — a page's Retry. */
+  recheck(): void {
+    for (const source of Object.values(this.#sources)) if (source.reach !== 'ok') source.recheck();
+  }
+
+  /** The page's reach, as last said. */
+  #reach: { reach: 'ok' | 'unreached' | 'down'; failure?: Failure } = { reach: 'ok' };
+
+  /** Read each source's reach — from state, never from the last event — and say a change. */
+  #syncReach(): void {
+    const rank = { ok: 0, unreached: 1, down: 2 } as const;
+    let worst: { reach: 'ok' | 'unreached' | 'down'; failure?: Failure } = { reach: 'ok' };
+    const sources = Object.values(this.#sources);
+    // A source that has not answered yet says nothing: the page's reach stands until one does.
+    const known = sources.filter((source) => source.loaded || source.reach !== 'ok');
+    if (sources.length && !known.length) return;
+    for (const source of known) {
+      const reach = source.reach;
+      if (rank[reach] <= rank[worst.reach]) continue;
+      const failure = source.failure;
+      worst = { reach, ...(failure ? { failure } : {}) };
+    }
+    this.#setReach(worst);
+  }
+
+  /** Keep the page's reach, and say it when it moved. */
+  #setReach(next: { reach: 'ok' | 'unreached' | 'down'; failure?: Failure }): void {
+    if (next.reach === this.#reach.reach && next.failure?.kind === this.#reach.failure?.kind) return;
+    this.#reach = next;
+    this.emit('reach-change', { ...next });
+  }
+
+  /** The network back, or the tab shown again: a store that could not be reached is tried again. */
+  #onBack = (): void => {
+    if (document.visibilityState === 'visible' && this.#reach.reach !== 'ok') this.recheck();
+  };
 
   /** Leave the page, or one still opening: its source goes, and nothing in the
    *  subtree reaches it. `next`: another page follows at once, and says
@@ -476,7 +528,14 @@ export class SherpaProvider extends SherpaElement {
     return this.#pages.view;
   }
 
+  override onConnect(): void {
+    window.addEventListener('online', this.#onBack);
+    document.addEventListener('visibilitychange', this.#onBack);
+  }
+
   override onDisconnect(): void {
+    window.removeEventListener('online', this.#onBack);
+    document.removeEventListener('visibilitychange', this.#onBack);
     this.#page?.abort();
     this.#pages.stopViews();
     for (const asked of this.#asked.values()) asked.unbind?.();
@@ -504,6 +563,7 @@ export class SherpaProvider extends SherpaElement {
         else for (const c of cards(false)) c.removeAttribute('data-loading');
       }, { signal });
       source.addEventListener('change', (event) => {
+        this.#syncReach();
         const state = (event as CustomEvent<DataChangeDetail>).detail.emptiness ?? null;
         for (const c of cards(false)) if (c.dataset['state'] === 'error') delete c.dataset['state'];
         for (const c of cards(true)) {
@@ -512,6 +572,7 @@ export class SherpaProvider extends SherpaElement {
         }
       }, { signal });
       source.addEventListener('error', (event) => {
+        this.#syncReach();
         const { error } = (event as CustomEvent).detail as { error: unknown };
         for (const c of cards(false)) {
           c.dataset['state'] = 'error';

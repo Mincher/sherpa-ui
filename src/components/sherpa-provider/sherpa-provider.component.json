@@ -92,12 +92,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, savedFilters, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, reach, savedFilters, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (provide, open, prepare, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, resetView, export, import). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, resetView, export, import). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -121,6 +121,17 @@
         "elements": "Record<string, HTMLElement> | undefined",
         "id": "string | undefined"
       }
+    },
+    {
+      "$type": "event",
+      "name": "reach-change",
+      "description": "Whether the page's data can be reached changed.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "failure": "Failure",
+        "reach": "'down' | 'ok' | 'unreached'"
+      }
     }
   ],
   "$extensions": {
@@ -143,6 +154,12 @@
           "name": "prepare",
           "args": "definition: PageDefinition | null",
           "description": "A page is about to be drawn from this definition, or from none: take its filter mode NOW — the panel open or shut — so its content is never drawn twice. `open()` follows."
+        },
+        {
+          "$type": "method",
+          "name": "recheck",
+          "args": "",
+          "description": "Try every source that cannot reach its store again — a page's Retry."
         },
         {
           "$type": "method",
@@ -220,6 +237,11 @@
           "name": "hideUnmatched",
           "type": "boolean",
           "access": "read-write"
+        },
+        {
+          "name": "reach",
+          "type": "{ reach: 'ok' | 'unreached' | 'down'; failure?: Failure }",
+          "access": "read"
         },
         {
           "name": "savedFilters",

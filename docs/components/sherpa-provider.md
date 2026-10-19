@@ -31,6 +31,7 @@ Put it round the part of a page whose components need data: each component insid
 | `filterMode` | `'toolbars' \| 'panel'` | read and write |  |
 | `limitOptions` | `boolean` | read and write |  |
 | `hideUnmatched` | `boolean` | read and write |  |
+| `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
 | `savedFilters` | `{ id: string; label: string; edited: boolean } \| null` | read only |  |
 | `savedFilterSets` | `{ id: string; label: string }[]` | read only |  |
 | `customView` | `boolean` | read only |  |
@@ -43,6 +44,7 @@ Put it round the part of a page whose components need data: each component insid
 | `provide(options: ProvideOptions)` | Give this subtree its sources — and its Views. Every component already asking is answered again: a Context that swaps its source swaps it for everything in it. Settles once the kept Query, or the start View, is on. |
 | `open(definition: PageDefinition, options: OpenOptions)` | Set up a page from its DEFINITION: its source over the app's store, every filter bar drawn from its scope — the View chip, the fields it holds, what it may add — and all of it provided. The source, or undefined for a page with no data. |
 | `prepare(definition: PageDefinition \| null)` | A page is about to be drawn from this definition, or from none: take its filter mode NOW — the panel open or shut — so its content is never drawn twice. `open()` follows. |
+| `recheck()` | Try every source that cannot reach its store again — a page's Retry. |
 | `close(options: { next?: boolean } = {})` | Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. `next`: another page follows at once, and says whether the panel stays. |
 | `saveView(label?: string, options: { stay?: boolean } = {})` | Save what is on screen as a View of the open page, and put it on the View chip. With a name, a NEW View — a name any View has already gets ` - Copy-001`. With none, over the reader's own View on screen; a preset is never overwritten, so that answers undefined. The saved View's id, else undefined. `stay`: keep it for later, and stay on the View on screen — the save before a Reset all to default. |
 | `deleteView(id?: string)` | Delete the reader's own View — the one on screen unless named — and go to the first. A preset is never deleted. |
@@ -62,6 +64,7 @@ Each one bubbles.
 |---|---|---|
 | `filter-mode-change` | `{ mode: 'panel' \| 'toolbars' }` | The filters moved between the toolbars and the panel. |
 | `view-change` | `{ elements: Record<string, HTMLElement> \| undefined; id: string \| undefined }` | A View was picked, opened or saved. |
+| `reach-change` | `{ failure: Failure; reach: 'down' \| 'ok' \| 'unreached' }` | Whether the page's data can be reached changed. |
 
 ## Slots
 

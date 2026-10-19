@@ -22,6 +22,7 @@
   Fires:
     filter-mode-change — the filters moved between the toolbars and the panel. detail: { mode }
     view-change — a View was picked, opened or saved. detail: { id, elements? }
+    reach-change — whether the page's data can be reached changed. detail: { reach, failure? }
 -->
 <template id="default">
   <slot data-accepts="content"></slot>

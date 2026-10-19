@@ -147,7 +147,14 @@ export const { store: customerStore, ready: customersReady } = localRecords({
 - **The schema says what a field may hold.** `oneOf([...])` is the list every
   filter offers, in its order. `T-the-data-says-what-a-field-may-hold`
 - Import a store by ONE URL everywhere. A file the server maps to two paths
-  is two modules, and two stores.
+  is two modules, and two stores. And make each store ONCE: the outlet's
+  `stores()` hands back the SAME object at every open, or a remote store's
+  held rows are read again each time. `T-a-store-has-one-cache`
+- **When a store cannot be reached**, the provider says so: `provider.reach`
+  is `ok`, `unreached` (the last rows are shown, unconfirmed) or `down`
+  (nothing to show), and `reach-change` fires when it moves; `recheck()` tries
+  again (it does on `online` and a tab shown). The outlet draws a banner for it;
+  a page with no outlet listens itself. `T-the-provider-says-the-pages-reach`
 
 ## 5. A page definition
 

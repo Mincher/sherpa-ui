@@ -228,7 +228,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (69)
+## The join and the app layer (70)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -296,6 +296,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — provider
 - [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — bind-source
 - [T-the-provider-owns-the-panel-mode](TRAPS.md#t-the-provider-owns-the-panel-mode) — provider
+- [T-the-provider-says-the-pages-reach](TRAPS.md#t-the-provider-says-the-pages-reach) — provider
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
