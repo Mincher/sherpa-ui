@@ -691,8 +691,8 @@ of that work, make it then. 350 is still done as its own exercise.
 
 **Page load, measured by Will (2026-10-19):** opening Demos' Records › All
 customers gives a Largest Contentful Paint (LCP) of **6.18 s** — rated poor.
-*"Definitely lots of work to do regarding optimisation."* (Whether this was at
-4x throttling too is not stated.) Leads to measure first, not yet proven:
+*"Definitely lots of work to do regarding optimisation."* Measured at 4x CPU
+throttling, as the INP was (Will confirmed). Leads to measure first, not yet proven:
 
 - Demos imports `sherpa-ui` as `/dist/index.js`, which pulls **143 modules,
   963 KB** of JS before any icon (counted 2026-10-19, static imports only), each
