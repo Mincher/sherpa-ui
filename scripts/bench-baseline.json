@@ -10,111 +10,111 @@
   },
   "records/pick": {
     "loads": 2,
-    "counts": 3,
-    "distinct": 5,
+    "counts": 2,
+    "distinct": 4,
     "rows": 2558,
-    "compiles": 16,
+    "compiles": 14,
     "clones": 1,
-    "scans": 15
+    "scans": 12
   },
   "records/repick": {
     "loads": 0,
     "counts": 0,
-    "distinct": 1,
+    "distinct": 0,
     "rows": 0,
     "compiles": 4,
     "clones": 0,
-    "scans": 2
+    "scans": 0
   },
   "records/page": {
-    "loads": 2,
-    "counts": 2,
-    "distinct": 1,
-    "rows": 2558,
-    "compiles": 4,
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 25,
+    "compiles": 0,
     "clones": 1,
-    "scans": 6
+    "scans": 1
   },
   "records/report": {
-    "loads": 2,
-    "counts": 15,
-    "distinct": 14,
-    "rows": 2543,
-    "compiles": 17,
+    "loads": 1,
+    "counts": 11,
+    "distinct": 10,
+    "rows": 10,
+    "compiles": 16,
     "clones": 7,
-    "scans": 45
+    "scans": 32
   },
   "records/switch-off": {
-    "loads": 2,
-    "counts": 10,
-    "distinct": 5,
-    "rows": 2558,
-    "compiles": 19,
+    "loads": 1,
+    "counts": 7,
+    "distinct": 4,
+    "rows": 25,
+    "compiles": 18,
     "clones": 11,
-    "scans": 22
+    "scans": 16
   },
   "records/switch-on": {
-    "loads": 2,
-    "counts": 17,
-    "distinct": 14,
-    "rows": 2543,
-    "compiles": 20,
+    "loads": 1,
+    "counts": 13,
+    "distinct": 10,
+    "rows": 10,
+    "compiles": 19,
     "clones": 5,
-    "scans": 47
+    "scans": 34
   },
   "records/sort": {
     "loads": 2,
-    "counts": 10,
-    "distinct": 4,
+    "counts": 0,
+    "distinct": 0,
     "rows": 2543,
-    "compiles": 4,
+    "compiles": 0,
     "clones": 1,
-    "scans": 20
+    "scans": 2
   },
   "records/heading": {
-    "loads": 2,
+    "loads": 1,
     "counts": 12,
     "distinct": 11,
-    "rows": 2535,
+    "rows": 2,
     "compiles": 11,
     "clones": 1,
-    "scans": 36
+    "scans": 35
   },
   "records/search": {
     "loads": 2,
-    "counts": 12,
-    "distinct": 5,
+    "counts": 0,
+    "distinct": 0,
     "rows": 898,
-    "compiles": 4,
+    "compiles": 0,
     "clones": 1,
-    "scans": 24
+    "scans": 2
   },
   "records/raise": {
     "loads": 2,
-    "counts": 18,
-    "distinct": 16,
+    "counts": 12,
+    "distinct": 11,
     "rows": 429,
-    "compiles": 16,
+    "compiles": 14,
     "clones": 11,
-    "scans": 52
+    "scans": 36
   },
   "records/clear": {
     "loads": 2,
-    "counts": 11,
-    "distinct": 10,
+    "counts": 7,
+    "distinct": 7,
     "rows": 3520,
-    "compiles": 18,
+    "compiles": 16,
     "clones": 1,
-    "scans": 33
+    "scans": 23
   },
   "records/reset": {
-    "loads": 2,
+    "loads": 1,
     "counts": 0,
     "distinct": 2,
-    "rows": 3545,
+    "rows": 25,
     "compiles": 11,
     "clones": 7,
-    "scans": 6
+    "scans": 5
   },
   "records/add": {
     "loads": 2,
@@ -159,7 +159,7 @@
     "rows": 0,
     "compiles": 15,
     "clones": 2,
-    "scans": 14
+    "scans": 12
   },
   "remote/repick": {
     "loads": 0,
@@ -168,16 +168,16 @@
     "rows": 0,
     "compiles": 5,
     "clones": 1,
-    "scans": 2
+    "scans": 0
   },
   "remote/page": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 4,
+    "compiles": 0,
     "clones": 1,
-    "scans": 6
+    "scans": 1
   },
   "remote/report": {
     "loads": 0,
@@ -186,34 +186,34 @@
     "rows": 0,
     "compiles": 16,
     "clones": 8,
-    "scans": 18
+    "scans": 15
   },
   "remote/switch-off": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 19,
+    "compiles": 18,
     "clones": 13,
-    "scans": 18
+    "scans": 14
   },
   "remote/switch-on": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 19,
+    "compiles": 18,
     "clones": 7,
-    "scans": 19
+    "scans": 15
   },
   "remote/sort": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 4,
+    "compiles": 0,
     "clones": 1,
-    "scans": 10
+    "scans": 2
   },
   "remote/heading": {
     "loads": 0,
@@ -222,16 +222,16 @@
     "rows": 0,
     "compiles": 12,
     "clones": 2,
-    "scans": 26
+    "scans": 21
   },
   "remote/search": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 4,
+    "compiles": 0,
     "clones": 1,
-    "scans": 14
+    "scans": 2
   },
   "remote/raise": {
     "loads": 0,
@@ -249,7 +249,7 @@
     "rows": 0,
     "compiles": 16,
     "clones": 2,
-    "scans": 17
+    "scans": 15
   },
   "remote/reset": {
     "loads": 0,
@@ -258,7 +258,7 @@
     "rows": 0,
     "compiles": 7,
     "clones": 8,
-    "scans": 4
+    "scans": 3
   },
   "remote/add": {
     "loads": 0,

@@ -1730,7 +1730,15 @@ the field's values match, once each. A row holds one value of a field, so for
 picked values it equals the sum of the chips; two conditions that match the
 same row count that row once.
 
+**A count runs again only when something it reads moved** (TODO 348 W1). The
+counts, and the set-aside pass, are keyed by the applied Query, what is set
+aside, the bound controls, and an AGE the source moves whenever the rows, a
+field's facts or values, a saved filter, a part or a set may have changed — a
+store `change` too, patched or not. A sort, a page or a search moves none of
+these, so it counts nothing: on the bench a sort fell from 20 scans to 2.
+
 - Site: `test/unit/a-field-counts-unique-rows.test.mjs`
+- Site: `test/unit/a-count-runs-again-only-when-something-moved.test.mjs`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -13597,6 +13605,11 @@ Three things make it safe:
 A page that asks through the provider gets the whole set for its summaries on
 its own; a hand `bindSource()` says `rows: 'all'`, as Sherpa Demos' Records gauge
 does.
+
+The second read is asked again only for a new question over new rows (TODO 348
+W1): it is keyed by its own load options and the source's age, so a page
+turned, or a component scope's answer (the summary sees the View alone), keeps
+the rows it has.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`

@@ -35,6 +35,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ⬜ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
+| ⬜ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -785,6 +786,22 @@ answer. That makes ORDER matter, as a serial filter set already does (99).
 Settle with Will what "before" means across a bar and the panel, and what an
 OFF chip counts. The TRAP changes with it.
 
+**Progress:**
+
+- ✅ **W0** (`7af8e40b`) — the bench counts SCANS, each full pass over a set of
+  rows (`applyOptions`, `filterRows`, `distinctOf`), held or not; the fixture's
+  View has Demos' serial set. A bar report was 45 scans, a sort 20.
+  **INP at 4x before** (Demos Records, Chromium, Toolbars, median of 3, probe
+  `inp.mjs`): open a chip's menu 40 ms; tick a value 216; a second value 208;
+  turn a saved filter on **320**; pick in the View 200. (Will saw about 600 ms
+  with DevTools on his machine; the order of the acts is what to read.)
+- ✅ **W1** — a count, the set-aside pass and the second all-rows read run again
+  only when something they read moved (`#age`: rows, facts, values, saved
+  filters, parts, sets). Bench: sort 20 → 2 scans and 0 counts; search 24 → 2;
+  page 6 → 1 and 1 load fewer; report 45 → 32 and 1 load fewer; raise 52 → 36.
+  **INP unchanged** (216 / 328 / 200): W1 cuts the work after the click, as the
+  plan foretold; the click's own stack is next (a profile, then P1).
+
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 
 Will, 2026-10-19: *"The above also goes for viable field and value options in
@@ -939,6 +956,22 @@ inherited properties, which fall back to the Style `active` ones. The app sets
 those once, at the top of the page, and every chip goes green — bar, panel and
 grid heading — with nothing else in the grid touched. Demos stops re-pointing
 Sherpa's `--sherpa-style-active-*` names. Do it with 346–349.
+
+### `[ ]` ⬜ 354 — FLAKE: a second Advanced filter sometimes drops the first
+
+Found 2026-10-19 while checking 348 W1. Demos
+`test/e2e/reforged-panel-apply.spec.ts:100` ("adding and applying a second
+Advanced filter keeps the first") fails at line 115: after the bar's
+`addFilters(['email'])`, the total is 100, not 10 — Owner's typed condition is
+gone. With the machine busy (load average 10–16), it failed 2 to 5 runs in 6
+to 10, with one worker too. Bisected: it fails the same with W1 taken out,
+before 346, and before 352 (`9948308f`, the 345 phase 2 commit, which does not
+touch this local page). So it is older than today's work, and load brings it
+out. The same test once found "10 rows went back to 100"
+(`T-a-conditioned-field-opens-on-its-rows`), so this is likely the same race
+coming back: a rebuilt chip reads unanswered for one tick, and its report
+clears Owner (`sherpa-a-composed-field-fills-async`). Next: reproduce it with
+4x CPU throttling and trace the report that clears Owner.
 
 ---
 

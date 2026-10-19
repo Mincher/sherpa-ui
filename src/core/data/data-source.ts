@@ -582,6 +582,7 @@ export class DataSource extends EventTarget {
    * TRAP T-a-chart-scope-is-its-legend-field
    */
   declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
+    this.#age++;
     if (part) this.#narrowing.set(scope, part);
     else this.#narrowing.delete(scope);
     // Sent up, the View holds its field — and draws only a field it knows.
@@ -707,6 +708,7 @@ export class DataSource extends EventTarget {
     readings: Readonly<Record<string, FieldReading>> | undefined,
     facts: { label?: string } = {},
   ): void {
+    this.#age++;
     if (readings) {
       this.#presets.set(id, readings);
       this.#presetFacts.set(id, { ...this.#presetFacts.get(id), ...facts });
@@ -932,6 +934,7 @@ export class DataSource extends EventTarget {
    * lets two controls share one selection.
    */
   declareValues(field: string, values: readonly unknown[]): void {
+    this.#age++;
     this.#catalogue.declareValues(field, values);
   }
 
@@ -944,6 +947,7 @@ export class DataSource extends EventTarget {
    * TRAP T-the-field-type-decides-the-clause
    */
   declareField(field: string, facts: FieldDeclaration = {}): void {
+    this.#age++;
     this.#catalogue.declare(field, facts);
   }
 
@@ -1021,6 +1025,7 @@ export class DataSource extends EventTarget {
   /** A scope's filter sets, in order. A field is in one set at most; a second
    *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
   declareSets(scope: string, sets: readonly FilterSet[]): void {
+    this.#age++;
     const taken = new Set<string>();
     this.#sets.set(scope, sets.map((set) => ({
       ...structuredClone(set),
@@ -1422,7 +1427,7 @@ export class DataSource extends EventTarget {
     /* The rows did not move, so no load will count again — yet an answer that
        is OFF, or one chart's own, changed, and its badge wears a number.
        TRAP T-a-chip-counts-its-own-results */
-    if (still && this.#loaded && this.#countedFor !== JSON.stringify(this.#applied)) void this.#drawResults();
+    if (still && this.#loaded) void this.#drawResults();
     if (still && this.#loaded) this.#presentSoon();
   }
 
@@ -1631,7 +1636,10 @@ export class DataSource extends EventTarget {
     // TRAP T-no-op-load-guard
     // TRAP T-in-flight-ticket-discards-stale — ANSWERED and ASKED are separate.
     // FORCED: the rows may have changed, so a held set is read again.
-    if (options.force) this.#letGo();
+    if (options.force) {
+      this.#age++;
+      this.#letGo();
+    }
     const key = this.#stateKey();
     if (!options.force) {
       /* ANSWERED only while nothing else is in flight. A DIFFERENT load in
@@ -1651,6 +1659,7 @@ export class DataSource extends EventTarget {
    *  change in place and is asked again; anything else is FORCED — read again.
    *  TRAP T-a-held-set-takes-a-change-in-place */
   #onStoreChange = (event: Event): void => {
+    this.#age++;
     this.#presentFor = '';
     const held = this.#held;
     const change = (event as CustomEvent<StoreChangeDetail | undefined>).detail;
@@ -1785,13 +1794,20 @@ export class DataSource extends EventTarget {
       const windowed = this.#state.pageSize != null && !this.#state.group;
       const viewed = this.#viewFilter === null ? this.#filter : this.#viewFilter;
       const split = JSON.stringify(viewed) !== JSON.stringify(this.#filter);
-      if (!this.#binding.wantsAllRows()) this.#allRows = [];
-      else if (!windowed && !split) this.#allRows = result.rows;
-      else {
+      if (!this.#binding.wantsAllRows() || (!windowed && !split)) {
+        this.#allRows = this.#binding.wantsAllRows() ? result.rows : [];
+        this.#allFor = '';
+      } else {
         const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
-        const all = await this.#reads.load(viewed ? { ...rest, filter: viewed } : rest);
-        if (!this.#inFlight.is(ticket)) return this.#result;
-        this.#allRows = all.rows;
+        const asked = viewed ? { ...rest, filter: viewed } : rest;
+        // The same question over the same rows — a page turned — is not asked again.
+        const allKey = JSON.stringify([this.#age, asked]);
+        if (allKey !== this.#allFor) {
+          const all = await this.#reads.load(asked);
+          if (!this.#inFlight.is(ticket)) return this.#result;
+          this.#allRows = all.rows;
+          this.#allFor = allKey;
+        }
       }
 
       // Re-clamp and reload ONCE, FORCED. Never while GROUPED: the page count
@@ -1904,7 +1920,11 @@ export class DataSource extends EventTarget {
     const drawn = [...this.#binding.entries()].flatMap(([el, b]) => (el.drawResults && b.scope
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
     if (!drawn.length) return;
-    this.#countedFor = JSON.stringify(this.#applied);
+    // Counted already, for this Query over these rows and these controls: a
+    // sort, a page or a search moves no count. TODO 348 W1
+    const key = JSON.stringify([this.#age, this.#applied, [...this.#setAside], drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes])]);
+    if (key === this.#countedFor) return;
+    this.#countedFor = key;
     const ticket = this.#counting.next();
     const byScope = new Map<string, Record<string, number>>();
     for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
@@ -2070,6 +2090,10 @@ export class DataSource extends EventTarget {
   /** Work out what is set aside; if it MOVED, compile again — the load that
    *  follows draws what is left. Says whether it moved. */
   async #settleSetAside(): Promise<boolean> {
+    // Worked out already for this Query over these rows. TODO 348 W1
+    const asked = JSON.stringify([this.#age, this.#limitOptions, this.#applied]);
+    if (asked === this.#settledFor) return false;
+    this.#settledFor = asked;
     const ticket = this.#settling.next();
     await this.#hold();
     const next = await this.#setAsideNow();
@@ -2083,6 +2107,8 @@ export class DataSource extends EventTarget {
   }
   /** The latest set-aside pass; an older one lands on nothing. */
   #settling = new Latest();
+  /** What the last set-aside pass was worked out for. */
+  #settledFor = '';
   /** The picks set aside, by scope then field, as value keys. */
   #setAside = new Map<string, Record<string, string[]>>();
 
@@ -2125,7 +2151,7 @@ export class DataSource extends EventTarget {
     const drawn = [...this.#binding.entries()].flatMap(([el, b]) => ((el.drawPresent || el.drawOffered) && b.scope
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
     const parts = [...this.#narrowing.keys()];
-    const key = `${this.#limitOptions}:${drawn.length}:${parts.join()}:${JSON.stringify(this.#applied)}`;
+    const key = `${this.#age}:${this.#limitOptions}:${drawn.length}:${parts.join()}:${JSON.stringify(this.#applied)}`;
     if ((!drawn.length && !parts.length) || key === this.#presentFor) return;
     this.#presentFor = key;
     const ticket = this.#presenting.next();
@@ -2151,8 +2177,13 @@ export class DataSource extends EventTarget {
 
   /** The latest results count; an older one lands on nothing. */
   #counting = new Latest();
-  /** The applied Query the chips' results were last counted for, as JSON. */
+  /** What the chips' results were last counted for: the rows, the Query, what is set aside, the controls. */
   #countedFor = '';
+  /** Moves each time what a count reads may have changed beside the Query: the
+   *  rows, a field's facts or values, a saved filter, a part, a set. */
+  #age = 0;
+  /** What the unpaged rows were last read for. */
+  #allFor = '';
 
   /* ── Binding ───────────────────────────────────────────────────────── */
 
