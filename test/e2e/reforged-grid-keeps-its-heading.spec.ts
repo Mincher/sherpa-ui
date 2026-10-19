@@ -5,7 +5,7 @@ import { test, expect } from './harness';
  * click wrote several attributes and the rows, and each one redrew the whole
  * grid, its heading's chips and menus built again each time: about half the
  * click's CPU at 4x. Counted here, so it cannot creep back.
- * TRAP T-a-grid-draws-once-per-moment
+ * TRAP T-a-grid-draws-once-per-moment · TRAP T-a-heading-cell-is-kept
  */
 const SETUP = `
   const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
@@ -45,10 +45,11 @@ test('two attribute writes in one moment draw the grid once', async ({ page }) =
     await settle();
     return seen;
   })()`);
-  expect(r).toEqual({ body: 1, heads: 4 });
+  // The heading is KEPT: no cell made again (C5).
+  expect(r).toEqual({ body: 1, heads: 0 });
 });
 
-test('a bound filter pick draws the body at most twice, and the heading at most twice', async ({ page }) => {
+test('a bound filter pick draws the body at most twice, and makes no heading cell', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
@@ -65,9 +66,8 @@ test('a bound filter pick draws the body at most twice, and the heading at most 
   })()`);
   expect(r.total).toBe(20);
   expect(r.body).toBeLessThanOrEqual(2);
-  // Two heading builds of 4 cells — drawReading's, and the rows' — where there
-  // were more. A ceiling that may only fall: C5 takes it to 0.
-  expect(r.heads).toBeLessThanOrEqual(8);
+  // The heading is KEPT: no cell made again (C5).
+  expect(r.heads).toBe(0);
 });
 
 /* C4: the offset and the widths are measured once, and only when what they read
@@ -106,4 +106,61 @@ test('the frozen offset and the shared widths stay right without a measure per d
     return out;
   })()`);
   expect(r).toEqual({ first: true, off: 0, on: true, kept: true, shown: true });
+});
+
+/* C5: the heading's own components are kept — a pick, a sort and a page make none. */
+test('a pick, a sort and a page make no new heading component', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+    source.declareValues('status', ['active', 'trial']);
+    bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
+    await source.load();
+    await settle();
+    const all = (root, out = []) => {
+      for (const el of root.querySelectorAll('*')) {
+        if (el.localName.startsWith('sherpa-')) out.push(el);
+        if (el.shadowRoot) all(el.shadowRoot, out);
+      }
+      return out;
+    };
+    const head = () => all(grid.shadowRoot.querySelector('.head-row'));
+    const before = new Set(head());
+    source.select('status', ['active']);
+    await settle();
+    source.setSort('name', 'desc');
+    await settle();
+    source.setPage(2);
+    await settle();
+    // Plain picks only: a menu's condition rows are its own to make.
+    return { kept: before.size > 0, fresh: head().filter((el) => !before.has(el)).length, total: source.total };
+  })()`);
+  expect(r).toEqual({ kept: true, fresh: 0, total: 20 });
+});
+
+/* C5, Will's G1 A: an open heading menu stays open through a data push, with
+   its search and its unapplied draft. */
+test('an open heading menu survives a push, with its search and its draft', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    grid.setAttribute('data-column-filters', '');
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+    source.declareValues('status', ['active', 'trial']);
+    source.declareValues('region', ['EMEA', 'APAC']);
+    bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
+    await source.load();
+    await settle();
+    grid.openColumnFilter('status');
+    await settle();
+    const menu = grid.shadowRoot.querySelector('.head-cell[data-field="status"] sherpa-menu');
+    const search = menu.shadowRoot.querySelector('.search');
+    if (search) search.value = 'act';
+    menu.values = ['active'];
+    // Another control changes ANOTHER field: the rows move, the heading is pushed.
+    source.select('region', ['EMEA']);
+    await settle();
+    const now = grid.shadowRoot.querySelector('.head-cell[data-field="status"] sherpa-menu');
+    return { same: now === menu, open: !!menu.open, search: search ? search.value : 'none', draft: menu.values, total: source.total };
+  })()`);
+  expect(r).toEqual({ same: true, open: true, search: 'act', draft: ['active'], total: 20 });
 });

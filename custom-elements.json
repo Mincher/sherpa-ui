@@ -5756,6 +5756,12 @@
             },
             {
               "kind": "method",
+              "name": "takeBaseline",
+              "parameters": [],
+              "description": "What Cancel restores becomes what it holds NOW — for a host that wrote an answer while it is open."
+            },
+            {
+              "kind": "method",
               "name": "setCount",
               "parameters": [
                 {

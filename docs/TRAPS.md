@@ -2005,6 +2005,7 @@ runs the task later than Chromium, so only Firefox showed it. `toggle` still
 takes one for an open that did not come through `show()`; a close clears the
 flag.
 
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ### T-the-more-menu-holds-what-folded
@@ -3453,8 +3454,8 @@ the clauses belongs to whoever owns the query — a DataSource, or the page.
 The grid instead lights the column (see `T-grid-active-flag-is-not-a-tint`) and
 says what was asked for. `#columnFilters` holds one `ColumnFilter` per field for
 the same reason it is held rather than applied: keeping it is what lets a
-re-opened menu show the pair already set, and what survives the header rebuild
-that every sort causes.
+re-opened menu show the pair already set, and what a heading cell made again
+(a changed type or filter shape) draws from.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -4075,9 +4076,8 @@ round trip IS the parity rule.
 that routes the event into its query filter twice. Nothing to filter by is not a
 filter, so a restored empty clause behaves like a cleared one.
 
-The HEADER is rebuilt rather than reached into — `#addColumnFilter` restores each
-menu from `#columnFilters`, so there is one path that writes a menu and it is the
-one a re-render uses.
+One path writes a menu, `#drawColumnFilter`, from `#columnFilters` — for a
+heading cell just made and a kept one alike (`T-a-heading-cell-is-kept`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -8399,8 +8399,10 @@ only JS knows the column's type and name.
 all** — an affordance that opens nothing is worse than none, so a column the grid
 cannot build a control for shows no control rather than a dead chip.
 
-This is why `#addColumnFilter` is the one path that writes a menu, and why a
-re-render uses it too (`T-grid-read-without-write-is-half-an-api`).
+The type is in a heading cell's key, so a column whose type changes is made
+again (`T-a-heading-cell-is-kept`). `#drawColumnFilter` is the one path that
+writes a menu, for a cell just made and a kept one alike
+(`T-grid-read-without-write-is-half-an-api`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -12423,7 +12425,7 @@ Two places light it now, both from that one answer:
 | where | why |
 |---|---|
 | `#syncColumnFilterStatus` | a clause changed without a re-render |
-| `#renderHead` | the head row is REBUILT, so the chip is brand new and blank |
+| `#renderHead` | each cell is drawn — made new, or kept (`T-a-heading-cell-is-kept`) |
 
 The second is the one that hid the bug. `#renderHead` never called
 `#syncColumnFilterStatus` — it set the `<th>` flag inline — so on any re-render
@@ -16096,6 +16098,47 @@ part drawn alone still pins its select cells and measures — a heading drawn
 alone would otherwise lose the shared widths, and a body the frozen column.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
+
+### T-a-heading-cell-is-kept
+
+TODO 355 C5. `#renderHead()` removed every heading cell and cloned it again on
+each render — per column a filter chip, its `sherpa-menu` from `menuFor()` with
+its own inputs, a sort chip and a button: 280–560 components per build on
+Records, the largest single cost of a filter click (`#bootstrap → #stamp`, 260
+of about 500 ms busy at 4x). It also shut an open heading menu, lost its search
+and focus, and dropped a grip's pointer capture.
+
+Now the heading is RECONCILED by field. A cell is made again only when its KEY
+moves — the column's type, whether it filters, and its filter menu's SHAPE (its
+def without `options`, `min`, `max` and `availableDates`; `range` as
+`menuFor` reads it), the bounds and apply-on. Else it is KEPT and drawn in place
+by ONE function for new and kept cells alike (`#drawHeadCell`,
+`#drawColumnFilter`), so every state is set AND taken away: `data-type`, the pin,
+`data-status`, the sort, `data-superseded` and `data-applied-at`,
+`data-advanced`, `data-unavailable`.
+
+- **A kept menu is told only what moved.** Its values only when they changed
+  (`#itemsFor`), so the search text stays; its reading only when what it HOLDS
+  changed (`#drawn`, compared with `sameReading`), so a reader's unapplied draft
+  survives a push of the same answer. A heading's own Apply records what it
+  holds first, so the push it causes writes nothing back into that menu.
+- **Will, G1 A:** a NEW answer for an open menu's field is written into it, and
+  the menu stays open; it takes a new Cancel baseline (`takeBaseline()`). New
+  values for an open menu keep its draft's ticks that still exist.
+- **A kept chip refreshes its face** when its menu's answer or its superseded
+  state moved: a chip made new drew it on its first render; a kept one would
+  keep its old tip ("This chip holds EMEA").
+- **A cell is moved only when it is out of place** — a moved node shuts an open
+  popover. The ACTIONS head stays last.
+- The filter row is stamped again only when the shown columns change; else each
+  input shows what it holds, in place.
+
+Measured: a bound pick makes 0 heading cells and 0 heading components (it made
+4–5 full builds); `test/e2e/reforged-grid-keeps-its-heading.spec.ts` holds it.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
 
 ### T-a-stale-draw-keeps-the-bars-own-change

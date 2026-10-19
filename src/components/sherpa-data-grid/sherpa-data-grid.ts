@@ -13,7 +13,7 @@
  * - GridColumn — one column: its field, heading, type, and whether it sorts or filters
  * - GridAction — One action a row offers.
  */
-import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
+import { advancedOf, kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FieldFilter } from '../../core/data/data-source.js';
 import {
@@ -239,7 +239,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#fillWatch?.disconnect();
     this.#fillWatch = new ResizeObserver(() => this.#measure(true));
     for (const box of [this.$('.scroller'), this.$('.head-row > .select-cell')]) if (box) this.#fillWatch.observe(box);
-    // Both footer buttons commit. Delegated — the header is rebuilt per sort.
+    // Both footer buttons commit. Delegated — a heading cell can be made again.
     this.$('.head-row')?.addEventListener('menu-apply', this.#onColumnFilterCommit);
     this.$('.head-row')?.addEventListener('menu-clear', this.#onColumnFilterCommit);
     // TRAP T-grid-chip-vocabulary-stops-here — a bound DataSource would read
@@ -494,109 +494,194 @@ export class SherpaDataGrid extends SherpaElement {
     if (actionsCol) this.$('.cols')?.appendChild(actionsCol);
   }
 
-  /** Draw the heading row: sort, filter and resize for each column. */
+  /** Draw the heading row: sort, filter and resize for each column. Each cell is
+   *  KEPT, by field, and drawn in place; one is made again only when its column's
+   *  type or its filter's shape changed. TODO 355 C5 · TRAP T-a-heading-cell-is-kept */
   #renderHead(): void {
     this.#renderCols();
     const headRow = this.$('.head-row');
     const tpl = this.$<HTMLTemplateElement>('template.head-cell-tpl');
     if (!headRow || !tpl) return;
-    const sortField = this.dataset['sortField'];
-    const sortDir = this.dataset['sortDirection'];
-
-    // Keep the fixed leading select-head <th>; rebuild only the dynamic cells.
-    headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
+    const kept = new Map(this.$$<HTMLElement>('.head-row > .head-cell').map((th) => [th.dataset['field'] ?? '', th]));
+    // The fixed leading select <th> leads; each cell follows the one before it.
+    let before: Element | null = headRow.querySelector(':scope > .select-head');
     this.#shownColumns().forEach((col, i) => {
-      // Imported, so its menu takes its items at once. TRAP T-custom-element-upgrade
-      const th = this.clone(tpl);
-      if (!th) return;
-      th.dataset['field'] = col.field;
-      if (col.type) th.dataset['type'] = col.type;
-      // Not nth-child: the position shifts when a column is dropped.
-      if (i === 0) this.#markPinned(th, true);
-      this.#addColumnFilter(th, col);
-      this.#lightFilterChip(th, col.field);
-      const sortable = col.sortable !== false;
-      th.dataset['sortable'] = String(sortable);
-      th.querySelector('.head-label')!.textContent = col.header ?? col.field;
-      // SORTED means APPLIED, not remembered — a suspended column keeps its
-      // field and an empty direction. TRAP T-a-suspended-sort-is-one-owners-job.
-      const sorted = sortable && col.field === sortField && sortDir !== '';
-      if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
-      else delete th.dataset['sort'];
-      // The grid's CSS paints nothing from `active`; a host may style it.
-      if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
-
-      // TRAP T-grid-sort-glyph-needs-a-third-state.
-      const sortChip = th.querySelector<HTMLElement>('.head-sort');
-      if (sortChip) {
-        const { sortNone, sortAsc, sortDesc } = SherpaDataGrid.icons;
-        sortChip.dataset['iconStart'] = !sorted
-          ? sortNone
-          : (sortDir === 'desc' ? sortDesc : sortAsc);
-        // The chip is LOCKED, so the grid sets its on-state.
-        sortChip.toggleAttribute('data-current', sorted);
-        sortChip.toggleAttribute('data-unsupported', !sortable);
-        const label = col.header ?? col.field;
-        sortChip.setAttribute(
-          'aria-label',
-          !sorted
-            ? `Sort by ${label}`
-            : `Sorted by ${label}, ${sortDir === 'desc' ? 'descending' : 'ascending'}`,
-        );
+      const held = this.#shown(col.field);
+      const def = FILTERABLE.has(col.type ?? 'text') ? this.#filterDef(col, held) : null;
+      const key = this.#cellKey(col, def);
+      let th = kept.get(col.field);
+      kept.delete(col.field);
+      if (!th || this.#cellKeys.get(th) !== key) {
+        // Imported, so its menu takes its items at once. TRAP T-custom-element-upgrade
+        const made = this.clone(tpl);
+        if (!made) return;
+        made.dataset['field'] = col.field;
+        if (def) this.#buildColumnFilter(made, def);
+        // The chip's own flag, so CSS hides it without reaching into its shadow.
+        else made.querySelector('.head-filter')?.setAttribute('data-unsupported', '');
+        this.#cellKeys.set(made, key);
+        // A new menu holds nothing, and has no values yet.
+        this.#drawn.delete(col.field);
+        this.#itemsFor.delete(col.field);
+        th?.remove();
+        th = made;
       }
-      headRow.appendChild(th);
+      // Moved only when out of place: a moved node shuts an open popover.
+      if (before ? before.nextElementSibling !== th : headRow.firstElementChild !== th) {
+        if (before) before.after(th);
+        else headRow.prepend(th);
+      }
+      before = th;
+      this.#drawHeadCell(th, col, i, def, held);
     });
-    // The static ACTIONS head sits in the template BEFORE these, so it is moved
-    // to the end. TRAP T-grid-actions-pin-to-the-trailing-edge.
-    const actionsHead = headRow.querySelector('.actions-head');
-    if (actionsHead) headRow.appendChild(actionsHead);
+    for (const gone of kept.values()) gone.remove();
+    // The ACTIONS head stays last. TRAP T-grid-actions-pin-to-the-trailing-edge.
+    const actionsHead = headRow.querySelector(':scope > .actions-head');
+    if (actionsHead && headRow.lastElementChild !== actionsHead) headRow.appendChild(actionsHead);
 
     this.#renderFilterRow();
   }
 
+  /** What makes a heading cell: its type, and its filter menu's SHAPE — not its
+   *  values, its ends or its days, which a kept menu is told. */
+  #cellKey(col: GridColumn, def: FilterMenuDef | null): string {
+    if (!def) return JSON.stringify([col.type ?? 'text', false]);
+    const { options: _options, min: _min, max: _max, availableDates: _days, ...shape } = def;
+    // TRAP T-a-default-is-not-an-override
+    return JSON.stringify([col.type ?? 'text', true, { ...shape, range: def.range ?? kindOf(def) === 'number' },
+      this.dataset['bounds'] ?? '', this.dataset['applyOn'] ?? '']);
+  }
+  /** Each heading cell's key, as it was made. */
+  #cellKeys = new WeakMap<HTMLElement, string>();
+  /** What each heading menu was last told it holds, by field — or what its reader applied. */
+  #drawn = new Map<string, FieldReading | null>();
+  /** Each heading menu's values, as it was last told them, by field. */
+  #itemsFor = new Map<string, string>();
+  /** The columns the filter row was last stamped for. */
+  #filterRowFor = '';
+
+  /** Draw one heading cell's state — the same for a cell just made and one kept,
+   *  so each state is set AND taken away. */
+  #drawHeadCell(th: HTMLElement, col: GridColumn, i: number, def: FilterMenuDef | null, held: FieldReading | undefined): void {
+    const sortField = this.dataset['sortField'];
+    const sortDir = this.dataset['sortDirection'];
+    if (col.type) th.dataset['type'] = col.type;
+    else delete th.dataset['type'];
+    // Not nth-child: the position shifts when a column is dropped.
+    if (i === 0) this.#markPinned(th, true);
+    else {
+      th.removeAttribute('data-pinned');
+      th.removeAttribute('data-pin-last');
+    }
+    if (def) this.#drawColumnFilter(th, col, def, held);
+    this.#lightFilterChip(th, col.field);
+    const sortable = col.sortable !== false;
+    th.dataset['sortable'] = String(sortable);
+    const label = th.querySelector('.head-label');
+    if (label && label.textContent !== (col.header ?? col.field)) label.textContent = col.header ?? col.field;
+    // SORTED means APPLIED, not remembered — a suspended column keeps its
+    // field and an empty direction. TRAP T-a-suspended-sort-is-one-owners-job.
+    const sorted = sortable && col.field === sortField && sortDir !== '';
+    if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
+    else delete th.dataset['sort'];
+    // The grid's CSS paints nothing from `active`; a host may style it.
+    if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
+    else delete th.dataset['status'];
+
+    // TRAP T-grid-sort-glyph-needs-a-third-state.
+    const sortChip = th.querySelector<HTMLElement>('.head-sort');
+    if (sortChip) {
+      const { sortNone, sortAsc, sortDesc } = SherpaDataGrid.icons;
+      sortChip.dataset['iconStart'] = !sorted
+        ? sortNone
+        : (sortDir === 'desc' ? sortDesc : sortAsc);
+      // The chip is LOCKED, so the grid sets its on-state.
+      sortChip.toggleAttribute('data-current', sorted);
+      sortChip.toggleAttribute('data-unsupported', !sortable);
+      const name = col.header ?? col.field;
+      sortChip.setAttribute(
+        'aria-label',
+        !sorted
+          ? `Sort by ${name}`
+          : `Sorted by ${name}, ${sortDir === 'desc' ? 'descending' : 'ascending'}`,
+      );
+    }
+  }
+
   /** TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only. */
   /**
-   * Give a heading its filter chip and menu — the CHIP's own menu, made by
+   * Give a new heading its filter chip's menu — the CHIP's own menu, made by
    * `menuFor()` from the source's def of its field, so one field opens one
    * menu wherever it is asked. Will, TODO 86. TRAP T-a-heading-opens-the-chips-menu
    */
-  #addColumnFilter(th: HTMLElement, col: GridColumn): void {
+  #buildColumnFilter(th: HTMLElement, def: FilterMenuDef): void {
     const chip = th.querySelector<HTMLElement>('.head-filter');
     if (!chip) return;
-    if (!FILTERABLE.has(col.type ?? 'text')) {
-      // The chip's own flag, so CSS hides it without reaching into its shadow.
-      chip.setAttribute('data-unsupported', '');
-      return;
-    }
-    const held = this.#shown(col.field);
-    const def = this.#filterDef(col, held);
     // A top-layer popover escapes the scroller, inside the HOST's named region.
-    const { menu, items } = menuFor(this.root, def, { bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input' });
+    const { menu } = menuFor(this.root, def, { bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input' });
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
     menu.setAttribute('data-removable', '');
+    chip.appendChild(menu);
+    /* Upgraded FIRST: a property set on a plain element hides the setter for good.
+       TRAP T-custom-element-upgrade */
+    customElements.upgrade(menu);
+  }
+
+  /** Draw a heading's filter — its menu kept, so an open one stays open, with its
+   *  search, focus and an unapplied draft. Each write only where it changed.
+   *  TRAP T-a-heading-menu-opens-on-what-it-holds · TRAP T-both-answers-are-kept */
+  #drawColumnFilter(th: HTMLElement, col: GridColumn, def: FilterMenuDef, held: FieldReading | undefined): void {
+    const chip = th.querySelector<SherpaQuickFilter>('.head-filter');
+    const menu = chip?.querySelector<SherpaMenu>('sherpa-menu');
+    if (!chip || !menu) return;
     /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where
        it is held. TRAP T-a-view-held-heading-shows-and-refuses */
     const superseded = this.#superseded.has(col.field);
+    const was = chip.hasAttribute('data-superseded');
     chip.toggleAttribute('data-superseded', superseded);
     if (superseded && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
+    else chip.removeAttribute('data-applied-at');
     menu.toggleAttribute('data-readonly', superseded);
-    chip.appendChild(menu);
     chip.setAttribute('aria-label', `Filter ${def.label}`);
-    /* THE MENU HOLDS ITS OWN — both answers and the mode, a date's days too —
-       and keeps a reading given before it has drawn. Upgraded FIRST: a property
-       set on a plain element hides the setter for good.
-       TRAP T-custom-element-upgrade · TRAP T-both-answers-are-kept
-       TRAP T-a-heading-menu-opens-on-what-it-holds */
-    customElements.upgrade(menu);
-    if (items.length) menu.items(this.#columnItems(items, held));
-    if (!held) {
-      this.#markPresent(th);
-      return;
+    // Its values, its ends, its days — told only when they moved, so the search text stays.
+    const items = this.#columnItems(def.options ?? [], held);
+    const itemsKey = JSON.stringify(items.map((it) => [it.value, it.label]));
+    if (items.length && this.#itemsFor.get(col.field) !== itemsKey) {
+      this.#itemsFor.set(col.field, itemsKey);
+      // An OPEN menu keeps its reader's draft through new values (Will, G1).
+      const draft = menu.open ? menu.values ?? [] : null;
+      menu.items(items);
+      if (draft) menu.values = draft.filter((v) => items.some((it) => it.value === v));
     }
-    // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
-    if (readingRows(held).length) menu.setAttribute('data-advanced', '');
-    menu.reading = held;
-    this.#markPresent(th);
+    if (menu.dataset['body'] === 'number') {
+      menu.setAttribute('data-min', String(def.min ?? 0));
+      menu.setAttribute('data-max', String(def.max ?? 100));
+    }
+    if (def.availableDates?.length) menu.setAttribute('data-available', def.availableDates.join(','));
+    /* THE MENU HOLDS ITS OWN — both answers and the mode, a date's days too —
+       told only when what it holds CHANGED, so a reader's draft survives a push. */
+    const drawn = this.#drawn.get(col.field);
+    const wrote = !this.#drawn.has(col.field) || !sameReading(drawn, held ?? null);
+    if (wrote) {
+      this.#drawn.set(col.field, held ?? null);
+      // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
+      if (held && readingRows(held).length) menu.setAttribute('data-advanced', '');
+      else if (!advancedOf(def)) menu.removeAttribute('data-advanced');
+      if (held) menu.reading = held;
+      else if (drawn) {
+        // Released from outside: emptied, as Clear empties it.
+        if (menu.getAttribute('data-type') === 'filter') menu.setAttribute('data-value', '');
+        menu.reading = {};
+      }
+      // Written while open (Will, G1 A): Cancel now restores THIS. TRAP T-the-baseline-is-taken-at-show
+      if (menu.open) menu.takeBaseline();
+    }
+    // A kept chip draws its face again from what its menu now holds: its tip says so.
+    if (wrote || was !== superseded) chip.refresh();
+    if (superseded) {
+      chip.removeAttribute('data-unavailable');
+      menu.present = null;
+    } else this.#markPresent(th);
   }
 
   /**
@@ -738,6 +823,8 @@ export class SherpaDataGrid extends SherpaElement {
       }
     }
 
+    // What the menu holds now is what it was drawn: a push of the same answer writes nothing.
+    this.#drawn.set(field, held ? { ...held } : null);
     this.#syncColumnFilterStatus();
     this.#renderBody();
 
@@ -990,7 +1077,7 @@ export class SherpaDataGrid extends SherpaElement {
       if (!this.#columnFilters.size) return;
       this.#columnFilters.clear();
     }
-    // Rebuilt, not reached into — #renderHead restores each menu from the map.
+    // Drawn from the map — #renderHead tells each kept menu what it now holds.
     this.#renderHead();
     this.#syncColumnFilterStatus();
     this.#renderBody();
@@ -1037,11 +1124,23 @@ export class SherpaDataGrid extends SherpaElement {
     }
   }
 
-  /** Stamp one filter input per column into the secondary header row. */
+  /** Stamp one filter input per column into the secondary header row — again only
+   *  when the columns changed; else each input shows what it holds, in place. */
   #renderFilterRow(): void {
     const filterRow = this.$('.filter-row');
     const tpl = this.$<HTMLTemplateElement>('template.filter-cell-tpl');
     if (!filterRow || !tpl) return;
+    const shownKey = JSON.stringify(this.#shownColumns().map((c) => [c.field, c.header ?? '', c.type ?? '']));
+    if (shownKey === this.#filterRowFor && filterRow.querySelector('.filter-cell')) {
+      for (const th of this.$$<HTMLElement>('.filter-row > .filter-cell')) {
+        const text = this.#filters.get(th.dataset['field'] ?? '') ?? '';
+        const input = th.querySelector<HTMLInputElement>('.filter-input');
+        if (input && input.value !== text) input.value = text;
+        th.toggleAttribute('data-has-value', text !== '');
+      }
+      return;
+    }
+    this.#filterRowFor = shownKey;
 
     // Keep the fixed leading spacer <th>; rebuild only the dynamic filter cells.
     filterRow.querySelectorAll('.filter-cell').forEach((el) => el.remove());

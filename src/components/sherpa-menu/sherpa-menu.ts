@@ -862,6 +862,12 @@ export class SherpaMenu extends SherpaElement {
     else this.values = this.#baseline;
   }
 
+  /** What Cancel restores becomes what it holds NOW — for a host that wrote an
+   *  answer while it is open. TRAP T-the-baseline-is-taken-at-show */
+  takeBaseline(): void {
+    this.#takeBaseline();
+  }
+
   /** Remember what Cancel restores. TRAP T-the-baseline-is-taken-at-show */
   #takeBaseline(): void {
     this.#baseline = this.values;

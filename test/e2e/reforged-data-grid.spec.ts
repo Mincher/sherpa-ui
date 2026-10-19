@@ -1422,8 +1422,8 @@ test('applying a column filter flags the column and reports a ready clause', asy
         .conditionValue,
     };
 
-    // A SORT rebuilds the whole header row, so the menu is stamped fresh — the
-    // pair the user set has to come back with it.
+    // A SORT draws the header again — each cell kept, or made anew — and the
+    // pair the user set has to stay with it. TRAP T-a-heading-cell-is-kept
     el.dataset['sortField'] = 'team';
     await settle();
     const afterSort = {
@@ -2689,9 +2689,9 @@ test('data-filter-fields lights the column CHIP, and survives a re-render', asyn
     await settle();
     const filtered = read();
 
-    /* A RE-POPULATE rebuilds the head row, so the chip is brand new. This is
-       the half that hid the bug: the <th> flag survived and the chip came back
-       blank, because #renderHead never ran the sync. */
+    /* A RE-POPULATE draws the head row again. This was the half that hid the
+       bug: the <th> flag survived and a chip made anew came back blank, because
+       #renderHead never ran the sync. TRAP T-a-heading-cell-is-kept */
     el.populate(config);
     await settle();
     const reRendered = read();

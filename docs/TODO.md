@@ -720,13 +720,13 @@ against the code). The full plan, with every file:line, is
     current; any other store is read again first. Bench `remote/reopen`: 0
     loads (open: 1 load, 10,000 rows). TRAP `T-a-store-has-one-cache`.
 
-  **Decisions for Will** (neither blocks 4.1–4.5):
-  - ❓ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
+  **Decisions — Will, 2026-10-19: "A for all, sure."**
+  - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;
     while shown it covers about 60 px (Records' data bar) until Dismiss or
     recovery. **B:** it sits in the flow and pushes the Context down — covers
     nothing, but the page moves each time it shows or goes.
-  - ❓ **W2 — a kept copy, on a reload while ONLINE.** **A (pick):** draw the
+  - ✅ **W2 — a kept copy, on a reload while ONLINE.** **A (pick):** draw the
     kept rows at once and check behind them — a faster first paint (an LCP
     gain), but rows can change about one round trip later. **B:** wait for the
     read, and use the kept rows only if it fails — always current, offline
@@ -841,11 +841,11 @@ OFF chip counts. The TRAP changes with it.
   `docs/history/plan-347-349-walk.md`. One ordered pass per scope gives every
   count, value count, grey, set-aside and serial offer; a bar report goes from
   32 scans to about 4. 347 (the View first) is folded into it.
-  - ❓ **Q1 — a chart legend's own scope, with Limit off.** **A (pick):** it sits
+  - ✅ **Q1 (Will: A) — a chart legend's own scope, with Limit off.** **A (pick):** it sits
     under its host like any component scope: the View greys the legend values
     it leaves no rows for; a legend pick is never set aside. **B:** greyed only
     while Limit is on, as today.
-  - ❓ **Q2 — the TOP field of a serial set, when filters stand before it.**
+  - ✅ **Q2 (Will: A) — the TOP field of a serial set, when filters stand before it.**
     **A (pick):** the top is never cut — greyed only by Limit, or by the View
     for a component scope; the fields below lose what everything before them
     rules out. **B:** the top also removes what the filters before the set rule
@@ -1069,10 +1069,29 @@ C5 heading cells kept by field and updated in place. Expected: the click's
 `#bootstrap → #stamp` 260 ms → under 60, layout reads 49 ms → about 0, INP
 about 120–190 ms.
 
-- ❓ **G1 — a heading menu is OPEN, and another control changes the same field.**
+- ✅ **G1 (Will: A) — a heading menu is OPEN, and another control changes the same field.**
   **A (pick):** the new answer is written and the menu stays open; its draft is
   replaced, as today, minus the close (the menu re-takes its Cancel baseline).
   **B:** the open menu keeps the reader's draft. (Today the rebuild CLOSES it.)
+
+**Progress:**
+
+- ✅ **C1** (`fe7899fd`) — `drawReading` skips the reading it holds; `#filterDef`
+  works out values only where a list shows them.
+- ✅ **C2** (`d385b602`) — one render per moment, and one per publish
+  (`populate()` says rows are coming). TRAP `T-a-grid-draws-once-per-moment`.
+- ✅ **C4** (`74078533`) — layout read once, only when it moved (`#measure`).
+- ✅ **C3** (`428e1270`) — each attribute redraws only its part.
+- ✅ **C5** — heading cells KEPT by field and drawn in place: a pick, a sort and a
+  page make 0 heading cells and 0 heading components; an open heading menu
+  stays open with its search and draft (built with G1 A, Claude's pick — the
+  menu takes a new Cancel baseline when written while open; Will confirmed A). TRAP
+  `T-a-heading-cell-is-kept`.
+- **INP at 4x after C1–C5** (Demos Records, Chromium, Toolbars, median of 5;
+  load average 9–27): tick a value 216 → **104 ms**; a second value 208 → **88**;
+  a saved filter on 320 → **176**; a View pick 200 → **80**. Every act is under
+  the 200 ms target on this machine. Full suites: sherpa-ui 3130 passed, Demos
+  426 passed.
 
 ### `[x]` ✅ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
 

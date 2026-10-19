@@ -590,7 +590,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (87)
+## The data grid (89)
 
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
 - [T-a-cloned-prototype-needs-its-icons-upgraded](TRAPS.md#t-a-cloned-prototype-needs-its-icons-upgraded) — data-grid
@@ -602,6 +602,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-find-asks-its-host-to-step](TRAPS.md#t-a-find-asks-its-host-to-step) — data-grid
 - [T-a-grid-draws-once-per-moment](TRAPS.md#t-a-grid-draws-once-per-moment) — data-grid
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — data-grid
+- [T-a-heading-cell-is-kept](TRAPS.md#t-a-heading-cell-is-kept) — data-grid
 - [T-a-heading-holds-a-whole-reading](TRAPS.md#t-a-heading-holds-a-whole-reading) — data-grid
 - [T-a-heading-menu-opens-on-what-it-holds](TRAPS.md#t-a-heading-menu-opens-on-what-it-holds) — data-grid
 - [T-a-heading-opens-the-chips-menu](TRAPS.md#t-a-heading-opens-the-chips-menu) — data-grid
@@ -675,6 +676,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-select-all-is-the-visible-rows](TRAPS.md#t-select-all-is-the-visible-rows) — data-grid
 - [T-selection-lives-in-the-keys-not-the-objects](TRAPS.md#t-selection-lives-in-the-keys-not-the-objects) — data-grid
 - [T-swallow-flag-not-listener](TRAPS.md#t-swallow-flag-not-listener) — data-grid
+- [T-the-baseline-is-taken-at-show](TRAPS.md#t-the-baseline-is-taken-at-show) — data-grid
 - [T-the-column-chip-is-the-only-signal](TRAPS.md#t-the-column-chip-is-the-only-signal) — data-grid
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
