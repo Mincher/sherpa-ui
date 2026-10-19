@@ -523,6 +523,19 @@ data?"* Then:
 *"It's not just a binary scenario but a series of considerations on when to be
 performant versus current in working with data."*
 
+**Some filters ALWAYS ask the server** (Will, 2026-10-19): *"Some filters
+(typically multi-select) may need to always trigger a server side fetch of
+values. These menus should have an 'Apply' button in their footer that triggers
+the fetching."* He asked how configurable that is for a Sherpa user. Today
+(read 2026-10-19): `menuFor()` decides Apply per menu (`filter-menu.ts:100`) —
+on a REMOTE store's multi-select menu, a number, or a def's `commit: true`; a
+local store never shows Apply. A user can set it only per STORE (`remote`) and
+per SOURCE (`applyOn`); `commit` is a UI flag the grid and the Filters button
+set in code, and a page definition's `fields` cannot say it. So 345 needs a
+PER-FIELD fact in the page definition — e.g. `fields.<name>.fetch: "server"`
+(name to settle): that filter always asks the store, its menu always has Apply,
+and Apply starts the fetch. It is an input to the decision series above.
+
 **Change tracking: Will's sketch** (2026-10-19). *"Definitely needs some
 thinking planning before we implement anything!"*
 
