@@ -24,6 +24,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
+| | | | **A — In hand** | |
+| 🚧 | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -408,6 +410,36 @@ first, then the bugs, then the filter features).
 - **L — The code review** (2026-10-14) is the work in hand:
   `docs/CODE-REVIEW-PLAN.md`, ruled by Will. Its rows run in the plan's order; a
   bug or gap found while reading joins at the end.
+
+---
+
+## A — In hand
+
+### `[~]` 🚧 344 — Markup, default variants and text come from the `.html` and `.css`
+
+Will, 2026-10-19: *"Ideally JS (or TS) should not be using template literals
+to provide default component variants. The HTML templates and CSS file for the
+component should do this. The Sherpa-Element base class should provide the
+mechanisms for template fetching."* Then: *"Let's just handle these breaks
+now."*
+
+A read-only sweep (2026-10-19) found the source keeps every component's
+template and sheet in its own files, and the build only copies their text into
+`dist/` (208). The breaks it found, to fix:
+
+1. **CSS or structure in TS:** the toast stack (`style.cssText`); nav-item's
+   `::highlight()` rule in a template literal; the calendar header's corners
+   and margins; `filter-menu.ts` makes the date body's `sherpa-calendar`.
+2. **A default variant set by TS:** nav `data-nav-state="collapsed"`;
+   chat-message `data-type`, calendar `data-view` and tooltip
+   `data-placement`, which are not needed.
+3. **Default text in TS:** transfer-list's headings, the app header's
+   "Ask N-zo", the ⋮ menu rows, the nav's default rows, the labels that swap
+   with state.
+4. **One element per item from `createElement`, not a `<template>` clone:**
+   filter-menu's menus, select-group's options, the toast.
+5. **Class lists in TS:** input-text's icon classes, chart-legend's
+   `rollup-toggle`, layout-grid's `sherpa-grid`.
 
 ---
 
