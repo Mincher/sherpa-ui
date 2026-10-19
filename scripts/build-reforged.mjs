@@ -9,7 +9,8 @@
  * Then each module is MINIFIED, one by one — never bundled, so every import
  * path holds; a dev build stays readable. Will, TODO 199.
  *
- *   node scripts/build-reforged.mjs [--watch | --dev]
+ *   node scripts/build-reforged.mjs [--watch | --dev | --no-minify]
+ *   (--no-minify: inlined as shipped, but with readable names — to profile)
  */
 import { execSync, spawn } from 'node:child_process';
 import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync } from 'node:fs';
@@ -37,6 +38,7 @@ execSync('node scripts/project-tokens.mjs', { stdio: 'inherit' });
 
 const WATCH = process.argv.includes('--watch');
 const DEV = WATCH || process.argv.includes('--dev');
+const MINIFY = !process.argv.includes('--no-minify');
 
 // Fatal one-shot; in --watch it only reports — an error there would kill the
 // watch and stop all updates silently.
@@ -153,8 +155,10 @@ if (!DEV) {
   // Each now lives in its JS: the copy in dist/ would ship twice. TRAP T-the-text-is-in-the-js
   for (const asset of inlinedAssets) unlinkSync(asset);
   console.log(`✓ ${inlinedAssets.size} inlined files not shipped`);
-  console.log('› minify the JS (esbuild)');
-  console.log(`✓ ${await minifyFiles(OUT)}`);
+  if (MINIFY) {
+    console.log('› minify the JS (esbuild)');
+    console.log(`✓ ${await minifyFiles(OUT)}`);
+  }
 }
 
 if (WATCH) {

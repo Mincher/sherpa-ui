@@ -49,6 +49,7 @@ npm run build
 npm run build:dev         # the same, but components FETCH their files — for live reload
 npm run build:watch       # build-reforged.mjs --watch — TS *and* assets, fetched (a dev build)
 npm run build:watch:ts    # tsc --watch — TS only, no asset copy
+node scripts/build-reforged.mjs --no-minify  # as shipped, with readable names — to profile
 
 # Type check (no emit)
 npm run type-check

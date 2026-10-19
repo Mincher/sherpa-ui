@@ -36,6 +36,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ⬜ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
 | ⬜ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
+| ⬜ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -972,6 +973,27 @@ out. The same test once found "10 rows went back to 100"
 coming back: a rebuilt chip reads unanswered for one tick, and its report
 clears Owner (`sherpa-a-composed-field-fills-async`). Next: reproduce it with
 4x CPU throttling and trace the report that clears Owner.
+
+### `[ ]` ⬜ 355 — PERF: a filter click rebuilds the grid's whole heading
+
+Found 2026-10-19 by profiling the click at 4x (Chromium CPU profile, Demos
+Records, a build with `--no-minify`). Turning a saved filter on: 493 ms busy,
+of which **257 ms is new components being made** (`#bootstrap` → `#stamp`), most
+of it the data grid's heading. Ticking a value: 546 ms busy, 266 ms the same.
+The data layer's own work is about 40 ms.
+
+Why: `sherpa-data-grid`'s `onChange()` runs a FULL `#render()` on every observed
+attribute, and `bind-source`'s `writeView()` sets several (the sort, the page,
+the total…) on each publish — so one click redraws the grid several times.
+`#renderHead()` removes every heading cell and clones it again: per column, a
+filter chip, its menu from `menuFor()` (with its inputs), a sort chip and a
+button — 14 columns on Records. `#syncPinned()` then reads layout
+(`getBoundingClientRect`, 49 ms).
+
+The fix to design: keep each heading cell by field and update it in place
+(sort, status, superseded, the menu's reading); rebuild a cell only when its
+column or its filter def changes; one render per tick, not one per attribute;
+and read layout once. Measure with `inp.mjs` before and after.
 
 ---
 
