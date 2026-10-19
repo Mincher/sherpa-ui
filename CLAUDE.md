@@ -513,19 +513,21 @@ is adopted into every shadow root — so a component imported alone is styled:
 | `sherpa-motion.css` | durations, shared keyframes |
 
 **A FAMILY sheet is the fourth kind.** A component's `static css` may be a
-LIST — its family's sheets first, its own last, so its own wins. Four exist:
+LIST — its family's sheets first, its own last, so its own wins. Five exist:
 `src/core/sherpa-chart-frame.css`, a chart's heading, body and legend place (bar,
 line, gauge, radial — TODO 283, 308); then `src/core/sherpa-chart-axes.css` for 2D charts with
 axes (bar, line) or `src/core/sherpa-chart-segments.css` for segmented charts
 (gauge, radial), by Will's ruling (2026-09-29); and
 `src/core/sherpa-container-regions.css`, a card's header, body and footer
-(container, dialog, panel — TODO 285). A family sheet MAY carry `:host` rules —
+(container, dialog, panel — TODO 285); and `src/core/sherpa-filter-more.css`, the
+⋮ menu's rows (toolbar, panel — TODO 344). A family sheet MAY carry `:host` rules —
 only its family adopts it — and `lint:css` reads it as it reads a component.
 
 **A family's MARKUP works the same way:** `static html` may be a list too, its
 family files first. Each family file's first template is stamped after the
 component's own body, so a shared helper's prototypes sit in every member's
-root — `src/core/sherpa-filter-menu.html` holds the menu `menuFor()` clones
+root — `src/core/sherpa-filter-menu.html` holds the menu `menuFor()` clones, and
+`src/core/sherpa-filter-more.html` the ⋮ menu and its rows
 (TRAP `T-a-family-shares-markup`).
 
 Reach for a shared sheet when the same rule appears in a THIRD component —

@@ -374,7 +374,15 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     await pick('Refresh view');
     await pick('Save view');
     await pick('View as filter panel');
-    return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard };
+    // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
+    (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
+    await pick('Reset filters');
+    el.addEventListener('view-favorite', (e) => heard.push(`favourite:${(e as CustomEvent).detail.favourite}`));
+    await pick('Favorite');
+    await open();
+    const starred = [...menu.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Remove from Favorites');
+    await pick('Remove from Favorites');
+    return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard, starred };
   });
 
   expect(r.collapse).toBe(3);
@@ -382,7 +390,8 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     'Suggest filters', 'Reset filters', 'Reset all to default', 'View as filter panel', '---',
     'Favorite', 'Save view', 'Save view as', 'Refresh view',
   ]);
-  expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra']);
+  expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra', 'clear', 'favourite:true', 'favourite:false']);
+  expect(r.starred).toBe(true);
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {

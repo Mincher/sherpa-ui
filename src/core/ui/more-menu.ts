@@ -4,7 +4,8 @@
  * TRAP T-the-more-menu-holds-what-folded
  *
  * Map:
- * - MoreRow — One ⋮ row: what it does, what it says, and whether it is off.
+ * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off.
+ * - MORE_MENU — The ⋮ menu's own markup and sheet: a host lists each FIRST.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all to default — off where they would change nothing.
  * - syncResets — Reset, and Reset all to default, as buttons: off where they would change nothing.
@@ -17,9 +18,16 @@
  */
 
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
+import { report } from '../data/report.js';
 
-/** One ⋮ row: what it does, what it says, and whether it is off. */
-export type MoreRow = readonly [value: string, label: string, disabled?: boolean];
+/** One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off. */
+export type MoreRow = readonly [value: string, disabled?: boolean];
+
+/** The ⋮ menu's own markup and sheet: a host lists each FIRST. TRAP T-a-family-shares-markup */
+export const MORE_MENU = {
+  html: new URL('../sherpa-filter-more.html', import.meta.url),
+  css: new URL('../sherpa-filter-more.css', import.meta.url),
+} as const;
 
 const EXTRA = 'extra:';
 
@@ -29,11 +37,8 @@ export function folded(el: Element | null): boolean {
 }
 
 /** Reset filters, then Reset all to default — off where they would change nothing. TODO 231 */
-export function resetRows(host: HTMLElement, reset: string): MoreRow[] {
-  return [
-    [reset, 'Reset filters', host.hasAttribute('data-nothing-to-reset')],
-    ['reset-default', 'Reset all to default', host.hasAttribute('data-at-default')],
-  ];
+export function resetRows(host: HTMLElement): MoreRow[] {
+  return [['reset', host.hasAttribute('data-nothing-to-reset')], ['reset-default', host.hasAttribute('data-at-default')]];
 }
 
 /** Reset, and Reset all to default, as buttons: off where they would change
@@ -51,51 +56,68 @@ export function hidesUnmatched(host: HTMLElement): boolean {
 /** Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves. TODO 105 */
 export function saveRows(host: HTMLElement, setOn: boolean): MoreRow[] {
   if (!host.hasAttribute('data-saveable')) return [];
-  return [['filters-save', 'Save filters'], ['filters-save-as', 'Save filters as'],
-    ...(setOn ? [['filters-delete', 'Delete filters'] as MoreRow] : [])];
+  return [['filters-save'], ['filters-save-as'], ...(setOn ? [['filters-delete'] as MoreRow] : [])];
 }
 
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
 export function extraRows(host: HTMLElement): MoreRow[] {
-  return extras(host).flatMap((extra, i): MoreRow[] => (folded(extra)
-    ? [[`${EXTRA}${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? '']]
-    : []));
+  return extras(host).flatMap((extra, i): MoreRow[] => (folded(extra) ? [[`${EXTRA}${i}`]] : []));
 }
 
 /** Draw the ⋮ menu from groups of rows — a divider between each — then the
  *  host's own switch, and show it at the trigger. Will, TODO 178. */
 export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLElement, groups: readonly MoreRow[][]): void {
   const menu = root.querySelector<SherpaMenu>('.more-menu');
-  const item = root.querySelector<HTMLTemplateElement>('template.more-item-tpl')?.content.firstElementChild;
-  const divider = root.querySelector<HTMLTemplateElement>('template.more-divider-tpl')?.content.firstElementChild;
-  if (!menu || !item || !divider) return;
-  const drawn = groups.map((rows) => rows.map(([value, label, disabled]) => {
-    const one = item.cloneNode(true) as HTMLElement;
-    one.setAttribute('value', value);
-    one.querySelector('.more-label')!.textContent = label;
-    one.toggleAttribute('disabled', !!disabled);
-    return one;
+  const divider = cloneFirst(root, 'template.more-divider-tpl');
+  if (!menu || !divider) return;
+  const drawn = groups.map((rows) => rows.flatMap(([value, disabled]) => {
+    const one = value.startsWith(EXTRA) ? pageRow(host, root, value) : row(root, value);
+    one?.toggleAttribute('disabled', !!disabled);
+    return one ? [one] : [];
   }));
-  const check = root.querySelector<HTMLTemplateElement>('template.more-check-tpl')?.content.firstElementChild;
   const limit = host.dataset['limitOptions'];
-  if (limit && check) {
-    const one = check.cloneNode(true) as HTMLElement;
-    one.querySelector('input')!.checked = limit === 'on';
-    const own = [one];
+  if (limit) {
     // …and while Limit is on, whether what it rules out is shown at all. Will, TODO 205.
-    if (limit === 'on') {
-      const hide = check.cloneNode(true) as HTMLElement;
-      const box = hide.querySelector('input')!;
-      box.value = 'hide-unmatched';
-      box.checked = host.dataset['hideUnmatched'] === 'on';
-      hide.querySelector('.menu-row-label')!.textContent = 'Hide unmatching filters';
-      own.push(hide);
-    }
-    drawn.push(own);
+    drawn.push([check(root, 'limit-options', limit === 'on'),
+      ...(limit === 'on' ? [check(root, 'hide-unmatched', host.dataset['hideUnmatched'] === 'on')] : [])]
+      .filter((n): n is HTMLElement => !!n));
   }
   menu.replaceChildren(...drawn.filter((g) => g.length)
     .flatMap((g, i) => (i ? [divider.cloneNode(true) as HTMLElement, ...g] : g)));
   menu.show?.(trigger);
+}
+
+/** A row's prototype, by value, from any more-rows-tpl: the family's or its host's own. */
+function row(root: ParentNode, value: string): HTMLElement | null {
+  for (const tpl of root.querySelectorAll<HTMLTemplateElement>('template.more-rows-tpl')) {
+    const hit = tpl.content.querySelector(`[value="${value}"]`)?.closest('.more-item, .more-check');
+    if (hit) return hit.cloneNode(true) as HTMLElement;
+  }
+  report({ code: 'more-row-missing', message: `No ⋮ row "${value}" in the markup.`, at: { value } });
+  return null;
+}
+
+/** A switch row, ticked or not. */
+function check(root: ParentNode, value: string, on: boolean): HTMLElement | null {
+  const one = row(root, value);
+  const box = one?.querySelector('input');
+  if (box) box.checked = on;
+  return one;
+}
+
+/** A page button's row: its words are the page's. */
+function pageRow(host: HTMLElement, root: ParentNode, value: string): HTMLElement | null {
+  const extra = extras(host)[Number(value.slice(EXTRA.length))];
+  const one = cloneFirst(root, 'template.more-item-tpl');
+  if (!extra || !one) return null;
+  one.setAttribute('value', value);
+  one.querySelector('.more-label')!.textContent = extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? '';
+  return one;
+}
+
+/** A prototype's first element, cloned. */
+function cloneFirst(root: ParentNode, sel: string): HTMLElement | null {
+  return (root.querySelector<HTMLTemplateElement>(sel)?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined) ?? null;
 }
 
 /** A row was chosen: the menu hides. A page button's row presses that button,

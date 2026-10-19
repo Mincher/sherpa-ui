@@ -319,7 +319,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-default-is-not-an-override](TRAPS.md#t-a-default-is-not-an-override) — filter-menu
 - [T-a-divider-needs-a-neighbour-on-both-sides](TRAPS.md#t-a-divider-needs-a-neighbour-on-both-sides) — quick-filter-toolbar
 - [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
-- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, saved-filter-menu
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, saved-filter-menu, sherpa-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu, filter-panel
 - [T-a-filter-menu-has-two-modes](TRAPS.md#t-a-filter-menu-has-two-modes) — quick-filter
@@ -451,7 +451,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-fold-measures-a-chip-that-has-not-drawn-itself](TRAPS.md#t-the-fold-measures-a-chip-that-has-not-drawn-itself) — quick-filter-toolbar
 - [T-the-header-chips-must-reach-the-query](TRAPS.md#t-the-header-chips-must-reach-the-query) — quick-filter-toolbar
 - [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — filter-panel
-- [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — filter-panel, more-menu, quick-filter-toolbar
+- [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — filter-panel, more-menu, quick-filter-toolbar, sherpa-filter-more
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — filter-panel
 - [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def, filter-panel
 - [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — filter-panel
@@ -956,7 +956,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-detail-is-typed-by-the-checker](TRAPS.md#t-a-detail-is-typed-by-the-checker) — generate-component-spec, ts-facts
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — project-tokens
 - [T-a-dragged-layout-is-kept-per-column-count](TRAPS.md#t-a-dragged-layout-is-kept-per-column-count) — project-tokens
-- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — check-size
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — check-size, check-traps
 - [T-a-file-says-what-it-holds](TRAPS.md#t-a-file-says-what-it-holds) — code-map
 - [T-a-fit-grid-needs-its-row-count](TRAPS.md#t-a-fit-grid-needs-its-row-count) — project-tokens
 - [T-a-flag-brings-the-base-methods](TRAPS.md#t-a-flag-brings-the-base-methods) — generate-component-spec, ts-facts

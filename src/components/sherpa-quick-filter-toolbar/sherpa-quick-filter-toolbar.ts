@@ -19,7 +19,7 @@ import {
   MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
+  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
@@ -53,8 +53,8 @@ export type { OrganiseColumn } from '../../core/data/data-source.js';
 export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
-  static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
-  static override html = [FILTER_MENU_HTML, new URL('./sherpa-quick-filter-toolbar.html', import.meta.url)];
+  static override css = [MORE_MENU.css, new URL('./sherpa-quick-filter-toolbar.css', import.meta.url)];
+  static override html = [FILTER_MENU_HTML, MORE_MENU.html, new URL('./sherpa-quick-filter-toolbar.html', import.meta.url)];
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -1510,6 +1510,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit('ai-filter-request');
         break;
       case 'clear':
+      case 'reset':
         // RESETS, not announces: a host cannot reach chips it did not stamp.
         this.clearAll();
         break;
@@ -1532,6 +1533,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit('view-delete');
         break;
       case 'favourite':
+      case 'unfavourite':
         this.#toggleFavourite();
         break;
       case 'filters-save':
@@ -1555,16 +1557,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #openMore(trigger: HTMLElement): void {
     const act = (name: string): HTMLElement | null => this.$(`.act[data-act="${name}"]`);
     const first: MoreRow[] = [];
-    if (folded(act('ai'))) first.push(['ai', 'Suggest filters']);
-    if (folded(act('clear'))) first.push(...resetRows(this, 'clear'));
+    if (folded(act('ai'))) first.push(['ai']);
+    if (folded(act('clear'))) first.push(...resetRows(this));
     first.push(...extraRows(this));
     const view: MoreRow[] = [];
     if (this.dataset['type'] === 'view' && folded(this.$('.view-group'))) {
-      view.push(['favourite', this.hasAttribute('data-favourite') ? 'Remove from Favorites' : 'Favorite']);
-      view.push(['save', 'Save view'], ['save-as', 'Save view as']);
-      if (this.hasAttribute('data-custom-view')) view.push(['delete-view', 'Delete view']);
+      view.push([this.hasAttribute('data-favourite') ? 'unfavourite' : 'favourite'], ['save'], ['save-as']);
+      if (this.hasAttribute('data-custom-view')) view.push(['delete-view']);
     }
-    if (folded(act('refresh'))) view.push(['refresh', 'Refresh view']);
+    if (folded(act('refresh'))) view.push(['refresh']);
     // Save filters, for every scope at once. Will, TODO 105.
     const save = saveRows(this, !!this.#saved.on);
     openMore(this, this.root, trigger, [first, save, view]);

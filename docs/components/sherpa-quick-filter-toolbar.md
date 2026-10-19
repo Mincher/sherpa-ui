@@ -169,10 +169,6 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.chips` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions-zone` | `gap` |
 | `--sherpa-style-content-base` | `.view-delete` | `color` |
-| `--sherpa-display-mode-space-xs` | `.more-item` | `padding` |
-| `--sherpa-style-content-base` | `.more-item` | `color` |
-| `--sherpa-display-mode-space-3xs` | `.more-divider` | `margin` |
-| `--sherpa-style-border-base` | `.more-divider` | `border-block-start` |
 
 ## populate()
 

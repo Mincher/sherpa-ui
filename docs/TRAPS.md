@@ -1394,6 +1394,10 @@ data is.
 **Markup a shared helper needs lives in a FAMILY file, not in TS** (Will, TODO
 344). `menuFor()` builds a field's menu for the toolbar, the panel and the
 grid; its menu is `template.filter-menu-tpl` in `src/core/sherpa-filter-menu.html`.
+The ⋮ menu a bar and the panel share is `src/core/sherpa-filter-more.html` and
+its sheet, `src/core/sherpa-filter-more.css`: the menu, and every row it can
+draw, words included, picked by `value`; a bar's own rows are in its own
+`template.more-rows-tpl`.
 
 A host lists the family file FIRST in its `static html`, as a family sheet is
 listed first in `static css`:
@@ -1416,6 +1420,9 @@ family's markup is not a component's anatomy.
 - Site: `test/e2e/reforged-date-conditions.spec.ts`
 - Site: `test/e2e/reforged-advanced-rows.spec.ts`
 - Site: `scripts/check-size.mjs`
+- Site: `scripts/check-traps.mjs`
+- Site: `src/core/ui/more-menu.ts`
+- Site: `src/core/sherpa-filter-menu.html`
 
 ### T-a-swapped-label-is-in-the-markup
 
@@ -1983,7 +1990,7 @@ rule names the view type too.
 **The filter PANEL has one too** — Will, TODO 178: after the host's own
 toggle, holding Reset and Reset all to default once the panel is narrow
 (≤ 380px), and the host's own buttons when they fold. **Both ⋮ menus end in
-the host's own option**, "Limit matching filters", a check row, shown while
+the host's own option**, "Limit to matching filters", a check row, shown while
 the host says it offers one (`data-limit-options="on|off"`, written by the
 provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 `limit-options-change`; the provider owns the setting, and the app keeps it.
@@ -1997,6 +2004,8 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/more-menu.ts`
+- Site: `src/core/sherpa-filter-more.html`
+- Site: `src/core/sherpa-filter-more.css`
 
 ### T-a-number-is-reset-not-cleared
 

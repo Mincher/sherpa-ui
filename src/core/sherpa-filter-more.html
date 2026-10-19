@@ -1,0 +1,19 @@
+<!-- sherpa-filter-more.html — the ⋮ menu a filter bar and the filter panel share:
+     its rows and their words. A host lists it first. TRAP T-the-more-menu-holds-what-folded -->
+<template id="default">
+  <sherpa-menu class="more-menu" data-align="end"></sherpa-menu>
+  <!-- A page button's row: its words are the page's. -->
+  <template class="more-item-tpl"><button class="more-item" type="button"><span class="more-label"></span></button></template>
+  <template class="more-divider-tpl"><hr class="more-divider" /></template>
+  <!-- The rows both hosts draw, by value; a host's own are in its own more-rows-tpl. -->
+  <template class="more-rows-tpl">
+    <button class="more-item" type="button" value="reset"><span class="more-label">Reset filters</span></button>
+    <button class="more-item" type="button" value="reset-default"><span class="more-label">Reset all to default</span></button>
+    <button class="more-item" type="button" value="filters-save"><span class="more-label">Save filters</span></button>
+    <button class="more-item" type="button" value="filters-save-as"><span class="more-label">Save filters as</span></button>
+    <button class="more-item" type="button" value="filters-delete"><span class="more-label">Delete filters</span></button>
+    <!-- SWITCH rows, as a filter's menu draws one. Will, TODO 178 and 205. -->
+    <label class="menu-row more-check"><input type="checkbox" value="limit-options" /><span class="menu-row-label">Limit to matching filters</span></label>
+    <label class="menu-row more-check"><input type="checkbox" value="hide-unmatched" /><span class="menu-row-label">Hide unmatching filters</span></label>
+  </template>
+</template>

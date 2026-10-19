@@ -247,65 +247,6 @@
         ]
       },
       {
-        "el": "sherpa-menu",
-        "class": "more-menu",
-        "attrs": {
-          "data-align": "end"
-        }
-      },
-      {
-        "el": "template",
-        "class": "more-item-tpl",
-        "children": [
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button"
-            },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "more-divider-tpl",
-        "children": [
-          {
-            "el": "hr",
-            "class": "more-divider"
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "more-check-tpl",
-        "children": [
-          {
-            "el": "label",
-            "class": "menu-row more-check",
-            "children": [
-              {
-                "el": "input",
-                "attrs": {
-                  "type": "checkbox",
-                  "value": "limit-options"
-                }
-              },
-              {
-                "el": "span",
-                "class": "menu-row-label"
-              }
-            ]
-          }
-        ]
-      },
-      {
         "el": "template",
         "class": "scope-tpl",
         "children": [
@@ -806,11 +747,6 @@
       "$type": "state",
       "name": "not-saved",
       "selector": ":host(:not([data-saved]))"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ".more-item:focus-visible"
     }
   ],
   "capabilities": [
@@ -989,10 +925,6 @@
     }
   ],
   "tokens": {
-    "more-item.padding": "{sherpa.display-mode-space-xs}",
-    "more-item.color": "{sherpa.style-content-base}",
-    "more-divider.margin": "{sherpa.display-mode-space-3xs}",
-    "more-divider.border-block-start": "{sherpa.style-border-base}",
     "field.row-gap": "{sherpa.display-mode-space-xs}",
     "field-lead.gap": "{sherpa.display-mode-space-xs}",
     "field-title.color": "{sherpa.style-content-secondary}",

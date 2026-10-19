@@ -25,6 +25,8 @@ const SOURCES = [
   // structural rules are written down, and one went undefined for months.
   'src/components/*/*.html',
   'src/core/*.css',
+  // A family's markup (TRAP T-a-family-shares-markup).
+  'src/core/*.html',
   'test/reforged/harness.html',
   'playwright.config.ts',
   'test/e2e/*.ts',
@@ -98,7 +100,8 @@ const AREAS = [
   ['The join and the app layer', [comp('provider', 'router', 'outlet'),
     ui('bind-source', 'context', 'apply-state', 'bind-settings'), /^src\/app\.ts$/]],
   ['Filters', [comp('quick-filter', 'quick-filter-toolbar', 'filter-panel'),
-    ui('filter-def', 'filter-host', 'filter-kind', 'filter-menu', 'filters-button', 'saved-filter-menu', 'more-menu')]],
+    ui('filter-def', 'filter-host', 'filter-kind', 'filter-menu', 'filters-button', 'saved-filter-menu', 'more-menu'),
+    /^src\/core\/sherpa-filter-/]],
   ['Menus, tips and overlays', [comp('menu', 'tooltip', 'dialog', 'overlay-panel', 'panel', 'toast', 'notifications'),
     ui('top-layer-tips', 'disclosure')]],
   ['The data grid', [comp('data-grid', 'pagination')]],

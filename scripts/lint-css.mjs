@@ -231,7 +231,7 @@ for (const d of dirs) {
   lintFile(`src/components/${d.name}/${d.name}.css`, readFileSync(p, 'utf8'));
 }
 // The FAMILY sheets a component adopts before its own — linted as a component is.
-for (const name of readdirSync(join(ROOT, 'src', 'core')).filter((f) => /^sherpa-(chart|container)-.+\.css$/.test(f))) {
+for (const name of readdirSync(join(ROOT, 'src', 'core')).filter((f) => /^sherpa-(chart|container|filter)-.+\.css$/.test(f))) {
   fileCount++;
   lintFile(`src/core/${name}`, readFileSync(join(ROOT, 'src', 'core', name), 'utf8'));
 }

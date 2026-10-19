@@ -1,0 +1,30 @@
+/**
+ * sherpa-filter-more.css — the ⋮ menu's rows, adopted first by the filter bar
+ * and the filter panel. TRAP T-the-more-menu-holds-what-folded
+ */
+
+/* Real <button>s, so Enter, Space and focus come free. */
+.more-item {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-style-content-base, #35353d);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.more-item:hover {
+  background: var(--sherpa-style-surface-base-1, #e8e8f64d);
+}
+.more-item:focus-visible {
+  outline: none;
+  box-shadow: var(--sherpa-focus-ring);
+}
+.more-divider {
+  margin: var(--sherpa-display-mode-space-3xs, 2px) 0;
+  border: none;
+  border-block-start: 1px solid var(--sherpa-style-border-base, #b3b3c3);
+}

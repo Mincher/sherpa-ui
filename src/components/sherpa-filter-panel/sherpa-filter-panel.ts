@@ -27,7 +27,7 @@ import {
   type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
+  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
@@ -105,8 +105,8 @@ interface ScopeFilter {
 }
 
 export class SherpaFilterPanel extends SherpaElement {
-  static override css = new URL('./sherpa-filter-panel.css', import.meta.url);
-  static override html = [FILTER_MENU_HTML, new URL('./sherpa-filter-panel.html', import.meta.url)];
+  static override css = [MORE_MENU.css, new URL('./sherpa-filter-panel.css', import.meta.url)];
+  static override html = [FILTER_MENU_HTML, MORE_MENU.html, new URL('./sherpa-filter-panel.html', import.meta.url)];
 
   /* It ASKS for its scopes (`data-scope="view data"`), and the source draws
      each whole. TRAP T-a-panel-asks-for-its-scopes */
@@ -1684,7 +1684,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * TRAP T-the-more-menu-holds-what-folded
    */
   #openMore = (event: Event): void => {
-    const first = folded(this.$('.reset-group')) ? resetRows(this, 'reset') : [];
+    const first = folded(this.$('.reset-group')) ? resetRows(this) : [];
     // Save filters, folded away for want of room. TODO 105
     const save = folded(this.$('.save-group')) ? saveRows(this, !!this.#saved.on) : [];
     openMore(this, this.root, event.currentTarget as HTMLElement, [[...first, ...extraRows(this)], save]);
