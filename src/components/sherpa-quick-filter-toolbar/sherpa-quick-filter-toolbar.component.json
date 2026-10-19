@@ -955,13 +955,13 @@
           "$type": "method",
           "name": "drawResults",
           "args": "results: Readonly<Record<string, number>>",
-          "description": "drawResults(results) — each answered chip's results, from its source: the rows its own answer matches, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
+          "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
         },
         {
           "$type": "method",
           "name": "drawPresent",
           "args": "present: Readonly<Record<string, readonly string[]>>",
-          "description": "drawPresent(present) — a bound source says what each field's other answers leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
+          "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
         },
         {
           "$type": "method",

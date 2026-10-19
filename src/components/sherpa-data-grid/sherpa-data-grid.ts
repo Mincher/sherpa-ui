@@ -726,8 +726,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * drawPresent(present, scope) — a bound source says what each field's other
-   * answers leave; a heading's menu greys the rest. A field not named is not
+   * drawPresent(present, scope) — a bound source says what the filters before
+   * each field leave; a heading's menu greys the rest. A field not named is not
    * limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
@@ -735,8 +735,8 @@ export class SherpaDataGrid extends SherpaElement {
     for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
   }
 
-  /** One heading's menu, told what its field's other answers leave — and its
-   *  chip greyed when every pick it holds is set aside (180). */
+  /** One heading's menu, told what the filters before its field leave — and its
+   *  chip greyed when every pick it holds is set aside. */
   #markPresent(cell: HTMLElement): void {
     const field = cell.dataset['field']!;
     const chip = cell.querySelector<HTMLElement>('.head-filter');
@@ -746,7 +746,7 @@ export class SherpaDataGrid extends SherpaElement {
     menu.present = left;
     chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left)));
   }
-  /** What each field's other answers leave, as the source last said. */
+  /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
 
   /** The values the ROWS on screen carry. */

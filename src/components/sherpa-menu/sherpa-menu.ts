@@ -41,7 +41,7 @@ export interface MenuItem {
   /** What a reader sees. Defaults to `value`. */
   label?: string;
   selected?: boolean;
-  /** `false`: the other answers rule it out — greyed and refused unless picked.
+  /** `false`: the filters before it rule it out — greyed and refused unless picked.
    *  TRAP T-a-ruled-out-value-is-greyed */
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
@@ -107,7 +107,7 @@ export class SherpaMenu extends SherpaElement {
     'data-body': { type: 'enum', kind: 'style', values: ['number', 'date'] },
     /* A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
     'data-time': { type: 'boolean', kind: 'style' },
-    /* A row the other answers rule out GOES, unless ticked — Hide unmatching
+    /* A row the filters before it rule out GOES, unless ticked — Hide unmatching
        filters. Will, TODO 205. TRAP T-a-ruled-out-value-is-greyed */
     'data-hide-unavailable': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
@@ -1303,7 +1303,7 @@ export class SherpaMenu extends SherpaElement {
   #stamped = false;
 
   /**
-   * The values the other answers LEAVE, as value keys — its host's, from the
+   * The values the filters before it LEAVE, as value keys — its host's, from the
    * source. A row they rule out is greyed and refused; a TICKED one stays
    * ticked, greyed, free to untick — set aside, not applied (180). `null`
    * limits nothing. Silent: no event. TRAP T-a-ruled-out-value-is-greyed
@@ -1315,7 +1315,7 @@ export class SherpaMenu extends SherpaElement {
   get present(): readonly string[] | null {
     return this.#present ? [...this.#present] : null;
   }
-  /** What the other answers leave; `null` is everything. */
+  /** What the filters before it leave; `null` is everything. */
   #present: Set<string> | null = null;
 
   /** What a serial set's chain OFFERS; a row it does not is removed, unless
@@ -1330,7 +1330,7 @@ export class SherpaMenu extends SherpaElement {
   /** What the chain offers; `null` is everything. */
   #offered: Set<string> | null = null;
 
-  /** Grey each row the other answers rule out; refuse it unless it is ticked.
+  /** Grey each row the filters before it rule out; refuse it unless it is ticked.
    *  A row the chain does not offer goes, unless it is ticked — and, hiding
    *  unmatched, so does one they rule out. */
   #markPresent(): void {

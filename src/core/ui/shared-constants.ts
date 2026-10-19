@@ -7,7 +7,7 @@
  *
  * Map:
  * - movedTo — What a filter another scope holds says: `Filter moved to View scope.`
- * - RULED_OUT — What a value the other filters rule out says, on its chip and its menu row
+ * - RULED_OUT — What a value the filters before it rule out says, on its chip and its menu row
  * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
  * - VIEW_CHIP — The View chip's id: the chip a View is picked through.
@@ -29,13 +29,13 @@ export function movedTo(scope?: string | null): string {
   return `Filter moved to ${name || 'a higher'} scope.`;
 }
 
-/** What a value the other filters rule out says, on its chip and its menu
+/** What a value the filters before it rule out says, on its chip and its menu
  *  row. Will, TODO 176. TRAP T-a-ruled-out-value-is-greyed */
-export const RULED_OUT = 'Limited by your other filters: no matches.';
+export const RULED_OUT = 'Limited by the filters before it: no matches.';
 
 /** What a PICKED value a later filter rules out says: kept, not applied.
  *  Will, TODO 180. TRAP T-a-ruled-out-value-is-greyed */
-export const SET_ASIDE = 'Limited by your other filters: not applied.';
+export const SET_ASIDE = 'Limited by the filters before it: not applied.';
 
 /** What a disabled chip says. Will, TODO 176. */
 export const NOT_AVAILABLE = 'Not available here.';

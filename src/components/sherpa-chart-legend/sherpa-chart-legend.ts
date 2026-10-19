@@ -54,7 +54,7 @@ export class SherpaChartLegend extends SherpaElement {
   #items: LegendItem[] = [];
 
   /**
-   * The values the other filters LEAVE, from its provider. A row they rule out
+   * The values the filters before it LEAVE — and the View — from its provider. A row they rule out
    * is drawn inactive and refuses a press, as its chip does in the panel.
    * `null` limits nothing. Will, TODO 179. TRAP T-a-ruled-out-value-is-greyed
    */
@@ -65,9 +65,9 @@ export class SherpaChartLegend extends SherpaElement {
   get present(): readonly string[] | null {
     return this.#present ? [...this.#present] : null;
   }
-  /** What the other filters leave; `null` is everything. */
+  /** What the filters before it leave; `null` is everything. */
   #present: Set<string> | null = null;
-  /** It draws something when on: a row the other answers rule out, or a
+  /** It draws something when on: a row the filters before it rule out, or a
    *  filter emptied, does not — so it does not keep the chart from going empty. */
   #draws(label: string): boolean {
     return (!this.#present || this.#present.has(label)) && Number(this.#seen.get(label)?.value ?? 1) !== 0;
@@ -255,7 +255,7 @@ export class SherpaChartLegend extends SherpaElement {
          row instead loses the way back — the legend IS how it comes on again.
          TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
       cell.toggleAttribute('data-empty', Number(item.value) === 0);
-      // Ruled out by the other filters: inactive, and its chip says why. TRAP T-a-ruled-out-value-is-greyed
+      // Ruled out by the filters before it: inactive, and its chip says why. TRAP T-a-ruled-out-value-is-greyed
       const out = !isRollup && !!this.#present && !this.#present.has(item.label);
       cell.toggleAttribute('data-unavailable', out);
       entry.toggleAttribute('data-unavailable', out);

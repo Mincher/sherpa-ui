@@ -2964,7 +2964,7 @@
         },
         {
           "name": "data-unavailable",
-          "description": "the other filters rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
+          "description": "the filters before it rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
           "valueSet": "v"
         },
         {

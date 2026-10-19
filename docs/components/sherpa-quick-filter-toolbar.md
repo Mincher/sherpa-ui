@@ -100,8 +100,8 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 |---|---|
 | `setChipValues(id: string, picks: readonly string[] \| undefined)` | Set ONE chip's picks, leaving every other chip alone. |
 | `setChipReading(id: string, reading: FieldReading)` | setChipReading(id, reading) — steer ONE chip with a whole reading. |
-| `drawResults(results: Readonly<Record<string, number>>)` | drawResults(results) — each answered chip's results, from its source: the rows its own answer matches, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60. |
-| `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what each field's other answers leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
+| `drawResults(results: Readonly<Record<string, number>>)` | drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60. |
+| `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |
 | `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
 | `supersede(ids: readonly string[], appliedAt?: string)` | supersede([...ids]) — the VIEW now owns these fields. |

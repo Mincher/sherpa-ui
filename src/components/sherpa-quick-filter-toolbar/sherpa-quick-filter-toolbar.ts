@@ -508,8 +508,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * drawResults(results) — each answered chip's results, from its source: the
-   * rows its own answer matches, by field or saved-filter id. SILENT. A chip
-   * with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
+   * rows that reach it — the filters before it — and match its answer, by field
+   * or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
    */
   drawResults(results: Readonly<Record<string, number>>): void {
     this.#results = results;
@@ -521,8 +521,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * drawPresent(present) — a bound source says what each field's other
-   * answers leave; a chip's menu greys the rest. SILENT. A field not named is
+   * drawPresent(present) — a bound source says what the filters before each
+   * field leave; a chip's menu greys the rest. SILENT. A field not named is
    * not limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
@@ -538,7 +538,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   /** What each chained field offers, as last drawn. */
   #offered: Readonly<Record<string, readonly string[]>> = {};
-  /** What each field's other answers leave, as the source last said. */
+  /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
   /** Each chip's results, as the source last said — a rebuilt chip is given them. */
   #results: Readonly<Record<string, number>> = {};
@@ -578,7 +578,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return Object.fromEntries([...out].filter(([, picks]) => picks.length));
   }
 
-  /** One chip's menu, told what its field's other answers leave — and the
+  /** One chip's menu, told what the filters before its field leave — and the
    *  chip itself greyed when every pick it holds is set aside (180). */
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';

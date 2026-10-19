@@ -121,7 +121,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 
 | Method | What it does |
 |---|---|
-| `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present, scope) — a bound source says what each field's other answers leave; a heading's menu greys the rest. A field not named is not limited. |
+| `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited. |
 | `setColumnFilter(field: string, clause: unknown[] \| null)` | Set one column's filter from OUTSIDE. — SILENT, and takes the clause `column-filter-change` reports. |
 | `supersedeColumns(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string)` | supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds, each with the answer it holds there. A named heading SHOWS that answer, read-only, with the superseded look and tip, so no contradicting pick can be made in it; a heading not named is released. Will, 2026-09-26. |
 | `columnClause(field: string)` | One column's filter as a ready FilterClause, or null. — a SUSPENDED clause is returned too. |

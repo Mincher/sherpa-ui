@@ -360,7 +360,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /**
    * drawResults(results, scope) — a bound source tells the panel the rows each
-   * answer in a scope matches, by field or saved-filter id. A field drawn as
+   * answer in a scope matches within the filters before it, by field or
+   * saved-filter id. A field drawn as
    * ONE chip, and a saved filter's chip, wear it; a field drawn as a run or a
    * body has no one chip, so its HEADER wears it. SILENT.
    * TRAP T-a-chip-counts-within-the-filters-before-it
@@ -406,16 +407,16 @@ export class SherpaFilterPanel extends SherpaElement {
   #valueCounted = new Map<string, Readonly<Record<string, Readonly<Record<string, number>>>>>();
 
   /**
-   * drawPresent(present, scope) — a bound source says what each field's other
-   * answers leave in a scope. A value chip they rule out is greyed — refused
-   * if off, set aside if on (180); a field's menu greys its rows. A field not
+   * drawPresent(present, scope) — a bound source says what the filters before
+   * each field leave in a scope. A value chip they rule out is greyed — refused
+   * if off, set aside if on; a field's menu greys its rows. A field not
    * named is not limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
     this.#presentBy.set(scope, present);
     for (const held of this.#held.values()) if (held.scope === scope) this.#markPresent(held);
   }
-  /** What each field's other answers leave, by scope, as last drawn. */
+  /** What the filters before each field leave, by scope, as last drawn. */
   #presentBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
 
   /** drawOffered(offered, scope) — what each serial-set field OFFERS: a value
@@ -427,7 +428,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** What each serial-set field offers, by scope, as last drawn. */
   #offeredBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
 
-  /** One field's chips and menu, told what its other answers leave, and what its chain offers. */
+  /** One field's chips and menu, told what the filters before it leave, and what its chain offers. */
   #markPresent(held: Held): void {
     if (held.def.id === 'presets' || held.def.appliedAt) return;
     const field = held.def.field ?? held.def.id;

@@ -2472,7 +2472,7 @@
                   }
                 }
               ],
-              "description": "drawPresent(present, scope) — a bound source says what each field's other answers leave; a heading's menu greys the rest. A field not named is not limited."
+              "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited."
             },
             {
               "kind": "method",
@@ -3629,7 +3629,7 @@
                   "optional": true
                 }
               ],
-              "description": "drawResults(results, scope) — a bound source tells the panel the rows each answer in a scope matches, by field or saved-filter id. A field drawn as ONE chip, and a saved filter's chip, wear it; a field drawn as a run or a body has no one chip, so its HEADER wears it. SILENT."
+              "description": "drawResults(results, scope) — a bound source tells the panel the rows each answer in a scope matches within the filters before it, by field or saved-filter id. A field drawn as ONE chip, and a saved filter's chip, wear it; a field drawn as a run or a body has no one chip, so its HEADER wears it. SILENT."
             },
             {
               "kind": "method",
@@ -3667,7 +3667,7 @@
                   }
                 }
               ],
-              "description": "drawPresent(present, scope) — a bound source says what each field's other answers leave in a scope. A value chip they rule out is greyed — refused if off, set aside if on (180); a field's menu greys its rows. A field not named is not limited."
+              "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave in a scope. A value chip they rule out is greyed — refused if off, set aside if on; a field's menu greys its rows. A field not named is not limited."
             },
             {
               "kind": "method",
@@ -8317,7 +8317,7 @@
                   }
                 }
               ],
-              "description": "drawResults(results) — each answered chip's results, from its source: the rows its own answer matches, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
+              "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
             },
             {
               "kind": "method",
@@ -8330,7 +8330,7 @@
                   }
                 }
               ],
-              "description": "drawPresent(present) — a bound source says what each field's other answers leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
+              "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
             },
             {
               "kind": "method",
@@ -8886,7 +8886,7 @@
             },
             {
               "name": "data-unavailable",
-              "description": "the other filters rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
+              "description": "the filters before it rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
               "type": {
                 "text": "boolean"
               }

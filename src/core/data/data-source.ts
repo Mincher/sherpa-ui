@@ -89,11 +89,11 @@
  * - .failure — Why the store could not be reached, while it cannot — its kind and message — else null.
  * - .recheck — Try the store again: `down`, a fresh read; `unreached`, a read behind the rows shown, with no loading; `ok`,…
  * - .close — Let the store go: a change no longer reloads it, and its held set is dropped.
- * - .results — Each answered chip's results in a scope: the rows its own answer matches.
- * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
- * - .limitOptions — Does each list field offer only the values the other answers leave? Settable, unlike applyOn.
- * - .present — Each list field's values the rows still HOLD under the OTHER answers in its scope — a component scope's withi…
- * - .offered — What each field below the top of a SERIAL set OFFERS: the values the rows hold under the answers above it, as…
+ * - .results — Each answered chip's results: the rows that reach it and match its answer.
+ * - .valueResults — Each picked value's own results: the rows that reach its field and match that one value.
+ * - .limitOptions — Does each list field offer only the values the filters before it leave? Settable, unlike applyOn.
+ * - .present — Each list field's values its ruler leaves in a scope: the filters before it, or the View's subset.
+ * - .offered — What each field below the top of a SERIAL set offers: the values the rows hold at its place.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
  * - .allRows — Every row a bound component is under, UNPAGED — what "Select all rows" ticks on a grid that holds one page.
  * - .unbind — Stop steering and stop populating this component.
@@ -2117,10 +2117,10 @@ export class DataSource extends EventTarget {
   /** What the controls were last drawn for: the walk and the controls. */
   #drawnFor = '';
 
-  /* ── What the other answers LEAVE — Will, TODO 174 (110 B) ─────────────
+  /* ── What the filters BEFORE a field leave — Will, TODOs 174 and 349 ────
    * TRAP T-a-ruled-out-value-is-greyed */
 
-  /** Does each list field offer only the values the other answers leave? Settable at any time, unlike `applyOn`. */
+  /** Does each list field offer only the values the filters before it leave? Settable at any time, unlike `applyOn`. */
   get limitOptions(): boolean {
     return this.#limitOptions;
   }
@@ -2179,7 +2179,7 @@ export class DataSource extends EventTarget {
     this.#binding.push(el);
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
-    // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
+    // …and what the filters before each field leave. TRAP T-a-ruled-out-value-is-greyed
     // …and its chips' counts. TRAP T-a-chip-counts-within-the-filters-before-it
     if (facts.scope && (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && this.#loaded) this.#walkSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the

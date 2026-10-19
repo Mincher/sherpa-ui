@@ -28,7 +28,7 @@
  * - rowOffer — What row `index` may offer: the values the rows before it in its AND chain leave.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
- * - ruleOut — A field's limits as one test: what its chain offers first, then what the other answers leave.
+ * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
  * - allSetAside — Every pick a chip holds is ruled out: it is set aside.
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
@@ -235,7 +235,7 @@ export function rowAnswered(row: FieldCondition): boolean {
     : (row.picked ?? []).length > 0;
 }
 
-/** Why the source rules a value out: its chain does not offer it, or the other answers leave none of it. */
+/** Why the source rules a value out: its chain does not offer it, or the filters before it leave none of it. */
 export type RuledOut = 'unoffered' | 'unmatched' | null;
 
 /** A field's limits as one test: what its chain OFFERS first, then what the

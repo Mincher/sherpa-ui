@@ -923,6 +923,8 @@ OFF chip counts. The TRAP changes with it.
     stays 1 load. **For Will to see:** a later pick no longer sets an earlier one
     aside — the earlier limits the later; with Limit off, a data-bar pick the
     View leaves no rows for is set aside (greyed, kept, not applied).
+  - ✅ **C7** — the words: "Limited by the filters before it: no matches." / "…:
+    not applied.", in the code, the JSDoc, the reference and Demos' Settings.
 
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 

@@ -57,7 +57,7 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
-    /* The other filters rule this value out: greyed, and refused while off — on,
+    /* The filters before it rule this value out: greyed, and refused while off — on,
        it is set aside and may be let go. Written by its host. Will, TODO 174
        and 180. TRAP T-a-ruled-out-value-is-greyed */
     'data-unavailable': { type: 'boolean', kind: 'style' },

@@ -411,7 +411,7 @@
    order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
 /* …and a value REMOVED: one a serial set's chain does not offer, or, hiding
-   unmatched, one the other answers rule out. TRAP T-a-filter-set-groups-or-chains */
+   unmatched, one the filters before it rule out. TRAP T-a-filter-set-groups-or-chains */
 .rows ::slotted([data-removed]) { display: none; }
 
 /* Clear, Reset, Remove, Today — each opt-in, so a plain menu is unchanged. */
