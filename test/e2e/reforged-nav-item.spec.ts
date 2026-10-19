@@ -237,3 +237,31 @@ test('a search match paints ONE tint: the mark and the row\'s ::highlight() read
   });
   expect(r).toEqual({ painted: true, highlightReadsTheTint: true });
 });
+
+/** ONE shared highlight, its rule static CSS (TODO 344). TRAP T-custom-highlight-not-painted-in-shadow */
+test('rows share one search highlight, and the last row out deletes it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const make = async (label: string) => {
+      const el = document.createElement('sherpa-nav-item') as HTMLElement & { rendered: Promise<void>; highlight(q: string | null): void };
+      el.dataset['label'] = label;
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      return el;
+    };
+    document.getElementById('root')!.replaceChildren();
+    const a = await make('Home');
+    const b = await make('Homework');
+    const reg = (CSS as unknown as { highlights: Map<string, Set<Range>> }).highlights;
+    a.highlight('Ho');
+    b.highlight('Ho');
+    const both = { entries: [...reg.keys()].filter((k) => k.startsWith('sherpa')), size: reg.get('sherpa-nav-match')?.size };
+    a.highlight(null);
+    const one = reg.get('sherpa-nav-match')?.size;
+    b.remove();
+    const gone = reg.has('sherpa-nav-match');
+    const rule = [...a.shadowRoot!.adoptedStyleSheets].some((s) => [...s.cssRules].some((c) => c.cssText.includes('::highlight(sherpa-nav-match)')));
+    return { both, one, gone, rule };
+  });
+  // A row marks BOTH its labels (TRAP T-nav-item-writes-to-both-rows): two ranges a row.
+  expect(r).toEqual({ both: { entries: ['sherpa-nav-match'], size: 4 }, one: 2, gone: false, rule: true });
+});

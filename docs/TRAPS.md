@@ -6068,12 +6068,11 @@ reading, 2026-10-15).
 
 Typing narrows the rail to matching rows and highlights the matched text with
 the **CSS Custom Highlight API** — a real `Highlight` of `Range`s, styled by
-`::highlight(sherpa-nav-match)`. No marker elements are injected, so the rows'
-own DOM and their Font Awesome icons are untouched.
+`::highlight(sherpa-nav-match)` — and a `<mark class="match">` around each hit.
 
-Each row highlights its OWN label, through `sherpa-nav-item`'s `highlight()`: a
-custom highlight is NOT PAINTED for shadow text unless it is registered and
-styled INSIDE that same tree.
+Each row highlights its OWN label, through `sherpa-nav-item`'s `highlight()`,
+adding its ranges to the one shared highlight; its `::highlight()` rule is in
+that row's own sheet.
 
 CSS owns the hiding; JS only marks the row with `data-filtered-out`. A section
 with no surviving rows carries the same flag, so its label and rule hide too.
@@ -8444,6 +8443,7 @@ Font Awesome class lists (`fa-solid fa-house`), so writing one as `textContent`
 renders the class names. It goes through `writeIcon()` per element instead.
 
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
+- Site: `test/e2e/reforged-nav-item.spec.ts`
 
 ### T-custom-highlight-not-painted-in-shadow
 
@@ -8451,27 +8451,23 @@ renders the class names. It goes through `writeIcon()` per element instead.
 that is deliberate — do not delete either.
 
 1. **The CSS Custom Highlight API** — the right tool, and the one Will asked for.
-   Each row registers its OWN uniquely-named highlight (`sherpa-item-<n>`) and
-   adopts the matching `::highlight()` rule into its OWN shadow root, because a
-   single SHARED `Highlight` holding ranges from many shadow trees paints
-   nothing.
-2. **A real `<mark>` around the matched text** — the VISIBLE result today.
+   Every row adds its ranges to ONE shared `Highlight`, `sherpa-nav-match`, and
+   its `::highlight()` rule is static, in `sherpa-nav-item.css`, so it is in
+   every row's tree (TODO 344: no CSS built in TS).
+2. **A real `<mark>` around the matched text** — the semantic element for a
+   search hit, which assistive tech announces.
 
-Verified on **Chromium 153**: the engine does not paint custom highlights for
-text inside a shadow root, *however the highlight is registered*. A hard-coded
-`::highlight()` paints on light-DOM text and is silently ignored here. `<mark>`
-is also the semantic element for a search hit, so assistive tech announces it.
-
-When the engine gains shadow-DOM highlight painting, (1) lights up for free and
-(2) can be dropped without touching a caller.
+**Measured in TODO 344, reading pixels:** a custom highlight on text in a
+shadow root now PAINTS in Chromium, Firefox and WebKit, and one shared
+`Highlight` holding ranges from several shadow trees paints as well as one per
+row. An earlier note said neither painted in Chromium 153; that is no longer
+true. Both mechanisms stay: `<mark>` carries the meaning.
 
 Both paint ONE tint, declared once in the CSS as `--_match-surface` and
-`--_match-ink`. The `::highlight()` rule, built in the TS because its name is
-per row, only reads them. It used to carry its own colour — a Theme read that
-`lint:css` could not see, and a second token for the same purple (2026-10-14).
+`--_match-ink`.
 
-`onDisconnect` deletes the row's entry so no orphan is left in the
-document-level registry.
+`onDisconnect` takes the row's ranges out; the last row out deletes the shared
+entry, so no orphan is left in the document-level registry.
 
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`

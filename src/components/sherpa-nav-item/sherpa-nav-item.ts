@@ -20,7 +20,8 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { markMatch } from '../../core/ui/mark-text.js';
 
-let uid = 0;
+/** The ONE search highlight every row adds its ranges to; its rule is static CSS. */
+const MATCH = 'sherpa-nav-match';
 
 export class SherpaNavItem extends SherpaElement {
   static override css = new URL('./sherpa-nav-item.css', import.meta.url);
@@ -49,10 +50,8 @@ export class SherpaNavItem extends SherpaElement {
   /** `data-type` picks the tree, so a change to it must re-stamp. */
   static override variantAttrs = ['data-type'];
 
-  /** The name of the search highlight this row registered. */
-  #highlightName: string | null = null;
-  /** Has the highlight style been added to the shadow root. */
-  #highlightStyled = false;
+  /** This row's ranges in the shared search highlight. */
+  #ranges: Range[] = [];
 
   protected override get templateId(): string {
     return this.dataset['type'] === 'promo' ? 'promo' : 'default';
@@ -161,27 +160,22 @@ export class SherpaNavItem extends SherpaElement {
       }
     }
 
+    this.#clearHighlight();
     const registry = (CSS as unknown as { highlights?: Map<string, Highlight> }).highlights;
     if (!registry || typeof Highlight === 'undefined' || !ranges.length) return;
-    const name = (this.#highlightName ??= `sherpa-item-${++uid}`);
-    registry.set(name, new Highlight(...ranges));
-    this.#ensureHighlightStyle(name);
+    let shared = registry.get(MATCH);
+    if (!shared) registry.set(MATCH, (shared = new Highlight()));
+    for (const range of ranges) shared.add(range);
+    this.#ranges = ranges;
   }
 
-  /** Remove this row's search highlight. */
+  /** Take this row's ranges out of the shared highlight; the last row out deletes it. */
   #clearHighlight(): void {
-    if (!this.#highlightName) return;
-    (CSS as unknown as { highlights?: Map<string, Highlight> }).highlights?.delete(this.#highlightName);
-  }
-
-  /** Add this row's ::highlight() rule to its own shadow root, once. */
-  #ensureHighlightStyle(name: string): void {
-    if (this.#highlightStyled || !this.shadowRoot) return;
-    this.#highlightStyled = true;
-    const sheet = new CSSStyleSheet();
-    // The <mark>'s tint, declared in the CSS where the lint reads it.
-    sheet.replaceSync(`::highlight(${name}){background-color:var(--_match-surface);color:var(--_match-ink)}`);
-    this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
+    const registry = (CSS as unknown as { highlights?: Map<string, Highlight> }).highlights;
+    const shared = registry?.get(MATCH);
+    for (const range of this.#ranges) shared?.delete(range);
+    this.#ranges = [];
+    if (shared && !shared.size) registry?.delete(MATCH);
   }
 
   override onDisconnect(): void {

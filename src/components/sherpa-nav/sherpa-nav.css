@@ -398,7 +398,7 @@
 
 /* ── Search filtering ──────────────────────────────────────────────────── */
 /* JS marks non-matching rows with data-filtered-out; CSS does the hiding.
-   Match highlighting is ::highlight(sherpa-nav-match) in sherpa-base.css. */
+   Match highlighting is the row's: a <mark>, and ::highlight(sherpa-nav-match) in sherpa-nav-item.css. */
 .nav-row[data-filtered-out],
 .section[data-filtered-out] {
   display: none;

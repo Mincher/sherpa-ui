@@ -111,8 +111,8 @@
 /* Truncation comes from `.sherpa-truncate` in sherpa-base.css. */
 .label { flex: 1 1 auto; }
 
-/* The search tint, ONCE: the <mark> paints it, and the row's ::highlight()
-   (built in the TS, named per row) reads it. TRAP T-custom-highlight-not-painted-in-shadow */
+/* The search tint, ONCE: the <mark> paints it, and so does the shared
+   ::highlight() below. TRAP T-custom-highlight-not-painted-in-shadow */
 :host {
   --_match-surface: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent); /* theme-direct */
   --_match-ink: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
@@ -121,6 +121,10 @@
   background: var(--_match-surface);
   color: var(--_match-ink);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+}
+::highlight(sherpa-nav-match) {
+  background-color: var(--_match-surface);
+  color: var(--_match-ink);
 }
 
 /* Trailing Tag — Figma Tag/Type=full, pinned Saturated=success. */
