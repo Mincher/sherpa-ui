@@ -536,6 +536,20 @@ PER-FIELD fact in the page definition — e.g. `fields.<name>.fetch: "server"`
 (name to settle): that filter always asks the store, its menu always has Apply,
 and Apply starts the fetch. It is an input to the decision series above.
 
+**And an HTML attribute too** (Will, 2026-10-19: *"What about an HTML attribute,
+too, to mark a filter as always fetch?"*). Yes — as another way IN to the same
+field fact, never a component deciding (the data layer decides, Will 2026-10-16;
+precedent: a tile's `data-where` becomes its own default in the source).
+"Always fetch" can only be turned ON: if the definition OR the markup says so,
+it is so, so the two never conflict. ❓ Where it goes:
+**A (Claude's pick)** on the filtering component —
+`<sherpa-quick-filter-toolbar data-scope="data" data-fetch-fields="owner tier">`;
+the provider hands it to the source. It works on a provider page, where chips
+are drawn from data and none is in the markup. **B** on each chip —
+`<sherpa-quick-filter data-id="owner" data-fetch="server">`; it works only where
+a page writes its chips by hand. A grid column takes it in its config
+(`fetch: "server"`). Names to settle.
+
 **Change tracking: Will's sketch** (2026-10-19). *"Definitely needs some
 thinking planning before we implement anything!"*
 
