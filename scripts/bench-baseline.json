@@ -4,16 +4,16 @@
     "counts": 0,
     "distinct": 3,
     "rows": 10025,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 7,
     "scans": 8
   },
   "records/pick": {
     "loads": 2,
-    "counts": 2,
+    "counts": 0,
     "distinct": 4,
     "rows": 2558,
-    "compiles": 14,
+    "compiles": 10,
     "clones": 1,
     "scans": 12
   },
@@ -37,30 +37,30 @@
   },
   "records/report": {
     "loads": 1,
-    "counts": 11,
+    "counts": 0,
     "distinct": 10,
     "rows": 10,
-    "compiles": 16,
+    "compiles": 11,
     "clones": 7,
-    "scans": 32
+    "scans": 25
   },
   "records/switch-off": {
     "loads": 1,
-    "counts": 7,
+    "counts": 0,
     "distinct": 4,
     "rows": 25,
-    "compiles": 18,
+    "compiles": 12,
     "clones": 11,
-    "scans": 16
+    "scans": 13
   },
   "records/switch-on": {
     "loads": 1,
-    "counts": 13,
+    "counts": 0,
     "distinct": 10,
     "rows": 10,
-    "compiles": 19,
+    "compiles": 12,
     "clones": 5,
-    "scans": 34
+    "scans": 27
   },
   "records/sort": {
     "loads": 2,
@@ -73,12 +73,12 @@
   },
   "records/heading": {
     "loads": 1,
-    "counts": 12,
+    "counts": 0,
     "distinct": 11,
     "rows": 2,
-    "compiles": 11,
+    "compiles": 7,
     "clones": 1,
-    "scans": 35
+    "scans": 25
   },
   "records/search": {
     "loads": 2,
@@ -91,28 +91,28 @@
   },
   "records/raise": {
     "loads": 2,
-    "counts": 12,
+    "counts": 0,
     "distinct": 11,
     "rows": 429,
-    "compiles": 14,
+    "compiles": 10,
     "clones": 11,
-    "scans": 36
+    "scans": 26
   },
   "records/clear": {
     "loads": 2,
-    "counts": 7,
+    "counts": 0,
     "distinct": 7,
     "rows": 3520,
-    "compiles": 16,
+    "compiles": 11,
     "clones": 1,
-    "scans": 23
+    "scans": 19
   },
   "records/reset": {
     "loads": 1,
     "counts": 0,
     "distinct": 2,
     "rows": 25,
-    "compiles": 11,
+    "compiles": 7,
     "clones": 7,
     "scans": 5
   },
@@ -121,7 +121,7 @@
     "counts": 0,
     "distinct": 2,
     "rows": 3546,
-    "compiles": 10,
+    "compiles": 6,
     "clones": 1,
     "scans": 6
   },
@@ -130,7 +130,7 @@
     "counts": 0,
     "distinct": 2,
     "rows": 3546,
-    "compiles": 10,
+    "compiles": 6,
     "clones": 1,
     "scans": 6
   },
@@ -139,7 +139,7 @@
     "counts": 0,
     "distinct": 2,
     "rows": 3545,
-    "compiles": 10,
+    "compiles": 6,
     "clones": 1,
     "scans": 6
   },
@@ -148,27 +148,27 @@
     "counts": 0,
     "distinct": 3,
     "rows": 10025,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 7,
     "scans": 8
   },
   "records/narrow": {
     "loads": 2,
-    "counts": 2,
+    "counts": 0,
     "distinct": 5,
     "rows": 272,
-    "compiles": 14,
+    "compiles": 10,
     "clones": 1,
     "scans": 14
   },
   "records/aside": {
     "loads": 1,
-    "counts": 11,
+    "counts": 0,
     "distinct": 12,
     "rows": 1,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 1,
-    "scans": 36
+    "scans": 27
   },
   "remote/open": {
     "loads": 1,
@@ -184,7 +184,7 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 2,
     "scans": 12
   },
@@ -211,27 +211,27 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 12,
     "clones": 8,
-    "scans": 15
+    "scans": 11
   },
   "remote/switch-off": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 18,
+    "compiles": 14,
     "clones": 13,
-    "scans": 14
+    "scans": 11
   },
   "remote/switch-on": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 18,
+    "compiles": 14,
     "clones": 7,
-    "scans": 15
+    "scans": 11
   },
   "remote/sort": {
     "loads": 0,
@@ -247,9 +247,9 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 12,
+    "compiles": 8,
     "clones": 2,
-    "scans": 21
+    "scans": 15
   },
   "remote/search": {
     "loads": 0,
@@ -265,18 +265,18 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 11,
     "clones": 11,
-    "scans": 22
+    "scans": 16
   },
   "remote/clear": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 12,
     "clones": 2,
-    "scans": 15
+    "scans": 11
   },
   "remote/reset": {
     "loads": 0,
@@ -328,7 +328,7 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 2,
     "scans": 14
   },
@@ -337,9 +337,9 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 12,
     "clones": 2,
-    "scans": 36
+    "scans": 27
   },
   "rest/open": {
     "loads": 1,
@@ -355,7 +355,7 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 2,
     "scans": 12
   },
@@ -382,27 +382,27 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 12,
     "clones": 8,
-    "scans": 15
+    "scans": 11
   },
   "rest/switch-off": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 18,
+    "compiles": 14,
     "clones": 13,
-    "scans": 14
+    "scans": 11
   },
   "rest/switch-on": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 18,
+    "compiles": 14,
     "clones": 7,
-    "scans": 15
+    "scans": 11
   },
   "rest/sort": {
     "loads": 0,
@@ -418,9 +418,9 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 12,
+    "compiles": 8,
     "clones": 2,
-    "scans": 21
+    "scans": 15
   },
   "rest/search": {
     "loads": 0,
@@ -436,18 +436,18 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 11,
     "clones": 11,
-    "scans": 22
+    "scans": 16
   },
   "rest/clear": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 12,
     "clones": 2,
-    "scans": 15
+    "scans": 11
   },
   "rest/reset": {
     "loads": 0,
@@ -499,7 +499,7 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 15,
+    "compiles": 11,
     "clones": 2,
     "scans": 14
   },
@@ -508,8 +508,8 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 16,
+    "compiles": 12,
     "clones": 2,
-    "scans": 36
+    "scans": 27
   }
 }

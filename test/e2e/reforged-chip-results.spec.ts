@@ -3,7 +3,7 @@ import { test, expect, type Bar } from './harness';
 /**
  * A CHIP'S BADGE IS ITS RESULTS — TODO 60. The rows its OWN answer matches, as
  * its source counted them; shown on or off (TODO 123), and never while pending.
- * TRAP T-a-chip-counts-its-own-results
+ * TRAP T-a-chip-counts-within-the-filters-before-it
  */
 test('a chip shows the results it is drawn, on or off, and none while pending', async ({ page }) => {
   const r = await page.evaluate(async () => {

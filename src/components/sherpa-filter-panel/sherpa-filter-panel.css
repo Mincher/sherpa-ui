@@ -141,7 +141,7 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 /* RESULTS: only a field the source counted has a number; a draft has none.
-   TRAP T-a-chip-counts-its-own-results */
+   TRAP T-a-chip-counts-within-the-filters-before-it */
 .field-results { display: none; }
 .field[data-results]:not([data-pending]) .field-results { display: inline-flex; }
 

@@ -169,7 +169,7 @@ test('a scope says what it narrows: the View is the view, a bound component name
 });
 
 /* Will, TODO 172: "For multi value filters in the filter panel each chip
-   should show their own count badge." TRAP T-a-chip-counts-its-own-results */
+   should show their own count badge." TRAP T-a-chip-counts-within-the-filters-before-it */
 test('each PICKED value has a count of its own — and only a list answer in force has values', async () => {
   const store = new ArrayStore([
     { region: 'EMEA', status: 'open', seats: 5 }, { region: 'EMEA', status: 'shut', seats: 9 },
@@ -206,7 +206,7 @@ test('each PICKED value has a count of its own — and only a list answer in for
 });
 
 test('a chip counts the rows ITS OWN answer matches, within what its scope can see', async () => {
-  // TRAP T-a-chip-counts-its-own-results
+  // TRAP T-a-chip-counts-within-the-filters-before-it
   const store = new ArrayStore([
     { region: 'EMEA', status: 'open' }, { region: 'EMEA', status: 'shut' },
     { region: 'AMER', status: 'open' }, { region: 'AMER', status: 'open' },

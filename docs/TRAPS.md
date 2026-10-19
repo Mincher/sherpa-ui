@@ -1683,18 +1683,22 @@ first hit wherever that was). Overlapping or touching hits JOIN into one
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
-### T-a-chip-counts-its-own-results
+### T-a-chip-counts-within-the-filters-before-it
 
-**A chip's badge is the number of rows ITS OWN answer matches** — Will, TODO
-60, decided 2026-09-26: not the whole filter's total (one number on every
-chip), and no longer a count of picks or `fx` (the tip says those, and the
-button's `aria-description` says it to a screen reader). Counted within what
-the chip's scope can see: a component chip within the rows the View allows.
-`source.results(scope)` counts from the APPLIED Query — `store.totalCount()`
-per answered field or saved filter — after every load, and draws them onto
-each scope-bound bar (`drawResults`); a later load's count wins. A chip never
-told its results, and with no menu, leaves `data-count` to its host, as
-before.
+**A chip's badge is the number of rows that REACH it and match its answer** —
+Will, TODO 348: *"they should show the count of matches from the filtered
+subset. So scopes and preceding filters will affect this."* The rows reach it
+through its scopes — the parts and the page's own scopes, then the View for a
+component chip, then a chart part's host — and every filter BEFORE it in the
+one order (`T-one-walk-counts-and-limits-in-order`): saved filters, then
+fields, each set together. So along a bar a count never rises, and the last
+chip in force counts the rows the page shows. (Until TODO 348 a chip counted
+its OWN answer within its scope — Will, TODO 60 — and the chips before it did
+not count.) Not the whole filter's total on every chip, and no longer a count
+of picks or `fx` (the tip says those). `source.results(scope)` reads the
+APPLIED Query's walk, and draws each scope-bound bar (`drawResults`); a later
+walk wins. A chip never told its results, and with no menu, leaves `data-count`
+to its host.
 
 **ON OR OFF** — Will, TODO 123: a chip switched off keeps its badge, and only
 one with no values and no conditions has none. So the source counts a FIELD's
@@ -1731,12 +1735,14 @@ the field's values match, once each. A row holds one value of a field, so for
 picked values it equals the sum of the chips; two conditions that match the
 same row count that row once.
 
-**A count runs again only when something it reads moved** (TODO 348 W1). The
-counts, and the set-aside pass, are keyed by the applied Query, what is set
-aside, the bound controls, and an AGE the source moves whenever the rows, a
-field's facts or values, a saved filter, a part or a set may have changed — a
-store `change` too, patched or not. A sort, a page or a search moves none of
-these, so it counts nothing: on the bench a sort fell from 20 scans to 2.
+**A count runs again only when something it reads moved** (TODO 348 W1). ONE
+walk per key — the applied Query, the setting, the parts, the bound scopes,
+what each scope offers, and an AGE the source moves whenever the rows, a
+field's facts or values, a saved filter, a part or a set may have changed (a
+store `change` too, patched or not). A sort, a page or a search moves none of
+these, so it counts nothing. On the bench, counts fell to 0 on every act: the
+walk reads the rows once (`scan`, the held set, or one load) and passes over
+them once per scope that counts.
 
 - Site: `test/unit/a-field-counts-unique-rows.test.mjs`
 - Site: `test/unit/a-count-runs-again-only-when-something-moved.test.mjs`
@@ -1747,6 +1753,7 @@ these, so it counts nothing: on the bench a sort fell from 20 scans to 2.
 - Site: `test/e2e/reforged-chip-results.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `test/unit/a-chip-counts-within-the-filters-before-it.test.mjs`
 
 ### T-a-scope-says-what-it-shows
 
@@ -3920,7 +3927,7 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
 - **The key is the store OBJECT**, never its name: a name could show one tenant's
   rows to the next. So an app makes each store once (`OutletOptions.stores`).
 - Every remembered count moves with it: a `change` or a `set` from the cache
-  moves the source's `#age` (`T-a-chip-counts-its-own-results`).
+  moves the source's `#age` (`T-a-chip-counts-within-the-filters-before-it`).
 
 **What a review of 4.2 put right** (2026-10-19):
 
@@ -10603,7 +10610,7 @@ it is wrong, and the reader believes it.
 
 So no mark ever names an operator. A grid HEADING wears ONE glyph — `fx`, the
 spreadsheet's formula sign — which says only THAT conditions apply. A CHIP's
-badge is its RESULTS since TODO 60 (`T-a-chip-counts-its-own-results`), so it
+badge is its RESULTS since TODO 60 (`T-a-chip-counts-within-the-filters-before-it`), so it
 wears no condition mark at all. The tooltip says HOW MANY
 (`T-a-condition-tip-counts-its-rows`); the chip's value and accessible name
 spell the chain, `Contains: ab or Equals: churned`, from `spellConditions()`.
@@ -14355,7 +14362,6 @@ that follows is what makes it read as unset.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/source-counts.ts`
-- Site: `src/core/data/data-source.ts`
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the

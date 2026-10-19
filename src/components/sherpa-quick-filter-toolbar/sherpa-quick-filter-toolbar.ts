@@ -509,7 +509,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * drawResults(results) — each answered chip's results, from its source: the
    * rows its own answer matches, by field or saved-filter id. SILENT. A chip
-   * with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-its-own-results
+   * with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
    */
   drawResults(results: Readonly<Record<string, number>>): void {
     this.#results = results;

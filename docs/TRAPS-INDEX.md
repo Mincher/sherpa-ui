@@ -18,7 +18,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-changed-key-moves-the-row](TRAPS.md#t-a-changed-key-moves-the-row) — stores
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — data-source, data-source-types
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — cycle
-- [T-a-chip-counts-its-own-results](TRAPS.md#t-a-chip-counts-its-own-results) — data-source
+- [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — data-source
 - [T-a-chip-says-its-own-answer](TRAPS.md#t-a-chip-says-its-own-answer) — filter-face
 - [T-a-closed-source-hears-nothing](TRAPS.md#t-a-closed-source-hears-nothing) — data-source, spoof-remote
 - [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — data-source, query, query-edits
@@ -103,7 +103,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-error-is-a-state-not-a-throw](TRAPS.md#t-error-is-a-state-not-a-throw) — data-source
 - [T-eventsource-error-is-not-fatal](TRAPS.md#t-eventsource-error-is-not-fatal) — live-stores
 - [T-every-rule-but-required-passes-absent](TRAPS.md#t-every-rule-but-required-passes-absent) — validate
-- [T-everything-on-is-no-filter](TRAPS.md#t-everything-on-is-no-filter) — bind-selection, data-source, filter-state, source-counts
+- [T-everything-on-is-no-filter](TRAPS.md#t-everything-on-is-no-filter) — bind-selection, filter-state, source-counts
 - [T-fetch-does-not-reject-on-404](TRAPS.md#t-fetch-does-not-reject-on-404) — stores
 - [T-filter-fields-flattens-the-tree](TRAPS.md#t-filter-fields-flattens-the-tree) — store
 - [T-filter-is-data-not-a-predicate](TRAPS.md#t-filter-is-data-not-a-predicate) — store
@@ -312,7 +312,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — filter-panel, quick-filter-toolbar
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — filter-panel, quick-filter
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — filter-host, quick-filter
-- [T-a-chip-counts-its-own-results](TRAPS.md#t-a-chip-counts-its-own-results) — filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-chip-knows-what-kind-it-is](TRAPS.md#t-a-chip-knows-what-kind-it-is) — filter-def, filter-kind, filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-chip-menu-apply-is-the-panels-apply](TRAPS.md#t-a-chip-menu-apply-is-the-panels-apply) — filter-panel
 - [T-a-chip-menu-in-the-panel-commits](TRAPS.md#t-a-chip-menu-in-the-panel-commits) — filter-panel

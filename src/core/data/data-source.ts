@@ -110,7 +110,8 @@ import {
 import { readingClause, stateClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
-import { answerOrder, belowIn, clauseOf, limitFor, presentUnder, serialChains } from './source-counts.js';
+import { answerOrder, belowIn, clauseOf, limitFor, planWalk, presentUnder, serialChains, walkStepwise } from './source-counts.js';
+import { emptyWalk, walkInOrder, type Walk, type WalkPlan } from './walk.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
   answerOf, compile, eachScope, emptyScope, filterKey, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
@@ -1442,7 +1443,7 @@ export class DataSource extends EventTarget {
     if (!same) this.#requery(this.applyOn === 'input');
     /* The rows did not move, so no load will count again — yet an answer that
        is OFF, or one chart's own, changed, and its badge wears a number.
-       TRAP T-a-chip-counts-its-own-results */
+       TRAP T-a-chip-counts-within-the-filters-before-it */
     if (still && this.#loaded) void this.#drawResults();
     if (still && this.#loaded) this.#presentSoon();
   }
@@ -1654,6 +1655,7 @@ export class DataSource extends EventTarget {
     // FORCED: the rows may have changed, so a held set is read again.
     if (options.force) {
       this.#age++;
+      this.#rowsAge++;
       this.#letGo();
     }
     const key = this.#stateKey();
@@ -1676,6 +1678,7 @@ export class DataSource extends EventTarget {
    *  TRAP T-a-held-set-takes-a-change-in-place · TRAP T-a-store-has-one-cache */
   #onStoreChange = (): void => {
     this.#age++;
+    this.#rowsAge++;
     this.#presentFor = '';
     void (this.#cache ? this.#reask() : this.load({ force: true }));
   };
@@ -1687,6 +1690,7 @@ export class DataSource extends EventTarget {
     // A set too big for this page — or none, where this page never used one — moves nothing here.
     if (set ? set.size > this.#holdRows : this.#plan !== 'held' && this.#plan !== 'held-stale') return;
     this.#age++;
+    this.#rowsAge++;
     // An ask in flight may have read the set before it landed: it is overtaken.
     if (this.#loaded || this.#inFlight.busy) void this.#reask();
   };
@@ -1889,101 +1893,159 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * Each answered chip's RESULTS in a scope: the rows its OWN answer matches,
-   * within what the scope can see — a component scope's, within the View's. By
-   * field, or saved-filter id; from the APPLIED Query, so a draft has none.
-   * A FIELD's answer, on or off: switched off, it still says what it would
-   * match (123). A SAVED filter only while it is on: its count is not always
-   * known before (166). Will, TODO 60.
-   * TRAP T-a-chip-counts-its-own-results
+   * Each answered chip's RESULTS in a scope: the rows that reach it — its
+   * scopes, and the filters BEFORE it in the one order — and match its answer.
+   * By field, or saved-filter id; from the APPLIED Query, so a draft has none.
+   * OFF, it still says what it would match (123); a SAVED filter only while ON
+   * (166). Will, TODOs 60 and 348.
+   * TRAP T-a-chip-counts-within-the-filters-before-it
    */
   async results(scope: string): Promise<Record<string, number>> {
-    // While a whole set is read again, wait for it: a count asks it, not the store.
-    await this.#hold();
-    const q = this.#applied.scopes[scope];
-    if (!q) return {};
-    const field = (f: string): Omit<FieldFacts, 'field'> => this.#catalogue.facts(f);
-    const { view } = compile(this.#applied, this.#compileFacts());
-    const base = scope === VIEW || !view ? [] : [view];
-    // One field, one scope: a field the View holds is the View's.
-    const above = heldAbove(this.#applied, scope);
-    const own: Array<[string, Filter | undefined]> = [
-      ...Object.entries(q.readings)
-        .filter(([f]) => !above.has(f))
-        .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
-          [f, readingClause({ field: f, ...field(f) }, withoutDropped(reading, this.#setAside.get(scope)?.[f]))]),
-      ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
-        .map(([id]): [string, Filter | undefined] => [id, andFilter(presetClauses(this.#presets.get(id) ?? {}, field))]),
-    ];
-    const out: Record<string, number> = {};
-    await Promise.all(own.map(async ([id, clause]) => {
-      const filter = clause && andFilter([...base, clause]);
-      if (filter) out[id] = await this.#reads.totalCount({ filter });
-    }));
-    return out;
+    return { ...(await this.#walked()).results[scope] };
   }
 
   /**
-   * Each PICKED value's own results in a scope: the rows that ONE value
-   * matches, within what the scope can see — by field, then by value. Only a
-   * list answer in force has values to count: rows, a range, a field that is
-   * off or held above have none. Will, TODO 172.
-   * TRAP T-a-chip-counts-its-own-results
+   * Each PICKED value's own results in a scope: the rows that reach its field
+   * and match that ONE value — by field, then by value. Only a plain pick in
+   * force has values to count: rows, a range, a field that is off or held above
+   * have none. Will, TODO 172.
+   * TRAP T-a-chip-counts-within-the-filters-before-it
    */
   async valueResults(scope: string): Promise<Record<string, Record<string, number>>> {
-    await this.#hold();
-    const q = this.#applied.scopes[scope];
-    if (!q) return {};
-    const { view } = compile(this.#applied, this.#compileFacts());
-    const base = scope === VIEW || !view ? [] : [view];
-    const above = heldAbove(this.#applied, scope);
-    const out: Record<string, Record<string, number>> = {};
-    await Promise.all(Object.entries(q.readings).flatMap(([f, reading]) => {
-      if (above.has(f) || reading.suspended) return [];
-      const state = this.#catalogue.stateFor(f, reading);
-      if (state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP) return [];
-      const type = this.#catalogue.get(f)?.type;
-      return (reading.picked ?? []).map(async (value) => {
-        /* ONE value, with no list beside it: against the field's whole list,
-           the one value of a one-value field reads as "everything", no filter.
-           TRAP T-everything-on-is-no-filter */
-        const clause = readingClause({ field: f, ...(type ? { type } : {}) }, { picked: [value], range: false });
-        if (!clause) return;
-        (out[f] ??= {})[valueKey(value)] = await this.#reads.totalCount({ filter: andFilter([...base, clause])! });
-      });
-    }));
-    return out;
+    return Object.fromEntries(Object.entries((await this.#walked()).values[scope] ?? {}).map(([f, byValue]) => [f, { ...byValue }]));
   }
+
+  /* ── The WALK: one ordered pass per scope gives every count. TODOs 347–349 ──
+   * TRAP T-one-walk-counts-and-limits-in-order */
+
+  /** What a walk reads besides the rows: the Query, the setting, the parts, the
+   *  bound scopes, what each scope offers, and the picks set aside. */
+  #walkKey(): string {
+    const components = [...this.#binding.componentScopes()].sort();
+    const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
+    return JSON.stringify([this.#age, this.#limitOptions, this.#applied, [...this.#parts],
+      this.#viewFilter === null ? this.#filter ?? null : null, components, [...this.#defaults.keys()].sort(), parts,
+      [...this.#offers], [...this.#setAside]]);
+  }
+
+  /** The component scope a chart part's element is bound into, if any. */
+  #hostOf(el: BoundControl): string | undefined {
+    const scope = this.#binding.get(el)?.scope;
+    return typeof scope === 'string' && scope !== VIEW ? scope : undefined;
+  }
+
+  /** The walk's plan, from the applied Query. Until the walk limits too (C6), it
+   *  only counts: the picks the newest-first pass set aside are handed in, and it
+   *  tallies nothing. */
+  #planWalk(): WalkPlan {
+    const narrowing = new Map([...this.#narrowing].map(([s, p]) => {
+      const host = this.#hostOf(p.only);
+      return [s, { field: p.field, ...(host ? { host } : {}) }] as const;
+    }));
+    const plan = planWalk(this.#applied, {
+      field: (f) => this.#catalogue.facts(f),
+      isList: (f) => this.#catalogue.isList(f),
+      plainPicks: (f, reading) => {
+        const state = this.#catalogue.stateFor(f, reading);
+        return state.mode === 'simple' && !state.range && state.op === DEFAULT_OP;
+      },
+      presets: (id) => this.#presets.get(id),
+      sets: (scope) => this.#sets.get(scope) ?? [],
+      fields: (scope) => this.fields(scope),
+      components: this.#binding.componentScopes(),
+      fixed: new Set(this.#defaults.keys()),
+      parts: [...this.#parts.values()],
+      ...(this.#viewFilter === null && this.#filter ? { hand: this.#filter } : {}),
+      narrowing,
+      limit: this.#limitOptions,
+      now: new Date(),
+    });
+    return { ...plan, scopes: plan.scopes.map((sc) => ({ ...sc, setsAside: false, taps: [], steps: sc.steps.map((step) => {
+      const { ruler: _r, offers: _o, ...counting } = step;
+      const given = step.field ? this.#setAside.get(sc.scope)?.[step.field] : undefined;
+      if (!given?.length || !step.less || !step.on) return counting;
+      const { clause: _was, ...rest } = counting;
+      const clause = step.less(given);
+      return { ...rest, ...(clause ? { clause } : {}), on: !!clause, counts: !!clause };
+    }) })) };
+  }
+
+  /** The rows a walk reads, as the plan says: the held set, in place; a local
+   *  store's scan, or one load per change; null — ask the store step by step. */
+  async #walkRows(): Promise<readonly Row[] | null> {
+    await this.#hold();
+    const reads = this.#reads;
+    // A remote store not held is asked; a held set is walked in place.
+    if (this.#remote && reads === this.store) return null;
+    if (reads.scan) return reads.scan();
+    if (this.#rowsCache?.age === this.#rowsAge) return this.#rowsCache.rows;
+    const age = this.#rowsAge;
+    const { rows } = await reads.load({});
+    // Kept until the rows change — not a set too big to keep.
+    if (age === this.#rowsAge && rows.length <= this.#holdRows) this.#rowsCache = { age, rows };
+    return rows;
+  }
+
+  /** The walk for the Query as it stands: one per key, shared by every reader of
+   *  it. A walk that fails keeps the last one — it never stops a load. */
+  async #walked(): Promise<Walk> {
+    const key = this.#walkKey();
+    if (this.#walk?.key === key) return this.#walk.walk;
+    if (this.#walking?.key === key) return this.#walking.walk;
+    const plan = this.#planWalk();
+    // Nothing to count or tally: no row is read.
+    if (!plan.scopes.some((sc) => sc.taps.length || sc.steps.some((st) => st.counts || st.each?.length || st.ruler || st.offers))) {
+      this.#walk = { key, walk: emptyWalk() };
+      return this.#walk.walk;
+    }
+    const entry: { key: string; walk: Promise<Walk> } = { key, walk: Promise.resolve(emptyWalk()) };
+    entry.walk = (async (): Promise<Walk> => {
+      try {
+        const rows = await this.#walkRows();
+        const out = rows ? walkInOrder(rows, plan) : await walkStepwise(this.#reads, plan);
+        if (this.#walkKey() === key) this.#walk = { key, walk: out };
+        return out;
+      } catch {
+        return this.#walk?.walk ?? emptyWalk();
+      } finally {
+        if (this.#walking === entry) this.#walking = null;
+      }
+    })();
+    this.#walking = entry;
+    return entry.walk;
+  }
+  /** The last walk, and what it was for. */
+  #walk: { key: string; walk: Walk } | null = null;
+  /** The walk in flight, and what it is for. */
+  #walking: { key: string; walk: Promise<Walk> } | null = null;
+  /** Moves each time the rows may have changed. */
+  #rowsAge = 0;
+  /** A store with no scan, loaded once per change. */
+  #rowsCache: { age: number; rows: readonly Row[] } | null = null;
 
   /** Each bound bar — and the panel, scope by scope — is drawn its chips'
    *  results, off the load that just landed; a later load's count wins.
-   *  TRAP T-a-chip-counts-its-own-results */
+   *  TRAP T-a-chip-counts-within-the-filters-before-it */
   async #drawResults(): Promise<void> {
     // A control over several scopes — the panel — draws each chart's own too.
-    const drawn = [...this.#binding.entries()].flatMap(([el, b]) => (el.drawResults && b.scope
+    const drawn = [...this.#binding.entries()].flatMap(([el, b]) => ((el.drawResults || el.drawValueResults) && b.scope
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
     if (!drawn.length) return;
-    // Counted already, for this Query over these rows and these controls: a
-    // sort, a page or a search moves no count. TODO 348 W1
-    const key = JSON.stringify([this.#age, this.#applied, [...this.#setAside], drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes])]);
+    // Drawn already, for this walk and these controls: a sort, a page or a search moves no count.
+    const key = JSON.stringify([this.#walkKey(), drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes])]);
     if (key === this.#countedFor) return;
     this.#countedFor = key;
     const ticket = this.#counting.next();
-    const byScope = new Map<string, Record<string, number>>();
-    for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
-      byScope.set(scope, await this.results(scope));
-      if (!this.#counting.is(ticket)) return;
-    }
+    const walk = await this.#walked();
+    if (!this.#counting.is(ticket)) return;
     for (const { el, scopes } of drawn) {
-      for (const scope of scopes) el.drawResults?.(byScope.get(scope) ?? {}, scope);
+      for (const scope of scopes) el.drawResults?.({ ...walk.results[scope] }, scope);
     }
     // A control that draws a chip per VALUE is told each picked value's own too.
     for (const { el, scopes } of drawn) {
       if (!el.drawValueResults) continue;
       for (const scope of scopes) {
-        const byValue = await this.valueResults(scope);
-        if (!this.#counting.is(ticket)) return;
-        el.drawValueResults(byValue, scope);
+        el.drawValueResults(Object.fromEntries(Object.entries(walk.values[scope] ?? {}).map(([f, v]) => [f, { ...v }])), scope);
       }
     }
   }
@@ -2250,6 +2312,8 @@ export class DataSource extends EventTarget {
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
     if (facts.scope && (el.drawPresent || el.drawOffered) && this.#loaded) this.#presentSoon();
+    // …and its chips' counts. TRAP T-a-chip-counts-within-the-filters-before-it
+    if (facts.scope && (el.drawResults || el.drawValueResults) && this.#loaded) void this.#drawResults();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */

@@ -225,8 +225,9 @@ source.query.draft     // what the reader is editing
   `source.dirty(scope)` and turns its commit and revert off when false — no
   host tracks it.
 - **Discard** copies `applied` back over `draft` for that scope.
-- **Result counts (60)** are the rows each field's own answer matches under
-  `applied` — computed by the source, read by the chip.
+- **Result counts (60, 348)** are the rows that reach each chip under `applied`
+  — its scopes and the filters before it in the one order — and match its own
+  answer: computed by the source in one walk, read by the chip.
 
 ---
 

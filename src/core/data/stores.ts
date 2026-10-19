@@ -88,7 +88,7 @@ export class ArrayStore extends BaseStore {
   /** Every row the schema accepts, in place: no row is copied, for a reader that
    *  only reads — the walk. TRAP T-array-store-copies-both-ways */
   async scan(): Promise<readonly Row[]> {
-    return (await this.page(this.#rows, {})).rows;
+    return (await this.checkRows({ rows: this.#rows, total: this.#rows.length })).rows;
   }
 
   /** Where a row is, by its key field — or by the key made up for it. */
@@ -214,7 +214,8 @@ export class JsonStore extends BaseStore {
   /** Every row the schema accepts, read in place from the rows it fetched. */
   async scan(): Promise<readonly Row[]> {
     await this.#ensure();
-    return (await this.page(await this.#inner.scan(), {})).rows;
+    const rows = [...await this.#inner.scan()];
+    return (await this.checkRows({ rows, total: rows.length })).rows;
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {

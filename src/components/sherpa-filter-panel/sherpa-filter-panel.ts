@@ -363,7 +363,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * answer in a scope matches, by field or saved-filter id. A field drawn as
    * ONE chip, and a saved filter's chip, wear it; a field drawn as a run or a
    * body has no one chip, so its HEADER wears it. SILENT.
-   * TRAP T-a-chip-counts-its-own-results
+   * TRAP T-a-chip-counts-within-the-filters-before-it
    */
   drawResults(results: Readonly<Record<string, number>>, scope?: string): void {
     // Kept: a redraw builds new chips and headers, and no load follows it.
@@ -388,7 +388,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * each PICKED value matches on its own, by field then value: each chip of a
    * run wears its own count, and one that is not picked wears none. The
    * header keeps the field's. SILENT. Will, TODO 172.
-   * TRAP T-a-chip-counts-its-own-results
+   * TRAP T-a-chip-counts-within-the-filters-before-it
    */
   drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string): void {
     this.#valueCounted.set(scope, results);

@@ -60,6 +60,17 @@ const countCompiles = {
       }
       return { loader: 'ts', contents: `let scanDepth = 0;\n${text}` };
     });
+    // The walk's one pass over a scope's rows is a scan too. TRAP T-one-walk-counts-and-limits-in-order
+    b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]walk\.ts$/ }, (args) => {
+      const text = readFileSync(args.path, 'utf8');
+      if (!text.includes('export function passOver(')) throw new Error('check-bench: walk.ts has no `export function passOver(` to count');
+      return {
+        loader: 'ts',
+        contents: `${text.replace('export function passOver(', 'function passOverOnce(')}
+export function passOver(rows, scan, from) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c) c.scans++; return passOverOnce(rows, scan, from); }
+`,
+      };
+    });
     b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]query\.ts$/ }, (args) => {
       const text = readFileSync(args.path, 'utf8');
       if (!text.includes('export function compile(')) throw new Error('check-bench: query.ts has no `export function compile(` to count');

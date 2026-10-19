@@ -931,7 +931,7 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /** The rows this chip's own answer matches, as its source counted them.
-   *  Null: no number. TRAP T-a-chip-counts-its-own-results */
+   *  Null: no number. TRAP T-a-chip-counts-within-the-filters-before-it */
   get results(): number | null {
     return this.#results ?? null;
   }
@@ -945,7 +945,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /**
    * The badge is the chip's RESULTS once applied, on or off — not a count of
    * picks, nor `fx`: the tip says those. Will, TODO 60 and 123.
-   * TRAP T-a-chip-counts-its-own-results
+   * TRAP T-a-chip-counts-within-the-filters-before-it
    */
   #syncBadge(): void {
     // The tip names the matches too, and follows the same rule.

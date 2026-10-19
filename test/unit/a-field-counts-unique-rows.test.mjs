@@ -5,7 +5,7 @@
  *
  *   node --test test/unit/a-field-counts-unique-rows.test.mjs
  *
- * TRAP T-a-chip-counts-its-own-results
+ * TRAP T-a-chip-counts-within-the-filters-before-it
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

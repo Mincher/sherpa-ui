@@ -899,6 +899,20 @@ OFF chip counts. The TRAP changes with it.
     out, so a declared value with no rows vanishes from the first menu. On
     Records both give the same answer.
 
+- 🚧 **Building the walk** (2026-10-19; the design checked against the code first):
+  - ✅ **C0** (`1b4a6c69`) — `appliesIn()` and `scopeClauses()` out of `compile()`.
+  - ✅ **C1** (`9f9ecadc`) — the walk, pure: `answerOrder`, `planWalk`, `walkInOrder`
+    (`walk.ts`), `walkStepwise`; a property test holds the three to one answer.
+  - ✅ **C2** (`3c9f4afd`) — ONE order, the source's (D2 A): `describe()` and the bar;
+    a saved filter added lands after the other saved filters; the bar draws one
+    the panel added.
+  - ✅ **C3** (`8f489c17`) — `Store.scan()`, the rows read in place.
+  - ✅ **C4** (`b2bbb751`) — a bench act that sets a pick aside.
+  - ✅ **C5** — a chip counts within the filters before it (348): counts come from
+    the walk. Bench: counts → 0 on every act; `records/report` scans 32 → 25,
+    compiles 16 → 11. TRAP renamed `T-a-chip-counts-within-the-filters-before-it`.
+    Limits still come from the old pass until C6.
+
 ### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
 
 Will, 2026-10-19: *"The above also goes for viable field and value options in

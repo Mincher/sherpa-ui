@@ -1,7 +1,7 @@
 /**
  * A chip's count runs again only when something it reads moved — the Query,
  * the rows, a saved filter — never for a sort, a page or a search. TODO 348 W1
- * TRAP T-a-chip-counts-its-own-results
+ * TRAP T-a-chip-counts-within-the-filters-before-it
  *
  *   node --test test/unit/a-count-runs-again-only-when-something-moved.test.mjs
  */
