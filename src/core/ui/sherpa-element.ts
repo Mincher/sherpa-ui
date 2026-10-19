@@ -21,7 +21,7 @@ import { hasIcon, iconsLoading, renderIcon, upgradeIcons } from './render-icon.j
 import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
 import { liftTips } from './top-layer-tips.js';
 import {
-  cachedTemplates, checkOwnTemplate, familyBody, filesFor, loadFamily, loadSheets, loadTemplates, onReload,
+  adoptPageSheet, cachedTemplates, checkOwnTemplate, familyBody, filesFor, loadFamily, loadSheets, loadTemplates, onReload,
   reloadFiles, templateBody,
 } from './templater.js';
 import { report } from '../data/report.js';
@@ -233,6 +233,11 @@ export abstract class SherpaElement extends Base {
    *  TRAP T-a-family-shares-markup */
   static html?: URL | readonly URL[];
 
+  /** A sheet for what it puts in the PAGE's light DOM: adopted into the document,
+   *  and awaited with its own sheets before its first stamp.
+   *  TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page */
+  static pageCss?: URL;
+
   /** Attribute names to observe. Subclasses override (merge with super if extending). */
   static observed: string[] = [];
 
@@ -283,6 +288,8 @@ export abstract class SherpaElement extends Base {
       if (files.html) html.add(files.html);
       for (const f of files.family) html.add(f);
       for (const c of files.css) css.add(c);
+      const page = (el.constructor as typeof SherpaElement).pageCss;
+      if (page) css.add(page.href);
     }
     await reloadFiles({ html: [...html], css: [...css] });
   }
@@ -867,7 +874,8 @@ export abstract class SherpaElement extends Base {
        TRAP T-rendered-settles-even-when-the-markup-does-not */
     let html = '';
     try {
-      [, html] = await Promise.all([styling, markup, loadFamily(files.family)]);
+      const page = (this.constructor as typeof SherpaElement).pageCss;
+      [, html] = await Promise.all([styling, markup, loadFamily(files.family), page ? adoptPageSheet(page.href) : undefined]);
     } catch (error) {
       report({ code: 'template-failed', message: `<${this.localName}>'s template did not load: ${String(error)}`, at: { tag: this.localName } });
     }

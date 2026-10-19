@@ -3632,10 +3632,6 @@
           "description": "the primary line (or the default slot)"
         },
         {
-          "name": "data-stacked",
-          "valueSet": "v"
-        },
-        {
           "name": "data-status",
           "description": "info | success | warning | critical | urgent",
           "values": [

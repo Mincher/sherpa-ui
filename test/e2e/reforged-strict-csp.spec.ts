@@ -44,3 +44,26 @@ test('templates, icons, an embedded calendar and a View\'s markup draw, and noth
   expect(r.styled).toBeNull();
   expect(errors).toEqual([]);
 });
+
+/** A toast's shared stack is a page sheet and a template clone: nothing a CSP refuses (TODO 344). */
+test('a toast from the static helpers stacks under the strict CSP', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/test/reforged/csp.html');
+  await page.waitForFunction(() => (window as unknown as { __cspReady?: boolean }).__cspReady === true);
+  const r = await page.evaluate(async () => {
+    const { SherpaToast } = await import('/dist/index.js') as {
+      SherpaToast: { info(m: string, o?: { duration?: number }): HTMLElement & { rendered?: Promise<void> } };
+    };
+    const toast = SherpaToast.info('Saved', { duration: 0 });
+    await toast.rendered;
+    const stack = toast.parentElement!;
+    return {
+      stacked: toast.matches(':state(stacked)'),
+      fixed: getComputedStyle(stack).position,
+      violations: (window as unknown as { __violations: string[] }).__violations,
+    };
+  });
+  expect(r).toEqual({ stacked: true, fixed: 'fixed', violations: [] });
+  expect(errors).toEqual([]);
+});

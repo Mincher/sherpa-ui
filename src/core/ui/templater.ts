@@ -15,6 +15,7 @@
  * - cachedTemplates — the split markup already fetched, for a re-stamp that costs no fetch.
  * - templateBody — one template's markup: the one wanted, else the first, else the whole file.
  * - loadSheets — adoptable sheets, each fetched once; one that fails is left out.
+ * - adoptPageSheet — adopt a sheet into the DOCUMENT, for light DOM a component puts in the page.
  * - reloadFiles — fetch files again; a sheet changes in place, and each listener hears what else changed.
  * - onReload — hear which files a reload changed, so their elements draw again.
  * - checkOwnTemplate — report what a consumer's markup lacks that the component reaches for.
@@ -194,6 +195,17 @@ export async function loadSheets(urls: readonly string[]): Promise<CSSStyleSheet
   return results
     .filter((r): r is PromiseFulfilledResult<CSSStyleSheet> => r.status === 'fulfilled')
     .map((r) => r.value);
+}
+
+/** Adopt a sheet into the DOCUMENT, after the page's own — for light DOM a component
+ *  puts in the page, which no shadow sheet reaches. Again if the page dropped it.
+ *  Never rejects. TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page */
+export async function adoptPageSheet(url: string): Promise<void> {
+  if (typeof document === 'undefined') return;
+  const [sheet] = await loadSheets([url]);
+  if (!sheet) return;
+  const have = document.adoptedStyleSheets;
+  if (!have.includes(sheet)) document.adoptedStyleSheets = [...have, sheet];
 }
 
 /**

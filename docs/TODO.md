@@ -25,7 +25,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
 | | | | **A — In hand** | |
-| 🚧 | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
+| ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ⬜ | 0a | 345 | EXPLORE — a remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340) | explore |
 | ⬜ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
 | ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
@@ -420,7 +420,7 @@ first, then the bugs, then the filter features).
 
 ## A — In hand
 
-### `[~]` 🚧 344 — Markup, default variants and text come from the `.html` and `.css`
+### `[x]` ✅ 344 — Markup, default variants and text come from the `.html` and `.css`
 
 Will, 2026-10-19: *"Ideally JS (or TS) should not be using template literals
 to provide default component variants. The HTML templates and CSS file for the
@@ -460,18 +460,25 @@ each checked by a second agent; handover: `docs/HANDOVER.md`):
 - ✅ Group 3b, swaps: `data-swap-on` / `data-swap-*` (2f3f5b17). TRAP `T-a-swapped-label-is-in-the-markup`.
 - ✅ Group 3c, words: `<template class="words">` + `this.word()` (4a8e80d5). TRAP `T-a-word-is-in-the-markup`.
 - ✅ Group 3d, the nav's default rows are markup; `QuickEntry` (3350c7a0).
-- ⬜ 1b, nav-item's `::highlight()`: one shared `sherpa-nav-match` Highlight,
-  its rule static in `sherpa-nav-item.css` (plan group 1 (b)).
-- ⬜ 1c, the calendar's projected header: a `<sherpa-group>` with `data-grow`
-  on the month (plan group 1 (c)).
-- ⬜ 1d + 3b(a), helper-owned markup: the ⋮ menu rows (`more-menu.ts`) and
-  `menuFor()`'s menu and date calendar. Two plans proposed two mechanisms
-  (`static html` as a list of family files, or `clonesFrom` + `cloneFromFile`);
-  use ONE — family markup, as `static css` already takes a list.
-- ⬜ 1a, the toast stack: a page-level sheet (`static pageCss`) and
-  `:state(stacked)`. `show()` keeps `createElement('sherpa-toast')`: one
-  component, no structure (Claude's pick; Will may overrule).
-- ⬜ PRINCIPLES 17's "typed child" exceptions, recounted once the rest land.
+- ✅ 1b, nav-item's search highlight is one shared `sherpa-nav-match`
+  Highlight, its rule static CSS (4c5b561a). Measured by pixels: a custom
+  highlight in a shadow root now paints in all three engines.
+- ✅ 1c, the calendar's projected stepper is a `<sherpa-group>`; `data-grow`
+  lets the month fill (e1df205b).
+- ✅ 1d, `static html` may be a LIST — family markup — and `menuFor(root, def)`
+  clones its menu from `src/core/sherpa-filter-menu.html`; the menu stamps its
+  own date calendar (e100c9a8). TRAP `T-a-family-shares-markup`.
+- ✅ 3b(a), the ⋮ menu's rows and words are `src/core/sherpa-filter-more.html`
+  and its sheet (77d71b9a).
+- ✅ 1a, the toast stack: `static pageCss` adopted into the document,
+  `:state(stacked)`, the stack cloned from the toast's template. `show()` keeps
+  `createElement('sherpa-toast')`: one component, no structure (Claude's pick;
+  Will may overrule). TRAP `T-a-page-sheet-is-for-what-a-component-puts-in-the-page`.
+- ✅ PRINCIPLES 17's exceptions recounted: five `createElement` calls left, none
+  builds structure.
+
+**✅ Done 2026-10-19.** Every group landed and passed its focused specs in three
+engines; the full suite is the next run.
 - Kept on purpose: labels with data inside (`Reset ${name}`) stay in TS — the
   sweep classed them as data.
 

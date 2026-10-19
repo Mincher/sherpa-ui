@@ -10958,12 +10958,6 @@
               }
             },
             {
-              "name": "data-stacked",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-status",
               "description": "info | success | warning | critical | urgent",
               "type": {

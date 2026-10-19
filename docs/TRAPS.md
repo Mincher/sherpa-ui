@@ -1389,6 +1389,35 @@ data is.
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 
+### T-a-page-sheet-is-for-what-a-component-puts-in-the-page
+
+**A component that puts light DOM in the PAGE styles it with a page sheet, not
+TS** (TODO 344). `SherpaToast.show()` puts a toast in a shared stack on
+`<body>`; no shadow sheet reaches that stack, so its layout was `style.cssText`
+in TS. Now the stack is cloned from the toast's template, and its CSS is
+`sherpa-toast-stack.css`, named by `static pageCss`.
+
+The base ADOPTS a `pageCss` into `document.adoptedStyleSheets`, once (one
+shared sheet object), after the page's own, and AWAITS it with its own sheets
+before the first stamp, so the stack never draws unstyled in a fetched build.
+It adopts again if a page replaced the list wholesale. Its rules sit in
+`@layer components` and are narrow (`body > .sherpa-toast-stack`), so a page's
+own CSS wins and an app's own container with the class is left alone.
+
+A toast in the stack says so with `:state(stacked)`, not a public attribute:
+`:host` cannot see its parent, and a custom state is private host state. Its
+rule comes BEFORE `:state(leaving)`, so a leaving toast still takes no pointer.
+`show()` still makes one `<sherpa-toast>` with `createElement`: one component,
+no structure. A constructed sheet needs no `'unsafe-inline'`, so it runs under
+the strict CSP.
+
+- Site: `src/core/ui/templater.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-toast/sherpa-toast.ts`
+- Site: `src/components/sherpa-toast/sherpa-toast-stack.css`
+- Site: `scripts/lint-css.mjs`
+- Site: `test/e2e/reforged-toast.spec.ts`
+
 ### T-a-family-shares-markup
 
 **Markup a shared helper needs lives in a FAMILY file, not in TS** (Will, TODO
@@ -16398,6 +16427,10 @@ inside it — that is the cascade (`T-a-state-colour-binds-the-style-mode`).
 So a host's own `<tr data-status="active">` tints the Sherpa controls in that
 row. Name a host's own state another way, or wrap the controls in an element
 that sets the value back.
+
+The one rule a component adds to a host page itself is `body > .sherpa-toast-stack`,
+in `@layer components`, and only once a helper shows a toast
+(`T-a-page-sheet-is-for-what-a-component-puts-in-the-page`).
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-document-reset.spec.ts`

@@ -27,7 +27,6 @@ For short feedback after an action, such as Saved, that goes away by itself afte
 | `data-action` | text |  | an action link label (shown when present; fires toast-action) |
 | `data-duration` | text |  | auto-dismiss delay in ms (default 5000; 0 disables) |
 | `data-heading` | text |  | the primary line (or the default slot) |
-| `data-stacked` | boolean |  |  |
 | `data-status` | `info` `success` `warning` `critical` `urgent` | `info` | info \| success \| warning \| critical \| urgent |
 | `data-value` | text |  | the supporting detail line (shown when present) |
 
@@ -76,6 +75,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ action?, heading?, stacked?, value? }`
+`{ action?, heading?, value? }`
 
 Its declared props by name: `label` sets data-label.

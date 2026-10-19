@@ -209,7 +209,7 @@ test('the factory passes the detail line and the action through', async ({ page 
       heading: sr.querySelector('.heading')?.textContent,
       value: sr.querySelector('.value')?.textContent,
       action: sr.querySelector('.action')?.textContent,
-      stacked: toast.hasAttribute('data-stacked'),
+      stacked: toast.matches(':state(stacked)'),
       inSharedStack: toast.parentElement?.classList.contains('sherpa-toast-stack'),
     };
   });
@@ -220,4 +220,31 @@ test('the factory passes the detail line and the action through', async ({ page 
   expect(r.action).toBe('Undo');
   expect(r.inSharedStack).toBe(true);
   expect(r.stacked).toBe(true);
+});
+
+/** The stack is markup and a page sheet, never TS styles (TODO 344).
+ *  TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page */
+test('the shared stack takes its look from a page sheet, adopted once, and a page rule wins', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mod = await import('/dist/components/sherpa-toast/sherpa-toast.js');
+    const SherpaToast = (mod as { SherpaToast: { info(m: string, o?: { duration?: number }): HTMLElement & { rendered?: Promise<void>; dismiss(): void } } }).SherpaToast;
+    const before = document.adoptedStyleSheets.length;
+    const one = SherpaToast.info('One', { duration: 0 });
+    const two = SherpaToast.info('Two', { duration: 0 });
+    await one.rendered;
+    await two.rendered;
+    const stack = one.parentElement!;
+    const sheets = document.adoptedStyleSheets.length - before;
+    const style = stack.getAttribute('style');
+    const fixed = getComputedStyle(stack).position;
+    const rule = new CSSStyleSheet();
+    rule.replaceSync('body > .sherpa-toast-stack { top: 80px; }');
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, rule];
+    const top = Math.round(stack.getBoundingClientRect().top);
+    document.adoptedStyleSheets = document.adoptedStyleSheets.filter((s) => s !== rule);
+    two.dismiss();
+    const leaving = getComputedStyle(two).pointerEvents;
+    return { sheets, style, fixed, top, leaving, stacked: one.matches(':state(stacked)') };
+  });
+  expect(r).toEqual({ sheets: 1, style: null, fixed: 'fixed', top: 80, leaving: 'none', stacked: true });
 });

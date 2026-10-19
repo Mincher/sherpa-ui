@@ -238,6 +238,13 @@ for (const name of readdirSync(join(ROOT, 'src', 'core')).filter((f) => /^sherpa
 // A shared LOOK a node wears by class: linted as a sheet of its own. TRAP T-a-native-wears-the-button-class
 fileCount++;
 lintFile('src/core/sherpa-button-look.css', readFileSync(join(ROOT, 'src', 'core', 'sherpa-button-look.css'), 'utf8'));
+// A PAGE sheet a component adopts into the document. TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page
+for (const d of readdirSync(C, { withFileTypes: true }).filter((e) => e.isDirectory())) {
+  for (const name of readdirSync(join(C, d.name)).filter((f) => f.endsWith('-stack.css') && f !== `${d.name}.css`)) {
+    fileCount++;
+    lintFile(`src/components/${d.name}/${name}`, readFileSync(join(C, d.name, name), 'utf8'));
+  }
+}
 
 const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')) : {};
 const themeTotal = Object.values(themeReads).reduce((a, b) => a + b, 0);

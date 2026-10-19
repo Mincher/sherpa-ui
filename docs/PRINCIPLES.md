@@ -121,12 +121,12 @@ default variant and its fixed text are in its `.html` and `.css` too: with no
 `data-x`, the bare `:host` or `:host(:not([data-x]))` draws the default, and the
 component never writes one (Will, 2026-10-19, TODO 344). No
 `createElement()` for structure, no structural `innerHTML`. Repeating items use
-a cloning prototype. A typed child by tag name is not structure — `menuFor()`
-building a `<sherpa-menu>` is that. Measured 2026-10-15: eight. Four are typed
-(`menuFor()`'s menu and calendar, `SherpaToast.show`, a select group's children);
-four build nothing a template could hold (the page's tokens `<link>`, the toasts'
-shared stack in `document.body`, a stored view's allow-listed tags, a match's
-`<mark>`). The nav's icon box and input-text's options are prototypes now (285).
+a cloning prototype, and a shared helper's markup is a family file
+(`T-a-family-shares-markup`). Measured 2026-10-19 (TODO 344): five
+`createElement` calls are left, and none builds structure. One is a component
+made by its own API (`SherpaToast.show`'s `<sherpa-toast>`); four build nothing a
+template could hold (the page's tokens `<link>`, an icon's `<svg>`, a stored
+view's allow-listed tags, a match's `<mark>`).
 
 **18. Events are unprefixed `noun-verb`** — `page-change`, `nav-select`. Never
 a `sherpa-` prefix. A re-dispatched native event keeps its native name, which

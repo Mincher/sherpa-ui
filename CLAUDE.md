@@ -246,6 +246,10 @@ export class SherpaFoo extends SherpaElement {
 define('sherpa-foo', SherpaFoo);  // from sherpa-element: once, and nothing on a server
 ```
 
+A component that puts light DOM in the PAGE (the toasts' shared stack) styles it with
+`static pageCss`, a sheet the base adopts into the document before the first stamp
+(TRAP `T-a-page-sheet-is-for-what-a-component-puts-in-the-page`).
+
 A form control sets `static formAssociated = true` and gets `formLink`, `checkValidity()` and
 `reportValidity()` from the base (override `syncFormValue()` to refresh what it submits first);
 one whose control is inside sets `static delegatesFocus = true` and writes no `focus()`

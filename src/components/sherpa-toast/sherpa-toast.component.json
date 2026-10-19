@@ -16,115 +16,127 @@
     "default"
   ],
   "anatomy": {
-    "root": {
-      "el": "div",
-      "class": "toast sherpa-border-edges sherpa-border-corners",
-      "part": "toast",
-      "attrs": {
-        "role": "alert"
-      },
-      "children": [
-        {
-          "el": "span",
-          "class": "icon sherpa-icon-box",
-          "part": "icon",
-          "attrs": {
-            "data-icon": "status-info",
-            "data-icon-status": "info",
-            "aria-hidden": "true"
-          }
+    "roots": [
+      {
+        "el": "div",
+        "class": "toast sherpa-border-edges sherpa-border-corners",
+        "part": "toast",
+        "attrs": {
+          "role": "alert"
         },
-        {
-          "el": "span",
-          "class": "icon sherpa-icon-box",
-          "part": "icon",
-          "attrs": {
-            "data-icon": "status-ok",
-            "data-icon-status": "success",
-            "aria-hidden": "true"
-          }
-        },
-        {
-          "el": "span",
-          "class": "icon sherpa-icon-box",
-          "part": "icon",
-          "attrs": {
-            "data-icon": "status-warning",
-            "data-icon-status": "warning",
-            "aria-hidden": "true"
-          }
-        },
-        {
-          "el": "span",
-          "class": "icon sherpa-icon-box",
-          "part": "icon",
-          "attrs": {
-            "data-icon": "status-critical",
-            "data-icon-status": "critical",
-            "aria-hidden": "true"
-          }
-        },
-        {
-          "el": "span",
-          "class": "icon sherpa-icon-box",
-          "part": "icon",
-          "attrs": {
-            "data-icon": "status-urgent",
-            "data-icon-status": "urgent",
-            "aria-hidden": "true"
-          }
-        },
-        {
-          "el": "span",
-          "class": "content",
-          "part": "content",
-          "children": [
-            {
-              "el": "span",
-              "class": "heading",
-              "part": "heading",
-              "children": [
-                {
-                  "el": "span",
-                  "class": "heading-text"
-                },
-                {
-                  "slot": "",
-                  "attrs": {
-                    "data-accepts": "text"
-                  }
-                }
-              ]
-            },
-            {
-              "el": "span",
-              "class": "value",
-              "part": "value"
-            },
-            {
-              "el": "button",
-              "class": "action",
-              "part": "action",
-              "attrs": {
-                "type": "button"
-              }
+        "children": [
+          {
+            "el": "span",
+            "class": "icon sherpa-icon-box",
+            "part": "icon",
+            "attrs": {
+              "data-icon": "status-info",
+              "data-icon-status": "info",
+              "aria-hidden": "true"
             }
-          ]
-        },
-        {
-          "el": "sherpa-button",
-          "class": "close sherpa-dismiss",
-          "part": "close",
-          "attrs": {
-            "data-type": "icon",
-            "data-size": "xs",
-            "data-look": "transparent",
-            "data-icon-start": "cross",
-            "aria-label": "Dismiss"
+          },
+          {
+            "el": "span",
+            "class": "icon sherpa-icon-box",
+            "part": "icon",
+            "attrs": {
+              "data-icon": "status-ok",
+              "data-icon-status": "success",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "span",
+            "class": "icon sherpa-icon-box",
+            "part": "icon",
+            "attrs": {
+              "data-icon": "status-warning",
+              "data-icon-status": "warning",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "span",
+            "class": "icon sherpa-icon-box",
+            "part": "icon",
+            "attrs": {
+              "data-icon": "status-critical",
+              "data-icon-status": "critical",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "span",
+            "class": "icon sherpa-icon-box",
+            "part": "icon",
+            "attrs": {
+              "data-icon": "status-urgent",
+              "data-icon-status": "urgent",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "span",
+            "class": "content",
+            "part": "content",
+            "children": [
+              {
+                "el": "span",
+                "class": "heading",
+                "part": "heading",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "heading-text"
+                  },
+                  {
+                    "slot": "",
+                    "attrs": {
+                      "data-accepts": "text"
+                    }
+                  }
+                ]
+              },
+              {
+                "el": "span",
+                "class": "value",
+                "part": "value"
+              },
+              {
+                "el": "button",
+                "class": "action",
+                "part": "action",
+                "attrs": {
+                  "type": "button"
+                }
+              }
+            ]
+          },
+          {
+            "el": "sherpa-button",
+            "class": "close sherpa-dismiss",
+            "part": "close",
+            "attrs": {
+              "data-type": "icon",
+              "data-size": "xs",
+              "data-look": "transparent",
+              "data-icon-start": "cross",
+              "aria-label": "Dismiss"
+            }
           }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "toast-stack-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "sherpa-toast-stack"
+          }
+        ]
+      }
+    ]
   },
   "props": [
     {
@@ -152,14 +164,6 @@
       "declared": true,
       "kind": "content",
       "description": "the primary line (or the default slot)"
-    },
-    {
-      "$type": "prop",
-      "name": "data-stacked",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
     },
     {
       "$type": "prop",
@@ -198,15 +202,10 @@
     }
   ],
   "populate": {
-    "shape": "{ action?, heading?, stacked?, value? }",
+    "shape": "{ action?, heading?, value? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "stacked",
-      "selector": ":host([data-stacked])"
-    },
     {
       "$type": "state",
       "name": "value",

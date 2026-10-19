@@ -24,7 +24,7 @@
 
 /* In a stack the container owns the corner. The stack is pointer-events:none so it
    never blocks the page — each toast turns interaction back on for its own box. */
-:host([data-stacked]) {
+:host(:state(stacked)) {
   position: static;
   inset: auto;
   pointer-events: auto;

@@ -466,7 +466,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (112)
+## Menus, tips and overlays (113)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](TRAPS.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -492,6 +492,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-number-has-advanced-rows](TRAPS.md#t-a-number-has-advanced-rows) — menu
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — menu
 - [T-a-number-is-reset-not-cleared](TRAPS.md#t-a-number-is-reset-not-cleared) — menu
+- [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — toast
 - [T-a-panel-chrome-row-never-shrinks](TRAPS.md#t-a-panel-chrome-row-never-shrinks) — panel
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — menu
 - [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — menu
@@ -732,7 +733,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (99)
+## SherpaElement and the shared sheets (100)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -756,6 +757,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-control-brings-its-own-margin](TRAPS.md#t-a-native-control-brings-its-own-margin) — sherpa-base
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — sherpa-button-look
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — mark-text
+- [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
 - [T-a-property-set-before-upgrade-shadows-its-accessor](TRAPS.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — shared-constants
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
@@ -941,7 +943,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (62)
+## Build, tools and the MCP (63)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -965,6 +967,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-look-override-is-not-on-the-variable](TRAPS.md#t-a-look-override-is-not-on-the-variable) — project-tokens
 - [T-a-metric-condenses-by-wrapping](TRAPS.md#t-a-metric-condenses-by-wrapping) — project-tokens
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — build-reforged, check-usage, generate-component-spec, lint-css, project-tokens
+- [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — lint-css
 - [T-a-read-is-public-api-a-write-is-not](TRAPS.md#t-a-read-is-public-api-a-write-is-not) — check-props
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — check-bench
 - [T-a-setting-is-a-pointer](TRAPS.md#t-a-setting-is-a-pointer) — check-usage

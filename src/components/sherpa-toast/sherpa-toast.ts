@@ -1,7 +1,8 @@
 /**
  * sherpa-toast — a pop-up message that removes itself after a delay.
  *
- * The static helpers share one `.sherpa-toast-stack` column. CSS owns colour,
+ * The static helpers share one `.sherpa-toast-stack` column, cloned from the
+ * template; its CSS is sherpa-toast-stack.css, in the page. CSS owns colour,
  * corner and both animations.
  *
  * Map:
@@ -31,25 +32,32 @@ type ToastStatus = 'info' | 'success' | 'warning' | 'critical';
 export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
+  // TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page
+  static override pageCss = new URL('./sherpa-toast-stack.css', import.meta.url);
   static override props = {
-    'data-stacked': { type: 'boolean', kind: 'style' },
     // Beside the slot, never in it: slotted words win by CSS.
     // TRAP T-slot-guards-only-when-filled
     'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
     'data-value': { type: 'string', kind: 'content', to: '.value' },
     'data-action': { type: 'string', kind: 'content', to: '.action' },
-    /* Written BY the toast for the duration of its exit animation. */
   } as const;
 
   /** The auto-dismiss timer. */
   #timer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Made by a helper with no container: it joins the shared stack once it has drawn. */
+  #joinsStack = false;
+
   override onRender(): void {
     this.$('.close')?.addEventListener('button-click', () => this.dismiss());
     this.$('.action')?.addEventListener('click', () => this.emit('toast-action'));
+    // LAST: the move disconnects it, which aborts `this.signal`.
+    if (this.#joinsStack && this.isConnected) this.#joinStack();
   }
 
   override onConnect(): void {
+    // :host cannot see its parent, so the state says it.
+    this.toggleState('stacked', this.parentElement?.classList.contains('sherpa-toast-stack') === true);
     const duration = this.num('data-duration', DEFAULT_DURATION);
     if (duration > 0) {
       this.#timer = setTimeout(() => this.dismiss(), duration);
@@ -98,31 +106,20 @@ export class SherpaToast extends SherpaElement {
     if (options.duration !== undefined) toast.dataset['duration'] = String(options.duration);
     if (options.value !== undefined) toast.dataset['value'] = options.value;
     if (options.action !== undefined) toast.dataset['action'] = options.action;
-    const host = options.container ?? SherpaToast.#stack();
-    // In the shared stack the CONTAINER owns the corner: the toast stays in flow.
-    if (host.classList.contains('sherpa-toast-stack')) toast.dataset['stacked'] = '';
-    host.appendChild(toast);
+    // No container: into the page, then the shared stack once it has drawn.
+    toast.#joinsStack = !options.container;
+    (options.container ?? document.body).appendChild(toast);
     return toast;
   }
 
-  /** The shared top-right stack, made on first use. Light DOM, so the app can target it. */
-  static #stack(): HTMLElement {
-    const existing = document.querySelector<HTMLElement>('.sherpa-toast-stack');
-    if (existing) return existing;
-    const stack = document.createElement('div');
-    stack.className = 'sherpa-toast-stack';
-    stack.style.cssText = [
-      'position:fixed',
-      'top:var(--sherpa-display-mode-space-base, 16px)',
-      'right:var(--sherpa-display-mode-space-base, 16px)',
-      'z-index:1000',
-      'display:flex',
-      'flex-direction:column',
-      'gap:var(--sherpa-display-mode-space-xs, 8px)',
-      'pointer-events:none', // the stack never blocks the page
-    ].join(';');
-    document.body.appendChild(stack);
-    return stack;
+  /** Into the page's shared stack, cloned from this template by the first toast
+   *  that draws. Light DOM, so the app can target it. */
+  #joinStack(): void {
+    this.#joinsStack = false;
+    const stack = document.querySelector('body > .sherpa-toast-stack') ?? this.clone('template.toast-stack-tpl');
+    if (!stack) return;
+    if (!stack.isConnected) document.body.appendChild(stack);
+    stack.appendChild(this);
   }
 
   static info(message: string, options?: ToastOptions): SherpaToast {
