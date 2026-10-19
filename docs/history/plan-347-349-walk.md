@@ -1,4 +1,44 @@
-> **Not yet checked against the code.** The checker agent stopped at a session limit (2026-10-19). Check each file:line before building.
+> **Checked against HEAD `0fa1b5af` on 2026-10-19** (a read-only agent; about 145 claims confirmed). What it changed is in §0 below, and it WINS over the sections after it. Line numbers in §1–§6 are at `dde2589e`; §0.K has the HEAD lines.
+
+## 0. The check — what changes before building
+
+**Wrong in the design:**
+
+1. The line shifts in §2.1 are wrong; use §0.K.
+2. `#take` adds a saved filter at :869 and calls `drawBars` at :873 (HEAD).
+3. **A saved filter the panel adds does NOT reach the bar.** `#take` calls `SourceBinding.drawBars` → `drawScope(describe())`, and `drawScope` only adds ids already in the bar's `#available`. So §3.3's second bullet (draw a described saved filter that `#available` lacks) is REQUIRED.
+4. `query.ts`: the View's answer wins at :230-231; `compile` reports an unknown preset at :239-246; C0 extracts :227-248.
+5. `store.ts`: `in` at :404-405, `looseEqual` at :430-435, dates per row at :408-410, `distinct` at :239.
+6. **C4's bench act proves nothing.** An undeclared pick ('Nowhere') never reaches the filter. A real set-aside costs **4** loads today (measured on the 10-row fixture with paging and an all-rows bind); the walk makes it **2**, not 1. The act needs a DECLARED value with no rows under the picks before it — check the combination is empty in the 10k seed first.
+7. Wrap `passOver` as a scan in **C5**, when `walk.ts` is first imported — not C4.
+8. The new `page-definition.test.mjs` case goes after :304, not :294.
+9. Toolbar `drawScope` is :1321-1385. `CompileFacts.drop` doc is :100-102.
+
+**Must change because of what landed (345 phase 4, 355):**
+
+- **A. `#walkRows` follows `#reads` / `#plan`.** `held` or `held-stale` → walk `cache.set.rows` in place (stale included, so 4.4's "a failed read keeps the set" decides for the walk too). `store` (never holdable, over the cap, refused, `holdRows: 0`) → stepwise. A CLOSED source does not walk. `HeldSet.rows` is already in place.
+- **B. A failed walk never aborts the load.** Catch inside `#walked`, keep the last walk, never touch `#down` — a stepwise walk against a store that cannot be reached would otherwise blank the page.
+- **C. A stepwise walk is never on the critical path.** Walk BEFORE the load only for a held set or a local in-place scan; stepwise keeps today's spot, after publish.
+- **D. `#rowsAge` moves** in `#onStoreChange`, `#onSet` and `load({ force })`. Delete `#presentFor = ''` in `#onStoreChange`. Keep "a change or a set from the cache moves the source's `#age`".
+- **E. The bench has 51 acts** (records, remote, rest × 17). `aside` lands on all three; `asked()` must stay empty for `remote/aside` and `rest/aside`.
+- **F. The INP baseline is 355's:** tick 104 ms, second value 88, saved filter 176, View pick 80 (4x). A walk before the load must keep each under 200.
+- **G. The grid's `drawOffered`** hooks both the kept-cell mark (C5's `#drawHeadCell`) and `drawPresent` / `#markPresent`.
+- **H. 345 seams:** expose each scope's tested and tallied fields, so History (phase 3) can skip a re-walk; they are `planRead`'s `need` later.
+- **I. The peer gate is gone:** phase 4 is committed.
+- **J. TRAPs:** also extend `T-a-read-is-planned` and `T-a-failed-read-keeps-the-last-set`; the rename also moves the mention in `T-a-store-has-one-cache`.
+
+**Missed:**
+
+- `test/unit/a-store-has-one-cache.test.mjs` calls `results('data')` ({tier:3}, an insert, {tier:4}) — keep it green through the `#age` bump.
+- The provider's legend listener (`sherpa-provider.ts` ~:857) reads the `present` event's `detail.byScope[partKey][field]`: `#drawWalk` keeps that shape, part scopes included.
+- `#compileFacts().drop`.
+- Tests: the `present-limits` comment block :137-140; Demos `reforged-limit-options.spec.ts` :3-8 header and :49 comment; a NEW test for Q1 A ("Limit off: the View greys a legend value").
+- Controls that write order themselves: toolbar `#render` → `#inSets`, `#addFilters` (append), `heldFields` → `answerScope` → `hold()` (the bar writes `q.holds` on every report); the panel's Organise → Presets → fields and `#groupSets`; the View chip first. Toolbar, panel and grid each work out set-aside with `allSetAside(ruleOut(...))`.
+- **Gates:** `check:size` (pre-commit) and `check:weight` (`npm test`) need growth recorded on purpose for `walk.ts`, `source-counts.ts` and `data-source.ts`.
+
+**K. HEAD lines (`data-source.ts`):** `#parts` :184 · `#viewFilter` :208 · `setFilter` :516-523 · `contribute` :535-539 · `answer` presets :705 · `describe` :744-807 · `#take` :863-874 · `declareFromRows` load :973 · `declareSets` :1035-1053 · `offer` :1324 · `debugState` :1381-1414 · `#recompose` :1418-1444 · `#ask` :1803-1885 · `results` :1893-1916 · `valueResults` :1926-1949 · `#drawResults` :1954-1982 · `limitOptions` :1991-1996 · `present` :2005-2026 · `#setAsideNow` :2037-2081 · `#chainAside` :2085-2102 · `offered` :2110-2124 · `#settleSetAside` :2128-2147 · `#recency`… :2151-2176 · `#drawPresent` :2186-2212 · `attach` :2228 · `answerColumn` hold :2324. (Moved again by the 4.3–4.7 review fixes: re-read before each edit.)
+
+---
 
 # THE WALK, for TODOs 347, 348 and 349: the two designs scored, then one merged design
 
