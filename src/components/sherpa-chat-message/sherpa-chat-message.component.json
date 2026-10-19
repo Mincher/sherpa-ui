@@ -170,11 +170,6 @@
     },
     {
       "$type": "state",
-      "name": "assistant",
-      "selector": ":host([data-type=\"assistant\"])"
-    },
-    {
-      "$type": "state",
       "name": "system",
       "selector": ":host([data-type=\"system\"])"
     },

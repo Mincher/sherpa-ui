@@ -74,7 +74,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "values": [
         "top",
         "bottom",

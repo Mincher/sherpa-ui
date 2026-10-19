@@ -17,14 +17,11 @@ export class SherpaTooltip extends SherpaElement {
   static override html = new URL('./sherpa-tooltip.html', import.meta.url);
   static override props = {
     'data-anchor': { type: 'string', kind: 'style' },
-    
     'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
-    'data-placement': { type: 'enum', kind: 'style', values: ['top', 'bottom', 'left', 'right'] },
+    'data-placement': { type: 'enum', kind: 'behaviour', values: ['top', 'bottom', 'left', 'right'] },
   } as const;
 
   override onRender(): void {
-    if (!this.dataset['placement']) this.set('data-placement', 'top');
-
     const bubble = this.$('.bubble');
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
     if (bubble) this.setAttribute('aria-describedby', bubble.id);
@@ -115,7 +112,7 @@ export class SherpaTooltip extends SherpaElement {
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
 
-    const preferred = (this.dataset['placement'] as Side | undefined) ?? 'top';
+    const preferred: Side = SIDES.find((s) => s === this.dataset['placement']) ?? 'top';
     const fits: Record<Side, boolean> = {
       top: t.top - gap - b.height >= gap,
       bottom: t.bottom + gap + b.height <= vh - gap,

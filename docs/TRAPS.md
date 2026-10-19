@@ -1360,6 +1360,24 @@ failure would have no banner.
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/core/data/data-source.ts`
 
+### T-no-attribute-is-the-default-variant
+
+**With no `data-nav-state` the rail is collapsed, and nothing writes the
+attribute** (TODO 344: a default variant is the CSS's, never a write from TS).
+The projected region puts Figma's PRIMARY mode, `default` (320px, open), on the
+bare `:host`, but the rail RESTS collapsed. So the projector's navigation route
+takes `unset: 'collapsed'`, and writes that mode's block as
+`:host(:is([data-nav-state="collapsed"], :not([data-nav-state])))`; every
+authored collapsed rule matches the same way. `unset` and the `.html` header's
+`collapsed (default)` must name the same mode.
+
+At rest the attribute is ABSENT. Read `nav.state`: a test that waits for
+`data-nav-state` waits for ever.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `src/components/sherpa-nav/sherpa-nav.css`
+- Site: `test/e2e/reforged-nav.spec.ts`
+
 ### T-the-nav-is-a-menu-on-a-phone
 
 **On a phone the nav is a MENU, and it is the SAME `sherpa-nav`** — TODO 17b.

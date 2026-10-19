@@ -25,15 +25,21 @@ test.beforeEach(async ({ page }) => {
 
 type WithRender = HTMLElement & { rendered?: Promise<void> };
 
-test('defaults to the assistant role', async ({ page }) => {
-  const role = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-chat-message') as WithRender;
-    el.setAttribute('data-message', 'hello');
-    document.getElementById('root')!.appendChild(el);
-    await el.rendered;
-    return el.dataset.type;
+/** The default is the CSS's: nothing writes data-type. TODO 344 */
+test('with no data-type it draws as the assistant, and writes nothing', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const draw = async (type?: string) => {
+      const el = document.createElement('sherpa-chat-message') as WithRender;
+      el.setAttribute('data-message', 'hello');
+      if (type) el.setAttribute('data-type', type);
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      return { attr: el.getAttribute('data-type'), bg: getComputedStyle(el.shadowRoot!.querySelector('.bubble')!).backgroundColor };
+    };
+    return { bare: await draw(), assistant: await draw('assistant') };
   });
-  expect(role).toBe('assistant');
+  expect(r.bare.attr).toBeNull();
+  expect(r.bare.bg).toBe(r.assistant.bg);
 });
 
 test('data-message, data-name and data-timestamp write their text nodes', async ({ page }) => {

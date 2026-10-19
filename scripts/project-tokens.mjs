@@ -115,8 +115,9 @@ const ROUTING = {
 
   // Component-scoped collections → a partial; non-primary modes → :host([attr=…]).
   input: { target: { scoped: 'sherpa-input-text' }, attr: 'data-state' },
-  // Navigation scopes the RAIL; items read its indent tiers by cascade.
-  navigation: { target: { scoped: 'sherpa-nav' }, attr: 'data-nav-state' },
+  // Navigation scopes the RAIL; items read its indent tiers by cascade. With no
+  // attribute the rail RESTS collapsed. TRAP T-no-attribute-is-the-default-variant
+  navigation: { target: { scoped: 'sherpa-nav' }, attr: 'data-nav-state', unset: 'collapsed' },
   switch: { target: { scoped: 'sherpa-switch' }, attr: 'data-type' },
 
   // Extension-only collections (no leaves in the dump) — read from the cache.
@@ -510,7 +511,7 @@ for (const slug of Object.keys(doc)) {
         );
       }
     }
-    const partial = buildScopedPartial(slug, route.target.scoped, route.attr, leaves, route.renameMap);
+    const partial = buildScopedPartial(slug, route.target.scoped, route.attr, leaves, route.renameMap, route.unset);
     scopedPartials.push(partial);
     const cls = route.target.alsoClass;
     if (cls) {
@@ -558,9 +559,10 @@ for (const slug of Object.keys(extDoc)) {
 /**
  * A scoped component partial. Non-primary modes become :host([attr="mode"]). Booleans
  * become private `--_<flag>` visibility vars (true→revert-layer, false→none) the
- * component reads with `display: var(--_flag, …)` — visibility stays in CSS.
+ * component reads with `display: var(--_flag, …)` — visibility stays in CSS. `unset`
+ * names the mode an ABSENT attribute means, when it is not Figma's primary one.
  */
-function buildScopedPartial(slug, comp, attr, leaves, renameMap) {
+function buildScopedPartial(slug, comp, attr, leaves, renameMap, unset) {
   const primaryMode = leaves.find((l) => l.primaryMode)?.primaryMode ?? 'default';
   const rootVars = [];
   const byMode = {};
@@ -593,9 +595,10 @@ function buildScopedPartial(slug, comp, attr, leaves, renameMap) {
       (byMode[mode] ??= []).push(`  ${name}: ${mv};`);
     }
   }
-  const modeBlocks = Object.entries(byMode).map(
-    ([mode, lines]) => `:host([${attr}="${mode}"]) {\n${lines.join('\n')}\n}`,
-  );
+  const modeBlocks = Object.entries(byMode).map(([mode, lines]) => {
+    const on = `[${attr}="${mode}"]`;
+    return `:host(${mode === unset ? `:is(${on}, :not([${attr}]))` : on}) {\n${lines.join('\n')}\n}`;
+  });
   const css = `${TOKENS_MARK_START}
 /* Component-scoped token aliases, PROJECTED from Figma (the "${slug}" collection).
    DO NOT EDIT — edit in Figma, re-project. The component's own [${attr}] re-points

@@ -21,7 +21,7 @@
     --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
   }
 
-  :host([data-nav-state="collapsed"]) {
+  :host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) {
     --sherpa-navigation-nav-surface-default: var(--sherpa-style-surface-base);
     --sherpa-navigation-nav-layout-width: var(--sherpa-display-mode-size-3xl);
     --sherpa-navigation-nav-container-header-label: Product name;
@@ -99,7 +99,7 @@
  * sherpa-nav.css — the primary application navigation rail.
  *
  * Five modes (collapsed / hover / default / pinned / settings) are projected above
- * as `:host([data-nav-state=...])`; everything below just reads those tokens.
+ * as `:host([data-nav-state=...])`; none is collapsed. TRAP T-no-attribute-is-the-default-variant
  * `--_is-visible` (Figma's isVisible boolean) hides the label / search / section
  * text when collapsed, so CSS never re-implements the mode logic.
  */
@@ -232,7 +232,7 @@
 :host(:not([data-searchable])) .search { display: none; }
 
 /* COLLAPSED: the search survives as an icon row — clicking it opens the rail. */
-:host([data-nav-state="collapsed"]) .search {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .search {
   display: flex;
   justify-content: center;
   padding-inline: 0;
@@ -242,7 +242,7 @@
   border: none;
   background: none;
 }
-:host([data-nav-state="collapsed"]) :is(.search-input, .search-clear) {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) :is(.search-input, .search-clear) {
   display: none;
 }
 
@@ -353,7 +353,7 @@
    `font-size: 0` as well as transparent ink — transparent alone leaves the word
    occupying its full width, so the `flex: 1 1 auto` ::after rule gets 0px and
    reads as missing. */
-:host([data-nav-state="collapsed"]) .section-label {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .section-label {
   color: transparent;
   font-size: 0;
   gap: 0;
@@ -394,7 +394,7 @@
 
 /* A child is always hidden in the 40px rail: children have no icon, and the
    parent's chevron is hidden too, so nothing could reach it. */
-:host([data-nav-state="collapsed"]) .nav-row[data-parent] { display: none; }
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .nav-row[data-parent] { display: none; }
 
 /* ── Search filtering ──────────────────────────────────────────────────── */
 /* JS marks non-matching rows with data-filtered-out; CSS does the hiding.
@@ -423,7 +423,7 @@
 }
 
 /* ── Collapsed rail ────────────────────────────────────────────────────── */
-:host([data-nav-state="collapsed"]) .footer {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .footer {
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
@@ -432,17 +432,17 @@
    `justify-content` must reach the INNER control via part(): the host's only
    visible child is `.nav`, which is itself the flex row holding the icon, so
    centring the host alone leaves the icon 4px off centre. */
-:host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .nav-row sherpa-nav-item {
   --_indent: var(--sherpa-display-mode-space-none, 0px);
   --_pad-end: var(--sherpa-display-mode-space-none, 0px);
   justify-content: center;
 }
-:host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item::part(row) {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .nav-row sherpa-nav-item::part(row) {
   justify-content: center;
 }
 /* The indicator dot goes with the label: a 24-wide icon-only row has nowhere to
    put an 8px disc without overlaying the icon, and Figma has no frame for it.
    FLAG FOR WILL: an attention signal on the collapsed rail needs a Figma frame. */
-:host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item::part(dot) {
+:host(:is([data-nav-state="collapsed"], :not([data-nav-state]))) .nav-row sherpa-nav-item::part(dot) {
   display: none;
 }

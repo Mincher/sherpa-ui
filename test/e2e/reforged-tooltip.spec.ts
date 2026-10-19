@@ -86,15 +86,23 @@ test('it takes the opposite side when its own does not fit, and the arrow follow
   expect(r).toEqual({ below: true, bottomState: true, topState: false });
 });
 
-test('data-placement defaults to top', async ({ page }) => {
-  const placement = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void> };
-    el.innerHTML = '<button>x</button>';
-    document.getElementById('root')!.appendChild(el);
-    await el.rendered;
-    return el.getAttribute('data-placement');
-  });
-  expect(placement).toBe('top');
+/** The default is read, never written. TODO 344 */
+test('with no data-placement, or an empty one, it opens on top and writes nothing', async ({ page }) => {
+  for (const attr of ['', ' data-placement=""']) {
+    await page.evaluate(async (a) => {
+      document.getElementById('root')!.innerHTML = `<sherpa-tooltip data-text="Above"${a} style="position:fixed;inset-block-start:200px;inset-inline-start:200px"><button id="trig">x</button></sherpa-tooltip>`;
+      await (document.querySelector('sherpa-tooltip') as HTMLElement & { rendered: Promise<void> }).rendered;
+    }, attr);
+    await page.locator('#trig').hover();
+    await page.waitForFunction(() => document.querySelector('sherpa-tooltip')!.matches(':state(side-top), :state(side-bottom), :state(side-left), :state(side-right)'));
+    const r = await page.evaluate(() => {
+      const t = document.querySelector('sherpa-tooltip') as HTMLElement;
+      const b = t.shadowRoot!.querySelector('.bubble')!.getBoundingClientRect();
+      return { written: t.getAttribute('data-placement') || null, above: b.bottom <= document.getElementById('trig')!.getBoundingClientRect().top, top: t.matches(':state(side-top)') };
+    });
+    expect(r).toEqual({ written: null, above: true, top: true });
+    await page.mouse.move(600, 400);
+  }
 });
 
 test('text property reflects to data-text and the bubble', async ({ page }) => {

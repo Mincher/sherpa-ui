@@ -116,7 +116,10 @@ blocks `.hidden =` and `.style.display|visibility =` (eslint
 `no-restricted-syntax`). A reviewer holds the rest: no `classList` for a visual
 state.
 
-**17. Every element the component will ever show is in the template.** No
+**17. Every element the component will ever show is in the template.** Its
+default variant and its fixed text are in its `.html` and `.css` too: with no
+`data-x`, the bare `:host` or `:host(:not([data-x]))` draws the default, and the
+component never writes one (Will, 2026-10-19, TODO 344). No
 `createElement()` for structure, no structural `innerHTML`. Repeating items use
 a cloning prototype. A typed child by tag name is not structure — `menuFor()`
 building a `<sherpa-menu>` is that. Measured 2026-10-15: eight. Four are typed

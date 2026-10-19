@@ -89,14 +89,6 @@
 .bubble ::slotted(*) { margin: 0; }
 .bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
 
-/* ── Assistant (default) ─────────────────────────────────────────────── */
-/* The bare `:host` above already carries these values; this restates them for
-   an explicit data-type="assistant". */
-:host([data-type="assistant"]) {
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_ink: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
-}
-
 /* ── User ────────────────────────────────────────────────────────────── */
 /* Only assistant keeps the avatar column. */
 :host(:is([data-type="user"], [data-type="system"])) .avatar { display: none; }

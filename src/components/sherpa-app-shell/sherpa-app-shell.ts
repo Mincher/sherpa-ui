@@ -35,7 +35,7 @@ export class SherpaAppShell extends SherpaElement {
     this.addEventListener('nav-menu-request', () => {
       this.#rail()?.openMenu?.();
     });
-    // Deferred: the rail sets itself to `collapsed` on its own first render.
+    // Deferred, so a state the page writes in this turn is read; none is collapsed.
     queueMicrotask(() => this.#adoptRailState());
 
     /* A panel area follows its panel's own `open`: slotted but SHUT, it

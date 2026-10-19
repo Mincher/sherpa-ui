@@ -70,7 +70,6 @@ export class SherpaCalendar extends SherpaElement {
     const anchor = parseIso(this.getAttribute('value') ?? this.dataset['valueStart'])
       ?? this.#availableAnchor();
     if (anchor) this.#shown = anchor.toPlainYearMonth();
-    if (!this.dataset['view']) this.set('data-view', 'day');
     // Project the stepper BEFORE binding, so it exists to bind to.
     if (this.hasAttribute('data-embedded')) this.#projectHeader();
     for (const el of this.#headerEls('.cal-prev')) el.addEventListener('click', this.#onPrev);

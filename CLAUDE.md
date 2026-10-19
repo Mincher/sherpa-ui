@@ -235,7 +235,7 @@ export class SherpaFoo extends SherpaElement {
   // For native attributes, and for attributes the component handles itself.
   static override observed = ['disabled'];
 
-  override onRender()  { /* shadow DOM ready — cache refs, set defaults, wire host listeners */ }
+  override onRender()  { /* shadow DOM ready — cache refs, wire host listeners; again on a re-stamp */ }
   override onConnect() { /* each time it is connected, after the first render; pair it with onDisconnect */ }
   override onDisconnect() { /* clean up timers / observers */ }
   override onChange(name: string, oldVal: string | null, newVal: string | null) { /* react to attribute changes */ }

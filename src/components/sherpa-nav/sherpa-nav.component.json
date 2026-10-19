@@ -372,6 +372,11 @@
     },
     {
       "$type": "state",
+      "name": "not-nav-state",
+      "selector": ":host(:not([data-nav-state]))"
+    },
+    {
+      "$type": "state",
       "name": "focus-visible",
       "selector": ".search-clear:focus-visible"
     }

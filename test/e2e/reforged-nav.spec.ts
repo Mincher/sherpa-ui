@@ -134,7 +134,9 @@ test('the rail starts collapsed: 40px, no product name or section labels, search
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
     return {
-      state: nav.dataset['navState'],
+      // No attribute is collapsed, and nothing writes one. TRAP T-no-attribute-is-the-default-variant
+      state: (nav as HTMLElement & { state?: string }).state,
+      attr: nav.getAttribute('data-nav-state'),
       width: getComputedStyle(nav).getPropertyValue('--sherpa-navigation-nav-layout-width').trim(),
       product: getComputedStyle(s.querySelector('.product')!).display,
       search: getComputedStyle(s.querySelector('.search')!).display,
@@ -150,6 +152,7 @@ test('the rail starts collapsed: 40px, no product name or section labels, search
   });
   // Figma Navigation collection: the rail's resting mode is `collapsed` at 40px.
   expect(r.state).toBe('collapsed');
+  expect(r.attr).toBeNull();
   expect(r.width).toBe('40px');
   expect(r.product).toBe('none');
   // The search SURVIVES as an icon row — Figma's Primary Navigation keeps a search
@@ -922,9 +925,10 @@ test('the collapsed rail is the density\'s size/3xl: 36, 40 and 48', async ({ pa
       widths[density] = Math.round(nav.getBoundingClientRect().width);
     }
     document.documentElement.removeAttribute('data-density');
-    return { state: nav.dataset['navState'], widths };
+    return { state: (nav as HTMLElement & { state?: string }).state, attr: nav.getAttribute('data-nav-state'), widths };
   });
   expect(r.state).toBe('collapsed');
+  expect(r.attr).toBeNull();
   expect(r.widths).toEqual({ compact: 36, default: 40, comfortable: 48 });
 });
 

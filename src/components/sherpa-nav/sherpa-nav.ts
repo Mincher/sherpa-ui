@@ -87,8 +87,6 @@ export class SherpaNav extends SherpaElement {
   #beforeSettings: NavState = 'collapsed';
 
   override onRender(): void {
-    if (!this.dataset['navState']) this.set('data-nav-state', 'collapsed');
-
     // Delegated — rows come and go, these listeners stay.
     this.$('.rail')?.addEventListener('item-select', this.#onItemClick as EventListener);
     this.$('.rail')?.addEventListener('item-expand', this.#onItemExpand as EventListener);

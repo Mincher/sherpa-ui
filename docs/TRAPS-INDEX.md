@@ -826,7 +826,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (103)
+## Other components (104)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -903,6 +903,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-nav-search-uses-a-real-highlight](TRAPS.md#t-nav-search-uses-a-real-highlight) — nav
 - [T-nav-state-writes-only-the-attribute](TRAPS.md#t-nav-state-writes-only-the-attribute) — nav
 - [T-never-fight-a-focused-field](TRAPS.md#t-never-fight-a-focused-field) — slider
+- [T-no-attribute-is-the-default-variant](TRAPS.md#t-no-attribute-is-the-default-variant) — nav
 - [T-num-is-stricter-than-parsefloat](TRAPS.md#t-num-is-stricter-than-parsefloat) — slider
 - [T-one-tab-stop-per-set](TRAPS.md#t-one-tab-stop-per-set) — tabs
 - [T-only-the-context-scrolls](TRAPS.md#t-only-the-context-scrolls) — app-shell
@@ -932,7 +933,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (58)
+## Build, tools and the MCP (59)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -979,6 +980,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-kind-says-how-not-whether](TRAPS.md#t-kind-says-how-not-whether) — compile-def, generate-component-spec, ts-facts
 - [T-markup-is-checked-against-the-spec](TRAPS.md#t-markup-is-checked-against-the-spec) — check-usage, sherpa-ui
 - [T-motion-is-owned-here](TRAPS.md#t-motion-is-owned-here) — lint-css
+- [T-no-attribute-is-the-default-variant](TRAPS.md#t-no-attribute-is-the-default-variant) — project-tokens
 - [T-nothing-downloads-to-serve](TRAPS.md#t-nothing-downloads-to-serve) — playwright.config, sherpa-ui
 - [T-private-state-is-a-custom-state](TRAPS.md#t-private-state-is-a-custom-state) — check-props
 - [T-snap-vscode-breaks-webkit](TRAPS.md#t-snap-vscode-breaks-webkit) — playwright.config

@@ -1152,7 +1152,7 @@ export abstract class SherpaElement extends Base {
     return undefined;
   }
 
-  /** Shadow DOM is ready. Cache refs, set defaults, wire host listeners. */
+  /** Shadow DOM is ready. Cache refs, wire host listeners. Runs again on a re-stamp. */
   protected onRender(): void {}
 
   /** Fires each time the element is connected, after the first render; pair it with onDisconnect. */
