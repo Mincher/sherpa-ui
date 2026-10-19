@@ -228,9 +228,11 @@ flowchart TD
   classDef ext fill:#e3f4e8,stroke:#2e7d32,color:#0c0b11
 ```
 
-Open questions in 345: how a source learns that a field changed (a store
-event, a live push, a version, a time limit), what the cache keys on, and how
-the reader sees that an answer came from held data.
+Open questions in 345: what the cache keys on, and how the reader sees that an
+answer came from held data. For "has a field changed?", Will's sketch: the
+store keeps a History table (a delta time and a bitmap of the changed fields
+per update), and the data layer compares it with the session start and View
+update times. See TODO 345.
 
 ### 4. A write (add, edit, delete)
 

@@ -473,6 +473,41 @@ data?"* Then:
 *"It's not just a binary scenario but a series of considerations on when to be
 performant versus current in working with data."*
 
+**Change tracking: Will's sketch** (2026-10-19). *"Definitely needs some
+thinking planning before we implement anything!"*
+
+- A store gets updates from many outside sources at any time, so the STORE
+  tracks its own updates.
+- A HISTORY table in the store: one row per update, with a time and the fields
+  that changed (not the values). Smaller still: a delta time and a BITMAP of the
+  changed fields.
+- The local data layer keeps the app instance's SESSION START time and the
+  VIEW UPDATE time, and the delta between them to speed up the maths. With the
+  History deltas, it works out what to request and load, and what to answer in
+  the browser.
+- Only the CURRENT View's update and delta times are kept. They reset when the
+  whole View refreshes, or a component in it redraws.
+- If the View is not fine-grained enough, the update and delta times move to
+  each component (`SherpaElement`), so each component asks for its own data.
+  *"I feel like this might be the actual best solution but I'm unsure of the
+  performance implications."* Filtering already works at component and View
+  scopes.
+
+Points to think through (Claude, 2026-10-19):
+
+- A bitmap needs a field order that the store and the client share: the
+  schema, with a version, so a new field never moves the other bits.
+- A row added or deleted changes every field's values and the counts: likely
+  one more bit, "rows changed".
+- One clock: the STORE's. The session start can be the store's time in its
+  first answer, so the browser's clock is never compared with the server's.
+- A remote store's History comes from its server: a "changes since T" request
+  that answers with the bitmaps OR-ed together.
+- The table grows: old rows can merge (OR their bitmaps over a time window).
+- Per component: the data layer has no DOM (lint enforces it). Each bound
+  component already has an entry in the source's `SourceBinding`, so a
+  per-component time could live there, with no change to `SherpaElement`.
+
 **What is there today (340):** `#readWhole()` sends
 `store.load({ take: holdRows + 1 })` with no filter, so up to 50,000 whole rows
 (every field), once per remote source when it opens. It holds them only if the
