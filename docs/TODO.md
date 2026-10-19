@@ -649,6 +649,13 @@ of Sherpa-UI is miserable. We need to investigate what the performance hits
 are, how sherpa can be optimised, and what our options are."* **Deferred until
 the data layer is explored and changed (345–349)**, as some of that may help.
 
+**The biggest hit, measured by Will (2026-10-19):** Interaction to Next Paint
+(INP) of about **600 ms** under 4x throttling, and it comes from the **quick
+filter toolbar** — the reason 350 sits after the data layer and filter work.
+
+**Will's rule while 345–349 are built:** where a performance fix is in reach
+of that work, make it then. 350 is still done as its own exercise.
+
 In scope, as Will named it:
 
 - what costs time, measured under 4x throttling, not guessed;

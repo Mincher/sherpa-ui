@@ -69,7 +69,9 @@ with Will.
 
 Sherpa is slow under 4x CPU throttling. Measure what costs, find the fixes and
 the options, and look for redundant, legacy and convoluted code and composition
-bottlenecks. Deferred until 345–349 are done, as they may help.
+bottlenecks. Deferred until 345–349 are done, as they may help. Will measured
+the worst: an INP of about 600 ms, from the quick filter toolbar. **While doing
+345–349, fix any performance issue that is in reach** — 350 still runs on its own.
 
 ## Waiting on Will (❓ and looks)
 
