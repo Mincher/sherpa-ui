@@ -720,6 +720,15 @@ against the code). The full plan, with every file:line, is
     current; any other store is read again first. Bench `remote/reopen`: 0
     loads (open: 1 load, 10,000 rows). TRAP `T-a-store-has-one-cache`.
 
+  - ✅ **4.2 review** (`0153f989`) — 12 faults confirmed, fixed: retry per page,
+    failure per cap, the widest cap, no cancelled read, a Refresh retries a
+    refusal, and no hang on a load that throws at once.
+  - ✅ **4.3** (2026-10-19) — `planRead()` (`read-plan.ts`) decides every read; a
+    page opened again over a store that may miss a writer shows its set AT ONCE,
+    `change { stale: true }`, and reads it again behind, once. Bench `rest/`
+    page: open and reopen ONE load each, every other act none. Demos `?remote`:
+    back to Records shows rows before an 800 ms read could. TRAP `T-a-read-is-planned`.
+
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

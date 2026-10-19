@@ -304,5 +304,158 @@
     "compiles": 10,
     "clones": 7,
     "scans": 6
+  },
+  "rest/open": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10000,
+    "compiles": 10,
+    "clones": 7,
+    "scans": 7
+  },
+  "rest/pick": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 15,
+    "clones": 2,
+    "scans": 12
+  },
+  "rest/repick": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 5,
+    "clones": 1,
+    "scans": 0
+  },
+  "rest/page": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 1
+  },
+  "rest/report": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 8,
+    "scans": 15
+  },
+  "rest/switch-off": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 18,
+    "clones": 13,
+    "scans": 14
+  },
+  "rest/switch-on": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 18,
+    "clones": 7,
+    "scans": 15
+  },
+  "rest/sort": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 2
+  },
+  "rest/heading": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 12,
+    "clones": 2,
+    "scans": 21
+  },
+  "rest/search": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 2
+  },
+  "rest/raise": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 11,
+    "scans": 22
+  },
+  "rest/clear": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 16,
+    "clones": 2,
+    "scans": 15
+  },
+  "rest/reset": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 7,
+    "clones": 8,
+    "scans": 3
+  },
+  "rest/add": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 6,
+    "clones": 1,
+    "scans": 4
+  },
+  "rest/save": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 6,
+    "clones": 1,
+    "scans": 4
+  },
+  "rest/delete": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 6,
+    "clones": 1,
+    "scans": 4
+  },
+  "rest/reopen": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10000,
+    "compiles": 16,
+    "clones": 8,
+    "scans": 11
   }
 }

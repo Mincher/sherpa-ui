@@ -278,4 +278,7 @@ export interface DataChangeDetail extends LoadResult {
   state: ViewState;
   /** No row came back, and why: the data holds none, or the question matched none. Absent while rows came. */
   emptiness?: 'empty' | 'no-matches';
+  /** Held rows the store has not confirmed: they are being checked behind, or the
+   *  store cannot be reached. TRAP T-a-read-is-planned */
+  stale?: true;
 }

@@ -122,6 +122,7 @@ import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import { cacheOf, type StoreCache } from './store-cache.js';
+import { planRead, type Plan } from './read-plan.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
@@ -224,8 +225,12 @@ export class DataSource extends EventTarget {
   readonly #cache: StoreCache | null;
   /** How many whole reads had landed when it was made: a set from before may miss a writer. */
   readonly #since: number;
-  /** Its first hold has asked whether the set from before can be trusted. */
+  /** Its first hold has tried a failed whole read once more. */
   #checked = false;
+  /** How its last question was answered. TRAP T-a-read-is-planned */
+  #plan: Plan = 'store';
+  /** It has started its ONE check of the set behind it. */
+  #tried = false;
 
   constructor(options: DataSourceOptions) {
     super();
@@ -1667,7 +1672,8 @@ export class DataSource extends EventTarget {
     const set = this.#cache?.set;
     if (!set || set.size > this.#holdRows) return;
     this.#age++;
-    if (this.#loaded && !this.#inFlight.busy) void this.#reask();
+    // An ask in flight may have read the set before it landed: it is overtaken.
+    if (this.#loaded || this.#inFlight.busy) void this.#reask();
   };
 
   /** Closed: it no longer hears its store, and holds nothing. */
@@ -1693,29 +1699,57 @@ export class DataSource extends EventTarget {
     return asking;
   }
 
-  /** What every read asks: the store's held set, while it is current and within
-   *  this page's cap; else the store. A closed source asks the store. */
+  /** What every read asks, as the plan says: the store's held set — current, or
+   *  shown while it is checked — else the store. A closed source asks the store. */
   get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct'> {
+    const set = this.#closed ? null : this.#cache?.set;
+    return set && (this.#plan === 'held' || this.#plan === 'held-stale') ? set : this.store;
+  }
+
+  /** The plan for the next question, as the store's set stands now. */
+  #planNow(): { plan: Plan; behind: boolean } {
     const cache = this.#closed ? null : this.#cache;
-    const set = cache?.set;
-    return set && !cache.due && !cache.failed && set.size <= this.#holdRows ? set : this.store;
+    if (!cache) return { plan: 'store', behind: false };
+    const set = cache.set;
+    return planRead({
+      need: { cap: this.#holdRows },
+      held: { set: set ? { size: set.size, gen: cache.gen, due: cache.due } : null, never: cache.never, over: cache.over, failedAt: cache.failedAt },
+      history: { announcesAll: !!this.store.announcesAll, since: this.#since },
+      reach: { tried: this.#tried },
+    });
   }
 
   /** Hold the store's whole set, where it can be: one read for every page over
    *  it. TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
   async #hold(): Promise<void> {
     const cache = this.#closed ? null : this.#cache;
-    if (!cache) return;
-    /* A new page: a failed whole read is tried once more; and a set held before
-       it, over a store that may miss a writer (another tab, another client), is
-       read again before it is trusted — unless that read is due already, or the
-       set is too big for this page, which then asks the store. */
-    if (!this.#checked && !(cache.set && cache.set.size > this.#holdRows)) {
+    if (!cache) {
+      this.#plan = 'store';
+      return;
+    }
+    // A new page tries a failed whole read once more, as each page did before the set was the store's.
+    if (!this.#checked) {
       this.#checked = true;
       if (cache.failed) cache.retry();
-      else if (cache.set && !cache.due && !this.store.announcesAll && cache.gen <= this.#since) cache.letGo();
     }
-    await cache.hold(this.#holdRows);
+    for (;;) {
+      const { plan, behind } = this.#planNow();
+      this.#plan = plan;
+      /* A set it cannot vouch for answers at once, and is read again BEHIND it —
+         once a page, at open or a first load: never on a toggle (340). */
+      if (behind) {
+        this.#tried = true;
+        cache.recheck(this.#holdRows);
+      }
+      if (plan !== 'fetch') return;
+      const before = `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}`;
+      await cache.hold(this.#holdRows);
+      // Nothing moved — no read could be sent: the store answers.
+      if (`${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}` === before) {
+        this.#plan = 'store';
+        return;
+      }
+    }
   }
 
   /** A Refresh: the store's set is read again before it is used — never by a closed source. */
@@ -1780,9 +1814,11 @@ export class DataSource extends EventTarget {
       this.#binding.publish();
       // Empty, or no matches: the data layer says which. TRAP T-a-container-shows-its-datas-state
       const emptiness = result.total > 0 ? undefined : this.#filter || this.#state.search ? 'no-matches' : 'empty';
+      // Unconfirmed, as the set stands NOW: a check that landed meanwhile confirmed it.
+      const stale = this.#plan === 'held-stale' && this.#planNow().plan === 'held-stale';
       this.dispatchEvent(
         new CustomEvent<DataChangeDetail>('change', {
-          detail: { ...result, state: this.state, ...(emptiness ? { emptiness } : {}) },
+          detail: { ...result, state: this.state, ...(emptiness ? { emptiness } : {}), ...(stale ? { stale: true as const } : {}) },
         }),
       );
       void this.#drawResults();

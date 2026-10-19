@@ -166,10 +166,10 @@ function control(tag, id, holds = []) {
 }
 
 /** The page, opened and bound as the provider binds it. */
-async function open(L, remote) {
+async function open(L, remote, announcesAll) {
   const def = JSON.parse(readFileSync(PAGE, 'utf8')).source;
   const store = counted(new L.ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id', time: 'created' }));
-  const seen = remote ? L.spoofRemote(store, { delay: 0 }) : store;
+  const seen = remote ? L.spoofRemote(store, { delay: 0, ...(announcesAll === false ? { announcesAll } : {}) }) : store;
   return { L, def, store: seen, ...await page(L, def, seen) };
 }
 
@@ -221,7 +221,12 @@ const ACTS = {
     Object.assign(p, await page(p.L, p.def, p.store));
   },
 };
-const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: Object.keys(ACTS) } };
+const PAGES = {
+  records: { remote: false, acts: Object.keys(ACTS) },
+  remote: { remote: true, acts: Object.keys(ACTS) },
+  // A store that may miss a writer (a server another client writes): a reopen shows its set and checks it behind.
+  rest: { remote: true, announcesAll: false, acts: Object.keys(ACTS) },
+};
 
 /** An act has ended when no counter moves for three timer turns. */
 async function settle(name) {
@@ -257,8 +262,8 @@ export async function bench() {
     return out;
   };
   try {
-    for (const [page, { remote, acts }] of Object.entries(PAGES)) {
-      const p = await measure(`${page}/open`, () => open(L, remote));
+    for (const [page, { remote, announcesAll, acts }] of Object.entries(PAGES)) {
+      const p = await measure(`${page}/open`, () => open(L, remote, announcesAll));
       for (const act of acts) await measure(`${page}/${act}`, () => ACTS[act](p));
     }
   } finally {
@@ -276,9 +281,14 @@ const ASKS = ['loads', 'counts', 'distinct'];
  *  set is held, so the client answers. A rule, never a baseline — Will, TODO 340.
  *  TRAP T-a-remote-source-holds-its-whole-set */
 export function asked(costs) {
+  // A rest/ open and reopen read the set ONCE — the reopen behind the set it shows. TRAP T-a-read-is-planned
+  const once = new Set(['rest/open', 'rest/reopen']);
   return Object.entries(costs)
-    .filter(([act, c]) => act.startsWith('remote/') && act !== 'remote/open' && ASKS.some((k) => c[k] > 0))
-    .map(([act, c]) => `${act} asked the store: ${ASKS.map((k) => `${k} ${c[k]}`).join(', ')}`);
+    .filter(([act]) => act.startsWith('remote/') || act.startsWith('rest/'))
+    .filter(([act, c]) => (act === 'remote/open' ? false
+      : once.has(act) ? c.loads !== 1 || c.counts > 0 || c.distinct > 0
+        : ASKS.some((k) => c[k] > 0)))
+    .map(([act, c]) => `${act} asked the store: ${ASKS.map((k) => `${k} ${c[k]}`).join(', ')}${once.has(act) ? ' (want: loads 1)' : ''}`);
 }
 
 /** Each cost above the baseline, and each act one side lacks. */

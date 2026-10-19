@@ -12,6 +12,10 @@
  * - .gen — How many whole reads have landed.
  * - .due — The set is out of date: a change it could not take, or a Refresh.
  * - .failed — The last whole read failed: questions ask the store until a change, a Refresh or a new page.
+ * - .failedAt — The cap the last whole read failed at, or 0.
+ * - .never — The store's own facts forbid holding it.
+ * - .over — The largest cap a set was refused at, for its size.
+ * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
  * - .hold — Hold the whole set, up to a cap: one shared read, waited for.
  * - .retry — A new page tries a failed whole read once more.
  * - .letGo — A Refresh: the set is due, and read again before it is used.
@@ -77,6 +81,33 @@ export class StoreCache extends EventTarget {
   /** The last whole read failed: questions ask the store until a change, a Refresh or a new page. */
   get failed(): boolean {
     return this.#failedAt > 0;
+  }
+
+  /** The cap the last whole read failed at, or 0. */
+  get failedAt(): number {
+    return this.#failedAt;
+  }
+
+  /** The store's own facts forbid holding it. */
+  get never(): boolean {
+    return !!this.#never;
+  }
+
+  /** The largest cap a set was refused at, for its size. */
+  get over(): number {
+    return this.#over;
+  }
+
+  /** Read the set again BEHIND the one held: it stays, and answers, until the
+   *  read lands — then `set` fires. A read in flight serves. TRAP T-a-read-is-planned */
+  recheck(cap: number): void {
+    this.#widest = Math.max(this.#widest, cap);
+    if (this.#reading) return;
+    const reading = this.#readWhole(this.#failedAt ? cap : this.#widest);
+    this.#reading = reading;
+    void reading.finally(() => {
+      if (this.#reading === reading) this.#reading = null;
+    });
   }
 
   /** Hold the whole set, up to `cap` rows: one read, shared by every source that

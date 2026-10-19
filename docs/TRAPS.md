@@ -3655,6 +3655,49 @@ asks the store nothing.
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-a-read-is-planned
+
+345 phase 4.3 — Will's series: can held data answer? is it current? can the
+store be reached? One pure function, `planRead()` (`read-plan.ts`), decides
+before every read, and `#reads` follows its `Plan`:
+
+| The store's set | Plan |
+|---|---|
+| none — the store's facts refuse one, the cap is under a size refusal, or a read failed at this cap | `store` |
+| none | `fetch` — read it first |
+| bigger than this page's cap; or due, with no read that may be sent | `store` |
+| due — a change it could not take, a Refresh | `fetch`, as before |
+| the last read failed | `held-stale`, checked behind once |
+| held before this page, over a store that may miss a writer (`announcesAll` unsaid) | `held-stale`, checked behind once |
+| otherwise | `held` |
+
+**A page opened again shows at once.** Its set comes from the store's cache
+(`T-a-store-has-one-cache`), and over a store that cannot vouch for it — a
+server another client writes — the first answer is `change { stale: true }`
+with nothing asked, then ONE read behind it (`StoreCache.recheck`), then a
+`change` with no `stale`. Demos `?remote` (800 ms reads): back to Records shows
+its rows in well under 800 ms.
+
+- **Never on a toggle (340).** The check behind is started once a page, by its
+  first hold — at open, or its first load. A toggle while stale asks nothing.
+- **Stale is read when published**, from the plan as the set stands then: a
+  check that landed meanwhile confirmed the answer. A set that lands while an
+  ask is in flight overtakes it, as that ask may have read the old set.
+- A `fetch` that moves nothing (no read could be sent) answers from the store,
+  so the loop cannot spin.
+
+The bench's `rest/` page (a spoof that does not announce every change) holds the
+rule exactly: `rest/open` and `rest/reopen` make ONE load each, every other act
+none (`asked()`).
+
+- Site: `src/core/data/read-plan.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/store-cache.ts`
+- Site: `scripts/check-bench.mjs`
+- Site: `test/unit/the-read-plan.test.mjs`
+- Site: `test/unit/a-reopen-checks-behind.test.mjs`
+
 ### T-a-store-has-one-cache
 
 345 phase 4.2. Each page's `DataSource` held its OWN copy of a remote store's
@@ -3676,8 +3719,8 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
 - **Trust needs `announcesAll`.** A store whose every change comes through it
   (`ArrayStore`; `spoofRemote` passes its store's say on) is trusted as held.
   Any other may have missed a writer — another tab, another client — so a set
-  held before a page opened is read again on that page's first hold. (Phase 4.3
-  draws it at once and checks behind instead.)
+  held before a page opened is shown at once, STALE, and read again behind it
+  (`T-a-read-is-planned`).
 - **One cap per page.** A page whose `holdRows` is under the set's size asks the
   store; the set stays for the others. A set refused for its size at one cap may
   still be held at a larger one.

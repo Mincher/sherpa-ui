@@ -68,11 +68,12 @@ test('a page opened again asks nothing, and sees a change made while none was op
   assert.equal(again.total, 7);
 });
 
-test('a store that may miss a writer is read again before a page trusts the set', async () => {
+test('a store that may miss a writer is read again behind the set a page opens on', async () => {
   const { store, seen } = remote({ announcesAll: false });
   (await open(store)).close();
   seen.whole = 0;
   await open(store);
+  await tick();
   assert.equal(seen.whole, 1);
 });
 
@@ -140,6 +141,7 @@ test('two pages opening together over a store that may miss a writer make one wh
   (await open(store)).close();
   seen.whole = 0;
   await Promise.all([open(store), open(store)]);
+  await tick();
   assert.equal(seen.whole, 1);
 });
 
