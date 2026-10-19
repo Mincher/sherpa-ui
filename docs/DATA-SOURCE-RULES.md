@@ -147,6 +147,7 @@ interface Store {
   remove(key: unknown): Promise<void>;
   totalCount(options?: LoadOptions): Promise<number>;
   distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
+  scan?(): Promise<readonly Row[]>;
   readonly key: string;
 }
 ```
@@ -154,6 +155,13 @@ interface Store {
 `distinct()` is optional: each field's values among the matching rows, one per
 value. A store that has it is asked for a filter's values; one without it is
 read row by row.
+
+`scan()` is optional too: every row the schema accepts, handed over IN PLACE —
+no copy — for a reader that only reads. The source's counts and limits walk the
+rows once per scope (TODOs 347–349): a store with `scan` is walked in place; one
+without it is loaded once per change; a remote store is walked from its held
+set, or asked step by step. Give `scan` only to a store whose rows live in
+memory — `ArrayStore`, `JsonStore` and the live stores have it.
 
 Extend `BaseStore` and you get the key handling, the schema check and the
 `change` announcement for free — you write `load` and the four mutations.

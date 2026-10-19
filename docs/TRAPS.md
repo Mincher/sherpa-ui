@@ -1857,6 +1857,8 @@ filter added on the bar lands after the other saved filters; a field at the end.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-filterset.spec.ts`
+- Site: `src/core/data/store.ts`
+- Site: `test/unit/a-store-scan-reads-in-place.test.mjs`
 
 ### T-a-view-keeps-a-draft
 

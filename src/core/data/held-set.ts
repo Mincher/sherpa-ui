@@ -11,6 +11,7 @@
  * - .patch — Take one store change in place; false when it cannot, and the set must be read again.
  * - .load — What a load asks, each row a copy keyed as its original, so a host's edit never reaches the set.
  * - .totalCount — The matches, unpaged and unsorted.
+ * - .scan — Every row, in place.
  * - .distinct — Each field's values among the matches, read in place.
  */
 import {
@@ -125,6 +126,11 @@ export class HeldSet {
   }
 
   /** Each field's values among the matches, read in place. */
+  /** Every row, in place. */
+  scan(): Promise<readonly Row[]> {
+    return Promise.resolve(this.#rows);
+  }
+
   distinct(fields: readonly string[], options: LoadOptions = {}): Promise<Record<string, unknown[]>> {
     const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
     return Promise.resolve(distinctOf(applyOptions(this.#rows, rest).rows, fields));

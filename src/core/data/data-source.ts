@@ -1742,7 +1742,7 @@ export class DataSource extends EventTarget {
 
   /** What every read asks, as the plan says: the store's held set — current, or
    *  shown while it is checked — else the store. A closed source asks the store. */
-  get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct'> {
+  get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct' | 'scan'> {
     const set = this.#closed ? null : this.#cache?.set;
     return set && (this.#plan === 'held' || this.#plan === 'held-stale') ? set : this.store;
   }

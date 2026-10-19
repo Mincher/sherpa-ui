@@ -85,6 +85,12 @@ export class ArrayStore extends BaseStore {
     return distinctOf((await this.page(this.#rows, rest)).rows, fields);
   }
 
+  /** Every row the schema accepts, in place: no row is copied, for a reader that
+   *  only reads — the walk. TRAP T-array-store-copies-both-ways */
+  async scan(): Promise<readonly Row[]> {
+    return (await this.page(this.#rows, {})).rows;
+  }
+
   /** Where a row is, by its key field — or by the key made up for it. */
   #at(key: unknown): number {
     // TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false.
@@ -203,6 +209,12 @@ export class JsonStore extends BaseStore {
     // The inner ArrayStore holds no schema, so the check happens once, here —
     // over EVERY row, before the page is cut. TRAP T-schema-guard-belongs-at-the-store
     return this.page((await this.#inner.load()).rows, options);
+  }
+
+  /** Every row the schema accepts, read in place from the rows it fetched. */
+  async scan(): Promise<readonly Row[]> {
+    await this.#ensure();
+    return (await this.page(await this.#inner.scan(), {})).rows;
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {

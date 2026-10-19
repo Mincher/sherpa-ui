@@ -136,7 +136,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-scale-for-every-chart](TRAPS.md#t-one-scale-for-every-chart) — format-tick
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — data, filter-face, filter-state
 - [T-one-total-for-the-ring-and-the-label](TRAPS.md#t-one-total-for-the-ring-and-the-label) — chart-datum, data
-- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — data-source, source-counts, walk
+- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — data-source, source-counts, store, walk
 - [T-one-way-to-write-a-condition](TRAPS.md#t-one-way-to-write-a-condition) — data, data-source, page-definition, query, query-edits, where
 - [T-only-five-filter-chips-carry-an-icon](TRAPS.md#t-only-five-filter-chips-carry-an-icon) — data-source-types
 - [T-only-the-view-trickles-down](TRAPS.md#t-only-the-view-trickles-down) — data-source, query

@@ -237,6 +237,10 @@ export interface Store extends EventTarget {
   /** OPTIONAL: each field's distinct values among the rows a filter matches, one
    *  per value key. A store without it is read row by row. TRAP T-a-ruled-out-value-is-greyed */
   distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
+  /** OPTIONAL: every row the schema accepts, as the store holds them — read in
+   *  place, never copied, by a reader that only reads (the walk). A store
+   *  without it is loaded. TRAP T-one-walk-counts-and-limits-in-order */
+  scan?(): Promise<readonly Row[]>;
 }
 
 /** The order a whole read returns rows in, asked no sort. */
