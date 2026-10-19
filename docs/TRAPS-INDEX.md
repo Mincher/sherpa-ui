@@ -296,7 +296,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
 
-## Filters (171)
+## Filters (172)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -343,6 +343,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-flush-between-surfaces-draws-two-edges](TRAPS.md#t-a-panel-flush-between-surfaces-draws-two-edges) — filter-panel
 - [T-a-panel-follows-the-query-open-or-shut](TRAPS.md#t-a-panel-follows-the-query-open-or-shut) — filter-panel
 - [T-a-pending-chip-has-no-fill](TRAPS.md#t-a-pending-chip-has-no-fill) — quick-filter, quick-filter-toolbar
+- [T-a-pin-a-page-can-re-point](TRAPS.md#t-a-pin-a-page-can-re-point) — quick-filter
 - [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
 - [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-panel, quick-filter, quick-filter-toolbar
@@ -947,7 +948,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (63)
+## Build, tools and the MCP (64)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -972,6 +973,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-metric-condenses-by-wrapping](TRAPS.md#t-a-metric-condenses-by-wrapping) — project-tokens
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — build-reforged, check-usage, generate-component-spec, lint-css, project-tokens
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — lint-css
+- [T-a-pin-a-page-can-re-point](TRAPS.md#t-a-pin-a-page-can-re-point) — project-tokens
 - [T-a-read-is-public-api-a-write-is-not](TRAPS.md#t-a-read-is-public-api-a-write-is-not) — check-props
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — check-bench
 - [T-a-setting-is-a-pointer](TRAPS.md#t-a-setting-is-a-pointer) — check-usage

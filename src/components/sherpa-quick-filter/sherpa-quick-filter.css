@@ -93,11 +93,11 @@
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
 }
 
-/* PENDING: changed, not yet applied — the active EDGE, and no fill (its pin
-   keeps it default). TRAP T-a-pending-chip-has-no-fill */
+/* PENDING: changed, not yet applied — the ON edge (a page's re-point too), and
+   no fill (its pin keeps it default). TRAP T-a-pending-chip-has-no-fill · TRAP T-a-pin-a-page-can-re-point */
 :host([data-pending]) :is(.body, .caret) {
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
-  border-color: var(--sherpa-style-active-border-base-1, #c046ff);
+  border-color: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1, #c046ff));
 }
 
 /* AI type carries the active mode's accent even when off. */

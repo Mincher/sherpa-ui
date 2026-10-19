@@ -15959,6 +15959,26 @@ the bar's slot fold away at narrow widths, as the old switch did.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 
+### T-a-pin-a-page-can-re-point
+
+TODO 353 (Will, 2026-10-19). Demos' "Show active filters in green" re-pointed
+the Style `active` names inside the filter bars and the panel. A grid heading's
+filter chip lives in the grid's shadow root: a page selector cannot reach it,
+and widening the rule to the grid would turn every active thing in it green.
+Will: *"Why can't this styling just be set on the filter chip scope?"*
+
+It can. A state pin in `scripts/figma-data/state-pins.yaml` may carry a HOOK —
+`'&[data-current]': active @filter-on` — and the projector writes each Style
+name as `var(--sherpa-filter-on-<name>, var(<the mode's token>))`. A page sets
+the hook's names ONCE (`--sherpa-filter-on-surface-base`, …) and, being custom
+properties, they inherit into every shadow root, where only the chip's pin reads
+them: every filter chip follows — bar, panel, grid heading — and nothing else.
+Unset, the pin is exactly the mode, as before. The chip's pending edge reads the
+same hook. A chip's fill FADES (100 ms), so a test reads it once it settles.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+
 ### T-the-filter-mode-is-set-before-the-page-paints
 
 TODO 352 (Will, 2026-10-19). Demos Records opened in Panel mode had a CLS of

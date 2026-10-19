@@ -914,25 +914,28 @@ for (const look of LOOKS) {
 }
 
 /** A pin: every public Style name re-pointed at the mode's own token — plus the
-    --_status-* names, until no component reads them. */
-function pinBody(mode, look) {
+    --_status-* names, until no component reads them. A HOOK lets a page re-point
+    the pin by names of its own, `--sherpa-<hook>-<name>`, inherited into every
+    shadow root. TRAP T-a-pin-a-page-can-re-point */
+function pinBody(mode, look, hook) {
   const keys = Object.keys(styleByKey).filter((k) => !look || LOOK_KEYS.includes(k));
+  const via = (key, name) => (hook ? `var(--sherpa-${hook}-${styleByKey[key].name.slice(STYLE_VAR.length)}, var(${name}))` : `var(${name})`);
   const lines = [];
   for (const key of keys) {
     const name = styleModeVar(key, mode, look);
-    if (emittedModeVars.has(name)) lines.push(`    ${styleByKey[key].name}: var(${name});`);
+    if (emittedModeVars.has(name)) lines.push(`    ${styleByKey[key].name}: ${via(key, name)};`);
   }
   for (const [key, cascadeVar] of Object.entries(STATUS_ROLE_MAP)) {
     const name = styleModeVar(key, mode, look);
     if (!keys.includes(key) || !emittedModeVars.has(name)) continue;
     // DEFAULT is "no status" to a component still on --_status-*: unset, so its
     // own fallback (a transparent button's clear face) survives.
-    lines.push(`    --${cascadeVar}: ${mode === 'default' && !look ? 'initial' : `var(${name})`};`);
+    lines.push(`    --${cascadeVar}: ${mode === 'default' && !look ? 'initial' : via(key, name)};`);
   }
   return lines;
 }
-function pinBlock(selector, mode, look) {
-  const lines = pinBody(mode, look);
+function pinBlock(selector, mode, look, hook) {
+  const lines = pinBody(mode, look, hook);
   return lines.length ? `  ${selector} {\n${lines.join('\n')}\n  }` : null;
 }
 
@@ -979,7 +982,13 @@ if (existsSync(STATE_PINS)) {
     if (!isClass && !existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);
     for (const [selector, spec] of Object.entries(rules ?? {})) {
       const m = /^&(\S*)(.*)$/.exec(selector);
-      const parts = String(spec).split('/');
+      // `mode @hook`: a page may re-point this pin. TRAP T-a-pin-a-page-can-re-point
+      const [pin, hook] = String(spec).split(/\s+@/);
+      if (hook !== undefined && !/^[a-z][a-z-]*$/.test(hook)) {
+        warn(`state-pins: ${tag} "${selector}": ${spec} — a hook is lower-case words: "mode @name"`);
+        continue;
+      }
+      const parts = String(pin).split('/');
       const look = LOOKS.includes(parts[0]) ? parts[0] : undefined;
       const mode = (look ? parts[1] : parts[0]) ?? 'default';
       if (!m || !['default', ...STATUS_MODES].includes(mode) || (look && parts.length > 2)) {
@@ -987,7 +996,7 @@ if (existsSync(STATE_PINS)) {
         continue;
       }
       const onPart = m[2].trim() !== '';
-      const body = `${look ?? ''}/${mode}`;
+      const body = `${look ?? ''}/${mode}${hook ? `@${hook}` : ''}`;
       if (isClass) {
         if (onPart) {
           warn(`state-pins: ${tag} "${selector}": a class key pins the element, not a part`);
@@ -1008,7 +1017,7 @@ if (existsSync(STATE_PINS)) {
         statePinHostBlocks.push(own);
         continue;
       }
-      const block = pinBlock(onPart ? `:host(${tag}${m[1]})${m[2]}` : `${tag}${m[1]}`, mode, look);
+      const block = pinBlock(onPart ? `:host(${tag}${m[1]})${m[2]}` : `${tag}${m[1]}`, mode, look, hook);
       if (!block) continue;
       statePinBlocks.push(block);
       if (!onPart) {

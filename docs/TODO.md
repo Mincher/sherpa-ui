@@ -34,9 +34,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
-| ⬜ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
+| ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
 | ⬜ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
 | ⬜ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
+| ⬜ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -935,7 +936,7 @@ outlet calls `provider.prepare(definition)` before it draws a Context's markup
 (4 × 3 engines) and Demos `reforged-panel-mode-does-not-shift.spec.ts` (both
 modes under 0.05, Chromium). TRAP `T-the-filter-mode-is-set-before-the-page-paints`.
 
-### `[ ]` ⬜ 353 — BUG: a column heading's Advanced filter button is not green
+### `[x]` ✅ 353 — BUG: a column heading's Advanced filter button is not green
 
 Will, 2026-10-19: *"The advanced filter button, in a data grid column header,
 is still the active styling rather than success styling. We can fix this with
@@ -957,6 +958,14 @@ inherited properties, which fall back to the Style `active` ones. The app sets
 those once, at the top of the page, and every chip goes green — bar, panel and
 grid heading — with nothing else in the grid touched. Demos stops re-pointing
 Sherpa's `--sherpa-style-active-*` names. Do it with 346–349.
+
+**✅ Done 2026-10-19.** A state pin may carry a hook: the chip's on pin is
+`active @filter-on`, so the projector writes each Style name as
+`var(--sherpa-filter-on-<name>, var(<active>))`. Demos sets six
+`--sherpa-filter-on-*` names on `html[data-chips-success]`, and every ON filter
+chip turns green — bar, panel and grid heading — while the sort chip beside it
+does not. The pending edge reads the same hook. Test: Demos
+`reforged-filter-chips-green.spec.ts` (3 engines). TRAP `T-a-pin-a-page-can-re-point`.
 
 ### `[ ]` ⬜ 354 — FLAKE: a second Advanced filter sometimes drops the first
 
@@ -994,6 +1003,17 @@ The fix to design: keep each heading cell by field and update it in place
 (sort, status, superseded, the menu's reading); rebuild a cell only when its
 column or its filter def changes; one render per tick, not one per attribute;
 and read layout once. Measure with `inp.mjs` before and after.
+
+### `[ ]` ⬜ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
+
+Found 2026-10-19 while testing 353. On Demos Records, calling the data bar's
+`setChipReading('status', { picked: ['active'] })` then `report()` applies the
+filter (100 → 24 rows) and the chip is on — then, about 250 ms later, in
+FIREFOX ONLY, the chip turns off while the 24 rows stay. Chromium and WebKit
+keep it on, and a reader's real clicks keep it on in all three. Likely the
+chip's own menu fills late and reports its unticked rows
+(`sherpa-a-composed-field-fills-async`). `setChipReading` is public, so a
+caller with no pointer must get the same result as a click.
 
 ---
 

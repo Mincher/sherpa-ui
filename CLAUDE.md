@@ -584,6 +584,8 @@ component STATE (on, current, open) is a pin written as data in
 `--_status-*` names above are the old door, kept until every component has moved.
 Never read Theme for a colour: `lint:css` `theme-colour` counts it per component
 against a baseline that may only fall. TRAP `T-a-state-colour-binds-the-style-mode`.
+A pin may carry a HOOK (`active @filter-on`): a page re-points it once, by
+`--sherpa-filter-on-*`, and every chip follows (TRAP `T-a-pin-a-page-can-re-point`).
 
 ### CSS `@function`: longhand first, function second
 

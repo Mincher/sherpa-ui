@@ -16,8 +16,10 @@ sherpa-data-grid:
   '& .group-count': default
 
 sherpa-quick-filter:
-  # Filter Chip (atom) instances pin Style=active when on.
-  '&[data-current]': active
+  # Filter Chip (atom) instances pin Style=active when on — re-pointable by a page
+  # as --sherpa-filter-on-*, so every chip follows: bar, panel, grid heading.
+  # Will, TODO 353. TRAP T-a-pin-a-page-can-re-point
+  '&[data-current]': active @filter-on
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-filters-nothing]': warning
   # An ADVANCED chip takes no pin of its own: it is ON, so it is active, as a
