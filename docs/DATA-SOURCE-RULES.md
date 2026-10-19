@@ -262,7 +262,8 @@ Each read-back here is a copy — `partFacts`' `only` is the element itself — 
 
 ### A remote store's whole set is HELD
 
-A store with `remote: true` is read ONCE for its whole set — `load({ take })`
+A store with `remote: true` is read ONCE for its whole set — once for every page
+over the same store OBJECT, which shares one held set — `load({ take })`
 with no filter, no sort and no search, so the answer is what your server's own
 shaping gives (a tenant, a permission). While that set is held, the source
 answers every load, count and distinct read on the client, with the same
@@ -280,8 +281,9 @@ The source checks those two before it reads anything. Then the whole read must
 come back whole: a total that is a number (a numeric string is read as one), at
 most `holdRows` rows (a source option or a page definition's, default 50 000;
 `0` holds none), and every row it counts — a server that caps a response
-silently is refused. Otherwise the source says why once (`held-set-refused`)
-and asks your store for every question, as before. A whole read that FAILS —
+silently is refused. Otherwise it is said why once per store (`held-set-refused`)
+and your store is asked every question, as before. A page whose `holdRows` is
+smaller than the set asks your store, and the set stays for the others. A whole read that FAILS —
 a 400 for the big `take`, a timeout — is caught: the source asks your store as
 before until a Refresh.
 
@@ -290,6 +292,14 @@ A `change` that names its row is taken into the held set in place; one that
 does not — or names a row the set does not hold — reads the whole set again, as
 a Refresh does. So a store whose rows change on the server should announce it
 (an `EventStore` or `SocketStore` does).
+
+**The set outlives the page.** When a page closes, its store's set stays, and
+the next page over the same store object answers from it at once. A store that
+says `announcesAll: true` — every change to its rows comes through it, as an
+`ArrayStore`'s does — is trusted as it is; any other (a server another client
+writes, a store another tab writes) is read again before a new page trusts it.
+So **make each store ONCE** and hand the same object to every page: a new
+object is a new store, with nothing held.
 
 Matching is the client's from then on, so your server and the client must agree
 on what a whole read returns, not on how to filter it.
@@ -398,4 +408,5 @@ nothing else. Saved Views, saved filters and the session are the app layer:
 10. Stores are app-level; sources are view-level.
 11. None of it needs a browser.
 12. A remote store's whole set is held — up to `holdRows`, when it reports a
-    true total — and every question is then answered on the client.
+    true total — once per store object, for every page over it, and every
+    question is then answered on the client.

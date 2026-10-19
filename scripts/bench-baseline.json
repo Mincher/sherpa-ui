@@ -143,6 +143,15 @@
     "clones": 1,
     "scans": 6
   },
+  "records/reopen": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 3,
+    "rows": 10025,
+    "compiles": 15,
+    "clones": 7,
+    "scans": 8
+  },
   "remote/open": {
     "loads": 1,
     "counts": 0,
@@ -286,5 +295,14 @@
     "compiles": 6,
     "clones": 1,
     "scans": 4
+  },
+  "remote/reopen": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 10,
+    "clones": 7,
+    "scans": 6
   }
 }

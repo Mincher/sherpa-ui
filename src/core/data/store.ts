@@ -227,6 +227,10 @@ export interface Store extends EventTarget {
   /** The order a whole read returns its rows in, asked no sort: as inserted, or by
    *  key (IndexedDB). Unsaid, a held set reads again on an insert. TRAP T-a-held-set-takes-a-change-in-place */
   readonly rowOrder?: RowOrder;
+  /** EVERY change to its rows is announced by this object — no other tab,
+   *  client or server writes them unheard — so a set held before a page opens
+   *  is current. Unsaid, it is read again first. TRAP T-a-store-has-one-cache */
+  readonly announcesAll?: boolean;
   /** What each field MAY hold — a set in order, a number's ends — as the data's
    *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
   readonly domains?: Readonly<Record<string, FieldDomain>>;

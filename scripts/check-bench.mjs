@@ -170,7 +170,12 @@ async function open(L, remote) {
   const def = JSON.parse(readFileSync(PAGE, 'utf8')).source;
   const store = counted(new L.ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id', time: 'created' }));
   const seen = remote ? L.spoofRemote(store, { delay: 0 }) : store;
-  const source = await L.openSource(def, seen);
+  return { L, def, store: seen, ...await page(L, def, seen) };
+}
+
+/** One page over a store: its source, and its controls bound as the provider binds them. */
+async function page(L, def, store) {
+  const source = await L.openSource(def, store);
   source.limitOptions = true;
   // As the provider keeps it.
   const initial = structuredClone(source.query.applied);
@@ -185,7 +190,7 @@ async function open(L, remote) {
   L.bindSource(source, grid, { scope: 'data', shows: 'grid' });
   L.bindSource(source, chart, { readonly: true, rows: 'all' });
   L.bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
-  return { store: seen, source, initial, view, data, grid, chart, panel };
+  return { source, initial, view, data, grid, chart, panel };
 }
 
 const REPORT = { status: { picked: ['active', 'trial'] }, owner: { picked: ['Owner 01'] }, plan: { picked: ['pro'] } };
@@ -210,6 +215,11 @@ const ACTS = {
   add: (p) => p.store.insert({ ...ROWS[0], id: N + 1, name: 'Person new', email: 'new@example.com' }),
   save: (p) => p.store.update(17, { owner: 'Owner 02' }),
   delete: (p) => p.store.remove(N + 1),
+  // The page left and opened again over the same store: a held set is the store's, and stays.
+  reopen: async (p) => {
+    p.source.close();
+    Object.assign(p, await page(p.L, p.def, p.store));
+  },
 };
 const PAGES = { records: { remote: false, acts: Object.keys(ACTS) }, remote: { remote: true, acts: Object.keys(ACTS) } };
 

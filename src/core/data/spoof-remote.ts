@@ -18,6 +18,8 @@ export interface SpoofOptions {
   delay?: number | (() => number);
   /** The share of loads that fail, 0 to 1, as a network failure (a `TypeError`). Default 0. */
   fail?: number | (() => number);
+  /** Does it act as a store whose every change is announced? Default: the store's own say. */
+  announcesAll?: boolean;
 }
 
 /** Wrap a store so its loads act as if they left the data layer. Writes pass straight through. */
@@ -47,6 +49,7 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
     reportsTotal: store.reportsTotal ?? false,
     sampled: store.sampled ?? false,
     rowOrder: store.rowOrder,
+    announcesAll: options.announcesAll ?? store.announcesAll,
     async load(o?: LoadOptions): Promise<LoadResult> {
       await wait();
       failed();

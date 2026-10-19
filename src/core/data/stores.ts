@@ -42,6 +42,8 @@ export { ValidationError } from './validate.js';
 export class ArrayStore extends BaseStore {
   /** A whole read returns its rows as inserted. */
   readonly rowOrder = 'insertion' as const;
+  /** Its rows change only through it, and each change is announced. */
+  readonly announcesAll = true;
   /** The records, in insertion order. */
   #rows: Row[];
   /** 0 or absent means no cap. */

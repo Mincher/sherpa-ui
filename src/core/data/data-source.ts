@@ -121,10 +121,10 @@ import {
 import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
-import { HeldSet } from './held-set.js';
+import { cacheOf, type StoreCache } from './store-cache.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store, StoreChangeDetail,
+  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
 } from './store.js';
 import type {
   ApplyAt, AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
@@ -217,22 +217,15 @@ export class DataSource extends EventTarget {
   #narrowing = new Map<string, { field: string; only: BoundControl; label?: string }>();
 
   /* ── A remote store's whole set, held. Will, TODO 340 ─────────────────
-   * TRAP T-a-remote-source-holds-its-whole-set */
-  /** Its whole set, while held: every read asks this, on the client. */
-  #held: HeldSet | null = null;
-  /** The read of it in flight, so two asks share one. */
-  #holding: Promise<void> | null = null;
-  /** Bumped when the set goes stale, so a read begun before it lands on nothing. */
-  #heldAge = 0;
+   * TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
   /** The most rows it holds; 0 holds none. */
   readonly #holdRows: number;
-  /** It can never be held — no true total, a sampled schema, too many rows, a
-   *  capped response — so the store is asked, as before, for good. */
-  #holdNever = false;
-  /** The whole read FAILED: the store is asked, as before, until a Refresh. */
-  #holdRefused = false;
-  /** Why it is not held has been said: once per source. */
-  #refusalSaid = false;
+  /** Its store's ONE held set, shared with every source over it — remote only. */
+  readonly #cache: StoreCache | null;
+  /** How many whole reads had landed when it was made: a set from before may miss a writer. */
+  readonly #since: number;
+  /** Its first hold has asked whether the set from before can be trusted. */
+  #checked = false;
 
   constructor(options: DataSourceOptions) {
     super();
@@ -253,7 +246,11 @@ export class DataSource extends EventTarget {
       pageSize: options.pageSize ?? null,
     };
     this.#filter = options.filter;
-    this.store.addEventListener('change', this.#onStoreChange);
+    this.#cache = this.#remote && this.#holdRows > 0 ? cacheOf(this.store) : null;
+    this.#since = this.#cache?.gen ?? 0;
+    // A held source hears its store through the cache, which takes each change once.
+    (this.#cache ?? this.store).addEventListener('change', this.#onStoreChange);
+    this.#cache?.addEventListener('set', this.#onSet);
     /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
        Nothing downstream has to know the dataset calls it `created`.
        TRAP T-a-record-has-a-time-of-its-own */
@@ -1655,34 +1652,35 @@ export class DataSource extends EventTarget {
     return this.#reask(key);
   }
 
-  /** The rows changed under an identical ViewState. A held set takes a keyed
-   *  change in place and is asked again; anything else is FORCED — read again.
-   *  TRAP T-a-held-set-takes-a-change-in-place */
-  #onStoreChange = (event: Event): void => {
+  /** The rows changed under an identical ViewState: asked again. A held set has
+   *  taken the change already — or is due, and read once for every page.
+   *  TRAP T-a-held-set-takes-a-change-in-place · TRAP T-a-store-has-one-cache */
+  #onStoreChange = (): void => {
     this.#age++;
     this.#presentFor = '';
-    const held = this.#held;
-    const change = (event as CustomEvent<StoreChangeDetail | undefined>).detail;
-    if (held && change && held.patch(change, this.store) && held.size <= this.#holdRows) {
-      void this.#reask();
-      return;
-    }
-    void this.load({ force: true });
+    void (this.#cache ? this.#reask() : this.load({ force: true }));
+  };
+
+  /** A whole set landed — another page's read too: what is counted moved, and an idle page asks again. */
+  #onSet = (): void => {
+    this.#age++;
+    if (this.#loaded && !this.#inFlight.busy) void this.#reask();
   };
 
   /** Closed: it no longer hears its store, and holds nothing. */
   #closed = false;
 
   /**
-   * Let the store go: a change no longer reloads it, and its held set is
-   * dropped. It can still be asked. A page's source is closed when the page
-   * goes, or every visit leaves one more listening. TRAP T-a-closed-source-hears-nothing
+   * Let the store go: a change no longer reloads it. It can still be asked —
+   * the store itself, never the shared set. The store's held set STAYS, for the
+   * next page over it. A page's source is closed when the page goes, or every
+   * visit leaves one more listening. TRAP T-a-closed-source-hears-nothing
    */
   close(): void {
     this.#closed = true;
-    this.store.removeEventListener('change', this.#onStoreChange);
+    (this.#cache ?? this.store).removeEventListener('change', this.#onStoreChange);
+    this.#cache?.removeEventListener('set', this.#onSet);
     clearTimeout(this.#liveWait);
-    this.#letGo();
   }
 
   /** Ask the store — or the held set — this question, even one asked before. */
@@ -1692,78 +1690,31 @@ export class DataSource extends EventTarget {
     return asking;
   }
 
-  /** What every read asks: the held set, else the store. */
+  /** What every read asks: the store's held set, while it is current and within
+   *  this page's cap; else the store. A closed source asks the store. */
   get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct'> {
-    return this.#held ?? this.store;
+    const cache = this.#closed ? null : this.#cache;
+    const set = cache?.set;
+    return set && !cache.due && !cache.failed && set.size <= this.#holdRows ? set : this.store;
   }
 
-  /** Hold a remote store's whole set, where it can be: one read, shared, and one
-   *  more if the rows changed while it was out. TRAP T-a-remote-source-holds-its-whole-set */
+  /** Hold the store's whole set, where it can be: one read for every page over
+   *  it. TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
   async #hold(): Promise<void> {
-    while (this.#mayHold()) {
-      const age = this.#heldAge;
-      this.#holding ??= this.#readWhole();
-      await this.#holding;
-      if (this.#held || age === this.#heldAge) return;
+    const cache = this.#closed ? null : this.#cache;
+    if (!cache) return;
+    /* A set held before this page, over a store that may miss a writer (another
+       tab, another client), is read again once before it is trusted. */
+    if (!this.#checked) {
+      this.#checked = true;
+      if (cache.set && !this.store.announcesAll && cache.gen <= this.#since) cache.letGo();
     }
+    await cache.hold(this.#holdRows);
   }
 
-  /** May it be held? The store's own facts first, so one that never can is never sent the whole read. */
-  #mayHold(): boolean {
-    if (this.#closed || !this.#remote || this.#held || this.#holdNever || this.#holdRefused || this.#holdRows <= 0) return false;
-    const why = !this.store.reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
-      : this.store.sampled ? 'its schema checks only a sample of each read' : '';
-    if (why) this.#refuse(why);
-    return !why;
-  }
-
-  /** The whole read: held, refused for good, or — failed — left to the store until a Refresh. */
-  async #readWhole(): Promise<void> {
-    const age = this.#heldAge;
-    try {
-      const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: this.#holdRows + 1 });
-      if (age !== this.#heldAge) return;
-      const why = totalUnknown ? 'its totalPath read no number, so its total is only the rows it sent'
-        : total > this.#holdRows || rows.length > this.#holdRows ? `it holds ${total} rows, more than ${this.#holdRows} (holdRows)`
-          : total !== rows.length ? `it sent ${rows.length} of its ${total} rows — does the server cap a response, or ignore take?` : '';
-      if (why) {
-        this.#refuse(why, { rows: rows.length, total });
-        return;
-      }
-      this.#held = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) });
-    } catch (error) {
-      if (age !== this.#heldAge) return;
-      // A failed whole read is not a failed source: each question asks the store, as before.
-      this.#holdRefused = true;
-      this.#sayNotHeld(`the whole read failed (${error instanceof Error ? error.message : String(error)})`);
-    } finally {
-      this.#holding = null;
-    }
-  }
-
-  /** It can never be held: say why, once. */
-  #refuse(why: string, at: Record<string, number> = {}): void {
-    this.#holdNever = true;
-    this.#sayNotHeld(why, at);
-  }
-
-  /** Why the whole set is not held — once per source. */
-  #sayNotHeld(why: string, at: Record<string, number> = {}): void {
-    if (this.#refusalSaid) return;
-    this.#refusalSaid = true;
-    report({
-      code: 'held-set-refused',
-      message: `This remote store's whole set is not held, so every question asks the store: ${why}.`,
-      at: { ...at, holdRows: this.#holdRows },
-    });
-  }
-
-  /** The held set is stale — the rows changed, or a refresh asks for them again. */
+  /** A Refresh: the store's set is read again before it is used — never by a closed source. */
   #letGo(): void {
-    // A read in flight is not dropped: #hold reads ONCE more when it lands, however many changes came.
-    this.#held = null;
-    this.#holdRefused = false;
-    this.#heldAge++;
+    if (!this.#closed) this.#cache?.letGo();
   }
 
   /** The load in flight, for a caller that asks the same question again. */

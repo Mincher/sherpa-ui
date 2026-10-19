@@ -712,6 +712,13 @@ against the code). The full plan, with every file:line, is
     a count too, and relays through a `WeakRef` (100 dropped wrappers: 100
     relays removed); Demos makes ONE wrapper. TRAP `T-a-failure-has-a-kind`.
 
+  - ✅ **4.2** (2026-10-19) — ONE held set per store object (`store-cache.ts`,
+    `cacheOf()`), shared by every page over it: one whole read, each change
+    taken once, the set kept when a page closes. `Store.announcesAll` (an
+    ArrayStore; a spoof passes it on) says a set held before a page opened is
+    current; any other store is read again first. Bench `remote/reopen`: 0
+    loads (open: 1 load, 10,000 rows). TRAP `T-a-store-has-one-cache`.
+
   **Decisions for Will** (neither blocks 4.1–4.5):
   - ❓ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

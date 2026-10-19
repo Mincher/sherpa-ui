@@ -3589,6 +3589,7 @@ held load. A page definition sets `holdRows` (`0` holds none).
 The bench holds the rule: each act on its remote page after it opens must cost
 0 loads, 0 counts and 0 distinct reads (`asked()`) — a rule, never a baseline.
 
+- Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/held-set.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
@@ -3624,6 +3625,9 @@ with its `rowOrder` option, and `spoofRemote` passes it on. Unsaid, an insert or
 a changed key reads the whole set again: in an unsorted, paged view a guessed
 place is a row on the wrong page.
 
+**The patch is the store's cache's, made ONCE** for every page over the store
+(`T-a-store-has-one-cache`), and every source hears it after.
+
 **Anything it is not certain of reads the whole set again**, as before: a
 change with no key (`setRows`, `putAll`, IdbStore `clear`), no row (a RestStore
 whose server sent no reply announces none: the saved row is not known), a row
@@ -3642,12 +3646,49 @@ tenant's, say. The next whole read (a Refresh) puts that right.
 The bench's `add`, `save` and `delete` acts hold it: on the remote page each
 asks the store nothing.
 
+- Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/held-set.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
+
+### T-a-store-has-one-cache
+
+345 phase 4.2. Each page's `DataSource` held its OWN copy of a remote store's
+whole set: every Context visit read it again (Demos `?remote`: 800 ms), each
+save was patched into every copy, and an unkeyed change read the whole set once
+PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
+`StoreCache` per store object (a `WeakMap`), and every source over it shares it.
+
+- **One whole read**, shared — two pages opening at once make one.
+- **Each change taken once.** The cache listens to its store for good, patches
+  a keyed change into the set (`T-a-held-set-takes-a-change-in-place`), or marks
+  the set DUE; then each source hears it from the cache and asks again — a due
+  set is read once for all of them. A change made while no page is open is in
+  the next page's first answer.
+- **The set outlives the page.** `close()` no longer drops it, so a page opened
+  again over the same store asks nothing (bench `remote/reopen`: 0 loads; the
+  first open is 1 load of 10,000 rows). A closed source asks the store itself
+  and never touches the shared set, so its Refresh cannot mark it due.
+- **Trust needs `announcesAll`.** A store whose every change comes through it
+  (`ArrayStore`; `spoofRemote` passes its store's say on) is trusted as held.
+  Any other may have missed a writer — another tab, another client — so a set
+  held before a page opened is read again on that page's first hold. (Phase 4.3
+  draws it at once and checks behind instead.)
+- **One cap per page.** A page whose `holdRows` is under the set's size asks the
+  store; the set stays for the others. A set refused for its size at one cap may
+  still be held at a larger one.
+- **The key is the store OBJECT**, never its name: a name could show one tenant's
+  rows to the next. So an app makes each store once (`OutletOptions.stores`).
+- Every remembered count moves with it: a `change` or a `set` from the cache
+  moves the source's `#age` (`T-a-chip-counts-its-own-results`).
+
+- Site: `src/core/data/store-cache.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/store.ts`
+- Site: `test/unit/a-store-has-one-cache.test.mjs`
 
 ### T-a-failure-has-a-kind
 
@@ -3688,9 +3729,10 @@ provider makes a NEW source every time a page opens (`openSource()` in
 listener, so every visit left one more source listening: each save reloaded
 them all (a whole read each on a remote store), and none was ever freed.
 
-**`close()` lets the store go:** it removes the listener, stops a live load
-waiting, and drops the held set; a closed source never holds again. It can
-still be asked — a caller that kept it gets an answer from the store.
+**`close()` lets the store go:** it removes the listener and stops a live load
+waiting; a closed source never holds again. It can still be asked — a caller
+that kept it gets an answer from the store itself. The store's held set STAYS
+for the next page (`T-a-store-has-one-cache`).
 
 **The provider closes what it made, and only that.** `#made` holds each source
 `open()` built. One is closed when a `provide()` no longer gives it (the next
