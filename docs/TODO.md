@@ -26,6 +26,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 |:-:|---:|---:|---|---|
 | | | | **A — In hand** | |
 | 🚧 | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
+| ⬜ | 0a | 345 | EXPLORE — a remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340) | explore |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -440,6 +441,41 @@ template and sheet in its own files, and the build only copies their text into
    filter-menu's menus, select-group's options, the toast.
 5. **Class lists in TS:** input-text's icon classes, chart-legend's
    `rollup-toggle`, layout-grid's `sherpa-grid`.
+
+### `[ ]` ⬜ 345 — EXPLORE: fetch each field's values on demand, and cache them
+
+Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
+*"I think this has serious performance implications."* What he wants instead:
+
+- A source KNOWS all of the available fields.
+- It FETCHES the fields and values a page or component needs, on demand, at
+  the right time. A page that opens with 5 preset filters and 10 visible grid
+  columns fetches values for those 5 filters and 10 columns only.
+- When a reader adds a filter (to any toolbar, panel or column), the source
+  starts to fetch that field's values at once, so the menu is full when it
+  opens. A menu that opens before the fetch ends shows a loading state.
+- Maybe a client-side PARTNER for each remote source, which keeps the latest
+  data it fetched, so a source that goes offline or times out degrades
+  gracefully. The empty-state and error components tell the reader.
+- In short: incremental pre-fetching and caching. *"Sherpa's data layer, and
+  components, are just meant to be like a thin rosetta stone layer for the
+  presentation layer (UI)."* No whole set from every store on load.
+
+**What is there today (340):** `#readWhole()` sends
+`store.load({ take: holdRows + 1 })` with no filter, so up to 50,000 whole rows
+(every field), once per remote source when it opens. It holds them only if the
+store reports its total and checks every row; else every question asks the
+store, as before 340. A page can turn it off with `holdRows: 0`. The filter
+value lists come from `declareFromRows()` at open (`store.distinct()`, else one
+load). 340 exists so that a toggle, a cycle and the Switch ask the store for
+nothing (Will, 338) — the plan must keep that.
+
+**To investigate:** what a field's values cost per store kind (REST, SSE,
+socket); which fields a page needs at open, and how the source learns them (the
+page definition, the bound components' asks); what a client cache keys on
+(field, scope, Query) and when it goes stale; how a toggle stays a client
+update without the whole set; offline and timeout states; the bench rules that
+prove it. Relates to 170 (client and server, waits on Will) and 341.
 
 ---
 
