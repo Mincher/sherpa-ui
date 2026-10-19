@@ -686,6 +686,13 @@ the data layer is explored and changed (345–349)**, as some of that may help.
 (INP) of about **600 ms** under 4x throttling, and it comes from the **quick
 filter toolbar** — the reason 350 sits after the data layer and filter work.
 
+**The target (Will, 2026-10-19): GOOD performance even at 4x CPU throttling.**
+"Good" is the Core Web Vitals line: **LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1**,
+held here as LAB targets at 4x. Today: LCP 6.18 s, INP ~600 ms. 350 ends with a
+gate that holds them — Playwright at `Emulation.setCPUThrottlingRate` 4,
+reading LCP, INP and CLS from a `PerformanceObserver` on Demos' Records page and
+the toolbar's acts — as `check:bench` holds the data layer.
+
 **Will's rule while 345–349 are built:** where a performance fix is in reach
 of that work, make it then. 350 is still done as its own exercise.
 
