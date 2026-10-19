@@ -593,6 +593,8 @@ export class DataSource extends EventTarget {
    */
   declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
     this.#age++;
+    // A legend declared after the last load is told what the View leaves it.
+    if (this.#loaded) this.#walkSoon();
     if (part) this.#narrowing.set(scope, part);
     else this.#narrowing.delete(scope);
     // Sent up, the View holds its field — and draws only a field it knows.
@@ -971,14 +973,21 @@ export class DataSource extends EventTarget {
    * — the store's distinct() where it has one, else one load — and only when a
    * field needs it. TRAP T-the-data-says-what-a-field-may-hold
    */
-  declareFromRows(fields: readonly string[]): Promise<void> {
-    return this.#catalogue.fromRows(fields, async (open) => {
+  async declareFromRows(fields: readonly string[]): Promise<void> {
+    await this.#catalogue.fromRows(fields, async (open) => {
       await this.#hold();
       const reads = this.#reads;
       if (reads.distinct) return reads.distinct(open, {});
+      const age = this.#rowsAge;
       const { rows } = await reads.load({});
+      // The walk reads these rows too, until they change. TRAP T-one-walk-counts-and-limits-in-order
+      if (reads === this.store && !this.#remote && age === this.#rowsAge && rows.length <= this.#holdRows) {
+        this.#rowsCache = { age, rows };
+      }
       return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
     });
+    // Each field's facts moved: what was counted is out of date.
+    this.#age++;
   }
 
   /** What `declareField` was told. */
@@ -1832,9 +1841,11 @@ export class DataSource extends EventTarget {
          where the walk asks no store: ONE load, right first time.
          TRAP T-one-walk-counts-and-limits-in-order */
       if (this.#walkIsCheap()) {
+        const walked = this.#walkKey();
         const walk = await this.#walked();
         if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
-        if (this.#takeAside(walk)) this.#compileNow();
+        // A walk something else moved past sets nothing aside: the walk after the load decides.
+        if (this.#walkKey() === walked && this.#takeAside(walk)) this.#compileNow();
         // Whoever set them aside — this ask, or a walk beside it — the load asks what stands now.
         key = this.#stateKey();
         this.#inFlightKey = key;
@@ -1998,6 +2009,8 @@ export class DataSource extends EventTarget {
   /** The walk for the Query as it stands: one per key, shared by every reader of
    *  it. A walk that fails keeps the last one — it never stops a load. */
   async #walked(): Promise<Walk> {
+    // A closed source walks nothing: the page is gone.
+    if (this.#closed) return this.#walk?.walk ?? emptyWalk();
     const key = this.#walkKey();
     if (this.#walk?.key === key) return this.#walk.walk;
     if (this.#walking?.key === key) return this.#walking.walk;
@@ -2015,9 +2028,11 @@ export class DataSource extends EventTarget {
         if (this.#walkKey() === key) this.#walk = { key, walk: out };
         return out;
       } catch {
-        // The last walk stays drawn, and nothing is set aside from it. It never stops a load.
+        /* The last walk stays drawn, and nothing is set aside from it; kept for
+           this key, so a draw does not ask again until something moves. It never stops a load. */
         const kept = { ...(this.#walk?.walk ?? emptyWalk()) };
         this.#unwalked.add(kept);
+        if (this.#walkKey() === key) this.#walk = { key, walk: kept };
         return kept;
       } finally {
         if (this.#walking === entry) this.#walking = null;
@@ -2047,8 +2062,11 @@ export class DataSource extends EventTarget {
 
   /** Take the walk's set-aside picks. Says whether they moved. */
   #takeAside(walk: Walk): boolean {
-    if (this.#unwalked.has(walk)) return false;
-    const next = new Map(Object.entries(walk.aside).filter(([, fields]) => Object.keys(fields).length));
+    // A whole filter set by hand has no readings to set aside, and a compile would drop it.
+    if (this.#viewFilter === null) return false;
+    // A walk that failed sets nothing aside: what an older Query set aside goes too.
+    const next = this.#unwalked.has(walk) ? new Map<string, Record<string, string[]>>()
+      : new Map(Object.entries(walk.aside).filter(([, fields]) => Object.keys(fields).length));
     const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
     if (key(next) === key(this.#setAside)) return false;
     this.#setAside = next;
@@ -2058,7 +2076,13 @@ export class DataSource extends EventTarget {
   /** Walk, and set aside what it rules out — compiling again, and asking again
    *  only when that moved what a load reads — then draw what it gives. */
   async #rewalk(): Promise<void> {
+    const key = this.#walkKey();
     const walk = await this.#walked();
+    // The Query moved while it walked: the walk for what stands now decides.
+    if (this.#walkKey() !== key) {
+      this.#walkSoon();
+      return;
+    }
     if (this.#takeAside(walk)) {
       const { still, same } = this.#compileNow();
       this.#syncPending();
@@ -2097,6 +2121,8 @@ export class DataSource extends EventTarget {
     const ticket = this.#drawing.next();
     const walk = await this.#walked();
     if (!this.#drawing.is(ticket)) return;
+    // Drawn from a walk that failed: the next draw draws again.
+    if (this.#unwalked.has(walk)) this.#drawnFor = '';
     const lists = (of: Record<string, string[]> | undefined): Record<string, string[]> =>
       Object.fromEntries(Object.entries(of ?? {}).map(([f, keys]) => [f, [...keys]]));
     for (const { el, scopes } of drawn) {

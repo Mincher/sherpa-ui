@@ -1858,6 +1858,17 @@ aside (Q1 A).
 `presentUnder` and `totalCount` requests. The property test holds all three —
 the walk, a plain walk, and step by step — to one answer.
 
+**Under change** (the review of C5 and C6): a walk the Query moved past while it
+ran sets nothing aside — the walk for what stands now decides. A filter set by
+hand (`setFilter`, a restored ViewState) is never compiled away by a set-aside.
+A walk that FAILS sets nothing aside, keeps the last one drawn, and is kept for
+its key: it is asked again when something moves — a filter, a store change, a
+Refresh, a reach recheck — never on a page turn, so a failing server is not
+asked again and again. A closed source walks nothing. The rows a source loaded
+to declare its fields are the walk's too (IndexedDB has no `scan`). Asked step
+by step, the tallies one filter shares are ONE request, the requests go
+together, and a failure fails the walk with no rejection unheard.
+
 **The controls draw the same order.** `describe()` gives a scope's filters in it,
 and a bar's `drawScope` puts its chips in it — the View chip and a chip that
 answers no field stay first — and draws a saved filter the panel added. A saved
@@ -1873,6 +1884,7 @@ filter added on the bar lands after the other saved filters; a field at the end.
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/a-store-scan-reads-in-place.test.mjs`
 - Site: `scripts/check-bench.mjs`
+- Site: `test/unit/the-walk-holds-under-change.test.mjs`
 
 ### T-a-view-keeps-a-draft
 
@@ -10473,6 +10485,7 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/moved-to.test.mjs`
 - Site: `src/core/data/source-binding.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-a-restored-filter-still-needs-its-chip
 

@@ -61,19 +61,22 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 | 355 | The grid keeps its heading: INP at 4x tick 216 → 104 ms, saved filter 320 → 176, View pick 200 → 80 | `T-a-grid-draws-once-per-moment`, `T-a-heading-cell-is-kept` |
 | 346, 353, 354, 356, 357 | One Send to; green chips everywhere; two filter races; favourites named after their View | `T-send-to-view-filters`, `T-a-pin-a-page-can-re-point`, `T-a-stale-draw-keeps-the-bars-own-change` |
 | 348 W0–W1 | The bench counts scans; counts run only when something moved | — |
+| Reviews of 355 C5, 345 4.3–4.7, 357 | 24 faults fixed: a cleared heading menu, row checkboxes, a set too big now, a late kept copy, a 401 copy, offline saves, a blocking reopen, `clearKept()`, the banner's words, focus and z-index; two favourites of one name | `T-a-kept-set-is-checked-each-session`, `T-a-reach-banner-takes-no-room` |
+| **347, 348, 349 — the walk** (C0–C10 + its review) | ONE order (saved filters, then fields, each set together); ONE walk per key gives every count, grey, set-aside and serial offer; a chip counts within the filters before it; the earlier filter limits the later; with Limit off the View still limits a component scope; the Add list greys a spent field. Bench `records/report` scans 32 → 3, distinct 10 → 0. INP at 4x: every act under 200 ms | `T-one-walk-counts-and-limits-in-order`, `T-a-chip-counts-within-the-filters-before-it`, `T-a-ruled-out-value-is-greyed` |
 
 **Will's decisions, all recorded in `docs/TODO.md`:** 345 D1 A, D2 B, W1 A, W2 A;
 346–349 D1–D5 A; 355 G1 A; the walk's Q1, Q2 A.
 
 **Next:**
-1. Read-only reviews of 355 C5 and 345 4.3–4.7 (agents hit a session limit at
-   16:30; they reset at 17:30).
-2. The walk (347–349): designed in `docs/history/plan-347-349-walk.md`, NOT yet
-   checked against the code. Check it, then build it in its small commits.
-3. 345 phases 3, 5, 6, 8, 9 (History after the walk; values on demand;
-   always-fetch fields; the decision series widened; remote History).
-4. 350 (performance): the leftovers from 355, and LCP (6.18 s at 4x when Will
-   measured; 1.0–1.5 s in the probe here).
+1. 345 phases 3, 5, 6, 8, 9 (History — the walk is in, so it is unblocked; values
+   on demand; always-fetch fields; the decision series widened; remote History).
+   The walk's seam for History: each scope's tested and tallied fields
+   (`docs/history/plan-347-349-walk.md` §0.H).
+2. 350 (performance): the leftovers from 355; LCP (6.18 s at 4x when Will
+   measured); `perf/inp.mjs` needs panel-mode acts (it hangs in panel mode);
+   the walk made "a second value" 88 → 112 ms and "a View pick" 80 → 96 ms —
+   look at what a draw sends every control.
+3. The ❓ rows waiting on Will (305, 319, 321, 327, 338, 293, 339, 290).
 
 **Probes:** Demos `perf/inp.mjs`, `perf/cls.mjs`, `perf/profile.mjs` (against
 :4200, Chromium, 4x). `node scripts/build-reforged.mjs --no-minify` for a

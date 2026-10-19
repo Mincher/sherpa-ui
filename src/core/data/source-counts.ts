@@ -194,9 +194,10 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   const viewSteps = [...(base ? [{ id: '', clause: base, on: true, counts: false }] : []), ...stepsOf(VIEW)];
   scopes.push({ scope: VIEW, after: null, steps: viewSteps, taps: tapsOf(VIEW, viewSteps), setsAside: true });
   for (const id of others) {
-    const steps = stepsOf(id);
-    // A page's own scope is in the View's base already: counted, never set aside.
-    scopes.push({ scope: id, after: VIEW, steps, taps: tapsOf(id, steps), setsAside: facts.components.has(id) });
+    const component = facts.components.has(id);
+    // A page's own scope is in the View's base already: counted, never set aside, and its lists not ruled by its own answer.
+    const steps = component ? stepsOf(id) : stepsOf(id).map(({ ruler: _r, offers: _o, ...counted }) => counted);
+    scopes.push({ scope: id, after: VIEW, steps, taps: component ? tapsOf(id, steps) : [], setsAside: component });
   }
   for (const [id, part] of facts.narrowing) {
     const steps = stepsOf(id);
@@ -207,65 +208,79 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
 }
 
 /** The same walk asked of a store, step by step — counts, values and tallies as
- *  requests, sent together; only a set-aside waits for the tally it reads. A
- *  relative date is the store's to read, as its loads are.
- *  TRAP T-one-walk-counts-and-limits-in-order */
+ *  requests, sent together: the tallies one filter shares go in one request, and
+ *  only a set-aside waits for the tally it reads. A relative date is the store's
+ *  to read, as its loads are. TRAP T-one-walk-counts-and-limits-in-order */
 export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'totalCount'>, plan: WalkPlan): Promise<Walk> {
   const out = emptyWalk();
   const pending: Array<Promise<unknown>> = [];
+  // Every request is waited for at the end; one that fails then fails the walk, and none goes unheard.
+  const later = <T>(p: Promise<T>): Promise<T> => {
+    pending.push(p);
+    p.catch(() => undefined);
+    return p;
+  };
+  // Tallies asked under one filter in one turn go as ONE request.
+  const batches = new Map<string, { filter: Filter | undefined; fields: Set<string>; asked: Promise<Record<string, string[]>> }>();
+  const tally = (filter: Filter | undefined, field: string): Promise<string[]> => {
+    const key = JSON.stringify(filter ?? null);
+    let batch = batches.get(key);
+    if (!batch) {
+      const fields = new Set<string>();
+      const asked = Promise.resolve().then(() => {
+        batches.delete(key);
+        return presentUnder(reads, [...fields], filter);
+      });
+      batch = { filter, fields, asked };
+      batches.set(key, batch);
+    }
+    batch.fields.add(field);
+    return later(batch.asked.then((found) => found[field] ?? []));
+  };
+  const count = (filters: readonly Filter[]): Promise<number> => later(reads.totalCount({ filter: andFilter(filters)! }));
   const ends = new Map<string, { filter: Filter | undefined; narrowed: boolean }>();
-  // Each scope's taps, filled once every tally has landed.
-  const taps: Array<() => void> = [];
-  const count = (filters: readonly Filter[]): Promise<number> => reads.totalCount({ filter: andFilter(filters)! });
+  const fills: Array<() => void> = [];
   for (const sc of plan.scopes) {
     const from = sc.after !== null ? ends.get(sc.after) : undefined;
     const before: Filter[] = from?.filter ? [from.filter] : [];
     let narrowed = from?.narrowed ?? false;
-    const startFields = [...new Set([
-      ...sc.steps.filter((s) => s.field && s.ruler === 'start').map((s) => s.field!),
-      ...sc.taps.filter((t) => t.ruler === 'start').map((t) => t.field),
-    ])];
-    const start = startFields.length ? await presentUnder(reads, startFields, from?.filter) : {};
+    const start = (field: string): Promise<string[]> => tally(from?.filter, field);
     const results: Record<string, number> = {};
     const values: Record<string, Record<string, number>> = {};
     const present: Record<string, string[]> = {};
     const offered: Record<string, string[]> = {};
     const aside: Record<string, string[]> = {};
-    const tapped: Record<string, string[]> = {};
+    const tapped: Array<[WalkTap, Promise<string[]>]> = [];
     const tap = (at: number): void => {
-      const fields = sc.taps.filter((t) => t.at === at && t.ruler === 'here').map((t) => t.field);
-      if (fields.length) pending.push(presentUnder(reads, fields, andFilter(before)).then((r) => Object.assign(tapped, r)));
+      for (const t of sc.taps) if (t.at === at) tapped.push([t, t.ruler === 'here' ? tally(andFilter(before), t.field) : start(t.field)]);
     };
     for (let i = 0; i < sc.steps.length; i++) {
       const step = sc.steps[i]!;
       const field = step.field;
       const here = [...before];
       tap(i);
-      const tallied = !!field && (step.ruler === 'here' || !!step.offers);
-      const tally = tallied ? presentUnder(reads, [field!], andFilter(here)).then((r) => r[field!] ?? []) : Promise.resolve([]);
+      const offers = !!step.offers && narrowed;
+      // Its tally only where something reads it.
+      const keys = field && (step.ruler === 'here' || offers) ? tally(andFilter(here), field) : null;
+      const ruled = field && step.ruler ? (step.ruler === 'here' ? keys! : start(field)) : null;
       if (field && step.each?.length) {
         const counts: Record<string, number> = {};
         values[field] = counts;
-        for (const [key, clause] of step.each) pending.push(count([...here, clause]).then((n) => { counts[key] = n; }));
+        for (const [key, clause] of step.each) void count([...here, clause]).then((n) => { counts[key] = n; }, () => undefined);
       }
       let test = step.clause;
-      const offers = !!step.offers && narrowed;
-      if (sc.setsAside && step.on && test && step.picks?.length && step.less && field) {
-        const keys = await tally;
-        const ruled = step.ruler === 'here' ? keys : step.ruler === 'start' ? start[field] ?? [] : null;
-        const ruledOut = step.picks.filter((k) => (ruled && !holdsKey(ruled, k)) || (offers && !holdsKey(keys, k)));
+      if (sc.setsAside && step.on && test && step.picks?.length && step.less && field && (ruled || offers)) {
+        const [rule, held] = await Promise.all([ruled, offers ? keys : null]);
+        const ruledOut = step.picks.filter((k) => (rule && !holdsKey(rule, k)) || (held && !holdsKey(held, k)));
         if (ruledOut.length) {
           aside[field] = ruledOut;
           test = step.less(ruledOut);
         }
       }
       const final = test;
-      if (step.counts && final) pending.push(count([...here, final]).then((n) => { results[step.id] = n; }));
-      if (field && step.ruler) {
-        const ruler = step.ruler;
-        pending.push(tally.then((keys) => { present[field] = ruler === 'here' ? keys : start[field] ?? []; }));
-      }
-      if (field && offers) pending.push(tally.then((keys) => { offered[field] = keys; }));
+      if (step.counts && final) void count([...here, final]).then((n) => { results[step.id] = n; }, () => undefined);
+      if (field && ruled) void ruled.then((k) => { present[field] = k; }, () => undefined);
+      if (field && offers && keys) void keys.then((k) => { offered[field] = k; }, () => undefined);
       if (step.on && final) {
         before.push(final);
         narrowed = true;
@@ -280,15 +295,16 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
     out.aside[sc.scope] = aside;
     out.spent[sc.scope] = spent;
     ends.set(sc.scope, { filter: andFilter(before), narrowed });
-    taps.push(() => {
-      for (const t of sc.taps) {
-        const keys = t.ruler === 'here' ? tapped[t.field] ?? [] : start[t.field] ?? [];
-        present[t.field] = keys;
-        if (!keys.length) spent.push(t.field);
-      }
+    fills.push(() => {
+      for (const [t, keys] of tapped) void keys.then((k) => {
+        present[t.field] = k;
+        if (!k.length) spent.push(t.field);
+      }, () => undefined);
     });
   }
+  for (const fill of fills) fill();
   await Promise.all(pending);
-  for (const fill of taps) fill();
+  // The taps' lists, in the order the plan gives them.
+  for (const sc of plan.scopes) out.spent[sc.scope] = sc.taps.filter((t) => out.spent[sc.scope]!.includes(t.field)).map((t) => t.field);
   return out;
 }

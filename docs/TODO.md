@@ -28,9 +28,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | 🚧 | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. Building, phase by phase | explore |
 | ✅ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
-| ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
-| ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
-| ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
+| ✅ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
+| ✅ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
+| ✅ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
@@ -843,7 +843,7 @@ report: 29 passes, one walk after 348); and a report runs `select()` →
 `#recompose()` → draw once PER FIELD on the click's own stack — the likeliest
 part of the toolbar's 600 ms INP. An INP probe at 4x is measured first.
 
-### `[ ]` ⬜ 347 — The View scope first; a component scope within its subset
+### `[x]` ✅ 347 — The View scope first; a component scope within its subset
 
 Will, 2026-10-19: *"Ensure that View Scope is applied first and Component
 Scope works with that filtered subset of fields and values."*
@@ -854,7 +854,12 @@ EVERY place a component scope offers or counts something — its chips' counts,
 its menus' values, its Add list's fields, the panel's run of value chips — and
 fix any that read the whole set instead of the View's subset.
 
-### `[ ]` ⬜ 348 — A chip counts its matches within the subset
+**✅ Done 2026-10-19**, with 348 and 349 on one walk (see 348): a component
+scope counts, greys, chains and sets aside within the View's subset — with
+Limit off too — and a chart legend sits under its host (Q1 A). A part another
+component contributes narrows every chip.
+
+### `[x]` ✅ 348 — A chip counts its matches within the subset
 
 Will, 2026-10-19: *"Filter badge counts show the total matches for that
 filter. However they should show the count of matches from the filtered
@@ -899,7 +904,7 @@ OFF chip counts. The TRAP changes with it.
     out, so a declared value with no rows vanishes from the first menu. On
     Records both give the same answer.
 
-- 🚧 **Building the walk** (2026-10-19; the design checked against the code first):
+- ✅ **Built the walk** (2026-10-19; the design checked against the code first):
   - ✅ **C0** (`1b4a6c69`) — `appliesIn()` and `scopeClauses()` out of `compile()`.
   - ✅ **C1** (`9f9ecadc`) — the walk, pure: `answerOrder`, `planWalk`, `walkInOrder`
     (`walk.ts`), `walkStepwise`; a property test holds the three to one answer.
@@ -936,8 +941,24 @@ OFF chip counts. The TRAP changes with it.
     value 112 (88); a saved filter on 176 (176); a View pick 96 (80). Every act
     is under 200 ms. For 350: `perf/inp.mjs` has no panel-mode acts (its acts
     click the bar, which panel mode hides) — it hangs; give it the panel's own.
+  - ✅ **Review of C5 and C6** (read-only; 22 found, 19 confirmed, all fixed): a walk
+    the Query moved past set picks aside for the newer one; a set-aside compile
+    dropped a hand filter (`setFilter`, a restored ViewState); a failed walk kept
+    an older Query's set-aside, and pinned the draw; a closed source still
+    walked; IndexedDB was read twice on open; step by step, one filter's tallies
+    were several requests, and a rejection could go unheard; a page scope's lists
+    were ruled by its own answer; a legend declared late got no greys; a
+    superseded chip kept its grey. Test: `the-walk-holds-under-change` (8, each
+    fails on C6).
 
-### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
+**✅ Done 2026-10-19.** A chip counts within the filters before it; one walk per
+key gives every count, grey, set-aside and serial offer. **For Will to see**
+(Demos Records): badges fall along the bar and the last one in force is the
+total; a later pick no longer sets an earlier one aside; with Limit off, a
+data-bar pick the View leaves no rows for is set aside; the Filters list greys
+a field with no value left.
+
+### `[x]` ✅ 349 — A menu's viable fields and values come from the same subset
 
 Will, 2026-10-19: *"The above also goes for viable field and value options in
 menus."*
@@ -948,6 +969,11 @@ limits Customer) — and only while Limit to matching filters is on
 (`T-a-ruled-out-value-is-greyed`, 174, 205). The new rule follows 348: scopes
 and PRECEDING filters decide which fields and values are viable. Do with 348,
 on one ordered pass. Ask Will whether Limit stays an opt-in.
+
+**✅ Done 2026-10-19** (see 348; Will: D4 A, D5 A — Limit stays an opt-in): with
+Limit on, the filters BEFORE a field grey its values and set picks aside, one
+way only; a menu's Advanced rows and a grid heading follow it; the Add list
+greys a field with no value left, and hides it with Hide unmatching.
 
 ### `[ ]` ⬜ 350 — PERFORMANCE: what costs, what can be faster, and the options
 
@@ -1183,7 +1209,10 @@ about 120–190 ms.
   cell is drawn frozen by `#renderBody` itself, so a group fold that moves only
   the page count keeps it frozen. Three tests in `reforged-grid-keeps-its-heading`
   (each fails without its fix).
-- **Left for 350** (the design's §5): the body is still redrawn — 50 select
+- **For 350 (2026-10-19):** reopening Records over `?remote` takes about 250 ms in
+Chromium but 300–620 ms in Firefox with three engines running; Demos'
+`reforged-a-reopen-shows-at-once` allows 800 ms and failed once under that load.
+**Left for 350** (the design's §5): the body is still redrawn — 50 select
   components per page, and one of a tick's two body draws is spent on old rows;
   the provider works out `filterDef` for every field on each push; `#pageRecords`
   sorts once per row. The probes are in Demos `perf/` (`inp.mjs`, `cls.mjs`,

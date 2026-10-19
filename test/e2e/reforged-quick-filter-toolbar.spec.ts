@@ -2763,3 +2763,28 @@ test('a Reset leaves a chip the View holds as it is, and empties the rest', asyn
   expect(r.status.tip).toBe('Filter moved to View scope. This chip holds active.');
   expect(r.plan).toMatchObject({ held: false, on: false, value: '', ticked: [] });
 });
+
+/* The C5/C6 review: a chip the View takes says where it went — never "limited"
+   from before the raise. TRAP T-an-inactive-chip-says-where-its-filter-went */
+test('a chip the View takes is no longer greyed for what the filters left', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const bar = await window.__mount<HTMLElement & {
+      drawPresent(p: unknown): void; supersede(ids: string[], at?: string): void; setChipValues(id: string, v: string[]): void;
+    }>('sherpa-quick-filter-toolbar', [
+      { id: 'region', label: 'Region', options: [{ value: 'EMEA', label: 'EMEA' }, { value: 'APAC', label: 'APAC' }] },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    bar.setChipValues('region', ['EMEA']);
+    bar.drawPresent({ region: ['APAC'] });
+    await window.__settled();
+    const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="region"]')!;
+    const greyed = chip.hasAttribute('data-unavailable');
+    bar.supersede(['region'], 'View filters');
+    await window.__settled();
+    const taken = chip.hasAttribute('data-unavailable');
+    bar.supersede([]);
+    await window.__settled();
+    return { greyed, taken, back: chip.hasAttribute('data-unavailable') };
+  });
+  expect(r).toEqual({ greyed: true, taken: false, back: true });
+});

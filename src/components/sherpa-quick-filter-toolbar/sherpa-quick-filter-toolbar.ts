@@ -586,6 +586,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = chip.dataset['id'] ?? '';
     const field = this.#filters.find((f) => f.id === id)?.field ?? id;
     const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
+    // A chip the View took says where it went, not what the filters left. TRAP T-an-inactive-chip-says-where-its-filter-went
+    if (this.superseded.includes(id)) chip.removeAttribute('data-unavailable');
     if (!menu || this.superseded.includes(id)) return;
     const left = this.#present[field] ?? null;
     const offered = this.#offered[field] ?? null;
@@ -663,6 +665,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-an-inactive-chip-says-where-its-filter-went */
       if (held && appliedAt) chip.setAttribute('data-applied-at', appliedAt);
       else chip.removeAttribute('data-applied-at');
+      // Taken, it is no longer greyed for what the filters left; let go, it is again.
+      this.#markPresent(chip);
     }
   }
 
