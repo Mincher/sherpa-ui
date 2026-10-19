@@ -65,6 +65,12 @@ viable fields and values, from that subset — its scopes and the filters BEFORE
 it (348, 349). Each section says what the code does today and what to settle
 with Will.
 
+## After that: TODO 350 — performance (Will, 2026-10-19)
+
+Sherpa is slow under 4x CPU throttling. Measure what costs, find the fixes and
+the options, and look for redundant, legacy and convoluted code and composition
+bottlenecks. Deferred until 345–349 are done, as they may help.
+
 ## Waiting on Will (❓ and looks)
 
 305, 319, 321, 327, 338 (two UX choices), 293 (CLAUDE.md cut, old skill), 339
