@@ -31,6 +31,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
 | ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
+| ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -640,6 +641,38 @@ limits Customer) — and only while Limit to matching filters is on
 (`T-a-ruled-out-value-is-greyed`, 174, 205). The new rule follows 348: scopes
 and PRECEDING filters decide which fields and values are viable. Do with 348,
 on one ordered pass. Ask Will whether Limit stays an opt-in.
+
+### `[ ]` ⬜ 350 — PERFORMANCE: what costs, what can be faster, and the options
+
+Will, 2026-10-19: *"I set cpu throttling to 4x in dev tools and the performance
+of Sherpa-UI is miserable. We need to investigate what the performance hits
+are, how sherpa can be optimised, and what our options are."* **Deferred until
+the data layer is explored and changed (345–349)**, as some of that may help.
+
+In scope, as Will named it:
+
+- what costs time, measured under 4x throttling, not guessed;
+- how Sherpa can be faster, and the options, each with its trade-off;
+- REDUNDANT code and LEGACY code;
+- CONVOLUTED implementations or solutions;
+- COMPOSITION bottlenecks (a component made of components made of components).
+
+What is known already, to start from (not yet measured under throttling):
+
+- `check:weight` says one button imports 12 files and about 221 KB of JS, and
+  `index.js` is about 960 KB: the base class and the shared sheets ship with
+  every component.
+- `check:bench` counts the data layer's loads, counts, compiles and clones per
+  act; 291 made a value pick go from 10 loads to 2, and its steps 7–8 (one test
+  per filter, one compile per act) wait for a run. 287 and 288 split and share
+  the data-source code.
+- Each element parses its template and adopts up to nine shared sheets, plus
+  family sheets; a filter bar composes chips, menus, inputs and buttons, each a
+  shadow root of its own.
+
+How to measure: Playwright's CDP session can throttle (`Emulation.setCPUThrottlingRate`,
+rate 4) and record a trace, so a slow path becomes a repeatable number in a gate,
+as `check:bench` does for the data layer.
 
 ---
 
