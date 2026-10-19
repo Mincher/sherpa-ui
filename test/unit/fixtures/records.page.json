@@ -33,7 +33,8 @@
       "lastSeen": { "label": "Last seen", "type": "date" }
     },
     "scopes": {
-      "view": { "label": "View filters", "holds": ["customer", "region", "created"] },
+      "view": { "label": "View filters", "holds": ["customer", "region", "created"],
+                "sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }] },
       "data": {
         "label": "Customer records", "offers": "all",
         "holds": ["status", "plan", "tier", "owner"],

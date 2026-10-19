@@ -591,14 +591,18 @@ Writes are always checked in full.
 ### T-the-bench-counts-and-never-times
 
 **`check:bench` gates COUNTS per reader's act — loads, counts, distinct reads,
-the rows they hand back, compiles and clones — and only prints time.** A count
+the rows they hand back, compiles, clones and scans — and only prints time.** A count
 is the same on every machine and every run; a time gate fails under load and
 passes on a fast laptop (TODO 286).
 
 It bundles the data layer from `src/` with esbuild, never `dist/`: the hook
 builds nothing, and a stale `dist/` benches the last build. The bundle renames
 `compile` in `query.ts` and counts each call, and the bench fails if it cannot
-find it; `structuredClone` is wrapped for the run. `BaseStore` makes a `totalCount`
+find it; `structuredClone` is wrapped for the run. It renames `applyOptions`,
+`filterRows` and `distinctOf` in `store.ts` the same way: each call is a SCAN,
+one full pass over a set of rows, held or not — so a held set's work shows,
+which its loads (0) never did (TODO 348 W0). A pass inside another is counted
+once. `BaseStore` makes a `totalCount`
 a load, but an `ArrayStore` counts in place, so a counts cache shows as fewer
 counts.
 

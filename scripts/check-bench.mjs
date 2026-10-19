@@ -3,8 +3,9 @@
  * check-bench.mjs — what a reader's act costs the data layer, against a baseline that may only FALL.
  *
  * Records over 10k seeded rows in an ArrayStore, its controls faked from their specs, each act
- * the event a real control sends. Counted: loads, counts, the rows they hand back, compiles
- * and clones. Time is printed, never gated. TODO 286
+ * the event a real control sends. Counted: loads, counts, the rows they hand back, compiles,
+ * clones, and scans — each full pass over a set of rows, held or not. Time is printed, never
+ * gated. TODO 286
  * TRAP T-the-bench-counts-and-never-times
  *
  *   npm run check:bench [-- --staged]
@@ -26,12 +27,12 @@ const PAGE = 'test/unit/fixtures/records.page.json';
 const N = 10_000;
 const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
-export const GATED = ['loads', 'counts', 'distinct', 'rows', 'compiles', 'clones'];
+export const GATED = ['loads', 'counts', 'distinct', 'rows', 'compiles', 'clones', 'scans'];
 // The fakes are read from these specs, so a change to one changes the bench.
 const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
   .map((tag) => `src/components/${tag}/${tag}.component.json`);
 const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, ...SPECS];
-const counters = { loads: 0, counts: 0, distinct: 0, rows: 0, compiles: 0, clones: 0, draws: 0 };
+const counters = { loads: 0, counts: 0, distinct: 0, rows: 0, compiles: 0, clones: 0, scans: 0, draws: 0 };
 
 /* ── The data layer, bundled from src/ with compile() counted ─────────── */
 
@@ -43,9 +44,22 @@ export { onReport } from './src/core/data/report.ts';
 export { bindSource } from './src/core/ui/bind-source.ts';
 `;
 
+/** Each pass over a set of rows — a filter, a sort and page, a tally — wherever it runs; one
+ *  pass inside another is not counted twice. */
+const SCANNED = ['applyOptions', 'filterRows', 'distinctOf'];
+
 const countCompiles = {
   name: 'count-compiles',
   setup(b) {
+    b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]store\.ts$/ }, (args) => {
+      let text = readFileSync(args.path, 'utf8');
+      for (const name of SCANNED) {
+        if (!text.includes(`export function ${name}(`)) throw new Error(`check-bench: store.ts has no \`export function ${name}(\` to count`);
+        text = text.replace(`export function ${name}(`, `function ${name}Once(`);
+        text += `\nexport function ${name}(...a) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c && !scanDepth) c.scans++; scanDepth++; try { return ${name}Once(...a); } finally { scanDepth--; } }\n`;
+      }
+      return { loader: 'ts', contents: `let scanDepth = 0;\n${text}` };
+    });
     b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]query\.ts$/ }, (args) => {
       const text = readFileSync(args.path, 'utf8');
       if (!text.includes('export function compile(')) throw new Error('check-bench: query.ts has no `export function compile(` to count');
