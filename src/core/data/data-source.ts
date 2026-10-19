@@ -1661,8 +1661,11 @@ export class DataSource extends EventTarget {
     void (this.#cache ? this.#reask() : this.load({ force: true }));
   };
 
-  /** A whole set landed — another page's read too: what is counted moved, and an idle page asks again. */
+  /** A whole set landed — another page's read too: what is counted moved, and an
+   *  idle page asks again. A page the set is too big for asks the store, which moved nothing. */
   #onSet = (): void => {
+    const set = this.#cache?.set;
+    if (!set || set.size > this.#holdRows) return;
     this.#age++;
     if (this.#loaded && !this.#inFlight.busy) void this.#reask();
   };
@@ -1703,11 +1706,14 @@ export class DataSource extends EventTarget {
   async #hold(): Promise<void> {
     const cache = this.#closed ? null : this.#cache;
     if (!cache) return;
-    /* A set held before this page, over a store that may miss a writer (another
-       tab, another client), is read again once before it is trusted. */
-    if (!this.#checked) {
+    /* A new page: a failed whole read is tried once more; and a set held before
+       it, over a store that may miss a writer (another tab, another client), is
+       read again before it is trusted — unless that read is due already, or the
+       set is too big for this page, which then asks the store. */
+    if (!this.#checked && !(cache.set && cache.set.size > this.#holdRows)) {
       this.#checked = true;
-      if (cache.set && !this.store.announcesAll && cache.gen <= this.#since) cache.letGo();
+      if (cache.failed) cache.retry();
+      else if (cache.set && !cache.due && !this.store.announcesAll && cache.gen <= this.#since) cache.letGo();
     }
     await cache.hold(this.#holdRows);
   }

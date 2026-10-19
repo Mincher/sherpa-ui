@@ -18,7 +18,8 @@ function remote(options = {}) {
   const inner = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
   const load = inner.load.bind(inner);
   const seen = { loads: 0, whole: 0 };
-  inner.load = (o = {}) => { seen.loads++; if (o.take > ROWS.length + 50) seen.whole++; return load(o); };
+  // A whole read asks a `take` and nothing else; a page here asks no take.
+  inner.load = (o = {}) => { seen.loads++; if (o.take !== undefined && !o.filter && !o.sort) seen.whole++; return load(o); };
   return { inner, store: spoofRemote(inner, { delay: 0, ...options }), seen };
 }
 
@@ -80,13 +81,14 @@ test('a closed page\'s Refresh leaves the shared set as it is', async () => {
   const gone = await open(store);
   const kept = await open(store);
   gone.close();
+  await gone.load({ force: true });
   seen.loads = 0;
   seen.whole = 0;
-  await gone.load({ force: true });
-  await kept.load({ force: false });
+  // A NEW question on the open page: a due set would be read again for it.
+  kept.setSort('tier');
+  await kept.load();
   assert.equal(kept.total, 6);
-  // The closed page asked the store itself; the open one asked nothing.
-  assert.equal(seen.whole, 0);
+  assert.deepEqual([seen.loads, seen.whole], [0, 0]);
 });
 
 test('a page with a smaller cap asks the store, and the set stays for the others', async () => {
@@ -98,7 +100,8 @@ test('a page with a smaller cap asks the store, and the set stays for the others
   assert.equal(seen.whole, 1);
   assert.deepEqual([small.total, big.total], [6, 6]);
   seen.loads = 0;
-  await big.load({ force: false });
+  big.setSort('tier');
+  await big.load();
   assert.equal(seen.loads, 0);
 });
 
@@ -117,3 +120,61 @@ test('what a chip counts moves with the shared set', async () => {
   await tick();
   assert.deepEqual(await source.results('data'), { tier: 4 });
 });
+
+test('a page opened after a failed whole read tries it once more', async () => {
+  let fail = 1;
+  const { store, seen } = remote({ fail: () => fail });
+  const first = new DataSource({ store });
+  await first.load();
+  assert.equal(first.loaded, false);
+  first.close();
+  fail = 0;
+  seen.whole = 0;
+  const next = await open(store);
+  assert.equal(seen.whole, 1);
+  assert.equal(next.total, 6);
+});
+
+test('two pages opening together over a store that may miss a writer make one whole read', async () => {
+  const { store, seen } = remote({ announcesAll: false });
+  (await open(store)).close();
+  seen.whole = 0;
+  await Promise.all([open(store), open(store)]);
+  assert.equal(seen.whole, 1);
+});
+
+test('a Refresh tries a set refused for its size again', async () => {
+  const { inner, store, seen } = remote();
+  const source = await open(store, 3);
+  assert.equal(seen.whole, 1);
+  for (const id of [1, 2, 3]) await inner.remove(id);
+  seen.whole = 0;
+  await source.load({ force: true });
+  assert.equal(seen.whole, 1);
+  seen.loads = 0;
+  source.setSort('tier');
+  await source.load();
+  assert.equal(seen.loads, 0);
+});
+
+test('a store whose load throws at once does not hang the next hold', async () => {
+  const rows = ROWS.map((r) => ({ ...r }));
+  let calls = 0;
+  const store = Object.assign(new EventTarget(), {
+    key: 'id', remote: true, reportsTotal: true, announcesAll: true,
+    load(o = {}) {
+      calls++;
+      if (calls === 1) throw new Error('not yet');
+      const take = o.take ?? rows.length;
+      return Promise.resolve({ rows: rows.slice(0, take), total: rows.length });
+    },
+    totalCount: () => Promise.resolve(rows.length),
+    byKey: () => Promise.resolve(undefined), insert: async () => ({}), update: async () => ({}), remove: async () => {},
+  });
+  const source = new DataSource({ store });
+  await source.load().catch(() => {});
+  const settled = Promise.race([source.load({ force: true }).then(() => 'held'), new Promise((r) => setTimeout(() => r('hung'), 500))]);
+  assert.equal(await settled, 'held');
+  assert.equal(source.total, 6);
+});
+

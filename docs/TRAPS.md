@@ -3685,6 +3685,25 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
 - Every remembered count moves with it: a `change` or a `set` from the cache
   moves the source's `#age` (`T-a-chip-counts-its-own-results`).
 
+**What a review of 4.2 put right** (2026-10-19):
+
+- **A failure is the cap's, and a new page tries again.** A failed whole read
+  turned holding off for every later page until a Refresh; before 4.2 each page
+  tried once. Now a page's first hold calls `retry()`, and the failure is kept
+  with the cap it was sent at (`#failedAt`): a smaller cap may still try, at its
+  own — a server may refuse only the big `take`.
+- **One shared read, at the widest cap asked** (`#widest`), so the first page's
+  smaller cap does not make the others wait for a read refused for its size. A
+  page the set is too big for neither re-reads it nor trusts-checks it: it asks
+  the store, and a set landing does not make it ask again.
+- **A first hold never cancels a read already due**: two pages opening together
+  over a store that may miss a writer make ONE whole read.
+- **A Refresh tries a refusal again** — for size, or a reply that was not
+  whole. The store's own facts (`reportsTotal`, `sampled`) refuse at no cost.
+- **The read in flight is cleared by identity.** A custom store whose `load()`
+  throws at once settled the read before it was kept, and the next `hold()`
+  awaited that settled promise for ever: a frozen tab.
+
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
