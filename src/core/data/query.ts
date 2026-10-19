@@ -27,6 +27,8 @@
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
  * - sameReading — Do two readings give the same answer? Only the answer keys count.
  * - filterKey — A filter as one string, its AND and OR children in one order.
+ * - appliesIn — Does a scope's reading of a field apply?
+ * - scopeClauses — One scope's clauses: each reading that applies, each saved filter on.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
@@ -204,6 +206,38 @@ export function filterKey(filter: Filter | undefined): string {
   return filter ? JSON.stringify(walk(filter)) : '';
 }
 
+/** Does a scope's reading of a field apply? One field, one scope: in a component
+ *  scope the View's answer wins, unless the scope is a component's own (`fixed`).
+ *  TRAP T-a-view-held-heading-shows-and-refuses */
+export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: string, fixed?: ReadonlySet<string>): boolean {
+  return scope === VIEW || !viewHolds.has(field) || !!fixed?.has(scope);
+}
+
+/** One scope's clauses: each reading that applies and is not suspended, and each
+ *  saved filter that is on. One on with no readings is reported, and applies nothing. */
+export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlySet<string>, facts: CompileFacts = {}): Filter[] {
+  const clauses: Filter[] = [];
+  for (const [field, reading] of Object.entries(scope.readings)) {
+    if (!appliesIn(viewHolds, id, field, facts.fixed) || reading.suspended) continue;
+    const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
+    if (clause) clauses.push(clause);
+  }
+  for (const [preset, on] of Object.entries(scope.presets ?? {})) {
+    if (!on) continue;
+    const given = facts.preset?.(preset);
+    if (!given) {
+      report({
+        code: 'unknown-preset',
+        message: 'compile: a preset is on, but no readings were found for it.',
+        at: { scope: id, preset },
+      });
+      continue;
+    }
+    clauses.push(...presetClauses(given, facts.field));
+  }
+  return clauses;
+}
+
 /**
  * Turn a Query into what the source runs — the ONE place a Query becomes a
  * filter. Pure: the same Query and facts always compile to the same thing.
@@ -225,27 +259,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   let arranged: ScopeQuery | undefined;
 
   for (const [id, scope] of Object.entries(query.scopes)) {
-    const clauses: Filter[] = [];
-    for (const [field, reading] of Object.entries(scope.readings)) {
-      // One field, one scope: the View's answer wins. TRAP T-a-view-held-heading-shows-and-refuses
-      if (id !== VIEW && viewHolds.has(field) && !facts.fixed?.has(id)) continue;
-      if (reading.suspended) continue;
-      const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
-      if (clause) clauses.push(clause);
-    }
-    for (const [preset, on] of Object.entries(scope.presets ?? {})) {
-      if (!on) continue;
-      const given = facts.preset?.(preset);
-      if (!given) {
-        report({
-          code: 'unknown-preset',
-          message: 'compile: a preset is on, but no readings were found for it.',
-          at: { scope: id, preset },
-        });
-        continue;
-      }
-      clauses.push(...presetClauses(given, facts.field));
-    }
+    const clauses = scopeClauses(id, scope, viewHolds, facts);
 
     if (scope.narrows?.length) {
       for (const el of scope.narrows) (only[el] ??= []).push(...clauses);
