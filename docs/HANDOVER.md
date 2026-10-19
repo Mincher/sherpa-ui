@@ -49,13 +49,22 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
   and a View, and a UI component (sections 7 to 10). Every diagram renders
   (checked with `mermaid@11.4.1` in a Playwright page).
 
-## Next: TODO 345 — fetch each field's values on demand, with a cache
+## TODO 345 — explored; waits on Will
 
 Will doubts 340's "a remote source reads its whole set once" (up to 50,000 rows
 on open). His design notes are in the TODO 345 section: the decision after
 `compile()` is a SERIES (held? current? reachable?), the store keeps a History
 table of delta times and field bitmaps, and the History starts again every
-session ("ground zero"). It is EXPLORE: plan with Will before building.
+session ("ground zero").
+
+Explored 2026-10-19 (read only). The plan, in nine phases with every
+file:line, is `docs/history/plan-345.md`; the TODO 345 section has the summary.
+It waits on Will for **D1** (how a remote store's History reaches the browser)
+and **D2** (does the cache keep data in IndexedDB too), and for a go to build.
+
+**Phase 1 is done as TODO 351** (2026-10-19, `1a2268e3`): a page's source is
+now closed when the page goes. Before, every Context visit left one more source
+reloading on each store change. TRAP `T-a-closed-source-hears-nothing`.
 
 ## Then: TODO 346–349 — filters (Will, 2026-10-19)
 
