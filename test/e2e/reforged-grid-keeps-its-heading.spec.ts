@@ -69,3 +69,41 @@ test('a bound filter pick draws the body at most twice, and the heading at most 
   // were more. A ceiling that may only fall: C5 takes it to 0.
   expect(r.heads).toBeLessThanOrEqual(8);
 });
+
+/* C4: the offset and the widths are measured once, and only when what they read
+   moved — yet still right after each thing that moves them. */
+test('the frozen offset and the shared widths stay right without a measure per draw', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    grid.style.width = '1200px';
+    grid.setAttribute('data-selectable', '');
+    await grid.populate({ columns, rows: rows.slice(0, 5) });
+    await settle();
+    const sr = grid.shadowRoot;
+    const offset = () => parseFloat(grid.style.getPropertyValue('--_pin-offset')) || 0;
+    const probe = () => sr.querySelector('.head-row > .select-cell').getBoundingClientRect().width;
+    const filled = () => [...sr.querySelectorAll('.cols > .col')].reduce((w, c) => w + parseFloat(c.style.width), 0);
+    const out = { first: offset() > 0 && Math.abs(offset() - probe()) < 0.01 };
+    grid.removeAttribute('data-selectable');
+    await settle();
+    out.off = offset();
+    grid.setAttribute('data-selectable', '');
+    await settle();
+    out.on = Math.abs(offset() - probe()) < 0.01 && offset() > 0;
+    // The same columns again: the widths still fill the box.
+    const before = filled();
+    await grid.populate({ columns, rows: rows.slice(0, 9) });
+    await settle();
+    out.kept = Math.abs(filled() - before) < 1 && filled() > 4 * 96;
+    // Drawn while hidden, then shown: measured when it shows.
+    grid.style.display = 'none';
+    await grid.populate({ columns: columns.slice(0, 3), rows: rows.slice(0, 3) });
+    await settle();
+    grid.style.display = '';
+    await settle();
+    await new Promise((d) => requestAnimationFrame(() => requestAnimationFrame(d)));
+    out.shown = Math.abs(offset() - probe()) < 0.01 && offset() > 0;
+    return out;
+  })()`);
+  expect(r).toEqual({ first: true, off: 0, on: true, kept: true, shown: true });
+});

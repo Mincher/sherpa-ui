@@ -38,6 +38,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
 | ⬜ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
 | ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
+| ⬜ | 0m | 357 | BUG — a favourited View is named after its Context in the nav's Favorites ("Records"), not the View ("All customers") (Will) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1076,6 +1077,21 @@ frames was cleared. The bar now counts its own changes, and a draw skips any
 chip changed after it began. A reader's tick in those frames was at risk too.
 Test: Demos `reforged-a-stale-draw-keeps-the-bars-own-change.spec.ts` (fails
 without the fix). TRAP `T-a-stale-draw-keeps-the-bars-own-change`.
+
+### `[ ]` ⬜ 357 — BUG: a favourite is named after its Context, not its View
+
+Will, 2026-10-19: *"The name shown in the favorites section, when a view is
+favorited, is the nav context and not the specific view name. E.g. should be
+'All Customers' instead of 'Records'."*
+
+Why (read, not yet run): the ★ in `outlet-nav.ts` `#onStar` keys a favourite
+`context` when the View on screen is the Context's FIRST View (`#favKey`), and
+then labels it with the Context's label alone (`#kept(context)`). Any other View
+is labelled `Context › View`. So "All customers", Records' first View, reads
+"Records". The fix: label every favourite with its View — the first one too —
+and keep the key as it is, so a saved favourite still opens the same page. Old
+favourites in the session keep their old label until starred again (or the
+label is read from the View at draw time, which is the better fix).
 
 ---
 

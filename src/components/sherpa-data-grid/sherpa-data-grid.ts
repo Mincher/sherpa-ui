@@ -174,7 +174,7 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
-  // MEASURED width, so it must re-run #syncPinned().
+  // MEASURED width, so it must re-run #measure().
 
   /* TRAP T-grid-column-width-bounds — 96/480/160 are measured, not chosen. */
   static readonly MIN_COL_WIDTH = 96;
@@ -235,9 +235,10 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
     this.$('.filter-row')?.addEventListener('click', this.#onFilterClick);
     this.$('.head-row')?.addEventListener('pointerdown', this.#onGripDown);
-    this.#fillWatch = new ResizeObserver(() => this.#fill());
-    const scroller = this.$('.scroller');
-    if (scroller) this.#fillWatch.observe(scroller);
+    // A re-stamp's observer replaces the last; the select cell too, for a density change.
+    this.#fillWatch?.disconnect();
+    this.#fillWatch = new ResizeObserver(() => this.#measure(true));
+    for (const box of [this.$('.scroller'), this.$('.head-row > .select-cell')]) if (box) this.#fillWatch.observe(box);
     // Both footer buttons commit. Delegated — the header is rebuilt per sort.
     this.$('.head-row')?.addEventListener('menu-apply', this.#onColumnFilterCommit);
     this.$('.head-row')?.addEventListener('menu-clear', this.#onColumnFilterCommit);
@@ -335,32 +336,53 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncSelected();
     this.#syncGroupSelects();
     this.#syncCurrent();
-    this.#syncPinned();
-    this.#fill();
+    this.#pinSelects();
+    this.#measure();
   }
 
   /**
-   * A card WIDER than its columns: the slack goes to the columns the reader has
-   * not dragged, in proportion; a dragged one and the pinned edges keep theirs.
-   * Narrower, each keeps its own width and the box scrolls, as before.
-   * Will, TODO 96 (A). TRAP T-col-width-not-inline-size
+   * The frozen offset and the column widths, from ONE layout read — and only
+   * when what it reads moved: the columns, their widths, the select column, the
+   * actions. `force`: the box was resized, or a column dragged. A card WIDER
+   * than its columns gives the slack to the columns the reader has not dragged,
+   * in proportion; narrower, each keeps its own width and the box scrolls.
+   * Will, TODO 96 (A). TODO 355 C4. TRAP T-col-width-not-inline-size ·
+   * TRAP T-grid-pin-offset-is-measured · TRAP T-a-grid-draws-once-per-moment
    */
-  #fill(): void {
+  #measure(force = false): void {
     const box = this.$('.scroller');
     if (!box) return;
+    const selectable = this.hasAttribute('data-selectable');
     const shown = this.#shownColumns();
+    const base = shown.map((col) => this.#widthFor(col));
+    const key = JSON.stringify([shown.map((c) => c.field), base, [...this.#widths], selectable,
+      this.#rows.length > 0, this.#actions.length > 0]);
+    if (!force && key === this.#measuredFor) return;
+    // READ, all at once. TRAP T-grid-pin-offset-needs-subpixel — offsetWidth rounds the
+    // 0.5px-bordered 32px cell and leaves a hairline under the pin.
+    const probe = this.$('.head-row > .select-cell');
+    const offset = selectable && probe ? probe.getBoundingClientRect().width : 0;
     const edges = this.$$('.head-row > .select-cell, .head-row > .actions-cell')
       .reduce((sum, cell) => sum + cell.getBoundingClientRect().width, 0);
-    const base = shown.map((col) => this.#widthFor(col));
+    const room = box.clientWidth;
+    // …then WRITE.
+    this.style.setProperty('--_pin-offset', `${offset}px`);
     const free = shown.map((col) => !this.#widths.has(col.field));
     const share = base.reduce((sum, w, i) => sum + (free[i] ? w : 0), 0);
-    const slack = box.clientWidth - edges - base.reduce((sum, w) => sum + w, 0);
+    const slack = room - edges - base.reduce((sum, w) => sum + w, 0);
     shown.forEach((col, i) => {
       const el = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(col.field)}"]`);
       const grow = slack > 0 && free[i] && share > 0 ? Math.floor((slack * base[i]!) / share) : 0;
       if (el) el.style.width = `${base[i]! + grow}px`;
     });
+    // Drawn while hidden, it measured nothing: it measures again when shown.
+    this.#measuredFor = !room || (selectable && !offset) ? '' : key;
   }
+
+  /** What the widths and offset were last measured for. */
+  #measuredFor = '';
+  /** The shown columns the <col>s were last stamped for. */
+  #colsFor = '';
 
   /** Flag one cell as frozen. `data-pin-last` draws the scroll shadow. */
   #markPinned(cell: HTMLElement, last: boolean): void {
@@ -368,11 +390,10 @@ export class SherpaDataGrid extends SherpaElement {
     cell.toggleAttribute('data-pin-last', last);
   }
 
-  /**
-   * Settle the frozen columns after a render. TRAP T-grid-pin-offset-is-measured
-   * — only a revealed selection cell may claim the offset.
-   */
-  #syncPinned(): void {
+  /** Freeze the selection cells while they show — writes only; `#measure`
+   *  reads the offset. TRAP T-grid-pin-offset-is-measured — only a revealed
+   *  selection cell may claim the offset. */
+  #pinSelects(): void {
     const selectable = this.hasAttribute('data-selectable');
     for (const cell of this.$$('.select-cell')) {
       if (selectable) this.#markPinned(cell as HTMLElement, false);
@@ -381,12 +402,6 @@ export class SherpaDataGrid extends SherpaElement {
         cell.removeAttribute('data-pin-last');
       }
     }
-
-    // TRAP T-grid-pin-offset-needs-subpixel — offsetWidth rounds the
-    // 0.5px-bordered 32px cell and leaves a hairline under the pin.
-    const probe = this.$('.head-row > .select-cell');
-    const offset = selectable && probe ? probe.getBoundingClientRect().width : 0;
-    this.style.setProperty('--_pin-offset', `${offset}px`);
   }
 
   /**
@@ -412,6 +427,11 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Stamp one <col> per column. Must run BEFORE the header cells are rebuilt. */
   #renderCols(): void {
+    // The same columns keep their <col>s, and the widths #measure shared out.
+    const shown = JSON.stringify(this.#shownColumns().map((c) => [c.field, this.#widthFor(c)]));
+    if (shown === this.#colsFor && this.$('.cols > .col')) return;
+    this.#colsFor = shown;
+    this.#measuredFor = '';
     // `own-children`, not `replace`: the fixed `.select-col` must survive.
     this.renderItems('.cols', 'template.col-tpl', this.#shownColumns(), {
       clear: 'own-children',
@@ -1611,7 +1631,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#widths.set(field, next);
     /* The COLGROUP only: a #render() per pointermove rebuilds the body 60x/s.
        The columns not dragged re-share what is left. */
-    this.#fill();
+    this.#measure(true);
   };
 
   /** The grip was let go: keep the width and report it. */
@@ -1634,7 +1654,7 @@ export class SherpaDataGrid extends SherpaElement {
     );
     if (!drag) return;
     // The frozen column's offset is MEASURED, so a resize moves the later pins.
-    this.#syncPinned();
+    this.#measure(true);
     this.emit('column-resize', { field: drag.field, width: this.#widths.get(drag.field) });
   };
 
