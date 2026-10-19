@@ -729,6 +729,11 @@ against the code). The full plan, with every file:line, is
     page: open and reopen ONE load each, every other act none. Demos `?remote`:
     back to Records shows rows before an 800 ms read could. TRAP `T-a-read-is-planned`.
 
+  - ✅ **4.4** (2026-10-19) — a whole read that fails UNREACHED keeps the last
+    set (`change { stale: true }`); a REFUSAL drops it. `source.reach` (`ok`,
+    `unreached`, `down`), `source.failure`, `source.recheck()`; the `error`
+    event carries `failure`. TRAP `T-a-failed-read-keeps-the-last-set`.
+
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

@@ -2905,6 +2905,10 @@ matching.
 **The rule is in `docs/DATA-SOURCE-RULES.md`, section 6:** a failed load is a
 state, and a setter never throws.
 
+The `error` event's detail is `{ error, failure }` — `failure` its KIND
+(`T-a-failure-has-a-kind`); an unreached failure with nothing held makes the
+source's `reach` `down` (`T-a-failed-read-keeps-the-last-set`).
+
 What belongs here is the ordering nobody would guess. Both the catch and the finally
 re-check the in-flight ticket (`T-in-flight-ticket-discards-stale`), so a stale
 failure cannot raise an `error` for a load that has already been superseded, and
@@ -3655,6 +3659,37 @@ asks the store nothing.
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-a-failed-read-keeps-the-last-set
+
+345 phase 4.4 (D2 groundwork). A whole read that failed dropped the held set and
+sent every question to the store — which was down too, so a page that HAD its
+rows went to an error state. Now the KIND decides (`T-a-failure-has-a-kind`):
+
+| The failed read | The set |
+|---|---|
+| not reached — `offline`, `timeout`, `server` | KEPT: answered from, `change { stale: true }`; `store-unreached` said once per flip |
+| `refused` — 401, 403, 407 | DROPPED: nothing held is shown to someone no longer allowed to see it; the store is asked, and its error says so |
+| `invalid`, `unknown` | dropped; the store is asked, as before |
+
+**`source.reach`** is read from state, never from the last event: `down` after an
+ask that failed unreached (nothing to show), until a `change`; `unreached` while
+answering from a set the store could not confirm; else `ok`. A refusal is not
+a reach failure — the store answered. `source.failure` gives the kind and the
+store's own message; the `error` event carries it too.
+
+**`source.recheck()`** — `down`: a fresh read; `unreached`: a read BEHIND the
+rows shown (no loading state), which on success clears the failure and fires
+`set`; `ok`: nothing. A page calls it on Retry, `online` and its tab shown
+(phase 4.5).
+
+- A failed Refresh WAS that page's check: it sends no second read at once.
+- While the store cannot be reached, the kept set still takes a keyed change.
+- A Refresh, a store change or a successful read clears the failure.
+
+- Site: `src/core/data/store-cache.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-failed-read-keeps-the-last-set.test.mjs`
+
 ### T-a-read-is-planned
 
 345 phase 4.3 — Will's series: can held data answer? is it current? can the
@@ -3779,6 +3814,7 @@ store reads as offline — the message is kept, so it can be told apart.
 fails too. Its `delay` and `fail` may be functions, read at each load, so one
 wrapper serves an app while a debug setting changes.
 
+- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/failure.ts`
 - Site: `src/core/data/spoof-remote.ts`
 - Site: `test/unit/a-failure-has-a-kind.test.mjs`

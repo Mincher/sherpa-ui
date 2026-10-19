@@ -85,6 +85,9 @@
  * - .setPage — which page to show
  * - .setPageSize — rows per page, or null for all
  * - .load — Re-read and push to every bound component.
+ * - .reach — Can its store be reached?
+ * - .failure — Why the store could not be reached, while it cannot — its kind and message — else null.
+ * - .recheck — Try the store again: `down`, a fresh read; `unreached`, a read behind the rows shown, with no loading; `ok`,…
  * - .close — Let the store go: a change no longer reloads it, and its held set is dropped.
  * - .results — Each answered chip's results in a scope: the rows its own answer matches.
  * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
@@ -123,6 +126,7 @@ import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import { cacheOf, type StoreCache } from './store-cache.js';
 import { planRead, type Plan } from './read-plan.js';
+import { failureOf, unreached, type Failure } from './failure.js';
 import type { FieldFacts, FieldReading, FilterState } from './filter-state.js';
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
@@ -231,6 +235,8 @@ export class DataSource extends EventTarget {
   #plan: Plan = 'store';
   /** It has started its ONE check of the set behind it. */
   #tried = false;
+  /** Its last ask failed and the store could not be reached: nothing to show. */
+  #down: Failure | null = null;
 
   constructor(options: DataSourceOptions) {
     super();
@@ -1400,6 +1406,10 @@ export class DataSource extends EventTarget {
       time: this.store.time ?? null,
       bound: this.#binding.debug(),
       loaded: this.#loaded,
+      // How it answers, and whether its store can be reached. TRAP T-a-read-is-planned
+      plan: this.#plan,
+      reach: this.reach,
+      ...(this.#cache ? { held: { rows: this.#cache.set?.size ?? null, gen: this.#cache.gen, due: this.#cache.due, failure: this.#cache.failure } } : {}),
     };
   }
 
@@ -1670,11 +1680,38 @@ export class DataSource extends EventTarget {
    *  idle page asks again. A page the set is too big for asks the store, which moved nothing. */
   #onSet = (): void => {
     const set = this.#cache?.set;
-    if (!set || set.size > this.#holdRows) return;
+    // A set too big for this page — or none, where this page never used one — moves nothing here.
+    if (set ? set.size > this.#holdRows : this.#plan !== 'held' && this.#plan !== 'held-stale') return;
     this.#age++;
     // An ask in flight may have read the set before it landed: it is overtaken.
     if (this.#loaded || this.#inFlight.busy) void this.#reask();
   };
+
+  /**
+   * Can its store be reached? `ok`; `unreached` — the store could not be reached,
+   * and the last rows it gave are shown, unconfirmed; `down` — it could not be
+   * reached, and there is nothing to show. A refusal (401) is not this: the
+   * store was reached. TRAP T-a-failed-read-keeps-the-last-set
+   */
+  get reach(): 'ok' | 'unreached' | 'down' {
+    if (this.#down) return 'down';
+    const failure = this.#closed ? null : this.#cache?.failure;
+    return failure && unreached(failure) && this.#plan === 'held-stale' ? 'unreached' : 'ok';
+  }
+
+  /** Why the store could not be reached, while it cannot — its kind and message — else null. */
+  get failure(): Failure | null {
+    return this.#down ?? (this.reach === 'unreached' ? this.#cache?.failure ?? null : null);
+  }
+
+  /** Try the store again: `down`, a fresh read; `unreached`, a read behind the rows
+   *  shown, with no loading; `ok`, nothing. A page's retry, its tab shown, `online`. */
+  recheck(): void {
+    const reach = this.reach;
+    if (reach === 'down') void this.load({ force: true });
+    // The rows stay, and say they are unconfirmed, until the read lands.
+    else if (reach === 'unreached') this.#cache?.recheck(this.#holdRows);
+  }
 
   /** Closed: it no longer hears its store, and holds nothing. */
   #closed = false;
@@ -1744,6 +1781,8 @@ export class DataSource extends EventTarget {
       if (plan !== 'fetch') return;
       const before = `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}`;
       await cache.hold(this.#holdRows);
+      // A read that just failed WAS this page's check: no second one at once.
+      if (cache.failed) this.#tried = true;
       // Nothing moved — no read could be sent: the store answers.
       if (`${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}` === before) {
         this.#plan = 'store';
@@ -1816,6 +1855,7 @@ export class DataSource extends EventTarget {
       const emptiness = result.total > 0 ? undefined : this.#filter || this.#state.search ? 'no-matches' : 'empty';
       // Unconfirmed, as the set stands NOW: a check that landed meanwhile confirmed it.
       const stale = this.#plan === 'held-stale' && this.#planNow().plan === 'held-stale';
+      this.#down = null;
       this.dispatchEvent(
         new CustomEvent<DataChangeDetail>('change', {
           detail: { ...result, state: this.state, ...(emptiness ? { emptiness } : {}), ...(stale ? { stale: true as const } : {}) },
@@ -1827,7 +1867,10 @@ export class DataSource extends EventTarget {
     } catch (error) {
       // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
       if (!this.#inFlight.is(ticket)) return this.#result;
-      this.dispatchEvent(new CustomEvent('error', { detail: { error } }));
+      // …and says what KIND it was. TRAP T-a-failure-has-a-kind
+      const failure = failureOf(error);
+      this.#down = unreached(failure) ? failure : null;
+      this.dispatchEvent(new CustomEvent('error', { detail: { error, failure } }));
       return this.#result;
     } finally {
       if (this.#inFlight.end(ticket)) {

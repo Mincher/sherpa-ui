@@ -13,6 +13,7 @@
  * - .due — The set is out of date: a change it could not take, or a Refresh.
  * - .failed — The last whole read failed: questions ask the store until a change, a Refresh or a new page.
  * - .failedAt — The cap the last whole read failed at, or 0.
+ * - .failure — Why the last whole read failed, while it stands — its kind and message.
  * - .never — The store's own facts forbid holding it.
  * - .over — The largest cap a set was refused at, for its size.
  * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
@@ -23,6 +24,7 @@
  */
 import { HeldSet } from './held-set.js';
 import { report } from './report.js';
+import { failureOf, unreached, type Failure } from './failure.js';
 import type { Store, StoreChangeDetail } from './store.js';
 
 /** A store change, as the cache passes it on: did the set take it in place? */
@@ -43,6 +45,8 @@ export class StoreCache extends EventTarget {
   #due = false;
   /** The cap the last whole read FAILED at, or 0: a smaller cap may still try. */
   #failedAt = 0;
+  /** Why it failed, while it stands. */
+  #failure: Failure | null = null;
   /** The largest cap any page has asked for: the shared read is sent at it. */
   #widest = 0;
   /** Why it can never be held — the store's own facts — or ''. */
@@ -86,6 +90,11 @@ export class StoreCache extends EventTarget {
   /** The cap the last whole read failed at, or 0. */
   get failedAt(): number {
     return this.#failedAt;
+  }
+
+  /** Why the last whole read failed, while it stands — its kind and message. TRAP T-a-failed-read-keeps-the-last-set */
+  get failure(): Failure | null {
+    return this.#failedAt ? this.#failure : null;
   }
 
   /** The store's own facts forbid holding it. */
@@ -135,6 +144,7 @@ export class StoreCache extends EventTarget {
    *  the set was the store's. No read is in flight while it has failed. */
   retry(): void {
     this.#failedAt = 0;
+    this.#failure = null;
   }
 
   /** A Refresh: the set is due, read again before it is used — and a refusal
@@ -143,6 +153,7 @@ export class StoreCache extends EventTarget {
   letGo(): void {
     this.#due = true;
     this.#failedAt = 0;
+    this.#failure = null;
     this.#over = 0;
     this.#never = '';
     this.#age++;
@@ -178,14 +189,38 @@ export class StoreCache extends EventTarget {
       }
       this.#set = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) });
       this.#due = false;
+      // Reached again: the failure is over.
+      this.#failedAt = 0;
+      this.#failure = null;
       this.#gen++;
       this.dispatchEvent(new Event('set'));
     } catch (error) {
       if (age !== this.#age) return;
-      // A failed whole read is not a failed source: each question asks the store.
-      this.#failedAt = cap;
-      this.#say(`the whole read failed (${error instanceof Error ? error.message : String(error)})`, cap);
+      this.#failed(error, cap);
     }
+  }
+
+  /** A whole read failed. Not REACHED, the last set stands — shown, unconfirmed.
+   *  REFUSED, it goes: nothing held is shown to someone no longer allowed to see
+   *  it. A reply it could not read drops it too. Each question then asks the
+   *  store, as before. TRAP T-a-failed-read-keeps-the-last-set */
+  #failed(error: unknown, cap: number): void {
+    const failure = failureOf(error);
+    const was = this.#failure;
+    this.#failedAt = cap;
+    this.#failure = failure;
+    if (!unreached(failure)) this.#set = null;
+    else if (this.#set && (!was || !unreached(was))) {
+      // Said once per flip, with the store's own words.
+      report({
+        code: 'store-unreached',
+        message: `The store could not be reached (${failure.kind}: ${failure.message}), so the last rows it gave are shown, unconfirmed.`,
+        at: { kind: failure.kind, ...(failure.status ? { status: failure.status } : {}) },
+      });
+    }
+    if (!this.#set) this.#say(`the whole read failed (${failure.message})`, cap);
+    // The set stands, or went: a page asks again, and says which.
+    this.dispatchEvent(new Event('set'));
   }
 
   /** A store change: a keyed one is taken into the set, ONCE for every page;
@@ -193,10 +228,13 @@ export class StoreCache extends EventTarget {
    *  TRAP T-a-held-set-takes-a-change-in-place */
   #onChange = (event: Event): void => {
     const change = (event as CustomEvent<StoreChangeDetail | undefined>).detail;
-    const taken = !!this.#set && !this.#due && !!change && this.#set.patch(change, this.store);
+    // While the store cannot be reached, the last set still takes a change it can place.
+    const taken = !!this.#set && (!this.#due || this.#failedAt > 0) && !!change && this.#set.patch(change, this.store);
     if (!taken) {
       this.#due = true;
+      // A change the store announced: it answers again, so a failed read is tried again.
       this.#failedAt = 0;
+      this.#failure = null;
       this.#age++;
     }
     this.dispatchEvent(new CustomEvent<CacheChangeDetail>('change', { detail: { taken } }));

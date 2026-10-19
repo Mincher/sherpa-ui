@@ -316,8 +316,21 @@ source.setSearch('ada');   // never throws, whatever the store does
 ```
 
 A failed load leaves the LAST GOOD ROWS on screen rather than blanking the
-view, and the `error` event says what went wrong. A bound `sherpa-container`
-shows its own overlay off `loading` without being told to.
+view, and the `error` event says what went wrong — `e.detail.failure` is its
+KIND (`offline`, `timeout`, `server`, `refused`, `invalid`, `unknown`), read from
+the error your store throws: give an HTTP failure a numeric `status`, as
+`HttpError` does. A bound `sherpa-container` shows its own overlay off
+`loading` without being told to.
+
+**When the store cannot be reached, a held set stays.** A remote store's whole
+read that fails offline, too slow or with a server error keeps the last set:
+the page answers from it, each `change` says `stale: true`, and
+`source.reach` is `'unreached'`. With nothing held it is `'down'`. A REFUSAL
+(401, 403) is different: the store was reached, and said no — the set is
+dropped, so nothing held is shown to someone no longer allowed to see it.
+`source.recheck()` tries again; a page calls it on its Retry, on `online`, and
+when its tab is shown. Never `navigator.onLine` — a store's own failures say
+whether it answers.
 
 ### The filter is NAMED PARTS, not one value
 
