@@ -507,6 +507,14 @@ Points to think through (Claude, 2026-10-19):
 - Per component: the data layer has no DOM (lint enforces it). Each bound
   component already has an entry in the source's `SourceBinding`, so a
   per-component time could live there, with no change to `SherpaElement`.
+- How long a History lasts follows its store's DATA. Memory stores
+  (`ArrayStore`, `JsonStore`, `EventStore`, `SocketStore`, the held set) start
+  again each session, so their History can too (Will: fine). A `RestStore`'s
+  data and History live on the server and outlast the app; the client reads
+  only the entries after its session start. `IdbStore` and a `localStorage`
+  `LocalStore` outlast the session, so their History must too, or be cleared
+  with the data. A cache that outlasts the session starts from the time it was
+  written, not the session start.
 
 **What is there today (340):** `#readWhole()` sends
 `store.load({ take: holdRows + 1 })` with no filter, so up to 50,000 whole rows
