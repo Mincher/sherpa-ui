@@ -135,6 +135,20 @@ test('a scope lists its filter SETS; a field in two, or one it does not hold, is
   assert.equal(source.describe('data').sets, undefined);
 });
 
+/* Will, D2 A (TODOs 347–349): ONE order, the source's — saved filters first, then
+   the fields it holds, each set together where its first field stands.
+   TRAP T-one-walk-counts-and-limits-in-order */
+test('describe() gives a scope\'s filters in the ONE order: saved filters, then fields, each set together', async () => {
+  const store = new ArrayStore([{ a: 1, b: 2, c: 3, d: 4 }]);
+  const source = await openSource({
+    store: 'rows',
+    fields: { a: { label: 'A' }, b: { label: 'B' }, c: { label: 'C' }, d: { label: 'D' } },
+    scopes: { data: { label: 'Rows', holds: ['a', 'c', 'd', 'b'], presets: ['p'], sets: [{ id: 's', fields: ['b', 'c'] }] } },
+    presets: { p: { label: 'P', where: { a: { eq: 1 } } } },
+  }, store);
+  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['p', 'a', 'b', 'c', 'd']);
+});
+
 test('a scope says what it narrows: the View is the view, a bound component names its own', async () => {
   // TRAP T-a-scope-says-what-it-shows
   const store = new ArrayStore([{ region: 'EMEA', status: 'open' }]);

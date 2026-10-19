@@ -1845,9 +1845,18 @@ aside (Q1 A).
 `presentUnder` and `totalCount` requests. The property test holds all three —
 the walk, a plain walk, and step by step — to one answer.
 
+**The controls draw the same order.** `describe()` gives a scope's filters in it,
+and a bar's `drawScope` puts its chips in it — the View chip and a chip that
+answers no field stay first — and draws a saved filter the panel added. A saved
+filter added on the bar lands after the other saved filters; a field at the end.
+
 - Site: `src/core/data/walk.ts`
 - Site: `src/core/data/source-counts.ts`
 - Site: `test/unit/filters-limit-in-order.test.mjs`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `test/e2e/reforged-filterset.spec.ts`
 
 ### T-a-view-keeps-a-draft
 

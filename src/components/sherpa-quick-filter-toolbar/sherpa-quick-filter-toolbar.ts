@@ -1351,9 +1351,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const def of [...this.#filters]) {
       if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
+    // A saved filter another control put in the scope — the panel — is drawn from its description.
+    const missing = presets.filter((f) => !this.#heldIds.includes(f.id) && !this.#available.some((d) => d.id === f.id));
+    if (missing.length) this.#available = [...this.#available, ...missing.map(({ active: _a, ...def }) => def as FilterDef)];
     const add = [...want].filter((id) => !this.#heldIds.includes(id)
       && this.#available.some((f) => f.id === id));
     if (add.length) this.#addFilters(add, { silent: true });
+    this.#orderAs([...presets.map((f) => f.id), ...fields.map((f) => this.#idOf(f.id))]);
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     await this.#settled();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
@@ -1443,6 +1447,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncOverflowActive();
   }
 
+  /** The chips in the source's ONE order (D2 A): the View and any chip that
+   *  answers no field first, as they stand, then the scope's own. Drawn again
+   *  only when it moved. TRAP T-one-walk-counts-and-limits-in-order */
+  #orderAs(ids: readonly string[]): void {
+    const rank = new Map(ids.map((id, i) => [id, i]));
+    const lead = this.#filters.filter((f) => f.persistent || f.field === null);
+    const ranked = this.#filters.filter((f) => !lead.includes(f) && rank.has(f.id))
+      .sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+    const rest = this.#filters.filter((f) => !lead.includes(f) && !rank.has(f.id));
+    const next = [...lead, ...ranked, ...rest];
+    if (next.every((f, i) => f === this.#filters[i])) return;
+    this.#filters = next;
+    this.#render();
+  }
+
   /** Move the chosen available filters onto the bar. SILENT for a restore. */
   #addFilters(ids: string[], { silent = false } = {}): void {
     const added: FilterDef[] = [];
@@ -1468,7 +1487,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       added.push({ ...def!, active: !!def!.readings, removable: true });
     }
     if (!added.length) return;
-    this.#filters = [...this.#filters, ...added];
+    // A saved filter lands after the other saved filters (D2 A); a field at the end.
+    const saved = added.filter((f) => f.readings);
+    const lastSaved = this.#filters.findLastIndex((f) => !!f.readings);
+    const at = lastSaved >= 0 ? lastSaved + 1 : this.#filters.findLastIndex((f) => f.persistent || f.field === null) + 1;
+    this.#filters = [...this.#filters.slice(0, at), ...saved, ...this.#filters.slice(at), ...added.filter((f) => !f.readings)];
     this.#render();
     this.#renderAvailable();
     if (silent) return;

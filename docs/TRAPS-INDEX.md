@@ -136,7 +136,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-scale-for-every-chart](TRAPS.md#t-one-scale-for-every-chart) — format-tick
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — data, filter-face, filter-state
 - [T-one-total-for-the-ring-and-the-label](TRAPS.md#t-one-total-for-the-ring-and-the-label) — chart-datum, data
-- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — source-counts, walk
+- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — data-source, source-counts, walk
 - [T-one-way-to-write-a-condition](TRAPS.md#t-one-way-to-write-a-condition) — data, data-source, page-definition, query, query-edits, where
 - [T-only-five-filter-chips-carry-an-icon](TRAPS.md#t-only-five-filter-chips-carry-an-icon) — data-source-types
 - [T-only-the-view-trickles-down](TRAPS.md#t-only-the-view-trickles-down) — data-source, query
@@ -305,7 +305,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — bind-source
 
-## Filters (173)
+## Filters (174)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -438,6 +438,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-pick-reads-field-and-value](TRAPS.md#t-one-pick-reads-field-and-value) — quick-filter
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — quick-filter-toolbar
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — quick-filter
+- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — quick-filter-toolbar
 - [T-only-five-filter-chips-carry-an-icon](TRAPS.md#t-only-five-filter-chips-carry-an-icon) — filter-def
 - [T-only-group-and-sort-stay-one-chip](TRAPS.md#t-only-group-and-sort-stay-one-chip) — filter-def, filter-kind, filter-panel
 - [T-organise-chips-lead-the-bar](TRAPS.md#t-organise-chips-lead-the-bar) — filter-panel, quick-filter-toolbar

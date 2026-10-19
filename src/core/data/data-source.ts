@@ -110,7 +110,7 @@ import {
 import { readingClause, stateClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
-import { belowIn, clauseOf, limitFor, presentUnder, serialChains } from './source-counts.js';
+import { answerOrder, belowIn, clauseOf, limitFor, presentUnder, serialChains } from './source-counts.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
   answerOf, compile, eachScope, emptyScope, filterKey, heldAbove, heldInView, narrowsOne, presetClauses, readingAnswered,
@@ -767,8 +767,12 @@ export class DataSource extends EventTarget {
         says: this.#says(id),
       };
     });
-    // EVERY field it holds, declared or not: one left out still filters. TRAP T-a-broken-assumption-reports
-    const fields: HeldFilter[] = q.holds.map((f) => {
+    /* EVERY field it holds, declared or not: one left out still filters. In the
+       ONE order — each set together (D2 A). TRAP T-a-broken-assumption-reports
+       TRAP T-one-walk-counts-and-limits-in-order */
+    const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], (id) => this.#presets.get(id), scope)
+      .flatMap((e) => (e.kind === 'field' && e.held ? [e.id] : []));
+    const fields: HeldFilter[] = held.map((f) => {
       const reading = q.readings[f];
       const down = scope === VIEW ? this.#sendTo(f) : undefined;
       const from = cameFrom(this.#draft, f);
