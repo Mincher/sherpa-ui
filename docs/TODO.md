@@ -541,8 +541,14 @@ too, to mark a filter as always fetch?"*). Yes — as another way IN to the same
 field fact, never a component deciding (the data layer decides, Will 2026-10-16;
 precedent: a tile's `data-where` becomes its own default in the source).
 "Always fetch" can only be turned ON: if the definition OR the markup says so,
-it is so, so the two never conflict. ❓ Where it goes:
-**A (Claude's pick)** on the filtering component —
+it is so, so the two never conflict. **Will chose A (2026-10-19)**, as it
+reaches a linked grid's column filters: the attribute becomes a FIELD fact in
+the source, and the grid builds each heading's menu from the source's
+`filterDef(field)` (`sherpa-provider.ts:629`, `sherpa-data-grid.ts:506`) — so
+every filter of that field on that source has it, the View bar's too. A grid
+heading's menu already always has Apply (`commit: true`); after 345 that Apply
+fetches. Where it goes:
+**A (chosen)** on the filtering component —
 `<sherpa-quick-filter-toolbar data-scope="data" data-fetch-fields="owner tier">`;
 the provider hands it to the source. It works on a provider page, where chips
 are drawn from data and none is in the markup. **B** on each chip —
