@@ -3670,17 +3670,24 @@ app's code where it makes the store — not a page definition (two pages could
 disagree) and not a provider option (it would work only under one). One record
 per store in its OWN database (`sherpa-cache`, object store `sets`), so an app's
 `version` never moves it. `clearKept()` empties every one — and each set held in
-memory — at sign-out. The `name` must carry the user or tenant: the rows outlive
-the session.
+memory — at sign-out, and stops each keep: nothing more is written under the old
+name until `keepCache` is called again, with the new sign-in's name. The `name`
+must carry the user or tenant: the rows outlive the session.
 
-- **Read at the start**, and a first hold waits for it — at most 1 s. The copy is
+- **Read at the start**, and the FIRST hold waits for it — at most 1 s, once: a
+  copy that never comes holds up no later hold. One that lands during the wait
+  is drawn at once too (the source plans again). The copy is
   gen 0: ALWAYS unconfirmed (`T-a-read-is-planned`), so the first page that uses
   the store draws it at once, `held-stale`, and reads behind it — the "checked
   again when the session starts" that keeps ground zero. A change heard while
   it was read marks it due. Its rows are KEYED again (`keyRow`): a key lives
   beside a row, and a copy drops it.
+- **Never shown after** a refusal (401), a refusal for size or a sign-out: a copy
+  that lands late is dropped.
 - **Written** only for a set confirmed this session (gen ≥ 1, not due): after a
   whole read lands, after a change it takes — once quiet for 2 s, in idle time.
+  An unconfirmed set writes nothing, and the last copy STAYS: a save made while
+  the store cannot be read does not erase what an offline reload needs.
   Not over `maxRows` (50,000). A refusal (401) forgets it; so does a refusal for
   size; a full device forgets it, says `cache-keep-full` once and stops writing.
 - **Dropped when stale in kind**: another `version`, another key field, or older
@@ -3695,6 +3702,7 @@ the 800 ms read could, and offline it shows them with the warning banner.
 - Site: `src/core/browser/cache-keep.ts`
 - Site: `test/e2e/reforged-a-kept-set-survives-a-reload.spec.ts`
 - Site: `test/unit/a-kept-set-in-node-is-a-miss.test.mjs`
+- Site: `test/unit/a-held-set-yields-when-it-cannot-answer.test.mjs`
 
 ### T-a-reach-banner-takes-no-room
 
@@ -3708,9 +3716,15 @@ provider's `reach-change` (`T-the-provider-says-the-pages-reach`), reading
 words; a private state shows one — `reach-unreached` a WARNING ("The last data
 is still shown, and may be out of date."), `reach-down` a CRITICAL with
 `role="alert"` ("There is no data to show until it can be reached."). Why — by
-the failure's kind — is a word in the markup (`T-a-word-is-in-the-markup`),
-written AFTER the state, so a reader hears it inside a live region already
-shown.
+the failure's kind — is a word in the markup (`T-a-word-is-in-the-markup`).
+
+**Heard:** a live region shown and filled in one task is not announced, so the
+warning is SAID by a hidden one, `.reach-say`, always in the tree and written
+when the reach moves; the visible warning is a `note`. The critical one is an
+alert. **Focus** on Retry or Dismiss, when the banner goes, lands on
+`.reach-after` — the top of the content — never the page's start. **On top:**
+the Context's own z-indexes stay inside it (`::slotted(*) { isolation:
+isolate }`), so a grid's sticky heading never paints over the banner.
 
 **No room:** `.reach` is a sticky row of ZERO height at the top of the
 scrolling content; its callout is absolute inside it. Shown or gone, nothing
@@ -3771,7 +3785,9 @@ rows shown (no loading state), which on success clears the failure and fires
 
 - A failed Refresh WAS that page's check: it sends no second read at once.
 - While the store cannot be reached, the kept set still takes a keyed change.
-- A Refresh, a store change or a successful read clears the failure.
+- A Refresh, a store change or a successful read clears the failure. A NEW page
+  clears it only when no set is held; with one, its one try is behind the rows,
+  so a failed Refresh never holds the next page up for the whole timeout.
 
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/data-source.ts`
@@ -3805,8 +3821,11 @@ its rows in well under 800 ms.
 - **Stale is read when published**, from the plan as the set stands then: a
   check that landed meanwhile confirmed the answer. A set that lands while an
   ask is in flight overtakes it, as that ask may have read the old set.
-- A `fetch` that moves nothing (no read could be sent) answers from the store,
-  so the loop cannot spin.
+- A `fetch` that moves nothing (no read could be sent, and no kept copy landed)
+  answers from the store, so the loop cannot spin.
+- **A check that finds the set can no longer be held** — too big now, or refused
+  for its facts — DROPS it: `set` fires and every page asks the store. A set
+  that stayed would answer, stale, for good, with no banner.
 
 The bench's `rest/` page (a spoof that does not announce every change) holds the
 rule exactly: `rest/open` and `rest/reopen` make ONE load each, every other act
@@ -3819,6 +3838,7 @@ none (`asked()`).
 - Site: `scripts/check-bench.mjs`
 - Site: `test/unit/the-read-plan.test.mjs`
 - Site: `test/unit/a-reopen-checks-behind.test.mjs`
+- Site: `test/unit/a-held-set-yields-when-it-cannot-answer.test.mjs`
 
 ### T-a-store-has-one-cache
 

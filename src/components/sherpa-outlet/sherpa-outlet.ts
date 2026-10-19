@@ -184,20 +184,39 @@ export class SherpaOutlet extends SherpaElement {
   /** Show the banner for the page's reach — warning while the last rows are
    *  shown, critical with nothing to show — and say why. TRAP T-a-reach-banner-takes-no-room */
   #drawReach(reach: SherpaProvider['reach']): void {
-    if (reach.reach !== this.#reachNow) this.toggleState('reach-dismissed', false);
+    const moved = reach.reach !== this.#reachNow;
+    const focused = this.#focusInReach();
+    if (moved) this.toggleState('reach-dismissed', false);
     this.#reachNow = reach.reach;
     this.toggleState('reach-unreached', reach.reach === 'unreached');
     this.toggleState('reach-down', reach.reach === 'down');
-    // After the state, so a reader hears a change inside a live region already shown.
     const kind = reach.failure?.kind;
     const why = kind === 'offline' || kind === 'timeout' || kind === 'server' ? this.word(kind) : '';
     for (const el of this.$$('.reach-why')) el.textContent = why;
+    // The warning is said by a live region always in the tree; the critical one is an alert.
+    const say = this.$('.reach-say');
+    if (say && moved) say.textContent = reach.reach === 'unreached' ? `${this.word('unreached')} ${why}`.trim() : '';
+    if (focused && reach.reach === 'ok') this.#focusAfterReach();
+  }
+
+  /** Is focus on the banner's own buttons? */
+  #focusInReach(): boolean {
+    const active = this.shadowRoot?.activeElement;
+    return !!active && !!this.$('.reach')?.contains(active);
+  }
+
+  /** The banner went from under focus: it lands just after, at the top of the content. */
+  #focusAfterReach(): void {
+    this.$<HTMLElement>('.reach-after')?.focus({ preventScroll: true });
   }
 
   /** Retry asks the provider to try again; Dismiss hides the banner until the reach moves. */
   #onReachAct = (event: Event): void => {
     if (this.pathFind(event, '.retry')) this.#provider?.recheck();
-    else if (this.pathFind(event, '.dismiss')) this.toggleState('reach-dismissed', true);
+    else if (this.pathFind(event, '.dismiss')) {
+      this.toggleState('reach-dismissed', true);
+      this.#focusAfterReach();
+    }
   };
 
   /** The app shell it sits in. */

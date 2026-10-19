@@ -65,5 +65,5 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-space-2xs` | `.reach-actions` | `gap` |
-| `--sherpa-space-xs` | `.reach-actions` | `margin-inline-start` |
+| `--sherpa-display-mode-space-2xs` | `.reach-actions` | `gap` |
+| `--sherpa-display-mode-space-xs` | `.reach-actions` | `margin-inline-start` |

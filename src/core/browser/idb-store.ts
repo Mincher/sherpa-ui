@@ -272,7 +272,8 @@ export class IdbStore extends BaseStore {
 
     await new Promise<void>((resolve, reject) => {
       tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error ?? new Error('IdbStore: bulk write failed'));
+      // The failed REQUEST's error: the transaction's is not set until it aborts.
+      tx.onerror = (event) => reject((event.target as IDBRequest | null)?.error ?? tx.error ?? new Error('IdbStore: bulk write failed'));
       tx.onabort = () => reject(tx.error ?? new Error('IdbStore: bulk write aborted'));
     });
 

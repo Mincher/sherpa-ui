@@ -75,3 +75,42 @@ test('with no IndexedDB, the set is held in memory only — and nothing breaks',
   })()`);
   expect(r).toEqual({ total: 2, codes: ['cache-keep-unavailable'] });
 });
+
+test('a sign-out keeps nothing more under the old name, though the store is read again', async ({ page }) => {
+  const name = 'kept-signout-' + Date.now();
+  await page.evaluate(`(async () => {
+    const { ArrayStore, DataSource, spoofRemote, keepCache, clearKept } = await import('/dist/index.js');
+    const store = spoofRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0, announcesAll: false });
+    await keepCache(store, { name: ${JSON.stringify(name)} }).ready;
+    const source = new DataSource({ store });
+    await source.load();
+    await clearKept();
+    // The next user's first read: it must not be written under the old name.
+    await source.load({ force: true });
+    await new Promise((d) => setTimeout(d, 3200));
+  })()`);
+  await page.reload();
+  const after = await page.evaluate(SESSION({ rows: 2, down: true, name }));
+  expect(after.first).toMatchObject({ total: 0, reach: 'down' });
+});
+
+test('a save made while the store cannot be read leaves the kept copy for the next reload', async ({ page }) => {
+  const name = 'kept-save-' + Date.now();
+  await page.evaluate(SESSION({ rows: 6, name }));
+  await page.reload();
+  await page.evaluate(`(async () => {
+    const { ArrayStore, DataSource, spoofRemote, keepCache } = await import('/dist/index.js');
+    const inner = new ArrayStore(Array.from({ length: 6 }, (_, i) => ({ id: i + 1, name: 'n' + i })), { key: 'id' });
+    // Reads fail; a save still goes through.
+    const store = spoofRemote(inner, { delay: 0, fail: 1, announcesAll: false });
+    await keepCache(store, { name: ${JSON.stringify(name)} }).ready;
+    const source = new DataSource({ store });
+    await source.load();
+    await new Promise((d) => setTimeout(d, 100));
+    await inner.update(2, { name: 'saved' });
+    await new Promise((d) => setTimeout(d, 3200));
+  })()`);
+  await page.reload();
+  const after = await page.evaluate(SESSION({ rows: 6, down: true, name }));
+  expect(after.first).toMatchObject({ total: 6, stale: true });
+});

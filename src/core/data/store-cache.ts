@@ -20,7 +20,7 @@
  * - .over — The largest cap a set was refused at, for its size.
  * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
  * - .keep — Keep the set beyond the session, and start from the copy kept last time.
- * - .drop — Hold nothing; `forget`, and the kept copy goes too.
+ * - .drop — Hold nothing; `forget`, and the kept copy goes too, and nothing more is kept.
  * - .hold — Hold the whole set, up to a cap: one shared read, waited for.
  * - .retry — A new page tries a failed whole read once more.
  * - .letGo — A Refresh: the set is due, and read again before it is used.
@@ -50,7 +50,7 @@ export interface KeptSet {
 export interface CacheKeep {
   /** The copy kept last time, or null. */
   read(): Promise<KeptSet | null>;
-  /** Write soon: `take` gives the set as it is then, or null for none. */
+  /** Write soon: `take` gives the set as it is then, or null — nothing confirmed to write, so the copy stays. */
   write(take: () => KeptSet | null): void;
   /** No copy any more. */
   forget(): Promise<void>;
@@ -92,6 +92,8 @@ export class StoreCache extends EventTarget {
   #restoring: Promise<void> | null = null;
   /** A change was heard: a copy that lands after it is out of date. */
   #heard = false;
+  /** A refusal or a drop: a kept copy that lands after it is never shown. */
+  #noRestore = false;
 
   constructor(store: Store) {
     super();
@@ -157,8 +159,10 @@ export class StoreCache extends EventTarget {
    *  TRAP T-a-kept-set-is-checked-each-session */
   keep(port: CacheKeep): void {
     this.#keep = port;
+    this.#noRestore = false;
     this.#restoring = port.read().then((kept) => {
-      if (!kept || this.#set) return;
+      // A set landed first, or a refusal or a sign-out came first: the copy is not shown.
+      if (!kept || this.#set || this.#noRestore || this.#keep !== port) return;
       // Its keys are rebuilt: a row's key lives beside it, and a copy drops it.
       const rows = kept.rows.map((row) => {
         const copy = { ...row };
@@ -176,12 +180,17 @@ export class StoreCache extends EventTarget {
     if (this.#gen > 0) this.#write();
   }
 
-  /** Hold nothing; `forget`, and the kept copy goes too — a sign-out. */
+  /** Hold nothing; `forget`, and the kept copy goes too, and nothing more is
+   *  kept until `keep` is called again — a sign-out. */
   drop(options: { forget?: boolean } = {}): void {
     this.#set = null;
     this.#due = false;
     this.#age++;
-    if (options.forget) void this.#keep?.forget();
+    this.#noRestore = true;
+    if (!options.forget) return;
+    void this.#keep?.forget();
+    this.#keep = null;
+    this.#restoring = null;
   }
 
   /** Ask the keep to write the set as it stands — a confirmed one only. */
@@ -200,6 +209,8 @@ export class StoreCache extends EventTarget {
       let timer: ReturnType<typeof setTimeout> | undefined;
       await Promise.race([this.#restoring, new Promise((r) => { timer = setTimeout(r, KEPT_WAIT); })]);
       clearTimeout(timer);
+      // Waited for once: a copy that never comes holds up no later hold.
+      this.#restoring = null;
     }
     while (this.#wants(cap)) {
       if (!this.#reading) {
@@ -255,15 +266,15 @@ export class StoreCache extends EventTarget {
       const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: cap + 1 });
       if (age !== this.#age) return;
       const counted = { rows: rows.length, total };
-      if (totalUnknown) return this.#refuse('its totalPath read no number, so its total is only the rows it sent', cap, counted);
+      if (totalUnknown) return this.#unheld(() => this.#refuse('its totalPath read no number, so its total is only the rows it sent', cap, counted));
       if (total > cap || rows.length > cap) {
         // Too many for THIS cap: a page with a larger one may still hold it.
         this.#over = Math.max(this.#over, cap);
         if (cap >= this.#widest) void this.#keep?.forget();
-        return this.#say(`it holds ${total} rows, more than ${cap} (holdRows)`, cap, counted);
+        return this.#unheld(() => this.#say(`it holds ${total} rows, more than ${cap} (holdRows)`, cap, counted));
       }
       if (total !== rows.length) {
-        return this.#refuse(`it sent ${rows.length} of its ${total} rows — does the server cap a response, or ignore take?`, cap, counted);
+        return this.#unheld(() => this.#refuse(`it sent ${rows.length} of its ${total} rows — does the server cap a response, or ignore take?`, cap, counted));
       }
       this.#set = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) });
       this.#due = false;
@@ -279,6 +290,16 @@ export class StoreCache extends EventTarget {
     }
   }
 
+  /** A read that cannot be held: the set it checked no longer answers — the
+   *  store does, for every page — and a copy that lands after is not shown. */
+  #unheld(say: () => void): void {
+    say();
+    this.#noRestore = true;
+    if (!this.#set) return;
+    this.#set = null;
+    this.dispatchEvent(new Event('set'));
+  }
+
   /** A whole read failed. Not REACHED, the last set stands — shown, unconfirmed.
    *  REFUSED, it goes: nothing held is shown to someone no longer allowed to see
    *  it. A reply it could not read drops it too. Each question then asks the
@@ -290,6 +311,7 @@ export class StoreCache extends EventTarget {
     this.#failure = failure;
     if (!unreached(failure)) {
       this.#set = null;
+      this.#noRestore = true;
       // Refused: the copy on the device goes too.
       if (failure.kind === 'refused') void this.#keep?.forget();
     }
@@ -314,7 +336,8 @@ export class StoreCache extends EventTarget {
     // While the store cannot be reached, the last set still takes a change it can place.
     const taken = !!this.#set && (!this.#due || this.#failedAt > 0) && !!change && this.#set.patch(change, this.store);
     this.#heard = true;
-    if (taken) this.#write();
+    // Only a confirmed set is written: an unconfirmed one leaves the last copy as it is.
+    if (taken && this.#gen > 0) this.#write();
     if (!taken) {
       this.#due = true;
       // A change the store announced: it answers again, so a failed read is tried again.

@@ -42,7 +42,8 @@ const DAY = 24 * 60 * 60 * 1000;
 const QUIET = 2000;
 
 let sets: IdbStore | null = null;
-const kept = new Set<Store>();
+/** Each kept store, and how to stop its port writing. */
+const kept = new Map<Store, () => void>();
 const said = new Set<string>();
 
 /** Say a thing once a session. */
@@ -74,8 +75,14 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
   const maxAge = options.maxAge ?? 7 * DAY;
   const maxRows = options.maxRows ?? 50_000;
   let full = false;
+  // Signed out, or kept again under another name: this port writes nothing more.
+  let closed = false;
+  // Known not to be there: a forget reads nothing to find that out again.
+  let gone = false;
   let quiet: ReturnType<typeof setTimeout> | undefined;
   const forget = async (): Promise<void> => {
+    if (gone) return;
+    gone = true;
     try {
       await setsStore().remove(name);
     } catch { /* not there */ }
@@ -84,7 +91,10 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
   const readKept = async (): Promise<KeptSet | null> => {
     try {
       const record = (await setsStore().byKey(name)) as Record | undefined;
-      if (!record) return null;
+      if (!record) {
+        gone = true;
+        return null;
+      }
       if (record.v !== 1 || record.version !== version || record.key !== store.key || Date.now() - record.savedAt > maxAge) {
         await forget();
         return null;
@@ -102,17 +112,21 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
       return (readOnce ??= readKept());
     },
     write(take): void {
-      if (full) return;
+      if (full || closed) return;
       clearTimeout(quiet);
       quiet = setTimeout(() => {
         const idle = (globalThis as { requestIdleCallback?: (fn: () => void) => void }).requestIdleCallback;
         const run = async (): Promise<void> => {
+          if (closed) return;
           const set = take();
-          if (!set || set.rows.length > maxRows) return forget();
+          // Nothing confirmed to write: the last copy stays.
+          if (!set) return;
+          if (set.rows.length > maxRows) return forget();
           const record: Record = { name, v: 1, version, key: store.key, savedAt: Date.now(), rows: [...set.rows],
             ...(set.dropped ? { dropped: set.dropped } : {}) };
           try {
             await setsStore().putAll([record]);
+            gone = false;
           } catch (error) {
             if ((error as { name?: string })?.name !== 'QuotaExceededError') return;
             full = true;
@@ -126,15 +140,25 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
     },
     forget,
   };
-  kept.add(store);
+  // Kept again — a new sign-in's name: the old port stops.
+  kept.get(store)?.();
+  kept.set(store, () => {
+    closed = true;
+    clearTimeout(quiet);
+  });
   const cache = cacheOf(store);
   cache.keep(port);
   return { ready: port.read().then(() => undefined), forget };
 }
 
-/** Forget every kept set — on the device, and each one held in memory: a sign-out. */
+/** Forget every kept set — on the device, and each one held in memory — and
+ *  keep nothing more until `keepCache` is called again: a sign-out. */
 export async function clearKept(): Promise<void> {
-  for (const store of kept) cacheOf(store).drop({ forget: true });
+  for (const [store, close] of kept) {
+    close();
+    cacheOf(store).drop({ forget: true });
+  }
+  kept.clear();
   if (!IdbStore.available) return;
   try {
     await setsStore().clear();

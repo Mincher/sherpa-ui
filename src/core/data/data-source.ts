@@ -1764,10 +1764,12 @@ export class DataSource extends EventTarget {
       this.#plan = 'store';
       return;
     }
-    // A new page tries a failed whole read once more, as each page did before the set was the store's.
+    /* A new page tries a failed whole read once more, as each page did before
+       the set was the store's — behind the set, where one is held, so the page
+       is never held up for it. */
     if (!this.#checked) {
       this.#checked = true;
-      if (cache.failed) cache.retry();
+      if (cache.failed && !cache.set) cache.retry();
     }
     for (;;) {
       const { plan, behind } = this.#planNow();
@@ -1780,11 +1782,12 @@ export class DataSource extends EventTarget {
       }
       if (plan !== 'fetch') return;
       const before = `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}`;
+      const held = cache.set;
       await cache.hold(this.#holdRows);
       // A read that just failed WAS this page's check: no second one at once.
       if (cache.failed) this.#tried = true;
-      // Nothing moved — no read could be sent: the store answers.
-      if (`${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}` === before) {
+      // Nothing moved — no read could be sent, and no kept copy landed: the store answers.
+      if (`${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}` === before && cache.set === held) {
         this.#plan = 'store';
         return;
       }

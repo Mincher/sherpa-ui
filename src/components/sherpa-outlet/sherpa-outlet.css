@@ -27,12 +27,25 @@
   box-shadow: var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #0000001f);
 }
+/* The Context's own z-indexes stay inside it: a grid's sticky heading never paints over the banner. */
+::slotted(*) { isolation: isolate; }
+/* What a reader hears: always in the tree, so a change to it is announced. Seen by no one. */
+.reach-say {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Where focus goes when the banner it was in goes. */
+.reach-after { outline: none; }
 :host(:state(reach-unreached)) .reach-unreached,
 :host(:state(reach-down)) .reach-down { display: block; }
 .reach-actions {
   display: inline-flex;
-  gap: var(--sherpa-space-2xs, 8px);
-  margin-inline-start: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
   vertical-align: middle;
 }
 

@@ -751,6 +751,21 @@ against the code). The full plan, with every file:line, is
     and checks behind (W2 A) — offline it shows it with the warning banner.
     `clearKept()` at sign-out. Demos keeps `?remote`'s customers. TRAP
     `T-a-kept-set-is-checked-each-session`. **Phase 4 is done.**
+  - ✅ **Review of 4.3–4.7** (read-only, 2026-10-19; 13 found, 6 checked by a
+    skeptic and confirmed, 7 checked by hand — all fixed but none refuted):
+    a set read again that is now TOO BIG, or refused, kept answering stale for
+    good — it is dropped and the store answers; a kept copy that landed during
+    the 1 s wait sent the page to the store — it is drawn at once; a copy that
+    landed after a 401 was shown — it is dropped; an offline save ERASED the
+    device copy — an unconfirmed set writes nothing; a reopen after a failed
+    Refresh waited for the whole timeout — it checks behind the rows;
+    `clearKept()` went on writing under the old user's name — each keep stops;
+    a copy that never comes held up every Refresh — only the first hold waits;
+    a quota error on the put was not seen as one; a forget re-read the record.
+    The banner: dead spacing tokens, a warning a screen reader did not hear (now
+    a hidden live region), focus lost on Dismiss, and a grid heading that could
+    paint over it. Tests: `a-held-set-yields-when-it-cannot-answer` (7) and 2 in
+    `reforged-a-kept-set-survives-a-reload` — each fails on the old code.
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it

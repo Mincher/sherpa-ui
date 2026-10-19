@@ -24,6 +24,7 @@
             "class": "reach-unreached",
             "attrs": {
               "data-status": "warning",
+              "role": "note",
               "data-heading": "Unable to reach data"
             },
             "children": [
@@ -107,6 +108,20 @@
         ]
       },
       {
+        "el": "div",
+        "class": "reach-say",
+        "attrs": {
+          "role": "status"
+        }
+      },
+      {
+        "el": "div",
+        "class": "reach-after",
+        "attrs": {
+          "tabindex": "-1"
+        }
+      },
+      {
         "slot": "",
         "attrs": {
           "data-accepts": "content"
@@ -116,6 +131,12 @@
         "el": "template",
         "class": "words",
         "children": [
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "unreached"
+            }
+          },
           {
             "el": "span",
             "attrs": {
@@ -209,8 +230,8 @@
     }
   ],
   "tokens": {
-    "reach-actions.gap": "{sherpa.space-2xs}",
-    "reach-actions.margin-inline-start": "{sherpa.space-xs}"
+    "reach-actions.gap": "{sherpa.display-mode-space-2xs}",
+    "reach-actions.margin-inline-start": "{sherpa.display-mode-space-xs}"
   },
   "$extensions": {
     "sherpa": {

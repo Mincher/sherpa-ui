@@ -34,7 +34,7 @@
   <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
        it never moves the Context (Will, W1 A). TRAP T-a-reach-banner-takes-no-room -->
   <div class="reach" part="reach">
-    <sherpa-callout class="reach-unreached" data-status="warning" data-heading="Unable to reach data">
+    <sherpa-callout class="reach-unreached" data-status="warning" role="note" data-heading="Unable to reach data">
       <span>The last data is still shown, and may be out of date. <span class="reach-why"></span></span>
       <span class="reach-actions">
         <sherpa-button class="retry" data-size="sm" data-label="Retry"></sherpa-button>
@@ -49,9 +49,12 @@
       </span>
     </sherpa-callout>
   </div>
+  <div class="reach-say" role="status"></div>
+  <div class="reach-after" tabindex="-1"></div>
   <slot data-accepts="content"></slot>
   <!-- Why it could not be reached, by the failure's kind. TRAP T-a-word-is-in-the-markup -->
   <template class="words">
+    <span data-word="unreached">Unable to reach data. The last data is still shown, and may be out of date.</span>
     <span data-word="offline">The network could not be reached.</span>
     <span data-word="timeout">The server took too long to answer.</span>
     <span data-word="server">The server had a problem.</span>
