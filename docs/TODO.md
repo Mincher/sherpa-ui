@@ -515,6 +515,14 @@ Points to think through (Claude, 2026-10-19):
   `LocalStore` outlast the session, so their History must too, or be cleared
   with the data. A cache that outlasts the session starts from the time it was
   written, not the session start.
+- **Will's ruling (2026-10-19): the History starts again EVERY session,** for
+  the stores that persist too. *"The first row is always 'ground zero' for that
+  session history and we don't have to worry about table sizes, archiving,
+  etc."* So what a client holds also counts from ground zero: a cache kept from
+  an earlier session is checked again when the session starts. A `RestStore`'s
+  server log is shared by every client, so the server cannot clear it per
+  session: the client asks only for the changes since its own ground zero, and
+  how long the server keeps its log is the server's concern.
 
 **What is there today (340):** `#readWhole()` sends
 `store.load({ take: holdRows + 1 })` with no filter, so up to 50,000 whole rows
