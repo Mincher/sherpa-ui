@@ -21,7 +21,8 @@ import { hasIcon, iconsLoading, renderIcon, upgradeIcons } from './render-icon.j
 import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
 import { liftTips } from './top-layer-tips.js';
 import {
-  cachedTemplates, checkOwnTemplate, filesFor, loadSheets, loadTemplates, onReload, reloadFiles, templateBody,
+  cachedTemplates, checkOwnTemplate, familyBody, filesFor, loadFamily, loadSheets, loadTemplates, onReload,
+  reloadFiles, templateBody,
 } from './templater.js';
 import { report } from '../data/report.js';
 import { ownHtml } from './trusted-html.js';
@@ -227,8 +228,10 @@ export abstract class SherpaElement extends Base {
    *  LIST: a family's shared sheet first, its own last, so its own wins. */
   static css?: URL | readonly URL[];
 
-  /** URL of this component's HTML template. Subclasses override. */
-  static html?: URL;
+  /** URL of this component's HTML template — or a LIST: a family's markup
+   *  first, its own last; each family file's body is stamped after its own.
+   *  TRAP T-a-family-shares-markup */
+  static html?: URL | readonly URL[];
 
   /** Attribute names to observe. Subclasses override (merge with super if extending). */
   static observed: string[] = [];
@@ -261,7 +264,7 @@ export abstract class SherpaElement extends Base {
     onReload((changed) => {
       for (const el of SherpaElement.#live) {
         const files = el.#files();
-        if ((files.html && changed.has(files.html)) || files.css.some((c) => changed.has(c))) void el.#redraw();
+        if ((files.html && changed.has(files.html)) || [...files.family, ...files.css].some((c) => changed.has(c))) void el.#redraw();
       }
     });
   }
@@ -278,6 +281,7 @@ export abstract class SherpaElement extends Base {
       if (tag && el.localName !== tag) continue;
       const files = el.#files();
       if (files.html) html.add(files.html);
+      for (const f of files.family) html.add(f);
       for (const c of files.css) css.add(c);
     }
     await reloadFiles({ html: [...html], css: [...css] });
@@ -863,7 +867,7 @@ export abstract class SherpaElement extends Base {
        TRAP T-rendered-settles-even-when-the-markup-does-not */
     let html = '';
     try {
-      [, html] = await Promise.all([styling, markup]);
+      [, html] = await Promise.all([styling, markup, loadFamily(files.family)]);
     } catch (error) {
       report({ code: 'template-failed', message: `<${this.localName}>'s template did not load: ${String(error)}`, at: { tag: this.localName } });
     }
@@ -912,7 +916,7 @@ export abstract class SherpaElement extends Base {
 
   /** The markup and sheets this element is drawn from now — its own, then a
    *  consumer's. TRAP T-a-templater-owns-the-files */
-  #files(): { html?: string; css: string[]; ownHtml?: string } {
+  #files(): { html?: string; family: string[]; css: string[]; ownHtml?: string } {
     const Ctor = this.constructor as typeof SherpaElement;
     return filesFor(this.localName, Ctor.html, Ctor.css);
   }
@@ -947,7 +951,8 @@ export abstract class SherpaElement extends Base {
    * TRAP T-restamp-does-not-abort
    */
   #stamp(body: string, id: string | null): void {
-    this.root.innerHTML = ownHtml(body);
+    // A family's markup after its own. TRAP T-a-family-shares-markup
+    this.root.innerHTML = ownHtml(body + familyBody(this.#files().family));
     this.#stampedTemplate = id;
     this.#hasRendered = true;
     this.#readOwn();

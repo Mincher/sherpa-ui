@@ -23,6 +23,8 @@ export interface SavedAnswer {
 
 /** What a bar or panel lends the card. */
 export interface SavedMenuHost {
+  /** The host's shadow root, which holds the menu prototype. TRAP T-a-family-shares-markup */
+  root: ParentNode;
   /** A fresh `<div>` holding `p.menu-section`, `div.saved-field` and `p.menu-line`. */
   unit(): HTMLElement | null;
   /** The field's own filter def; none keeps the field as words. */
@@ -104,6 +106,7 @@ function fieldNodes(card: Card, field: string, answer: FieldReading, def: Filter
     // A number is always given rows: 'only' is a list's word.
     const only = advancedOf(def) === 'only' && kindOf(def) !== 'number';
     const built = menuFor(
+      card.host.root,
       { ...def, advanced: only ? 'only' : true, commit: false, selectAll: false },
       { inline: true, remote: false, bounds: card.host.bounds },
     );

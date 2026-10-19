@@ -17,7 +17,7 @@ import type {
 import {
   arranges, advancedOf, hasOwnBody, kindOf, oneChipList, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
-import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { FILTER_MENU_HTML, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
   hangSavedMenu, type SavedMenuHost,
@@ -106,7 +106,7 @@ interface ScopeFilter {
 
 export class SherpaFilterPanel extends SherpaElement {
   static override css = new URL('./sherpa-filter-panel.css', import.meta.url);
-  static override html = new URL('./sherpa-filter-panel.html', import.meta.url);
+  static override html = [FILTER_MENU_HTML, new URL('./sherpa-filter-panel.html', import.meta.url)];
 
   /* It ASKS for its scopes (`data-scope="view data"`), and the source draws
      each whole. TRAP T-a-panel-asks-for-its-scopes */
@@ -879,7 +879,7 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     // TRAP T-an-inline-menu-is-the-same-menu — the same card, drawn in the flow.
-    const { menu, items } = menuFor(def, { inline, live: this.dataset['applyOn'] === 'input' });
+    const { menu, items } = menuFor(this.root, def, { inline, live: this.dataset['applyOn'] === 'input' });
     if (inline) {
       menu.removeAttribute('slot');
     } else {
@@ -1010,7 +1010,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const def = drawFiltersButton(btn, hides, added, offer, this.#saved.listed);
     if (!def) return;
 
-    const { menu, items } = menuFor(def);
+    const { menu, items } = menuFor(this.root, def);
     menu.setAttribute('data-align', 'end');
     btn.append(menu);
     menu.items?.(items);
@@ -1183,7 +1183,7 @@ export class SherpaFilterPanel extends SherpaElement {
         value: o.value, label: o.label ?? o.value, selected: picked.has(o.value),
       })),
     };
-    const { menu, items } = menuFor(def);
+    const { menu, items } = menuFor(this.root, def);
     // A filter's menu in the panel COMMITS. TRAP T-a-chip-menu-in-the-panel-commits
     menu.setAttribute('data-commit', '');
     held.box.append(menu);
@@ -1477,6 +1477,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** What a saved preset's card borrows from this panel. */
   #savedHost(scope: string): SavedMenuHost {
     return {
+      root: this.root,
       unit: () => this.clone<HTMLElement>('template.saved-field-tpl'),
       defOf: (field) => this.#fieldDefIn(scope, field) as FilterMenuDef | undefined,
     };

@@ -30,7 +30,10 @@ export const SOURCES = [
   'src/core/sherpa-button-look.css',
   'src/core/sherpa-chart-*.css',
   'src/core/sherpa-container-*.css',
+  'src/core/sherpa-filter-*.css',
   'src/components/**/*.html',
+  // A family's markup (TRAP T-a-family-shares-markup).
+  'src/core/*.html',
 ];
 
 const BASELINE = 'scripts/size-baseline.json';

@@ -8,6 +8,7 @@
  * TRAP T-an-inline-menu-is-the-same-menu
  *
  * Map:
+ * - FILTER_MENU_HTML — The markup every field's menu is cloned from: a host lists it first in its static html.
  * - FilterMenuItem — One row a menu offers.
  * - FilterMenuDef — Enough of a filter definition to draw its menu.
  * - FilterMenuOptions — where the card stays inside, and whether it draws inline
@@ -24,6 +25,10 @@ import type { MenuItem, SherpaMenu } from '../../components/sherpa-menu/sherpa-m
 import '../../components/sherpa-calendar/sherpa-calendar.js';
 import '../../components/sherpa-slider/sherpa-slider.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
+
+/** The markup every field's menu is cloned from: a host lists it first in its
+ *  static html. TRAP T-a-family-shares-markup */
+export const FILTER_MENU_HTML = new URL('../sherpa-filter-menu.html', import.meta.url);
 
 /** One row a menu offers: the menu's own item. */
 export type FilterMenuItem = MenuItem;
@@ -66,14 +71,17 @@ export interface FilterMenuOptions {
  * TRAP T-custom-element-upgrade
  */
 export function menuFor(
+  root: ParentNode,
   def: FilterMenuDef,
   opts: FilterMenuOptions = {},
 ): { menu: SherpaMenu; kind: FilterKind; items: FilterMenuItem[] } {
-  const menu = document.createElement('sherpa-menu') as SherpaMenu;
+  const tpl = root.querySelector<HTMLTemplateElement>('template.filter-menu-tpl');
+  if (!tpl) throw new Error("menuFor(): no template.filter-menu-tpl — list FILTER_MENU_HTML first in the host's static html");
+  // Imported, so it upgrades now, as a clone() does.
+  const menu = document.importNode(tpl.content, true).firstElementChild as SherpaMenu;
   const kind = kindOf(def);
   const one = picksOne(kind);
 
-  menu.setAttribute('slot', 'menu');
   if (def.label) menu.setAttribute('data-heading', def.label);
   menu.setAttribute('data-select', one ? 'single' : 'multiple');
 
@@ -95,8 +103,7 @@ export function menuFor(
   // A def that NAMED `commit` outranks the Range switch's own rule; so does a number.
   if (def.commit != null || local || typed) menu.setAttribute('data-commit-fixed', '');
   // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
-  if (!def.persistent) menu.setAttribute('data-clearable', '');
-  menu.setAttribute('data-search', '');
+  if (def.persistent) menu.removeAttribute('data-clearable');
   if (opts.bounds) menu.setAttribute('data-bounds', opts.bounds);
   if (opts.inline) menu.setAttribute('data-inline', '');
   if (def.selectAll === false) menu.setAttribute('data-no-select-all', '');
@@ -131,17 +138,8 @@ export function menuFor(
     if (def.range) menu.setAttribute('data-range', '');
     // The Menu set's `Type = Calendar` variant: a wider card.
     menu.setAttribute('data-type', 'calendar');
-    /* SLOTTED, because the calendar projects its stepper into the menu's
-       header slot and slot assignment only reaches LIGHT DOM.
-       TRAP T-projected-slot-content-crosses-two-shadow-boundaries */
-    const cal = document.createElement('sherpa-calendar');
-    cal.className = 'qf-calendar';
-    cal.setAttribute('data-embedded', '');
-    if (def.range) cal.setAttribute('data-type', 'range');
-    if (def.availableDates?.length) {
-      cal.setAttribute('data-available', def.availableDates.join(','));
-    }
-    menu.appendChild(cal);
+    // The menu stamps its own calendar; this is what it hands on. TRAP T-a-menu-owns-its-own-bodies
+    if (def.availableDates?.length) menu.setAttribute('data-available', def.availableDates.join(','));
     /* ADVANCED, where the field opts in: a FILTER menu, its rows asking the
        DATE questions — the calendar stays its Simple body. TODO 90 with 21d */
     if (advancedOf(def) === true) {

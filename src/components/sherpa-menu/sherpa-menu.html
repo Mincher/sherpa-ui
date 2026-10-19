@@ -168,12 +168,13 @@
                      data-show-value></sherpa-slider>
     </div>
 
-    <!-- NO CALENDAR HERE. A date body stays a SLOTTED child of the menu: the
-         calendar projects its stepper into this menu's `header` slot, and slot
-         assignment only reaches a host's LIGHT DOM. Inside this shadow root it
-         would have nothing to project into.
-         TRAP T-a-menu-owns-its-own-bodies
+    <!-- THE DATE BODY: stamped into this menu's LIGHT DOM on data-body="date",
+         as its rows are, so the calendar can project its stepper into the
+         header slot. TRAP T-a-menu-owns-its-own-bodies
          TRAP T-projected-slot-content-crosses-two-shadow-boundaries -->
+    <template class="menu-calendar-tpl">
+      <sherpa-calendar data-embedded></sherpa-calendar>
+    </template>
 
     <div class="rows" part="rows">
       <slot data-accepts="item"></slot>
@@ -364,6 +365,10 @@
       </div>
     </template>
 
+    <!-- The date body, as in the default template. -->
+    <template class="menu-calendar-tpl">
+      <sherpa-calendar data-embedded></sherpa-calendar>
+    </template>
     <template class="menu-check-tpl">
       <label class="menu-row"><input type="checkbox" /><span class="menu-row-label"></span></label>
     </template>

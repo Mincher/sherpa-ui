@@ -14,7 +14,7 @@
  * - GridAction — One action a row offers.
  */
 import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
-import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { FILTER_MENU_HTML, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FieldFilter } from '../../core/data/data-source.js';
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, define,
@@ -115,7 +115,7 @@ const FILTERABLE: ReadonlySet<string> = new Set(['text', 'number', 'date']);
 
 export class SherpaDataGrid extends SherpaElement {
   static override css = new URL('./sherpa-data-grid.css', import.meta.url);
-  static override html = new URL('./sherpa-data-grid.html', import.meta.url);
+  static override html = [FILTER_MENU_HTML, new URL('./sherpa-data-grid.html', import.meta.url)];
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -469,7 +469,7 @@ export class SherpaDataGrid extends SherpaElement {
     const held = this.#shown(col.field);
     const def = this.#filterDef(col, held);
     // A top-layer popover escapes the scroller, inside the HOST's named region.
-    const { menu, items } = menuFor(def, { bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input' });
+    const { menu, items } = menuFor(this.root, def, { bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input' });
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
     menu.setAttribute('data-removable', '');
     /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where

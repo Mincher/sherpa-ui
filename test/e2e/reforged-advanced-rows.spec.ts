@@ -57,6 +57,8 @@ const WANT: Record<string, [string, unknown]> = {
 test('every Advanced row shows what its condition takes, and answers the clause it says', async ({ page }) => {
   const got = await page.evaluate(async (kinds) => {
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
+    // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
+    const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
     const { readingClause } = await import('/dist/core/data/filter-state.js');
     const FILL: Record<string, string> = {
       'condition-pick': 'Ravi', 'condition-date': '2026-09-03', 'condition-date-to': '2026-09-30',
@@ -65,7 +67,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
     const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
     const out: Record<string, [string, unknown]> = {};
     for (const [kind, { def, facts }] of Object.entries(kinds)) {
-      const { menu, items } = menuFor(def as never);
+      const { menu, items } = menuFor(host, def as never);
       document.getElementById('root')!.replaceChildren(menu);
       const m = menu as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[]; items?(i: unknown): void };
       await m.rendered;
@@ -105,9 +107,11 @@ test('every Advanced row shows what its condition takes, and answers the clause 
 test('two rows join by Or or And, and the cross takes one away', async ({ page }) => {
   const r = await page.evaluate(async (def) => {
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
+    // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
+    const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
     const { readingClause } = await import('/dist/core/data/filter-state.js');
     const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
-    const { menu, items } = menuFor(def as never);
+    const { menu, items } = menuFor(host, def as never);
     document.getElementById('root')!.replaceChildren(menu);
     const m = menu as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[];
       items?(i: unknown): void; addCondition(): void };

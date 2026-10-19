@@ -21,7 +21,9 @@ const ROWS = [
 test('a date menu offers Advanced rows that ask a date\'s questions, and reads them back', async ({ page }) => {
   const r = await page.evaluate(async (rows) => {
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
-    const { menu } = menuFor({ id: 'created', label: 'Created', kind: 'date', advanced: true });
+    // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
+    const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
+    const { menu } = menuFor(host, { id: 'created', label: 'Created', kind: 'date', advanced: true });
     document.getElementById('root')!.replaceChildren(menu);
     const m = menu as Menu;
     await m.rendered;
@@ -59,7 +61,9 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
 test('the switch to Advanced carries the calendar\'s day over as On', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
-    const { menu } = menuFor({ id: 'created', label: 'Created', kind: 'date', advanced: true });
+    // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
+    const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
+    const { menu } = menuFor(host, { id: 'created', label: 'Created', kind: 'date', advanced: true });
     document.getElementById('root')!.replaceChildren(menu);
     const m = menu as Menu;
     await m.rendered;

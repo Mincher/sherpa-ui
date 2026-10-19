@@ -50,7 +50,8 @@ function tsFacts(ts, path) {
   const f = {};
   f.class = (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null;
   f.css = (/static override css = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
-  f.html = (/static override html = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
+  // A list is a family's markup first, its own last.
+  f.html = (/static override html = [^;]*new URL\('(\.\/[^']+\.html)'/.exec(ts) || [])[1] ?? null;
   // Must stay the SHARED reader: a bare regex here misses comment-stripping and
   // `...SPREAD` expansion, and silently disagrees with the spec generator.
   f.observed = parseObserved(ts, path);

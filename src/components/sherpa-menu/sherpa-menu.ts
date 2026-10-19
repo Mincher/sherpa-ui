@@ -187,6 +187,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   override onRender(): void {
+    this.#stampDateBody();
     this.#syncInline();
     this.#sync();
     /* Items given BEFORE this element had a shadow tree. A caller building a
@@ -1064,6 +1065,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   override onChange(name?: string): void {
+    if (name === 'data-body') this.#stampDateBody();
     this.#sync();
     if (name === 'data-hide-unavailable') this.#markPresent();
   }
@@ -1188,7 +1190,11 @@ export class SherpaMenu extends SherpaElement {
     }
     if (body === 'date') {
       const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
-      if (!cal) return true;
+      // Not stamped yet: HELD, and the shape above is said NOW. TRAP T-a-value-before-the-first-render-is-held
+      if (!cal) {
+        this.#heldValues = [...next];
+        return true;
+      }
       for (const a of ['value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
       cal.setAttribute('data-type', range ? 'range' : 'single');
       // A range kept with NO ends holds none: `undefined` was written as a day.
@@ -1445,6 +1451,14 @@ export class SherpaMenu extends SherpaElement {
   #inputs(): HTMLInputElement[] {
     return this.#own<HTMLInputElement>('input[type="checkbox"], input[type="radio"]')
       .filter((i) => !i.closest(NON_VALUE_ROWS));
+  }
+
+  /** A DATE body's calendar, stamped once into the light DOM — never beside a
+   *  page's own. TRAP T-a-menu-owns-its-own-bodies */
+  #stampDateBody(): void {
+    if (this.dataset['body'] !== 'date' || this.#own('sherpa-calendar').length) return;
+    const cal = this.clone('template.menu-calendar-tpl');
+    if (cal) this.append(cal);
   }
 
   /** This menu's OWN light-DOM nodes: a menu nested in it answers for itself.

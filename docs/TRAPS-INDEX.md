@@ -319,6 +319,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-default-is-not-an-override](TRAPS.md#t-a-default-is-not-an-override) — filter-menu
 - [T-a-divider-needs-a-neighbour-on-both-sides](TRAPS.md#t-a-divider-needs-a-neighbour-on-both-sides) — quick-filter-toolbar
 - [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, saved-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu, filter-panel
 - [T-a-filter-menu-has-two-modes](TRAPS.md#t-a-filter-menu-has-two-modes) — quick-filter
@@ -431,7 +432,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-path-not-target-finds-chip-host](TRAPS.md#t-path-not-target-finds-chip-host) — quick-filter-toolbar
 - [T-persistent-chip-is-a-selector](TRAPS.md#t-persistent-chip-is-a-selector) — filter-def, quick-filter-toolbar
 - [T-private-state-is-a-custom-state](TRAPS.md#t-private-state-is-a-custom-state) — quick-filter-toolbar
-- [T-projected-slot-content-crosses-two-shadow-boundaries](TRAPS.md#t-projected-slot-content-crosses-two-shadow-boundaries) — filter-menu
 - [T-readonly-legend-is-a-key-not-a-filter](TRAPS.md#t-readonly-legend-is-a-key-not-a-filter) — quick-filter
 - [T-reflow-resets-before-measuring](TRAPS.md#t-reflow-resets-before-measuring) — quick-filter-toolbar
 - [T-remove-is-opt-in-and-a-footer-button](TRAPS.md#t-remove-is-opt-in-and-a-footer-button) — quick-filter-toolbar
@@ -732,7 +732,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (98)
+## SherpaElement and the shared sheets (99)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -744,6 +744,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-with-data-icon-draws-its-own](TRAPS.md#t-a-component-with-data-icon-draws-its-own) — render-icon
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — mark-text
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — sherpa-element, templater
 - [T-a-flag-brings-the-base-methods](TRAPS.md#t-a-flag-brings-the-base-methods) — sherpa-element
 - [T-a-gauge-composes-the-ring](TRAPS.md#t-a-gauge-composes-the-ring) — shared-constants
 - [T-a-grid-group-computes-its-own-position](TRAPS.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping
@@ -940,7 +941,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (61)
+## Build, tools and the MCP (62)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -955,6 +956,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-detail-is-typed-by-the-checker](TRAPS.md#t-a-detail-is-typed-by-the-checker) — generate-component-spec, ts-facts
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — project-tokens
 - [T-a-dragged-layout-is-kept-per-column-count](TRAPS.md#t-a-dragged-layout-is-kept-per-column-count) — project-tokens
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — check-size
 - [T-a-file-says-what-it-holds](TRAPS.md#t-a-file-says-what-it-holds) — code-map
 - [T-a-fit-grid-needs-its-row-count](TRAPS.md#t-a-fit-grid-needs-its-row-count) — project-tokens
 - [T-a-flag-brings-the-base-methods](TRAPS.md#t-a-flag-brings-the-base-methods) — generate-component-spec, ts-facts

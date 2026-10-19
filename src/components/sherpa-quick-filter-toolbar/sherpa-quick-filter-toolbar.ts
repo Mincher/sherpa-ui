@@ -10,7 +10,7 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/s
 import { NON_VALUE_ROWS, ORGANISE_ICONS, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf } from '../../core/ui/filter-kind.js';
-import { menuFor } from '../../core/ui/filter-menu.js';
+import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
   drawSavedMenu, hangSavedMenu, type SavedMenuHost,
@@ -54,7 +54,7 @@ export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
-  static override html = new URL('./sherpa-quick-filter-toolbar.html', import.meta.url);
+  static override html = [FILTER_MENU_HTML, new URL('./sherpa-quick-filter-toolbar.html', import.meta.url)];
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -811,7 +811,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* ONE DEF, ONE MENU. The panel and a column heading build theirs the same
        way, so a field cannot open with a different control in each.
        TRAP T-one-field-one-filter-menu */
-    const { menu, items } = menuFor(def, {
+    const { menu, items } = menuFor(this.root, def, {
       bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
       live: this.dataset['applyOn'] === 'input',
     });
@@ -946,6 +946,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** What a saved filter's card borrows from this bar. */
   #savedHost(): SavedMenuHost {
     return {
+      root: this.root,
       unit: () => this.clone<HTMLElement>('template.qf-saved-field-tpl'),
       defOf: (field) => [...this.#filters, ...this.#available].find((d) => !d.readings && (d.field ?? d.id) === field),
       bounds: this.dataset['bounds'],

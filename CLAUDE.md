@@ -522,6 +522,12 @@ axes (bar, line) or `src/core/sherpa-chart-segments.css` for segmented charts
 (container, dialog, panel — TODO 285). A family sheet MAY carry `:host` rules —
 only its family adopts it — and `lint:css` reads it as it reads a component.
 
+**A family's MARKUP works the same way:** `static html` may be a list too, its
+family files first. Each family file's first template is stamped after the
+component's own body, so a shared helper's prototypes sit in every member's
+root — `src/core/sherpa-filter-menu.html` holds the menu `menuFor()` clones
+(TRAP `T-a-family-shares-markup`).
+
 Reach for a shared sheet when the same rule appears in a THIRD component —
 `.sherpa-tip` (the five charts) got into `sherpa-anchor.css` that way. Pick the
 sheet by job: `base` is what every component needs, the rest are opt-in by

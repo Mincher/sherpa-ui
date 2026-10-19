@@ -8,7 +8,9 @@
  * - OwnFiles — the files a consumer gives a component.
  * - inlined — a file's text, carried in the JS by the build, so it is never fetched.
  * - useTemplate — draw a component from your own markup, and add your sheets after its own.
- * - filesFor — the markup and sheets a component is drawn from now.
+ * - filesFor — the markup and sheets a component is drawn from now: a family's, its own, a consumer's.
+ * - loadFamily — a family's markup files, each on its own: one that fails is said and left out.
+ * - familyBody — each family file's first template, in order; one not loaded adds nothing.
  * - loadTemplates — a markup file, fetched once and split by `<template id>`.
  * - cachedTemplates — the split markup already fetched, for a re-stamp that costs no fetch.
  * - templateBody — one template's markup: the one wanted, else the first, else the whole file.
@@ -59,20 +61,41 @@ export function useTemplate(tag: string, files: OwnFiles): void {
   own.set(tag, { ...(files.html ? { html: href(files.html) } : {}), css });
 }
 
-/** The markup and sheets `tag` is drawn from now: its own, then a consumer's. */
+/** The markup and sheets `tag` is drawn from now: a family's, its own, then a
+ *  consumer's. A LIST of markup is a family's files first, its own last.
+ *  TRAP T-a-family-shares-markup */
 export function filesFor(
   tag: string,
-  html: URL | undefined,
+  html: URL | readonly URL[] | undefined,
   css: URL | readonly URL[] | undefined,
-): { html?: string; css: string[]; ownHtml?: string } {
+): { html?: string; family: string[]; css: string[]; ownHtml?: string } {
   const given = own.get(tag);
-  const mine = [css ?? []].flat().map((u) => u.href);
-  const markup = given?.html ?? html?.href;
+  const list = [html ?? []].flat();
+  const mine = list.at(-1);
+  const markup = given?.html ?? mine?.href;
   return {
     ...(markup ? { html: markup } : {}),
-    ...(given?.html && html ? { ownHtml: html.href } : {}),
-    css: [...mine, ...(given?.css ?? [])],
+    ...(given?.html && mine ? { ownHtml: mine.href } : {}),
+    family: list.slice(0, -1).map((u) => u.href),
+    css: [...[css ?? []].flat().map((u) => u.href), ...(given?.css ?? [])],
   };
+}
+
+/** A family's markup files, each on its own: one that fails is said and left out.
+ *  TRAP T-shared-sheets-settle-independently */
+export async function loadFamily(urls: readonly string[]): Promise<void> {
+  const results = await Promise.allSettled(urls.map(loadTemplates));
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') report({ code: 'template-failed', message: `A family's markup did not load: ${String(r.reason)}`, at: { url: urls[i]! } });
+  });
+}
+
+/** Each family file's first template, in order; one not loaded adds nothing. */
+export function familyBody(urls: readonly string[]): string {
+  return urls.map((u) => {
+    const t = templateCache.get(u);
+    return t ? templateBody(t.map, t.html, null)[0] : '';
+  }).join('');
 }
 
 /** Fetch a file's text. A 404 RESOLVES, so without the check the body is the server's

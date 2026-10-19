@@ -1389,6 +1389,34 @@ data is.
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 
+### T-a-family-shares-markup
+
+**Markup a shared helper needs lives in a FAMILY file, not in TS** (Will, TODO
+344). `menuFor()` builds a field's menu for the toolbar, the panel and the
+grid; its menu is `template.filter-menu-tpl` in `src/core/sherpa-filter-menu.html`.
+
+A host lists the family file FIRST in its `static html`, as a family sheet is
+listed first in `static css`:
+
+```ts
+static override html = [FILTER_MENU_HTML, new URL('./sherpa-data-grid.html', import.meta.url)];
+```
+
+The base stamps each family file's first template AFTER its own body, on every
+stamp, re-stamp and reload; the build inlines the file as it does any other.
+The helper is handed the host's ROOT and clones from it (`menuFor(root, def)`).
+A family file that fails to load is reported and left out; `useTemplate()`
+replaces only the component's own file. The spec reads `<name>.html` only, so a
+family's markup is not a component's anatomy.
+
+- Site: `src/core/ui/templater.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `src/core/ui/saved-filter-menu.ts`
+- Site: `test/e2e/reforged-date-conditions.spec.ts`
+- Site: `test/e2e/reforged-advanced-rows.spec.ts`
+- Site: `scripts/check-size.mjs`
+
 ### T-a-swapped-label-is-in-the-markup
 
 **A value that follows a host attribute is written in the markup, both ways**
@@ -1833,8 +1861,8 @@ component's elements ARE its state, keep the state as data instead —
 `T-a-value-is-data-the-ticks-are-drawn`.
 
 `sherpa-menu` holds three: `values` until its rows exist (their stamp draws
-them over each item's `selected`), and `conditions` and `setCount` until it
-draws. Once drawn, its rows stay the live answer, because a drill MOVES them
+them over each item's `selected`) — a date's until its calendar is stamped, its
+shape said at once — and `conditions` and `setCount` until it draws. Once drawn, its rows stay the live answer, because a drill MOVES them
 into another menu (`T-drill-moves-not-clones`). The last write wins: items
 that name their own picks drop a held one. `sherpa-quick-filter` sets its
 picks THROUGH the menu, so they are held there too, and holds its own
@@ -2281,15 +2309,14 @@ as well as the slider, and a RANGE defers, because the pick is not finished on
 its first end. `data-commit-fixed` says a host named `commit` itself and
 outranks that.
 
-**THE CALENDAR IS THE EXCEPTION, and it is not a small one.** A date body stays
-a SLOTTED child. `sherpa-calendar` projects its stepper into the menu's
+**The calendar is the menu's too — stamped into its LIGHT DOM.** A date body
+is a SLOTTED child: `sherpa-calendar` projects its stepper into the menu's
 `header` slot, and slot assignment only reaches a host's LIGHT DOM — inside the
-menu's shadow root it has nothing to project into, and the menu's header comes
-up empty. Measured: the test for it fails with the projected header null.
+menu's shadow root it would have nothing to project into. So the menu clones
+`template.menu-calendar-tpl` into its own light DOM on `data-body="date"`, as
+it stamps its rows (TODO 344), in both its templates. A value given before the
+calendar exists is HELD, and the shape is said at once.
 TRAP T-projected-slot-content-crosses-two-shadow-boundaries
-
-So the switch above a calendar is the menu's; the calendar below it is the
-host's. That reads like an inconsistency and is a platform limit.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -2311,11 +2338,10 @@ host's LIGHT DOM. Move it into the host's shadow root and the projection stops
 
 `sherpa-calendar` puts its month stepper into `sherpa-menu`'s `header` slot.
 That is why a date body cannot move into the menu's shadow root with the number
-body: it would have nothing to project into.
-TRAP T-a-menu-owns-its-own-bodies
+body: it would have nothing to project into. The menu stamps it into its light
+DOM instead. TRAP T-a-menu-owns-its-own-bodies
 
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/core/ui/filter-menu.ts`
 
 ### T-range-switch-swaps-not-rebuilds
 
@@ -16333,6 +16359,10 @@ EXTENDS the default rather than replacing it.
   New MARKUP is stamped again, as a variant re-stamp is, so a component whose
   `onRender` draws from its own state comes back as it was.
   `SherpaElement.reload()` with no tag reloads the shared sheets too.
+- **A family's markup** (TODO 344): `static html` may be a LIST, as
+  `static css` is — family files first, its own last. Each family file's
+  first template is stamped AFTER the component's own body, so its
+  prototypes sit in every member's root (`T-a-family-shares-markup`).
 - **The example app reloads live** while `npm run build:watch` runs: the
   examples server watches `dist/` and sends `/live/files`, and the page
   calls `SherpaElement.reload(tag)`. Restart the server once to get the route.
