@@ -199,6 +199,39 @@ flowchart TD
   classDef ext fill:#e3f4e8,stroke:#2e7d32,color:#0c0b11
 ```
 
+Today the check reads "Is the whole set held?" (TODO 340). TODO 345 makes it a
+series of checks. That is the next diagram.
+
+### 3b. Planned (TODO 345): fast or current
+
+Will, 2026-10-19: *"It's not just a binary scenario but a series of
+considerations on when to be performant versus current in working with data."*
+Not built yet.
+
+```mermaid
+flowchart TD
+  F["compile() makes one Filter"] --> Q{"Can the query be fulfilled<br/>with held data?"}
+  Q -->|no| R1{"Is the store reachable?"}
+  R1 -->|yes| Fetch["Fetch only the fields and values<br/>the query needs"]
+  R1 -->|no| Err["Empty state or error UI<br/>shows the last data held"]
+  Q -->|yes| C{"Has any field the query uses<br/>changed in the store since it was held?"}
+  C -->|no| Local["Answer in the browser<br/>0 server requests"]
+  C -->|yes| R2{"Is the store reachable?"}
+  R2 -->|yes| Fetch
+  R2 -->|"no: offline or timed out"| Stale["Answer in the browser<br/>from the held data"]
+  Fetch --> S[("Store")]:::ext
+  S --> Hold["Hold the new data<br/>in the client cache"]
+  Hold --> Draw["Every bound part redraws"]
+  Local --> Draw
+  Stale --> Draw
+
+  classDef ext fill:#e3f4e8,stroke:#2e7d32,color:#0c0b11
+```
+
+Open questions in 345: how a source learns that a field changed (a store
+event, a live push, a version, a time limit), what the cache keys on, and how
+the reader sees that an answer came from held data.
+
 ### 4. A write (add, edit, delete)
 
 ```mermaid

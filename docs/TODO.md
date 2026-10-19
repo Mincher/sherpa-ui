@@ -461,6 +461,18 @@ Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
   components, are just meant to be like a thin rosetta stone layer for the
   presentation layer (UI)."* No whole set from every store on load.
 
+**The decision is a SERIES, not a yes or no** (Will, 2026-10-19, later). The
+check after `compile()` stays, reworded: *"Can the query be fulfilled with held
+data?"* Then:
+
+- **Current:** has any field the query uses changed in the store since it was
+  held? Then fetch it, not answer locally.
+- **Offline:** the app is offline, or the store does not answer? Then answer
+  locally from what is held.
+
+*"It's not just a binary scenario but a series of considerations on when to be
+performant versus current in working with data."*
+
 **What is there today (340):** `#readWhole()` sends
 `store.load({ take: holdRows + 1 })` with no filter, so up to 50,000 whole rows
 (every field), once per remote source when it opens. It holds them only if the
@@ -473,7 +485,9 @@ nothing (Will, 338) — the plan must keep that.
 **To investigate:** what a field's values cost per store kind (REST, SSE,
 socket); which fields a page needs at open, and how the source learns them (the
 page definition, the bound components' asks); what a client cache keys on
-(field, scope, Query) and when it goes stale; how a toggle stays a client
+(field, scope, Query) and when it goes stale; how a source learns that a field
+changed in the store (a store `change` event, a live push, a version or ETag,
+a time limit, a cheap "changed since" ask); how a toggle stays a client
 update without the whole set; offline and timeout states; the bench rules that
 prove it. Relates to 170 (client and server, waits on Will) and 341.
 
