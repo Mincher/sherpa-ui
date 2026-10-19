@@ -26,12 +26,13 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 |:-:|---:|---:|---|---|
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
-| ⬜ | 0a | 345 | EXPLORE — a remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340) | explore |
+| ❓ | 0a | 345 | EXPLORE — a remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Explored; plan in `docs/history/plan-345.md`; D1, D2 and a go wait on Will | explore |
 | ⬜ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
 | ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
 | ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
+| ⬜ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -492,7 +493,7 @@ has a stale navigation token region; the outlet writes Context markup by plain
 the Starter template asks npm for `sherpa-ui@^2.1.0-beta.0`, another person's
 package.
 
-### `[ ]` ⬜ 345 — EXPLORE: fetch each field's values on demand, and cache them
+### `[ ]` ❓ 345 — EXPLORE: fetch each field's values on demand, and cache them
 
 Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
 *"I think this has serious performance implications."* What he wants instead:
@@ -625,6 +626,51 @@ a time limit, a cheap "changed since" ask); how a toggle stays a client
 update without the whole set; offline and timeout states; the bench rules that
 prove it. Relates to 170 (client and server, waits on Will) and 341.
 
+**❓ Explored 2026-10-19** (read only: four explorers, one planner, one checker
+against the code). The full plan, with every file:line, is
+`docs/history/plan-345.md`. In short:
+
+- **Today, Records `?remote`:** one whole read at open (`load({ take: 50001 })`,
+  100 rows × 14 fields), then 0 asks per toggle. Not held (`holdRows: 0`, a failed
+  read, a RestStore with no `totalPath`): about 3 whole loads at open, and each
+  chip count is one more whole load. No load can ask for SOME fields, a RestStore
+  has no `distinct`, no store says WHICH fields changed, and a menu has no loading
+  state. Records shows 14 of its 14 fields, so it gains little at open; a wider
+  store gains a lot.
+- **The idea:** hold the fields the screen uses, one COLUMN at a time (the key
+  and one field, every row), and keep each until the store says that field
+  changed. Values come free from the column, and a toggle stays in the browser.
+- **The parts:** a page NEED (fields from the definition, the holds, the presets,
+  a grid's columns, a summary's spec — no component words, 341); columns on
+  demand (`LoadOptions.fields`, `Store.projects`); the decision series
+  (`planRead(need, held, history, reach)` in a new DOM-free `read-plan.ts`,
+  replacing the 8 `#hold()` sites); a History (`store-history.ts`: a sequence
+  and a field bitmap per change, reset each session); a cache partner
+  (`store-cache.ts`); a loading row in the filter menu; Will's always-fetch fields.
+  Every new member is optional, so an old store works as today.
+- **Nine phases, smallest first, each shippable and proved by `check:bench`:**
+  (1) close a source — a BUG, now **351**; (2) a change patches the held set, so a
+  save costs no whole read; (3) a History for memory stores; (4) the cache
+  partner in memory — going back to Records is instant, and a dropped network
+  keeps the data, marked stale; (5) values on demand and a menu loading state;
+  (6) always-fetch fields (Will's A); (7) projected reads, no change in
+  behaviour; (8) the decision series; (9) a remote History.
+- **What stays true:** a toggle asks nothing; the data layer has no DOM; no
+  component words in it; an old store works as today.
+
+**Decisions for Will** (neither blocks phases 1–3 or 5–8):
+
+- ❓ **D1 — how a remote store's History reaches the browser (phase 9).**
+  **A (Claude's pick):** never inside a toggle — from a change feed beside the
+  RestStore, on tab focus, on a timer, or with a fetch that goes anyway; a toggle
+  can show data one step old, and 340's rule stays. **B:** each toggle first asks
+  "changes since" (no rows); always current, but each toggle waits a round trip.
+- ❓ **D2 — what the cache keeps when the store does not answer (phase 4).**
+  **A (Claude's pick):** memory only, for the session; a reload while offline
+  shows the error state. **B:** IndexedDB too, opt-in per remote store; a reload
+  offline shows the last data, marked stale; more code, and data that outlives
+  the session.
+
 ### `[ ]` ⬜ 346 — One "Send to <component>" on a View field
 
 Will, 2026-10-19: *"We only need 1 'Send to ComponentName' option when
@@ -735,6 +781,21 @@ What is known already, to start from (not yet measured under throttling):
 How to measure: Playwright's CDP session can throttle (`Emulation.setCPUThrottlingRate`,
 rate 4) and record a trace, so a slow path becomes a repeatable number in a gate,
 as `check:bench` does for the data layer.
+
+### `[ ]` ⬜ 351 — BUG: a closed page's DataSource still hears its store
+
+Found by 345's exploration (2026-10-19), checked in the code. A `DataSource`
+adds a `change` listener to its store (`data-source.ts:256`) and never removes it
+— the file has no `removeEventListener`, and a source has no `close()`. The
+provider makes a NEW source each time a Context opens (`openSource()` in
+`open()`), over the same store, and drops the old one. So every visit leaves one
+more source listening, and each store change runs `load({ force: true })` in ALL
+of them: wasted loads (a whole read each on a remote store), and memory that is
+never freed. `spoofRemote` leaks its own listener the same way
+(`spoof-remote.ts:29`). The fix (345 phase 1): the source keeps its listener,
+`DataSource.close()` removes it and drops the held set, and the provider closes
+the old source in `open()` and `close()`. Proof: two opens over one store, the
+first closed, one insert — one load, not two. A 350 lead, too.
 
 ---
 
