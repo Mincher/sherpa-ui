@@ -27,6 +27,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | | | | **A — In hand** | |
 | 🚧 | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ⬜ | 0a | 345 | EXPLORE — a remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340) | explore |
+| ⬜ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
+| ⬜ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
+| ⬜ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
+| ⬜ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -579,6 +583,56 @@ changed in the store (a store `change` event, a live push, a version or ETag,
 a time limit, a cheap "changed since" ask); how a toggle stays a client
 update without the whole set; offline and timeout states; the bench rules that
 prove it. Relates to 170 (client and server, waits on Will) and 341.
+
+### `[ ]` ⬜ 346 — One "Send to <component>" on a View field
+
+Will, 2026-10-19: *"We only need 1 'Send to ComponentName' option when
+removing from the view scope. No need to cater for all possible routing of
+filters to component scope."*
+
+Today the source lists `sendTo` as EVERY scope below that has the field — a
+component's offer, or a chart's own scope — with the one it came up from
+first, and the panel draws a "Send to <scope>" for each
+(`data-source.ts` `describe()`, `T-send-to-view-filters`). Make it one. Which
+one — the scope it came up from, else the page's main component scope — is to
+confirm with Will when it is built.
+
+### `[ ]` ⬜ 347 — The View scope first; a component scope within its subset
+
+Will, 2026-10-19: *"Ensure that View Scope is applied first and Component
+Scope works with that filtered subset of fields and values."*
+
+Rows already work this way (`T-only-the-view-trickles-down`), and
+`present()` and `results()` read a component scope "within the View's". Check
+EVERY place a component scope offers or counts something — its chips' counts,
+its menus' values, its Add list's fields, the panel's run of value chips — and
+fix any that read the whole set instead of the View's subset.
+
+### `[ ]` ⬜ 348 — A chip counts its matches within the subset
+
+Will, 2026-10-19: *"Filter badge counts show the total matches for that
+filter. However they should show the count of matches from the filtered
+subset. So scopes and preceding filters will affect this."*
+
+Today `results(scope)` counts the rows a chip's OWN answer matches within what
+its scope can see (Will, TODO 60; `T-a-chip-counts-its-own-results`): the
+scopes count, the chips before it do not. The new rule: a chip's count is the
+rows that match its scopes, the filters BEFORE it in its bar, and its own
+answer. That makes ORDER matter, as a serial filter set already does (99).
+Settle with Will what "before" means across a bar and the panel, and what an
+OFF chip counts. The TRAP changes with it.
+
+### `[ ]` ⬜ 349 — A menu's viable fields and values come from the same subset
+
+Will, 2026-10-19: *"The above also goes for viable field and value options in
+menus."*
+
+Today `present(scope)` greys a value the OTHER answers in its scope rule out —
+every other answer, in both directions (Customer limits Region and Region
+limits Customer) — and only while Limit to matching filters is on
+(`T-a-ruled-out-value-is-greyed`, 174, 205). The new rule follows 348: scopes
+and PRECEDING filters decide which fields and values are viable. Do with 348,
+on one ordered pass. Ask Will whether Limit stays an opt-in.
 
 ---
 
