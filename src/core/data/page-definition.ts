@@ -8,6 +8,7 @@
  * - SourceDefinition — A page's source: which store, how it pages and searches, its fields, scopes and saved filters.
  * - PageDefinition — One page, as JSON — its source, and its components' configuration.
  * - openSource — Build a page's source from its definition, over the app's store.
+ * - checkTiers — A page's child fields, each reported where it cannot be one.
  */
 import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
 import { report } from './report.js';
@@ -73,6 +74,7 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
     ...(def.search ? { searchFields: [...def.search] } : {}),
   });
   const fields = Object.keys(def.fields ?? {});
+  const children = checkTiers(def);
   for (const [field, facts] of Object.entries(def.fields ?? {})) source.declareField(field, facts);
   await source.declareFromRows(fields);
   for (const [id, preset] of Object.entries(def.presets ?? {})) {
@@ -92,7 +94,8 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
         ...(facts.label ? { label: facts.label } : {}), ...(facts.arranges != null ? { arranges: facts.arranges } : {}),
       });
     }
-    if (facts.offers) source.offer(scope, facts.offers === 'all' ? fields : facts.offers);
+    // A child is never offered on its own: its picks are its parent's. TODO 369
+    if (facts.offers) source.offer(scope, facts.offers === 'all' ? fields.filter((f) => !children.has(f)) : facts.offers);
     if (facts.holds) source.hold(scope, facts.holds);
     for (const set of facts.sets ?? []) {
       for (const field of set.fields) {
@@ -108,4 +111,44 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
     if (facts.presets?.length) source.answer(scope, {}, Object.fromEntries(facts.presets.map((id) => [id, false])));
   }
   return source;
+}
+
+/**
+ * A page's child fields — each named by a parent's `child` — reported where one
+ * cannot be: not declared, under a number or a date, or held, offered or set by
+ * a scope, since a child's picks live in its parent's reading. TODO 369
+ */
+export function checkTiers(def: SourceDefinition): Set<string> {
+  const fields = def.fields ?? {};
+  const children = new Set<string>();
+  for (const [field, facts] of Object.entries(fields)) {
+    const child = facts.child;
+    if (!child) continue;
+    if (!(child in fields)) {
+      report({
+        code: 'child-not-declared',
+        message: `openSource: "${field}" names the child "${child}", which source.fields does not declare.`,
+        at: { field, child },
+      });
+    } else if (facts.type === 'number' || facts.type === 'date') {
+      report({
+        code: 'child-under-a-typed-field',
+        message: `openSource: "${field}" is a ${facts.type}, so it holds no child values; "${child}" is not its child.`,
+        at: { field, child },
+      });
+    } else children.add(child);
+  }
+  for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
+    const named = [...(facts.holds ?? []), ...(Array.isArray(facts.offers) ? facts.offers : []),
+      ...(facts.sets ?? []).flatMap((set) => set.fields)];
+    for (const field of new Set(named)) {
+      if (!children.has(field)) continue;
+      report({
+        code: 'child-field-named',
+        message: `openSource: scope "${scope}" names "${field}", a child field: its picks are in its parent's filter.`,
+        at: { scope, field },
+      });
+    }
+  }
+  return children;
 }

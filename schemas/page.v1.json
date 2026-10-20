@@ -82,6 +82,10 @@
         "carryOver": {
           "description": "Its answer survives a View change that does not answer it; without this, a View resets it.",
           "type": "boolean"
+        },
+        "child": {
+          "description": "The field holding this one's CHILD values — a Customer's Site. A child has no filter of its own: its picks are in this field's reading.",
+          "type": "string"
         }
       }
     },

@@ -62,6 +62,9 @@ export interface FieldDeclaration {
   /** Its answer SURVIVES a View change that does not answer it; else a View
    *  resets it. TRAP T-a-field-can-carry-over-views */
   carryOver?: boolean;
+  /** The field holding this one's CHILD values — a Customer's Site. A child has
+   *  no filter of its own: its picks are in this field's reading. TODO 369 */
+  child?: string;
 }
 
 /** A field's filter as any bar or panel draws it — its declaration and values. */

@@ -76,6 +76,11 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope over a grid or a list does, and the View does not
   (`T-group-and-sort-are-component-scope`).
+- **A field's `child`** names the field holding its CHILD values — a
+  Customer's Site: `"customer": { "label": "Customer", "child": "site" }`,
+  `"site": { "label": "Site" }`. A child has no filter of its own: its picks are
+  in its parent's reading, so no scope holds, offers or sets it, and
+  `offers: "all"` leaves it out. Not under a number or a date (TODO 369).
 - **A number field's `thresholds`** are its bands, declared once:
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved

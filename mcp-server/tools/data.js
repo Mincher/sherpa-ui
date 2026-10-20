@@ -832,4 +832,6 @@ function pageNames(dl, page, errors, warnings) {
     if (preset?.where) dl.readingsOf(preset.where);
     else errors.push(`saved filter "${id}" has no where`);
   }
+  // A child field, where it cannot be one: the data layer's own check reports it.
+  dl.checkTiers?.(source);
 }
