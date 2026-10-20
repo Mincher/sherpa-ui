@@ -6654,7 +6654,12 @@ display. It is re-derived after every stamp and every chevron toggle, and runs
 once at the end of `#renderSections` because parents start closed, so their
 children must start hidden.
 
+The walk itself is `hiddenRows` (`src/core/ui/tree-rows.ts`), DOM-free: a menu's
+tree of tiered values (TODO 369) asks the same question of the same flat shape.
+
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `src/core/ui/tree-rows.ts`
+- Site: `test/unit/a-shut-parent-hides-its-tree.test.mjs`
 
 ### T-brand-icon-must-empty-its-host
 

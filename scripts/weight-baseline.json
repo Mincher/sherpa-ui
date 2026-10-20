@@ -5,8 +5,8 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 850009,
-    "files": 107,
+    "js": 850178,
+    "files": 108,
     "fetched": 217926
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
@@ -195,8 +195,8 @@
     "fetched": 0
   },
   "components/sherpa-nav/sherpa-nav.js": {
-    "js": 264129,
-    "files": 15,
+    "js": 264298,
+    "files": 16,
     "fetched": 0
   },
   "components/sherpa-notifications/sherpa-notifications.js": {
@@ -345,8 +345,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1003368,
-    "files": 149,
+    "js": 1003537,
+    "files": 150,
     "fetched": 217926
   }
 }

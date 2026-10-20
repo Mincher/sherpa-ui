@@ -750,7 +750,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (99)
+## SherpaElement and the shared sheets (100)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -824,6 +824,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-number-coercion](TRAPS.md#t-number-coercion) — sherpa-element
 - [T-one-tab-stop-per-set](TRAPS.md#t-one-tab-stop-per-set) — roving-focus
 - [T-one-value-one-declaration](TRAPS.md#t-one-value-one-declaration) — sherpa-base
+- [T-parent-chain-walk-not-a-selector](TRAPS.md#t-parent-chain-walk-not-a-selector) — tree-rows
 - [T-populate-settles-after-render-data](TRAPS.md#t-populate-settles-after-render-data) — sherpa-element
 - [T-private-state-is-a-custom-state](TRAPS.md#t-private-state-is-a-custom-state) — form-value, sherpa-element
 - [T-radios-in-shadow-roots-are-not-one-group](TRAPS.md#t-radios-in-shadow-roots-are-not-one-group) — radio-group

@@ -14,6 +14,7 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';
+import { hiddenRows } from '../../core/ui/tree-rows.js';
 import '../sherpa-nav-item/sherpa-nav-item.js';
 import { report } from '../../core/data/report.js';
 import '../sherpa-button/sherpa-button.js';
@@ -446,8 +447,8 @@ export class SherpaNav extends SherpaElement {
   /**
    * Write `data-hidden` on rows under a closed parent, for CSS to act on.
    *
-   * Walks up `data-parent`; `:has()` on flat siblings would hide unrelated
-   * branches. TRAP T-parent-chain-walk-not-a-selector.
+   * Up `data-parent`, by `hiddenRows`; `:has()` on flat siblings would hide
+   * unrelated branches. TRAP T-parent-chain-walk-not-a-selector.
    */
   #syncRowVisibility(): void {
     const rows = this.$$<HTMLElement>('.nav-row');
@@ -462,15 +463,10 @@ export class SherpaNav extends SherpaElement {
       if (p) parent.set(id, p);
     }
 
+    const hidden = hiddenRows(parent.keys(), parent, open);
     for (const row of rows) {
       const id = row.dataset['id'];
-      if (!id) continue;
-      let hidden = false;
-      for (let p = parent.get(id); p !== undefined; p = parent.get(p)) {
-        if (open.get(p) === false) { hidden = true; break; }
-      }
-      if (hidden) row.dataset['hidden'] = '';
-      else delete row.dataset['hidden'];
+      if (id) row.toggleAttribute('data-hidden', hidden.has(id));
     }
   }
 
