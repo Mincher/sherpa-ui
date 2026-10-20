@@ -47,6 +47,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-max` | text |  |  |
 | `data-min` | text |  |  |
 | `data-mode` | `simple` `advanced` |  | FILTER type only: simple \| advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes |
+| `data-mode-outside` | boolean |  |  |
 | `data-no-select-all` | boolean |  | a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp. |
 | `data-op` | text |  | FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many. |
 | `data-range` | boolean |  |  |

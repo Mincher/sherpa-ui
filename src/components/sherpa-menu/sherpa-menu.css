@@ -112,6 +112,7 @@
    TRAP T-an-inline-condition-row-keeps-its-tracks */
 
 :host([data-inline]) .use-condition,
+:host([data-mode-outside]) .use-condition,
 :host([data-inline]) .footer {
   /* `!important`, and it is the honest answer. Both are COMPOSED components
      with their own `:host { display: … }`, and a host's own sheet wins over a

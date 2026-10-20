@@ -2134,6 +2134,10 @@
           ]
         },
         {
+          "name": "data-mode-outside",
+          "valueSet": "v"
+        },
+        {
           "name": "data-no-select-all",
           "description": "a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp.",
           "valueSet": "v"

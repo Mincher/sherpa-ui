@@ -30,7 +30,7 @@ test('more than 16 values is one chip; its menu holds them, and a pick reports t
       rows: menu.querySelectorAll('.menu-row:not(.qf-all)').length,
       picked: menu.values,
       on: chip.hasAttribute('data-current'),
-      // The switch is the menu's; the header has none. A run keeps its own.
+      // The switch is the HEADER's, a one-chip list's too (Will, TODO 385); its menu's is not shown.
       ownerSwitch: !!field('owner').querySelector('.field-advanced'),
       tierSwitch: !!field('tier').querySelector('.field-advanced'),
       menuSwitch: menu.hasAttribute('data-advanced'),
@@ -44,7 +44,7 @@ test('more than 16 values is one chip; its menu holds them, and a pick reports t
   }, OWNERS);
   expect(r.drawn).toEqual({
     ownerChips: 1, tierChips: 16, rows: 20, picked: ['owner-3'], on: true,
-    ownerSwitch: false, tierSwitch: true, menuSwitch: true,
+    ownerSwitch: true, tierSwitch: true, menuSwitch: true,
   });
   expect(r.heard.at(-1)).toEqual(['owner-3', 'owner-7']);
 });

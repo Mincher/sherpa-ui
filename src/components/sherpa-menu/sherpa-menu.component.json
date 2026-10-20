@@ -1089,6 +1089,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-mode-outside",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-no-select-all",
       "type": "boolean",
       "observed": true,
@@ -1252,6 +1260,11 @@
       "$type": "state",
       "name": "inline",
       "selector": ":host([data-inline])"
+    },
+    {
+      "$type": "state",
+      "name": "mode-outside",
+      "selector": ":host([data-mode-outside])"
     },
     {
       "$type": "state",

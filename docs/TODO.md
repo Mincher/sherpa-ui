@@ -66,7 +66,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ⬜ | 0zm | 383 | UX — ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
-| ⬜ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
+| ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -1499,6 +1499,19 @@ took one filter click from 176 to 56 ms at 4x CPU.
   120 ms more per filter click.
 
 **✅ Will, 2026-10-20: A, keep 367.**
+
+### `[x]` ✅ 385 — UX: every panel field's f(x) is in its header
+
+Will, 2026-10-20: *"Show the advanced filter toggle on all relevant filter panel
+headers. Don't hide it inside menus when in filter panel mode."*
+
+**✅ Done 2026-10-20.** A field drawn as ONE chip with its own menu — a list of
+more than 16 values, a date — now has its f(x) in the field header too, when it
+offers Advanced (every number does since 375). The header f(x) switches the
+chip's menu through the menu's own door, and the chip stays: its rows are in
+its menu. A menu the panel hangs on a chip says `data-mode-outside`, so its own
+f(x) is not shown. In Demos the View's Date field shows it. Dead `qf-*` CSS
+for the old cloned number rows went, with its TRAP.
 
 ### `[x]` ✅ 386 — BUG?: Advanced conditions and the query chain
 

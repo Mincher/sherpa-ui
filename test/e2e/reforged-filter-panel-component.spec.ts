@@ -991,3 +991,34 @@ test('a menu built by f(x) is told what the filters before it leave', async ({ p
   expect(r.before).toBe(false);
   expect(r.present).toEqual(['Dana']);
 });
+
+/** EVERY field that offers Advanced has its f(x) in its HEADER — a one-chip
+ *  list's too — and its menu's own is not shown. Will, TODO 385. */
+test('a one-chip list has its f(x) in its header, and its menu does not', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const options = Array.from({ length: 20 }, (_, i) => ({ value: `a${i}@x.io`, label: `a${i}@x.io` }));
+    const panel = await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel', [{
+      scope: 'data', label: 'Data', filters: [{ id: 'email', label: 'Email', select: 'multiple', advanced: true, options }],
+    }], { style: 'inline-size: 480px' });
+    panel.show();
+    await window.__settled();
+    const sr = panel.shadowRoot!;
+    const field = sr.querySelector<HTMLElement>('.field[data-field="email"]')!;
+    const fx = field.querySelector<HTMLElement>('.field-advanced');
+    const chip = field.querySelector<HTMLElement>('.field-values sherpa-quick-filter');
+    const menu = chip?.querySelector('sherpa-menu') as (HTMLElement & { mode: string }) | null;
+    const shown = (el: Element | null | undefined) => !!el && el.getClientRects().length > 0;
+    const look = () => ({ mode: menu?.mode, on: fx?.hasAttribute('data-current'), chip: shown(chip) });
+    const before = { fx: shown(fx), chipFx: getComputedStyle(menu!.shadowRoot!.querySelector('.use-condition')!).display, ...look() };
+    fx!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    await window.__settled();
+    const on = look();
+    fx!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    await window.__settled();
+    return { before, on, off: look() };
+  });
+  expect(r.before).toEqual({ fx: true, chipFx: 'none', mode: 'simple', on: false, chip: true });
+  // Its rows are in its menu, so its chip stays.
+  expect(r.on).toEqual({ mode: 'advanced', on: true, chip: true });
+  expect(r.off).toEqual({ mode: 'simple', on: false, chip: true });
+});

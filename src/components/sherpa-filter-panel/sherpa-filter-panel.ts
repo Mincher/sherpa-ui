@@ -882,7 +882,8 @@ export class SherpaFilterPanel extends SherpaElement {
        field has no list behind it, as its menu says too. Will, 2026-09-26.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
     // ONE chip's switch is its menu's own. TRAP T-only-group-and-sort-stay-one-chip
-    box.toggleAttribute('data-advanced-ok', !isPresets && !organise && !def.asChip && advancedOf(def) === true);
+    // Every field that offers Advanced: its f(x) is in its header, a one-chip list's too. Will, TODO 385
+    box.toggleAttribute('data-advanced-ok', !isPresets && !organise && advancedOf(def) === true);
 
     // What this field does not offer is not drawn.
     if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
@@ -967,6 +968,8 @@ export class SherpaFilterPanel extends SherpaElement {
          apply as they are picked, on a bar and in a panel alike.
          TRAP T-a-chip-menu-in-the-panel-commits */
       if (!arranges(kind)) menu.setAttribute('data-commit', '');
+      // Its f(x) is the field header's, never hidden in the menu. Will, TODO 385
+      menu.setAttribute('data-mode-outside', '');
       host.setAttribute('data-menu', '');
     }
     held.menu = menu;
@@ -1498,7 +1501,8 @@ export class SherpaFilterPanel extends SherpaElement {
        them: X and Y become Equals X OR Equals Y. TRAP T-both-answers-are-kept
        A NUMBER has no chips: its menu carries its own body over. */
     const now = menu?.reading;
-    if (on && menu && now && !menu.dataset['body'] && (now.mirror || !(now.conditions ?? []).length)) {
+    // A one-chip list carried its own over, through the menu's door. TODO 385
+    if (on && menu && now && !menu.dataset['body'] && !held.def.asChip && (now.mirror || !(now.conditions ?? []).length)) {
       menu.reading = { ...now, picked: this.#picked(held), mode: 'advanced', mirror: true };
     }
     this.#syncAnswered(held);
@@ -1531,8 +1535,9 @@ export class SherpaFilterPanel extends SherpaElement {
          panel's own button IS that opt-in reaching it.
          TRAP T-conditions-are-opt-in-per-field */
       if (on) held.menu.setAttribute('data-advanced', '');
-      // A NUMBER through its own door, which carries its body into the rows.
-      if (held.menu.dataset['body'] === 'number') held.menu.mode = on ? 'advanced' : 'simple';
+      /* A NUMBER through its own door, which carries its body into the rows — and
+         a ONE-chip list's, which carries its own ticks. TODO 385 */
+      if (held.menu.dataset['body'] === 'number' || held.def.asChip) held.menu.mode = on ? 'advanced' : 'simple';
       else held.menu.dataset['mode'] = on ? 'advanced' : 'simple';
     }
   }

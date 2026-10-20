@@ -11433,28 +11433,6 @@ first build multiplied the width at every size, and Will sent it back.
 
 ---
 
-### T-a-slotted-rows-css-follows-the-menu-not-the-chip
-
-`sherpa-quick-filter-toolbar` clones rows into a chip's MENU — a number field's
-input and slider, a range switch — and styled them `.chip .qf-number-*`.
-
-That menu may be drawn somewhere else entirely: a filter panel borrows it. None
-of those rules reached the panel, so a number field showed BOTH shapes at once
-and the bare `<input type="number">` kept its native spinner beside the slider.
-
-Two halves to the fix, because a slotted row is in nobody's shadow:
-
-- the toolbar's rules DROP `.chip` — they belong to the rows, not to where the
-  menu happens to sit;
-- and the panel repeats the two `display` lines, because the toolbar's sheet is
-  not shared and does not reach the panel's own shadow root.
-
-`::slotted()` cannot close the gap: it matches a slotted element, never its
-CHILDREN, and `.qf-number-one` is inside `.qf-number`.
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
-
 ### T-two-chips-in-one-section-need-their-own-id
 
 The filter panel's Organise section holds TWO chips — Group by and Sort by —

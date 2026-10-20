@@ -133,6 +133,9 @@ export class SherpaMenu extends SherpaElement {
     'data-commit-fixed': { type: 'boolean', kind: 'style' },
     /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
     'data-inline': { type: 'boolean', kind: 'style' },
+    /* Its HOST draws the Simple / Advanced switch — a panel field's header f(x) —
+       so its own is not shown. Will, TODO 385. */
+    'data-mode-outside': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
     /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
