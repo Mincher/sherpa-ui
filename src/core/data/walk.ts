@@ -12,11 +12,13 @@
  * - Walk — What a walk gives, by scope.
  * - holdsKey — Does a tally hold a value key, compared as a filter compares — case aside?
  * - emptyWalk — A walk that found nothing.
+ * - WalkReads — The fields one scope's walk reads: those it tests, and those it tallies.
+ * - walkReads — The fields each scope's walk reads — a change to no other leaves the walk as it is.
  * - Scan — One scope's scan: its tests, and what it gathers at each step.
  * - passOver — One scan of rows through a scope's steps, from one step on.
  * - walkInOrder — Walk the rows, scope by scope.
  */
-import { absoluteDates, matchesFilter, readField, valueKey, type Filter, type Row } from './store.js';
+import { absoluteDates, filterFields, matchesFilter, readField, valueKey, type Filter, type Row } from './store.js';
 
 /** One filter in a scope's order: its answer, and what it counts and limits. */
 export interface WalkStep {
@@ -94,6 +96,30 @@ export function holdsKey(keys: Iterable<string>, key: string): boolean {
 /** A walk that found nothing. */
 export function emptyWalk(): Walk {
   return { results: {}, values: {}, present: {}, offered: {}, aside: {}, spent: {}, ends: {} };
+}
+
+/** The fields one scope's walk reads: those it tests, and those it tallies. */
+export interface WalkReads {
+  tested: string[];
+  tallied: string[];
+}
+
+/** The fields each scope's walk reads — a change to no other leaves the walk as
+ *  it is. A step tests only while it is on or counts. TRAP T-one-walk-counts-and-limits-in-order */
+export function walkReads(plan: WalkPlan): Record<string, WalkReads> {
+  const out: Record<string, WalkReads> = {};
+  for (const sc of plan.scopes) {
+    const tested = new Set<string>();
+    const tallied = new Set<string>();
+    for (const step of sc.steps) {
+      if (step.clause && (step.on || step.counts)) for (const f of filterFields(step.clause)) tested.add(f);
+      for (const [, clause] of step.each ?? []) for (const f of filterFields(clause)) tested.add(f);
+      if (step.field && (step.ruler || step.offers)) tallied.add(step.field);
+    }
+    for (const tap of sc.taps) tallied.add(tap.field);
+    out[sc.scope] = { tested: [...tested], tallied: [...tallied] };
+  }
+  return out;
 }
 
 /** One scope's scan: its tests, and what it gathers at each step. */
@@ -180,7 +206,8 @@ function scanOf(sc: WalkScope, now: Date): Scan {
   ])];
   return {
     steps,
-    tests: steps.map((s) => s.clause && absoluteDates(s.clause, now)),
+    // A step neither on nor counted would test each row for nothing.
+    tests: steps.map((s) => (s.clause && (s.on || s.counts) ? absoluteDates(s.clause, now) : undefined)),
     eachTests: steps.map((s) => (s.each?.length ? s.each.map(([, c]) => absoluteDates(c, now)) : null)),
     tallied: steps.map((s) => !!s.field && (s.ruler === 'here' || !!s.offers)),
     tapsAt,

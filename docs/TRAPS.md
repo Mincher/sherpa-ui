@@ -1898,6 +1898,12 @@ to declare its fields are the walk's too (IndexedDB has no `scan`). Asked step
 by step, the tallies one filter shares are ONE request, the requests go
 together, and a failure fails the walk with no rejection unheard.
 
+**A step tests a row only while it is on or counts** (345 phase 3). A saved
+filter that is off counts nothing, so it reads no row. `walkReads(plan)` names
+the fields each scope tests and tallies: a change to any other field leaves the
+walk as it is (`test/unit/a-walk-reads-only-what-it-names.test.mjs`, over Limit
+on and off, a part, a hand filter, a chart part and a component's own scope).
+
 **The controls draw the same order.** `describe()` gives a scope's filters in it,
 and a bar's `drawScope` puts its chips in it — the View chip and a chip that
 answers no field stay first — and draws a saved filter the panel added. A saved
@@ -1905,6 +1911,7 @@ filter added on the bar lands after the other saved filters; a field at the end.
 
 - Site: `src/core/data/walk.ts`
 - Site: `src/core/data/source-counts.ts`
+- Site: `test/unit/a-walk-reads-only-what-it-names.test.mjs`
 - Site: `test/unit/filters-limit-in-order.test.mjs`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`

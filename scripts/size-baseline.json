@@ -117,7 +117,7 @@
   "src/core/data/threshold.ts": 35,
   "src/core/data/timing.ts": 55,
   "src/core/data/validate.ts": 331,
-  "src/core/data/walk.ts": 288,
+  "src/core/data/walk.ts": 315,
   "src/core/data/where.ts": 155,
   "src/core/ui/apply-state.ts": 72,
   "src/core/ui/bind-settings.ts": 38,
