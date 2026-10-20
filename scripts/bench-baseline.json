@@ -5,7 +5,7 @@
     "distinct": 1,
     "rows": 10025,
     "compiles": 5,
-    "clones": 7,
+    "clones": 10,
     "scans": 6
   },
   "records/pick": {
@@ -149,7 +149,7 @@
     "distinct": 1,
     "rows": 10025,
     "compiles": 5,
-    "clones": 7,
+    "clones": 10,
     "scans": 6
   },
   "records/narrow": {
@@ -176,7 +176,7 @@
     "distinct": 0,
     "rows": 10000,
     "compiles": 4,
-    "clones": 7,
+    "clones": 10,
     "scans": 7
   },
   "remote/pick": {
@@ -320,7 +320,7 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 4,
-    "clones": 7,
+    "clones": 10,
     "scans": 6
   },
   "remote/narrow": {
@@ -347,7 +347,7 @@
     "distinct": 0,
     "rows": 10000,
     "compiles": 4,
-    "clones": 7,
+    "clones": 10,
     "scans": 7
   },
   "rest/pick": {
@@ -491,7 +491,7 @@
     "distinct": 0,
     "rows": 10000,
     "compiles": 4,
-    "clones": 8,
+    "clones": 11,
     "scans": 11
   },
   "rest/narrow": {

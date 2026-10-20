@@ -722,7 +722,8 @@ export class DataSource extends EventTarget {
   ): void {
     this.#age++;
     if (readings) {
-      this.#presets.set(id, readings);
+      // Its OWN copy: a caller that edits its object later changes nothing here (Will, 319 A).
+      this.#presets.set(id, structuredClone(readings));
       this.#presetFacts.set(id, { ...this.#presetFacts.get(id), ...facts });
     } else {
       this.#presets.delete(id);
@@ -742,7 +743,8 @@ export class DataSource extends EventTarget {
   /**
    * One scope as a control draws it WHOLE: each preset and field it holds —
    * a field held ABOVE keeps its place and says where it went — what it may
-   * add, and, below the View, how its rows are arranged.
+   * add, and, below the View, how its rows are arranged. READ-ONLY: a saved
+   * filter's readings are the source's own, not copied for each draw (319).
    * TRAP T-a-panel-asks-for-its-scopes
    */
   describe(scope: string): ScopeDescription {

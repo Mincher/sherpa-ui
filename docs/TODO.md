@@ -334,7 +334,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
-| ⬜ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
+| ✅ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
@@ -8155,7 +8155,7 @@ the buttons' sizes and looks, and the fill already matched. Changed:
 
 **Look at:** Demos, any page — the header, the bell's count, the dividers.
 
-### `[ ]` ⬜ 319 — GAP: the source shares its presets with its callers
+### `[x]` ✅ 319 — GAP: the source shares its presets with its callers
 
 `declarePreset` keeps the CALLER's readings object, and `describe()` and
 `debugState()` hand out the source's own presets, parts and `only`. A caller
@@ -8167,6 +8167,10 @@ each preset's readings; the bench's clone count rises in every act that draws a
 bar). My pick: A.
 
 **Will, 2026-10-20: A.**
+
+**✅ Done 2026-10-20.** `declarePreset` keeps its own copy; `describe()` says what it
+hands out is read-only. Opening a page makes one copy per saved filter (bench
+`*/open` clones 7 → 10, recorded). Test: `every-declare-reads-back`.
 
 ### `[~]` 🚧 321 — BUG: a Context's saved Views have two keys
 

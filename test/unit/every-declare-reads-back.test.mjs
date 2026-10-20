@@ -22,6 +22,15 @@ test('preset() reads back declarePreset, as a copy', () => {
   assert.equal(source.preset('emea'), undefined);
 });
 
+// Will, 319 A: the source keeps its OWN copy of what it is given.
+test('declarePreset keeps its own copy: the caller editing its object changes nothing', () => {
+  const source = open();
+  const given = { region: { picked: ['EMEA'] } };
+  source.declarePreset('emea', given, { label: 'EMEA' });
+  given.region.picked.push('AMER');
+  assert.deepEqual(source.preset('emea').readings.region.picked, ['EMEA']);
+});
+
 test('partFacts() reads back declarePart; `only` is the element itself', () => {
   const source = open();
   const chart = {};
