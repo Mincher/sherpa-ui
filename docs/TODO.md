@@ -49,6 +49,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
 | 🚧 | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
+| ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1451,7 +1452,15 @@ fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
 sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
 3 engines, the coordination gate among them.
 
-### `[ ]` ⬜ 366 — DATA: one QueryContext for the app Context
+### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
+
+Found measuring 350: one saved-filter click made the grid build 25 checkboxes
+AND 25 radios, with CSS hiding one set. **✅ Done 2026-10-20.** A row keeps
+the box its mode shows, and none when the grid is not selectable; a change of
+`data-select` or `data-selectable` draws the rows again. Grid tests: 548 pass,
+3 engines. TRAP `T-a-row-holds-two-selection-boxes`.
+
+### `[~]` 🚧 366 — DATA: one QueryContext for the app Context
 
 Will, 2026-10-20: *"I still think we could have a singular QueryContext
 component in the data layer that holds the query conditions, for the current

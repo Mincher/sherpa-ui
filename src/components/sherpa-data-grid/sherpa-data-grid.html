@@ -193,10 +193,9 @@
   <template class="row-tpl">
     <tr class="row">
       <td class="select-cell">
-        <!-- REAL controls, not bare <input>s — a raw input draws the browser's
-             own box. TRAP T-compose-never-reimplement. Both exist always and CSS
-             reveals one: SINGLE wants a radio, and a checkbox cannot become one.
-             TRAP T-every-element-in-the-template. -->
+        <!-- REAL controls, not bare <input>s. TRAP T-compose-never-reimplement.
+             Both are here; a row keeps the one its mode shows.
+             TRAP T-every-element-in-the-template · TRAP T-a-row-holds-two-selection-boxes -->
         <sherpa-select-checkbox class="row-select row-multi"
                                 aria-label="Select row"></sherpa-select-checkbox>
         <sherpa-select-radio class="row-select row-one"

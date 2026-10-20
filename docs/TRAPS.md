@@ -9923,13 +9923,16 @@ every descendant that reads it.
 
 ### T-a-row-holds-two-selection-boxes
 
-Every body row stamps BOTH a `sherpa-select-checkbox` and a
-`sherpa-select-radio`, and CSS reveals one — so `.row-select` matches **two
-elements per row**, not one.
+The row template holds BOTH a `sherpa-select-checkbox` and a
+`sherpa-select-radio`. Until 2026-10-20 every body row stamped both and CSS
+revealed one — so `.row-select` matched **two elements per row**, and a
+hidden box still upgraded and stamped: 50 controls (and 25 inner buttons) on
+every page of 25 rows. Now a row keeps only the box its mode shows, and none
+when the grid is not selectable; changing `data-select` or `data-selectable`
+draws the rows again (TODO 368).
 
-Anything that COUNTS or READS must ask for the visible box (`.row-multi` or
-`.row-one`, via `#rowBox()` / `#rowBoxes()`). Only a write that genuinely means
-"set them both" uses the broad selector.
+Ask for the box through `#rowBox()` / `#rowBoxes()` (`.row-multi` or
+`.row-one`) all the same: it reads which one the mode wants.
 
 Four callers had it wrong, and each failed differently — which is what made it
 hard to see as one bug:
@@ -9943,6 +9946,7 @@ hard to see as one bug:
 
 The tests had the same fault: `.row-select` in a spec counts double too.
 
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-a-click-does-not-clear-indeterminate

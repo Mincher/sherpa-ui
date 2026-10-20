@@ -1243,7 +1243,11 @@ export class SherpaDataGrid extends SherpaElement {
       // TRAP T-a-cloned-prototype-needs-its-icons-upgraded
       this.upgradeClonedIcons(tr);
       tr.dataset['index'] = String(offset + i);
-      // BOTH boxes are stamped; CSS shows one. TRAP T-compose-never-reimplement.
+      /* Only the box this mode shows stays: a hidden one still upgrades and stamps,
+         and a mode change draws the rows again. TRAP T-a-row-holds-two-selection-boxes
+         · TRAP T-compose-never-reimplement */
+      const unused = this.#single ? '.row-multi' : '.row-one';
+      for (const box of tr.querySelectorAll('.row-select')) if (!selectable || box.matches(unused)) box.remove();
       // One NAME per grid: the radio's group. TRAP T-radios-in-shadow-roots-are-not-one-group
       const radio = tr.querySelector<SelectBox>('.row-one');
       if (radio) radio.setAttribute('name', this.#selectName);
@@ -1881,12 +1885,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.#emitSelection();
   };
 
-  /**
-   * The SHOWN selection box — the checkbox, or the radio in single mode. Every
-   * row stamps BOTH, so `.row-select` matches two per row: anything that COUNTS
-   * or READS must ask for the visible one.
-   * TRAP T-a-row-holds-two-selection-boxes.
-   */
+  /** The row's selection box — the checkbox, or the radio in single mode.
+   *  TRAP T-a-row-holds-two-selection-boxes */
   #rowBox(row: Element): SelectBox | null {
     return row.querySelector<SelectBox>(this.#single ? '.row-one' : '.row-multi');
   }
