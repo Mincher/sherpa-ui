@@ -58,8 +58,8 @@ export interface OpenOptions {
   views?: ViewLibrary;
   view?: string;
   session?: ProvideOptions['session'];
-  /** Keep a draft per View: off, for the tab, or across sessions. Asked at
-   *  each write. None: no drafts. TRAP T-a-view-keeps-a-draft */
+  /** Keep a draft per View, for the tab: on or off, asked at each write. None:
+   *  no drafts. TRAP T-a-view-keeps-a-draft */
   drafts?: () => DraftMode;
 }
 

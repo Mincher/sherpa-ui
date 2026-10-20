@@ -1933,8 +1933,14 @@ too … configurable options for filtering (on by default)."* A pick used to
 put the View's own filters on, so what the reader had set on the View they
 left was gone.
 
+**A draft is the TAB's alone** — Will, 2026-10-20 (TODO 370): *"The only way to
+share filter configurations across tabs, windows, or sessions is if they are
+saved by the user to a custom definition."* The "across sessions" mode
+(`always`, kept in localStorage) is gone; a shared copy an older build left is
+never read, and goes at the next write.
+
 `src/core/browser/view-drafts.ts` keeps one map per page, View id →
-`{ query, sig }`, in the tab's storage — and the shared one too in `always`.
+`{ query, sig }`, in the tab's storage.
 `sig` is the View's own definition as it was when the draft was made: a
 draft over another definition is DROPPED, so a changed preset never hides
 behind an old draft. The provider takes a `drafts` option — a function
@@ -1959,6 +1965,7 @@ Four things that are not obvious:
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/browser/view-drafts.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `test/e2e/reforged-view-drafts.spec.ts`
 
 ### T-reset-to-default-is-the-views-own
 
@@ -17675,7 +17682,10 @@ Four orderings make it work:
   and filters nothing.
 
 The session path must be `persist()`ed in the app (`/filters/records`), or it
-lives in memory and dies with the page.
+lives in memory and dies with the page — and persisted with `shared: false`,
+for THIS TAB: a reload keeps it, another tab, window or session does not. Only
+a filter the reader SAVES crosses those (Will, 2026-10-20, TODO 370;
+`T-a-view-keeps-a-draft`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`

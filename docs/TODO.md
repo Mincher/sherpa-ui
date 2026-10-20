@@ -51,6 +51,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
 | ⬜ | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| ✅ | 0z | 370 | RULE — a filter setup crosses tabs, windows and sessions ONLY once the reader saves it: drafts and the kept Query are the tab's own (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1096,7 +1097,8 @@ Firefox `reforged-a-reopen-shows-at-once` timing under 3-engine load, and the
 "saved filter on" profile (the base class's stamp is the most self time). A
 flake seen once in a full Demos run (2026-10-20, Chromium, passed on retry and
 5 of 5 alone): `reforged-view-chips.spec.ts:445` — after a reload the heading's
-Advanced filter read `null` while its chip was on.
+Advanced filter read `null` while its chip was on. And `reforged-nav-pin-persist.spec.ts:63` (a
+pinned rail after a full reload), once; neither failed in 108 repeats alone.
 
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 
@@ -1459,6 +1461,24 @@ data comes, open or shut. Two tests now open the panel before they read its
 fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
 sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
 3 engines, the coordination gate among them.
+
+### `[x]` ✅ 370 — RULE: only a saved filter crosses tabs and sessions
+
+Will, 2026-10-20: *"The only way to share filter configurations across tabs,
+windows, or sessions is if they are saved by the user to a custom
+definition."* Two things broke it:
+- **View drafts** kept across sessions in localStorage (the `always` mode,
+  Demos' "Keep them across sessions", on by default). Will chose **per tab
+  only**: the mode and the setting are gone; a shared copy an older build left
+  is never read, and goes at the next write.
+- **Each Context's kept Query** — Demos persisted `/filters/<context>` shared
+  (localStorage), so a new tab or session opened on the last unsaved filters.
+  Now `shared: false`: a reload of the tab keeps it, nothing else does.
+
+**✅ Done 2026-10-20.** sherpa-ui: `DraftMode` is `off | session`; drafts test
+(6 pass, 3 engines). Demos: one drafts switch (`data-setting`), the kept Query
+per tab; its suite 454 pass. TRAPs `T-a-view-keeps-a-draft`,
+`T-a-reload-replays-the-readers-answers`.
 
 ### `[ ]` ⬜ 369 — FILTERS: tiered values, and a tree menu
 

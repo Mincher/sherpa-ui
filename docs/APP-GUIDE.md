@@ -261,7 +261,7 @@ import { SessionStore } from 'sherpa-ui';
 const session = new SessionStore({
   theme: { mode: 'auto' },
   nav: { pinned: false, favorites: [], recent: [], hierarchy: false },
-  filters: { mode: 'toolbars', drafts: true, draftsAcross: true },
+  filters: { mode: 'toolbars', drafts: true },
 });
 session.persist('/theme/mode');
 session.persist('/nav/pinned');
@@ -319,7 +319,7 @@ outlet.start({
   app, base: new URL('./app.json', location.href), session,
   stores: () => ({ customers: customerStore }),
   ready: customersReady,
-  drafts: () => 'always',
+  drafts: () => 'session',
   panels: { filters: document.getElementById('filter-panel') },
   settings: { dialog: settings, header: settings.querySelector('sherpa-app-header'),
               root: document.getElementById('settings-root') },
