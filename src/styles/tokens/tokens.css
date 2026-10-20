@@ -2696,7 +2696,8 @@
     --_status-icon: initial;
   }
 
-  sherpa-quick-filter[data-superseded] {
+  sherpa-quick-filter[data-superseded],
+  :where(.menu-row:not([part~="trigger"]))[data-unavailable] {
     --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
     --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);

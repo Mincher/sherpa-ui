@@ -7950,9 +7950,17 @@ active … show a badge with count 0."* Only a pick BESIDE one that stands is se
 aside. When none stands, nothing is: the chip stays active — never greyed —
 wears 0, and the rows go to 0, so the reader sees the impact, opens the menu
 (its picks ticked, greyed, "no matches"), clears or removes the filter, or
-presses it OFF. A panel's run of value chips does the same: the ones that are
-on stay active. Off and ruled out, a value chip is refused; a chip with a menu
+presses it OFF. Off and ruled out, a value chip is refused; a chip with a menu
 always opens it.
+
+**The FILTER stays active; a VALUE the context rules out reads inactive** — on
+or off, ticked or not (Will, 2026-10-20: *"even if checked, to visually
+communicate that it's limited by the context"*). A menu row is pinned to the
+`inactive` Style mode (`.menu-row[data-unavailable]` in `state-pins.yaml` — a
+class key, as the row is slotted light DOM), and its checkbox takes the
+mode's accent (`accent-color`), so a ticked one is a grey tick that can still
+be unticked. A panel's value chip that is on and ruled out is greyed too, and
+may be let go.
 
 **Each control is TOLD** — `drawPresent(present, scope)` on a bound bar, panel
 or grid — and passes it to `menu.present`, which greys and disables the rows
@@ -8003,6 +8011,7 @@ go.
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/core/data/walk.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 

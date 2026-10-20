@@ -42,6 +42,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0n | 358 | UX — a filter whose every pick is ruled out stays ACTIVE, wears 0 and applies, instead of greyed and set aside (Will) | filters |
 | ✅ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
 | ✅ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
+| ✅ | 0q | 361 | UX — a value the context rules out has an INACTIVE checkbox, even when ticked (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1317,6 +1318,22 @@ Send-to group, not in it: a hidden Reset in the group would square Send to's
 corners (the group squares by position). The action row now holds only Add
 condition (Advanced) and, remote, Discard and Apply. Test:
 `reforged-filter-panel-component` (left of it, same width and height).
+
+
+### `[x]` ✅ 361 — UX: a ruled-out value's checkbox reads inactive, ticked too
+
+Will, 2026-10-20: *"A contextually inactive value should have an inactive
+checkbox style, even if checked, to visually communicate that it's limited by
+the context."*
+
+**✅ Done 2026-10-20.** A menu row the filters before it rule out is pinned to the
+`inactive` Style mode (`.menu-row[data-unavailable]`, a class key in
+`state-pins.yaml`, as the row is slotted light DOM), and its checkbox takes the
+mode's accent: a ticked one is a grey tick, still free to untick. A panel's value
+chip that is ON and ruled out is greyed too (it had stayed active under 358 —
+the FILTER's chip stays active at 0, a VALUE reads inactive). Tests:
+`reforged-quick-filter-toolbar` (the box's accent is the inactive one),
+`reforged-serial-set`. TRAP `T-a-ruled-out-value-is-greyed`.
 
 ---
 

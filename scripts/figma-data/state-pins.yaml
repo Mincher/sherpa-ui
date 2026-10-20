@@ -44,6 +44,13 @@ sherpa-menu:
   # does not inherit its mode.
   '&': default
 
+# A MENU ROW — a Menu List Item, slotted light DOM, so a class key: it lives in
+# its menu's tree, not the menu's shadow root. One the filters before it rule out
+# is INACTIVE, ticked or not: the context limits it. Will, 2026-10-20.
+# TRAP T-a-ruled-out-value-is-greyed
+.menu-row:
+  '&[data-unavailable]': inactive
+
 sherpa-button:
   # A look is the button's own pin, as a nested Figma Button pins its look.
   '&[data-look="transparent"]': transparent

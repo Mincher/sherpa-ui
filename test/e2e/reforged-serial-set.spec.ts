@@ -105,6 +105,7 @@ test('the panel removes a value chip its chain does not offer, and keeps one tha
       .filter((chip) => getComputedStyle(chip).display !== 'none')
       .map((chip) => `${chip.dataset['value']}${chip.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
   }, REGIONS);
-  // EMEA is the only pick, and the chain leaves it nothing: it stays in force, active (Will, 2026-10-20).
-  expect(r).toEqual(['AMER', 'EMEA']);
+  // EMEA is on, and the chain leaves it nothing: a VALUE the context rules out reads
+  // inactive, on or off (Will, 2026-10-20).
+  expect(r).toEqual(['AMER', 'EMEA [dim]']);
 });

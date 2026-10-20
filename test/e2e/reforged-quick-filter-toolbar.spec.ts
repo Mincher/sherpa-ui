@@ -2780,14 +2780,22 @@ test('a chip whose every pick is ruled out stays active, toggles, and its menu g
     await window.__settled();
     const chip = bar.shadowRoot!.querySelector<HTMLElement & { current: boolean }>('.chip[data-id="region"]')!;
     const row = [...chip.querySelectorAll<HTMLElement>('sherpa-menu .menu-row')].find((x) => x.querySelector('input')?.value === 'EMEA')!;
+    // The inactive accent, as this tree resolves it.
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--sherpa-style-inactive-indicator-accent)';
+    document.body.append(probe);
+    const inactive = getComputedStyle(probe).color;
+    probe.remove();
     const before = { greyed: chip.hasAttribute('data-unavailable'), on: chip.current,
-      row: { greyed: row.hasAttribute('data-unavailable'), ticked: row.querySelector('input')!.checked, says: row.getAttribute('title') } };
+      row: { greyed: row.hasAttribute('data-unavailable'), ticked: row.querySelector('input')!.checked, says: row.getAttribute('title'),
+        // Its box in the inactive mode, ticked too (Will, 2026-10-20).
+        inactiveBox: getComputedStyle(row.querySelector('input')!).accentColor === inactive } };
     // A press on its body turns it off, as any chip.
     chip.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await window.__settled();
     return { before, off: !chip.current };
   });
   expect(r.before).toEqual({ greyed: false, on: true,
-    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.' } });
+    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true } });
   expect(r.off).toBe(true);
 });

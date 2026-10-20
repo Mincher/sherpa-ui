@@ -454,14 +454,12 @@ export class SherpaFilterPanel extends SherpaElement {
       if (held.menu) Object.assign(held.menu, { present: left, offered });
       return;
     }
-    const chips = [...held.values.querySelectorAll<HTMLElement>('.value')].filter((chip) => this.#heldOfChip(chip) === held);
-    // Every chip that is on ruled out: the filter stays in force, so those chips stay active.
-    const on = chips.filter((chip) => chip.hasAttribute('data-current'));
-    const inForce = on.length > 0 && on.every((chip) => out(chip.dataset['value'] ?? '') !== null);
-    for (const chip of chips) {
+    // A VALUE the context rules out reads inactive, on or off (Will, 2026-10-20); on, it may be let go.
+    for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
+      if (this.#heldOfChip(chip) !== held) continue;
       const why = out(chip.dataset['value'] ?? '');
       chip.toggleAttribute('data-removed', why === 'unoffered' && !chip.hasAttribute('data-current'));
-      chip.toggleAttribute('data-unavailable', why !== null && !(inForce && chip.hasAttribute('data-current')));
+      chip.toggleAttribute('data-unavailable', why !== null);
     }
     if (held.menu) Object.assign(held.menu, { present: left, offered });
   }
