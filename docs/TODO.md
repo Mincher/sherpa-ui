@@ -47,6 +47,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
 | ⬜ | 9z | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
+| ⬜ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1044,6 +1045,22 @@ How to measure: Playwright's CDP session can throttle (`Emulation.setCPUThrottli
 rate 4) and record a trace, so a slow path becomes a repeatable number in a gate,
 as `check:bench` does for the data layer.
 
+**Measured 2026-10-20, after 347–349, 352 and 355** — Demos `perf/`, headless
+Chromium, 4x CPU, no network throttling, against :4200:
+
+| | toolbars mode | panel mode | target |
+|---|---:|---:|---:|
+| LCP (`cls.mjs`, 3 runs) | 1,308–1,668 ms | 1,016–1,108 ms | ≤ 2,500 |
+| CLS | 0.011 | 0.013 | ≤ 0.1 |
+| worst INP (`inp.mjs`, median of 5) | 176 ms, saved filter on | 112 ms, tick a value | ≤ 200 |
+
+Every act is GOOD in both modes. `inp.mjs` now has panel acts (it hung before:
+its acts pressed the bars, which step back in panel mode). **Not the same
+measure as Will's 6.18 s**, which was in his own browser: a DevTools run with a
+cold cache or network throttling can differ. Will to check by eye. Left: the
+Firefox `reforged-a-reopen-shows-at-once` timing under 3-engine load, and the
+"saved filter on" profile (the base class's stamp is the most self time).
+
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 
 Found by 345's exploration (2026-10-19), checked in the code. A `DataSource`
@@ -1387,6 +1404,21 @@ deselected."*
 **✅ Done 2026-10-20.** "Select all on page" clears the selection — other pages'
 keys too — then ticks this page's rows. Test: `reforged-grid-select-all-pages`.
 TRAP `T-select-all-is-the-visible-rows`.
+
+### `[ ]` ⬜ 366 — DATA: one QueryContext for the app Context
+
+Will, 2026-10-20: *"I still think we could have a singular QueryContext
+component in the data layer that holds the query conditions, for the current
+app context, for all data sources and related UI components. This single
+component can then be read by any component to get the context it needs to
+operate in the correct context. … I feel like this simplifies the code base and
+reduces a lot of duplication and fractured query contexts."*
+
+Today each `DataSource` owns ONE Query, and a page can have more than one
+source. **Step 1, running:** a read-only map of where the Query lives today, every
+copy a component keeps, and how sources relate. **Step 2:** a design, at most two
+options, for Will. Structural data-layer work (287 5b, 288 8b–10, 320) waits for
+it.
 
 ---
 
