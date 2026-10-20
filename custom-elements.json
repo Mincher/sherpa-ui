@@ -7770,7 +7770,7 @@
               "kind": "field",
               "name": "savedFilterSets",
               "type": {
-                "text": "{ id: string; label: string; applied: boolean }[]"
+                "text": "{ id: string; label: string; applied: boolean; own: boolean }[]"
               },
               "readonly": true
             },
@@ -7902,7 +7902,7 @@
                   "optional": true
                 }
               ],
-              "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first. With none, over the set last taken (\"Save <name>\"); none taken answers undefined. The set's id. Will, TODO 105, 366."
+              "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366."
             },
             {
               "kind": "method",
@@ -7942,7 +7942,7 @@
                   "optional": true
                 }
               ],
-              "description": "DELETE a saved set — the one last taken unless named. Its filters stay on screen."
+              "description": "DELETE a reader's saved set — the one last taken unless named; never a page's own. Its filters stay on screen."
             },
             {
               "kind": "method",

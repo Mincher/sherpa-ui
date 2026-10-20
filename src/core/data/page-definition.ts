@@ -4,26 +4,24 @@
  * TRAP T-a-page-is-its-definition
  *
  * Map:
- * - ScopeDefinition — One scope: its name, the fields it offers and holds at the start, and the saved filters it shows.
- * - SourceDefinition — A page's source: which store, how it pages and searches, its fields, scopes and saved filters.
- * - PageDefinition — One page, as JSON — its source, and its components' configuration.
+ * - ScopeDefinition — One scope: its name, and the fields it offers and holds at the start.
+ * - SourceDefinition — A page's source: which store, how it pages and searches, its fields and scopes.
+ * - PageDefinition — One page, as JSON — its source, its saved filters, and its components' configuration.
  * - openSource — Build a page's source from its definition, over the app's store.
+ * - savedFiltersOf — A page's own saved filters, each checked; one that is not a name and a query is reported.
  * - checkTiers — A page's child fields, each reported where it cannot be one.
  */
 import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
 import { report } from './report.js';
 import type { Store } from './store.js';
-import type { Where } from './where.js';
+import { isSavedFilter, type SavedFilter } from './query.js';
 
-/** One scope: its name, the fields it offers and holds at the start, and the
- *  saved filters it shows. */
+/** One scope: its name, and the fields it offers and holds at the start. */
 export interface ScopeDefinition {
   label?: string;
   /** Every field it may add — `'all'`, every field the page declares. */
   offers?: readonly string[] | 'all';
   holds?: readonly string[];
-  /** The saved filters its bar shows, each off. */
-  presets?: readonly string[];
   /** Fields drawn as one group; a `serial` set chains them. TRAP T-a-filter-set-groups-or-chains */
   sets?: readonly FilterSet[];
   /** Group and Sort arrange its rows: its Organise chips. Left out, a scope
@@ -31,8 +29,8 @@ export interface ScopeDefinition {
   arranges?: boolean;
 }
 
-/** A page's source: which store, how it pages and searches, its fields, scopes
- *  and saved filters. No field lists its values: the data says them.
+/** A page's source: which store, how it pages and searches, its fields and
+ *  scopes. No field lists its values: the data says them.
  *  TRAP T-the-data-says-what-a-field-may-hold */
 export interface SourceDefinition {
   /** The name the app registered its store under. */
@@ -47,17 +45,17 @@ export interface SourceDefinition {
   search?: readonly string[];
   fields?: Readonly<Record<string, FieldDeclaration>>;
   scopes?: Readonly<Record<string, ScopeDefinition>>;
-  /** Saved filters, each a whole clause flipped on or off — `where` in the
-   *  plain form. TRAP T-a-toggle-is-a-clause-not-a-value · TRAP T-one-way-to-write-a-condition */
-  presets?: Readonly<Record<string, { label?: string; where: Where }>>;
 }
 
-/** One page, as JSON — its source, and its components' configuration. Its
- *  markup is its Context's, in the app definition. */
+/** One page, as JSON — its source, its saved filters, and its components'
+ *  configuration. Its markup is its Context's, in the app definition. */
 export interface PageDefinition {
   v: 1;
   id: string;
   source?: SourceDefinition;
+  /** The page's OWN saved filters, by id: query definitions, listed beside a
+   *  reader's and applied as theirs are. Will, 366. TRAP T-saved-filters-are-every-scope */
+  savedFilters?: Readonly<Record<string, SavedFilter>>;
   /** Each component's CONFIGURATION, by id — set before it is answered.
    *  TRAP T-configuration-is-not-data */
   ui?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
@@ -81,17 +79,6 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
   for (const [field, facts] of Object.entries(def.fields ?? {})) {
     if (facts.child && children.has(facts.child)) await source.declareChildren(field);
   }
-  for (const [id, preset] of Object.entries(def.presets ?? {})) {
-    if (!preset.where) {
-      report({
-        code: 'preset-without-where',
-        message: `openSource: the saved filter "${id}" has no where, so it is left out. Write where: { field: { gt: 0 } }.`,
-        at: { preset: id },
-      });
-      continue;
-    }
-    source.declarePreset(id, source.readingsOf(preset.where), preset.label ? { label: preset.label } : {});
-  }
   for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
     if (facts.label || facts.arranges != null) {
       source.declareScope(scope, {
@@ -112,9 +99,22 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
       }
     }
     if (facts.sets?.length) source.declareSets(scope, facts.sets);
-    if (facts.presets?.length) source.answer(scope, {}, Object.fromEntries(facts.presets.map((id) => [id, false])));
   }
   return source;
+}
+
+/** A page's own saved filters, each checked: one that is not a name and a
+ *  query definition is reported and left out. Will, 366 */
+export function savedFiltersOf(page: PageDefinition): Record<string, SavedFilter> {
+  return Object.fromEntries(Object.entries(page.savedFilters ?? {}).filter(([id, set]) => {
+    if (isSavedFilter(set)) return true;
+    report({
+      code: 'saved-filter-invalid',
+      message: `page "${page.id}": the saved filter "${id}" is not { label, query: { v: 1, scopes } }, so it is left out.`,
+      at: { page: page.id, savedFilter: id },
+    });
+    return false;
+  }));
 }
 
 /**

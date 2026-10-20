@@ -1749,8 +1749,9 @@ the catalogue keeps the children apart; a path pick filters two fields; the walk
 counts, greys and sets aside at both tiers (a site's own read shares the walk's);
 one tree-row helper for the nav and the menu; the menu draws a tree of tri-state
 boxes; the bar's chip face reads "Contoso, Northwind: London".
-Next: Demos' sites; then the panel (after 366 commit 20), the grid (after 23),
-Demos' child link, and a remote store's read on open (after 345 phase 5).
+Demos' customers have sites (a Site column; the dialog's Site follows Customer).
+Next: the panel (after 366 commit 20), the grid (after 23), Demos' child link,
+and a remote store's read on open (after 345 phase 5).
 
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
@@ -1830,6 +1831,11 @@ CLEARS the filters of the scopes it names. Plan:
 **Step 3, running:** a read-only
 design of that, then a revision that folds it and every checker finding into the
 plan, then the build.
+
+**Built:** S1 (no Saved chip; one set taken; Save <name>), and S2 (2026-10-20): a
+page's own saved filters are query definitions, `savedFilters` in its JSON —
+listed on every bar beside a reader's, taken into the field chips, never saved
+over or deleted. Page `presets` are gone; Demos and the Starter moved with it.
 
 ---
 

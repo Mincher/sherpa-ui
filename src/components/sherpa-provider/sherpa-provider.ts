@@ -23,7 +23,7 @@ import { bindSelection, type Selector } from '../../core/data/bind-selection.js'
 import { valueKey, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
-import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
+import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, SourceState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
@@ -301,7 +301,10 @@ export class SherpaProvider extends SherpaElement {
       const shipped = options.views;
       const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
       // The page as DEFINED, before a kept Query: what Reset all to default starts from.
-      this.#pages.begin({ id: definition.id, store: def.store, source, library, initial: source.query.applied });
+      this.#pages.begin({
+        id: definition.id, store: def.store, source, library, initial: source.query.applied,
+        savedFilters: savedFiltersOf(definition),
+      });
       // A View this page does not have is the first.
       const view = options.view && library?.()[options.view] ? options.view : undefined;
       // BEFORE the Query: a kept one is drawn onto these chips.
@@ -427,9 +430,10 @@ export class SherpaProvider extends SherpaElement {
 
   /**
    * SAVE FILTERS — every scope's filters under a name, kept with the page beside
-   * its Views. A set of the same name is saved over, so a host asks first. With
-   * none, over the set last taken ("Save <name>"); none taken answers undefined.
-   * The set's id. Will, TODO 105, 366. TRAP T-saved-filters-are-every-scope
+   * its Views. A set of the same name is saved over, so a host asks first; a
+   * page's own name gets a copy's. With none, over the reader's set last taken
+   * ("Save <name>"); none answers undefined. The set's id. Will, TODO 105, 366.
+   * TRAP T-saved-filters-are-every-scope
    */
   saveFilters(label?: string): string | undefined {
     return this.#pages.saveFilters(label);
@@ -446,14 +450,15 @@ export class SherpaProvider extends SherpaElement {
     return this.#pages.dismissFilters(id);
   }
 
-  /** DELETE a saved set — the one last taken unless named. Its filters stay on screen. */
+  /** DELETE a reader's saved set — the one last taken unless named; never a
+   *  page's own. Its filters stay on screen. */
   deleteFilters(id?: string): boolean {
     return this.#pages.deleteFilters(id);
   }
 
-  /** The page's saved sets, and the ONE taken — what a host asks before it saves
-   *  over a name, or deletes one. */
-  get savedFilterSets(): { id: string; label: string; applied: boolean }[] {
+  /** The page's saved sets — its own, then the reader's (`own`) — and the ONE
+   *  taken: what a host asks before it saves over a name, or deletes one. */
+  get savedFilterSets(): { id: string; label: string; applied: boolean; own: boolean }[] {
     return this.#pages.savedFilterSets;
   }
 

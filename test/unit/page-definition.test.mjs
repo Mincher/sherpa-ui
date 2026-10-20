@@ -75,7 +75,7 @@ test('a field the schema gave is never read from the rows', async () => {
   assert.deepEqual(source.valuesFor('status'), ['active', 'trial']);
 });
 
-test('openSource builds the page\'s source: fields, labels, scopes, holds and presets', async () => {
+test('openSource builds the page\'s source: fields, labels, scopes and holds', async () => {
   const rows = [
     { id: 1, region: 'AMER', customer: 'Contoso', tickets: 2 },
     { id: 2, region: 'EMEA', customer: 'Northwind', tickets: 0 },
@@ -89,9 +89,8 @@ test('openSource builds the page\'s source: fields, labels, scopes, holds and pr
     },
     scopes: {
       view: { label: 'View filters', holds: ['customer', 'region'] },
-      data: { label: 'Alerts', offers: 'all', presets: ['busy'] },
+      data: { label: 'Alerts', offers: 'all' },
     },
-    presets: { busy: { label: 'Has tickets', where: { tickets: { gt: 0 } } } },
   }, store);
   assert.deepEqual(source.scope('view'), ['customer', 'region']);
   assert.equal(source.scopeLabel('data'), 'Alerts');
@@ -102,8 +101,8 @@ test('openSource builds the page\'s source: fields, labels, scopes, holds and pr
   ]);
   assert.equal(source.filterDef('customer').icon, 'buildings');
   assert.deepEqual(source.valuesFor('customer'), ['Contoso', 'Northwind']);
-  const data = source.describe('data');
-  assert.deepEqual(data.filters.map((f) => [f.id, f.active]), [['busy', false]]);
+  // It holds nothing at the start: every field is on offer.
+  assert.deepEqual(source.describe('data').filters, []);
 });
 
 test('a scope lists its filter SETS; a field in two, or one it does not hold, is said', async () => {
@@ -135,18 +134,17 @@ test('a scope lists its filter SETS; a field in two, or one it does not hold, is
   assert.equal(source.describe('data').sets, undefined);
 });
 
-/* Will, D2 A (TODOs 347–349): ONE order, the source's — saved filters first, then
-   the fields it holds, each set together where its first field stands.
+/* Will, D2 A (TODOs 347–349): ONE order, the source's — the fields it holds,
+   each set together where its first field stands.
    TRAP T-one-walk-counts-and-limits-in-order */
-test('describe() gives a scope\'s filters in the ONE order: saved filters, then fields, each set together', async () => {
+test('describe() gives a scope\'s filters in the ONE order: its fields, each set together', async () => {
   const store = new ArrayStore([{ a: 1, b: 2, c: 3, d: 4 }]);
   const source = await openSource({
     store: 'rows',
     fields: { a: { label: 'A' }, b: { label: 'B' }, c: { label: 'C' }, d: { label: 'D' } },
-    scopes: { data: { label: 'Rows', holds: ['a', 'c', 'd', 'b'], presets: ['p'], sets: [{ id: 's', fields: ['b', 'c'] }] } },
-    presets: { p: { label: 'P', where: { a: { eq: 1 } } } },
+    scopes: { data: { label: 'Rows', holds: ['a', 'c', 'd', 'b'], sets: [{ id: 's', fields: ['b', 'c'] }] } },
   }, store);
-  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['p', 'a', 'b', 'c', 'd']);
+  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['a', 'b', 'c', 'd']);
 });
 
 test('a scope says what it narrows: the View is the view, a bound component names its own', async () => {
@@ -283,36 +281,4 @@ test('the View\'s date is a RANGE; a component\'s date stays one day', async () 
   }, store);
   assert.equal(source.describe('view').filters.find((f) => f.id === 'created').range, true);
   assert.equal(source.describe('data').filters.find((f) => f.id === 'seen').range, undefined);
-});
-
-/* Found with TODO 167, fixed as 169: "Reset to default", and any View pick,
-   took a bar's saved filter chips off it — a View kept the FIELD chips a scope
-   holds and not its saved filters. TRAP T-a-view-keeps-the-saved-filter-chips */
-test('a View keeps a scope\'s saved filter chips: each OFF, unless the View turns it on', async () => {
-  const store = new ArrayStore([{ status: 'open', health: 40 }, { status: 'shut', health: 90 }]);
-  const source = await openSource({
-    store: 'rows',
-    fields: { status: { label: 'Status' }, health: { label: 'Health', type: 'number' } },
-    scopes: { data: { label: 'Alerts', holds: ['status'], presets: ['at-risk', 'shut'] } },
-    presets: {
-      'at-risk': { label: 'At risk', where: { health: { lt: 60 } } },
-      shut: { label: 'Shut', where: { status: { eq: 'shut' } } },
-    },
-  }, store);
-  const presets = () => source.query.applied.scopes.data.presets;
-  assert.deepEqual(presets(), { 'at-risk': false, shut: false });
-
-  // A View that names NONE: both chips stay, off.
-  await source.setQuery({ v: 1, scopes: { data: { sort: [], group: null, search: '' } } }, { holds: 'keep' });
-  assert.deepEqual(presets(), { 'at-risk': false, shut: false });
-  assert.deepEqual(source.describe('data').filters.map((f) => [f.id, f.active ?? null]),
-    [['at-risk', false], ['shut', false], ['status', null]]);
-
-  // A View that turns ONE on: that one on, the other still there.
-  await source.setQuery({ v: 1, scopes: { data: { presets: { 'at-risk': true } } } }, { holds: 'keep' });
-  assert.deepEqual(presets(), { 'at-risk': true, shut: false });
-
-  // And back: the first is off again, and neither has gone.
-  await source.setQuery({ v: 1, scopes: { data: { sort: [], group: null, search: '' } } }, { holds: 'keep' });
-  assert.deepEqual(presets(), { 'at-risk': false, shut: false });
 });

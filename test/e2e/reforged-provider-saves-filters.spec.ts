@@ -83,7 +83,7 @@ test('Save filters keeps every scope under a name; the button then says it, acti
   expect(scopes.view.sort).toBeUndefined();
   expect(r['saved']).toEqual({
     save: { says: 'Save Gold Pro', active: true }, told: [{ id: 'gold-pro', applied: true }],
-    read: [{ id: 'gold-pro', label: 'Gold Pro', applied: true }],
+    read: [{ id: 'gold-pro', label: 'Gold Pro', applied: true, own: true }],
   });
   // Changed, it is still the set taken, and the one Save saves over.
   expect(r['edited']).toEqual({ save: { says: 'Save Gold Pro', active: true }, told: [{ id: 'gold-pro', applied: true }] });
@@ -207,10 +207,10 @@ test('the bar\'s ⋮, the panel\'s Save filters and a Saved row each ask, and th
       return [...sr.querySelectorAll('.more-menu .more-label')].map((l) => (l.textContent ?? '').trim());
     };
     // Nothing taken: one row, and it asks for a name.
-    bar.savedSets = [{ id: 'a', label: 'A' }];
+    bar.savedSets = [{ id: 'a', label: 'A', own: true }];
     const none = await more();
     (sr.querySelector('.more-menu') as HTMLElement & { hide?(): void }).hide?.();
-    const sets = [{ id: 'a', label: 'A', applied: true }, { id: 'b', label: 'B' }];
+    const sets = [{ id: 'a', label: 'A', applied: true, own: true }, { id: 'b', label: 'B', own: true }];
     bar.savedSets = sets;
     panel.savedSets = sets;
     await window.__settled();
@@ -241,4 +241,55 @@ test('the bar\'s ⋮, the panel\'s Save filters and a Saved row each ask, and th
     'quick-filter-toolbar:filters-save-as:', 'filter-panel:filters-save:', 'filter-panel:filters-delete:a',
     'quick-filter-toolbar:filters-apply:b', 'quick-filter-toolbar:filters-dismiss:a',
   ]);
+});
+
+/* A PAGE'S OWN saved filter (366 S2): a query definition in its JSON, listed
+   beside a reader's on every bar, applied as theirs is, and never saved over or
+   deleted — a name that is its gets a copy's. */
+test('a page\'s own saved filter is listed on an unsaveable bar, fills the chips, is ticked while taken, and is never saved over or deleted', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const { ArrayStore } = await import('/dist/index.js');
+    const provider = document.createElement('sherpa-provider');
+    provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="view"></sherpa-quick-filter-toolbar>'
+      + '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>';
+    document.getElementById('root').replaceChildren(provider);
+    const [viewBar, dataBar] = provider.querySelectorAll('sherpa-quick-filter-toolbar');
+    const rows = [{ id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }, { id: 3, plan: 'Pro', tier: 'silver' }];
+    const source = await provider.open({
+      v: 1, id: 'plans',
+      source: {
+        store: 'plans', fields: { plan: { label: 'Plan' }, tier: { label: 'Tier' } },
+        scopes: { view: { label: 'View', holds: ['tier'] }, data: { label: 'Rows', holds: ['plan'] } },
+      },
+      savedFilters: { 'pro-only': { label: 'Pro only', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } },
+    }, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
+    const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
+    await settle();
+    const sets = (bar) => (bar.shadowRoot.querySelector('.add-btn sherpa-menu')?.itemData ?? [])
+      .filter((i) => i.value.startsWith('set:')).map((i) => i.label);
+    const listed = { view: sets(viewBar), data: sets(dataBar) };
+    await provider.applyFilters('pro-only');
+    await source.load();
+    await settle();
+    const chip = dataBar.shadowRoot.querySelector('.chip[data-id="plan"]');
+    const taken = {
+      rows: source.rows.map((row) => row.id),
+      chip: chip?.valueLabel ?? null,
+      ticked: (dataBar.shadowRoot.querySelector('.add-btn sherpa-menu')?.values ?? []).filter((v) => v.startsWith('set:')),
+      read: provider.savedFilterSets,
+    };
+    const over = provider.saveFilters();
+    const deleted = provider.deleteFilters();
+    const copy = provider.saveFilters('Pro only');
+    return { listed, taken, over: over ?? null, deleted, copy, after: provider.savedFilterSets.map((set) => [set.id, set.own]) };
+  })()`) as Record<string, any>;
+  expect(r['listed']).toEqual({ view: ['Pro only'], data: ['Pro only'] });
+  expect(r['taken']).toEqual({
+    rows: [1, 3], chip: 'Pro', ticked: ['set:pro-only'],
+    read: [{ id: 'pro-only', label: 'Pro only', applied: true, own: false }],
+  });
+  expect(r['over']).toBeNull();
+  expect(r['deleted']).toBe(false);
+  expect(r['copy']).toBe('pro-only-copy-001');
+  expect(r['after']).toEqual([['pro-only', false], ['pro-only-copy-001', true]]);
 });

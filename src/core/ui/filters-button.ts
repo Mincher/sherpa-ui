@@ -62,8 +62,10 @@ export interface SavedSet {
   id: string;
   label: string;
   /** The ONE set taken — applied or saved: its row is ticked, and "Save <name>"
-   *  saves over it. Will, 366. */
+   *  saves over it while it is the reader's. Will, 366. */
   applied?: boolean;
+  /** The reader's own: a page's own is never saved over or deleted. */
+  own?: boolean;
 }
 
 /** A saved set's row value: this, then its id. Its tick APPLIES it. */
@@ -169,14 +171,14 @@ export class SavedSets {
     return this.#sets.map((set) => ({ ...set }));
   }
 
-  /** The one set taken: ticked, what "Save <name>" saves over and Delete deletes. */
+  /** The one set taken while it is the reader's: what "Save <name>" saves over and Delete deletes. */
   get applied(): SavedSet | undefined {
-    return this.#host.hasAttribute('data-saveable') ? this.#sets.find((set) => set.applied) : undefined;
+    return this.#host.hasAttribute('data-saveable') ? this.#sets.find((set) => set.applied && set.own) : undefined;
   }
 
-  /** What the Filters menu lists: nothing unless the host saves. */
+  /** What the Filters menu lists: the page's own always; the reader's while the host saves. */
   get listed(): readonly SavedSet[] {
-    return this.#host.hasAttribute('data-saveable') ? this.#sets : [];
+    return this.#host.hasAttribute('data-saveable') ? this.#sets : this.#sets.filter((set) => !set.own);
   }
 
   /** A Filters menu's ticks, as a saved-set request: a set newly ticked is

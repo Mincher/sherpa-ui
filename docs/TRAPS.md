@@ -14914,7 +14914,6 @@ filters at rest and none after the first View pick.
 Each saved filter a scope holds stays on its bar, OFF unless the View turns
 it on.
 
-- Site: `test/unit/page-definition.test.mjs`
 - Site: `src/core/data/query-edits.ts`
 
 ### T-a-saved-chip-lists-its-conditions
@@ -15047,9 +15046,17 @@ the query definition."*
   2026-10-14). The per-scope card's Edit filter, Save and Delete went with
   them: a set is changed by saving again (Will, A; 186 closed with it).
 
-A page's own presets stay preset chips, applied one at a time.
+**A page's OWN saved filters** (366 S2) are the same shape, in its JSON
+(`savedFilters`), checked as it opens (`savedFiltersOf`: one that is not a name
+and a query is reported, `saved-filter-invalid`). They are listed beside a
+reader's on EVERY bar — a reader's only where the host saves — and taken the
+same way. A page's own is never saved over or deleted: taken, Save filters
+asks for a name, and a name that is the page's gets a copy's (`- Copy-001`). A
+reader's set under a page id is the reader's.
 
 - Site: `src/core/browser/saved-filters.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/core/ui/filters-button.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -15620,29 +15627,6 @@ nothing rather than `0`.
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
-
-### T-a-toggle-is-a-clause-not-a-value
-
-A TOGGLE chip is a whole clause the reader flips on or off — a question the
-data answers yes or no. A MENU chip picks values of a field.
-
-The Records example had four toggles named `Active`, `Trial`, `Suspended` and
-`Churned` sitting beside a `Status` menu chip: one field with two controls on
-one bar, and no way to tell which was in force.
-
-They are now three toggles over fields no menu covers — `openTickets > 0`,
-`health < 60`, `owner = Unassigned` — reading "Open tickets", "At risk" and
-"Unassigned". Measured: 90, 27 and 27 of 100.
-
-Each ON toggle contributes its own clause, ANDed with the rest, so two toggles
-NARROW. The old status set ORed instead, because four values of one field
-cannot all be true at once — which is another sign they were a menu wearing
-toggles.
-
-Since 2026-09-25 each is a saved filter that carries its own answer, and
-the page holds no clause for it. TRAP T-a-saved-filter-is-its-readings
-
-- Site: `src/core/data/page-definition.ts`
 
 ### T-component-extends-view-never-alters-it
 
@@ -18410,7 +18394,6 @@ condition rows, so it reports `unreadable-condition` and filters nothing.
 - Site: `src/core/data/where.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
-- Site: `src/core/data/page-definition.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/data.ts`

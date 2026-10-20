@@ -37,15 +37,14 @@
                 "sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }] },
       "data": {
         "label": "Customer records", "offers": "all",
-        "holds": ["status", "plan", "tier", "owner"],
-        "presets": ["has-tickets", "at-risk", "unassigned"]
+        "holds": ["status", "plan", "tier", "owner"]
       }
-    },
-    "presets": {
-      "has-tickets": { "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } },
-      "at-risk": { "label": "At risk", "where": { "health": { "band": "At risk" } } },
-      "unassigned": { "label": "Unassigned", "where": { "owner": { "eq": "Unassigned" } } }
     }
+  },
+  "savedFilters": {
+    "has-tickets": { "label": "Has open tickets", "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } },
+    "at-risk": { "label": "At risk", "query": { "v": 1, "scopes": { "data": { "where": { "health": { "band": "At risk" } } } } } },
+    "unassigned": { "label": "Unassigned", "query": { "v": 1, "scopes": { "data": { "where": { "owner": { "eq": "Unassigned" } } } } } }
   },
   "ui": {
     "grid": {

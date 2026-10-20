@@ -45,6 +45,7 @@ export { ArrayStore } from './src/core/data/stores.ts';
 export { spoofRemote } from './src/core/data/spoof-remote.ts';
 export { onReport } from './src/core/data/report.ts';
 export { bindSource } from './src/core/ui/bind-source.ts';
+export { takeSet } from './src/core/data/query-edits.ts';
 `;
 
 /** Each pass over a set of rows — a filter, a sort and page, a tally — wherever it runs; one
@@ -196,13 +197,14 @@ function control(tag, id, holds = []) {
 /** The page, opened and bound as the provider binds it. A tiered page's Customer has Sites:
  *  six, from the row's id, so the other pages' rows stay as they are. */
 async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered }) {
-  const def = JSON.parse(readFileSync(path, 'utf8')).source;
+  const whole = JSON.parse(readFileSync(path, 'utf8'));
+  const def = whole.source;
   if (holdRows != null) def.holdRows = holdRows;
   if (tiered) Object.assign(def.fields, { customer: { ...def.fields.customer, child: 'site' }, site: { label: 'Site' } });
   const rows = tiered ? ROWS.map((r) => ({ ...r, site: `Site ${1 + (r.id % 6)}` })) : ROWS.map((r) => ({ ...r }));
   const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
   const seen = remote ? L.spoofRemote(store, { delay: 0, ...(announcesAll === false ? { announcesAll } : {}) }) : store;
-  return { L, def, store: seen, ...await page(L, def, seen) };
+  return { L, def, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen) };
 }
 
 /** One page over a store: its source, and its controls bound as the provider binds them. */
@@ -213,7 +215,6 @@ async function page(L, def, store) {
   const initial = structuredClone(source.query.applied);
   const view = control('sherpa-quick-filter-toolbar', 'view-bar', def.scopes.view.holds);
   const data = control('sherpa-quick-filter-toolbar', 'data-bar', def.scopes.data.holds);
-  data.presets = Object.fromEntries((def.scopes.data.presets ?? []).map((p) => [p, { on: false, readings: {} }]));
   const grid = control('sherpa-data-grid', 'grid');
   const chart = control('sherpa-barchart', 'chart');
   const panel = control('sherpa-filter-panel', 'panel');
@@ -226,7 +227,6 @@ async function page(L, def, store) {
 }
 
 const REPORT = { status: { picked: ['active', 'trial'] }, owner: { picked: ['Owner 01'] }, plan: { picked: ['pro'] } };
-const AT_RISK = { 'has-tickets': { on: false, readings: {} }, 'at-risk': { on: true, readings: {} }, unassigned: { on: false, readings: {} } };
 
 /** The acts, in order: they share one page's state. */
 const ACTS = {
@@ -234,7 +234,7 @@ const ACTS = {
   repick: (p) => p.view.answer({ region: { picked: ['EMEA'] } }),
   // While the rows still fill many pages: after the report they fit on one.
   page: (p) => p.grid.send('page-change', { page: 2 }),
-  report: (p) => p.data.answer(REPORT, AT_RISK),
+  report: (p) => p.data.answer(REPORT),
   'switch-off': (p) => p.data.switchOff(true),
   'switch-on': (p) => p.data.switchOff(false),
   sort: (p) => p.grid.send('sort-change', { field: 'customer', direction: 'asc' }),
@@ -267,13 +267,15 @@ const ACTS = {
   narrow: (p) => p.view.answer({ customer: { picked: ['Customer 01'] } }),
   aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
     owner: { picked: ['Owner 03', 'Owner 01'] } }),
+  // A page's own saved filter TAKEN, as the provider takes it: a whole write, not a toggle. 366
+  'apply-saved': (p) => p.source.setQuery(p.L.takeSet(p.source.query.applied, p.saved['at-risk'].query, new Set())),
   // The tiered page: a Site pick is a PATH; one beside a whole customer; a row edit that moves only a site walks again.
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
   'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),
   'move-site': (p) => p.store.update(17, { site: 'Site 9' }),
 };
 const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'sort', 'heading', 'search', 'raise',
-  'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside'];
+  'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside', 'apply-saved'];
 const PAGES = {
   records: { remote: false, acts: MAIN },
   remote: { remote: true, acts: MAIN },

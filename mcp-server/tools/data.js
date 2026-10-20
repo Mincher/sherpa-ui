@@ -778,7 +778,7 @@ export function register(server) {
     {
       title: "Validate a Page Definition or an app.json",
       description:
-        "Check a page definition (schemas/page.v1.json) or an app.json (schemas/app.v1.json) the way sherpa-ui reads it: the JSON schema first, then every name it uses — a scope that shows a saved filter the page does not define, a condition that does not parse, a default that is not a Context, a section naming a Context that is not there. Use it before a page or an app goes live: at run time a broken name is reported and never followed, so the page simply shows less.",
+        "Check a page definition (schemas/page.v1.json) or an app.json (schemas/app.v1.json) the way sherpa-ui reads it: the JSON schema first, then every name it uses — a saved filter that fills a scope the page does not have, a condition that does not parse, a default that is not a Context, a section naming a Context that is not there. Use it before a page or an app goes live: at run time a broken name is reported and never followed, so the page simply shows less.",
       inputSchema: {
         document: z.string().describe("The page definition or the app.json, as JSON. One with `contexts` is read as an app.json."),
       },
@@ -813,24 +813,28 @@ export function register(server) {
   );
 }
 
-/** A page's names: each scope's saved filters must be defined, each saved
- *  filter's conditions must parse, and a held field not in `fields` is noted. */
+/** A page's names: each saved filter's scopes must be the page's and its
+ *  conditions must parse, and a field not in `fields` is noted. */
 function pageNames(dl, page, errors, warnings) {
   const source = page.source ?? {};
   const fields = new Set(Object.keys(source.fields ?? {}));
-  const presets = source.presets ?? {};
+  const scopes = new Set(Object.keys(source.scopes ?? {}));
   for (const [scope, facts] of Object.entries(source.scopes ?? {})) {
-    for (const id of facts.presets ?? []) {
-      if (!(id in presets)) errors.push(`scope "${scope}" shows the saved filter "${id}", which source.presets does not define`);
-    }
     const named = [...(facts.holds ?? []), ...(Array.isArray(facts.offers) ? facts.offers : [])];
     for (const field of named) {
       if (!fields.has(field)) warnings.push(`scope "${scope}" names "${field}", which source.fields does not declare — the rows must carry it`);
     }
   }
-  for (const [id, preset] of Object.entries(presets)) {
-    if (preset?.where) dl.readingsOf(preset.where);
-    else errors.push(`saved filter "${id}" has no where`);
+  // A saved filter that is not a name and a query: the data layer's own check reports it.
+  const saved = dl.savedFiltersOf?.(page) ?? page.savedFilters ?? {};
+  for (const [id, set] of Object.entries(saved)) {
+    for (const [scope, filters] of Object.entries(set?.query?.scopes ?? {})) {
+      if (!scopes.has(scope)) errors.push(`saved filter "${id}" fills scope "${scope}", which source.scopes does not have`);
+      if (filters?.where) dl.readingsOf(filters.where);
+      for (const field of [...(filters?.holds ?? []), ...Object.keys(filters?.where ?? {})]) {
+        if (!fields.has(field)) warnings.push(`saved filter "${id}" names "${field}", which source.fields does not declare — the rows must carry it`);
+      }
+    }
   }
   // A child field, where it cannot be one: the data layer's own check reports it.
   dl.checkTiers?.(source);

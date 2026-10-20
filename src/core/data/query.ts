@@ -12,6 +12,8 @@
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
+ * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
+ * - isSavedFilter — Is this a saved filter — a name, and a query definition?
  * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
  * - CompileFacts — What compiling needs to know that the Query does not say.
  * - withoutDropped — A reading without the picks set aside.
@@ -76,6 +78,20 @@ export interface ScopeQuery {
 export interface QueryDefaults {
   v: 1;
   scopes: Record<string, ViewScope>;
+}
+
+/** A saved filter: a name, and each scope's filters as a View writes them —
+ *  a query definition, a page's own or a reader's. Will, 366. TRAP T-saved-filters-are-every-scope */
+export interface SavedFilter {
+  label: string;
+  query: QueryDefaults;
+}
+
+/** Is this a saved filter — a name, and a query definition? */
+export function isSavedFilter(v: unknown): v is SavedFilter {
+  const plain = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x);
+  return plain(v) && typeof v['label'] === 'string' && plain(v['query'])
+    && v['query']['v'] === 1 && plain(v['query']['scopes']);
 }
 
 /** One scope as a View writes it: each field's condition in the plain form.

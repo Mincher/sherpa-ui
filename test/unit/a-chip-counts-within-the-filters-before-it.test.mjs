@@ -1,9 +1,8 @@
 /**
  * A CHIP COUNTS WITHIN THE FILTERS BEFORE IT — TODO 348. Will: *"they should
  * show the count of matches from the filtered subset. So scopes and preceding
- * filters will affect this."* The one order: saved filters, then fields, each set
- * together; OFF counts and narrows nothing (123); a saved filter counts only
- * while ON (166). TRAP T-a-chip-counts-within-the-filters-before-it
+ * filters will affect this."* The one order: fields, each set together; OFF
+ * counts and narrows nothing (123). TRAP T-a-chip-counts-within-the-filters-before-it
  *
  *   node --test test/unit/a-chip-counts-within-the-filters-before-it.test.mjs
  */
@@ -22,23 +21,22 @@ const ROWS = [
 ];
 const control = () => ({ populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} });
 
-async function page({ data = ['status', 'plan'], sets, presets } = {}) {
+async function page({ data = ['status', 'plan'], sets } = {}) {
   const source = await openSource({
     store: 'rows',
     fields: { region: { label: 'Region' }, status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } },
     scopes: {
       view: { label: 'View filters', holds: ['region'] },
-      data: { label: 'Rows', holds: data, ...(sets ? { sets } : {}), ...(presets ? { presets: Object.keys(presets) } : {}) },
+      data: { label: 'Rows', holds: data, ...(sets ? { sets } : {}) },
     },
-    ...(presets ? { presets } : {}),
   }, new ArrayStore(ROWS, { key: 'id' }));
   // Bound, `data` is a COMPONENT's scope, under the View.
   bindSource(source, control(), { scope: 'data' });
   return source;
 }
-const query = (view, data, dataPresets) => ({ v: 1, scopes: {
+const query = (view, data) => ({ v: 1, scopes: {
   view: { holds: ['region'], readings: view },
-  data: { holds: Object.keys(data), readings: data, ...(dataPresets ? { presets: dataPresets } : {}) },
+  data: { holds: Object.keys(data), readings: data },
 } });
 
 test('each chip counts within the filters before it; the last in force is the total', async () => {
@@ -63,16 +61,6 @@ test('OFF counts within the filters before it, and narrows nothing after it', as
   }));
   // Status off: 1 of Plan's 3 would match; Seats counts over all 3.
   assert.deepEqual(await source.results('data'), { plan: 3, status: 1, seats: 1 });
-});
-
-test('a saved filter ON narrows what follows it; OFF it has no badge', async () => {
-  const presets = { free: { label: 'Free', where: { plan: { eq: 'free' } } } };
-  const source = await page({ data: ['status'], presets });
-  await source.setQuery(query({}, { status: { picked: ['open'] } }, { free: true }));
-  // Saved filters come first: Free over every row, then Status within it.
-  assert.deepEqual(await source.results('data'), { free: 3, status: 2 });
-  await source.setQuery(query({}, { status: { picked: ['open'] } }, { free: false }));
-  assert.deepEqual(await source.results('data'), { status: 4 });
 });
 
 test('a set\'s fields count together, where its first stands', async () => {

@@ -48,12 +48,12 @@ One JSON document per page. The same rule as a View: **a definition is data**
     "scopes": {
       "view": { "label": "View filters", "holds": ["customer", "region", "created"] },
       "data": { "label": "Customer records", "offers": "all",
-                "holds": ["status", "plan", "tier", "owner"],
-                "presets": ["has-tickets", "at-risk", "unassigned"] }
-    },
-    "presets": {
-      "has-tickets": { "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } }
+                "holds": ["status", "plan", "tier", "owner"] }
     }
+  },
+  "savedFilters": {
+    "has-tickets": { "label": "Has open tickets",
+                     "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } }
   },
   "ui": {
     "grid": { "key": "email", "columns": ["…"], "actions": ["…"] }
@@ -62,16 +62,21 @@ One JSON document per page. The same rule as a View: **a definition is data**
 ```
 
 - **`source`** — which store, how it pages and searches, every field as
-  `declareField` takes it, each scope's name, what it holds at the start, and
-  the saved filters the page ships, each a `where` (DATA-SOURCE-RULES §2).
-  **No field lists its values** — see §3.
+  `declareField` takes it, and each scope's name and what it holds at the
+  start. **No field lists its values** — see §3.
+- **`savedFilters`** — the saved filters the page ships: each a name and a
+  query definition, every scope's `where` (DATA-SOURCE-RULES §2) and `holds`,
+  as a reader's saved filter is. Listed beside the reader's on every bar, and
+  taken as theirs are — into the field chips; never saved over or deleted.
+  One that is not `{ label, query: { v: 1, scopes } }` is reported
+  (`saved-filter-invalid`) and left out. `T-saved-filters-are-every-scope`
 - **A scope's `sets`** draw fields as one group:
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
   Customers, and of every filter before it. `parallel`, the default, only
   groups (`T-a-filter-set-groups-or-chains`). Either way a chip counts, and
-  Limit greys it, within the filters BEFORE it: the saved filters, then the
-  fields in the scope's order, each set together
+  Limit greys it, within the filters BEFORE it: the fields in the scope's
+  order, each set together
   (`T-one-walk-counts-and-limits-in-order`).
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope over a grid or a list does, and the View does not
@@ -145,7 +150,7 @@ cleanup = await mod.init(contextRoot, { session, view, source });
 ```
 
 The provider builds the source from the app's registered store, declares
-every field, value, scope and preset, holds each scope's first fields, fills
+every field, value and scope, holds each scope's first fields, fills
 the header's chips from the View scope, and does what `provide()` does today —
 the kept Query on its own View, the View picks, the session, the panel mode.
 Leaving a page closes it. A Context module keeps only its own business:
@@ -160,7 +165,7 @@ the panel as it does now (G1).
 
 | goes | stays |
 |---|---|
-| each Context's source, declarations, holds, presets, Add lists, header chips, `provide()`, teardown | the Context's own business: add, edit, delete, its dialogs and toasts |
+| each Context's source, declarations, holds, saved filters, Add lists, header chips, `provide()`, teardown | the Context's own business: add, edit, delete, its dialogs and toasts |
 | the "forgot to pass the session" gap | a bespoke summary a page binds itself (the risk gauge) |
 | `globalFilters()` — the header's chips come from the View scope | `DataSource`, the Query, `provide()` for a page that wants it by hand |
 

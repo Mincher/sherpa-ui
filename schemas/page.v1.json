@@ -18,7 +18,12 @@
       "type": "object",
       "additionalProperties": { "type": "object" }
     },
-    "source": { "$ref": "#/$defs/source" }
+    "source": { "$ref": "#/$defs/source" },
+    "savedFilters": {
+      "description": "The page's own saved filters, by id: listed beside a reader's, and applied as theirs are.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/savedFilter" }
+    }
   },
   "$defs": {
     "source": {
@@ -40,11 +45,6 @@
         "scopes": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/scope" }
-        },
-        "presets": {
-          "description": "The saved filters the page ships, by id.",
-          "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/preset" }
         }
       }
     },
@@ -99,7 +99,6 @@
           "oneOf": [{ "const": "all" }, { "type": "array", "items": { "type": "string" } }]
         },
         "holds": { "description": "The fields it holds at the start.", "type": "array", "items": { "type": "string" } },
-        "presets": { "description": "The saved filters its bar shows, each off.", "type": "array", "items": { "type": "string" } },
         "arranges": {
           "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope over a grid or a list does, and the View does not.",
           "type": "boolean"
@@ -121,15 +120,35 @@
         }
       }
     },
-    "preset": {
+    "savedFilter": {
+      "description": "A saved filter: a name, and each scope's filters as a View writes them. Applied, it fills the field chips.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["where"],
+      "required": ["label", "query"],
       "properties": {
-        "label": { "type": "string" },
-        "where": {
-          "description": "Its condition, field by field: { \"openTickets\": { \"gt\": 0 } }.",
-          "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" }
+        "label": { "type": "string", "minLength": 1 },
+        "query": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["v", "scopes"],
+          "properties": {
+            "v": { "const": 1 },
+            "scopes": {
+              "description": "Each scope it fills, by id. A scope it does not name has no filters once it is applied.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "holds": { "description": "The fields it holds.", "type": "array", "items": { "type": "string" } },
+                  "where": {
+                    "description": "Its conditions, field by field: { \"openTickets\": { \"gt\": 0 } }.",
+                    "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },

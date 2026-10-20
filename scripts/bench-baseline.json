@@ -4,8 +4,8 @@
     "counts": 0,
     "distinct": 1,
     "rows": 10025,
-    "compiles": 5,
-    "clones": 10,
+    "compiles": 1,
+    "clones": 7,
     "scans": 6
   },
   "records/pick": {
@@ -39,9 +39,9 @@
     "loads": 1,
     "counts": 0,
     "distinct": 0,
-    "rows": 10,
+    "rows": 13,
     "compiles": 5,
-    "clones": 7,
+    "clones": 1,
     "scans": 3
   },
   "records/switch-off": {
@@ -57,7 +57,7 @@
     "loads": 1,
     "counts": 0,
     "distinct": 0,
-    "rows": 10,
+    "rows": 13,
     "compiles": 6,
     "clones": 5,
     "scans": 3
@@ -66,7 +66,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 2543,
+    "rows": 2546,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -75,7 +75,7 @@
     "loads": 1,
     "counts": 0,
     "distinct": 0,
-    "rows": 2,
+    "rows": 4,
     "compiles": 1,
     "clones": 1,
     "scans": 3
@@ -166,8 +166,8 @@
     "counts": 0,
     "distinct": 1,
     "rows": 10025,
-    "compiles": 5,
-    "clones": 10,
+    "compiles": 1,
+    "clones": 7,
     "scans": 6
   },
   "records/narrow": {
@@ -188,13 +188,22 @@
     "clones": 1,
     "scans": 4
   },
+  "records/apply-saved": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10025,
+    "compiles": 2,
+    "clones": 10,
+    "scans": 4
+  },
   "remote/open": {
     "loads": 1,
     "counts": 0,
     "distinct": 0,
     "rows": 10000,
-    "compiles": 4,
-    "clones": 10,
+    "compiles": 0,
+    "clones": 7,
     "scans": 7
   },
   "remote/pick": {
@@ -230,8 +239,8 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 6,
-    "clones": 8,
-    "scans": 3
+    "clones": 1,
+    "scans": 2
   },
   "remote/switch-off": {
     "loads": 0,
@@ -239,8 +248,8 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 8,
-    "clones": 13,
-    "scans": 3
+    "clones": 6,
+    "scans": 2
   },
   "remote/switch-on": {
     "loads": 0,
@@ -248,8 +257,8 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 8,
-    "clones": 7,
-    "scans": 3
+    "clones": 6,
+    "scans": 2
   },
   "remote/sort": {
     "loads": 0,
@@ -355,8 +364,8 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 4,
-    "clones": 10,
+    "compiles": 0,
+    "clones": 7,
     "scans": 6
   },
   "remote/narrow": {
@@ -377,13 +386,22 @@
     "clones": 2,
     "scans": 4
   },
+  "remote/apply-saved": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 2,
+    "clones": 11,
+    "scans": 4
+  },
   "rest/open": {
     "loads": 1,
     "counts": 0,
     "distinct": 0,
     "rows": 10000,
-    "compiles": 4,
-    "clones": 10,
+    "compiles": 0,
+    "clones": 7,
     "scans": 7
   },
   "rest/pick": {
@@ -419,8 +437,8 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 6,
-    "clones": 8,
-    "scans": 3
+    "clones": 1,
+    "scans": 2
   },
   "rest/switch-off": {
     "loads": 0,
@@ -428,8 +446,8 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 8,
-    "clones": 13,
-    "scans": 3
+    "clones": 6,
+    "scans": 2
   },
   "rest/switch-on": {
     "loads": 0,
@@ -437,8 +455,8 @@
     "distinct": 0,
     "rows": 0,
     "compiles": 8,
-    "clones": 7,
-    "scans": 3
+    "clones": 6,
+    "scans": 2
   },
   "rest/sort": {
     "loads": 0,
@@ -544,8 +562,8 @@
     "counts": 0,
     "distinct": 0,
     "rows": 10000,
-    "compiles": 4,
-    "clones": 11,
+    "compiles": 0,
+    "clones": 8,
     "scans": 11
   },
   "rest/narrow": {
@@ -564,6 +582,15 @@
     "rows": 0,
     "compiles": 7,
     "clones": 2,
+    "scans": 4
+  },
+  "rest/apply-saved": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 2,
+    "clones": 11,
     "scans": 4
   },
   "lean/open": {
@@ -643,27 +670,27 @@
     "counts": 0,
     "distinct": 2,
     "rows": 10025,
-    "compiles": 4,
-    "clones": 10,
+    "compiles": 0,
+    "clones": 7,
     "scans": 6
   },
   "notheld/report": {
-    "loads": 1,
-    "counts": 4,
-    "distinct": 2,
-    "rows": 25,
+    "loads": 0,
+    "counts": 3,
+    "distinct": 1,
+    "rows": 0,
     "compiles": 6,
-    "clones": 7,
-    "scans": 9
+    "clones": 1,
+    "scans": 5
   },
   "notheld/save": {
     "loads": 2,
-    "counts": 4,
-    "distinct": 2,
+    "counts": 3,
+    "distinct": 1,
     "rows": 10025,
     "compiles": 0,
     "clones": 1,
-    "scans": 10
+    "scans": 7
   },
   "notheld/save-same": {
     "loads": 2,
@@ -685,29 +712,29 @@
   },
   "notheld/add": {
     "loads": 2,
-    "counts": 4,
-    "distinct": 2,
+    "counts": 3,
+    "distinct": 1,
     "rows": 10026,
     "compiles": 0,
     "clones": 1,
-    "scans": 10
+    "scans": 7
   },
   "notheld/delete": {
     "loads": 2,
-    "counts": 4,
-    "distinct": 2,
+    "counts": 3,
+    "distinct": 1,
     "rows": 10025,
     "compiles": 0,
     "clones": 1,
-    "scans": 10
+    "scans": 7
   },
   "tiered/open": {
     "loads": 2,
     "counts": 0,
     "distinct": 1,
     "rows": 10025,
-    "compiles": 5,
-    "clones": 10,
+    "compiles": 1,
+    "clones": 7,
     "scans": 6
   },
   "tiered/pick-site": {

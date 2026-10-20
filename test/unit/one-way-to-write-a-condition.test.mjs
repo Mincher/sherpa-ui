@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, onReport, openSource, readingsOf, whereOf,
+  ArrayStore, DataSource, onReport, readingsOf, savedFiltersOf, whereOf,
 } from '../../dist/data.js';
 
 const TYPES = { openTickets: 'number', health: 'number', created: 'date' };
@@ -114,23 +114,21 @@ test('a source reads a View\'s `where` by its field types, and says its Query ba
   assert.deepEqual(rows.map((r) => r.id), [2]);
 });
 
-test('a definition\'s saved filter is `where`; the old `readings` key reports', async () => {
-  const store = new ArrayStore([{ health: 40 }, { health: 90 }]);
+test('a page\'s saved filter is a query definition, its `where` in the plain form; one that is not reports', () => {
   const seen = [];
   const undo = onReport((r) => seen.push(r.code));
+  let kept;
   try {
-    const source = await openSource({
-      store: 'rows',
-      fields: { health: { label: 'Health', type: 'number' } },
-      scopes: { data: { label: 'Rows', presets: ['at-risk'] } },
-      presets: {
-        'at-risk': { label: 'At risk', where: { health: { lt: 60 } } },
-        old: { label: 'Old', readings: { health: { op: 'lt', text: '60' } } },
+    kept = savedFiltersOf({
+      v: 1, id: 'p',
+      savedFilters: {
+        'at-risk': { label: 'At risk', query: { v: 1, scopes: { data: { where: { health: { lt: 60 } } } } } },
+        old: { label: 'Old', where: { health: { lt: 60 } } },
       },
-    }, store);
-    assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['at-risk']);
+    });
   } finally {
     undo();
   }
-  assert.deepEqual(seen, ['preset-without-where']);
+  assert.deepEqual(Object.keys(kept), ['at-risk']);
+  assert.deepEqual(seen, ['saved-filter-invalid']);
 });

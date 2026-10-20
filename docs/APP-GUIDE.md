@@ -176,9 +176,11 @@ export const { store: customerStore, ready: customersReady } = localRecords({
     },
     "scopes": {
       "view": { "label": "View filters", "holds": ["region"] },
-      "data": { "label": "Records", "offers": "all", "holds": ["status"], "presets": ["has-tickets"] }
-    },
-    "presets": { "has-tickets": { "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } } }
+      "data": { "label": "Records", "offers": "all", "holds": ["status"] }
+    }
+  },
+  "savedFilters": {
+    "has-tickets": { "label": "Has open tickets", "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } }
   },
   "ui": { "grid": { "key": "email", "columns": [{ "field": "name", "header": "Name" }] } }
 }
@@ -245,7 +247,11 @@ export async function init(root, { source, session, view, signal, header, panels
 }
 ```
 
-- A View is JSON: each scope's `where`, `holds`, `presets`, `sort`, `group`.
+- A View is JSON: each scope's `where`, `holds`, `sort`, `group`.
+- A page's own **saved filters** are query definitions — each scope's `where`
+  and `holds`, under a name. The Filters menu lists them beside the reader's;
+  taken, one fills the field chips. It is never saved over or deleted.
+  `T-saved-filters-are-every-scope`
   The first View is the Context's own; the URL leaves it out.
   `T-a-view-is-json`
 - A View's own cards are markup, in a template beside the JSON.

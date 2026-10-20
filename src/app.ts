@@ -36,7 +36,7 @@ export {
 } from './core/browser/view-sync.js';
 export {
   loadSavedFilters, saveFilterAs, deleteSavedFilter,
-  type SavedFilter, type SavedFilterSet, type SavedFilterOptions,
+  type SavedFilterSet, type SavedFilterOptions,
 } from './core/browser/saved-filters.js';
 // A page's Views from JSON files, each View's markup in an HTML template.
 export { loadViewLibrary } from './core/browser/view-files.js';

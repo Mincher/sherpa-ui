@@ -84,6 +84,7 @@ export { bindSource, type BindOptions } from './core/ui/bind-source.js';
 /* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */
 export {
   checkTiers,
+  savedFiltersOf,
   openSource,
   type PageDefinition,
   type ScopeDefinition,
@@ -218,6 +219,7 @@ export {
   VIEW,
   type Query,
   type QueryDefaults,
+  type SavedFilter,
   type ViewScope,
   type ScopeQuery,
   type CompileFacts,

@@ -38,7 +38,7 @@ import {
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
-import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
+import { VIEW, type Query, type QueryDefaults, type SavedFilter } from '../../core/data/query.js';
 import { dropSet, takeSet } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { ProvideOptions } from './sherpa-provider.js';
@@ -60,6 +60,8 @@ export interface OpenedPage {
   source: DataSource;
   library: (() => ViewLibrary) | null;
   initial: Query;
+  /** The page's own saved filters, as its definition ships them. Will, 366 */
+  savedFilters: Readonly<Record<string, SavedFilter>>;
 }
 
 /** What the open page asks of its provider. */
@@ -101,7 +103,7 @@ export class ProviderPage {
     this.#sentSets = '';
     // The set last taken before a reload, while it is still saved.
     const id = loadApplied(page.id);
-    this.#applied = id && loadSavedFilters(page.id)[id] ? id : null;
+    this.#applied = id && this.#library()[id] ? id : null;
   }
 
   /** The page has gone, with its source. */
@@ -199,7 +201,10 @@ export class ProviderPage {
    *  TRAP T-saved-filters-are-every-scope */
   saveFilters(label?: string): string | undefined {
     const opened = this.#opened;
-    const name = label == null ? this.#takenSet()?.label : label.trim();
+    const taken = this.#takenSet();
+    // A page's own is never saved over; a new name never takes one of its names.
+    const name = label == null ? (taken?.own ? taken.label : undefined)
+      : label.trim() && opened && uniqueViewLabel(label, Object.values(opened.savedFilters).map((set) => set.label));
     if (!opened || !name) return undefined;
     this.#flush?.();
     saveFilterAs(opened.id, name, filtersOf(viewQueryOf(opened.source)));
@@ -213,7 +218,7 @@ export class ProviderPage {
    *  TRAP T-saved-filters-are-every-scope */
   async applyFilters(id: string): Promise<boolean> {
     const opened = this.#opened;
-    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
+    const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
     await opened.source.setQuery(takeSet(opened.source.query.applied, set.query, this.#own()));
@@ -225,7 +230,7 @@ export class ProviderPage {
    *  filters. Will, 366. TRAP T-saved-filters-are-every-scope */
   async dismissFilters(id: string): Promise<boolean> {
     const opened = this.#opened;
-    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
+    const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
     await opened.source.setQuery(dropSet(opened.source.query.applied, set.query, this.#own()));
@@ -233,7 +238,8 @@ export class ProviderPage {
     return true;
   }
 
-  /** DELETE a saved set — the one last taken unless named. Its filters stay on screen. */
+  /** DELETE a saved set — the one last taken unless named; never a page's own.
+   *  Its filters stay on screen. */
   deleteFilters(id = this.#applied ?? ''): boolean {
     const opened = this.#opened;
     if (!opened || !loadSavedFilters(opened.id)[id]) return false;
@@ -243,23 +249,31 @@ export class ProviderPage {
     return true;
   }
 
-  /** The page's saved sets, and the ONE taken (`applied`), which "Save <name>"
-   *  saves over — what a host asks before it saves over a name. */
-  get savedFilterSets(): { id: string; label: string; applied: boolean }[] {
+  /** The page's saved sets — its own, then the reader's (`own`) — and the ONE
+   *  taken (`applied`): "Save <name>" saves over it while it is the reader's. */
+  get savedFilterSets(): { id: string; label: string; applied: boolean; own: boolean }[] {
+    return Object.entries(this.#library())
+      .map(([id, { label, own }]) => ({ id, label, applied: id === this.#applied, own }));
+  }
+
+  /** The page's own sets, then the reader's: one of theirs under a page id is theirs. */
+  #library(): Record<string, SavedFilter & { own: boolean }> {
     const opened = this.#opened;
-    if (!opened) return [];
-    return Object.entries(loadSavedFilters(opened.id))
-      .map(([id, { label }]) => ({ id, label, applied: id === this.#applied }));
+    if (!opened) return {};
+    const own = loadSavedFilters(opened.id);
+    return {
+      ...Object.fromEntries(Object.entries(opened.savedFilters).map(([id, set]) => [id, { ...set, own: false }])),
+      ...Object.fromEntries(Object.entries(own).map(([id, set]) => [id, { ...set, own: true }])),
+    };
   }
 
   /** The set last taken in this tab — applied or saved — while it is still saved. Will, 366. */
   #applied: string | null = null;
 
-  /** The set last taken, and its name, or undefined. */
-  #takenSet(): { id: string; label: string } | undefined {
-    const opened = this.#opened;
-    const set = opened && this.#applied ? loadSavedFilters(opened.id)[this.#applied] : undefined;
-    return set && this.#applied ? { id: this.#applied, label: set.label } : undefined;
+  /** The set last taken — its name, and whether it is the reader's — or undefined. */
+  #takenSet(): { id: string; label: string; own: boolean } | undefined {
+    const set = this.#applied ? this.#library()[this.#applied] : undefined;
+    return set && this.#applied ? { id: this.#applied, label: set.label, own: set.own } : undefined;
   }
 
   /** A set is taken — or none: remembered in this tab, and every saving control told. */
@@ -282,7 +296,8 @@ export class ProviderPage {
   /** Each saving control is told the page's sets, and the one taken. TODO 105 */
   #saySaved(): void {
     if (!this.#opened) return;
-    const sets: SavedSet[] = this.savedFilterSets.map(({ id, label, applied }) => ({ id, label, ...(applied ? { applied } : {}) }));
+    const sets: SavedSet[] = this.savedFilterSets
+      .map(({ id, label, applied, own }) => ({ id, label, ...(applied ? { applied } : {}), ...(own ? { own } : {}) }));
     const sent = JSON.stringify(sets);
     if (sent === this.#sentSets) return;
     this.#sentSets = sent;
