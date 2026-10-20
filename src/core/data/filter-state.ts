@@ -229,9 +229,10 @@ export function rowOffer(rows: readonly FieldCondition[], index: number, values:
 /** Does this condition row have what its op needs to narrow anything? An
  *  untouched row is not an answer. TRAP T-an-untouched-select-is-not-an-answer */
 export function rowAnswered(row: FieldCondition): boolean {
-  return (OP_TAKES[row.op] ?? 'list') === 'text'
-    ? (row.text ?? '').trim() !== ''
-    : (row.picked ?? []).length > 0;
+  const takes = OP_TAKES[row.op] ?? 'list';
+  if (takes === 'text') return (row.text ?? '').trim() !== '';
+  // A range is BOTH its ends: one alone narrows nothing. TODO 375
+  return (row.picked ?? []).length >= (takes === 'range' ? 2 : 1);
 }
 
 /** Why the source rules a value out: its chain does not offer it, or the filters before it leave none of it. */
@@ -433,25 +434,21 @@ function cast(picked: readonly unknown[], type: FieldType): unknown[] {
 /**
  * A NUMBER or DATE field's picks as a clause.
  *
- * TWO ends are a `between`; one is a plain comparison. A number is compared as
- * a NUMBER — sorting `["1000","9"]` as text puts 1000 first and the range then
- * matches nothing. TRAP T-the-field-type-decides-the-clause
+ * TWO ends are a `between` — or a `notbetween`; one end alone is no range, and
+ * narrows nothing. A number is compared as a NUMBER — sorting `["1000","9"]` as
+ * text puts 1000 first and the range then matches nothing.
+ * TRAP T-the-field-type-decides-the-clause
  */
 function rangeClause(
   field: string, type: FieldType, picked: readonly unknown[], op: FilterOp,
 ): Filter | undefined {
-  if (!picked.length) return undefined;
+  if (picked.length < 2) return undefined;
   const numeric = type === 'number';
   const ends = numeric ? picked.map(Number) : picked.map(String);
-  if (ends.length >= 2) {
-    const sorted = numeric
-      ? (ends as number[]).slice().sort((a, b) => a - b)
-      : (ends as string[]).slice().sort();
-    return [field, 'between', [sorted[0], sorted[sorted.length - 1]]];
-  }
-  /* ONE end is whatever the reader asked — `eq` by default, but a `gt` or an
-     `lte` from a condition row means exactly that. */
-  return [field, op, ends[0]];
+  const sorted = numeric
+    ? (ends as number[]).slice().sort((a, b) => a - b)
+    : (ends as string[]).slice().sort();
+  return [field, op === 'notbetween' ? 'notbetween' : 'between', [sorted[0], sorted[sorted.length - 1]]];
 }
 
 /**
@@ -477,7 +474,7 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
     const end = endOf(one);
     if (end) return row.op === 'gt' ? [state.field, 'gt', end] : [state.field, 'between', [one, end]];
     const [from, to] = [...(row.picked ?? [])].map(String).sort();
-    if (row.op === 'between' && from && to) return [state.field, 'between', [from, endOf(to) ?? to]];
+    if ((row.op === 'between' || row.op === 'notbetween') && from && to) return [state.field, row.op, [from, endOf(to) ?? to]];
   }
   const takes = OP_TAKES[row.op] ?? 'list';
   if (takes === 'text') {

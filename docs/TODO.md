@@ -56,7 +56,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
 | ✅ | 0zc | 373 | UX — hover a grid cell: an icon-only filter chip at its right adds that cell's value to the filter, and a second press takes it off (Will) | filters |
 | ✅ | 0zd | 374 | ASK — a cell chip on a field the VIEW holds (Customer, Region in Demos): Will — show it INACTIVE on hover, as the heading is | filters |
-| ⬜ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
+| 🚧 | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
 | ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
@@ -66,6 +66,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ⬜ | 0zm | 383 | UX — ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
+| ⬜ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
+| ⬜ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) | data |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1526,7 +1528,7 @@ and its icon. **Will, 2026-10-20:** *"'Hide unmatching filters' should be
 inactive, not hidden, when 'Limit matching filters' is not selected."* So it is
 always there, and inactive while Limit is off.
 
-### `[ ]` ⬜ 375 — FILTERS: a range is an Advanced condition
+### `[~]` 🚧 375 — FILTERS: a range is an Advanced condition
 
 Will, 2026-10-20: *"For numerical and date fields a 'range' is an advanced
 filter. To use a range, the user will enable advanced filter mode and then set

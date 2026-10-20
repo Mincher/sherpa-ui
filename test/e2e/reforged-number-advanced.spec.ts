@@ -18,7 +18,8 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
   const r = await page.evaluate(async () => {
     const bar = await window.__mount<Bar & { setChipReading(id: string, r: unknown): void }>('sherpa-quick-filter-toolbar', [
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, advanced: true, active: true },
-      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000 },
+      // Every number offers Advanced now, unless it says not (TODO 375).
+      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000, advanced: false },
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
     const chip = (id: string) => bar.shadowRoot!.querySelector<HTMLElement & { reading: Record<string, unknown> | null }>(`.chip[data-id="${id}"]`)!;
@@ -50,7 +51,7 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
     const back = { mode: menu('seats').mode, body: shown('.body-number'), picked: (menu('seats').reading as { picked?: unknown[] }).picked };
     return {
       simple, advanced, reading, back,
-      // A number that did NOT opt in is as it was.
+      // A number that says advanced:false is as it was.
       plain: { type: menu('spend').dataset['type'] ?? null, advanced: menu('spend').hasAttribute('data-advanced') },
     };
   });
@@ -136,4 +137,55 @@ test('in the panel, a number field\'s f(x) carries its number into the rows, and
   expect(r.advanced).toEqual({ mode: 'advanced', field: true, conditions: [{ op: 'eq', picked: ['37'] }] });
   expect(r.back).toEqual({ mode: 'simple', picked: ['37'] });
   expect(r.heard).toBe(true);
+});
+
+/**
+ * A NUMBER's range is an Advanced row — TODO 375. Will: "| Condition select |
+ * Start value input | End value input |" with the "Range Slider" under them,
+ * the row's full width. The slider moves both boxes, and the boxes move it; one
+ * end alone is no answer.
+ */
+test('Between and Not between: two boxes on the row, and a slider under it that moves them', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, active: true },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const chip = bar.shadowRoot!.querySelector<HTMLElement & { reading: unknown }>('.chip[data-id="seats"]')!;
+    const menu = chip.querySelector('sherpa-menu') as Menu;
+    const sr = menu.shadowRoot;
+    // Every number offers Advanced, and its rows ask Between and Not between.
+    const offers = { advanced: menu.hasAttribute('data-advanced'), ops: menu.dataset['conditions'] };
+    (chip as unknown as { reading: unknown }).reading = { conditions: [{ op: 'between', picked: ['20', '80'] }], mode: 'advanced' };
+    await window.__settled();
+    menu.show(chip);
+    await window.__settled();
+    const row = sr.querySelector<HTMLElement>('.condition-row')!;
+    const box = (s: string) => row.querySelector<HTMLElement & { value: string }>(s)!;
+    const slider = row.querySelector<HTMLElement & { range: [number, number] }>('.condition-slider')!;
+    const place = (n: Element) => { const b = n.getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left), width: Math.round(b.width) }; };
+    const drawn = { takes: row.dataset['takes'], from: box('.condition-value').value, to: box('.condition-value-to').value,
+      slider: slider.range, min: slider.getAttribute('min'), max: slider.getAttribute('max') };
+    const layout = { row: place(row), op: place(box('.condition')), from: place(box('.condition-value')), to: place(box('.condition-value-to')), slider: place(slider) };
+    // The slider moves both boxes.
+    slider.range = [100, 300];
+    slider.dispatchEvent(new CustomEvent('input', { bubbles: true, composed: true, detail: { start: 100, end: 300 } }));
+    await window.__settled();
+    const slid = { from: box('.condition-value').value, to: box('.condition-value-to').value, rows: menu.conditions };
+    // One end alone is no answer.
+    box('.condition-value-to').value = '';
+    box('.condition-value-to').dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await window.__settled();
+    return { offers, drawn, layout, slid, half: menu.conditions };
+  });
+  expect(r.offers).toEqual({ advanced: true, ops: 'eq,ne,gt,gte,lt,lte,between,notbetween' });
+  expect(r.drawn).toEqual({ takes: 'range', from: '20', to: '80', slider: [20, 80], min: '0', max: '500' });
+  // One line: condition, From, To; the slider under it, the row's full width.
+  expect(r.layout.op.top).toBe(r.layout.from.top);
+  expect(r.layout.to.top).toBe(r.layout.from.top);
+  expect(r.layout.to.left).toBeGreaterThan(r.layout.from.left);
+  expect(r.layout.slider.top).toBeGreaterThan(r.layout.from.top);
+  expect(r.layout.slider.width).toBe(r.layout.row.width);
+  expect(r.slid).toEqual({ from: '100', to: '300', rows: [{ op: 'between', picked: ['100', '300'] }] });
+  expect(r.half).toEqual([{ op: 'between' }]);
 });

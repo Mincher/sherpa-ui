@@ -90,8 +90,8 @@ function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'fi
 
 /** One row as the reading a Simple control would hold. */
 function rowReading(row: FieldCondition, type?: FieldType): FieldReading {
-  // A date from today has no Simple answer: it is a row. TRAP T-a-relative-date-stays-relative
-  if (row.op === 'last' || row.op === 'next') return { conditions: [row], mode: 'advanced' };
+  // A date from today, and Not between, have no Simple answer: each is a row. TRAP T-a-relative-date-stays-relative
+  if (row.op === 'last' || row.op === 'next' || row.op === 'notbetween') return { conditions: [row], mode: 'advanced' };
   if (row.op === 'between') return { picked: [...(row.picked ?? [])], range: true };
   if (OP_TAKES[row.op] === 'text') return { op: row.op, text: row.text ?? '' };
   const picked = [...(row.picked ?? [])];

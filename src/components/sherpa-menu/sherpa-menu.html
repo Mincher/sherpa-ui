@@ -356,6 +356,12 @@
         <sherpa-input-text class="condition-time-to" type="time" aria-label="To time"></sherpa-input-text>
         <sherpa-input-text class="condition-count" data-type="number" min="1" aria-label="How many"></sherpa-input-text>
         <sherpa-input-text class="condition-unit" data-type="select" aria-label="Unit"></sherpa-input-text>
+        <!-- A NUMBER's Between and Not between: its To end, and a slider that moves
+             both, on a line of its own under the row. Before Remove, which stays
+             the group's last. Will, TODO 375. -->
+        <sherpa-input-text class="condition-value-to" placeholder="To"
+                           data-clearable aria-label="To value"></sherpa-input-text>
+        <sherpa-slider class="condition-slider" data-type="range"></sherpa-slider>
         <!-- DEFAULT look and DEFAULT size, and LAST in the group: it is one of
              the row's controls, not chrome floating beside them, so it stands
              the same height as the inputs it sits with. -->
@@ -424,6 +430,10 @@
         never a shadow root.
       -->
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
+      <!-- A NUMBER is reset, not cleared, in Advanced too: every number is a filter
+           menu now. Will, TODO 134, 375. -->
+      <sherpa-button class="reset" part="reset"
+                     data-icon-start="arrow-rotate-left">Reset</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel" data-footer="revert">Cancel</sherpa-button>

@@ -111,3 +111,23 @@ test('the fx badge and the type AGREE on every shape', () => {
     assert.equal(filterFace(s).badge === 'fx', s.condition === 'advanced', JSON.stringify(reading));
   }
 });
+
+/* ── A number's range is an Advanced row — TODO 375 ─────────── */
+
+test('Not between is a range row: both ends, sorted as numbers, and every row outside them', async () => {
+  const { filterRows } = await import('../../dist/data.js');
+  const s = shape(SEATS, { conditions: [{ op: 'notbetween', picked: ['500', '9'] }], mode: 'advanced' });
+  assert.equal(s.condition, 'advanced');
+  assert.deepEqual(s.clause, ['seats', 'notbetween', [9, 500]]);
+  const rows = [{ seats: 5 }, { seats: 9 }, { seats: 200 }, { seats: 600 }, { seats: null }];
+  // Outside the ends, and — as `ne` — a row with no value.
+  assert.deepEqual(filterRows(rows, s.clause).map((r) => r.seats), [5, 600, null]);
+});
+
+test('a range row with ONE end is no answer, and narrows nothing', () => {
+  for (const op of ['between', 'notbetween']) {
+    const s = shape(SEATS, { conditions: [{ op, picked: ['9'] }], mode: 'advanced' });
+    assert.equal(s.clause, undefined, op);
+    assert.equal(s.condition, null, op);
+  }
+});

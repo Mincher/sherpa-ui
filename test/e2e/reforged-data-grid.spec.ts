@@ -1650,7 +1650,8 @@ test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, a
     return { conditions, ranged, events };
   });
 
-  expect(r.conditions).toEqual(['eq', 'ne', 'gt', 'gte', 'lt', 'lte']);
+  // A number's range is an Advanced row too (TODO 375).
+  expect(r.conditions).toEqual(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'between', 'notbetween']);
 
   // The clauses carry a real NUMBER, not the typed string. The store compares
   // numerically only when BOTH sides are numbers; as a string, "100" sorts

@@ -660,6 +660,22 @@
                       }
                     },
                     {
+                      "el": "sherpa-input-text",
+                      "class": "condition-value-to",
+                      "attrs": {
+                        "placeholder": "To",
+                        "data-clearable": "",
+                        "aria-label": "To value"
+                      }
+                    },
+                    {
+                      "el": "sherpa-slider",
+                      "class": "condition-slider",
+                      "attrs": {
+                        "data-type": "range"
+                      }
+                    },
+                    {
                       "el": "sherpa-button",
                       "class": "drop-condition",
                       "attrs": {
@@ -835,6 +851,14 @@
                   "el": "sherpa-button",
                   "class": "clear",
                   "part": "clear"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "reset",
+                  "part": "reset",
+                  "attrs": {
+                    "data-icon-start": "arrow-rotate-left"
+                  }
                 },
                 {
                   "el": "sherpa-button",

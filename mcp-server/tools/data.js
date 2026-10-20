@@ -254,7 +254,7 @@ export function register(server) {
         filter: z
           .string()
           .optional()
-          .describe('A filter as JSON: `["status","eq","active"]`, or `["and",["health","lt",60],["tickets","gt",2]]`. Operators: eq ne lt lte gt gte contains notcontains startswith endswith in notin between.'),
+          .describe('A filter as JSON: `["status","eq","active"]`, or `["and",["health","lt",60],["tickets","gt",2]]`. Operators: eq ne lt lte gt gte contains notcontains startswith endswith in notin between notbetween.'),
         sort: z
           .string()
           .optional()
@@ -294,7 +294,7 @@ export function register(server) {
          so an unknown op rejects EVERY row — a silent empty grid that reads as
          missing data. Catch it here until the layer throws. */
       const OPS = new Set(['eq','ne','lt','lte','gt','gte','contains','notcontains',
-        'startswith','endswith','in','notin','between']);
+        'startswith','endswith','in','notin','between','notbetween']);
       const badOps = [];
       const walkOps = (node) => {
         if (!Array.isArray(node)) return;

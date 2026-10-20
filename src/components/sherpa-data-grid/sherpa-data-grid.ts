@@ -1389,8 +1389,9 @@ export class SherpaDataGrid extends SherpaElement {
       next = { ...held, conditions: rows.map(({ join, ...row }, i) => (i ? { ...row, join: join ?? 'or' } : row)), mode: 'advanced' };
     } else {
       const rest = (held?.picked ?? []).filter((v) => valueKey(v) !== at.key);
-      // One value only where a second would change the question: a day, a single pick.
-      const one = at.kind === 'date' || this.#givenFilters[at.field]?.select === 'single';
+      /* One value only where a second would change the question: a day, a number
+         (Simple holds one, Will, 375), a single pick. */
+      const one = at.kind === 'date' || at.kind === 'number' || this.#givenFilters[at.field]?.select === 'single';
       const picked = on ? rest : one ? [at.value] : [...rest, at.value];
       next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}) };
     }

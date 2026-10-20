@@ -66,7 +66,7 @@ export type FilterOp =
   | 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'
   | 'contains' | 'notcontains' | 'startswith' | 'endswith'
   | 'in' | 'notin'
-  | 'between'
+  | 'between' | 'notbetween'
   // A DATE from today: `{ n: 7, unit: 'day' }`, worked out when it is matched.
   | 'last' | 'next';
 
@@ -85,6 +85,7 @@ export const OP_LABELS: Record<FilterOp, string> = {
   in: 'Is one of',
   notin: 'Is not one of',
   between: 'Between',
+  notbetween: 'Not between',
   last: 'In the last',
   next: 'In the next',
 };
@@ -100,7 +101,8 @@ export const DATE_OP_LABELS: Partial<Record<FilterOp, string>> = { eq: 'On', lt:
  */
 export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
   text: ['eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith'],
-  number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
+  // A number's range is an Advanced row: Between, Not between. Will, TODO 375
+  number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'between', 'notbetween'],
   // A date's Advanced rows; its Simple answer is the calendar. TODO 21d
   date: ['eq', 'lt', 'gt', 'between', 'last', 'next'],
 };
@@ -125,6 +127,7 @@ export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
   gt: 'text',
   gte: 'text',
   between: 'range',
+  notbetween: 'range',
   // The COUNT is typed; its unit rides beside it.
   last: 'text',
   next: 'text',
@@ -418,6 +421,9 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
     case 'last':
     case 'next':
       return matchesFilter(row, absoluteDates(filter));
+    // Outside the two ends — and, as `ne` does, a row with no value. TODO 375
+    case 'notbetween':
+      return !matchesFilter(row, [field, 'between', value]);
     case 'between': {
       // A backwards pair is still a range — order the bounds, do not reject.
       if (!Array.isArray(value) || value.length !== 2 || actual == null) return false;

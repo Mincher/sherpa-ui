@@ -52,8 +52,9 @@ export interface KindSource extends OffersAdvanced {
 const KNOWN = new Set<string>(FILTER_KINDS);
 
 /** A field's Advanced offer: beside its values, instead of them, or none. */
-export function advancedOf(def: OffersAdvanced): boolean | 'only' {
-  return def.advanced ?? false;
+export function advancedOf(def: OffersAdvanced & { kind?: string }): boolean | 'only' {
+  // A NUMBER asks its range as an Advanced row, so it offers Advanced unless it says not. Will, TODO 375
+  return def.advanced ?? def.kind === 'number';
 }
 
 /**

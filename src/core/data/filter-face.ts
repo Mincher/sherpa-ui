@@ -180,7 +180,7 @@ export function conditionLines(state: FilterState): string[] {
     const op = picks.length > 1 && row.op === 'eq' ? 'in'
       : picks.length > 1 && row.op === 'ne' ? 'notin' : row.op;
     const said = (OP_TAKES[row.op] ?? 'list') === 'text' ? sayTyped(row, dated)
-      : row.op === 'between' ? picks.join(' and ') : picks.join(', ');
+      : row.op === 'between' || row.op === 'notbetween' ? picks.join(' and ') : picks.join(', ');
     const line = `${opName(op, dated)} ${said}`.trim();
     return i ? `${row.join === 'or' ? 'or' : 'and'} ${line}` : line;
   });

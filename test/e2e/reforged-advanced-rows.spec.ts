@@ -38,6 +38,9 @@ const WANT: Record<string, [string, unknown]> = {
   'number:gte': ['condition-value', ['seats', 'gte', 42]],
   'number:lt': ['condition-value', ['seats', 'lt', 42]],
   'number:lte': ['condition-value', ['seats', 'lte', 42]],
+  // A number's range: From, To and the slider under them. Will, TODO 375
+  'number:between': ['condition-value+condition-value-to+condition-slider', ['seats', 'between', [42, 99]]],
+  'number:notbetween': ['condition-value+condition-value-to+condition-slider', ['seats', 'notbetween', [42, 99]]],
   'date:eq': ['condition-date', ['created', 'eq', '2026-09-03']],
   'date:lt': ['condition-date', ['created', 'lt', '2026-09-03']],
   'date:gt': ['condition-date', ['created', 'gt', '2026-09-03']],
@@ -63,6 +66,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
     const FILL: Record<string, string> = {
       'condition-pick': 'Ravi', 'condition-date': '2026-09-03', 'condition-date-to': '2026-09-30',
       'condition-time': '14:00', 'condition-time-to': '18:00', 'condition-count': '7', 'condition-unit': 'week',
+      'condition-value-to': '99',
     };
     const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
     const out: Record<string, [string, unknown]> = {};
@@ -95,7 +99,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
         await settle();
         out[`${kind}:${op}`] = [shown.join('+'),
           readingClause({ field: def.id as string, ...facts }, { conditions: [m.conditions[0]!], mode: 'advanced' })];
-        for (const box of row.querySelectorAll<HTMLElement & { value: string }>('.condition-value, .condition-date, .condition-date-to, .condition-time, .condition-time-to, .condition-count')) box.value = '';
+        for (const box of row.querySelectorAll<HTMLElement & { value: string }>('.condition-value, .condition-value-to, .condition-date, .condition-date-to, .condition-time, .condition-time-to, .condition-count')) box.value = '';
         delete row.dataset['want'];
       }
     }

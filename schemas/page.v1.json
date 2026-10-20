@@ -140,6 +140,7 @@
         "startswith": { "type": "string" }, "endswith": { "type": "string" },
         "in": { "type": "array" }, "notin": { "type": "array" },
         "between": { "type": "array", "minItems": 2, "maxItems": 2 },
+        "notbetween": { "type": "array", "minItems": 2, "maxItems": 2 },
         "last": { "description": "A date in the last n units, from today.", "type": "number" },
         "next": { "description": "A date in the next n units, from today.", "type": "number" },
         "unit": { "enum": ["day", "week", "month"] },

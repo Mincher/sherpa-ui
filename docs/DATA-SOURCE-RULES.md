@@ -68,7 +68,7 @@ The operators, in full:
 | comparison | `eq` `ne` `lt` `lte` `gt` `gte` |
 | text | `contains` `notcontains` `startswith` `endswith` |
 | set | `in` `notin` |
-| range | `between` (value is `[from, to]`) |
+| range | `between` `notbetween` (value is `[from, to]`; `notbetween` is every value outside them, and a row with none) |
 | a date from today | `last` `next` (value is `{ n: 7, unit: "day" }` — `day`, `week` or `month`) |
 
 **A server never gets `last` or `next`.** They stay relative in a saved View,
@@ -90,7 +90,7 @@ write a condition, with numbers as numbers:
 |---|---|
 | one value | `{ "eq": "EMEA" }` — `{ "ne": "churned" }` |
 | several | `{ "in": ["Pro", "Free"] }` — `{ "notin": [...] }` |
-| a range | `{ "between": [10, 60] }` |
+| a range | `{ "between": [10, 60] }` — `{ "notbetween": [10, 60] }` |
 | typed | `{ "gt": 0 }` — `{ "contains": "acme" }` |
 | a date from today | `{ "last": 7 }` — `{ "next": 2, "unit": "month" }` |
 | one of the field's bands | `{ "band": "At risk" }` — its `thresholds` say the ends (`T-a-threshold-is-a-fact-of-the-field`) |

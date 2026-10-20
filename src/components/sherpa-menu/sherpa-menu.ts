@@ -639,9 +639,37 @@ export class SherpaMenu extends SherpaElement {
     }
     /* A NUMBER's `=` is typed too, and kept as its one pick — and so is one with no list.
        Written whether or not a list is here NOW: a list that goes later reads the box. */
-    /* …written whether or not a list is here NOW: a list that goes later reads the box. */
-    if (text) text.value = seed?.text ?? (seed?.picked?.length && (OP_TAKES[seed.op] ?? 'list') === 'list' ? String(seed.picked[0]) : '');
+    const ends = !dated && (OP_TAKES[op] ?? 'list') === 'range' ? (seed?.picked ?? []).map(String) : null;
+    if (text) {
+      text.value = ends ? ends[0] ?? ''
+        : seed?.text ?? (seed?.picked?.length && (OP_TAKES[seed.op] ?? 'list') === 'list' ? String(seed.picked[0]) : '');
+    }
+    // A number's Between: its To end, and the slider under the row. Will, TODO 375
+    const to = row.querySelector<SherpaInputText>('.condition-value-to');
+    if (to) to.value = ends?.[1] ?? '';
+    this.#rangeSlider(row);
     if (dated) this.#fillDateRow(row, seed);
+  }
+
+  /** A range row's slider: the menu's bounds, and the two ends typed, or the
+   *  whole span while they are not. Will, TODO 375 */
+  #rangeSlider(row: HTMLElement, from: 'boxes' | 'slider' = 'boxes'): void {
+    const slider = row.querySelector<SherpaSlider>('.condition-slider');
+    const boxes = [...row.querySelectorAll<SherpaInputText>('.condition-value, .condition-value-to')];
+    if (!slider || boxes.length < 2) return;
+    const min = this.dataset['min'] ?? '0';
+    const max = this.dataset['max'] ?? '100';
+    slider.setAttribute('min', min);
+    slider.setAttribute('max', max);
+    if (this.dataset['step']) slider.setAttribute('step', this.dataset['step']);
+    if (from === 'slider') {
+      const [lo, hi] = slider.range;
+      boxes[0]!.value = String(lo);
+      boxes[1]!.value = String(hi);
+      return;
+    }
+    const ends = boxes.map((box) => Number((box.value ?? '').trim() || NaN));
+    slider.range = ends.every(Number.isFinite) ? [ends[0]!, ends[1]!] : [Number(min), Number(max)];
   }
 
   /** A date row's own boxes: a day (and a time), two for Between, a count and a unit. TODO 21d */
@@ -696,7 +724,10 @@ export class SherpaMenu extends SherpaElement {
   /** What a row answers with: a pick, typing — or, on a date, a day, two, or a count. */
   #takes(op: FilterOp): 'list' | 'text' | 'range' | 'date' | 'dates' | 'duration' {
     if (this.#dated()) return op === 'last' || op === 'next' ? 'duration' : op === 'between' ? 'dates' : 'date';
-    return this.#typesItsPicks() ? 'text' : (OP_TAKES[op] ?? 'list');
+    const takes = OP_TAKES[op] ?? 'list';
+    // A number's Between and Not between: two typed ends. Will, TODO 375
+    if (takes === 'range') return 'range';
+    return this.#typesItsPicks() ? 'text' : takes;
   }
 
   /** A row with NO list to pick from types its Equals — a number, or a field
@@ -772,6 +803,13 @@ export class SherpaMenu extends SherpaElement {
       const out: FieldCondition = { op };
       if (i > 0) out.join = (row.dataset['join'] ?? 'or') as 'and' | 'or';
       if (this.#dated()) return { ...out, ...this.#dateRowAnswer(row, op) };
+      // A range is BOTH ends typed. Will, TODO 375
+      if (takes === 'range') {
+        const ends = [...row.querySelectorAll<SherpaInputText>('.condition-value, .condition-value-to')]
+          .map((box) => (box.value ?? '').trim());
+        if (ends.length === 2 && ends.every(Boolean)) out.picked = ends;
+        return out;
+      }
       /* A NUMBER's `=` is typed, and answers as the one number it picks —
          as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
       if (this.#typesItsPicks() && takes === 'list') {
@@ -903,6 +941,11 @@ export class SherpaMenu extends SherpaElement {
     /* The row the change came from — its OWN op decides its OWN body, so two
        rows can ask different questions at once. */
     const row = (event?.target as HTMLElement | null)?.closest?.('.condition-row');
+    // A range's slider moves its two boxes, and its boxes move the slider. TODO 375
+    if (row instanceof HTMLElement && row.dataset['takes'] === 'range') {
+      const bySlider = !!(event?.target as HTMLElement | null)?.closest?.('.condition-slider');
+      this.#rangeSlider(row, bySlider ? 'slider' : 'boxes');
+    }
     if (row instanceof HTMLElement) {
       this.#mirror = false;
       // The reader just answered, so THAT is what the row remembers now.
@@ -1584,6 +1627,8 @@ export class SherpaMenu extends SherpaElement {
       el.setAttribute('max', max);
       if (this.dataset['step']) el.setAttribute('step', this.dataset['step']);
     }
+    // …and every range row's slider. TODO 375
+    for (const row of this.#rowEls()) if (row.dataset['takes'] === 'range') this.#rangeSlider(row);
     /* A HELD range wins; otherwise a fresh one opens at both ends and excludes
        nothing. `data-touched` says the reader has moved it since.
        TRAP T-a-full-range-is-still-a-range */

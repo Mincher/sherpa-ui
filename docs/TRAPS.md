@@ -10765,6 +10765,12 @@ button with a live mode is a control a reader cannot reach but a script can.
 A TEXT GRID COLUMN is the exception and always opts in. A column of free text
 is exactly what a reader asks "starts with" of.
 
+A NUMBER is the other exception, and opts OUT: it offers Advanced unless its
+def says `advanced: false` (`advancedOf`). Its range is an Advanced row —
+Between or Not between — since its Simple body is one value. Will, TODO 375:
+*"For numerical and date fields a 'range' is an advanced filter."* (A date
+keeps its Range switch for now: 379.)
+
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`

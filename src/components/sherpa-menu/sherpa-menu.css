@@ -269,6 +269,23 @@
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
+/* A NUMBER's range: condition, From and To on the row, and a slider that moves
+   both on a line of its own, the row's full width. Will, TODO 375. */
+.condition-value-to,
+.condition-slider { display: none; }
+.condition-row[data-takes="range"] { display: flex; flex-wrap: wrap; align-items: center; row-gap: var(--sherpa-display-mode-space-2xs, 4px); }
+.condition-row[data-takes="range"] > .join { flex: 0 0 3.5rem; }
+.condition-row[data-takes="range"] > .condition { flex: 2 1 6.5rem; min-inline-size: 0; }
+.condition-row[data-takes="range"] > :is(.condition-value, .condition-value-to) { display: block; flex: 3 1 0; min-inline-size: 0; }
+.condition-row[data-takes="range"] > .condition-slider { display: block; order: 1; flex: 0 0 100%; }
+/* …and To is the row's right end where nothing follows it. TRAP T-a-hidden-sibling-still-counts-as-first-child */
+.condition-row[data-only][data-takes="range"] > .condition-value-to,
+:host([data-readonly]) .condition-row[data-takes="range"] > .condition-value-to {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
 /* Every part of a row is the same height, so the joints read as one edge. */
 .condition-row > * {
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
