@@ -1713,8 +1713,8 @@ to its host.
 one with no values and no conditions has none. So the source counts a FIELD's
 answer that is off too — what it WOULD match. A SAVED filter is counted only
 while it is on (166): its count is not always known before it runs. Pending
-still shows none (46): a draft has no results yet. The TIP says its matches only while the chip is on; off, it says
-nothing.
+still shows none (46): a draft has no results yet. The TIP says the same on or off — its answer and its matches (Will, 363):
+on or off has no bearing on whether it shows.
 
 **An off answer that changes moves no rows, so no load follows** — and the
 count was only ever drawn after a load. Emptied, the chip kept its old

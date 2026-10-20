@@ -13,7 +13,7 @@ type Chip = HTMLElement & { results: number | null; current: boolean; refresh():
 
 const frames = `new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(res))))`;
 
-test('a toolbar chip says a number, a range and a date — and its matches while it is on', async ({ page }) => {
+test('a toolbar chip says a number, a range and a date — and its matches, on or off', async ({ page }) => {
   const r = await page.evaluate(async (wait) => {
     const bar = await window.__mount<Bar & { setChipReading(id: string, reading: unknown): void }>('sherpa-quick-filter-toolbar', [
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, active: true },
@@ -35,7 +35,7 @@ test('a toolbar chip says a number, a range and a date — and its matches while
     chip('seats').results = 28;
     chip('plan').results = 1;
     const counted = { seats: tip('seats'), plan: tip('plan') };
-    // OFF: it filters nothing, so it says nothing.
+    // OFF it says the same: on or off has no bearing on the tip (Will, 363).
     chip('seats').current = false;
     chip('seats').results = 28;
     const off = tip('seats');
@@ -50,7 +50,7 @@ test('a toolbar chip says a number, a range and a date — and its matches while
   expect(r.said.created[0]).toMatch(/05 .* to 06 .* 2024/);
   expect(r.said.plan).toBe('Pro, Free');
   expect(r.counted).toEqual({ seats: '37 to 120 - 28 matches', plan: 'Pro, Free - 1 match' });
-  expect(r.off).toBe('');
+  expect(r.off).toBe('37 to 120 - 28 matches');
   expect(r.one).toEqual(['12', '12 - 28 matches']);
   // The same words for a screen reader, on the button.
   expect(r.described).toBe('Pro, Free - 1 match');
@@ -131,7 +131,7 @@ test('a grid heading\'s sort button says its column, and which way once it sorts
   expect(r).toEqual({ before: 'Sort by Name', sorted: 'Sorted by Name, descending' });
 });
 
-test('a chip switched OFF under the pointer shuts its whole tooltip, not only its words', async ({ page }) => {
+test('a chip switched OFF still shows its tooltip — on or off has no bearing (Will, 363)', async ({ page }) => {
   await page.evaluate(async () => {
     const bar = await window.__mount<Bar & { setChipReading(id: string, reading: unknown): void }>('sherpa-quick-filter-toolbar', [
       { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }], active: true },
@@ -143,10 +143,17 @@ test('a chip switched OFF under the pointer shuts its whole tooltip, not only it
   const open = (): Promise<boolean> => page.evaluate(() => document.querySelector('sherpa-quick-filter-toolbar')!
     .shadowRoot!.querySelector('.chip[data-id="plan"]')!.shadowRoot!.querySelector('.count-wrap')!
     .shadowRoot!.querySelector('.bubble')!.matches(':popover-open'));
+  const text = (): Promise<string> => page.evaluate(() => document.querySelector('sherpa-quick-filter-toolbar')!
+    .shadowRoot!.querySelector('.chip[data-id="plan"]')!.shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '');
   await body.hover();
   await expect.poll(open).toBe(true);
+  // Switched OFF, then hovered again: the same tip.
   await body.click();
+  await page.mouse.move(0, 0);
   await expect.poll(open).toBe(false);
+  await body.hover();
+  await expect.poll(open).toBe(true);
+  expect(await text()).toBe('Pro, Free');
 });
 
 test('a RESET leaves a date chip with no value — a kept range holds no ends, never `undefined`', async ({ page }) => {

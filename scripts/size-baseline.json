@@ -55,7 +55,7 @@
   "src/components/sherpa-provider/provider-page.ts": 559,
   "src/components/sherpa-provider/sherpa-provider.ts": 899,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 1929,
-  "src/components/sherpa-quick-filter/sherpa-quick-filter.ts": 997,
+  "src/components/sherpa-quick-filter/sherpa-quick-filter.ts": 995,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.ts": 227,
   "src/components/sherpa-router/sherpa-router.ts": 110,
   "src/components/sherpa-section-header/sherpa-section-header.ts": 22,

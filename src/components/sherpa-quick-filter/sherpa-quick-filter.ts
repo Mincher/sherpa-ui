@@ -797,16 +797,14 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /**
    * WRITE THE TIP: the answer in words, then ` - X matches` while the chip
-   * shows its results. The CHIP's own, whatever draws it — a bar, a panel, a
+   * shows its results — on or off. The CHIP's own, whatever draws it — a bar, a panel, a
    * grid heading. Will, TODO 130. TRAP T-a-chip-says-its-own-answer
    */
   #writeTip(): void {
-    // OFF, the badge keeps its number and the tip says nothing.
-    const n = this.current ? this.#shownResults() : null;
+    // ON OR OFF it says the same — its answer and its matches, as its badge keeps its number. Will, 363.
+    const n = this.#shownResults();
     const matches = n == null ? '' : countSaid(n, ['match', 'matches']).label;
-    // OFF filters nothing, so it says nothing — but one held ABOVE says where it went.
-    const says = this.current || ['data-superseded', 'data-unavailable', 'disabled'].some((a) => this.hasAttribute(a));
-    const said = [says ? this.#tipText(this.#said) : '', matches].filter(Boolean).join(' - ');
+    const said = [this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
     /* A chip with NO WORDS on it — a grid heading's sort button — says its
        name in the tip, as an icon button does: "Sorted by Name, descending". */
     const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';

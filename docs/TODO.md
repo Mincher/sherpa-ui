@@ -44,7 +44,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
 | ✅ | 0q | 361 | UX — a value the context rules out has an INACTIVE checkbox, even when ticked (Will) | filters |
 | ✅ | 0r | 362 | UX — an inactive value is not interactive: a ticked ruled-out menu row or an on value chip refuses a press (Will) | filters |
-| ⬜ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
+| ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
+| ⬜ | 0t | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1351,11 +1352,25 @@ field's Reset, or the filter chip's off. Tests: `reforged-quick-filter-toolbar`
 (a press leaves the row ticked), `reforged-serial-set` (a press leaves the
 chip on), Demos `reforged-limit-options`. TRAP `T-a-ruled-out-value-is-greyed`.
 
-### `[ ]` ⬜ 363 — BUG: a chip's value tooltip shows only while it is on
+### `[x]` ✅ 363 — BUG: a chip's value tooltip shows only while it is on
 
 Will, 2026-10-20: *"Filter chip value tooltips only show if the chip is active.
 The active/inactive state should have no bearing on the visibility of the
 tooltip."*
+
+**✅ Done 2026-10-20.** A chip's tip says the same on or off — its answer and its
+matches, as its badge keeps its number (123). It had said nothing while off.
+Tests: `reforged-chip-tips` (off says the same; switched off, a hover still
+shows it), Demos `reforged-chip-results`. TRAP `T-a-chip-counts-within-the-filters-before-it`.
+
+### `[ ]` ⬜ 364 — BUG: a Button's tooltip is clipped; one tooltip system
+
+Will, 2026-10-20: *"Button tooltips are not at the CSS top level and as a result
+get clipped by other components or container bounds. I suspect this is to do
+with tooltip anchoring to buttons being done differently to other components
+as other component tooltips don't have this issue. It would be great if we just
+had 1 tooltip system for all components rather than any duplication and
+deviation."* When convenient.
 
 ---
 
