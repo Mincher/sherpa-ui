@@ -13,6 +13,10 @@
     color: var(--sherpa-theme-content-body-base, #0c0b11);
     background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   }
+  /* Every scrollbar, shadow roots too (it inherits): no light track in dark mode. */
+  html {
+    scrollbar-color: var(--sherpa-theme-border-default-2, #b3b3c3) transparent;
+  }
   /* The shell is the page's frame, so it inherits the full height rather than
      each app re-declaring it. :is() keeps this at class specificity. */
   body > sherpa-app-shell,

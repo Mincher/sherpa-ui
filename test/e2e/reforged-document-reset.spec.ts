@@ -102,3 +102,24 @@ test('the reset lives in page.css, in the core layer, before everything else; to
   // tokens.css styles no page: a host that embeds Sherpa keeps its own.
   expect(r.tokensBody).toEqual([]);
 });
+
+test('every scrollbar has a clear track, inside a shadow root too, in both modes', async ({ page }) => {
+  const r = await page.evaluate(() => {
+    if (!CSS.supports('scrollbar-color', 'red transparent')) return null;
+    const host = document.createElement('div');
+    const box = host.attachShadow({ mode: 'open' }).appendChild(document.createElement('div'));
+    document.body.appendChild(host);
+    const read = () => getComputedStyle(box).scrollbarColor;
+    const light = read();
+    document.documentElement.dataset.mode = 'dark';
+    const dark = read();
+    delete document.documentElement.dataset.mode;
+    host.remove();
+    return { light, dark };
+  });
+  test.skip(!r, 'this engine has no scrollbar-color');
+  // The track is clear, so a dark page shows no light bar; the thumb follows the mode.
+  expect(r!.light).toMatch(/rgba\(0, 0, 0, 0\)$/);
+  expect(r!.dark).toMatch(/rgba\(0, 0, 0, 0\)$/);
+  expect(r!.light).not.toBe(r!.dark);
+});
