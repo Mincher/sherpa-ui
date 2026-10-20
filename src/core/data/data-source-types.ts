@@ -82,27 +82,24 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   range?: boolean;
   /** Where it lives now, when an Add list offers it from another scope. */
   note?: string;
-  /** A PRESET — a saved filter: its answer, field by field. */
+  /** A saved filter's chip, as a bar drew it — no source describes one now; S4 deletes it. 366 */
   readings?: Readonly<Record<string, FieldReading>>;
-  /** …and that answer in WORDS, field by field, as its chip's menu lists it.
-   *  TRAP T-a-saved-chip-lists-its-conditions */
+  /** …and that answer in WORDS. TRAP T-a-saved-chip-lists-its-conditions */
   says?: SaidField[];
 }
 
 /** A source's whole question, as JSON — to send out and take back in: the
- *  Query as applied, its arrangement in the View scope, and every saved filter
- *  it names, so another service needs no library. TRAP T-a-page-goes-out-as-json */
+ *  Query as applied, and its arrangement. TRAP T-a-page-goes-out-as-json */
 export interface SourceState {
   v: 1;
   query: Query;
-  presets: Record<string, { label?: string; readings: Record<string, FieldReading> }>;
 }
 
 /** One filter a scope holds, as a control draws it. */
 export interface HeldFilter extends FieldFilter {
   /** Its answer in the Query, where it has one. */
   state?: FieldReading;
-  /** A preset's on or off. */
+  /** A saved filter chip's on or off — no source describes one now; S4 deletes it. 366 */
   active?: boolean;
   removable?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here,

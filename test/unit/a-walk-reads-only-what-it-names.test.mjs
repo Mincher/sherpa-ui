@@ -1,7 +1,6 @@
 /**
  * A WALK READS ONLY WHAT IT NAMES — 345 phase 3. `walkReads` names the fields a
- * walk tests and tallies; a change to any other field leaves the walk as it is,
- * and a saved filter that is off, and counts nothing, reads no row at all.
+ * walk tests and tallies; a change to any other field leaves the walk as it is.
  * TRAP T-one-walk-counts-and-limits-in-order
  *
  *   node --test test/unit/a-walk-reads-only-what-it-names.test.mjs
@@ -23,18 +22,17 @@ const ROWS = (() => {
   }));
 })();
 const LIST = new Set(['customer', 'region', 'status', 'plan', 'tier']);
-const PRESETS = { 'free-plan': { plan: { picked: ['free'] } }, gold: { tier: { picked: ['gold'] } } };
 
 const facts = (over = {}) => ({
   field: (f) => (f === 'seats' || f === 'health' ? { type: 'number' } : {}),
-  isList: (f) => LIST.has(f), plainPicks: () => true, presets: (id) => PRESETS[id], sets: () => [],
+  isList: (f) => LIST.has(f), plainPicks: () => true, sets: () => [],
   fields: (scope) => (scope === 'view' ? ['customer', 'region'] : ['status', 'tier']),
   components: new Set(['data']), fixed: new Set(), parts: [], narrowing: new Map(),
   limit: true, now: new Date('2026-10-20T00:00:00Z'), ...over,
 });
 const query = (extra = {}) => ({ v: 1, scopes: {
   view: { holds: ['customer', 'region'], readings: { region: { picked: ['EMEA', 'APAC'] } } },
-  data: { holds: ['status', 'tier'], readings: { status: { picked: ['active'] } }, presets: { 'free-plan': false, gold: true } },
+  data: { holds: ['status', 'tier'], readings: { status: { picked: ['active'] }, tier: { picked: ['gold'] } } },
   ...extra,
 } });
 
@@ -52,7 +50,7 @@ const PLANS = {
 
 const readsOf = (plan) => new Set(Object.values(walkReads(plan)).flatMap((r) => [...r.tested, ...r.tallied]));
 
-test('walkReads names what each scope tests and tallies — an off saved filter is not among them', () => {
+test('walkReads names what each scope tests and tallies', () => {
   const on = walkReads(PLANS.limit);
   assert.deepEqual(on.view, { tested: ['region'], tallied: ['customer', 'region'] });
   assert.deepEqual({ tested: [...on.data.tested].sort(), tallied: [...on.data.tallied].sort() },
@@ -81,17 +79,4 @@ test('a change to a field the walk does not read leaves the walk as it is', () =
   // …and the check has teeth: a field it reads does move it.
   const moved = ROWS.map((r) => (r.id % 5 ? r : { ...r, region: 'LATAM' }));
   assert.notDeepEqual(walkInOrder(moved, PLANS.limit), walkInOrder(ROWS, PLANS.limit));
-});
-
-test('a saved filter that is off and counts nothing reads no row', () => {
-  let reads = 0;
-  const rows = ROWS.map((r) => {
-    const { plan, ...rest } = r;
-    return Object.defineProperty(rest, 'plan', { get: () => { reads++; return plan; }, enumerable: true });
-  });
-  walkInOrder(rows, PLANS.limit);
-  assert.equal(reads, 0);
-  // On, it does: each row the View leaves it.
-  walkInOrder(rows, planWalk(query({ data: { holds: ['status'], readings: {}, presets: { 'free-plan': true } } }), facts()));
-  assert.ok(reads > 100, `${reads} reads`);
 });

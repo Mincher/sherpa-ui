@@ -11,26 +11,6 @@ import { ArrayStore, DataSource } from '../../dist/data.js';
 
 const open = () => new DataSource({ store: new ArrayStore([{ id: 1, region: 'EMEA' }], { key: 'id' }), autoLoad: false });
 
-test('preset() reads back declarePreset, as a copy', () => {
-  const source = open();
-  source.declarePreset('emea', { region: { picked: ['EMEA'] } }, { label: 'EMEA' });
-  const got = source.preset('emea');
-  assert.deepEqual(got, { label: 'EMEA', readings: { region: { picked: ['EMEA'] } } });
-  got.readings.region.picked.push('AMER');
-  assert.deepEqual(source.preset('emea').readings.region.picked, ['EMEA']);
-  source.declarePreset('emea', undefined);
-  assert.equal(source.preset('emea'), undefined);
-});
-
-// Will, 319 A: the source keeps its OWN copy of what it is given.
-test('declarePreset keeps its own copy: the caller editing its object changes nothing', () => {
-  const source = open();
-  const given = { region: { picked: ['EMEA'] } };
-  source.declarePreset('emea', given, { label: 'EMEA' });
-  given.region.picked.push('AMER');
-  assert.deepEqual(source.preset('emea').readings.region.picked, ['EMEA']);
-});
-
 test('partFacts() reads back declarePart; `only` is the element itself', () => {
   const source = open();
   const chart = {};

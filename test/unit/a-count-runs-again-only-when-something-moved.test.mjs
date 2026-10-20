@@ -1,6 +1,6 @@
 /**
  * A chip's count runs again only when something it reads moved — the Query,
- * the rows, a saved filter — never for a sort, a page or a search. TODO 348 W1
+ * the rows, a scope's sets — never for a sort, a page or a search. TODO 348 W1
  * TRAP T-a-chip-counts-within-the-filters-before-it
  *
  *   node --test test/unit/a-count-runs-again-only-when-something-moved.test.mjs
@@ -57,14 +57,15 @@ test('a change to the rows counts again, though the Query is the same', async ()
   assert.deepEqual(drawn.at(-1), ['data', { status: 3 }]);
 });
 
-test('a saved filter whose readings change counts again', async () => {
+test('a scope\'s sets moving counts again: the order the chips count in is new', async () => {
   const { source, drawn } = await setup();
-  source.declarePreset('trials', { status: { picked: ['trial'] } }, { label: 'Trials' });
-  source.answer('data', { status: { picked: ['active'] } }, { trials: true });
+  source.offer('data', ['status', 'name']);
+  source.hold('data', ['status', 'name']);
+  source.answer('data', { status: { picked: ['active'] }, name: { picked: ['a', 'c'] } });
   await tick();
-  const was = drawn.at(-1)[1].trials;
-  // The Query is the same — `trials` is on — but what the saved filter reads is not.
-  source.declarePreset('trials', { status: { picked: ['active', 'trial'] } }, { label: 'Trials' });
+  assert.deepEqual(drawn.at(-1), ['data', { status: 2, name: 1 }]);
+  // The Query is the same; the set puts Name first.
+  source.declareSets('data', [{ id: 'who', fields: ['name', 'status'] }]);
   await tick();
-  assert.notEqual(drawn.at(-1)[1].trials, was);
+  assert.deepEqual(drawn.at(-1), ['data', { name: 2, status: 1 }]);
 });

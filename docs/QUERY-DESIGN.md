@@ -80,8 +80,6 @@ interface ScopeQuery {
   holds: FieldId[];
   /** Each held field's answer. The shape chips already report. */
   readings: Record<FieldId, FieldReading>;
-  /** Saved filters on this scope, on or off. Their readings stay in the library. */
-  presets?: Record<PresetId, boolean>;
   /** A component scope narrows only these bound components (see 42). */
   narrows?: BindId[];
   sort?: SortSpec[];
@@ -114,7 +112,6 @@ suspended }` — so every control already speaks it.
         "owner":  { "conditions": [{ "op": "contains", "text": "Da" }] },
         "email":  { "conditions": [{ "op": "contains", "text": "@" }], "suspended": true }
       },
-      "presets": { "at-risk": false },
       "sort": [{ "field": "name", "direction": "asc" }],
       "group": null,
       "page": { "size": 25, "index": 1 }
@@ -347,8 +344,9 @@ count that may only fall — 38's plan), so each step shows what it deleted.
 a bar must be drawn FROM the Query before a restore can draw it.
 
 - 4a–4e: the header answers the View scope; a bound `scope` draws the bars,
-  the open panel and the header (`drawReading`, `drawScope`); saved filters
-  are presets.
+  the open panel and the header (`drawReading`, `drawScope`). (Saved filters
+  were presets in the Query until 366; now a saved filter is a query definition
+  that loads into the field chips, and the Query names none.)
 - 3: the session keeps the Query, and `setQuery` restores it.
 - 5a: a legend is a scope that `narrows` its chart (`ownParts` gone).
 - 5b: a heading is a view of its field's reading, and wears the field's

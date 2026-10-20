@@ -15,7 +15,7 @@
 import { andFilter, readField, valueKey, type Filter, type Store } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import {
-  appliesIn, heldInView, narrowsOne, presetClauses, scopeClauses, VIEW, withoutDropped,
+  appliesIn, heldInView, narrowsOne, scopeClauses, VIEW, withoutDropped,
   type CompileFacts, type Query,
 } from './query.js';
 import { emptyWalk, holdsKey, type Walk, type WalkPlan, type WalkScope, type WalkStep, type WalkTap, type WalkTier } from './walk.js';
@@ -36,26 +36,27 @@ export async function presentUnder(
   return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
 }
 
-/** One answer in a scope's order: a saved filter, or a field. `above`: the View
- *  holds it; `chain`: its place in a serial set. */
-export type OrderEntry =
-  | { kind: 'preset'; id: string; on: boolean; known: boolean }
-  | { kind: 'field'; id: string; held: boolean; above: boolean; set?: string; chain?: 'top' | 'below' };
+/** One answer in a scope's order: a field. `above`: the View holds it; `chain`:
+ *  its place in a serial set. */
+export interface OrderEntry {
+  kind: 'field';
+  id: string;
+  held: boolean;
+  above: boolean;
+  set?: string;
+  chain?: 'top' | 'below';
+}
 
 /**
- * A scope's answers in the ONE order (Will, D2 A): its saved filters first, in
- * the order it keeps them; then the fields it holds, each set gathered where its
- * first held field stands, in the set's order; then a reading no chip holds.
- * TRAP T-one-walk-counts-and-limits-in-order
+ * A scope's answers in the ONE order (Will, D2 A): the fields it holds, each
+ * set gathered where its first held field stands, in the set's order; then a
+ * reading no chip holds. TRAP T-one-walk-counts-and-limits-in-order
  */
-export function answerOrder(
-  applied: Query, sets: readonly FilterSet[], presets: (id: string) => unknown, scope: string,
-): OrderEntry[] {
+export function answerOrder(applied: Query, sets: readonly FilterSet[], scope: string): OrderEntry[] {
   const q = applied.scopes[scope];
   if (!q) return [];
   const above = scope === VIEW ? new Set<string>() : heldInView(applied);
-  const out: OrderEntry[] = Object.entries(q.presets ?? {})
-    .map(([id, on]) => ({ kind: 'preset', id, on: !!on, known: !!presets(id) }));
+  const out: OrderEntry[] = [];
   const setOf = (f: string): FilterSet | undefined => sets.find((set) => set.fields.includes(f));
   const placed = new Set<string>();
   const place = (f: string, held: boolean): void => {
@@ -72,8 +73,7 @@ export function answerOrder(
   // A serial set's chain: its held fields the View does not hold, in the set's order.
   for (const set of sets) {
     if (set.mode !== 'serial') continue;
-    const chain = out.filter((e): e is Extract<OrderEntry, { kind: 'field' }> =>
-      e.kind === 'field' && e.held && !e.above && set.fields.includes(e.id));
+    const chain = out.filter((e) => e.held && !e.above && set.fields.includes(e.id));
     if (chain.length < 2) continue;
     chain.forEach((e, i) => { e.chain = i ? 'below' : 'top'; });
   }
@@ -88,8 +88,6 @@ export interface WalkFacts {
   isList: (f: string) => boolean;
   /** Is this reading a plain pick — Simple, no range, the default op? */
   plainPicks: (f: string, reading: FieldReading) => boolean;
-  /** A saved filter's readings, by id. */
-  presets: (id: string) => Readonly<Record<string, FieldReading>> | undefined;
   /** A scope's filter sets. */
   sets: (scope: string) => readonly FilterSet[];
   /** The fields a scope may hold. */
@@ -120,7 +118,7 @@ export interface WalkFacts {
 export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   const viewHolds = heldInView(applied);
   // An unknown saved filter is compile's to report; here it applies nothing.
-  const compiling: CompileFacts = { field: facts.field, preset: (id) => facts.presets(id) ?? {}, components: facts.components, fixed: facts.fixed };
+  const compiling: CompileFacts = { field: facts.field, components: facts.components, fixed: facts.fixed };
   const page: Filter[] = [];
   const others: string[] = [];
   for (const [id, scope] of Object.entries(applied.scopes)) {
@@ -137,14 +135,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   const stepsOf = (scope: string): WalkStep[] => {
     const q = applied.scopes[scope];
     const steps: WalkStep[] = [];
-    for (const e of answerOrder(applied, facts.sets(scope), facts.presets, scope)) {
-      if (e.kind === 'preset') {
-        const given = e.known ? facts.presets(e.id) : undefined;
-        const clause = given ? andFilter(presetClauses(given, facts.field)) : undefined;
-        // A saved filter counts only while it is on (166).
-        steps.push({ id: e.id, ...(clause ? { clause } : {}), on: e.on && !!clause, counts: e.on && !!clause });
-        continue;
-      }
+    for (const e of answerOrder(applied, facts.sets(scope), scope)) {
       const f = e.id;
       if (!appliesIn(viewHolds, scope, f, facts.fixed)) continue;
       const reading = q?.readings[f];

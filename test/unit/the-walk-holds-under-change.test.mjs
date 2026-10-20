@@ -29,11 +29,10 @@ const ticks = async (n = 8) => { for (let i = 0; i < n; i++) await sleep(0); };
 class Bar extends EventTarget {
   constructor(readings, chips) { super(); this.held = readings; this.chips = chips; this.drawn = []; }
   get readings() { return this.held; }
-  get presets() { return {}; }
   get heldFields() { return this.chips; }
   drawResults(r) { this.drawn.push(r); }
   drawScope() {} drawPresent() {} setAttribute() {} removeAttribute() {} toggleAttribute() {} populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: this.presets, holds: this.heldFields } })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
 }
 
 /** A remote store not held: its counts and tallies are requests, slow while told. */
@@ -183,7 +182,7 @@ test('asked step by step, tallies under one filter go as one request, and a fail
   store.distinct = (f, o) => { asked++; return distinct(f, o); };
   // Two held fields and a tap, nothing answered: all three under no filter.
   const plan = planWalk({ v: 1, scopes: { view: { holds: ['customer', 'region'], readings: {} } } }, {
-    field: () => ({}), isList: () => true, plainPicks: () => true, presets: () => undefined, sets: () => [],
+    field: () => ({}), isList: () => true, plainPicks: () => true, sets: () => [],
     fields: () => ['customer', 'region', 'status'], components: new Set(), fixed: new Set(), parts: [],
     narrowing: new Map(), limit: true, now: new Date(),
   });

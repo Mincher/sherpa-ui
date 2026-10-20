@@ -207,26 +207,24 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
          which values, which condition — and `apply()` is the ONE place a
          reading becomes a query; the control is never read.
          TRAP T-one-query-builder-in-the-data-layer */
-      const presets = (detail['presets'] ?? {}) as Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
       const holds = Array.isArray(detail['holds']) ? (detail['holds'] as string[]) : undefined;
       /* A control over SEVERAL scopes — the panel — reports the ONE field it
-         changed, in its scope, and its presets. TRAP T-the-panel-reports-its-own-reading */
+         changed, in its scope. TRAP T-the-panel-reports-its-own-reading */
       if (Array.isArray(bind?.scope)) {
         source.answerScopes(detail['readings'] as Record<string, Record<string, FieldReading>> | undefined);
         return;
       }
       const readings = (detail['readings'] as Record<string, FieldReading> | undefined) ?? pickedReadings(detail['values']);
-      /* A SCOPED bar answers in the Query: its saved filters are presets, on
-         or off, and their readings go to the library. TRAP T-one-query-one-owner */
+      // A SCOPED bar answers in the Query. TRAP T-one-query-one-owner
       if (typeof bind?.scope === 'string') {
         // Its filter Switch, from a bar that shows one. TRAP T-the-filter-switch-keeps-what-it-turned-off
         const suspended = typeof detail['suspended'] === 'boolean' ? { suspended: detail['suspended'] } : {};
         const reset = detail['reset'] === true ? { reset: true } : {};
-        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets, ...suspended, ...reset });
+        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, ...suspended, ...reset });
         return;
       }
-      // An unscoped bar's report is its whole answer, saved filters too.
-      source.answerUnscoped(el, readings, presets);
+      // An unscoped bar's report is its whole answer.
+      source.answerUnscoped(el, readings);
       return;
     }
     case 'filter-add':

@@ -38,12 +38,9 @@
  * - .contribution — One named part's filter, as `contribute` left it, or undefined.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
- * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
- * - .preset — What `declarePreset` was told for this id — its label and readings — or undefined.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
- * - .say — say(readings) — a saved filter in WORDS, field by field: the source knows each field's name, type and values.
- * - .answerScopes — The panel's answer: each field it changed, and each scope's presets.
- * - .release — A scope lets ONE go — a field or a preset.
+ * - .answerScopes — The panel's answer: each field it changed.
+ * - .release — A scope lets ONE field go.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
@@ -113,7 +110,6 @@ import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
 import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
-import { sayReadings, type SaidField } from './filter-face.js';
 import {
   answerOf, compile, eachScope, emptyScope, filterKey, readingAnswered, sameReading, VIEW,
   type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
@@ -199,9 +195,6 @@ export class DataSource extends EventTarget {
    * is a copy, and `commit()` sends it. TRAP T-apply-and-discard-wait-for-a-change
    */
   #draft: Query = this.#applied;
-  /** Each saved filter's readings, by id. A scope says only whether one is ON.
-   *  TRAP T-a-saved-filter-is-its-readings */
-  #presets = new Map<string, Readonly<Record<string, FieldReading>>>();
   /** The last compile, so a load does not redo it. Written by `#recompose` — and
    *  by `setFilter`/`setState`, whose whole filter has no readings until step 7. */
   #filter: Filter | undefined;
@@ -213,8 +206,6 @@ export class DataSource extends EventTarget {
   #scoped: Record<string, Filter> = {};
   /** What each field IS: its kind, label and values. TRAP T-the-field-type-decides-the-clause */
   readonly #catalogue = new FieldCatalogue();
-  /** Each preset's name, and whether the reader may edit it. */
-  #presetFacts = new Map<string, { label?: string }>();
   /** Each component's OWN default filter, by its scope — put back under any
    *  Query that does not name that scope. TRAP T-a-component-default-outlives-a-view */
   #defaults = new Map<string, ScopeQuery>();
@@ -299,8 +290,8 @@ export class DataSource extends EventTarget {
     return structuredClone({ applied: this.#applied, draft: this.#draft });
   }
 
-  /** This source's whole question as JSON — the Query as applied, how its rows
-   *  are arranged, and the saved filters it names. TRAP T-a-page-goes-out-as-json */
+  /** This source's whole question as JSON — the Query as applied, and how its
+   *  rows are arranged. TRAP T-a-page-goes-out-as-json */
   export(): SourceState {
     const query = structuredClone(this.#applied);
     const { sort, group, search } = this.#state;
@@ -308,24 +299,14 @@ export class DataSource extends EventTarget {
     const by = this.#arrangedIn() ?? VIEW;
     query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), search };
     query.scopes[by] = { ...(query.scopes[by] ?? emptyScope()), sort: structuredClone(sort), group };
-    const presets: SourceState['presets'] = {};
-    for (const scope of Object.values(query.scopes)) {
-      for (const id of Object.keys(scope.presets ?? {})) {
-        const preset = this.preset(id);
-        if (preset) presets[id] = preset;
-      }
-    }
-    return { v: 1, query, presets };
+    return { v: 1, query };
   }
 
-  /** Take a question back in, exactly: its saved filters, then its Query. */
+  /** Take a question back in, exactly. */
   async import(state: SourceState): Promise<void> {
     if (state?.v !== 1) {
       report({ code: 'unknown-state', message: 'import: not a v1 source state, so nothing was taken in.' });
       return;
-    }
-    for (const [id, { readings, ...facts }] of Object.entries(state.presets ?? {})) {
-      this.declarePreset(id, readings, facts);
     }
     await this.setQuery(state.query);
   }
@@ -361,15 +342,14 @@ export class DataSource extends EventTarget {
   }
 
   /** Is there anything a Reset would clear — in one scope, or any: a reading
-   *  that filters, a saved filter on, or the rows arranged? TODO 231 */
+   *  that filters, or the rows arranged? TODO 231 */
   answered(scope?: string): boolean {
     const { sort, group, sortSuspended } = this.#state;
     if ((sort.length && !sortSuspended) || group) return true;
     const facts = this.#compileFacts();
     return (scope ? [scope] : Object.keys(this.#applied.scopes)).some((id) => {
       const at = this.#applied.scopes[id];
-      return !!at && (Object.values(at.presets ?? {}).some(Boolean)
-        || Object.entries(at.readings).some(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading)));
+      return !!at && Object.entries(at.readings).some(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading));
     });
   }
 
@@ -703,57 +683,16 @@ export class DataSource extends EventTarget {
    * cleared. A field raised to another scope is not this one's to clear.
    * TRAP T-a-filter-report-is-the-whole-answer · TRAP T-one-query-one-owner
    */
-  answer(
-    scope: string,
-    readings: Readonly<Record<string, FieldReading>>,
-    presets?: Readonly<Record<string, boolean>>,
-  ): void {
+  answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
     const was = Object.keys(this.#draft.scopes[scope]?.readings ?? {});
     for (const field of was) if (!(field in readings)) this.select(field, []);
     this.apply(readings);
-    if (!presets) return;
-    const before = JSON.stringify(this.#draft.scopes[scope]?.presets ?? {});
-    // The saved filters it holds, on or off — the whole set. TRAP T-a-saved-filter-is-its-readings
-    if (Object.keys(presets).length) scopeEntry(this.#draft, scope).presets = { ...presets };
-    else if (this.#draft.scopes[scope]) delete this.#draft.scopes[scope]!.presets;
-    prune(this.#draft);
-    this.#recompose();
-    if (JSON.stringify(this.#draft.scopes[scope]?.presets ?? {}) !== before) this.#binding.drawScopesSoon();
-  }
-
-  /** A saved filter's readings, by id — the library a preset that is ON
-   *  compiles from. `undefined` forgets one. TRAP T-a-saved-filter-is-its-readings */
-  declarePreset(
-    id: string,
-    readings: Readonly<Record<string, FieldReading>> | undefined,
-    facts: { label?: string } = {},
-  ): void {
-    this.#age++;
-    if (readings) {
-      // Its OWN copy: a caller that edits its object later changes nothing here (Will, 319 A).
-      this.#presets.set(id, structuredClone(readings));
-      this.#presetFacts.set(id, { ...this.#presetFacts.get(id), ...facts });
-    } else {
-      this.#presets.delete(id);
-      this.#presetFacts.delete(id);
-    }
-    this.#recompose();
-    this.#binding.drawScopesSoon();
-  }
-
-  /** What `declarePreset` was told for this id — its label and readings — or
-   *  undefined. A copy, in the shape `export()` sends and `import()` takes. */
-  preset(id: string): SourceState['presets'][string] | undefined {
-    const readings = this.#presets.get(id);
-    return readings ? { ...this.#presetFacts.get(id), readings: structuredClone(readings) as Record<string, FieldReading> } : undefined;
   }
 
   /**
-   * One scope as a control draws it WHOLE: each preset and field it holds —
-   * a field held ABOVE keeps its place and says where it went — what it may
-   * add, and, below the View, how its rows are arranged. READ-ONLY: a saved
-   * filter's readings are the source's own, not copied for each draw (319).
-   * TRAP T-a-panel-asks-for-its-scopes
+   * One scope as a control draws it WHOLE: each field it holds — a field held
+   * ABOVE keeps its place and says where it went — what it may add, and, below
+   * the View, how its rows are arranged. TRAP T-a-panel-asks-for-its-scopes
    */
   describe(scope: string): ScopeDescription {
     const q = this.#draft.scopes[scope] ?? emptyScope();
@@ -774,18 +713,10 @@ export class DataSource extends EventTarget {
         }] : [],
       };
     }
-    const presets: HeldFilter[] = Object.entries(q.presets ?? {}).map(([id, on]) => {
-      const facts = this.#presetFacts.get(id) ?? {};
-      return {
-        id, label: facts.label ?? id, readings: this.#presets.get(id) ?? {}, active: on, removable: true,
-        says: this.#says(id),
-      };
-    });
     /* EVERY field it holds, declared or not: one left out still filters. In the
        ONE order — each set together (D2 A). TRAP T-a-broken-assumption-reports
        TRAP T-one-walk-counts-and-limits-in-order */
-    const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], (id) => this.#presets.get(id), scope)
-      .flatMap((e) => (e.kind === 'field' && e.held ? [e.id] : []));
+    const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], scope).flatMap((e) => (e.held ? [e.id] : []));
     const fields: HeldFilter[] = held.map((f) => {
       const reading = q.readings[f];
       const down = scope === VIEW ? this.#sendTo(f) : undefined;
@@ -801,17 +732,12 @@ export class DataSource extends EventTarget {
         } } : {}),
       };
     });
-    // Below the View, a saved filter it does not hold is offered too.
-    const offered = scope === VIEW ? [] : [...this.#presetFacts.keys()]
-      .filter((id) => !(id in (q.presets ?? {})))
-      .map((id) => ({ id, label: this.#presetFacts.get(id)?.label ?? id,
-        readings: this.#presets.get(id) ?? {}, says: this.#says(id) }));
     const shows = scope === VIEW ? 'view'
       : this.#binding.showsOf(scope);
     const sets = this.sets(scope);
     const out: ScopeDescription = {
-      scope, label: this.scopeLabel(scope), ...(shows ? { shows } : {}), filters: [...presets, ...fields],
-      available: [...this.addable(scope), ...offered], ...(sets.length ? { sets } : {}),
+      scope, label: this.scopeLabel(scope), ...(shows ? { shows } : {}), filters: fields,
+      available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };
     /* HOW its rows are arranged — only in a scope that arranges, and its own
@@ -832,35 +758,10 @@ export class DataSource extends EventTarget {
     return out;
   }
 
-  /** say(readings) — a saved filter in WORDS, field by field: the source knows
-   *  each field's name, type and values. TRAP T-a-saved-chip-lists-its-conditions */
-  say(readings: Readonly<Record<string, FieldReading>>): SaidField[] {
-    return sayReadings(readings, (field) => this.#catalogue.facts(field));
-  }
-
-  /** A preset it holds, in words. */
-  #says(id: string): SaidField[] {
-    return this.say(this.#presets.get(id) ?? {});
-  }
-
-  /** Switch a scope's presets: the ids given are ON, the rest it holds OFF. */
-  #setPresets(scope: string, on: readonly string[]): void {
-    const entry = scopeEntry(this.#draft, scope);
-    entry.presets = Object.fromEntries(Object.keys(entry.presets ?? {}).map((id) => [id, on.includes(id)]));
-    this.#recompose();
-  }
-
-  /** The panel's answer: each field it changed, and each scope's presets. A
-   *  preset switch is an Apply, as a bar's report is. */
+  /** The panel's answer: each field it changed. */
   answerScopes(readings: Record<string, Record<string, FieldReading>> | undefined): void {
-    const switched: string[] = [];
     for (const [scope, fields] of Object.entries(readings ?? {})) {
       for (const [id, reading] of Object.entries(fields)) {
-        if (id === 'presets') {
-          this.#setPresets(scope, (reading.picked ?? []).map(String));
-          switched.push(scope);
-          continue;
-        }
         // A chart's own field narrows that chart alone. TRAP T-a-chart-scope-is-its-legend-field
         if (this.#narrowing.has(scope)) {
           this.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
@@ -869,25 +770,12 @@ export class DataSource extends EventTarget {
         this.select(id, reading.picked ?? [], reading);
       }
     }
-    /* THE BARS LAST, once every field is in. A bar draws a COPY of its scope a
-       moment later: drawn mid-way through a Reset, it put back the fields the
-       rest of that report then cleared. TRAP T-a-bar-is-drawn-the-scope-as-it-ends */
-    for (const scope of switched) this.#binding.drawBars(scope);
-    if (switched.length) this.commit();
   }
 
-  /** A scope TAKES fields and presets: a field is held, and a saved filter
-   *  comes ON — it is answered already. */
+  /** A scope TAKES fields: each is held. */
   #take(scope: string, ids: readonly string[]): void {
-    const presets = ids.filter((id) => this.#presets.has(id));
-    const fields = ids.filter((id) => !this.#presets.has(id) && !this.holds(scope, id));
+    const fields = ids.filter((id) => !this.holds(scope, id));
     if (fields.length) this.hold(scope, [...this.scope(scope), ...fields]);
-    if (presets.length) {
-      const entry = scopeEntry(this.#draft, scope);
-      entry.presets = { ...entry.presets, ...Object.fromEntries(presets.map((id) => [id, true])) };
-      this.#recompose();
-      this.#binding.drawScopesSoon();
-    }
     this.#binding.drawBars(scope);
   }
 
@@ -938,17 +826,9 @@ export class DataSource extends EventTarget {
     if (!part) this.#binding.drawBars(to);
   }
 
-  /** A scope lets ONE go — a field or a preset. */
+  /** A scope lets ONE field go. */
   release(scope: string, id: string): void {
-    const entry = this.#draft.scopes[scope];
-    if (entry?.presets && id in entry.presets) {
-      Reflect.deleteProperty(entry.presets, id);
-      prune(this.#draft);
-      this.#recompose();
-      this.#binding.drawScopesSoon();
-    } else {
-      this.hold(scope, this.scope(scope).filter((f) => f !== id));
-    }
+    this.hold(scope, this.scope(scope).filter((f) => f !== id));
     this.#binding.drawBars(scope);
   }
 
@@ -1086,6 +966,9 @@ export class DataSource extends EventTarget {
         return false;
       }),
     })));
+    // The order every chip counts in moved: count, and draw, again.
+    if (this.#loaded) this.#walkSoon();
+    this.#binding.drawScopesSoon();
   }
 
   /** A scope's filter sets, as declared. */
@@ -1214,8 +1097,8 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * A bar's filter Switch. OFF stops every answer and saved filter in force in
-   * this scope, keeping each; ON brings back exactly those. While it is off,
+   * A bar's filter Switch. OFF stops every answer in force in this scope,
+   * keeping each; ON brings back exactly those. While it is off,
    * nothing comes into force there. TRAP T-the-filter-switch-keeps-what-it-turned-off
    */
   suspendScope(scope: string, suspended = true): void {
@@ -1223,7 +1106,7 @@ export class DataSource extends EventTarget {
     const entry = scopeEntry(this.#draft, scope);
     let fields: string[];
     if (suspended) {
-      entry.suspended = { fields: [], presets: [] };
+      entry.suspended = { fields: [] };
       this.#recompose();
       fields = [...entry.suspended.fields];
     } else {
@@ -1234,7 +1117,6 @@ export class DataSource extends EventTarget {
         const { suspended: _off, ...on } = entry.readings[f]!;
         entry.readings[f] = on;
       }
-      for (const id of off.presets) if (entry.presets && id in entry.presets) entry.presets[id] = true;
       prune(this.#draft);
       this.#recompose();
     }
@@ -1428,7 +1310,6 @@ export class DataSource extends EventTarget {
       query: structuredClone(this.#applied),
       // …and what the reader is editing, where it differs. TRAP T-apply-and-discard-wait-for-a-change
       ...(this.#remote ? { draft: structuredClone(this.#draft), dirty: this.dirty() } : {}),
-      presets: [...this.#presets.keys()],
       selections: Object.fromEntries(this.selectedFields.map((f) => [f, this.selection(f)])),
       parts: Object.fromEntries(this.#parts),
       // …and what narrows ONE component alone, by bind id.
@@ -1490,7 +1371,6 @@ export class DataSource extends EventTarget {
   #compileFacts(): CompileFacts {
     return {
       field: (f) => this.#catalogue.facts(f),
-      preset: (id) => this.#presets.get(id),
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
       drop: (scope, field) => this.#setAside.get(scope)?.[field],
@@ -2027,7 +1907,6 @@ export class DataSource extends EventTarget {
         const state = this.#catalogue.stateFor(f, reading);
         return state.mode === 'simple' && !state.range && state.op === DEFAULT_OP;
       },
-      presets: (id) => this.#presets.get(id),
       sets: (scope) => this.#sets.get(scope) ?? [],
       fields: (scope) => this.fields(scope),
       components: this.#binding.componentScopes(),
@@ -2301,35 +2180,24 @@ export class DataSource extends EventTarget {
 
   /* ── What a control asks, by name — what the steering calls ─────────── */
 
-  /** A scoped bar's whole answer: what it holds, each field's reading, and its
-   *  saved filters on or off. It is its Apply. The library is the SOURCE's: a
-   *  report only teaches it a saved filter it has never heard of.
-   *  TRAP T-a-bar-reports-its-holds · TRAP T-one-query-one-owner */
+  /** A scoped bar's whole answer: what it holds, and each field's reading. It
+   *  is its Apply. TRAP T-a-bar-reports-its-holds · TRAP T-one-query-one-owner */
   answerScope(scope: string, answer: {
     holds?: readonly string[];
     readings: Record<string, FieldReading>;
-    presets?: Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
     /** Its filter Switch is off — only from a bar that shows one. */
     suspended?: boolean;
     /** A Reset: what the Switch turned off is forgotten, not brought back. */
     reset?: boolean;
   }): void {
     const off = this.#draft.scopes[scope]?.suspended;
-    if (answer.reset && off) this.#draft.scopes[scope]!.suspended = { fields: [], presets: [] };
+    if (answer.reset && off) this.#draft.scopes[scope]!.suspended = { fields: [] };
     if (answer.holds) this.hold(scope, [...answer.holds]);
-    const presets = answer.presets ?? {};
-    for (const [id, p] of Object.entries(presets)) if (!this.#presets.has(id)) this.declarePreset(id, p.readings);
-    this.answer(scope, answer.readings, Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
+    this.answer(scope, answer.readings);
     // The answer first, then the Switch: OFF lists what that answer has in force.
     if (answer.suspended !== undefined) this.suspendScope(scope, answer.suspended);
     // A bar's report IS its Apply: its menus waited for it, remote.
     this.commit();
-    // A saved filter it turned on, into a scope ALREADY off, was turned off: draw
-    // that. A Switch turned off just now has drawn its bars.
-    const now = this.#draft.scopes[scope];
-    if (off && now?.suspended && Object.entries(presets).some(([id, p]) => p.on && !now.presets?.[id])) {
-      this.#binding.drawBars(scope);
-    }
   }
 
   /** A HEADING's answer is its field's, in its grid's scope — and a field no
@@ -2344,23 +2212,13 @@ export class DataSource extends EventTarget {
     if (fresh) this.#binding.drawBars(scope);
   }
 
-  /** An UNSCOPED bar's whole answer: a field it answered before and names no longer
-   *  is cleared (its own only), and each saved filter it has on is one part of its own.
-   *  TRAP T-a-filter-report-is-the-whole-answer · TRAP T-a-saved-filter-is-its-readings */
-  answerUnscoped(
-    by: BoundControl,
-    readings: Readonly<Record<string, FieldReading>>,
-    presets: Readonly<Record<string, { on: boolean; readings: Record<string, FieldReading> }>> = {},
-  ): void {
+  /** An UNSCOPED bar's whole answer: a field it answered before and names no
+   *  longer is cleared (its own only). TRAP T-a-filter-report-is-the-whole-answer */
+  answerUnscoped(by: BoundControl, readings: Readonly<Record<string, FieldReading>>): void {
     const bind = this.#binding.get(by);
     for (const field of bind?.answered ?? []) if (!(field in readings)) this.select(field, []);
     if (bind) bind.answered = new Set(Object.keys(readings));
     this.apply(readings);
-    const on = Object.entries(presets).filter(([, p]) => p.on);
-    const parts = new Set(on.map(([id]) => `saved:${id}`));
-    for (const key of bind?.saved ?? []) if (!parts.has(key)) this.contribute(key, undefined);
-    for (const [id, p] of on) this.apply(p.readings, { reach: 'component', key: `saved:${id}` });
-    if (bind) bind.saved = parts;
   }
 
   /** Move fields into a scope — sent DOWN from the View to the one scope

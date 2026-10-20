@@ -232,15 +232,9 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
   source.suspendSelection('region');
   assert.deepEqual(await source.results('view'), { region: 2 });
   assert.deepEqual(await source.results('data'), { status: 3 });
-  // A SAVED filter is counted only while it is ON. Will, TODO 166.
-  source.declarePreset('shut', { status: { picked: ['shut'] } }, { label: 'Shut' });
-  source.answer('data', { status: { picked: ['open'] } }, { shut: false });
-  assert.deepEqual(await source.results('data'), { status: 3 });
   // EMPTIED, a field has no number.
   source.select('status', []);
   assert.deepEqual(await source.results('data'), {});
-  source.answer('data', {}, { shut: true });
-  assert.deepEqual(await source.results('data'), { shut: 1 });
 });
 
 test('a carry-over field keeps its answer through a View change; any other resets', async () => {

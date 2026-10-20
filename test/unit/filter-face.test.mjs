@@ -71,7 +71,7 @@ test('chained rows: the face shows each row\'s VALUES, and the words keep the co
    show a menu with the conditions applied." The words are made HERE, once.
    TRAP T-a-saved-chip-lists-its-conditions */
 test('a saved filter reads a line per condition, under each field\'s own name', async () => {
-  const { conditionLines, sayReadings, ArrayStore, DataSource } = await import('../../dist/data.js');
+  const { conditionLines, sayReadings } = await import('../../dist/data.js');
   const lines = (facts, reading) => conditionLines(fieldState({ field: 'f', ...facts }, reading));
 
   assert.deepEqual(lines({ type: 'number' }, { op: 'lt', text: '60' }), ['Less than 60']);
@@ -93,17 +93,4 @@ test('a saved filter reads a line per condition, under each field\'s own name', 
     { field: 'health', label: 'Health', lines: ['Less than 60'] },
     { field: 'owner', label: 'owner', lines: ['Equals Unassigned'] },
   ]);
-
-  // The SOURCE says it with what it knows of each field — a held preset and an offered one.
-  const source = new DataSource({ store: new ArrayStore([{ id: 1, health: 40, owner: 'Dana' }], { key: 'id' }) });
-  source.declareField('health', { type: 'number', label: 'Health' });
-  source.declareField('owner', { label: 'Owner' });
-  source.declareScope('data', { label: 'Records' });
-  source.declarePreset('risky', readings, { label: 'Risky and unowned' });
-  const said = [
-    { field: 'health', label: 'Health', lines: ['Less than 60'] },
-    { field: 'owner', label: 'Owner', lines: ['Equals Unassigned'] },
-  ];
-  assert.deepEqual(source.say(readings), said);
-  assert.deepEqual(source.describe('data').available.find((f) => f.id === 'risky').says, said);
 });

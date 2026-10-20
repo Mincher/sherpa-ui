@@ -84,16 +84,6 @@ test('a scope that NARROWS one component reaches it alone', () => {
   assert.deepEqual(ids(c.only['r-bar']), [2]);
 });
 
-test('a preset that is ON applies its saved readings; one that is off, nothing', () => {
-  const q = { v: 1, scopes: { grid: { holds: [], readings: {}, presets: { 'at-risk': true, 'mine': false } } } };
-  const presets = { 'at-risk': { health: { op: 'lt', text: '60' } }, mine: { owner: { picked: ['Ravi Menon'] } } };
-  const c = compile(q, {
-    preset: (id) => presets[id],
-    field: (f) => (f === 'health' ? { type: 'number' } : {}),
-  });
-  assert.deepEqual(ids(c.filter), [1, 4, 5]);
-});
-
 test('an empty Query filters nothing and arranges nothing', () => {
   assert.deepEqual(compile({ v: 1, scopes: {} }), { scoped: {}, only: {}, sort: [], group: null, search: '' });
 });
@@ -217,26 +207,6 @@ test('a control bound over SEVERAL scopes — the panel — is drawn each, told 
   src.select('status', ['active']);
   src.select('region', ['EMEA']);
   assert.deepEqual(drawn, [['status', 'grid'], ['region', VIEW]]);
-});
-
-test('a scoped bar\'s saved filters are PRESETS in the Query — on or off, readings in the library', async () => {
-  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.declareField('health', { type: 'number' });
-  const presets = { 'at-risk': { on: true, readings: { health: { op: 'lt', text: '60' } } } };
-  const bar = Object.assign(new EventTarget(), {
-    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
-  });
-  bindSource(src, bar, { steerOnly: true, scope: 'grid' });
-  const report = () => bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: {}, presets } }));
-  report();
-  assert.deepEqual(src.query.applied.scopes.grid.presets, { 'at-risk': true });
-  assert.deepEqual(ids(src.state.filter), [1, 4, 5]);
-  assert.deepEqual(src.contributions, [], 'no compiled part');
-  // OFF keeps it held, and filters nothing.
-  presets['at-risk'].on = false;
-  report();
-  assert.deepEqual(src.query.applied.scopes.grid.presets, { 'at-risk': false });
-  assert.equal(src.state.filter, undefined);
 });
 
 test('setQuery restores the WHOLE Query and draws each bound scope — nothing replays a control', async () => {

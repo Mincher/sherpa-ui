@@ -1138,18 +1138,6 @@ source's answer is drawn into that chip: its days, and whether it is on.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
-### T-a-bar-is-drawn-the-scope-as-it-ends
-
-**A bar is drawn a COPY of its scope, a moment later** — `drawScope` waits for
-its chips to settle. So it must be asked for AFTER the last write of a report.
-The panel's whole report — a Reset — names `presets` first, and the source
-drew the bars there, mid-loop: the copy still held Status and Seats, the loop
-then cleared them, and two frames on the bar put them back, silently. The
-Query was empty and the toolbar said otherwise. `#answerScopes` draws the
-bars once, at the end.
-
-- Site: `src/core/data/data-source.ts`
-
 ### T-the-router-owns-the-url
 
 **`sherpa-router` is the ONE owner of the URL, on the Navigation API** — TODO
@@ -1825,17 +1813,16 @@ scopes and preceding filters will affect this"*, and *"the above also goes for
 viable field and value options in menus"*; the View first, a component scope
 within it. Rulings D1–D5 A, Q1 A, Q2 A (`docs/history/plan-347-349-walk.md`).
 
-**One order** (`answerOrder`): a scope's saved filters first, in the order it
-keeps them; then the fields it holds, each filter set gathered where its first
-held field stands; then a reading no chip holds. A serial set's held fields that
+**One order** (`answerOrder`): the fields a scope holds, each filter set
+gathered where its first held field stands; then a reading no chip holds. A
+saved filter is no step: taken, it is the field chips it fills (366). A serial set's held fields that
 the View does not hold are its chain: the first is its top, the rest below.
 
 **One plan** (`planWalk`), from the APPLIED Query: the View first, from every row,
 behind a base step of the parts (`contribute`) and the page's own scopes; then
 each other scope from the View's end; then each chart part from its host's. A
 step counts the rows that REACH it and match its answer — OFF counts and narrows
-nothing (123); a saved filter counts only while ON (166); each plain pick counts
-its own (172). A list field is RULED — what greys it and sets its picks aside —
+nothing (123); each plain pick counts its own (172). A list field is RULED — what greys it and sets its picks aside —
 by the rows at its place with Limit on; with Limit off, a component scope's by
 the View's end (347), the View's by nothing (D5 A). A chain's lower field offers
 only what the rows at its place hold, once anything before it narrows (Q2 A). A
@@ -1868,8 +1855,7 @@ to declare its fields are the walk's too (IndexedDB has no `scan`). Asked step
 by step, the tallies one filter shares are ONE request, the requests go
 together, and a failure fails the walk with no rejection unheard.
 
-**A step tests a row only while it is on or counts** (345 phase 3). A saved
-filter that is off counts nothing, so it reads no row. `walkReads(plan)` names
+**A step tests a row only while it is on or counts** (345 phase 3). `walkReads(plan)` names
 the fields each scope tests and tallies: a change to any other field leaves the
 walk as it is (`test/unit/a-walk-reads-only-what-it-names.test.mjs`, over Limit
 on and off, a part, a hand filter, a chart part and a component's own scope).
@@ -1885,8 +1871,7 @@ unless its customer is — the loose side, as a recheck must be
 
 **The controls draw the same order.** `describe()` gives a scope's filters in it,
 and a bar's `drawScope` puts its chips in it — the View chip and a chip that
-answers no field stay first — and draws a saved filter the panel added. A saved
-filter added on the bar lands after the other saved filters; a field at the end.
+answers no field stay first; a field added lands at the end.
 
 - Site: `src/core/data/walk.ts`
 - Site: `src/core/data/source-counts.ts`
@@ -4134,15 +4119,15 @@ reasons, so a bar shows it only with `data-switchable` (Will, TODO 338). OFF
 stops every filter in the bar at once and keeps each one's value; ON brings back
 exactly the ones it stopped.
 
-**The Query owns it**, not the bar: `ScopeQuery.suspended` lists the fields and
-saved filters the Switch turned off. Its presence IS "off". One flag would not
+**The Query owns it**, not the bar: `ScopeQuery.suspended` lists the fields the
+Switch turned off. Its presence IS "off". One flag would not
 do: a chip that was already off before the Switch must stay off after it, so the
 Switch has to remember which ones IT turned off. The bar never works the Switch
 out from its chips.
 
 **While a scope is off, nothing comes into force there.** `keepOff()` runs in
-every recompose: an answer or a saved filter in force in an off scope is turned
-off and added to the list. That one rule closes every race — a late report, a
+every recompose: an answer in force in an off scope is turned off and added to
+the list. That one rule closes every race — a late report, a
 heading pick, a View that names a field — so no reader needs a second check. The
 bar greys its chips and makes them inert while off: only the Switch turns them
 back on.
@@ -4153,9 +4138,8 @@ back on.
 - A scope switched off stays, even with nothing in it: `prune()` keeps it.
 - Reset, a saved filter set and a new View replace the scope, so the Switch
   comes back on. A Reset report says `reset`: the source FORGETS the list —
-  bringing it back would turn the saved filters it stopped on again, as a
-  Reset's `on: false` looks the same as the Switch's. The session and a saved
-  View keep it.
+  bringing it back would turn on again what the Reset cleared. The session and
+  a saved View keep it.
 - A listed field that LEAVES the scope — raised to the View, moved — leaves the
   Switch: it is on again where it went, or listed there if that scope is off.
 - A bound bar (`data-locked`) never turns its own chips: its report goes to the
@@ -14909,20 +14893,6 @@ words.
 - Site: `test/e2e/reforged-num-coercion.spec.ts`
 - Site: `test/e2e/reforged-metric.spec.ts`
 
-### T-a-view-keeps-the-saved-filter-chips
-
-A View pick (`setQuery(query, { holds: 'keep' })`) keeps the chips a scope
-holds that the View does not name. It kept the FIELD chips and not the SAVED
-filters: a View's scope replaced `presets` whole, so a View that named none —
-"All customers" — took every saved filter chip off the bar, and "Reset to
-default", which picks the View again, did the same. A page showed three saved
-filters at rest and none after the first View pick.
-
-Each saved filter a scope holds stays on its bar, OFF unless the View turns
-it on.
-
-- Site: `src/core/data/query-edits.ts`
-
 ### T-a-saved-chip-lists-its-conditions
 
 **Every saved filter's chip has a menu, and the menu LISTS its conditions** —
@@ -14963,7 +14933,6 @@ actions and no words.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
@@ -15007,11 +14976,9 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
-- Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
 - Site: `src/core/ui/filter-def.ts`
 
 ### T-saved-filters-are-every-scope
@@ -15073,6 +15040,7 @@ reader's set under a page id is the reader's.
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
 
 ### T-saved-filters-are-the-last-section
 
@@ -17993,7 +17961,6 @@ dropped reads "contains an" as nothing.
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
-- Site: `test/unit/a-bar-report-never-rewrites-a-saved-filter.test.mjs`
 
 ### T-the-data-says-what-a-field-may-hold
 

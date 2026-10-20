@@ -267,7 +267,7 @@ Each thing you tell a source, you can ask back — one door each:
 | `hold(scope, fields)` | `scope(scope)` — the fields it holds; `scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
 | `declareField` · `declareValues` · `declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `sets(scope)` |
 | `declareScope` | `scopeFacts(scope)`; `scopeLabel()` and `arranges()` add their fallbacks |
-| `declarePreset` · `declarePart` · `declareDefault` | `preset(id)` · `partFacts(scope)` · `defaultFor(scope)` |
+| `declarePart` · `declareDefault` | `partFacts(scope)` · `defaultFor(scope)` |
 | `contribute(key, filter)` | `contribution(key)`; `contributions` — every key |
 | `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
 

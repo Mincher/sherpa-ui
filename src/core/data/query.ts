@@ -23,7 +23,6 @@
  * - narrowsOne — Does this scope narrow only the components it names?
  * - eachScope — Each scope that answers for the page, by id, as a copy.
  * - heldInView — The fields the View holds, which are answered there alone.
- * - presetClauses — A saved filter's readings as clauses.
  * - answerOf — The ANSWER keys of a reading only, not its label or the values it offers.
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
  * - sameReading — Do two readings give the same answer? Only the answer keys count.
@@ -52,17 +51,15 @@ export interface ScopeQuery {
   /** Each field's answer — the shape every filter control reports. The View's
    *  may answer a field no bar holds: a legend, or a column heading. */
   readings: Record<string, FieldReading>;
-  /** Saved filters on this scope, on or off. Their readings live in the library. */
-  presets?: Record<string, boolean>;
   /** The ONLY bound components this scope narrows — a legend's own chart.
    *  Absent, it narrows every one. TRAP T-a-component-part-narrows-one-component */
   narrows?: string[];
   /** The View's only: the scope each field it holds came UP from, so "Return to"
    *  outlives a reload. TODO 235 · TRAP T-send-to-view-filters */
   from?: Record<string, string>;
-  /** Its bar's filter Switch is OFF: the fields and saved filters it switched
-   *  off, so ON brings back exactly those. TRAP T-the-filter-switch-keeps-what-it-turned-off */
-  suspended?: { fields: string[]; presets: string[] };
+  /** Its bar's filter Switch is OFF: the fields it switched off, so ON brings
+   *  back exactly those. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+  suspended?: { fields: string[] };
   /** How this scope arranges its rows. One scope on a source says it. */
   sort?: SortSpec[];
   group?: string | null;
@@ -105,8 +102,6 @@ export interface ViewScope extends Partial<Omit<ScopeQuery, 'readings'>> {
 export interface CompileFacts {
   /** A field's facts — its type, label and values — as `fieldState` takes them. */
   field?: (field: string) => Omit<FieldFacts, 'field'>;
-  /** A saved filter's readings, by its id. */
-  preset?: (id: string) => Readonly<Record<string, FieldReading>> | undefined;
   /** The scopes a COMPONENT answers. One no component answers is the page's,
    *  and trickles down with the View. Absent: every scope but the View is a
    *  component's. TRAP T-only-the-view-trickles-down */
@@ -165,19 +160,6 @@ export function heldInView(query: Query): ReadonlySet<string> {
   return new Set(query.scopes[VIEW]?.holds ?? []);
 }
 
-/** A saved filter's readings as clauses. A reading that answers nothing gives none. */
-export function presetClauses(
-  readings: Readonly<Record<string, FieldReading>>,
-  field?: CompileFacts['field'],
-): Filter[] {
-  const out: Filter[] = [];
-  for (const [f, reading] of Object.entries(readings)) {
-    const clause = readingClause({ field: f, ...field?.(f) }, reading);
-    if (clause) out.push(clause);
-  }
-  return out;
-}
-
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
   picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0,
@@ -221,27 +203,13 @@ export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: 
   return scope === VIEW || !viewHolds.has(field) || !!fixed?.has(scope);
 }
 
-/** One scope's clauses: each reading that applies and is not suspended, and each
- *  saved filter that is on. One on with no readings is reported, and applies nothing. */
+/** One scope's clauses: each reading that applies and is not suspended. */
 export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlySet<string>, facts: CompileFacts = {}): Filter[] {
   const clauses: Filter[] = [];
   for (const [field, reading] of Object.entries(scope.readings)) {
     if (!appliesIn(viewHolds, id, field, facts.fixed) || reading.suspended) continue;
     const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
     if (clause) clauses.push(clause);
-  }
-  for (const [preset, on] of Object.entries(scope.presets ?? {})) {
-    if (!on) continue;
-    const given = facts.preset?.(preset);
-    if (!given) {
-      report({
-        code: 'unknown-preset',
-        message: 'compile: a preset is on, but no readings were found for it.',
-        at: { scope: id, preset },
-      });
-      continue;
-    }
-    clauses.push(...presetClauses(given, facts.field));
   }
   return clauses;
 }

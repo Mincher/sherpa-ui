@@ -1851,6 +1851,10 @@ plan, then the build.
 page's own saved filters are query definitions, `savedFilters` in its JSON —
 listed on every bar beside a reader's, taken into the field chips, never saved
 over or deleted. Page `presets` are gone; Demos and the Starter moved with it.
+S3 (2026-10-21): the Query names no saved filter — the library, `declarePreset`,
+`preset`, `say`, the export's `presets` and the walk's preset steps are gone; a
+stored scope key the Query does not keep is dropped and said once
+(`unknown-scope-key`). A chip's preset fields stay in the types until S4.
 
 ---
 

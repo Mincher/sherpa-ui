@@ -25,13 +25,12 @@ const ROWS = Object.entries(REGION_ORGS).flatMap(([region, orgs]) =>
   .map((r, id) => ({ id, seats: id * 3, ...r }));
 const LISTS = new Set(['region', 'customer', 'status']);
 
-/** A source's facts, by hand: list fields, plain picks, no saved filter. */
+/** A source's facts, by hand: list fields, plain picks. */
 function facts(over = {}) {
   return {
     field: () => ({}),
     isList: (f) => LISTS.has(f),
     plainPicks: (_f, r) => (r.mode ?? 'simple') === 'simple' && !r.range && (r.op ?? 'eq') === 'eq',
-    presets: () => undefined,
     sets: () => [],
     fields: (scope) => (scope === 'view' ? ['customer', 'region', 'status'] : scope === 'data' ? ['status', 'customer'] : []),
     components: new Set(['data']),
@@ -46,19 +45,18 @@ function facts(over = {}) {
 const query = (scopes) => ({ v: 1, scopes });
 const walk = (q, over) => walkInOrder(ROWS, planWalk(q, facts(over)));
 
-test('the order: saved filters first, a set gathered where it starts, an unheld reading last, chain marks', () => {
+test('the order: a set gathered where it starts, an unheld reading last, chain marks', () => {
   const q = query({
-    view: { holds: ['status', 'region', 'seats', 'customer'], readings: { id: { picked: [1] } }, presets: { b: true, a: false } },
+    view: { holds: ['status', 'region', 'seats', 'customer'], readings: { id: { picked: [1] } } },
     data: { holds: ['customer', 'status'], readings: {} },
   });
   const sets = [{ id: 'acct', mode: 'serial', fields: ['customer', 'region'] }];
-  const order = answerOrder(q, sets, (id) => (id === 'b' ? {} : undefined), 'view');
-  assert.deepEqual(order.map((e) => e.id), ['b', 'a', 'status', 'customer', 'region', 'seats', 'id']);
-  assert.deepEqual(order.slice(0, 2).map((e) => e.known), [true, false]);
+  const order = answerOrder(q, sets, 'view');
+  assert.deepEqual(order.map((e) => e.id), ['status', 'customer', 'region', 'seats', 'id']);
   assert.deepEqual(order.filter((e) => e.chain).map((e) => [e.id, e.chain]), [['customer', 'top'], ['region', 'below']]);
   assert.equal(order.find((e) => e.id === 'id').held, false);
   // Below the View, a field the View holds is marked above, and out of any chain.
-  const data = answerOrder(q, sets, () => undefined, 'data');
+  const data = answerOrder(q, sets, 'data');
   assert.deepEqual(data.map((e) => [e.id, e.above]), [['customer', true], ['status', true]]);
 });
 
@@ -79,14 +77,6 @@ test('OFF counts what it would match within the filters before it, and narrows n
   assert.equal(w.ends.view, 4);
   // An OFF pick is never set aside.
   assert.deepEqual(w.aside.view, {});
-});
-
-test('a saved filter ON narrows what follows; OFF it has no badge', () => {
-  const presets = (id) => (id === 'trials' ? { status: { picked: ['trial'] } } : undefined);
-  const on = walk(query({ view: { holds: ['customer'], readings: { customer: { picked: ['Litware', 'Contoso'] } }, presets: { trials: true } } }), { presets });
-  assert.deepEqual(on.results.view, { trials: 1, customer: 1 });
-  const off = walk(query({ view: { holds: ['customer'], readings: { customer: { picked: ['Litware', 'Contoso'] } }, presets: { trials: false } } }), { presets });
-  assert.deepEqual(off.results.view, { customer: 5 });
 });
 
 test('Limit on: an earlier pick limits a later field, never the other way', () => {

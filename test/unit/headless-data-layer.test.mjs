@@ -957,7 +957,6 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   source.declareScope('view', { label: 'View filters' });
   // No grid is bound here, so it SAYS it arranges. TODO 99
   source.declareScope('grid', { arranges: true });
-  source.declarePreset('pro-only', { plan: { picked: ['Pro'] } }, { label: 'Pro only', editable: true });
   source.offer('grid', ['plan']);
   const drawn = [];
   const panel = Object.assign(new EventTarget(), {
@@ -968,31 +967,29 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   const ask = (type, detail) => panel.dispatchEvent(new CustomEvent(type, { detail }));
   const settle = () => new Promise((r) => setTimeout(r, 0));
 
-  ask('filter-add', { scope: 'grid', ids: ['plan', 'pro-only'] });
+  ask('filter-add', { scope: 'grid', ids: ['plan'] });
   await settle();
   const grid = drawn.at(-1).find((d) => d.scope === 'grid');
-  // A saved filter comes ON; the field is held, with its definition.
-  assert.deepEqual(grid.filters.map((f) => [f.id, f.active ?? null]), [['pro-only', true], ['plan', null]]);
-  assert.equal(grid.filters[0].label, 'Pro only');
+  // The field is held, with its definition.
+  assert.deepEqual(grid.filters.map((f) => [f.id, f.label]), [['plan', 'Plan']]);
   assert.deepEqual(grid.group.map((c) => c.field), ['plan']);
 
   // RAISED: the grid keeps it, and says where it went.
   ask('filter-add', { scope: 'view', ids: ['plan'] });
   await settle();
   const after = drawn.at(-1);
-  assert.equal(after.find((d) => d.scope === 'grid').filters[1].appliedAt, 'View filters');
+  assert.equal(after.find((d) => d.scope === 'grid').filters[0].appliedAt, 'View filters');
   assert.deepEqual(after.find((d) => d.scope === 'view').filters.map((f) => f.id), ['plan']);
 
-  // Its answer — the changed field, in its scope — and a preset switched off.
-  ask('quick-filter-change', { readings: { view: { plan: { picked: ['Free'] } }, grid: { presets: { picked: [] } } } });
+  // Its answer — the changed field, in its scope.
+  ask('quick-filter-change', { readings: { view: { plan: { picked: ['Free'] } } } });
   await settle();
   assert.deepEqual(source.query.applied.scopes.view.readings.plan.picked, ['Free']);
-  assert.equal(source.query.applied.scopes.grid.presets['pro-only'], false);
 
   // REMOVE lets it go.
-  ask('filter-remove', { scope: 'grid', id: 'pro-only' });
+  ask('filter-remove', { scope: 'grid', id: 'plan' });
   await settle();
-  assert.equal(source.query.applied.scopes.grid.presets?.['pro-only'], undefined);
+  assert.equal(source.scope('grid').includes('plan'), false);
 });
 
 /* A HEADING asks through the source: its answer is its field's, in its grid's
@@ -1075,7 +1072,7 @@ test('declareDefault on a field the View holds still narrows its component', asy
 });
 
 /* A PAGE GOES OUT AS JSON and comes back: a round trip gives the same rows and
-   the same question — its saved filters with it. TRAP T-a-page-goes-out-as-json */
+   the same question. TRAP T-a-page-goes-out-as-json */
 test('export and import: a round trip through JSON gives the same rows', async () => {
   const rows = [
     { id: 1, plan: 'Pro', seats: 5 }, { id: 2, plan: 'Free', seats: 50 },
@@ -1087,14 +1084,14 @@ test('export and import: a round trip through JSON gives the same rows', async (
     return s;
   };
   const a = make();
-  a.declarePreset('big', { seats: { op: 'gt', text: '10' } }, { label: 'Big accounts' });
   a.hold('view', ['plan']);
   a.answer('view', { plan: { picked: ['Pro', 'Enterprise'] } });
-  a.answer('grid', {}, { big: true });
+  a.hold('grid', ['seats']);
+  a.answer('grid', { seats: { op: 'gt', text: '10' } });
   a.setSort('seats', 'desc');
   await a.load();
   const out = JSON.parse(JSON.stringify(a.export()));
-  assert.deepEqual(out.presets.big, { label: 'Big accounts', readings: { seats: { op: 'gt', text: '10' } } });
+  assert.deepEqual(Object.keys(out), ['v', 'query']);
 
   const b = make();
   await b.import(out);

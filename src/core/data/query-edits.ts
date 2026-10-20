@@ -27,12 +27,13 @@
  * - takeSet — A saved filter TAKEN: the screen then matches it exactly; every other scope's filters go.
  * - dropSet — A saved filter TAKEN OFF: the scopes it names lose their filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
- * - answersOf — A scope's answers and its saved filters, as one comparable value.
+ * - answersOf — A scope's answers, as one comparable value.
  */
 import { answerOf, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
 import type { SortSpec } from './store.js';
 import type { Where } from './where.js';
+import { report } from './report.js';
 
 /** How a definition arranges the rows — only what it names. */
 export type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string; scope?: string };
@@ -46,22 +47,21 @@ export function scopeEntry(query: Query, id: string): ScopeQuery {
 export function prune(query: Query): void {
   for (const [id, scope] of Object.entries(query.scopes)) {
     // A scope switched off is kept: its Switch is still OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off
-    if (!scope.holds.length && !Object.keys(scope.readings).length && !Object.keys(scope.presets ?? {}).length
-      && !scope.suspended) {
+    if (!scope.holds.length && !Object.keys(scope.readings).length && !scope.suspended) {
       Reflect.deleteProperty(query.scopes, id);
     }
   }
 }
 
-/** A scope switched OFF applies nothing: an answer or saved filter in force
- *  there is switched off and listed, and a listed one that left is forgotten.
+/** A scope switched OFF applies nothing: an answer in force there is switched
+ *  off and listed, and a listed one that left is forgotten.
  *  The scopes it changed. TRAP T-the-filter-switch-keeps-what-it-turned-off */
 export function keepOff(query: Query): string[] {
   const touched: string[] = [];
   for (const [id, scope] of Object.entries(query.scopes)) {
     const off = scope.suspended;
     if (!off) continue;
-    const before = JSON.stringify([off, scope.readings, scope.presets]);
+    const before = JSON.stringify([off, scope.readings]);
     /* A listed field that LEFT — raised, lowered, moved — leaves the Switch:
        it is on again where it went, or listed there if that scope is off too. */
     for (const f of off.fields) {
@@ -79,18 +79,12 @@ export function keepOff(query: Query): string[] {
       if (!touched.includes(home)) touched.push(home);
     }
     off.fields = off.fields.filter((f) => f in scope.readings);
-    off.presets = off.presets.filter((p) => p in (scope.presets ?? {}));
     for (const [field, reading] of Object.entries(scope.readings)) {
       if (reading.suspended || !readingAnswered(reading)) continue;
       scope.readings[field] = { ...reading, suspended: true };
       if (!off.fields.includes(field)) off.fields.push(field);
     }
-    for (const [preset, on] of Object.entries(scope.presets ?? {})) {
-      if (!on) continue;
-      scope.presets![preset] = false;
-      if (!off.presets.includes(preset)) off.presets.push(preset);
-    }
-    if (JSON.stringify([off, scope.readings, scope.presets]) !== before) touched.push(id);
+    if (JSON.stringify([off, scope.readings]) !== before) touched.push(id);
   }
   return touched;
 }
@@ -234,21 +228,28 @@ export interface DefinitionFacts {
   carriesOver: (field: string) => boolean;
 }
 
+/** The keys a scope keeps, beside its readings and arrangement. */
+const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended']);
+
 /**
  * A definition as a whole Query. Its sort, group and search set the source's
  * own — and leave the Query, which holds WHICH rows, not their order. A VIEW
  * (`keep`) keeps the chips a scope it does not name holds, and a field it
  * answers is held, so its chip shows it. `copy: false` for a caller that only reads it.
+ * A key a scope does not have — a stored `presets` — is left out, said once (D4).
  */
 export function definitionOf(
   given: Query | QueryDefaults, keep: boolean, base: Query, facts: DefinitionFacts, copy = true,
 ): { query: Query; arrange: Arrange | null } {
   const next: Query = { v: 1, scopes: {} };
   let arrange: Arrange | null = null;
+  const strays = new Set<string>();
   for (const [id, scope] of Object.entries(copy ? structuredClone(given.scopes) : given.scopes)) {
     // A View says `where`; a whole Query, `readings`. TRAP T-one-way-to-write-a-condition
-    const { sort, group, search, where, readings, ...rest } = scope as ViewScope
+    const { sort, group, search, where, readings, ...all } = scope as ViewScope
       & Partial<Pick<ScopeQuery, 'readings'>>;
+    const rest = Object.fromEntries(Object.entries(all).filter(([key]) => SCOPE_KEYS.has(key) || !strays.add(key))) as typeof all;
+    if (rest.suspended) rest.suspended = { fields: [...(rest.suspended.fields ?? [])] };
     next.scopes[id] = {
       ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? facts.readingsOf(where) : {}) },
     };
@@ -256,6 +257,13 @@ export function definitionOf(
     if (group !== undefined) (arrange ??= {}).group = group;
     if (sort || group !== undefined) arrange!.scope = id;
     if (search !== undefined) (arrange ??= {}).search = search;
+  }
+  if (strays.size) {
+    report({
+      code: 'unknown-scope-key',
+      message: `definitionOf: a scope has keys it does not keep, so they are left out: ${[...strays].join(', ')}.`,
+      at: { keys: [...strays].join(', ') },
+    });
   }
   /* A component's OWN default filter outlives a View that does not name it,
      and a restore from before it joined. A View may name it to change it.
@@ -278,14 +286,6 @@ export function definitionOf(
   for (const [id, scope] of eachScope(base)) {
     if (given.scopes[id]?.holds) continue;
     (next.scopes[id] ??= emptyScope()).holds = [...scope.holds];
-  }
-  /* …and its SAVED filters, as chips: each stays on its bar, OFF unless the
-     View turns it on. A View that named none took them all off the bar.
-     TRAP T-a-view-keeps-the-saved-filter-chips */
-  for (const [id, scope] of eachScope(base)) {
-    if (!scope.presets) continue;
-    const to = (next.scopes[id] ??= emptyScope());
-    to.presets = { ...Object.fromEntries(Object.keys(scope.presets).map((p) => [p, false])), ...to.presets };
   }
   for (const [, scope] of eachScope(next)) {
     for (const field of Object.keys(scope.readings)) {
@@ -322,11 +322,10 @@ export function dropSet(now: Query, set: QueryDefaults, own: ReadonlySet<string>
   return { v: 1, scopes };
 }
 
-/** One scope with no filters on: its chips, saved filters (off) and arrangement stay. */
+/** One scope with no filters on: its chips and arrangement stay. */
 function unfiltered(scope: ScopeQuery): ScopeQuery {
   const { suspended: _off, ...rest } = scope;
-  const presets = scope.presets && Object.fromEntries(Object.keys(scope.presets).map((id) => [id, false]));
-  return { ...rest, readings: {}, ...(presets ? { presets } : {}) };
+  return { ...rest, readings: {} };
 }
 
 /** One field's answer in one copy of the Query, wherever it lives, or null. */
@@ -338,9 +337,8 @@ export function answerIn(query: Query, field: string): FieldReading | null {
   return null;
 }
 
-/** A scope's answers and its saved filters, as one comparable value. */
+/** A scope's answers, as one comparable value. */
 export function answersOf(scope: ScopeQuery | undefined): unknown {
   if (!scope) return null;
-  const readings = Object.fromEntries(Object.entries(scope.readings).map(([f, r]) => [f, answerOf(r)]));
-  return { readings, presets: scope.presets ?? {} };
+  return Object.fromEntries(Object.entries(scope.readings).map(([f, r]) => [f, answerOf(r)]));
 }

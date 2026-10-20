@@ -34,7 +34,6 @@ function facts(over = {}) {
     field: (f) => (f === 'customer' ? { child: 'site', parentOf: PARENT_OF } : {}),
     isList: (f) => LISTS.has(f),
     plainPicks: (_f, r) => (r.mode ?? 'simple') === 'simple' && !r.range && (r.op ?? 'eq') === 'eq',
-    presets: () => undefined,
     sets: () => [],
     fields: () => ['region', 'customer'],
     components: new Set(),
