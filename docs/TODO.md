@@ -45,7 +45,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0q | 361 | UX — a value the context rules out has an INACTIVE checkbox, even when ticked (Will) | filters |
 | ✅ | 0r | 362 | UX — an inactive value is not interactive: a ticked ruled-out menu row or an on value chip refuses a press (Will) | filters |
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
-| ⬜ | 0t | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) | bug |
+| ⬜ | 9z | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -320,7 +320,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
 | ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
 | ✅ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
-| ❓ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
+| ⬜ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
 | ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
 | ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
 | ✅ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
@@ -334,7 +334,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
-| ❓ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
+| ⬜ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
@@ -342,7 +342,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ✅ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
-| ❓ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
+| ✅ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
 | ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
 | ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
 | ✅ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
@@ -353,7 +353,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
 | ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
-| ❓ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
+| ✅ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
 | ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | ✅ | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
 | ⬜ | 62.86 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
@@ -1364,7 +1364,7 @@ matches, as its badge keeps its number (123). It had said nothing while off.
 Tests: `reforged-chip-tips` (off says the same; switched off, a hover still
 shows it), Demos `reforged-chip-results`. TRAP `T-a-chip-counts-within-the-filters-before-it`.
 
-### `[ ]` ⬜ 364 — BUG: a Button's tooltip is clipped; one tooltip system
+### `[ ]` ⬜ 364 — BUG: a Button's tooltip is clipped; one tooltip system (DEFERRED)
 
 Will, 2026-10-20: *"Button tooltips are not at the CSS top level and as a result
 get clipped by other components or container bounds. I suspect this is to do
@@ -1372,6 +1372,10 @@ with tooltip anchoring to buttons being done differently to other components
 as other component tooltips don't have this issue. It would be great if we just
 had 1 tooltip system for all components rather than any duplication and
 deviation."* When convenient.
+
+**Deferred, much later** (Will, 2026-10-20: *"Focus on 345, and other data and
+performance improvements, as a priority."*). A read-only design ran first; its
+map and design go in `docs/history/` for then.
 
 
 ### `[x]` ✅ 365 — BUG: "Select all on page" keeps other pages' rows
@@ -7716,11 +7720,17 @@ its own config, so it still checks its 199 tags. The README still leaves it out:
 its command is `npx sherpa-ui`, which is 325's hazard. Not run yet: the
 check-usage unit test.
 
-### `[ ]` ❓ 327 — GAP: no LICENSE file
+### `[x]` ✅ 327 — GAP: no LICENSE file
 
 Both `package.json` files and the README say MIT, but the repo has no LICENSE
 file, and the MIT licence asks for its notice in each copy. **For Will:** the
 copyright holder and the year.
+
+**Will, 2026-10-20: "Sherpa-UI contributors".**
+
+**✅ Done 2026-10-20.** An MIT `LICENSE` — "Copyright (c) 2026 the Sherpa-UI
+contributors" — in sherpa-ui and in `mcp-server/` (npm ships a root LICENSE in
+every package, whatever `files` lists). The README points to it.
 
 ### `[~]` 🚧 293 — Phase 8.1: the doc set
 
@@ -8060,7 +8070,7 @@ right-actions; the code builds both and keeps `view` and `actions` slots for a
 host's extras. The note now says that, and names the one gap (338). A carried
 note is the one part of a spec written by hand; a regeneration keeps it.
 
-### `[~]` ❓ 338 — GAP: the data bar's leading Switch
+### `[x]` ✅ 338 — GAP: the data bar's leading Switch
 
 Figma's Filter Toolbar `Type=data` starts its content with a Switch (28×16,
 on, no label), then a divider, then the chips. The code's data bar has no
@@ -8099,6 +8109,8 @@ Filters menu turns no chip on while off. **Not run yet.**
    chip.) My pick: A, as built — it has no race.
 2. The panel has no Switch, so a bar the panel answers for turns its Switch
    back on. (B: each panel section gets the Switch too.) My pick: A, as built.
+
+**Will, 2026-10-20: keep both as built.** Done.
 
 ### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
 
@@ -8143,7 +8155,7 @@ the buttons' sizes and looks, and the fill already matched. Changed:
 
 **Look at:** Demos, any page — the header, the bell's count, the dividers.
 
-### `[ ]` ❓ 319 — GAP: the source shares its presets with its callers
+### `[ ]` ⬜ 319 — GAP: the source shares its presets with its callers
 
 `declarePreset` keeps the CALLER's readings object, and `describe()` and
 `debugState()` hand out the source's own presets, parts and `only`. A caller
@@ -8153,6 +8165,8 @@ today (read 2026-10-15). **For Will:** A — copy on the way in only
 what it hands out is read-only; B — copy both ways (every `describe()` clones
 each preset's readings; the bench's clone count rises in every act that draws a
 bar). My pick: A.
+
+**Will, 2026-10-20: A.**
 
 ### `[~]` 🚧 321 — BUG: a Context's saved Views have two keys
 
@@ -8546,7 +8560,7 @@ chip, so the chip's results badge stays up while its Apply waits —
 **✅ Fixed 2026-10-15**, by reading: `#syncPending` marks the field's one chip as
 it marks its box. **Not run yet.**
 
-### `[ ]` ❓ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
+### `[ ]` ⬜ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
 
 Found by the 281 plan agent, by reading. The provider writes
 `data-hide-unmatched` only to bars and panels, and the grid's `#markPresent`
@@ -8556,6 +8570,8 @@ never toggles `data-hide-unavailable` on a heading's menu. Intended, or a gap?
 writes the grid's `data-hide-unmatched` as it writes a bar's, and the grid marks
 its menus with `hidesUnmatched()`): one rule in every filter. **B** — a grid
 heading always shows every value. My pick: **A**.
+
+**Will, 2026-10-20: A.**
 
 ### `[x]` ✅ 281 — Phase 5: toolbar and panel, one helper for each part written twice
 

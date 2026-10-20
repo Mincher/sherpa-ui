@@ -201,4 +201,4 @@ the package.
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 the Sherpa-UI contributors.
