@@ -1744,6 +1744,11 @@ picked, and a press suspends it without clearing the picks; the chip says
 reads a customer's sites when its row first opens; build the parts that 366
 does not touch now, the panel after 366 commit 20 and the grid after 23.
 
+**Built, 2026-10-20:** the store's key-Set in-list; a field declares its child;
+the catalogue keeps the children apart; a path pick filters two fields; the walk
+counts, greys and sets aside at both tiers (a site's own read shares the walk's).
+Next: the tree-row helper, the tree menu, the bar's chip face, Demos' sites.
+
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
 Found measuring 350: one saved-filter click made the grid build 25 checkboxes

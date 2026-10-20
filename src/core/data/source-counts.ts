@@ -18,7 +18,7 @@ import {
   appliesIn, heldInView, narrowsOne, presetClauses, scopeClauses, VIEW, withoutDropped,
   type CompileFacts, type Query,
 } from './query.js';
-import { emptyWalk, holdsKey, type Walk, type WalkPlan, type WalkScope, type WalkStep, type WalkTap } from './walk.js';
+import { emptyWalk, holdsKey, type Walk, type WalkPlan, type WalkScope, type WalkStep, type WalkTap, type WalkTier } from './walk.js';
 import type { FilterSet } from './data-source-types.js';
 
 /** Each field's distinct values, as value keys, among the rows a filter matches. */
@@ -131,6 +131,8 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   for (const id of facts.components) if (!others.includes(id) && !facts.narrowing.has(id)) others.push(id);
   const base = andFilter([...facts.parts, ...page]) ?? facts.hand;
   const ruleOf = (scope: string): 'here' | 'start' | undefined => (facts.limit ? 'here' : scope !== VIEW ? 'start' : undefined);
+  const tierOf = (ff: Omit<FieldFacts, 'field'>): { tier?: WalkTier } =>
+    (ff.child && ff.parentOf ? { tier: { child: ff.child, parentOf: ff.parentOf } } : {});
 
   const stepsOf = (scope: string): WalkStep[] => {
     const q = applied.scopes[scope];
@@ -156,13 +158,13 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
         // OFF counts what it would match, and narrows nothing (D3 A, 123).
         on: !!clause && !suspended, counts: !!clause,
         ...(rule ? { ruler: rule } : {}), ...(list && e.chain === 'below' ? { offers: true } : {}),
+        ...tierOf(fieldFacts),
       };
       if (reading && !suspended && reading.picked?.length && facts.plainPicks(f, reading)) {
         const type = fieldFacts.type;
         step.each = reading.picked.flatMap((value) => {
-          // ONE value, with no list beside it. TRAP T-everything-on-is-no-filter
-          const tier = fieldFacts.child && fieldFacts.parentOf ? { child: fieldFacts.child, parentOf: fieldFacts.parentOf } : {};
-          // A tiered field's path counts as the two fields it names. TODO 369
+          // ONE value, with no list beside it; a path counts as the two fields it names. TRAP T-everything-on-is-no-filter
+          const tier = step.tier ?? {};
           const own = readingClause({ field: f, ...(type ? { type } : {}), ...tier }, { picked: [value], range: false });
           return own ? [[valueKey(value), own] as const] : [];
         });
@@ -187,7 +189,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
       // Where it would stand: after its set's last step here, else at the end.
       const set = sets.find((x) => x.fields.includes(f));
       const last = set ? steps.findLastIndex((s) => !!s.field && set.fields.includes(s.field)) : -1;
-      taps.push({ at: last >= 0 ? last + 1 : steps.length, field: f, ruler: rule });
+      taps.push({ at: last >= 0 ? last + 1 : steps.length, field: f, ruler: rule, ...tierOf(facts.field(f)) });
     }
     return taps;
   };
@@ -239,6 +241,12 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
     batch.fields.add(field);
     return later(batch.asked.then((found) => found[field] ?? []));
   };
+  /* A store tallies one field at a time, so it has no pairs: a path is there
+     while its parent is, and is never set aside unless its parent is. TODO 369 */
+  const withPaths = (keys: Promise<string[]>, tier: WalkTier | undefined): Promise<string[]> => (!tier ? keys : keys.then((k) => {
+    const low = new Set(k.map((x) => x.toLowerCase()));
+    return [...k, ...[...tier.parentOf].filter(([, p]) => low.has(p.toLowerCase())).map(([path]) => path)];
+  }));
   const count = (filters: readonly Filter[]): Promise<number> => later(reads.totalCount({ filter: andFilter(filters)! }));
   const ends = new Map<string, { filter: Filter | undefined; narrowed: boolean }>();
   const fills: Array<() => void> = [];
@@ -246,7 +254,7 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
     const from = sc.after !== null ? ends.get(sc.after) : undefined;
     const before: Filter[] = from?.filter ? [from.filter] : [];
     let narrowed = from?.narrowed ?? false;
-    const start = (field: string): Promise<string[]> => tally(from?.filter, field);
+    const start = (field: string, tier?: WalkTier): Promise<string[]> => withPaths(tally(from?.filter, field), tier);
     const results: Record<string, number> = {};
     const values: Record<string, Record<string, number>> = {};
     const present: Record<string, string[]> = {};
@@ -254,7 +262,7 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
     const aside: Record<string, string[]> = {};
     const tapped: Array<[WalkTap, Promise<string[]>]> = [];
     const tap = (at: number): void => {
-      for (const t of sc.taps) if (t.at === at) tapped.push([t, t.ruler === 'here' ? tally(andFilter(before), t.field) : start(t.field)]);
+      for (const t of sc.taps) if (t.at === at) tapped.push([t, t.ruler === 'here' ? withPaths(tally(andFilter(before), t.field), t.tier) : start(t.field, t.tier)]);
     };
     for (let i = 0; i < sc.steps.length; i++) {
       const step = sc.steps[i]!;
@@ -263,8 +271,8 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       tap(i);
       const offers = !!step.offers && narrowed;
       // Its tally only where something reads it.
-      const keys = field && (step.ruler === 'here' || offers) ? tally(andFilter(here), field) : null;
-      const ruled = field && step.ruler ? (step.ruler === 'here' ? keys! : start(field)) : null;
+      const keys = field && (step.ruler === 'here' || offers) ? withPaths(tally(andFilter(here), field), step.tier) : null;
+      const ruled = field && step.ruler ? (step.ruler === 'here' ? keys! : start(field, step.tier)) : null;
       if (field && step.each?.length) {
         const counts: Record<string, number> = {};
         values[field] = counts;

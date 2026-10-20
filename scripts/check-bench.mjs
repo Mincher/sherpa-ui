@@ -193,11 +193,14 @@ function control(tag, id, holds = []) {
   return el;
 }
 
-/** The page, opened and bound as the provider binds it. */
-async function open(L, { page: path = PAGE, remote, announcesAll, holdRows }) {
+/** The page, opened and bound as the provider binds it. A tiered page's Customer has Sites:
+ *  six, from the row's id, so the other pages' rows stay as they are. */
+async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered }) {
   const def = JSON.parse(readFileSync(path, 'utf8')).source;
   if (holdRows != null) def.holdRows = holdRows;
-  const store = counted(new L.ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id', time: 'created' }));
+  if (tiered) Object.assign(def.fields, { customer: { ...def.fields.customer, child: 'site' }, site: { label: 'Site' } });
+  const rows = tiered ? ROWS.map((r) => ({ ...r, site: `Site ${1 + (r.id % 6)}` })) : ROWS.map((r) => ({ ...r }));
+  const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
   const seen = remote ? L.spoofRemote(store, { delay: 0, ...(announcesAll === false ? { announcesAll } : {}) }) : store;
   return { L, def, store: seen, ...await page(L, def, seen) };
 }
@@ -264,6 +267,10 @@ const ACTS = {
   narrow: (p) => p.view.answer({ customer: { picked: ['Customer 01'] } }),
   aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
     owner: { picked: ['Owner 03', 'Owner 01'] } }),
+  // The tiered page: a Site pick is a PATH; one beside a whole customer; a row edit that moves only a site walks again.
+  'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
+  'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),
+  'move-site': (p) => p.store.update(17, { site: 'Site 9' }),
 };
 const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'sort', 'heading', 'search', 'raise',
   'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside'];
@@ -275,6 +282,7 @@ const PAGES = {
   lean: { page: LEAN, remote: false, acts: ['change-unused', 'change-shown', 'change-held', 'answer-held', 'change-answered', 'add', 'delete'] },
   // A remote store not held: every count and tally is a request.
   notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete'] },
+  tiered: { remote: false, tiered: true, acts: ['pick-site', 'pick-both', 'move-site'] },
 };
 
 /** An act has ended when no counter moves for three timer turns. */

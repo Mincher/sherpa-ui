@@ -1874,6 +1874,15 @@ the fields each scope tests and tallies: a change to any other field leaves the
 walk as it is (`test/unit/a-walk-reads-only-what-it-names.test.mjs`, over Limit
 on and off, a part, a hand filter, a chart part and a component's own scope).
 
+**A tiered field is tallied at both tiers** (TODO 369). A step or tap on
+Customer adds each row's Customer key AND its Customer–Site path key, written as
+`valueKey` writes the pair with no object per row, so a site greys, counts and is
+set aside as a customer is; `walkReads` names the child, so an edit to a site
+alone walks again. Step by step a store tallies one field at a time and has no
+pairs: there a path is present while its customer is, so it is never set aside
+unless its customer is — the loose side, as a recheck must be
+(`test/unit/a-tiered-field-counts-at-both-tiers.test.mjs`).
+
 **The controls draw the same order.** `describe()` gives a scope's filters in it,
 and a bar's `drawScope` puts its chips in it — the View chip and a chip that
 answers no field stay first — and draws a saved filter the panel added. A saved
@@ -1892,6 +1901,7 @@ filter added on the bar lands after the other saved filters; a field at the end.
 - Site: `scripts/check-bench.mjs`
 - Site: `test/unit/the-walk-holds-under-change.test.mjs`
 - Site: `test/unit/an-advanced-answer-limits-what-follows.test.mjs`
+- Site: `test/unit/a-tiered-field-counts-at-both-tiers.test.mjs`
 
 ### T-a-view-keeps-a-draft
 

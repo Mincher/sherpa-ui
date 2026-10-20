@@ -1000,15 +1000,13 @@ export class DataSource extends EventTarget {
     this.#age++;
   }
 
-  /** A tiered field's child values, from the rows the source holds: one pass. A
-   *  store it does not hold reads a parent's children later, as it opens. TODO 369 */
+  /** A tiered field's child values, from the rows the walk reads — one read for
+   *  both. A store it does not hold reads a parent's children later, as it opens. TODO 369 */
   async declareChildren(field: string): Promise<void> {
     const child = this.#catalogue.get(field)?.child;
     if (!child) return;
-    await this.#hold();
-    const reads = this.#reads;
-    if (reads === this.store && this.#remote) return;
-    const rows = this.#rowsCache?.rows ?? (await reads.load({})).rows;
+    const rows = await this.#walkRows();
+    if (!rows) return;
     this.#catalogue.declareChildren(field, rows.map((r) => [readField(r, field), readField(r, child)] as const));
     this.#age++;
   }

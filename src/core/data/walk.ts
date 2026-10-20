@@ -5,6 +5,7 @@
  * TRAP T-one-walk-counts-and-limits-in-order
  *
  * Map:
+ * - WalkTier — A tiered field's child, and each path's parent key.
  * - WalkStep — One filter in a scope's order: its answer, and what it counts and limits.
  * - WalkTap — A list field no filter holds, tallied where it would stand.
  * - WalkScope — One scope's walk: where it starts, its steps and its taps.
@@ -19,6 +20,12 @@
  * - walkInOrder — Walk the rows, scope by scope.
  */
 import { absoluteDates, filterFields, matchesFilter, readField, valueKey, type Filter, type Row } from './store.js';
+
+/** A tiered field's child, and each path's parent key: a tally holds both tiers. TODO 369 */
+export interface WalkTier {
+  child: string;
+  parentOf: ReadonlyMap<string, string>;
+}
 
 /** One filter in a scope's order: its answer, and what it counts and limits. */
 export interface WalkStep {
@@ -42,6 +49,8 @@ export interface WalkStep {
   less?: (aside: readonly string[]) => Filter | undefined;
   /** Each pick's own clause, by value key: a count of its own. */
   each?: ReadonlyArray<readonly [key: string, clause: Filter]>;
+  /** A tiered field: its tally holds each row's path too. */
+  tier?: WalkTier;
 }
 
 /** A list field no filter holds, tallied where it would stand: before step `at`. */
@@ -49,6 +58,7 @@ export interface WalkTap {
   at: number;
   field: string;
   ruler: 'here' | 'start';
+  tier?: WalkTier;
 }
 
 /** One scope's walk: it starts from the rows `after` ends with — every row for null. */
@@ -115,9 +125,15 @@ export function walkReads(plan: WalkPlan): Record<string, WalkReads> {
     for (const step of sc.steps) {
       if (step.clause && (step.on || step.counts)) for (const f of filterFields(step.clause)) tested.add(f);
       for (const [, clause] of step.each ?? []) for (const f of filterFields(clause)) tested.add(f);
-      if (step.field && (step.ruler || step.offers)) tallied.add(step.field);
+      if (step.field && (step.ruler || step.offers)) {
+        tallied.add(step.field);
+        if (step.tier) tallied.add(step.tier.child);
+      }
     }
-    for (const tap of sc.taps) tallied.add(tap.field);
+    for (const tap of sc.taps) {
+      tallied.add(tap.field);
+      if (tap.tier) tallied.add(tap.tier.child);
+    }
     out[sc.scope] = { tested: [...tested], tallied: [...tallied] };
   }
   return out;
@@ -135,6 +151,8 @@ export interface Scan {
   tapsAt: Map<number, string[]>;
   /** Fields tallied over every row the scope starts with. */
   startFields: string[];
+  /** A tiered field's child, by field. */
+  childOf: Map<string, string>;
   tally: Array<Set<string>>;
   count: number[];
   each: number[][];
@@ -148,11 +166,20 @@ function keyOf(row: Row, field: string): string | null {
   return v == null || v === '' ? null : valueKey(v);
 }
 
-function add(into: Map<string, Set<string>>, field: string, key: string | null): void {
+/** A row's keys for a field: its value's, and a tiered field's path's — as
+ *  `valueKey` writes the pair, its names sorted, with no object made per row. */
+function addKeys(keys: Set<string>, row: Row, field: string, child: string | undefined): void {
+  const key = keyOf(row, field);
   if (key === null) return;
+  keys.add(key);
+  const c = child ? keyOf(row, child) : null;
+  if (c !== null) keys.add(child! < field ? `{${child}:${c},${field}:${key}}` : `{${field}:${key},${child}:${c}}`);
+}
+
+function add(into: Map<string, Set<string>>, row: Row, field: string, child: string | undefined): void {
   let keys = into.get(field);
   if (!keys) into.set(field, (keys = new Set()));
-  keys.add(key);
+  addKeys(keys, row, field, child);
 }
 
 /** The taps at a place: each tallies its field over the rows that reach it. */
@@ -161,7 +188,7 @@ function tapAt(scan: Scan, at: number, row: Row): void {
   if (!fields) return;
   let tallies = scan.tapTally.get(at);
   if (!tallies) scan.tapTally.set(at, (tallies = new Map()));
-  for (const f of fields) add(tallies, f, keyOf(row, f));
+  for (const f of fields) add(tallies, row, f, scan.childOf.get(f));
 }
 
 /** ONE scan: each row, from step `from`, is tallied and counted at each step it
@@ -173,15 +200,12 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
   const stopped = new Uint32Array(rows.length);
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r]!;
-    if (from === 0) for (const f of scan.startFields) add(scan.start, f, keyOf(row, f));
+    if (from === 0) for (const f of scan.startFields) add(scan.start, row, f, scan.childOf.get(f));
     let i = from;
     for (; i < n; i++) {
       tapAt(scan, i, row);
       const step = steps[i]!;
-      if (scan.tallied[i]) {
-        const key = keyOf(row, step.field!);
-        if (key !== null) scan.tally[i]!.add(key);
-      }
+      if (scan.tallied[i]) addKeys(scan.tally[i]!, row, step.field!, step.tier?.child);
       const each = scan.eachTests[i];
       if (each) for (let k = 0; k < each.length; k++) if (matchesFilter(row, each[k])) scan.each[i]![k]!++;
       const test = tests[i];
@@ -213,6 +237,7 @@ function scanOf(sc: WalkScope, now: Date): Scan {
     tallied: steps.map((s) => !!s.field && (s.ruler === 'here' || !!s.offers)),
     tapsAt,
     startFields,
+    childOf: new Map([...steps, ...sc.taps].flatMap((s) => (s.field && s.tier ? [[s.field, s.tier.child] as const] : []))),
     tally: steps.map(() => new Set<string>()),
     count: steps.map(() => 0),
     each: steps.map((s) => (s.each ?? []).map(() => 0)),

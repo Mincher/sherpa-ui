@@ -700,5 +700,41 @@
     "compiles": 0,
     "clones": 1,
     "scans": 10
+  },
+  "tiered/open": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 1,
+    "rows": 10025,
+    "compiles": 5,
+    "clones": 10,
+    "scans": 6
+  },
+  "tiered/pick-site": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 66,
+    "compiles": 4,
+    "clones": 1,
+    "scans": 4
+  },
+  "tiered/pick-both": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 314,
+    "compiles": 4,
+    "clones": 1,
+    "scans": 4
+  },
+  "tiered/move-site": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 314,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
   }
 }
