@@ -272,7 +272,8 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       if (sc.setsAside && step.on && test && step.picks?.length && step.less && field && (ruled || offers)) {
         const [rule, held] = await Promise.all([ruled, offers ? keys : null]);
         const ruledOut = step.picks.filter((k) => (rule && !holdsKey(rule, k)) || (held && !holdsKey(held, k)));
-        if (ruledOut.length) {
+        // Every pick ruled out: it stays in force. TRAP T-a-ruled-out-value-is-greyed
+        if (ruledOut.length && ruledOut.length < step.picks.length) {
           aside[field] = ruledOut;
           test = step.less(ruledOut);
         }

@@ -66,13 +66,18 @@ test('off, nothing is limited', async () => {
   assert.deepEqual(await source.present(VIEW), {});
 });
 
-test('off, only the View limits a component scope: a pick it leaves no row for is set aside', async () => {
-  const { source } = await setup({ view: { customer: { picked: ['Litware'] } }, data: { status: { picked: ['active'] } }, limit: false });
+test('off, only the View limits a component scope: it greys what the View leaves no row for', async () => {
+  const { source } = await setup({ view: { customer: { picked: ['Litware'] } }, data: { status: { picked: ['trial'] } }, limit: false });
   assert.deepEqual(sorted(await source.present('data')).status, ['trial']);
   assert.deepEqual(await source.present(VIEW), {});
-  // Litware's one row is a trial: "active" leaves the filter, and the row shows.
   assert.equal(source.debugState().total, 1);
-  assert.deepEqual(source.debugState().aside, { data: { status: ['active'] } });
+});
+
+test('every pick ruled out: the filter stays in force, and its chip counts 0 (Will, 2026-10-20)', async () => {
+  const { source } = await setup({ view: { customer: { picked: ['Litware'] } }, data: { status: { picked: ['active'] } }, limit: false });
+  assert.equal(source.debugState().total, 0);
+  assert.deepEqual(source.debugState().aside, {});
+  assert.deepEqual(await source.results('data'), { status: 0 });
 });
 
 test('a Customer pick limits Region; its own answer never limits Customer', async () => {
@@ -91,10 +96,11 @@ test('one way: Customer limits the Region after it; Region never limits the Cust
   assert.deepEqual(q.region, ['AMER', 'LATAM']);
 });
 
-test('two answers that share no rows: the earlier stands, and the later is set aside', async () => {
+test('two answers that share no rows: the earlier stands, and the later stays in force at 0', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } } });
-  // Customer is before Region: Adventure Works stands, and LATAM — none of its rows — is set aside.
-  assert.equal(source.debugState().total, 3);
+  // Customer is before Region: Adventure Works stands; LATAM — none of its rows — stays, and the page is empty.
+  assert.equal(source.debugState().total, 0);
+  assert.deepEqual(await source.results(VIEW), { customer: 3, region: 0 });
   const p = sorted(await source.present(VIEW));
   assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA']);

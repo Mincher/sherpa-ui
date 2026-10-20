@@ -235,7 +235,10 @@ export function walkInOrder(rows: readonly Row[], plan: WalkPlan): Walk {
         const ruled = step.ruler === 'here' ? scan.tally[j] : step.ruler === 'start' ? scan.start.get(step.field) ?? new Set() : null;
         const offered = step.offers && narrowedAt(j) ? scan.tally[j] : null;
         const ruledOut = step.picks.filter((k) => (ruled && !holdsKey(ruled, k)) || (offered && !holdsKey(offered, k)));
-        if (!ruledOut.length) continue;
+        /* Every pick ruled out: the filter STAYS in force — its chip active, its
+           count 0 — so the reader sees it, and clears it or turns it off.
+           Will, 2026-10-20. TRAP T-a-ruled-out-value-is-greyed */
+        if (!ruledOut.length || ruledOut.length === step.picks.length) continue;
         aside[step.field] = ruledOut;
         const less = step.less(ruledOut);
         scan.tests[j] = less && absoluteDates(less, plan.now);

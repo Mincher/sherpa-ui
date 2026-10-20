@@ -2764,12 +2764,13 @@ test('a Reset leaves a chip the View holds as it is, and empties the rest', asyn
   expect(r.plan).toMatchObject({ held: false, on: false, value: '', ticked: [] });
 });
 
-/* The C5/C6 review: a chip the View takes says where it went — never "limited"
-   from before the raise. TRAP T-an-inactive-chip-says-where-its-filter-went */
-test('a chip the View takes is no longer greyed for what the filters left', async ({ page }) => {
+/* Will, 2026-10-20: a chip whose every pick the filters before it rule out STAYS
+   active — never greyed — so its reader sees it, opens its menu, clears it or
+   turns it off; its menu greys the ruled-out rows. TRAP T-a-ruled-out-value-is-greyed */
+test('a chip whose every pick is ruled out stays active, toggles, and its menu greys the picks', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bar = await window.__mount<HTMLElement & {
-      drawPresent(p: unknown): void; supersede(ids: string[], at?: string): void; setChipValues(id: string, v: string[]): void;
+      drawPresent(p: unknown): void; setChipValues(id: string, v: string[]): void; report(): void;
     }>('sherpa-quick-filter-toolbar', [
       { id: 'region', label: 'Region', options: [{ value: 'EMEA', label: 'EMEA' }, { value: 'APAC', label: 'APAC' }] },
     ], { style: 'inline-size: 1200px' });
@@ -2777,14 +2778,16 @@ test('a chip the View takes is no longer greyed for what the filters left', asyn
     bar.setChipValues('region', ['EMEA']);
     bar.drawPresent({ region: ['APAC'] });
     await window.__settled();
-    const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="region"]')!;
-    const greyed = chip.hasAttribute('data-unavailable');
-    bar.supersede(['region'], 'View filters');
+    const chip = bar.shadowRoot!.querySelector<HTMLElement & { current: boolean }>('.chip[data-id="region"]')!;
+    const row = [...chip.querySelectorAll<HTMLElement>('sherpa-menu .menu-row')].find((x) => x.querySelector('input')?.value === 'EMEA')!;
+    const before = { greyed: chip.hasAttribute('data-unavailable'), on: chip.current,
+      row: { greyed: row.hasAttribute('data-unavailable'), ticked: row.querySelector('input')!.checked, says: row.getAttribute('title') } };
+    // A press on its body turns it off, as any chip.
+    chip.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await window.__settled();
-    const taken = chip.hasAttribute('data-unavailable');
-    bar.supersede([]);
-    await window.__settled();
-    return { greyed, taken, back: chip.hasAttribute('data-unavailable') };
+    return { before, off: !chip.current };
   });
-  expect(r).toEqual({ greyed: true, taken: false, back: true });
+  expect(r.before).toEqual({ greyed: false, on: true,
+    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.' } });
+  expect(r.off).toBe(true);
 });

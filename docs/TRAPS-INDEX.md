@@ -59,7 +59,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-relative-date-stays-relative](TRAPS.md#t-a-relative-date-stays-relative) — filter-state, store, stores, where
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — data-source
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-set, page-definition, store, store-cache
-- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, store, stores
+- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, source-counts, store, stores, walk
 - [T-a-saved-chip-lists-its-conditions](TRAPS.md#t-a-saved-chip-lists-its-conditions) — data, data-source, data-source-types, filter-face
 - [T-a-saved-filter-is-its-readings](TRAPS.md#t-a-saved-filter-is-its-readings) — data-source, filter-state
 - [T-a-scope-is-a-place-not-a-reach](TRAPS.md#t-a-scope-is-a-place-not-a-reach) — data-source

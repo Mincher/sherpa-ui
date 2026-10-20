@@ -65,7 +65,7 @@ test('the bar tells a chip\'s menu what its chain offers', async ({ page }) => {
   expect(r.shown).toEqual(['APAC']);
 });
 
-test('the grid tells a heading\'s menu what its chain offers, and greys a pick it set aside (349)', async ({ page }) => {
+test('the grid tells a heading\'s menu what its chain offers; its chip stays active (349)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const grid = await window.__mount<HTMLElement & {
       populate(d: unknown): Promise<void>; drawOffered(o: Offered): void; openColumnFilter(f: string): void;
@@ -81,12 +81,13 @@ test('the grid tells a heading\'s menu what its chain offers, and greys a pick i
     const chip = grid.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="region"] .head-filter')!;
     return { offered: menu.offered, shown: [...menu.querySelectorAll<HTMLElement>('.menu-row:not(.qf-all)')]
       .filter((row) => getComputedStyle(row).display !== 'none').map((row) => row.querySelector('input')!.value),
-    setAside: chip.hasAttribute('data-unavailable') };
+    greyed: chip.hasAttribute('data-unavailable') };
   });
   expect(r.offered).toEqual(['APAC']);
-  // EMEA is the pick: it stays, set aside; AMER is not offered, so it goes.
+  // EMEA is the pick: it stays, greyed in the menu; AMER is not offered, so it goes.
   expect([...r.shown].sort()).toEqual(['APAC', 'EMEA']);
-  expect(r.setAside).toBe(true);
+  // Every pick ruled out, the filter stays in force: its chip is never greyed (Will, 2026-10-20).
+  expect(r.greyed).toBe(false);
 });
 
 test('the panel removes a value chip its chain does not offer, and keeps one that is on', async ({ page }) => {
@@ -104,5 +105,6 @@ test('the panel removes a value chip its chain does not offer, and keeps one tha
       .filter((chip) => getComputedStyle(chip).display !== 'none')
       .map((chip) => `${chip.dataset['value']}${chip.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
   }, REGIONS);
-  expect(r).toEqual(['AMER', 'EMEA [dim]']);
+  // EMEA is the only pick, and the chain leaves it nothing: it stays in force, active (Will, 2026-10-20).
+  expect(r).toEqual(['AMER', 'EMEA']);
 });

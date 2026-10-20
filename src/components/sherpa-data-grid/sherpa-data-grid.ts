@@ -31,7 +31,7 @@ import {
   DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  clauseConditions, fieldState, readingClause, readingRows, ruleOut, allSetAside,
+  clauseConditions, fieldState, readingClause, readingRows,
   type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
@@ -678,10 +678,8 @@ export class SherpaDataGrid extends SherpaElement {
     }
     // A kept chip draws its face again from what its menu now holds: its tip says so.
     if (wrote || was !== superseded) chip.refresh();
-    if (superseded) {
-      chip.removeAttribute('data-unavailable');
-      menu.present = null;
-    } else this.#markPresent(th);
+    if (superseded) menu.present = null;
+    else this.#markPresent(th);
   }
 
   /**
@@ -745,17 +743,14 @@ export class SherpaDataGrid extends SherpaElement {
   #offered: Readonly<Record<string, readonly string[]>> = {};
 
   /** One heading's menu, told what the filters before its field leave and what
-   *  its chain offers — and its chip greyed when every pick it holds is set aside. */
+   *  its chain offers. Its chip is never greyed for it: a filter whose every pick
+   *  is ruled out stays in force (Will, 2026-10-20). TRAP T-a-ruled-out-value-is-greyed */
   #markPresent(cell: HTMLElement): void {
     const field = cell.dataset['field']!;
-    const chip = cell.querySelector<HTMLElement>('.head-filter');
-    const menu = chip?.querySelector<SherpaMenu>('sherpa-menu');
-    if (!chip || !menu || this.#superseded.has(field)) return;
-    const left = this.#present[field] ?? null;
-    const offered = this.#offered[field] ?? null;
-    menu.present = left;
-    menu.offered = offered;
-    chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left, offered)));
+    const menu = cell.querySelector<SherpaMenu>('.head-filter sherpa-menu');
+    if (!menu || this.#superseded.has(field)) return;
+    menu.present = this.#present[field] ?? null;
+    menu.offered = this.#offered[field] ?? null;
   }
   /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};

@@ -98,11 +98,11 @@ test('Limit on: an earlier pick limits a later field, never the other way', () =
   assert.deepEqual(w.present.view.region.sort(), ['AMER', 'APAC', 'EMEA']);
   assert.deepEqual(w.results.view, { customer: 3, region: 1 });
   assert.equal(w.ends.view, 1);
-  // Every pick ruled out: the field narrows nothing and wears no badge.
+  // Every pick ruled out: nothing is set aside — the filter stays in force, and counts 0 (Will, 2026-10-20).
   const all = walk(query({ view: { ...q.scopes.view, readings: { ...q.scopes.view.readings, region: { picked: ['LATAM'] } } } }));
-  assert.deepEqual(all.aside.view, { region: ['LATAM'] });
-  assert.deepEqual(all.results.view, { customer: 3 });
-  assert.equal(all.ends.view, 3);
+  assert.deepEqual(all.aside.view, {});
+  assert.deepEqual(all.results.view, { customer: 3, region: 0 });
+  assert.equal(all.ends.view, 0);
 });
 
 test('a pick that matches rows as the filter compares — case aside — is never set aside', () => {
@@ -228,7 +228,7 @@ function referenceWalk(rows, plan) {
       if (sc.setsAside && step.on && test && step.picks?.length && step.less) {
         const ruled = step.ruler === 'here' ? tally : step.ruler === 'start' ? keysOf(start, step.field) : null;
         const out2 = step.picks.filter((k) => (ruled && !holdsKey(ruled, k)) || (step.offers && narrowed && !holdsKey(tally, k)));
-        if (out2.length) { aside[step.field] = out2; test = step.less(out2); }
+        if (out2.length && out2.length < step.picks.length) { aside[step.field] = out2; test = step.less(out2); }
       }
       if (step.field && step.each?.length) values[step.field] = Object.fromEntries(step.each.map(([k, c]) => [k, match(reach, c).length]));
       if (step.counts && test) results[step.id] = match(reach, test).length;

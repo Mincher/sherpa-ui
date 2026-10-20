@@ -29,7 +29,6 @@
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
- * - allSetAside — Every pick a chip holds is ruled out: it is set aside.
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
@@ -253,12 +252,6 @@ function looseSet(list: Iterable<string> | null | undefined): ((value: string) =
   const keys = new Set<string>();
   for (const key of list) keys.add(key.toLowerCase());
   return (value) => keys.has(value.toLowerCase());
-}
-
-/** Every pick a chip holds is ruled out: it is set aside, kept and not applied.
- *  TRAP T-a-ruled-out-value-is-greyed */
-export function allSetAside(picks: readonly string[], out: (value: string) => RuledOut): boolean {
-  return picks.length > 0 && picks.every((v) => out(v) !== null);
 }
 
 /**

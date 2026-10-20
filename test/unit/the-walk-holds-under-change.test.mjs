@@ -68,9 +68,9 @@ test('a walk the Query has moved past sets nothing aside, and asks for no load',
   const bar = await viewBar(source);
   const changes = [];
   source.addEventListener('change', (e) => changes.push(e.detail.total));
-  // S0: Adventure Works then LATAM — its slow walk would set LATAM aside.
+  // S0: Adventure Works then LATAM and EMEA — its slow walk would set LATAM aside.
   seen.slow = true;
-  bar.held = { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } };
+  bar.held = { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } };
   bar.report();
   await sleep(30);
   seen.slow = false;
@@ -89,7 +89,7 @@ test('a walk the Query has moved past sets nothing aside, and asks for no load',
 
 test('a filter set by hand is never compiled away by a set-aside', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), limitOptions: true });
-  await viewBar(source, { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } });
+  await viewBar(source, { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } });
   assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
   source.setFilter(['customer', 'eq', 'Tailspin']);
   await source.load();
@@ -101,13 +101,13 @@ test('a filter set by hand is never compiled away by a set-aside', async () => {
 test('a failed walk sets nothing aside, and is not asked again until something moves', async () => {
   const { store, seen } = slowRemote();
   const source = new DataSource({ store, limitOptions: true, holdRows: 0, pageSize: 2 });
-  const bar = await viewBar(source, { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } });
+  const bar = await viewBar(source, { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } });
   assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
   seen.fail = true;
-  bar.held = { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } };
+  bar.held = { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA', 'APAC'] } };
   bar.report();
   await sleep(40);
-  // The older Query's set-aside is gone: EMEA and LATAM both apply.
+  // The older Query's set-aside is gone: every region picked applies.
   assert.deepEqual(source.debugState().aside, {});
   const asked = seen.distinct;
   source.setPage(2);

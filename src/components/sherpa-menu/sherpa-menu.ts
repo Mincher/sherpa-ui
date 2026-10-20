@@ -1349,6 +1349,11 @@ export class SherpaMenu extends SherpaElement {
     const given = new Map(this.#items.map((i) => [i.value, i]));
     const hides = this.hasAttribute('data-hide-unavailable');
     const limit = ruleOut(this.#present, this.#offered);
+    const outOf = (box: HTMLInputElement): boolean => given.get(box.value)?.available === false || limit(box.value) !== null;
+    /* Every ticked row ruled out: the filter stays in force (Will, 2026-10-20), so
+       they say "no matches"; only beside a pick that stands are they "not applied". */
+    const ticked = this.#inputs().filter((box) => box.checked);
+    const inForce = ticked.length > 0 && ticked.every(outOf);
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
       const why = limit(box.value);
@@ -1362,7 +1367,7 @@ export class SherpaMenu extends SherpaElement {
       const said = box.getAttribute('aria-description');
       // Said on hover too: why it is greyed. Will, TODO 176.
       if (out) {
-        const why = box.checked ? SET_ASIDE : RULED_OUT;
+        const why = box.checked && !inForce ? SET_ASIDE : RULED_OUT;
         box.setAttribute('aria-description', why);
         row?.setAttribute('title', why);
       } else if (said === RULED_OUT || said === SET_ASIDE) {

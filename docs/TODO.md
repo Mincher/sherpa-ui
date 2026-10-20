@@ -39,6 +39,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
 | ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
 | ✅ | 0m | 357 | BUG — a favourited View is named after its Context in the nav's Favorites ("Records"), not the View ("All customers") (Will) | bug |
+| ✅ | 0n | 358 | UX — a filter whose every pick is ruled out stays ACTIVE, wears 0 and applies, instead of greyed and set aside (Will) | filters |
+| ❓ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1264,6 +1266,34 @@ called "Overview" — read the same, with no icon to tell them apart. Each now
 says its Context ("Home › My view", "Records › My view"), and only when the
 names clash; every other favourite stays its View's name alone. Demos test
 "two favourites of one name each say their Context".
+
+
+### `[x]` ✅ 358 — UX: a filter with no valid value stays active, at 0
+
+Will, 2026-10-20: *"Instead of setting filter chips with no valid values to
+inactive we should leave them active. If an active filter, with valid values,
+becomes invalid due to context changes then we should show a badge with count
+0."* So the reader can see the impact on results, open the menu to see the
+inactive values, remove or clear the filter, or press it off.
+
+**✅ Done 2026-10-20.** A pick is set aside only BESIDE one that stands. When
+every pick is ruled out, nothing is set aside: the filter stays in force, the
+rows go to 0, and its chip — on the bar, in a grid heading, in the panel — stays
+active and wears 0. Its menu ticks and greys the picks and says "no matches"
+("not applied" only beside a pick that stands). Pressed, it turns off and the
+rows come back. Read as: the filter APPLIES (0 rows) — say if it should not.
+Tests: `present-limits-each-field`, `a-serial-set-chains-its-fields`,
+`filters-limit-in-order`, `reforged-quick-filter-toolbar`, Demos
+`reforged-the-view-limits-a-component-scope` (each fails on the old rule).
+TRAP `T-a-ruled-out-value-is-greyed`.
+
+### `[ ]` ❓ 359 — UX: "No matches" covers a card's own filter bar
+
+Found with 358 (2026-10-20). With 358 a filter at 0 is common, and the Records
+card then shows "No matches" OVER its whole content — the data bar too, since
+the bar lives in the card's body. The chip with its 0 badge is hidden, and
+cannot be pressed off; only the cover's "Clear filters" is left. With Settings ›
+Experiments › keep content on, nothing covers and the flow works. Waits on Will.
 
 ---
 

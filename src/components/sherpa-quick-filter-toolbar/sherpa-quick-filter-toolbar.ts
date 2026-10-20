@@ -27,7 +27,7 @@ import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
 import { readingAnswered } from '../../core/data/query.js';
 import {
-  modeOf, readingRows, ruleOut, allSetAside,
+  modeOf, readingRows,
   type FieldReading,
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
@@ -580,22 +580,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return Object.fromEntries([...out].filter(([, picks]) => picks.length));
   }
 
-  /** One chip's menu, told what the filters before its field leave — and the
-   *  chip itself greyed when every pick it holds is set aside (180). */
+  /** One chip's menu, told what the filters before its field leave. The chip
+   *  itself is never greyed for it: a filter whose every pick is ruled out stays
+   *  in force and wears 0 (Will, 2026-10-20). TRAP T-a-ruled-out-value-is-greyed */
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';
     const field = this.#filters.find((f) => f.id === id)?.field ?? id;
     const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
-    // A chip the View took says where it went, not what the filters left. TRAP T-an-inactive-chip-says-where-its-filter-went
-    if (this.superseded.includes(id)) chip.removeAttribute('data-unavailable');
     if (!menu || this.superseded.includes(id)) return;
-    const left = this.#present[field] ?? null;
-    const offered = this.#offered[field] ?? null;
-    menu.present = left;
-    menu.offered = offered;
+    menu.present = this.#present[field] ?? null;
+    menu.offered = this.#offered[field] ?? null;
     // Hiding unmatched, a row Limit rules out goes. Will, TODO 205.
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
-    chip.toggleAttribute('data-unavailable', allSetAside(menu.values ?? [], ruleOut(left, offered)));
   }
 
   /**
@@ -665,8 +661,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-an-inactive-chip-says-where-its-filter-went */
       if (held && appliedAt) chip.setAttribute('data-applied-at', appliedAt);
       else chip.removeAttribute('data-applied-at');
-      // Taken, it is no longer greyed for what the filters left; let go, it is again.
-      this.#markPresent(chip);
     }
   }
 

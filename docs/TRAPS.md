@@ -1849,7 +1849,9 @@ is SPENT.
 
 **One pass** (`walkInOrder`, `walk.ts`): each row runs the steps in order and
 stops at the first in force it fails. A pick its ruler rules out is set aside,
-and the rows from that step are scanned AGAIN with what is left — exact,
+and the rows from that step are scanned AGAIN with what is left — unless EVERY
+pick is ruled out: then it stays in force, and counts 0
+(`T-a-ruled-out-value-is-greyed`) — exact,
 whatever loose matching (`in`, `T-loose-equal-is-case-insensitive`) does. Dates
 are made absolute once, at the plan's `now`. A chart part's pick is never set
 aside (Q1 A).
@@ -7931,9 +7933,15 @@ BEFORE the load where the walk asks no store (a held set, a store with `scan`,
 rows kept since the last change), so the first load is right; a store asked
 step by step is walked after, and loads again only if that moved the rows.
 
-A chip whose every pick is set aside is greyed too, and says so. Off and ruled
-out, a value chip is refused; on, it may be let go. A chip with a menu always
-opens it.
+**Every pick ruled out: the filter STAYS in force** — Will, 2026-10-20: *"Instead
+of setting filter chips with no valid values to inactive we should leave them
+active … show a badge with count 0."* Only a pick BESIDE one that stands is set
+aside. When none stands, nothing is: the chip stays active — never greyed —
+wears 0, and the rows go to 0, so the reader sees the impact, opens the menu
+(its picks ticked, greyed, "no matches"), clears or removes the filter, or
+presses it OFF. A panel's run of value chips does the same: the ones that are
+on stay active. Off and ruled out, a value chip is refused; a chip with a menu
+always opens it.
 
 **Each control is TOLD** — `drawPresent(present, scope)` on a bound bar, panel
 or grid — and passes it to `menu.present`, which greys and disables the rows
@@ -7981,6 +7989,9 @@ go.
 - Site: `src/core/data/query.ts`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `src/core/data/walk.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-an-and-row-offers-what-the-rows-before-it-leave
 
@@ -10485,7 +10496,6 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/moved-to.test.mjs`
 - Site: `src/core/data/source-binding.ts`
-- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-a-restored-filter-still-needs-its-chip
 

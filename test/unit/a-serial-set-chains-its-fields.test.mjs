@@ -59,17 +59,26 @@ test('a field offers what the fields above it leave; the top of the chain offers
 });
 
 test('a pick the chain rules out is SET ASIDE: kept in the Query, out of the rows', async () => {
-  // Adventure Works has no LATAM rows.
-  const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } });
-  assert.equal(source.debugState().total, 3);
-  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['LATAM']);
+  // Adventure Works has no LATAM rows; it has EMEA ones.
+  const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } });
+  assert.equal(source.debugState().total, 1);
+  assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
+  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['LATAM', 'EMEA']);
   assert.deepEqual(sorted(await source.offered(VIEW)).region, ['AMER', 'APAC', 'EMEA']);
 });
 
+test('every pick the chain rules out: the field stays in force, at 0 (Will, 2026-10-20)', async () => {
+  const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } });
+  assert.equal(source.debugState().total, 0);
+  assert.deepEqual(source.debugState().aside, {});
+  assert.deepEqual(await source.results(VIEW), { customer: 3, region: 0 });
+});
+
 test('a field is never ruled out by one BELOW it — even with Limit on, and Region the later answer', async () => {
-  const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM'] } }, { limit: true });
+  const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } }, { limit: true });
   // Customer is before Region: it stands, and LATAM goes.
-  assert.equal(source.debugState().total, 3);
+  assert.equal(source.debugState().total, 1);
+  assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
 });
 
 test('a filter before the set limits the chain, though the top is unanswered', async () => {

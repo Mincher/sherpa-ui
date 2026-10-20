@@ -31,7 +31,7 @@ import {
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
-import { modeOf, readingRows, ruleOut, allSetAside, type FieldReading } from '../../core/data/filter-state.js';
+import { modeOf, readingRows, ruleOut, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
@@ -450,16 +450,18 @@ export class SherpaFilterPanel extends SherpaElement {
     held.menu?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     const one = this.#answerChip(held);
     if (one) {
-      // ONE chip is greyed when every pick is ruled out, as a bar chip is.
-      one.toggleAttribute('data-unavailable', allSetAside(this.#picked(held), out));
+      // ONE chip is never greyed for it: every pick ruled out, it stays in force (Will, 2026-10-20).
       if (held.menu) Object.assign(held.menu, { present: left, offered });
       return;
     }
-    for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
-      if (this.#heldOfChip(chip) !== held) continue;
+    const chips = [...held.values.querySelectorAll<HTMLElement>('.value')].filter((chip) => this.#heldOfChip(chip) === held);
+    // Every chip that is on ruled out: the filter stays in force, so those chips stay active.
+    const on = chips.filter((chip) => chip.hasAttribute('data-current'));
+    const inForce = on.length > 0 && on.every((chip) => out(chip.dataset['value'] ?? '') !== null);
+    for (const chip of chips) {
       const why = out(chip.dataset['value'] ?? '');
       chip.toggleAttribute('data-removed', why === 'unoffered' && !chip.hasAttribute('data-current'));
-      chip.toggleAttribute('data-unavailable', why !== null);
+      chip.toggleAttribute('data-unavailable', why !== null && !(inForce && chip.hasAttribute('data-current')));
     }
     if (held.menu) Object.assign(held.menu, { present: left, offered });
   }
