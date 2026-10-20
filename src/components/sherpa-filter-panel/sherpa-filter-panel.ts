@@ -112,6 +112,9 @@ export class SherpaFilterPanel extends SherpaElement {
      each whole. TRAP T-a-panel-asks-for-its-scopes */
   static override asks: DataAsk = { shape: 'scope' };
 
+  // A shut panel builds its scopes when it opens.
+  static override observed = ['open'];
+
   static override props = {
     /* The host offers "Limit to matching filters", on or off. Will, TODO 178. */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
@@ -211,11 +214,12 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const type of ['group-change', 'sort-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onArrange);
     }
-    if (this.#scopes.length) this.#draw();
+    if (this.#scopes.length) this.#drawOrWait();
   }
 
   override onChange(name: string): void {
-    if (name === 'data-at-default' || name === 'data-nothing-to-reset') syncResets(this, this.root, '.reset-all');
+    if (name === 'open') this.#fresh();
+    else if (name === 'data-at-default' || name === 'data-nothing-to-reset') syncResets(this, this.root, '.reset-all');
     else if (name === 'data-saveable') this.#saved.draw();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
@@ -236,12 +240,49 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** populate([{ scope, label, filters, available }]). */
   protected override renderData(data: unknown): void {
+    const first = !this.#scopes.length;
     this.#scopes = Array.isArray(data) ? (data as PanelScope[]) : [];
-    this.#draw();
+    // Newer than any answer drawn while shut.
+    if (!first) this.#early.clear();
+    this.#reportUndrawable();
+    this.#drawOrWait();
+  }
+
+  /** A field with NO VALUES and NO BODY has nothing to draw, so it SAYS SO, open
+   *  or shut — rather than leaving a gap in the scope. A preset never has values.
+   *  TRAP T-the-panel-is-the-toolbar-in-a-column · TRAP T-a-broken-assumption-reports */
+  #reportUndrawable(): void {
+    for (const scope of this.#scopes) {
+      for (const def of scope.filters ?? []) {
+        if (def.preset || def.appliedAt || def.options?.length || hasOwnBody(kindOf(def))) continue;
+        report({
+          code: 'undrawable-filter',
+          message: 'This filter has no values and no body of its own, so it was skipped.',
+          at: { scope: scope.scope, id: def.id, kind: kindOf(def) },
+        });
+      }
+    }
+  }
+
+  /** Build the scopes now if the panel is open; else when it opens. A shut panel
+   *  keeps every answer as data, and builds from the newest. TRAP T-a-panel-follows-the-query-open-or-shut */
+  #drawOrWait(): void {
+    if (this.hasAttribute('open')) this.#draw();
+    else this.#stale = true;
+  }
+  /** The scopes changed while shut: not built yet. */
+  #stale = false;
+  /** Build what waited, before anything reads it or shows it. */
+  #fresh(): void {
+    if (this.#stale) this.#draw();
   }
 
   /** What every field holds now, by scope then field id. */
   get values(): Record<string, Record<string, string[]>> {
+    if (this.#stale) {
+      return Object.fromEntries(Object.entries(this.#describedReadings()).map(([scope, fields]) =>
+        [scope, Object.fromEntries(Object.entries(fields).map(([id, r]) => [id, (r.picked ?? []).map(String)]))]));
+    }
     const out: Record<string, Record<string, string[]>> = {};
     for (const [, held] of this.#held) {
       // GROUP and SORT arrange rows; they are not part of WHICH rows.
@@ -262,6 +303,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * TRAP T-the-panel-reports-its-own-reading
    */
   get readings(): Record<string, Record<string, FieldReading>> {
+    if (this.#stale) return this.#describedReadings();
     const out: Record<string, Record<string, FieldReading>> = {};
     // An answer held for a field not drawn yet is still the panel's answer.
     for (const { id, reading, scope } of this.#early.values()) (out[scope ?? ''] ??= {})[id] = reading;
@@ -270,6 +312,36 @@ export class SherpaFilterPanel extends SherpaElement {
       if (arranges(kindOf(held.def))) continue;
       (out[held.scope] ??= {})[held.def.id] = this.#readingOf(held);
     }
+    return out;
+  }
+
+  /** A shut panel's answers, read from what the source last described and drew
+   *  since — the newest data, not built. The fields a draw would hold, and no other.
+   *  TRAP T-a-panel-follows-the-query-open-or-shut */
+  #describedReadings(): Record<string, Record<string, FieldReading>> {
+    const out: Record<string, Record<string, FieldReading>> = {};
+    const taken = new Set<string>();
+    for (const scope of this.#scopes) {
+      const on: string[] = [];
+      let presets = false;
+      for (const def of scope.filters ?? []) {
+        if (def.appliedAt) continue;
+        if (!scope.part) {
+          if (taken.has(def.id)) continue;
+          taken.add(def.id);
+        }
+        if (def.preset) {
+          presets = true;
+          if (def.active) on.push(def.id);
+          continue;
+        }
+        const kind = kindOf(def);
+        if (arranges(kind) || (!def.options?.length && !hasOwnBody(kind))) continue;
+        (out[scope.scope] ??= {})[def.id] = def.state ?? { picked: [] };
+      }
+      if (presets) (out[scope.scope] ??= {})['presets'] = { picked: on };
+    }
+    for (const { id, reading, scope } of this.#early.values()) (out[scope ?? ''] ??= {})[id] = reading;
     return out;
   }
 
@@ -310,6 +382,14 @@ export class SherpaFilterPanel extends SherpaElement {
        Query keeps it, for the chip that switched it off.
        TRAP T-a-suspended-answer-is-drawn-as-off */
     const reading: FieldReading = given.suspended ? { picked: [] } : given;
+    // Not built: before the first populate, or shut since. HELD, and drawn with its field.
+    // TRAP T-a-value-before-the-first-render-is-held
+    if (this.#stale || !this.#scopes.length) {
+      const key = `${scope ?? ''}:${id}`;
+      this.#early.delete(key);
+      this.#early.set(key, { id, reading: given, scope });
+      return;
+    }
     for (const [key, held] of this.#held) {
       // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
       if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
@@ -341,11 +421,6 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#syncAnswered(held);
       return;
     }
-    // Before the first populate: HELD, and drawn with its field. TRAP T-a-value-before-the-first-render-is-held
-    if (this.#scopes.length) return;
-    const key = `${scope ?? ''}:${id}`;
-    this.#early.delete(key);
-    this.#early.set(key, { id, reading: given, scope });
   }
 
   /**
@@ -355,7 +430,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * answer back over the Query. TRAP T-a-panel-follows-the-query-open-or-shut
    */
   drawReading(field: string, reading: FieldReading, scope: string): void {
-    if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading, scope);
+    if (this.#stale || this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading, scope);
   }
 
   /**
@@ -369,6 +444,7 @@ export class SherpaFilterPanel extends SherpaElement {
   drawResults(results: Readonly<Record<string, number>>, scope?: string): void {
     // Kept: a redraw builds new chips and headers, and no load follows it.
     if (scope != null) this.#counted.set(scope, results);
+    if (this.#stale) return;
     for (const held of this.#held.values()) {
       if (held.scope !== scope) continue;
       const one = this.#oneChip(held);
@@ -393,6 +469,7 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string): void {
     this.#valueCounted.set(scope, results);
+    if (this.#stale) return;
     for (const held of this.#held.values()) {
       // A run only: one chip, the presets and a body are drawn by drawResults.
       if (held.scope !== scope || held.def.id === 'presets' || this.#oneChip(held)) continue;
@@ -414,6 +491,7 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
     this.#presentBy.set(scope, present);
+    if (this.#stale) return;
     for (const held of this.#held.values()) if (held.scope === scope) this.#markPresent(held);
     // The Filters list is drawn again only when a field's being spent moved.
     if (this.#spentKey() !== this.#spentFor) this.#fillFilters();
@@ -434,6 +512,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  chip it does not is removed, unless it is on. TRAP T-a-filter-set-groups-or-chains */
   drawOffered(offered: Readonly<Record<string, readonly string[]>>, scope: string): void {
     this.#offeredBy.set(scope, offered);
+    if (this.#stale) return;
     for (const held of this.#held.values()) if (held.scope === scope) this.#markPresent(held);
   }
   /** What each serial-set field offers, by scope, as last drawn. */
@@ -521,6 +600,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #draw(): void {
     const region = this.$('.scopes');
     if (!region) return;
+    this.#stale = false;
     this.#held.clear();
     this.#lists.clear();
     region.replaceChildren();
@@ -773,19 +853,8 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field: its header, its actions, and its run of value chips. */
   #drawField(def: FilterDef, scope: string, isPresets: boolean): HTMLElement | null {
     const options = def.options ?? [];
-    /* A field with NO VALUES and NO BODY has nothing to draw at all — so it
-       SAYS SO rather than leaving a gap in the scope. A preset is the one
-       legitimate case, and it never reaches here.
-       TRAP T-the-panel-is-the-toolbar-in-a-column
-       TRAP T-a-broken-assumption-reports */
-    if (!options.length && !hasOwnBody(kindOf(def))) {
-      report({
-        code: 'undrawable-filter',
-        message: 'This filter has no values and no body of its own, so it was skipped.',
-        at: { scope, id: def.id, kind: kindOf(def) },
-      });
-      return null;
-    }
+    // Nothing to draw: `#reportUndrawable` said so.
+    if (!options.length && !hasOwnBody(kindOf(def))) return null;
 
     /* ONLY GROUP AND SORT stay as one chip with their own menu. They are not
        filters — they say HOW the rows are arranged — so they read as the two
@@ -1690,7 +1759,7 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   set savedSets(sets: readonly SavedSet[]) {
     this.#saved.set(sets);
-    if (this.#scopes.length) this.#fillFilters();
+    if (this.#scopes.length && !this.#stale) this.#fillFilters();
   }
   get savedSets(): SavedSet[] {
     return this.#saved.all;

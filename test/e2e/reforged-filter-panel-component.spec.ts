@@ -940,9 +940,12 @@ test('an answer given before the field is drawn is held, read back, and drawn', 
       ] },
     ] }]);
     await window.__settled();
+    // Shut, it reads back the answer; open, it draws it.
+    const read = el.readings['data']?.['status']?.picked;
+    el.setAttribute('open', '');
     const on = [...el.shadowRoot!.querySelectorAll<HTMLElement>('.field[data-field="status"] .value[data-current]')]
       .map((c) => c.dataset['value']);
-    return { early, on, read: el.readings['data']?.['status']?.picked };
+    return { early, on, read };
   });
   expect(r).toEqual({ early: ['churned'], on: ['churned'], read: ['churned'] });
 });

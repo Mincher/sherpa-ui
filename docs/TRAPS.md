@@ -1065,6 +1065,17 @@ it over the Query — typing 60 made the range 60 to 240, and the 120 was gone.
 A view that can go stale is a second owner. The guard is gone: a shut panel
 is drawn as a bar is.
 
+**But a shut panel BUILDS nothing** — TODO 367, 2026-10-20. In toolbars mode the
+panel is `display: none`, and building every field on every filter act cost
+about 800 elements and 120 ms at 4x CPU. So a shut panel keeps every answer
+as DATA, at once: the scopes the source described, each count and
+ruled-out list, and a `drawReading` since (in `#early`, cleared by the next
+description, which is newer). It builds from that data when it opens. Its
+`readings` and `values` read the same data while shut, never a half-built
+field: a date chip fills its answer a tick after it is built. It cannot go
+stale, because nothing it shows or sends is older than the source's last
+word.
+
 **The gate** is `test/e2e/reforged-filter-coordination.spec.ts`: one Records
 page, forty steps across every kind of answer, and after each step every
 control must hold what the Query holds. When a filter control is added or

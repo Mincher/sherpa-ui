@@ -671,7 +671,7 @@
       "$type": "prop",
       "name": "open",
       "type": "string",
-      "observed": false,
+      "observed": true,
       "native": true,
       "description": "the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only"
     }

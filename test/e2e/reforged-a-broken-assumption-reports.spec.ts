@@ -47,6 +47,8 @@ test('the panel reports a field it cannot draw, naming its scope', async ({ page
     const undo = onReport((issue) => seen.push(issue));
 
     const el = await window.__mount('sherpa-filter-panel');
+    // Open: a shut panel builds its fields when it opens. The report comes either way.
+    el.setAttribute('open', '');
     (el as unknown as { populate(d: unknown): void }).populate([{
       scope: 'data',
       label: 'Records',
