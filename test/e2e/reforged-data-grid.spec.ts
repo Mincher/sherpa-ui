@@ -3121,3 +3121,119 @@ test('few columns fill a wide card; a dragged one keeps its width; a narrow card
   const narrow = await read();
   expect(narrow).toMatchObject({ name: 160, score: 160, scrolls: true });
 });
+
+/**
+ * A CELL's filter chip: hover a cell and an icon-only chip shows at its right.
+ * A press adds that cell's value to its field's filter; a second press takes it
+ * off. ONE chip per grid, moved into the cell. Will, TODO 373.
+ */
+test.describe('a cell filter chip', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(async () => {
+      const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+      el.setAttribute('data-column-filters', '');
+      el.setAttribute('data-selectable', '');
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.populate({
+        columns: [{ field: 'name', header: 'Name' }, { field: 'team', header: 'Team' },
+          { field: 'seats', header: 'Seats', type: 'number' }, { field: 'created', header: 'Created', type: 'date' }],
+        rows: [{ name: 'Ada', team: 'Blue', seats: 5, created: '2026-01-05T10:00:00Z' },
+          { name: 'Bob', team: 'Red', seats: 9, created: '2026-01-06' }],
+      });
+      await window.__settled();
+      const w = window as unknown as { heard: unknown[]; rowSelects: number };
+      w.heard = [];
+      w.rowSelects = 0;
+      el.addEventListener('column-filter-change', (e) => w.heard.push((e as CustomEvent).detail.reading));
+      el.addEventListener('row-select', () => { w.rowSelects++; });
+    });
+  });
+  const cell = (page: import('@playwright/test').Page, field: string, row: number) =>
+    page.locator(`sherpa-data-grid .row >> nth=${row}`).locator(`td.cell[data-field="${field}"]`);
+  const chipOf = (page: import('@playwright/test').Page, field: string, row: number) => cell(page, field, row).locator('.cell-filter');
+  const heard = (page: import('@playwright/test').Page) => page.evaluate(() => (window as unknown as { heard: unknown[] }).heard);
+
+  test('shows on the hovered cell only, named for its value, and adds then takes off that value', async ({ page }) => {
+    await expect(page.locator('sherpa-data-grid .cell-filter')).toBeHidden();
+    await cell(page, 'team', 0).hover();
+    const chip = chipOf(page, 'team', 0);
+    await expect(chip).toBeVisible();
+    await expect(chip.locator('.caret')).toHaveAttribute('aria-label', 'Filter Team: Blue');
+    await expect(chip.locator('.caret')).toHaveAttribute('aria-pressed', 'false');
+    await chip.locator('.caret').click();
+    await expect.poll(() => heard(page)).toEqual([{ picked: ['Blue'], mode: 'simple' }]);
+    await expect(chipOf(page, 'team', 0)).toHaveAttribute('data-current', '');
+    // The heading's own chip says the column is filtered.
+    await expect(page.locator('sherpa-data-grid .head-cell[data-field="team"] .head-filter')).toHaveAttribute('data-current', '');
+    // A second value is added beside it…
+    await cell(page, 'team', 1).hover();
+    await chipOf(page, 'team', 1).locator('.caret').click();
+    await expect.poll(async () => (await heard(page)).at(-1)).toEqual({ picked: ['Blue', 'Red'], mode: 'simple' });
+    // …and a press on an ON value takes it off, then the last one ends the filter.
+    await chipOf(page, 'team', 1).locator('.caret').click();
+    await cell(page, 'team', 0).hover();
+    await chipOf(page, 'team', 0).locator('.caret').click();
+    expect((await heard(page)).slice(-2)).toEqual([{ picked: ['Blue'], mode: 'simple' }, null]);
+    // A press is a filter, not a row.
+    expect(await page.evaluate(() => (window as unknown as { rowSelects: number }).rowSelects)).toBe(0);
+  });
+
+  test('a date filters by one DAY, and a number by values, not a range', async ({ page }) => {
+    await cell(page, 'created', 0).hover();
+    await chipOf(page, 'created', 0).locator('.caret').click();
+    await cell(page, 'created', 1).hover();
+    await chipOf(page, 'created', 1).locator('.caret').click();
+    await cell(page, 'seats', 0).hover();
+    await chipOf(page, 'seats', 0).locator('.caret').click();
+    expect(await heard(page)).toEqual([
+      { picked: ['2026-01-05'], mode: 'simple' },
+      // Two days would be "Between": the second REPLACES the first.
+      { picked: ['2026-01-06'], mode: 'simple' },
+      { picked: [5], mode: 'simple', range: false },
+    ]);
+  });
+
+  test('a field with no list to tick takes an "Is" row, so its chip can show it', async ({ page }) => {
+    // Name answers by conditions only, as a free-text field does.
+    await page.evaluate(async () => {
+      const el = document.querySelector('sherpa-data-grid') as HTMLElement & { populate(d: unknown): void };
+      el.populate({
+        columns: [{ field: 'name', header: 'Name', advanced: 'only', op: 'contains' }, { field: 'team', header: 'Team' }],
+        rows: [{ name: 'Ada', team: 'Blue' }, { name: 'Bob', team: 'Red' }],
+      });
+      await window.__settled();
+    });
+    await cell(page, 'name', 0).hover();
+    await chipOf(page, 'name', 0).locator('.caret').click();
+    await cell(page, 'name', 1).hover();
+    await chipOf(page, 'name', 1).locator('.caret').click();
+    await expect(chipOf(page, 'name', 1)).toHaveAttribute('data-current', '');
+    await chipOf(page, 'name', 1).locator('.caret').click();
+    expect(await heard(page)).toEqual([
+      { conditions: [{ op: 'eq', picked: ['Ada'] }], mode: 'advanced' },
+      { conditions: [{ op: 'eq', picked: ['Ada'] }, { op: 'eq', picked: ['Bob'], join: 'or' }], mode: 'advanced' },
+      { conditions: [{ op: 'eq', picked: ['Ada'] }], mode: 'advanced' },
+    ]);
+  });
+
+  test('an INACTIVE chip on a field the View holds, that refuses; none on a grid whose headings do not filter', async ({ page }) => {
+    await page.evaluate(() => (document.querySelector('sherpa-data-grid') as HTMLElement & {
+      supersedeColumns(r: Record<string, unknown>, at?: string): void }).supersedeColumns({ team: { picked: ['Red'] } }, 'App header'));
+    await cell(page, 'team', 1).hover();
+    const held = chipOf(page, 'team', 1);
+    await expect(held).toBeVisible();
+    await expect(held).toHaveAttribute('data-superseded', '');
+    await expect(held).toHaveAttribute('data-applied-at', 'App header');
+    // ON as the View holds it: Red is the View's pick.
+    await expect(held).toHaveAttribute('data-current', '');
+    await held.evaluate((c) => c.shadowRoot!.querySelector<HTMLElement>('.caret')!.click());
+    expect(await heard(page)).toEqual([]);
+    // A field the grid holds itself is a live chip again.
+    await cell(page, 'name', 1).hover();
+    await expect(chipOf(page, 'name', 1)).not.toHaveAttribute('data-superseded', '');
+    await page.evaluate(() => document.querySelector('sherpa-data-grid')!.removeAttribute('data-column-filters'));
+    await cell(page, 'name', 0).hover();
+    await expect(page.locator('sherpa-data-grid .cell-filter')).toBeHidden();
+  });
+});

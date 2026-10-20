@@ -23,7 +23,9 @@
                     row, and shows no control in the header: "select all" is
                     meaningless where only one can be chosen
     data-filterable                          show a secondary header row of filter inputs
-    data-column-filters                      a filter button in each column heading
+    data-column-filters                      a filter button in each column heading, and a
+                                             filter chip in the cell under the pointer: it
+                                             adds or takes off that cell's value
     data-filter-fields                       space-separated fields an EXTERNAL filter
                     is narrowing; those columns' headings take data-status="active".
                     Written by SherpaDataSource — a host driving the grid by hand
@@ -133,6 +135,10 @@
     </thead>
     <tbody class="body" part="body"></tbody>
   </table>
+    <!-- A CELL's filter chip: ONE, moved into the cell under the pointer. It adds
+         or takes off that cell's value. Will, TODO 373. TRAP T-a-cell-chip-is-one-and-moves -->
+    <span class="cell-filter-home"><sherpa-quick-filter class="cell-filter" data-icon-only
+      data-no-value data-locked></sherpa-quick-filter></span>
   </div>
   <div class="empty" part="empty" role="status">
     <slot name="empty" data-accepts="content">No rows to display.</slot>

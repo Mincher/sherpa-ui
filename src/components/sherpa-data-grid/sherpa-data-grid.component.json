@@ -140,6 +140,21 @@
                 "part": "body"
               }
             ]
+          },
+          {
+            "el": "span",
+            "class": "cell-filter-home",
+            "children": [
+              {
+                "el": "sherpa-quick-filter",
+                "class": "cell-filter",
+                "attrs": {
+                  "data-icon-only": "",
+                  "data-no-value": "",
+                  "data-locked": ""
+                }
+              }
+            ]
           }
         ]
       },
@@ -480,7 +495,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a filter button in each column heading"
+      "description": "a filter button in each column heading, and a filter chip in the cell under the pointer: it adds or takes off that cell's value"
     },
     {
       "$type": "prop",
@@ -903,7 +918,8 @@
     "group-count.color": "{sherpa.style-content-base}",
     "group-count.font-size": "{sherpa.font-size-body-small}",
     "empty.padding": "{sherpa.display-mode-space-2xl}",
-    "empty.color": "{sherpa.theme-content-body-1}"
+    "empty.color": "{sherpa.theme-content-body-1}",
+    "cell-filter.inset-inline-end": "{sherpa.display-mode-space-2xs}"
   },
   "$extensions": {
     "sherpa": {

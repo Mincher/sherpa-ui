@@ -9956,6 +9956,31 @@ The tests had the same fault: `.row-select` in a spec counts double too.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-a-cell-chip-is-one-and-moves
+
+A cell's filter chip (TODO 373) is ONE `sherpa-quick-filter` per grid, MOVED
+into the cell under the pointer — not one per cell. A page of 25 rows and 14
+columns would stamp 350 chips, each a shadow root, for a control only one cell
+shows at a time (368 took 50 hidden boxes out of a page for the same reason).
+
+Three things follow from the move:
+
+- A redraw empties the body, so `#renderBody` puts the chip back in
+  `.cell-filter-home` first. Left in its cell it leaves with the row.
+- The pointer does not move when the rows change under it (a press that
+  filters is exactly that), so after a redraw the chip is placed again from
+  the last pointer point, in the next frame, not by forcing layout.
+- CSS shows it only on the hovered cell. The cell keeps the chip after the
+  pointer leaves, so its room (`padding-inline-end`) is a hover rule too, or
+  the last cell stays narrow.
+
+The cell clips at its content box (`overflow-clip-margin`), so the cell that
+holds the chip clips at its padding box, where the chip sits.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
 ### T-a-click-does-not-clear-indeterminate
 
 `indeterminate` is a **JS-only property**. A user's click flips `checked` and
@@ -15063,6 +15088,12 @@ Save flagged the menu (`data-saveable`), which is a sync — but the panel and
 attributes, so the menu's own record and its rows agree. So does a row's
 Remove: a dropped FIRST row left its op and text in the two attributes, and
 the next sync drew it back.
+
+The typed value is a TYPED PICK too, where no list shows it (Advanced only):
+an "Is" row on Name holds its value in the box. Mirroring "" for it (an `eq`
+takes a list) let the next sync empty the box, and the row then read as
+unanswered: a grid cell's "Is Aisha" vanished from the bar's chip (TODO 373).
+While its box is not drawn, such a row reads the pick it was given (`want`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-row-one.spec.ts`

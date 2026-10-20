@@ -32,7 +32,7 @@ import {
 } from '../../core/data/store.js';
 import {
   clauseConditions, fieldState, readingClause, readingRows,
-  type FieldReading, type FieldType, type FilterState,
+  type FieldCondition, type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
 import { sameReading } from '../../core/data/query.js';
@@ -72,6 +72,9 @@ export interface GridColumn extends OffersAdvanced {
 }
 
 type GridRow = Record<string, unknown>;
+
+/** A cell's value, as its filter chip filters on it. TODO 373 */
+interface CellValue { field: string; kind: string; value: unknown; key: string; header: string; text: string; held: boolean }
 
 /** A selection box — a `sherpa-select-checkbox`, or the one-row `sherpa-select-radio`; NOT `HTMLInputElement`. */
 type SelectBox = HTMLElement & { checked: boolean; indeterminate: boolean };
@@ -255,6 +258,10 @@ export class SherpaDataGrid extends SherpaElement {
     // Delegated: the body is replaced per render. The menu sits outside it.
     this.$('.body')?.addEventListener('click', this.#onActionsClick);
     this.$('.actions-menu')?.addEventListener('menu-select', this.#onActionSelect);
+    this.$('.body')?.addEventListener('pointerover', this.#onCellOver);
+    this.$('.body')?.addEventListener('pointerleave', this.#onBodyLeave);
+    this.#cellChip = this.$<SherpaQuickFilter>('.cell-filter');
+    this.#cellChip?.addEventListener('quick-filter-click', this.#onCellFilter);
     if (this.#columns.length) this.#render();
   }
 
@@ -855,7 +862,11 @@ export class SherpaDataGrid extends SherpaElement {
     this.#drawn.set(field, held ? { ...held } : null);
     this.#syncColumnFilterStatus();
     this.#renderBody();
+    this.#reportColumn(field, held);
+  };
 
+  /** Report one column's answer: the heading's menu or a cell's chip set it. */
+  #reportColumn(field: string, held: FieldReading | null): void {
     const col = this.#columns.find((c) => c.field === field);
     const header = col?.header ?? field;
     // TRAP T-grid-number-clause-must-coerce — the clause is the data layer's.
@@ -878,7 +889,7 @@ export class SherpaDataGrid extends SherpaElement {
       // What a toolbar chip shows: "Contains: ana". The field half is `header`.
       label: held ? this.#columnFilterLabel(field, held) : null,
     });
-  };
+  }
 
   /**
    * Read one column's menu into what it holds — both answers and the mode.
@@ -1213,6 +1224,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     const group = this.dataset['groupField'];
     const columns = this.#shownColumns();
+    // The cell chip goes home first: it would leave with its row. TRAP T-a-cell-chip-is-one-and-moves
+    if (this.#cellChip) this.$('.cell-filter-home')?.appendChild(this.#cellChip);
     body.replaceChildren();
 
     // Each <tr>'s index is its place in the FILTERED, SORTED list, so row-click
@@ -1238,6 +1251,7 @@ export class SherpaDataGrid extends SherpaElement {
       }
 
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      this.#rowOf.set(tr, record);
 
       // Cloned from a prototype, so its icons are still bare <i>.
       // TRAP T-a-cloned-prototype-needs-its-icons-upgraded
@@ -1262,6 +1276,7 @@ export class SherpaDataGrid extends SherpaElement {
         const td = this.clone(cellTpl);
         if (!td) return;
         if (col.type) td.dataset['type'] = col.type;
+        td.dataset['field'] = col.field;
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
         this.#fillCell(td, value == null ? '' : String(value), col);
@@ -1280,7 +1295,115 @@ export class SherpaDataGrid extends SherpaElement {
     this.#reportPages(pages);
     // A Find that stepped off the last page lands on this one's first match.
     if (this.#landing) this.#land();
+    // The pointer has not moved, but the cell under it is new: placed after layout, not forcing it.
+    if (this.#pointer) requestAnimationFrame(() => {
+      if (this.#pointer) this.#placeCellChip(this.root.elementFromPoint(this.#pointer.x, this.#pointer.y));
+    });
   }
+
+  /* ── A cell's filter chip — TODO 373 ─────────────────────────────── */
+
+  /** The one cell chip, kept: a redraw parks it, and a cell takes it. */
+  #cellChip: SherpaQuickFilter | null = null;
+
+  /** Each drawn row's record. */
+  #rowOf = new WeakMap<Element, GridRow>();
+
+  /** Where the pointer last entered a cell, while it is over the rows. */
+  #pointer: { x: number; y: number } | null = null;
+
+  /** The pointer came into a cell: the chip goes there. */
+  #onCellOver = (event: Event): void => {
+    const { clientX: x, clientY: y } = event as PointerEvent;
+    this.#pointer = { x, y };
+    this.#placeCellChip(event.target as Element);
+  };
+
+  /** The pointer left the rows. */
+  #onBodyLeave = (): void => {
+    this.#pointer = null;
+  };
+
+  /** Put the chip in the cell at `el`, on when its value is in force. */
+  #placeCellChip(el: Element | null): void {
+    const td = el?.closest?.<HTMLElement>('td.cell[data-field]');
+    const at = td ? this.#cellValue(td) : null;
+    const chip = this.#cellChip;
+    if (!td || !at || !chip) return;
+    if (chip.parentElement !== td) td.appendChild(chip);
+    chip.toggleAttribute('data-current', this.#cellOn(at));
+    // HELD HIGHER: shown inactive, as its heading is. Will, 374. TRAP T-a-view-held-heading-shows-and-refuses
+    chip.toggleAttribute('data-superseded', at.held);
+    if (at.held && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
+    else chip.removeAttribute('data-applied-at');
+    chip.setAttribute('aria-label', `Filter ${at.header}: ${at.text}`);
+  }
+
+  /** The value a cell offers its field, or null where none can be filtered on:
+   *  no filter for its type, or empty. */
+  #cellValue(td: HTMLElement): CellValue | null {
+    const field = td.dataset['field']!;
+    const col = this.#columns.find((c) => c.field === field);
+    const kind = col?.type ?? 'text';
+    if (!col || !FILTERABLE.has(kind)) return null;
+    const row = this.#rowOf.get(td.parentElement!);
+    const raw = row?.[field];
+    if (raw == null || raw === '') return null;
+    // A date is filtered by its DAY: one day is "On", two would be "Between".
+    const day = kind === 'date' ? /^\d{4}-\d{2}-\d{2}/.exec(raw instanceof Date ? raw.toISOString() : String(raw))?.[0] : undefined;
+    if (kind === 'date' && !day) return null;
+    const value = day ?? raw;
+    return { field, kind, value, key: valueKey(value), header: col.header ?? field, text: td.textContent?.trim() || String(value),
+      held: this.#superseded.has(field) };
+  }
+
+  /** Is this cell's value in force on its field: picked in Simple, or an "Is" row in Advanced? */
+  #cellOn(at: CellValue): boolean {
+    const held = this.#shown(at.field);
+    if (!held || held.suspended) return false;
+    const rows = held.mode ? held.mode === 'advanced' : readingRows(held).length > 0;
+    const values = rows ? isRows(held).flatMap((r) => r.picked ?? []) : held.picked ?? [];
+    return values.some((v) => valueKey(v) === at.key);
+  }
+
+  /** A field with no list to tick answers by conditions only: its value is an "Is" row. */
+  #byConditions(field: string): boolean {
+    const col = this.#columns.find((c) => c.field === field);
+    return !!col && kindOf(this.#filterDef(col, this.#columnFilters.get(field))) === 'advanced';
+  }
+
+  /** The cell chip was pressed: its value is added to its field, or taken off. */
+  #onCellFilter = (event: Event): void => {
+    event.stopPropagation();
+    const td = this.#cellChip?.parentElement;
+    const at = td?.matches('td.cell') ? this.#cellValue(td) : null;
+    // A field the View holds is changed there.
+    if (!at || at.held) return;
+    const held = this.#columnFilters.get(at.field);
+    const on = this.#cellOn(at);
+    let next: FieldReading;
+    if (this.#byConditions(at.field)) {
+      // Its value is an "Is" row, OR'd with the others: the shape its chip holds.
+      const kept = readingRows(held ?? {}).filter((r) => !(r.op === 'eq' && (r.picked ?? []).some((v) => valueKey(v) === at.key)));
+      const rows = on ? kept : [...kept, { op: 'eq' as const, picked: [at.value] }];
+      next = { ...held, conditions: rows.map(({ join, ...row }, i) => (i ? { ...row, join: join ?? 'or' } : row)), mode: 'advanced' };
+    } else {
+      const rest = (held?.picked ?? []).filter((v) => valueKey(v) !== at.key);
+      // One value only where a second would change the question: a day, a single pick.
+      const one = at.kind === 'date' || this.#givenFilters[at.field]?.select === 'single';
+      const picked = on ? rest : one ? [at.value] : [...rest, at.value];
+      next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}) };
+    }
+    delete next.suspended;
+    const reading = answersAnything(next) ? next : null;
+    if (reading) this.#columnFilters.set(at.field, reading);
+    else this.#columnFilters.delete(at.field);
+    // The heading's menu is told by the redraw: what it holds no longer matches.
+    this.#renderHead();
+    this.#syncColumnFilterStatus();
+    this.#renderBody();
+    this.#reportColumn(at.field, reading);
+  };
 
   /**
    * Write one cell's text, marking what a TEXT filter matched. TRAP
@@ -1674,6 +1797,8 @@ export class SherpaDataGrid extends SherpaElement {
        stopPropagation there: both listeners sit on `.body` and fire in
        REGISTRATION order, so stopping it later is too late. */
     if ((event.target as HTMLElement).closest('.actions-cell')) return;
+    // …and the cell's filter chip is a filter, not the row.
+    if ((event.target as HTMLElement).closest('.cell-filter')) return;
 
     // A group row is a heading, not a record: clicking it anywhere folds it.
     const groupRow = (event.target as HTMLElement).closest<HTMLElement>('.group-row');
@@ -2208,6 +2333,11 @@ export class SherpaDataGrid extends SherpaElement {
 }
 
 define('sherpa-data-grid', SherpaDataGrid);
+
+/** A reading's "Is" rows: the values a condition-only field holds. */
+function isRows(reading: FieldReading): FieldCondition[] {
+  return readingRows(reading).filter((r) => r.op === 'eq');
+}
 
 /** Does a reading hold ANY answer — a tick, typed text or a row — in either mode? */
 function answersAnything(reading: FieldReading): boolean {

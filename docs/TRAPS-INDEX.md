@@ -599,8 +599,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (90)
+## The data grid (91)
 
+- [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
 - [T-a-cloned-prototype-needs-its-icons-upgraded](TRAPS.md#t-a-cloned-prototype-needs-its-icons-upgraded) — data-grid
 - [T-a-component-asks-its-provider](TRAPS.md#t-a-component-asks-its-provider) — data-grid, pagination

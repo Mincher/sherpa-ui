@@ -767,3 +767,29 @@ test('an icon-only chip with no menu is a toggle: its caret presses it, says its
   expect(r.off).toBe(false);
   expect(r.fired).toEqual([true, false]);
 });
+
+test('a chip whose menu has no list keeps an "Is" row it is given, and says it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const chip = document.createElement('sherpa-quick-filter') as HTMLElement & { reading: unknown; rendered?: Promise<void> };
+    chip.setAttribute('data-label', 'Name');
+    chip.setAttribute('data-menu', '');
+    const menu = document.createElement('sherpa-menu') as HTMLElement & { reading: unknown; rendered?: Promise<void> };
+    for (const [k, v] of Object.entries({ slot: 'menu', 'data-type': 'filter', 'data-op': 'contains', 'data-advanced-only': '',
+      'data-mode': 'advanced', 'data-conditions': 'eq,ne,contains,notcontains,startswith,endswith', 'data-select': 'multiple' })) menu.setAttribute(k, v);
+    chip.appendChild(menu);
+    document.getElementById('root')!.replaceChildren(chip);
+    await chip.rendered;
+    await menu.rendered;
+    // A grid cell's chip sends this for a field with no list: an "Is" row (TODO 373).
+    chip.reading = { conditions: [{ op: 'eq', picked: ['Bo'] }], mode: 'advanced' };
+    await window.__settled();
+    return {
+      reading: menu.reading,
+      on: chip.hasAttribute('data-current'),
+      says: chip.shadowRoot!.querySelector('.caret-label')?.textContent,
+      box: (menu.shadowRoot!.querySelector('.condition-row .condition-value') as HTMLInputElement).value,
+    };
+  });
+  expect(r.reading).toMatchObject({ conditions: [{ op: 'eq', picked: ['Bo'] }], mode: 'advanced' });
+  expect(r).toMatchObject({ on: true, says: 'Bo', box: 'Bo' });
+});

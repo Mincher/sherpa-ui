@@ -2275,7 +2275,7 @@
             },
             {
               "name": "data-column-filters",
-              "description": "a filter button in each column heading",
+              "description": "a filter button in each column heading, and a filter chip in the cell under the pointer: it adds or takes off that cell's value",
               "type": {
                 "text": "boolean"
               }

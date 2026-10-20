@@ -786,3 +786,23 @@
 
 /* A GROUP's box is a select-all for its rows, so it goes for the same reason. */
 :host([data-select="single"]) .group-select { display: none; }
+
+/* ── A cell's filter chip: ONE, moved into the cell under the pointer. TODO 373 ──
+   TRAP T-a-cell-chip-is-one-and-moves */
+.cell-filter-home { display: none; }
+.cell-filter {
+  display: none;
+  position: absolute;
+  inset-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+}
+/* Only where the headings filter too. */
+:host([data-column-filters]) .cell:is(:hover, :focus-within) > .cell-filter { display: inline-flex; }
+/* Its cell makes room for it, and lets it paint in its padding. */
+:host([data-column-filters]) .cell:is(:hover, :focus-within):has(> .cell-filter) {
+  padding-inline-end: calc(var(--sherpa-display-mode-size-lg, 24px) + 2 * var(--sherpa-display-mode-space-2xs, 4px));
+  overflow-clip-margin: padding-box;
+}
+/* A pinned cell is sticky, which places the chip already. */
+.cell:not([data-pinned]):has(> .cell-filter) { position: relative; }

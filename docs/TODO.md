@@ -54,6 +54,11 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0z | 370 | RULE — a filter setup crosses tabs, windows and sessions ONLY once the reader saves it: drafts and the kept Query are the tab's own (Will) | filters |
 | ✅ | 0za | 371 | UX — a scrollbar's track is white on a dark page; make every track clear (Will) | look |
 | ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
+| ✅ | 0zc | 373 | UX — hover a grid cell: an icon-only filter chip at its right adds that cell's value to the filter, and a second press takes it off (Will) | filters |
+| ✅ | 0zd | 374 | ASK — a cell chip on a field the VIEW holds (Customer, Region in Demos): Will — show it INACTIVE on hover, as the heading is | filters |
+| ⬜ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
+| ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
+| ❓ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: a SHUT panel keeps the Query as data and draws it when it opens. Keep that, or draw the shut panel on every change? | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1470,6 +1475,107 @@ fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
 sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
 3 engines, the coordination gate among them.
 
+### `[ ]` ❓ 377 — ASK: hidden inputs and the shut panel
+
+Will, 2026-10-20 (366): *"Any input fields that show a value from the
+QueryContext need to be updated. Even if they are hidden."* TODO 367 made a
+SHUT panel keep the Query as data and build its fields when it opens: every
+value it shows is current when it shows, and its getters read the data. That
+took one filter click from 176 to 56 ms at 4x CPU.
+
+- **A (my pick):** keep 367. A hidden panel never shows an old value: it draws
+  the current Query when it opens. Every other hidden input (a shut chip menu,
+  a grid heading's menu, the cell chip) is updated at once, as now.
+- **B:** draw the shut panel on every change too. Simple to state, and about
+  120 ms more per filter click.
+
+### `[ ]` ⬜ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
+
+Will, 2026-10-20: *"Add an icon only 'Hide invalid values' button to the filter
+toolbar, and filter panel, overflow menus. This will toggle the visibility of
+invalid menu items in the filter menus."*
+
+Today the ⋮ menu (`src/core/sherpa-filter-more.html`, `more-menu.ts`) has a
+tick row, "Hide unmatching filters", shown only while "Limit options" is on; it
+sets `data-hide-unmatched` (TODO 305), and every filter menu and grid heading
+follows it. So: that row becomes an icon-only toggle button named "Hide invalid
+values", pressed while on. Settle at build time: where it sits in the ⋮ menu,
+and its icon. **Will, 2026-10-20:** *"'Hide unmatching filters' should be
+inactive, not hidden, when 'Limit matching filters' is not selected."* So it is
+always there, and inactive while Limit is off.
+
+### `[ ]` ⬜ 375 — FILTERS: a range is an Advanced condition
+
+Will, 2026-10-20: *"For numerical and date fields a 'range' is an advanced
+filter. To use a range, the user will enable advanced filter mode and then set
+the condition to 'between'. Other conditions such as not between, contains,
+does not contain etc. can be used too. 'Contains' and 'Does not contain' for a
+date should show a select dropdown with: Monday, Tuesday, Wednesday, Thursday,
+Friday, Saturday, Sunday, Weekdays, Weekends. We no longer need the range
+toggle as the 'advanced filter' chip will handle this mode switch."*
+
+So:
+- Simple mode on a number or a date picks values (a number's list, a date's
+  days). No Range switch.
+- Advanced mode (the f(x) chip, 372) holds the rows: Between and Not between
+  take two ends; the other ops as now.
+- A date's Contains and Does not contain take ONE pick from a select: a day of
+  the week, Weekdays or Weekends. The data layer compiles it (a server gets it
+  as a clause too).
+- What goes: the Range switch, `FieldReading.range` and `kept` (TRAP
+  `T-both-shapes-are-kept`, `T-the-field-type-decides-the-clause`), and a date's
+  two days meaning Between in Simple. Old stored readings with `range: true`
+  are read once as a Between row. The cell chip (373) stops setting
+  `range: false`.
+
+### `[x]` ✅ 374 — ASK: a cell chip on a field the View holds
+
+Found building 373. In Demos' Records the View holds Customer and Region, so a
+grid heading for them is greyed and refuses (TRAP
+`T-a-view-held-heading-shows-and-refuses`). The cell chip follows the heading:
+those cells show no chip.
+
+- **A (my pick):** keep it. The reader changes a View-held field in the View's
+  chip, as the heading says.
+- **B:** the cell chip edits the View's filter for that field. This is easy
+  after 366 (one request to the QueryContext); today it needs a second path.
+
+**Will, 2026-10-20:** *"Show the inactive filter chip in the grid cell, on hover,
+for fields that are limited by view scope."* **✅ Done:** the chip shows there
+with `data-superseded` and `data-applied-at`, as the heading's does: inactive,
+ON where the View holds that value, and a press changes nothing.
+
+### `[x]` ✅ 373 — UX: a grid cell's filter chip
+
+Will, 2026-10-20: *"When hovering over a data grid cell we should show an icon
+only filter chip on the right side of the cell. Clicking this should add the
+cell field and value to the filter query. Clicking it again should remove it."*
+
+**✅ Done 2026-10-20.** One icon-only `sherpa-quick-filter` per grid moves into
+the cell under the pointer (TRAP `T-a-cell-chip-is-one-and-moves`). It is ON,
+in the filter-on look, when that value is picked and in force. A press adds the
+value to the column's answer, or takes it off, and reports it the way a
+heading's menu does (`column-filter-change`, so the data layer's
+`answerColumn`). A DATE filters by its day, and a second day replaces the first
+(two would be "Between"). A NUMBER sets `range: false`. A single-pick field
+replaces. A field with NO list to tick (Advanced only, as Name) takes an "Is"
+row, OR'd with the others: the shape its chip holds. Only with
+`data-column-filters`; on a field the View holds it is inactive (374). The
+hovered cell makes room for it, so a number is not covered.
+
+**Bug, Will 2026-10-20:** *"Applying a filter from a grid cell does not correctly
+populate, or activate, the filter chip in the toolbar or the filter section in
+the filter panel."* **✅ Fixed:** two causes. (1) The cell chip sent ticked
+values for Name, which has no list, so the bar's new Name chip had nothing to
+show: it now sends an "Is" row. (2) A menu with no list LOST an "Is" row it was
+given: drawing the rows mirrored row one's text into `data-value` as "", and a
+later sync put that "" back in the box the row reads. Now the mirror carries the
+typed pick, and the row reads what it was given while its box is not drawn. A
+Demos test presses Plan and Name and reads the bar chip and the panel. A press
+is not a row click. Tests: 3 new (9 runs), every grid and provider spec, 3
+engines. Demos' row-details test now clicks the row's first cell: the middle of
+the row is the Status cell's chip.
+
 ### `[x]` ✅ 372 — UX: a panel field's f(x) is an icon-only filter chip
 
 Will, 2026-10-20: *"The filter panel still uses an active button for the
@@ -1601,7 +1707,12 @@ a chip in the filter panel header (or filter toolbar) when selected. Selecting a
 saved filter definition should just apply the state, fields, and values to the
 filter chip components to match the query definition."* So a saved filter LOADS:
 no saved chip, no page toggle chip, no ` *` mark, no Dismiss cross. Its fields,
-values and on/off show on the ordinary chips. **Step 3, running:** a read-only
+values and on/off show on the ordinary chips. **And:** *"All filtering,
+grouping, and sorting, should be feeding to the QueryContext when changed. When
+the QueryContext updates it should broadcast the changes out to all components.
+I think we have this. Any input fields that show a value from the QueryContext
+need to be updated. Even if they are hidden."* (377 asks how this meets 367.)
+**Step 3, running:** a read-only
 design of that, then a revision that folds it and every checker finding into the
 plan, then the build.
 

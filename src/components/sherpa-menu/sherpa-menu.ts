@@ -637,8 +637,10 @@ export class SherpaMenu extends SherpaElement {
         if (want) pick.value = want;
       });
     }
-    // A NUMBER's `=` is typed too, and kept as its one pick — and so is one with no list.
-    if (text) text.value = seed?.text ?? (this.#typesItsPicks() && seed?.picked?.length ? String(seed.picked[0]) : '');
+    /* A NUMBER's `=` is typed too, and kept as its one pick — and so is one with no list.
+       Written whether or not a list is here NOW: a list that goes later reads the box. */
+    /* …written whether or not a list is here NOW: a list that goes later reads the box. */
+    if (text) text.value = seed?.text ?? (seed?.picked?.length && (OP_TAKES[seed.op] ?? 'list') === 'list' ? String(seed.picked[0]) : '');
     if (dated) this.#fillDateRow(row, seed);
   }
 
@@ -773,7 +775,8 @@ export class SherpaMenu extends SherpaElement {
       /* A NUMBER's `=` is typed, and answers as the one number it picks —
          as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
       if (this.#typesItsPicks() && takes === 'list') {
-        const typed = (row.querySelector<SherpaInputText>('.condition-value')?.value ?? '').trim();
+        // The box, else what the row was given: a box not drawn yet reads ''. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
+        const typed = (row.querySelector<SherpaInputText>('.condition-value')?.value ?? '').trim() || row.dataset['want'];
         if (typed) out.picked = [typed];
       } else if (takes === 'list') {
         /* `row.dataset.want` is what the READER chose. A `<select>` shows its
@@ -828,7 +831,11 @@ export class SherpaMenu extends SherpaElement {
       return;
     }
     if (this.dataset['op'] !== first.op) this.set('data-op', first.op);
-    const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '') : '';
+    /* …and a pick that is TYPED, where no list shows it (Advanced only): the box
+       holds it, so a later sync must not put back an empty one. TODO 373 */
+    const typesIt = this.#typesItsPicks() || this.#advancedOnly();
+    const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '')
+      : typesIt ? String(first.picked?.[0] ?? '') : '';
     /* `data-value` TOO. A rebuilt row already holds the text, so comparing the
        box alone skipped the write — and the next re-sync put back the empty
        attribute over what a host had set. TRAP T-row-one-is-data-op */
@@ -907,6 +914,13 @@ export class SherpaMenu extends SherpaElement {
       row.dataset['takes'] = this.#takes(op);
       const picked = row.querySelector<SherpaInputText>('.condition-pick')?.value ?? '';
       if (picked) row.dataset['want'] = picked;
+      // A TYPED pick is what the row wants now, emptied too — from the box itself only.
+      const fromBox = !!(event?.target as HTMLElement | null)?.closest?.('.condition-value');
+      if (fromBox && this.#typesItsPicks() && (OP_TAKES[op] ?? 'list') === 'list') {
+        const typed = (row.querySelector<SherpaInputText>('.condition-value')?.value ?? '').trim();
+        if (typed) row.dataset['want'] = typed;
+        else delete row.dataset['want'];
+      }
     }
 
     // A NUMBER's host attributes are its BODY's, and a date's. TRAP T-a-number-has-advanced-rows
