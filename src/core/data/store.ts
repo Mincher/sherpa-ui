@@ -415,9 +415,9 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
     case 'endswith':
       return text(actual).endsWith(text(value));
     case 'in':
-      return Array.isArray(value) && value.some((v) => looseEqual(actual, v));
+      return Array.isArray(value) && inList(actual, value);
     case 'notin':
-      return !Array.isArray(value) || !value.some((v) => looseEqual(actual, v));
+      return !Array.isArray(value) || !inList(actual, value);
     case 'last':
     case 'next':
       return matchesFilter(row, absoluteDates(filter));
@@ -443,6 +443,24 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
  * is the set form, and is what a control usually wants.
  * TRAP T-one-comparison-rule-for-query-and-ui
  */
+/** A list's values as `looseEqual` reads them, worked out ONCE per list. */
+const listKeys = new WeakMap<readonly unknown[], { keys: Set<string>; nul: boolean; undef: boolean }>();
+
+/** Is a row's value one of a list's, as `looseEqual` says — through a Set, not a
+ *  key per list value per row. A null or undefined matches only itself. TODO 369 */
+function inList(actual: unknown, list: readonly unknown[]): boolean {
+  let known = listKeys.get(list);
+  if (!known) {
+    known = { keys: new Set(list.filter((v) => v != null).map(text)), nul: list.includes(null), undef: list.includes(undefined) };
+    listKeys.set(list, known);
+  }
+  if (actual === null) return known.nul;
+  if (actual === undefined) return known.undef;
+  // NaN equals nothing, itself included, as `===` says.
+  if (typeof actual === 'number' && Number.isNaN(actual)) return false;
+  return known.keys.has(text(actual));
+}
+
 function looseEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;

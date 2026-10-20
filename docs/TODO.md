@@ -50,7 +50,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
-| ⬜ | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| 🚧 | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
 | ✅ | 0z | 370 | RULE — a filter setup crosses tabs, windows and sessions ONLY once the reader saves it: drafts and the kept Query are the tab's own (Will) | filters |
 | ✅ | 0za | 371 | UX — a scrollbar's track is white on a dark page; make every track clear (Will) | look |
 | ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
@@ -1711,7 +1711,7 @@ definition."* Two things broke it:
 per tab; its suite 454 pass. TRAPs `T-a-view-keeps-a-draft`,
 `T-a-reload-replays-the-readers-answers`.
 
-### `[ ]` ⬜ 369 — FILTERS: tiered values, and a tree menu
+### `[~]` 🚧 369 — FILTERS: tiered values, and a tree menu
 
 Will, 2026-10-20: *"In the demo app, customers should be able to have sites
 (e.g. office locations). This makes the menu for the customer filter chip a

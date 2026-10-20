@@ -113,7 +113,7 @@
   "src/core/data/spoof-remote.ts": 78,
   "src/core/data/store-cache.ts": 379,
   "src/core/data/store-history.ts": 85,
-  "src/core/data/store.ts": 625,
+  "src/core/data/store.ts": 643,
   "src/core/data/stores.ts": 530,
   "src/core/data/threshold.ts": 35,
   "src/core/data/timing.ts": 55,
