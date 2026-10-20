@@ -23,6 +23,7 @@ Line numbers are from the HEAD the run read; check each one when you build.
 - **B: last applied**: The tab keeps the last saved filter you applied. Save saves over it, also after you change the chips. Delete deletes it. One per-tab key stays.
 
 Pick: A: by match
+**Will: A, by match.**
 
 ### You apply a saved filter. What happens to a scope that it does not name?
 
@@ -30,6 +31,7 @@ Pick: A: by match
 - **B: clear it**: Every scope matches the saved filter exactly. A scope it does not name is cleared.
 
 Pick: A: keep it
+**Will: B, clear it.** Every scope matches the saved filter exactly.
 
 ### A saved filter is ticked in the Filters menu, and you untick it. What happens?
 
@@ -37,6 +39,7 @@ Pick: A: keep it
 - **B: clear**: The filters of the scopes it names are cleared.
 
 Pick: A: nothing
+**Will: B, clear.** Unticking clears the filters of the scopes it names.
 
 ### TODO 320 waits for your test run and for 302 and 311. Commits 20-22 do 320's work. What do we do?
 
@@ -44,6 +47,7 @@ Pick: A: nothing
 - **B: wait**: Commits 20-22 wait for your test run and for 302 and 311. S1 to 19 go first.
 
 Pick: A: 366 does it
+Not asked yet: it matters only at commit 20.
 
 ## Commits
 

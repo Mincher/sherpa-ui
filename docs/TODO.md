@@ -58,7 +58,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zd | 374 | ASK — a cell chip on a field the VIEW holds (Customer, Region in Demos): Will — show it INACTIVE on hover, as the heading is | filters |
 | ⬜ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
 | ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
-| ❓ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: a SHUT panel keeps the Query as data and draws it when it opens. Keep that, or draw the shut panel on every change? | filters |
+| ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1475,7 +1475,7 @@ fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
 sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
 3 engines, the coordination gate among them.
 
-### `[ ]` ❓ 377 — ASK: hidden inputs and the shut panel
+### `[x]` ✅ 377 — ASK: hidden inputs and the shut panel
 
 Will, 2026-10-20 (366): *"Any input fields that show a value from the
 QueryContext need to be updated. Even if they are hidden."* TODO 367 made a
@@ -1488,6 +1488,8 @@ took one filter click from 176 to 56 ms at 4x CPU.
   a grid heading's menu, the cell chip) is updated at once, as now.
 - **B:** draw the shut panel on every change too. Simple to state, and about
   120 ms more per filter click.
+
+**✅ Will, 2026-10-20: A, keep 367.**
 
 ### `[ ]` ⬜ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
 
@@ -1711,7 +1713,13 @@ values and on/off show on the ordinary chips. **And:** *"All filtering,
 grouping, and sorting, should be feeding to the QueryContext when changed. When
 the QueryContext updates it should broadcast the changes out to all components.
 I think we have this. Any input fields that show a value from the QueryContext
-need to be updated. Even if they are hidden."* (377 asks how this meets 367.)
+need to be updated. Even if they are hidden."* (377: a shut panel keeps 367.)
+**Will's answers to the build plan, 2026-10-20:** Save and Delete find their
+saved filter BY MATCH (the Filters menu ticks each one on screen; Save always
+asks for a name). Applying one CLEARS every scope it does not name, so the
+screen matches it exactly (this replaces 105's "the rest stay"). Unticking one
+CLEARS the filters of the scopes it names. Plan:
+[plan-366-build.md](history/plan-366-build.md).
 **Step 3, running:** a read-only
 design of that, then a revision that folds it and every checker finding into the
 plan, then the build.
