@@ -68,7 +68,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
-| ⬜ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
+| ✅ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1544,7 +1544,7 @@ every held field, so it limits the rows but not the held fields' lists; per-valu
 counts and set-aside are for Simple picks only, by design; a superseded chip's
 rows are never greyed.
 
-### `[ ]` ⬜ 387 — GALLERY: two node checks fail
+### `[x]` ✅ 387 — GALLERY: two node checks fail
 
 Found 2026-10-20, running `../Sherpa Gallery`'s `npm test` for 366 S2 (its
 Playwright 207/207 pass). `every data story's markup passes the usage check`:
@@ -1554,6 +1554,9 @@ and steps through each enum of its spec`: no story steps through `sherpa-button`
 and `sherpa-nav-item` `data-type`, `sherpa-data-grid` `data-hide-unmatched` and
 `data-limit-options`, or `sherpa-radial-chart` `data-legend`. Fix the stories
 in the Gallery; nothing in sherpa-ui changes.
+
+**✅ Done 2026-10-20** (Gallery `6ca9655`): the gauge story writes `min` and `max`,
+and five variant stories step the enums. Gallery node 3/3, Playwright 207.
 
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 
