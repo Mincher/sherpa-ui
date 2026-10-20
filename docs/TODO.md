@@ -59,6 +59,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
 | ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
+| ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |

@@ -950,3 +950,25 @@ test('an answer given before the field is drawn is held, read back, and drawn', 
   });
   expect(r).toEqual({ early: ['churned'], on: ['churned'], read: ['churned'] });
 });
+
+/** Wide, the header's button reads "Save filters", with its space: the space
+ *  inside the word's span is a FLEX item's first character, and a plain one
+ *  collapsed to nothing. Will, 2026-10-20 (TODO 378). */
+test('the header\'s Save filters keeps the space between its two words', async ({ page }) => {
+  const gap = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-filter-panel') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-saveable', '');
+    el.style.inlineSize = '720px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    (el as HTMLElement & { show(): void }).show();
+    await new Promise((r) => setTimeout(r, 150));
+    const word = el.shadowRoot!.querySelector('.save-word')!;
+    const range = document.createRange();
+    range.setStart(word.firstChild!, 0);
+    range.setEnd(word.firstChild!, 1);
+    return { shown: (word as HTMLElement).getClientRects().length > 0, space: range.getBoundingClientRect().width };
+  });
+  expect(gap.shown).toBe(true);
+  expect(gap.space).toBeGreaterThan(1);
+});
