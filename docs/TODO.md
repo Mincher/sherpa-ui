@@ -1564,8 +1564,13 @@ there too and send one-field requests, so the two-way loop goes.
 commits; two checkers found 7 unsafe as written). **Will, 2026-10-20:** D1 A — one
 Apply for the whole Context when any source is remote; D2 A — a superseded chip's
 own answer is kept in the Query (`ScopeQuery.superseded`); D3 A — a source skips a
-saved filter that names a field it lacks, whole. **Step 3, running:** a read-only
-revision that folds every checker finding in, then the build.
+saved filter that names a field it lacks, whole. **Will, 2026-10-20:** *"Saved
+filters need to be reworked to provide a single query definition to the single
+query component."* Both kinds — a page's saved filters (the preset library,
+on/off by id) and a reader's saved sets — become ONE query definition (the JSON a
+View uses) handed to the QueryContext. **Step 3, running:** a read-only design of
+that, then a revision that folds it and every checker finding into the plan, then
+the build.
 
 ---
 
