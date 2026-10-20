@@ -57,9 +57,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
-    /* The filters before it rule this value out: greyed, and refused while off — on,
-       it is set aside and may be let go. Written by its host. Will, TODO 174
-       and 180. TRAP T-a-ruled-out-value-is-greyed */
+    /* The filters before it rule this value out: greyed and refused, on or off —
+       inactive is not interactive. Written by its host. Will, TODO 174 and
+       2026-10-20. TRAP T-a-ruled-out-value-is-greyed */
     'data-unavailable': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-active */
@@ -644,10 +644,10 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#openMenu();
   };
 
-  /** Ruled out and OFF: nothing to press. On, it is set aside and may be let go —
-   *  but a key's ON is SHOWN, not picked, so it has nothing to let go. */
+  /** Ruled out: nothing to press, on or off — inactive is not interactive (Will,
+   *  2026-10-20). A chip with a menu still opens it. */
   #refused(): boolean {
-    return this.hasAttribute('data-unavailable') && (!this.current || this.#isKey());
+    return this.hasAttribute('data-unavailable');
   }
 
   /** A chart legend's row. TRAP T-a-legend-row-is-a-key-chip */

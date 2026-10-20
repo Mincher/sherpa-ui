@@ -101,11 +101,16 @@ test('the panel removes a value chip its chain does not offer, and keeps one tha
     panel.show();
     await window.__settled();
     panel.drawOffered({ region: ['AMER'] }, 'view');
-    return [...panel.shadowRoot!.querySelectorAll<HTMLElement>('.field[data-field="region"] .value')]
+    const shown = [...panel.shadowRoot!.querySelectorAll<HTMLElement>('.field[data-field="region"] .value')]
       .filter((chip) => getComputedStyle(chip).display !== 'none')
       .map((chip) => `${chip.dataset['value']}${chip.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
+    // Pressed, it stays on: inactive is not interactive.
+    const emea = panel.shadowRoot!.querySelector<HTMLElement & { current: boolean }>('.field[data-field="region"] .value[data-value="EMEA"]')!;
+    emea.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    await window.__settled();
+    return { shown, on: emea.current };
   }, REGIONS);
   // EMEA is on, and the chain leaves it nothing: a VALUE the context rules out reads
-  // inactive, on or off (Will, 2026-10-20).
-  expect(r).toEqual(['AMER', 'EMEA [dim]']);
+  // inactive, and refuses a press, on or off (Will, 2026-10-20).
+  expect(r).toEqual({ shown: ['AMER', 'EMEA [dim]'], on: true });
 });

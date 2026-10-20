@@ -7923,8 +7923,8 @@ went on filtering. Will, TODO 167.
 **A value the filters BEFORE it rule out stays in its list, greyed out, and
 cannot be picked** — Will, TODO 174 (110's B), made ONE WAY by TODO 349 (D4 A):
 a field's scopes and the filters before it in the one order limit it, never
-the ones after. A value already picked stays ticked, greyed and free to untick
-— SET ASIDE: kept in the reading (a saved View, a draft and the URL keep it),
+the ones after. A value already picked stays ticked and greyed — SET ASIDE:
+kept in the reading (a saved View, a draft and the URL keep it),
 left out of the compiled filter (`CompileFacts.drop`). Let the earlier filter
 go and it is back. (Until 349 a LATER answer set an earlier pick aside —
 TODO 180, newest first; the one order replaced it.)
@@ -7958,9 +7958,11 @@ or off, ticked or not (Will, 2026-10-20: *"even if checked, to visually
 communicate that it's limited by the context"*). A menu row is pinned to the
 `inactive` Style mode (`.menu-row[data-unavailable]` in `state-pins.yaml` — a
 class key, as the row is slotted light DOM), and its checkbox takes the
-mode's accent (`accent-color`), so a ticked one is a grey tick that can still
-be unticked. A panel's value chip that is on and ruled out is greyed too, and
-may be let go.
+mode's accent (`accent-color`), so a ticked one is a grey tick. **Inactive is
+not interactive** (Will, 2026-10-20): the row is disabled, ticked or not, with
+no hover; a panel's value chip that is ruled out refuses a press, on or off; a
+chip with a menu still opens it. The reader lets a ruled-out pick go with the
+menu's Clear or Remove, the field's Reset, or the filter chip's off.
 
 **Each control is TOLD** — `drawPresent(present, scope)` on a bound bar, panel
 or grid — and passes it to `menu.present`, which greys and disables the rows

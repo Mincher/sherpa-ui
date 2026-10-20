@@ -1311,9 +1311,9 @@ export class SherpaMenu extends SherpaElement {
 
   /**
    * The values the filters before it LEAVE, as value keys — its host's, from the
-   * source. A row they rule out is greyed and refused; a TICKED one stays
-   * ticked, greyed, free to untick — set aside, not applied (180). `null`
-   * limits nothing. Silent: no event. TRAP T-a-ruled-out-value-is-greyed
+   * source. A row they rule out is greyed and refused, a TICKED one too: it stays
+   * ticked, and Clear lets it go. `null` limits nothing. Silent: no event.
+   * TRAP T-a-ruled-out-value-is-greyed
    */
   set present(values: readonly string[] | null) {
     // The same list does nothing: a draw tells every chip's menu each time.
@@ -1360,8 +1360,9 @@ export class SherpaMenu extends SherpaElement {
       const ruled = given.get(box.value)?.available === false || why === 'unmatched';
       row?.toggleAttribute('data-removed', (why === 'unoffered' || (hides && ruled)) && !box.checked);
       const out = ruled || why === 'unoffered';
+      // INACTIVE is not interactive, ticked or not: Clear, Remove or the chip's off let it go (Will, 2026-10-20).
       // Only ever undo its OWN refusal.
-      if (out) box.disabled = !box.checked;
+      if (out) box.disabled = true;
       else if (row?.hasAttribute('data-unavailable')) box.disabled = false;
       row?.toggleAttribute('data-unavailable', out);
       const said = box.getAttribute('aria-description');

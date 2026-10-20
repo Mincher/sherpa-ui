@@ -43,6 +43,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
 | ✅ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
 | ✅ | 0q | 361 | UX — a value the context rules out has an INACTIVE checkbox, even when ticked (Will) | filters |
+| ✅ | 0r | 362 | UX — an inactive value is not interactive: a ticked ruled-out menu row or an on value chip refuses a press (Will) | filters |
+| ⬜ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1334,6 +1336,26 @@ chip that is ON and ruled out is greyed too (it had stayed active under 358 —
 the FILTER's chip stays active at 0, a VALUE reads inactive). Tests:
 `reforged-quick-filter-toolbar` (the box's accent is the inactive one),
 `reforged-serial-set`. TRAP `T-a-ruled-out-value-is-greyed`.
+
+
+### `[x]` ✅ 362 — UX: an inactive value is not interactive
+
+Will, 2026-10-20: *"I shouldn't be able to toggle the inactive menu item to
+unchecked. If it's inactive it's not interactive."*
+
+**✅ Done 2026-10-20.** A menu row the filters before it rule out is disabled,
+ticked or not, with no hover; Select all leaves it be. A panel's value chip
+that is ruled out refuses a press, on or off (a chip with a menu still opens
+it). The reader lets a ruled-out pick go with the menu's Clear or Remove, the
+field's Reset, or the filter chip's off. Tests: `reforged-quick-filter-toolbar`
+(a press leaves the row ticked), `reforged-serial-set` (a press leaves the
+chip on), Demos `reforged-limit-options`. TRAP `T-a-ruled-out-value-is-greyed`.
+
+### `[ ]` ⬜ 363 — BUG: a chip's value tooltip shows only while it is on
+
+Will, 2026-10-20: *"Filter chip value tooltips only show if the chip is active.
+The active/inactive state should have no bearing on the visibility of the
+tooltip."*
 
 ---
 

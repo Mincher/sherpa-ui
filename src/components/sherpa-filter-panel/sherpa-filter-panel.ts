@@ -454,7 +454,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if (held.menu) Object.assign(held.menu, { present: left, offered });
       return;
     }
-    // A VALUE the context rules out reads inactive, on or off (Will, 2026-10-20); on, it may be let go.
+    // A VALUE the context rules out reads inactive, and is refused, on or off (Will, 2026-10-20).
     for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(chip) !== held) continue;
       const why = out(chip.dataset['value'] ?? '');
@@ -1311,8 +1311,8 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A single-select field unticks its siblings. */
   #onValueClick = (event: Event): void => {
     const one = this.pathFind(event, '.value');
-    // A ruled-out value is refused — unless it is on, so it can be let go. TRAP T-a-ruled-out-value-is-greyed
-    if (!one || (one.hasAttribute('data-unavailable') && !one.hasAttribute('data-current'))) return;
+    // A ruled-out value is refused, on or off: inactive is not interactive. TRAP T-a-ruled-out-value-is-greyed
+    if (!one || one.hasAttribute('data-unavailable')) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
     /* ONE OF THIS FIELD'S VALUES, not one of the run. A section can hold two

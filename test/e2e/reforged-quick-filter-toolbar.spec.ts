@@ -2788,14 +2788,20 @@ test('a chip whose every pick is ruled out stays active, toggles, and its menu g
     probe.remove();
     const before = { greyed: chip.hasAttribute('data-unavailable'), on: chip.current,
       row: { greyed: row.hasAttribute('data-unavailable'), ticked: row.querySelector('input')!.checked, says: row.getAttribute('title'),
-        // Its box in the inactive mode, ticked too (Will, 2026-10-20).
-        inactiveBox: getComputedStyle(row.querySelector('input')!).accentColor === inactive } };
+        // Its box in the inactive mode, ticked too, and not interactive (Will, 2026-10-20).
+        inactiveBox: getComputedStyle(row.querySelector('input')!).accentColor === inactive,
+        refused: row.querySelector('input')!.disabled } };
+    // A press on the row leaves it ticked.
+    row.click();
+    await window.__settled();
+    const stillTicked = row.querySelector('input')!.checked;
     // A press on its body turns it off, as any chip.
     chip.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await window.__settled();
-    return { before, off: !chip.current };
+    return { before, stillTicked, off: !chip.current };
   });
   expect(r.before).toEqual({ greyed: false, on: true,
-    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true } });
+    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true, refused: true } });
+  expect(r.stillTicked).toBe(true);
   expect(r.off).toBe(true);
 });
