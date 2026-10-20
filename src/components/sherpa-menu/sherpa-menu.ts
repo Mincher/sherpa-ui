@@ -66,6 +66,8 @@ export interface MenuItem {
   /** A small × at its end that REMOVES it — a one-value filter, whose tick
    *  means On. Reported as `menu-row-remove`. TODO 54 */
   remove?: boolean;
+  /** A tiered field's child value: its parent value's key. TODO 369 */
+  parent?: string;
 }
 
 /** How long a pointer RESTS on a row before its child menu opens. */

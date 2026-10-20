@@ -912,7 +912,8 @@ export class SherpaFilterPanel extends SherpaElement {
       return box;
     }
 
-    for (const option of values ? options : []) {
+    // A tiered field's children are its parents' menus, not chips of their own. TODO 369
+    for (const option of values ? options.filter((o) => !o.parent) : []) {
       const one = this.#valueChip(option.value, option.label ?? option.value,
         { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}),
           ...(option.swatch ? { swatch: option.swatch } : {}) });

@@ -149,6 +149,9 @@ export interface FieldFacts {
   time?: boolean;
   /** A number's bands, for a condition that names one. TRAP T-a-threshold-is-a-fact-of-the-field */
   thresholds?: readonly Threshold[];
+  /** A TIERED field's child field, and each child pick's (path's) parent, by key. TODO 369 */
+  child?: string;
+  parentOf?: ReadonlyMap<string, string>;
 }
 
 /** What is true right now, which decides the STATES. */

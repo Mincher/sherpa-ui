@@ -96,5 +96,7 @@ const EXPLODE_AT = 16;
 /** A list too long for a run: ONE chip, its values in its menu. */
 export function oneChipList(def: KindSource): boolean {
   const kind = kindOf(def);
-  return (kind === 'single' || kind === 'multi') && (def.options?.length ?? 0) > EXPLODE_AT;
+  // PARENTS only: a tiered field's children are under them. TODO 369
+  const parents = (def.options ?? []).filter((o) => !(o as { parent?: string }).parent).length;
+  return (kind === 'single' || kind === 'multi') && parents > EXPLODE_AT;
 }

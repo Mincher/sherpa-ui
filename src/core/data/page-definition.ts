@@ -77,6 +77,10 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
   const children = checkTiers(def);
   for (const [field, facts] of Object.entries(def.fields ?? {})) source.declareField(field, facts);
   await source.declareFromRows(fields);
+  // A tiered field's children, once its parents are known. TODO 369
+  for (const [field, facts] of Object.entries(def.fields ?? {})) {
+    if (facts.child && children.has(facts.child)) await source.declareChildren(field);
+  }
   for (const [id, preset] of Object.entries(def.presets ?? {})) {
     if (!preset.where) {
       report({

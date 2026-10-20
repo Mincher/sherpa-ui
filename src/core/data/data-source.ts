@@ -47,6 +47,7 @@
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
+ * - .declareChildren — A tiered field's child values, from the rows the source holds: one pass.
  * - .fieldFacts — What `declareField` was told.
  * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
  * - .readingsOf — The plain form as readings, by this source's field types.
@@ -990,6 +991,19 @@ export class DataSource extends EventTarget {
       return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
     });
     // Each field's facts moved: what was counted is out of date.
+    this.#age++;
+  }
+
+  /** A tiered field's child values, from the rows the source holds: one pass. A
+   *  store it does not hold reads a parent's children later, as it opens. TODO 369 */
+  async declareChildren(field: string): Promise<void> {
+    const child = this.#catalogue.get(field)?.child;
+    if (!child) return;
+    await this.#hold();
+    const reads = this.#reads;
+    if (reads === this.store && this.#remote) return;
+    const rows = this.#rowsCache?.rows ?? (await reads.load({})).rows;
+    this.#catalogue.declareChildren(field, rows.map((r) => [readField(r, field), readField(r, child)] as const));
     this.#age++;
   }
 

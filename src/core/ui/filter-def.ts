@@ -26,6 +26,8 @@ export interface FilterOption {
   section?: string;
   /** The data-viz series a chart draws this value in, from 1 — its chip's swatch. */
   swatch?: number;
+  /** A tiered field's child value: its parent value's key. TODO 369 */
+  parent?: string;
   /** The panel's: what the value's own chip IS — a preset that carries its answer is `advanced`. */
   kind?: FilterKind;
   /** The panel's: a saved filter's answer, as its chip's card draws it.
