@@ -719,6 +719,18 @@ against the code). The full plan, with every file:line, is
   each tab's History takes it, so those stores are trusted. A tab woken from
   sleep counts everything as changed. **B:** keep them untrusted now; the channel
   later. Until then they take today's path.
+  - ✅ **3.1** (2026-10-20) — the bench: pages `lean` and `notheld`, acts
+    `save-same` and `save-unread`, `save` now moves a read field, a `walks`
+    counter. 57 old acts unchanged, 21 new.
+  - ✅ **3.2** — an off saved filter tests no row; `walkReads(plan)` names what
+    a walk reads (a property test over six plans).
+  - ✅ **3.3** — `StoreHistory` (`store-history.ts`): one clock per store, the
+    last change per field; an update names its `fields`. Node 576, browsers
+    3196. TRAP `T-a-store-keeps-its-history`.
+  - ✅ **3.4** — a store change walks again only when it moved a field the walk
+    reads, or the rows. Bench: a save to an unread field, scans 4 → 2 and walks
+    1 → 0; over a store not held, counts 4 → 0 and distinct 2 → 0. TRAP
+    `T-a-change-redoes-only-what-reads-it`.
 - 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner.
   Designed 2026-10-19 (two designs, a judge, a checker):
   `docs/history/plan-345-phase-4.md`. Seven commits: 4.1 failure kinds and a
@@ -1072,7 +1084,10 @@ its acts pressed the bars, which step back in panel mode). **Not the same
 measure as Will's 6.18 s**, which was in his own browser: a DevTools run with a
 cold cache or network throttling can differ. Will to check by eye. Left: the
 Firefox `reforged-a-reopen-shows-at-once` timing under 3-engine load, and the
-"saved filter on" profile (the base class's stamp is the most self time).
+"saved filter on" profile (the base class's stamp is the most self time). A
+flake seen once in a full Demos run (2026-10-20, Chromium, passed on retry and
+5 of 5 alone): `reforged-view-chips.spec.ts:445` — after a reload the heading's
+Advanced filter read `null` while its chip was on.
 
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 

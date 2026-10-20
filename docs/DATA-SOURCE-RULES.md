@@ -311,6 +311,10 @@ does not — or names a row the set does not hold — reads the whole set again,
 a Refresh does. So a store whose rows change on the server should announce it
 (an `EventStore` or `SocketStore` does).
 
+A change that moves no field the counts and greys read — and not the rows —
+counts nothing again, when the store says `announcesAll` and names its
+`fields`. The page itself is still read again.
+
 **The set outlives the page.** When a page closes, its store's set stays, and
 the next page over the same store object answers from it at once. A store that
 says `announcesAll: true` — every change to its rows comes through it, as an

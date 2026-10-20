@@ -141,7 +141,7 @@
     "rows": 3546,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 2
   },
   "records/save-unread": {
     "loads": 2,
@@ -150,7 +150,7 @@
     "rows": 3546,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 2
   },
   "records/delete": {
     "loads": 2,
@@ -330,7 +330,7 @@
     "rows": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 2
   },
   "remote/save-unread": {
     "loads": 0,
@@ -339,7 +339,7 @@
     "rows": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 2
   },
   "remote/delete": {
     "loads": 0,
@@ -582,7 +582,7 @@
     "rows": 10025,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 2
   },
   "lean/change-shown": {
     "loads": 2,
@@ -591,7 +591,7 @@
     "rows": 10025,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 2
   },
   "lean/change-held": {
     "loads": 2,
@@ -667,21 +667,21 @@
   },
   "notheld/save-same": {
     "loads": 2,
-    "counts": 4,
-    "distinct": 2,
+    "counts": 0,
+    "distinct": 0,
     "rows": 10025,
     "compiles": 0,
     "clones": 1,
-    "scans": 10
+    "scans": 2
   },
   "notheld/save-unread": {
     "loads": 2,
-    "counts": 4,
-    "distinct": 2,
+    "counts": 0,
+    "distinct": 0,
     "rows": 10025,
     "compiles": 0,
     "clones": 1,
-    "scans": 10
+    "scans": 2
   },
   "notheld/add": {
     "loads": 2,

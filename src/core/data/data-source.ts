@@ -111,7 +111,7 @@ import { readingClause, stateClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
 import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
-import { emptyWalk, walkInOrder, type Walk, type WalkPlan } from './walk.js';
+import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import { sayReadings, type SaidField } from './filter-face.js';
 import {
   answerOf, compile, eachScope, emptyScope, filterKey, readingAnswered, sameReading, VIEW,
@@ -124,7 +124,7 @@ import {
 import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
-import { cacheOf, type StoreCache } from './store-cache.js';
+import { cacheOf, type CacheChangeDetail, type StoreCache } from './store-cache.js';
 import { planRead, type Plan } from './read-plan.js';
 import { failureOf, unreached, type Failure } from './failure.js';
 import type { FieldReading, FilterState } from './filter-state.js';
@@ -261,6 +261,7 @@ export class DataSource extends EventTarget {
     this.#filter = options.filter;
     this.#cache = this.#remote && this.#holdRows > 0 ? cacheOf(this.store) : null;
     this.#since = this.#cache?.gen ?? 0;
+    this.#heard = this.store.history?.seq ?? 0;
     // A held source hears its store through the cache, which takes each change once.
     (this.#cache ?? this.store).addEventListener('change', this.#onStoreChange);
     this.#cache?.addEventListener('set', this.#onSet);
@@ -1694,11 +1695,40 @@ export class DataSource extends EventTarget {
   /** The rows changed under an identical ViewState: asked again. A held set has
    *  taken the change already — or is due, and read once for every page.
    *  TRAP T-a-held-set-takes-a-change-in-place · TRAP T-a-store-has-one-cache */
-  #onStoreChange = (): void => {
-    this.#age++;
+  #onStoreChange = (event: Event): void => {
     this.#rowsAge++;
-    void (this.#cache ? this.#reask() : this.load({ force: true }));
+    this.#allAge++;
+    const history = this.store.history;
+    const since = this.#heard;
+    this.#heard = history?.seq ?? 0;
+    // Not in a History it can trust: any field may have moved.
+    if (!history || !this.#trusts(event, since)) {
+      this.#age++;
+      void (this.#cache ? this.#reask() : this.load({ force: true }));
+      return;
+    }
+    // The walk runs again only when a field it reads, or the rows, moved. TRAP T-a-change-redoes-only-what-reads-it
+    const moved = (reads: readonly string[]): boolean => history.changedSince(since, reads);
+    const w = this.#walk;
+    if ((w && (this.#unwalked.has(w.walk) || moved(w.reads))) || (this.#walking && moved(this.#walking.reads))) this.#walkAge++;
+    void this.#reask();
   };
+
+  /** Is this change in the store's History, from a store that hears every writer —
+   *  and, held, taken into a set it can vouch for? TRAP T-a-change-redoes-only-what-reads-it */
+  #trusts(event: Event, since: number): boolean {
+    const history = this.store.history;
+    if (!history || history.seq <= since || !this.store.announcesAll) return false;
+    if (!this.#cache) return true;
+    const said = (event as CustomEvent<CacheChangeDetail | undefined>).detail;
+    return !!said?.taken && this.#planNow().plan !== 'held-stale';
+  }
+  /** The store's History as this source last heard it. */
+  #heard = 0;
+  /** Moves when a store change moved a field the walk reads, or the rows. */
+  #walkAge = 0;
+  /** Moves on every store change: the unpaged rows are read again. */
+  #allAge = 0;
 
   /** A whole set landed — another page's read too: what is counted moved, and an
    *  idle page asks again. A page the set is too big for asks the store, which moved nothing. */
@@ -1874,7 +1904,7 @@ export class DataSource extends EventTarget {
         const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
         const asked = viewed ? { ...rest, filter: viewed } : rest;
         // The same question over the same rows — a page turned — is not asked again.
-        const allKey = JSON.stringify([this.#age, asked]);
+        const allKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (allKey !== this.#allFor) {
           const all = await this.#reads.load(asked);
           if (!this.#inFlight.is(ticket)) return this.#result;
@@ -1955,7 +1985,7 @@ export class DataSource extends EventTarget {
   #walkKey(): string {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#age, this.#limitOptions, this.#applied, [...this.#parts],
+    return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, this.#applied, [...this.#parts],
       this.#viewFilter === null ? this.#filter ?? null : null, components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }
@@ -2019,22 +2049,23 @@ export class DataSource extends EventTarget {
     const plan = this.#planWalk();
     // Nothing to count or tally: no row is read.
     if (!plan.scopes.some((sc) => sc.taps.length || sc.steps.some((st) => st.counts || st.each?.length || st.ruler || st.offers))) {
-      this.#walk = { key, walk: emptyWalk() };
+      this.#walk = { key, walk: emptyWalk(), reads: [] };
       return this.#walk.walk;
     }
-    const entry: { key: string; walk: Promise<Walk> } = { key, walk: Promise.resolve(emptyWalk()) };
+    const reads = [...new Set(Object.values(walkReads(plan)).flatMap((r) => [...r.tested, ...r.tallied]))];
+    const entry: { key: string; walk: Promise<Walk>; reads: string[] } = { key, walk: Promise.resolve(emptyWalk()), reads };
     entry.walk = (async (): Promise<Walk> => {
       try {
         const rows = await this.#walkRows();
         const out = rows ? walkInOrder(rows, plan) : await walkStepwise(this.#reads, plan);
-        if (this.#walkKey() === key) this.#walk = { key, walk: out };
+        if (this.#walkKey() === key) this.#walk = { key, walk: out, reads };
         return out;
       } catch {
         /* The last walk stays drawn, and nothing is set aside from it; kept for
            this key, so a draw does not ask again until something moves. It never stops a load. */
         const kept = { ...(this.#walk?.walk ?? emptyWalk()) };
         this.#unwalked.add(kept);
-        if (this.#walkKey() === key) this.#walk = { key, walk: kept };
+        if (this.#walkKey() === key) this.#walk = { key, walk: kept, reads };
         return kept;
       } finally {
         if (this.#walking === entry) this.#walking = null;
@@ -2043,12 +2074,12 @@ export class DataSource extends EventTarget {
     this.#walking = entry;
     return entry.walk;
   }
-  /** The last walk, and what it was for. */
-  #walk: { key: string; walk: Walk } | null = null;
+  /** The last walk, what it was for, and the fields it read. */
+  #walk: { key: string; walk: Walk; reads: readonly string[] } | null = null;
   /** A walk that failed, standing in for the last one. */
   #unwalked = new WeakSet<Walk>();
-  /** The walk in flight, and what it is for. */
-  #walking: { key: string; walk: Promise<Walk> } | null = null;
+  /** The walk in flight, what it is for, and the fields it reads. */
+  #walking: { key: string; walk: Promise<Walk>; reads: readonly string[] } | null = null;
   /** Moves each time the rows may have changed. */
   #rowsAge = 0;
   /** A store with no scan, loaded once per change. */

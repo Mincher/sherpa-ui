@@ -105,7 +105,8 @@ export interface WalkReads {
 }
 
 /** The fields each scope's walk reads — a change to no other leaves the walk as
- *  it is. A step tests only while it is on or counts. TRAP T-one-walk-counts-and-limits-in-order */
+ *  it is. A step tests only while it is on or counts.
+ *  TRAP T-one-walk-counts-and-limits-in-order · TRAP T-a-change-redoes-only-what-reads-it */
 export function walkReads(plan: WalkPlan): Record<string, WalkReads> {
   const out: Record<string, WalkReads> = {};
   for (const sc of plan.scopes) {

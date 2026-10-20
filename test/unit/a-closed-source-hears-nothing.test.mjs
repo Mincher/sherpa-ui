@@ -12,11 +12,10 @@ import { ArrayStore, DataSource } from '../../dist/data.js';
 const ROWS = [{ id: 1, tier: 'gold' }, { id: 2, tier: 'silver' }];
 const tick = () => new Promise((done) => setTimeout(done, 20));
 
-/** Count the loads a source starts. */
+/** Count the asks a source starts — a change asks without the public `load()`. */
 function counted(source) {
-  const load = source.load.bind(source);
   const seen = { loads: 0 };
-  source.load = (...args) => { seen.loads++; return load(...args); };
+  source.addEventListener('loading', (e) => { if (e.detail.loading) seen.loads++; });
   return seen;
 }
 

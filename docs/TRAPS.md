@@ -1888,10 +1888,12 @@ aside (Q1 A).
 the walk, a plain walk, and step by step — to one answer.
 
 **Under change** (the review of C5 and C6): a walk the Query moved past while it
-ran sets nothing aside — the walk for what stands now decides. A filter set by
+ran sets nothing aside — the walk for what stands now decides. A store change
+walks again only when it moved a field the walk reads, or the rows
+(`T-a-change-redoes-only-what-reads-it`). A filter set by
 hand (`setFilter`, a restored ViewState) is never compiled away by a set-aside.
 A walk that FAILS sets nothing aside, keeps the last one drawn, and is kept for
-its key: it is asked again when something moves — a filter, a store change, a
+its key: it is asked again when something moves — a filter, ANY store change, a
 Refresh, a reach recheck — never on a page turn, so a failing server is not
 asked again and again. A closed source walks nothing. The rows a source loaded
 to declare its fields are the walk's too (IndexedDB has no `scan`). Asked step
@@ -3813,6 +3815,33 @@ is not in it (TODO 345, D2).
 - Site: `test/unit/a-store-keeps-its-history.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-a-change-redoes-only-what-reads-it
+
+345 phase 3. A store change moved a source's `#age`, so EVERY change walked
+again and redrew every count — a save to `lastSeen`, which nothing reads, cost
+the same as one to a field each chip tallies. Now a source asks the store's
+History (`T-a-store-keeps-its-history`) what moved since it last heard, and
+redoes only what reads it.
+
+- **The walk** keeps the fields it reads (`walkReads`: what its steps test and
+  what they tally). It runs again — `#walkAge` moves, in its key — only when a
+  change moved one of them, or the rows. A walk in flight is dropped the same
+  way, and a walk that failed runs again on any change.
+- **The page and the unpaged rows** are read again on every change, as before
+  (`#allAge`, in the all-rows key). Taking an update into them in place waits
+  for after 366 (Will, 2026-10-20, D3).
+- **Trusted only when certain**, else everything moves as before: the store has
+  a History, the History moved for this change (one sent by hand is not in it),
+  the store says `announcesAll` (a store that may miss a writer — IndexedDB,
+  localStorage, a server — is not trusted; TODO 345 D2), and a held source's
+  cache took the change into a set it can vouch for (not `held-stale`, read from
+  the plan NOW).
+- A Refresh, a set landing and every `declare*` still move `#age`: everything.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/walk.ts`
+- Site: `test/unit/a-change-walks-again-only-for-what-it-moved.test.mjs`
+
 ### T-a-kept-set-is-checked-each-session
 
 345 phase 4.7 — Will's D2 B (the held set kept in IndexedDB, opt-in per remote
@@ -4021,8 +4050,9 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
   still be held at a larger one.
 - **The key is the store OBJECT**, never its name: a name could show one tenant's
   rows to the next. So an app makes each store once (`OutletOptions.stores`).
-- Every remembered count moves with it: a `change` or a `set` from the cache
-  moves the source's `#age` (`T-a-chip-counts-within-the-filters-before-it`).
+- Every remembered count moves with it: a `set` from the cache moves the
+  source's `#age` (`T-a-chip-counts-within-the-filters-before-it`); a `change`
+  moves the walk only when its reads moved (`T-a-change-redoes-only-what-reads-it`).
 
 **What a review of 4.2 put right** (2026-10-19):
 
