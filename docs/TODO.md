@@ -1099,6 +1099,12 @@ flake seen once in a full Demos run (2026-10-20, Chromium, passed on retry and
 5 of 5 alone): `reforged-view-chips.spec.ts:445` — after a reload the heading's
 Advanced filter read `null` while its chip was on. And `reforged-nav-pin-persist.spec.ts:63` (a
 pinned rail after a full reload), once; neither failed in 108 repeats alone.
+After 367 and 368, one saved-filter click still builds about 100 elements: the
+grid's 25 rows (each with its checkbox and that box's button), one bar menu's
+body (a number slider, inputs, a footer — `sherpa-menu` inside `.act`), and each
+chart legend's 4 entries with their tooltips. The bar parts wait for 366's
+commits 13–14, which rewrite how a bar paints; row reuse in the grid is its own
+item if a measure asks for it (the click is 56 ms at 4x).
 
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 
