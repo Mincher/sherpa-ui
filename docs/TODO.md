@@ -47,7 +47,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
 | ⬜ | 9z | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
-| ❓ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
+| 🚧 | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -1457,6 +1457,13 @@ sources, one per app Context. It removes nothing: no filter crosses sources
 today, and the two-way loop is below it. My pick: **A**, designed first by a
 read-only workflow, then built in small commits. Structural data-layer work
 (287 5b, 288 8b–10, 320) waits for it.
+
+**Will, 2026-10-20: B** — *"but if all sources are using this new component as the
+query source then they don't need to store their own, do they?"* So: ONE
+QueryContext per app Context holds the only Query. A source keeps NO Query: it
+reads its filter from the QueryContext and loads. The controls read their slice
+there too and send one-field requests, so the two-way loop goes. **Step 2,
+running:** a read-only design, then small commits.
 
 ---
 
