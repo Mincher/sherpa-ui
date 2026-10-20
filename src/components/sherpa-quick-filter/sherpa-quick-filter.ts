@@ -183,7 +183,7 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (['data-current', 'data-readonly', 'data-type', 'data-persistent'].includes(name)) this.#syncPressed();
+    if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
@@ -232,6 +232,19 @@ export class SherpaQuickFilter extends SherpaElement {
       body.removeAttribute('role');
       body.removeAttribute('tabindex');
     }
+    // An icon-only TOGGLE is its caret: the caret takes the chip's name and on-state.
+    const caret = this.$('.caret');
+    if (!caret || !this.#togglesOnly()) return;
+    caret.setAttribute('aria-pressed', String(this.current));
+    caret.removeAttribute('aria-haspopup');
+    caret.removeAttribute('aria-expanded');
+    const name = this.getAttribute('aria-label');
+    if (name) caret.setAttribute('aria-label', name);
+  }
+
+  /** Icon-only with no menu: a toggle whose whole face is the caret. */
+  #togglesOnly(): boolean {
+    return this.hasAttribute('data-icon-only') && !this.hasAttribute('data-menu');
   }
 
   get current(): boolean {
@@ -638,6 +651,7 @@ export class SherpaQuickFilter extends SherpaElement {
       this.emit('quick-filter-dismiss', {});
       return;
     }
+    if (this.#togglesOnly()) return this.#onClick(event);
     // A chip with a MENU always opens it: its rows say what is left.
     if (this.hasAttribute('disabled') || (this.#refused() && !this.hasAttribute('data-menu'))) return;
     event.stopPropagation(); // opening the menu must not toggle the chip

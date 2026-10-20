@@ -123,7 +123,7 @@ test('in the panel, a number field\'s f(x) carries its number into the rows, and
     await window.__settled();
     const heard: unknown[] = [];
     panel.addEventListener('quick-filter-change', () => heard.push(panel.readings['data']?.['seats']));
-    const fx = () => field.querySelector<HTMLElement>('.field-advanced')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    const fx = () => field.querySelector<HTMLElement>('.field-advanced')!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
     fx();
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));

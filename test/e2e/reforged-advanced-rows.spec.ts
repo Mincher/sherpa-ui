@@ -179,7 +179,7 @@ test('Equals offers the field\'s values on the bar and in the panel; a field wit
     const panel = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-filter-panel', undefined, { open: true });
     await panel.populate([{ scope: 'data', label: 'Rows', filters: [list] }]);
     await settle();
-    panel.shadowRoot!.querySelector('.field[data-field="owner"] .field-advanced')!.shadowRoot!.querySelector('button')!.click();
+    panel.shadowRoot!.querySelector('.field[data-field="owner"] .field-advanced')!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
     await settle();
     const inPanel = await eqRow(panel.shadowRoot!.querySelector('.field[data-field="owner"] sherpa-menu') as Menu);
     return { onBar, inPanel };

@@ -336,13 +336,13 @@
                         ]
                       },
                       {
-                        "el": "sherpa-button",
+                        "el": "sherpa-quick-filter",
                         "class": "field-advanced",
                         "attrs": {
-                          "data-type": "icon",
-                          "data-size": "sm",
+                          "data-icon-only": "",
                           "data-icon-start": "function",
-                          "aria-pressed": "false"
+                          "data-no-value": "",
+                          "data-locked": ""
                         }
                       }
                     ]

@@ -41,7 +41,7 @@ test('the switch carries the chips over, the rows follow them until edited, and 
     };
     const flip = async (): Promise<void> => {
       const sw = field.querySelector('.field-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('button')!.click();
+      sw.shadowRoot.querySelector<HTMLElement>('.caret')!.click();
       await wait();
     };
     const read = (): Reading => {

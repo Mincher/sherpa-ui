@@ -265,7 +265,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header)."
+      "description": "the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header). With no data-menu it is a TOGGLE: the caret is the whole chip, named by the host's aria-label (a heading's sort, a panel field's f(x))."
     },
     {
       "$type": "prop",

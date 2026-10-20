@@ -52,6 +52,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
 | ⬜ | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
 | ✅ | 0z | 370 | RULE — a filter setup crosses tabs, windows and sessions ONLY once the reader saves it: drafts and the kept Query are the tab's own (Will) | filters |
+| ✅ | 0za | 371 | UX — a scrollbar's track is white on a dark page; make every track clear (Will) | look |
+| ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1467,6 +1469,32 @@ data comes, open or shut. Two tests now open the panel before they read its
 fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
 sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
 3 engines, the coordination gate among them.
+
+### `[x]` ✅ 372 — UX: a panel field's f(x) is an icon-only filter chip
+
+Will, 2026-10-20: *"The filter panel still uses an active button for the
+advanced filter instead of an icon-only filter chip with a success styling when
+active."*
+
+**✅ Done 2026-10-20.** A panel field's f(x) is a `sherpa-quick-filter`:
+icon-only, locked, with the chip's border at rest, as the Reset and Send to
+buttons beside it have. The panel sets `data-current` in Advanced, so it takes
+the filter-on look: green in Demos with "Show active filters in green", active
+purple without it. An icon-only chip with NO menu is now a toggle: its caret
+presses it, and says the host's name and `aria-pressed`. So a grid heading's
+sort says "Sorted by Name" too. The menu's own f(x) (in a bar chip's menu) is
+still a button. Tests: the chip, the panel, 5 sherpa-ui and 4 Demos specs that
+press f(x), 3 engines.
+
+### `[x]` ✅ 371 — UX: every scrollbar track is clear
+
+Will, 2026-10-20: *"Can we style scrollbar tracks to be transparent so they
+aren't white on black in dark mode."*
+
+**✅ Done 2026-10-20.** `page.css` sets `scrollbar-color` on `html`: a clear
+track and a `border-default-2` thumb. It inherits into every shadow root, so a
+component's own scroll box follows. A test reads it inside a shadow root, in
+both modes, 3 engines.
 
 ### `[x]` ✅ 370 — RULE: only a saved filter crosses tabs and sessions
 

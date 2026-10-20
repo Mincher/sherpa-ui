@@ -45,7 +45,7 @@ const SETUP = `
   const q = (s) => [...sr.querySelectorAll(s)];
   const press = (s) => sr.querySelector(s).dispatchEvent(
     new CustomEvent('button-click', { bubbles: true, composed: true }));
-  const flip = (s) => sr.querySelector(s).shadowRoot.querySelector('button').click();
+  const flip = (s) => { const r = sr.querySelector(s).shadowRoot; (r.querySelector('.caret') ?? r.querySelector('button')).click(); };
 `;
 
 test('a scope draws its presets, its fields, and nothing it cannot', async ({ page }) => {
@@ -179,7 +179,7 @@ test('the condition button flags the field and hides its chips', async ({ page }
     el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.readings.data.owner.mode));
     const read = () => ({
       flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-advanced'),
-      pressed: sr.querySelector('.field[data-field="owner"] .field-advanced').getAttribute('aria-pressed'),
+      pressed: sr.querySelector('.field[data-field="owner"] .field-advanced').shadowRoot.querySelector('.caret').getAttribute('aria-pressed'),
       chips: getComputedStyle(
         sr.querySelector('.field[data-field="owner"] .field-values')).display,
     });
@@ -205,7 +205,7 @@ test('the condition button flags the field and hides its chips', async ({ page }
  * does not jump as Clear comes and goes. A token gap sits under it.
  * Will, 2026-09-26.
  */
-test('a field header keeps one height with or without its buttons, and Advanced is an f(x) button at its end', async ({ page }) => {
+test('a field header keeps one height with or without its buttons, and Advanced is an f(x) chip at its end', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const shown = (e) => e.getClientRects().length > 0;
@@ -215,19 +215,20 @@ test('a field header keeps one height with or without its buttons, and Advanced 
       const acts = f.querySelector('.field-acts');
       return {
         field: f.dataset.field,
-        acts: !!acts && [...acts.querySelectorAll('sherpa-button')].some(shown),
+        acts: !!acts && [...acts.querySelectorAll('sherpa-button, sherpa-quick-filter')].some(shown),
         height: Math.round(head.height),
         gap: next ? Math.round(next.getBoundingClientRect().top - head.bottom) : null,
       };
     });
-    // ADVANCED is an f(x) icon button IN the header, at its end. Will, TODO 141.
+    // ADVANCED is an f(x) icon-only CHIP IN the header, at its end. Will, TODO 141, 372.
     const owner = sr.querySelector('.field[data-field="owner"]');
     const button = owner.querySelector('.field-advanced');
     const b = button.getBoundingClientRect();
     const h = owner.querySelector('.field-head').getBoundingClientRect();
     const advanced = {
-      is: button.localName, glyph: button.getAttribute('data-icon-start'), type: button.getAttribute('data-type'),
-      name: button.getAttribute('aria-label'), pressed: button.getAttribute('aria-pressed'),
+      is: button.localName, glyph: button.getAttribute('data-icon-start'), iconOnly: button.hasAttribute('data-icon-only'),
+      name: button.shadowRoot.querySelector('.caret').getAttribute('aria-label'),
+      pressed: button.shadowRoot.querySelector('.caret').getAttribute('aria-pressed'),
       inHead: b.top >= h.top && b.bottom <= h.bottom, atEnd: Math.abs(b.right - h.right) <= 1,
     };
     return { fields: read(), advanced };
@@ -238,7 +239,7 @@ test('a field header keeps one height with or without its buttons, and Advanced 
   expect(r.fields.some((f) => !f.acts)).toBe(true);
   expect(new Set(r.fields.map((f) => f.height)).size).toBe(1);
   for (const f of r.fields) if (f.gap !== null) expect(f.gap).toBe(8);
-  expect(r.advanced).toEqual({ is: 'sherpa-button', glyph: 'function', type: 'icon',
+  expect(r.advanced).toEqual({ is: 'sherpa-quick-filter', glyph: 'function', iconOnly: true,
     name: 'Advanced Owner', pressed: 'false', inHead: true, atEnd: true });
 });
 
@@ -719,7 +720,7 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
     const box = el.shadowRoot!.querySelector('.field[data-field="owner"]')!;
     return {
       advanced: box.hasAttribute('data-advanced'),
-      switchOn: box.querySelector('.field-advanced')?.getAttribute('aria-pressed') === 'true',
+      switchOn: box.querySelector('.field-advanced')?.hasAttribute('data-current'),
       reading: el.readings['data']?.['owner']?.conditions,
     };
   });

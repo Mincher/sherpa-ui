@@ -180,9 +180,10 @@
             <sherpa-button class="field-lower" data-type="icon" data-size="sm"
                            data-icon-start="arrow-down"></sherpa-button>
           </span>
-          <!-- ADVANCED: f(x), at the header's end, ON in Advanced. Will, TODO 141. -->
-          <sherpa-button class="field-advanced" data-type="icon" data-size="sm"
-                         data-icon-start="function" aria-pressed="false"></sherpa-button>
+          <!-- ADVANCED: f(x), at the header's end — a filter chip, ON in Advanced, as a
+               grid heading's. LOCKED: the panel sets its on-state. Will, TODO 141, 372. -->
+          <sherpa-quick-filter class="field-advanced" data-icon-only data-icon-start="function"
+                               data-no-value data-locked></sherpa-quick-filter>
         </span>
       </sherpa-section-header>
       <!-- `hug`: each chip at its own width. Every other value STRETCHES its

@@ -185,6 +185,8 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
+    // The f(x) is a chip, so it reports a chip's click.
+    this.$('.scopes')?.addEventListener('quick-filter-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     // Rows and bodies change their answer without a chip click.
@@ -1513,7 +1515,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Put a field in Advanced mode, or take it out: its flag, its switch, its menu. */
   #setCustom(held: Held, on: boolean, atDraw = false): void {
     held.box.toggleAttribute('data-advanced', on);
-    held.box.querySelector('.field-advanced')?.setAttribute('aria-pressed', String(on));
+    held.box.querySelector('.field-advanced')?.toggleAttribute('data-current', on);
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off

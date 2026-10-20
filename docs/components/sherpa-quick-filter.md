@@ -35,7 +35,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-dismiss` | boolean |  | its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105 |
 | `data-full-value` | boolean |  |  |
 | `data-icon` | text |  | start leading icon — an FA class list (Figma default is a funnel) |
-| `data-icon-only` | boolean |  | the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header). |
+| `data-icon-only` | boolean |  | the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header). With no data-menu it is a TOGGLE: the caret is the whole chip, named by the host's aria-label (a heading's sort, a panel field's f(x)). |
 | `data-icon-start` | text |  | leading icon — an icon name (Figma default is a funnel) |
 | `data-id` | text |  |  |
 | `data-indicator` | boolean |  | show the leading status dot (Figma "Indicator (atom)", opt-in) |

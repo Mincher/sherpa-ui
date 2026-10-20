@@ -163,7 +163,7 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.readings.data.owner.mode));
     const sr = panel.shadowRoot!;
     const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced')!
-      .shadowRoot!.querySelector('button')!.click();
+      .shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
     press();
     await window.__settled();
     const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu') as Menu | null;

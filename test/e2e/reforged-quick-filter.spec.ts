@@ -747,3 +747,23 @@ test('switching a chip OFF keeps what it holds — values, and the column', asyn
   expect(r.off.sort).toEqual({ on: false, label: 'email', ticked: 'email' });
   expect(r.off.value.ticked).toBe('name');
 });
+
+test('an icon-only chip with no menu is a toggle: its caret presses it, says its name and whether it is on', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount('sherpa-quick-filter', undefined,
+      { 'data-icon-only': '', 'data-icon-start': 'function', 'aria-label': 'Advanced Owner' });
+    const fired: boolean[] = [];
+    el.addEventListener('quick-filter-click', (e) => fired.push((e as CustomEvent).detail.active));
+    const caret = el.shadowRoot!.querySelector<HTMLElement>('.caret')!;
+    const say = () => ({ name: caret.getAttribute('aria-label'), pressed: caret.getAttribute('aria-pressed'), popup: caret.getAttribute('aria-haspopup') });
+    const before = say();
+    caret.click();
+    const on = { current: el.hasAttribute('data-current'), ...say() };
+    caret.click();
+    return { before, on, off: el.hasAttribute('data-current'), fired };
+  });
+  expect(r.before).toEqual({ name: 'Advanced Owner', pressed: 'false', popup: null });
+  expect(r.on).toEqual({ current: true, name: 'Advanced Owner', pressed: 'true', popup: null });
+  expect(r.off).toBe(false);
+  expect(r.fired).toEqual([true, false]);
+});
