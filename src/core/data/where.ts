@@ -13,7 +13,7 @@ import {
   clauseConditions, fieldState, isRanged, stateClause,
   type FieldCondition, type FieldFacts, type FieldReading, type FieldType,
 } from './filter-state.js';
-import { DEFAULT_OP, OP_TAKES, type Duration, type Filter, type FilterOp } from './store.js';
+import { DEFAULT_OP, OP_TAKES, picksClause, type Duration, type Filter, type FilterOp } from './store.js';
 import { report } from './report.js';
 import { bandCondition } from './threshold.js';
 
@@ -42,8 +42,14 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
   const where: Where = {};
   for (const [field, reading] of Object.entries(readings)) {
     // The clause the field compiles to IS its condition, so the two cannot disagree.
-    const clause = stateClause(fieldState({ field, ...facts?.(field) }, { ...reading, suspended: false }));
-    if (clause) where[field] = { ...conditionOf(clause), ...(reading.suspended ? { off: true } : {}) };
+    const state = fieldState({ field, ...facts?.(field) }, { ...reading, suspended: false });
+    /* …but a TIERED field's is two fields, which a condition cannot say: it is
+       written as its pick list, which reads back as itself. TODO 369 */
+    const tiered = state.child && state.mode === 'simple' && state.rows[0]?.picked
+      ? conditionOf(picksClause(field, state.rows[0].picked, state.op === 'ne' ? 'ne' : 'eq')!) : undefined;
+    const clause = tiered ? undefined : stateClause(state);
+    const said = tiered ?? (clause ? conditionOf(clause) : undefined);
+    if (said) where[field] = { ...said, ...(reading.suspended ? { off: true } : {}) };
   }
   return where;
 }

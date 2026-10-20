@@ -680,8 +680,14 @@ export class DataSource extends EventTarget {
     if (at.reach === 'component') {
       const key = at.key;
       if (!key) throw new Error('apply: a component reach needs a `key`');
+      /* A control hands back KEYS: mapped to the values, as `select` does — a
+         path key to its object. TODO 369 · TRAP T-a-value-can-be-an-object */
       const clauses = Object.entries(readings)
-        .map(([field, reading]) => stateClause(this.#catalogue.stateFor(field, reading)))
+        .map(([field, reading]) => {
+          const declared = this.#catalogue.byKey(field);
+          const picked = reading.picked?.map((v) => declared.get(valueKey(v)) ?? v);
+          return stateClause(this.#catalogue.stateFor(field, picked ? { ...reading, picked } : reading));
+        })
         .filter((c): c is NonNullable<typeof c> => !!c);
       this.contribute(key, andFilter(clauses));
       return;

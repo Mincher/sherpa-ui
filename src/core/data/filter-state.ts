@@ -73,6 +73,8 @@ export interface ValueEntry {
   /** What a reader sees. Defaults to `value`. */
   label: string;
   state: ValueState;
+  /** A tiered field's child value: its parent's key. TODO 369 */
+  parent?: string;
 }
 
 /** Everything every control needs to draw one field. */
@@ -99,6 +101,8 @@ export interface FilterState {
   mode: ConditionType;
   /** Its picks are the ENDS of a range. */
   range: boolean;
+  /** A TIERED field's child field: a pick may be a path over both. TODO 369 */
+  child?: string;
   /** EVERY value the field has — never only the reachable ones. */
   values: ValueEntry[];
   /**
@@ -321,26 +325,38 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const op = reading.op ?? DEFAULT_OP;
   const text = (reading.text ?? '').trim();
 
-  const values: ValueEntry[] = all.map((value, i) => ({
-    value,
-    raw: raws[i],
-    label: facts.labels?.[value] ?? value,
-    state: picked.has(raws[i])
-      ? 'picked'
-      : present && !present.has(raws[i])
-        ? 'unavailable'
-        : 'unpicked',
-  }));
+  /* A TIERED field's child picks are PATHS: a path whose parent is picked shows
+     picked, and the parent says it already. TODO 369 */
+  const parentOf = facts.child ? facts.parentOf : undefined;
+  const pickedKeys = new Set(all.filter((_, i) => picked.has(raws[i])));
+  const values: ValueEntry[] = all.map((value, i) => {
+    const parent = parentOf?.get(value);
+    return {
+      value,
+      raw: raws[i],
+      label: facts.labels?.[value] ?? value,
+      ...(parent ? { parent } : {}),
+      state: pickedKeys.has(value) || (parent != null && pickedKeys.has(parent))
+        ? 'picked'
+        : present && !present.has(raws[i])
+          ? 'unavailable'
+          : 'unpicked',
+    };
+  });
+  /** A pick the parent does not already say. */
+  const own = (v: ValueEntry): boolean => v.state === 'picked' && !(v.parent && pickedKeys.has(v.parent));
 
   /* A TYPED condition filters with nothing ticked; EVERYTHING ticked filters
-     nothing. TRAP T-everything-on-is-no-filter */
+     nothing — counted over PARENTS on a tiered field. TRAP T-everything-on-is-no-filter */
   const takesText = (OP_TAKES[op] ?? 'list') === 'text';
-  const chosen = values.filter((v) => v.state === 'picked').length;
+  const tops = parentOf ? values.filter((v) => !v.parent) : values;
+  const chosen = tops.filter((v) => v.state === 'picked').length;
+  const paths = parentOf ? values.filter((v) => v.parent && own(v)).length : 0;
   const answered = takesText
     ? text !== ''
     : range || !facts.values
-      ? chosen > 0
-      : chosen > 0 && chosen < all.length;
+      ? chosen + paths > 0
+      : (chosen > 0 && chosen < tops.length) || paths > 0;
 
   /* ROWS answer for themselves. A row is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows
@@ -352,7 +368,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      field join with OR, so `in` — a range is a `between`, and a typed op is a
      row of its own. Whatever answered it, the compiler below sees rows.
      TRAP T-one-condition-system */
-  const ends = values.filter((v) => v.state === 'picked').map((v) => v.raw);
+  const ends = values.filter(own).map((v) => v.raw);
   // Only the answer IN FORCE compiles; the other is kept. TRAP T-both-answers-are-kept
   const mode: ConditionType = modeOf(reading, conditions) ?? 'simple';
   const rows: FieldCondition[] = mode === 'advanced' ? [...conditions]
@@ -372,6 +388,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     time: type === 'date' && !!facts.time,
     mode,
     range,
+    ...(parentOf ? { child: facts.child! } : {}),
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
@@ -474,9 +491,40 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
   }
   const picked = [...(row.picked ?? [])];
   if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
+  // A tiered field's picks: parents, and paths over both fields. TODO 369
+  if (state.child) return tierClause(state.field, state.child, picked, ROW_OPS[row.op] ?? row.op);
   /* A row's `in` / `notin` is its `eq` / `ne` over several picks: as given, `notin`
      with two picks compiled to `in`, and with one matched every row. TODO 386 */
   return picksClause(state.field, cast(picked, state.type), ROW_OPS[row.op] ?? row.op);
+}
+
+/**
+ * A TIERED field's picks as one clause over two fields, in the four ops any
+ * server runs: parents `in`, and each parent's child picks as `and(eq parent,
+ * in children)`, all OR'd — `Contoso, or Northwind at London or Leeds`. `ne`
+ * is its opposite. A path is split by its OWN fields, never by a key string.
+ * TODO 369
+ */
+function tierClause(field: string, child: string, picked: readonly unknown[], op: FilterOp): Filter | undefined {
+  const isPath = (v: unknown): v is Record<string, unknown> =>
+    !!v && typeof v === 'object' && !Array.isArray(v) && field in v && child in v;
+  const tops = picked.filter((v) => !isPath(v));
+  const under = new Map<string, { parent: unknown; kids: unknown[] }>();
+  for (const path of picked.filter(isPath)) {
+    const at = under.get(valueKey(path[field])) ?? { parent: path[field], kids: [] };
+    at.kids.push(path[child]);
+    under.set(valueKey(path[field]), at);
+  }
+  const not = op === 'ne';
+  const parts: Filter[] = [];
+  const top = picksClause(field, tops, not ? 'ne' : 'eq');
+  if (top) parts.push(top);
+  for (const { parent, kids } of under.values()) {
+    const sites = picksClause(child, kids, not ? 'ne' : 'eq')!;
+    parts.push(not ? ['or', [field, 'ne', parent], sites] : ['and', [field, 'eq', parent], sites]);
+  }
+  if (parts.length < 2) return parts[0];
+  return [not ? 'and' : 'or', ...parts];
 }
 
 /** The last moment of a day (`2026-09-03`) or a minute (`2026-09-03T14:00`);

@@ -124,8 +124,11 @@ export class FieldCatalogue {
     // A tiered field's children: each path's parent and its own name. TODO 369
     const paths = this.#paths(field);
     const childLabels = facts.child ? this.#fields.get(facts.child)?.labels : undefined;
+    // …and its values are the TREE: each parent, then its paths.
+    const tree = paths.length && values
+      ? values.flatMap((v) => [v, ...paths.filter((p) => p.parent === valueKey(v)).map((p) => p.path)]) : values;
     return {
-      ...(values ? { values } : {}),
+      ...(tree ? { values: tree } : {}),
       ...(paths.length ? {
         child: facts.child!,
         parentOf: new Map(paths.map((p) => [p.key, p.parent])),

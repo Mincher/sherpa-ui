@@ -161,7 +161,9 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
         const type = fieldFacts.type;
         step.each = reading.picked.flatMap((value) => {
           // ONE value, with no list beside it. TRAP T-everything-on-is-no-filter
-          const own = readingClause({ field: f, ...(type ? { type } : {}) }, { picked: [value], range: false });
+          const tier = fieldFacts.child && fieldFacts.parentOf ? { child: fieldFacts.child, parentOf: fieldFacts.parentOf } : {};
+          // A tiered field's path counts as the two fields it names. TODO 369
+          const own = readingClause({ field: f, ...(type ? { type } : {}), ...tier }, { picked: [value], range: false });
           return own ? [[valueKey(value), own] as const] : [];
         });
         if (list) {
