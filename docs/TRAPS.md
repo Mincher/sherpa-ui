@@ -5339,6 +5339,13 @@ see it over ITSELF (`T-grid-toolbar-chip-borrows-the-menu`).
 **The rule:** a component that owns a menu never calls `toggle()` from a click.
 It slots the menu into a `sherpa-button`, or it tracks its own open flag.
 
+**A flag goes stale when its menu is swapped.** A host that rebuilds its menu —
+the Filters button, when a saved set is taken — removes the old one as it
+shuts, and that menu's `menu-close` is heard nowhere: the button kept
+`data-open`, so the next press hid a menu already shut, and the reader pressed
+twice. The button's menu slot's `slotchange` sets the flag from the menu now
+in the slot (366 S2).
+
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 - Site: `test/e2e/reforged-button.spec.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`

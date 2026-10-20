@@ -244,6 +244,43 @@ test('a click opens the slotted menu and marks the button open', async ({ page }
   expect(r.closed).toEqual({ open: false, active: false, expanded: 'false' });
 });
 
+/* A host that REBUILDS its menu — the Filters button, when a saved set is taken —
+   removes the old one while it shuts; its menu-close never reaches the button.
+   The open mark follows the menu now in the slot, so the next press opens it. */
+test('a menu swapped out as it shuts leaves the button shut: the next press opens the new one', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
+    el.textContent = 'Filters';
+    const make = () => {
+      const m = document.createElement('sherpa-menu') as HTMLElement & { open: boolean; hide(): void; rendered?: Promise<void> };
+      m.setAttribute('slot', 'menu');
+      m.innerHTML = '<button value="a" type="button">A</button>';
+      return m;
+    };
+    const first = make();
+    el.appendChild(first);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await first.rendered;
+    const trigger = el.shadowRoot!.querySelector('.trigger') as HTMLElement;
+    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    trigger.click();
+    await settled();
+    // Shut, and swapped before its close is heard.
+    first.hide();
+    first.remove();
+    const second = make();
+    el.appendChild(second);
+    await second.rendered;
+    await settled();
+    const swapped = el.hasAttribute('data-open');
+    trigger.click();
+    await settled();
+    return { swapped, opened: second.open, expanded: trigger.getAttribute('aria-expanded') };
+  });
+  expect(r).toEqual({ swapped: false, opened: true, expanded: 'true' });
+});
+
 test('a button with no menu still just reports its click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };

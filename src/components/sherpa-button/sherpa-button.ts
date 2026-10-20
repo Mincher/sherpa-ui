@@ -60,6 +60,8 @@ export class SherpaButton extends SherpaElement {
     // The menu is a LIGHT DOM child, so its events reach the host.
     this.addEventListener('menu-open', this.#onMenuToggle);
     this.addEventListener('menu-close', this.#onMenuToggle);
+    // A menu swapped out shuts where this cannot hear it: the mark follows the one there now.
+    this.$('.menu-slot slot')?.addEventListener('slotchange', this.#onMenuSwap);
   }
 
   override onChange(name: string): void {
@@ -178,6 +180,14 @@ export class SherpaButton extends SherpaElement {
     button.command = this.getAttribute('command') ?? '';
     button.commandForElement = id ? (this.getRootNode() as Document | ShadowRoot).getElementById(id) : null;
   }
+
+  /** A host rebuilt its menu: open is what the menu now in the slot says. TRAP T-a-trigger-click-follows-light-dismiss */
+  #onMenuSwap = (): void => {
+    const open = !!this.#menu?.open;
+    if (open === this.hasAttribute('data-open')) return;
+    this.set('data-open', open);
+    this.$('.trigger')?.setAttribute('aria-expanded', String(open));
+  };
 
   /** Mirror the menu's open state; focus is inside it, so CSS reads this. */
   #onMenuToggle = (event: Event): void => {
