@@ -620,6 +620,16 @@ rows, an act or a fake's spec moves the baseline: record it on purpose. Will,
 The walk's one pass over a scope's rows (`passOver`, TODOs 347–349) counts as a
 scan; reading the rows for it (`scan()`, a held set) does not.
 
+**Five pages** (345 phase 3): `records`, `remote` (held) and `rest` (may miss a
+writer) run the same acts; `lean` (`test/unit/fixtures/lean.page.json`: 15
+fields, 10 declared, 5 held) changes a field it never declares, one it only
+shows, one it holds and one it answers; `notheld` is a remote store with
+`holdRows: 0`, so each count and tally is a request. `save` moves a field the
+page reads (row 17's owner was already Owner 02, so the old `save` changed
+nothing); `save-same` changes nothing and `save-unread` moves a field nothing
+reads. `walks` (each walk, in order or step by step) and `draws` are printed,
+never gated.
+
 - Site: `scripts/check-bench.mjs`
 - Site: `test/unit/bench.test.mjs`
 

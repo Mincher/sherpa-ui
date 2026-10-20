@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schemas/page.v1.json",
+  "v": 1,
+  "id": "lean",
+  "source": {
+    "store": "customers",
+    "pageSize": 25,
+    "search": ["name", "email"],
+    "fields": {
+      "name": { "label": "Name", "advanced": "only", "op": "contains" },
+      "email": { "label": "Email", "advanced": "only", "op": "contains" },
+      "customer": { "label": "Customer", "select": "multiple" },
+      "status": { "label": "Status", "select": "multiple" },
+      "plan": { "label": "Plan", "select": "multiple" },
+      "tier": { "label": "Tier", "select": "multiple" },
+      "region": { "label": "Region", "select": "multiple" },
+      "owner": { "label": "Owner", "select": "multiple", "advanced": true },
+      "seats": { "label": "Seats", "type": "number", "advanced": true },
+      "created": { "label": "Date", "type": "date" }
+    },
+    "scopes": {
+      "view": { "label": "View filters", "holds": ["region", "created"] },
+      "data": { "label": "Customer records", "offers": ["status", "plan", "tier"], "holds": ["status", "plan", "tier"] }
+    }
+  },
+  "ui": {
+    "grid": {
+      "key": "id",
+      "columns": [
+        { "field": "name",     "header": "Name",     "sortable": true, "advanced": "only", "op": "contains" },
+        { "field": "email",    "header": "Email",    "sortable": true, "advanced": "only", "op": "contains" },
+        { "field": "customer", "header": "Customer", "sortable": true },
+        { "field": "status",   "header": "Status",   "sortable": true },
+        { "field": "plan",     "header": "Plan",     "sortable": true },
+        { "field": "tier",     "header": "Tier",     "sortable": true },
+        { "field": "region",   "header": "Region",   "sortable": true },
+        { "field": "owner",    "header": "Owner",    "sortable": true },
+        { "field": "seats",    "header": "Seats",    "sortable": true, "type": "number" },
+        { "field": "created",  "header": "Created",  "sortable": true, "type": "date" }
+      ]
+    }
+  }
+}

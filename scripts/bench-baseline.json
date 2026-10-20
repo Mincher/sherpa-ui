@@ -134,6 +134,24 @@
     "clones": 1,
     "scans": 4
   },
+  "records/save-same": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 3546,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "records/save-unread": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 3546,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
   "records/delete": {
     "loads": 2,
     "counts": 0,
@@ -297,6 +315,24 @@
     "scans": 4
   },
   "remote/save": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "remote/save-same": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "remote/save-unread": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
@@ -476,6 +512,24 @@
     "clones": 1,
     "scans": 4
   },
+  "rest/save-same": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "rest/save-unread": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 0,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
   "rest/delete": {
     "loads": 0,
     "counts": 0,
@@ -511,5 +565,140 @@
     "compiles": 7,
     "clones": 2,
     "scans": 4
+  },
+  "lean/open": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 1,
+    "rows": 10025,
+    "compiles": 1,
+    "clones": 6,
+    "scans": 6
+  },
+  "lean/change-unused": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "lean/change-shown": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "lean/change-held": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "lean/answer-held": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 25,
+    "compiles": 4,
+    "clones": 1,
+    "scans": 3
+  },
+  "lean/change-answered": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "lean/add": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10026,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "lean/delete": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 0,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 4
+  },
+  "notheld/open": {
+    "loads": 2,
+    "counts": 0,
+    "distinct": 2,
+    "rows": 10025,
+    "compiles": 4,
+    "clones": 10,
+    "scans": 6
+  },
+  "notheld/report": {
+    "loads": 1,
+    "counts": 4,
+    "distinct": 2,
+    "rows": 25,
+    "compiles": 6,
+    "clones": 7,
+    "scans": 9
+  },
+  "notheld/save": {
+    "loads": 2,
+    "counts": 4,
+    "distinct": 2,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 10
+  },
+  "notheld/save-same": {
+    "loads": 2,
+    "counts": 4,
+    "distinct": 2,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 10
+  },
+  "notheld/save-unread": {
+    "loads": 2,
+    "counts": 4,
+    "distinct": 2,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 10
+  },
+  "notheld/add": {
+    "loads": 2,
+    "counts": 4,
+    "distinct": 2,
+    "rows": 10026,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 10
+  },
+  "notheld/delete": {
+    "loads": 2,
+    "counts": 4,
+    "distinct": 2,
+    "rows": 10025,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 10
   }
 }

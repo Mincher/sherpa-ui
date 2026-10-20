@@ -24,6 +24,8 @@ import { build } from 'esbuild';
 
 const BASELINE = 'scripts/bench-baseline.json';
 const PAGE = 'test/unit/fixtures/records.page.json';
+// 15 fields, 10 declared, 5 held: Will's example of a page that reads few of its fields. 345 phase 3
+const LEAN = 'test/unit/fixtures/lean.page.json';
 const N = 10_000;
 const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
@@ -31,8 +33,9 @@ export const GATED = ['loads', 'counts', 'distinct', 'rows', 'compiles', 'clones
 // The fakes are read from these specs, so a change to one changes the bench.
 const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
   .map((tag) => `src/components/${tag}/${tag}.component.json`);
-const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, ...SPECS];
-const counters = { loads: 0, counts: 0, distinct: 0, rows: 0, compiles: 0, clones: 0, scans: 0, draws: 0 };
+const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, LEAN, ...SPECS];
+// `walks` and `draws` are printed, never gated.
+const counters = { loads: 0, counts: 0, distinct: 0, rows: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
 
 /* ── The data layer, bundled from src/ with compile() counted ─────────── */
 
@@ -63,11 +66,25 @@ const countCompiles = {
     // The walk's one pass over a scope's rows is a scan too. TRAP T-one-walk-counts-and-limits-in-order
     b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]walk\.ts$/ }, (args) => {
       const text = readFileSync(args.path, 'utf8');
-      if (!text.includes('export function passOver(')) throw new Error('check-bench: walk.ts has no `export function passOver(` to count');
+      for (const fn of ['passOver', 'walkInOrder']) {
+        if (!text.includes(`export function ${fn}(`)) throw new Error(`check-bench: walk.ts has no \`export function ${fn}(\` to count`);
+      }
       return {
         loader: 'ts',
-        contents: `${text.replace('export function passOver(', 'function passOverOnce(')}
+        contents: `${text.replace('export function passOver(', 'function passOverOnce(').replace('export function walkInOrder(', 'function walkInOrderOnce(')}
 export function passOver(rows, scan, from) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c) c.scans++; return passOverOnce(rows, scan, from); }
+export function walkInOrder(rows, plan) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c) c.walks++; return walkInOrderOnce(rows, plan); }
+`,
+      };
+    });
+    // A walk asked step by step, of a store not held, is a walk too.
+    b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]source-counts\.ts$/ }, (args) => {
+      const text = readFileSync(args.path, 'utf8');
+      if (!text.includes('export async function walkStepwise(')) throw new Error('check-bench: source-counts.ts has no `export async function walkStepwise(` to count');
+      return {
+        loader: 'ts',
+        contents: `${text.replace('export async function walkStepwise(', 'async function walkStepwiseOnce(')}
+export function walkStepwise(store, plan) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c) c.walks++; return walkStepwiseOnce(store, plan); }
 `,
       };
     });
@@ -177,8 +194,9 @@ function control(tag, id, holds = []) {
 }
 
 /** The page, opened and bound as the provider binds it. */
-async function open(L, remote, announcesAll) {
-  const def = JSON.parse(readFileSync(PAGE, 'utf8')).source;
+async function open(L, { page: path = PAGE, remote, announcesAll, holdRows }) {
+  const def = JSON.parse(readFileSync(path, 'utf8')).source;
+  if (holdRows != null) def.holdRows = holdRows;
   const store = counted(new L.ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id', time: 'created' }));
   const seen = remote ? L.spoofRemote(store, { delay: 0, ...(announcesAll === false ? { announcesAll } : {}) }) : store;
   return { L, def, store: seen, ...await page(L, def, seen) };
@@ -224,7 +242,17 @@ const ACTS = {
   reset: (p) => p.source.setQuery(structuredClone(p.initial)),
   // A reader's own writes: each names its row, so a held set takes it in place.
   add: (p) => p.store.insert({ ...ROWS[0], id: N + 1, name: 'Person new', email: 'new@example.com' }),
-  save: (p) => p.store.update(17, { owner: 'Owner 02' }),
+  // Row 17's owner is Owner 02: this MOVES a field the page reads.
+  save: (p) => p.store.update(17, { owner: 'Owner 03' }),
+  // A save that changes nothing, and a save to a field no filter, sort, search or count reads.
+  'save-same': (p) => p.store.update(17, { owner: 'Owner 03' }),
+  'save-unread': (p) => p.store.update(17, { lastSeen: '2030-01-01' }),
+  // The lean page: a field it never declares, one it shows only, one it holds, then one it answers.
+  'change-unused': (p) => p.store.update(17, { spend: -1 }),
+  'change-shown': (p) => p.store.update(17, { owner: 'Owner 99' }),
+  'change-held': (p) => p.store.update(17, { tier: 'platinum' }),
+  'answer-held': (p) => p.data.answer({ tier: { picked: ['gold'] } }),
+  'change-answered': (p) => p.store.update(18, { tier: 'platinum' }),
   delete: (p) => p.store.remove(N + 1),
   // The page left and opened again over the same store: a held set is the store's, and stays.
   reopen: async (p) => {
@@ -237,11 +265,16 @@ const ACTS = {
   aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
     owner: { picked: ['Owner 03', 'Owner 01'] } }),
 };
+const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'sort', 'heading', 'search', 'raise',
+  'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside'];
 const PAGES = {
-  records: { remote: false, acts: Object.keys(ACTS) },
-  remote: { remote: true, acts: Object.keys(ACTS) },
+  records: { remote: false, acts: MAIN },
+  remote: { remote: true, acts: MAIN },
   // A store that may miss a writer (a server another client writes): a reopen shows its set and checks it behind.
-  rest: { remote: true, announcesAll: false, acts: Object.keys(ACTS) },
+  rest: { remote: true, announcesAll: false, acts: MAIN },
+  lean: { page: LEAN, remote: false, acts: ['change-unused', 'change-shown', 'change-held', 'answer-held', 'change-answered', 'add', 'delete'] },
+  // A remote store not held: every count and tally is a request.
+  notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete'] },
 };
 
 /** An act has ended when no counter moves for three timer turns. */
@@ -278,8 +311,9 @@ export async function bench() {
     return out;
   };
   try {
-    for (const [page, { remote, announcesAll, acts }] of Object.entries(PAGES)) {
-      const p = await measure(`${page}/open`, () => open(L, remote, announcesAll));
+    for (const [page, opts] of Object.entries(PAGES)) {
+      const p = await measure(`${page}/open`, () => open(L, opts));
+      const { acts } = opts;
       for (const act of acts) await measure(`${page}/${act}`, () => ACTS[act](p));
     }
   } finally {
