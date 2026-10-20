@@ -37,6 +37,7 @@ import {
 import { spellConditions } from '../../core/data/filter-face.js';
 import { sameReading } from '../../core/data/query.js';
 import { coalesce } from '../../core/data/timing.js';
+import { hidesUnmatched } from '../../core/ui/more-menu.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { isStaleKey, keyRow, rowKey } from '../../core/data/row-key.js';
@@ -143,6 +144,9 @@ export class SherpaDataGrid extends SherpaElement {
     'data-selectable': { type: 'boolean', kind: 'style' },
     // Single vs multiple changes the CONTROL each row draws, so it re-renders.
     'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
+    // The provider's Limit switches: its heading menus hide what Limit rules out. TODO 305
+    'data-limit-options': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
+    'data-hide-unmatched': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
   } as const;
 
   /* A PAGE of rows, with its groups. Its own header filter row it answers
@@ -279,6 +283,9 @@ export class SherpaDataGrid extends SherpaElement {
       case 'data-sort-field': case 'data-sort-direction':
         this.#invalidate('head');
         this.#invalidate('body');
+        return;
+      case 'data-limit-options': case 'data-hide-unmatched':
+        for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
         return;
       default:
         this.#syncNeedles();
@@ -761,6 +768,7 @@ export class SherpaDataGrid extends SherpaElement {
     const field = cell.dataset['field']!;
     const menu = cell.querySelector<SherpaMenu>('.head-filter sherpa-menu');
     if (!menu || this.#superseded.has(field)) return;
+    menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     menu.present = this.#present[field] ?? null;
     menu.offered = this.#offered[field] ?? null;
   }

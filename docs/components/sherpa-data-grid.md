@@ -91,6 +91,8 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-filter-fields` | text |  | space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write it too. |
 | `data-filterable` | boolean |  | show a secondary header row of filter inputs |
 | `data-group-field` | text |  | group rows by this column |
+| `data-hide-unmatched` | `on` `off` |  | on \| off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305 |
+| `data-limit-options` | `on` `off` |  | on \| off — the host's "Limit to matching filters". Written by the provider. |
 | `data-locked` | boolean |  |  |
 | `data-needles` | text |  | what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction |
 | `data-page` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |

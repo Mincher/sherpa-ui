@@ -959,6 +959,30 @@
           "description": "group rows by this column"
         },
         {
+          "name": "data-hide-unmatched",
+          "description": "on | off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-limit-options",
+          "description": "on | off — the host's \"Limit to matching filters\". Written by the provider.",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
           "name": "data-locked",
           "valueSet": "v"
         },

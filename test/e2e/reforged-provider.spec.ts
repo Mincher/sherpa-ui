@@ -62,6 +62,44 @@ test('a paged grid in a provider lists the WHOLE column in its heading menu', as
   expect(r['reports']).toEqual([]);
 });
 
+/* "Hide unmatching filters" reaches a grid's headings as it reaches a bar:
+   the provider tells the grid, and its heading menus hide a ruled-out value.
+   TODO 305 · TRAP T-a-ruled-out-value-is-greyed */
+test('a grid heading menu follows the provider\'s Hide unmatching switch', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const g = grid({ 'data-column-filters': '' });
+    g.columns = [{ field: 'region', header: 'Region' }];
+    provider.append(g);
+    root.append(provider);
+    const src = new DataSource({ store: new ArrayStore(
+      [{ id: 0, region: 'EMEA' }, { id: 1, region: 'AMER' }], { key: 'id' }) });
+    await src.declareFromRows(['region']);
+    await provider.provide({ sources: { s: src } });
+    provider.limitOptions = true;
+    provider.hideUnmatched = true;
+    await settle();
+    const menu = () => g.shadowRoot.querySelector('.head-cell[data-field="region"] sherpa-menu');
+    const amer = () => [...menu().querySelectorAll('.menu-row')].find((row) => row.querySelector('input')?.value === 'AMER');
+    const read = () => ({ hides: menu().hasAttribute('data-hide-unavailable'),
+      greyed: amer().hasAttribute('data-unavailable'), shown: getComputedStyle(amer()).display !== 'none' });
+    const told = [g.dataset.limitOptions, g.dataset.hideUnmatched];
+    // The filters before it leave EMEA alone.
+    g.drawPresent({ region: ['EMEA'] });
+    await settle();
+    const hidden = read();
+    provider.hideUnmatched = false;
+    await settle();
+    return { told, hidden, greyed: read(), after: g.dataset.hideUnmatched, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['told']).toEqual(['on', 'on']);
+  expect(r['hidden']).toEqual({ hides: true, greyed: true, shown: false });
+  expect(r['greyed']).toEqual({ hides: false, greyed: true, shown: true });
+  expect(r['after']).toBe('off');
+  expect(r['reports']).toEqual([]);
+});
+
 /* A provider used BEFORE it has drawn its template still gives its mode
    buttons — once it has. Making one from a template that is not there yet
    threw. TRAP T-the-mode-switch-is-the-pages-own */

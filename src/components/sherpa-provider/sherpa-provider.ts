@@ -190,7 +190,7 @@ export class SherpaProvider extends SherpaElement {
     this.#limit = on;
     for (const source of Object.values(this.#sources)) source.limitOptions = on;
     // Every bar and panel offers the switch in its ⋮, showing where it stands. TODO 178.
-    for (const el of [...this.#bars(), ...this.#panels()]) this.#offerLimit(el);
+    for (const el of this.#limited()) this.#offerLimit(el);
   }
 
   /** While Limit is on, a value it rules out is HIDDEN, not greyed — on every
@@ -200,12 +200,17 @@ export class SherpaProvider extends SherpaElement {
   }
   set hideUnmatched(on: boolean) {
     this.#hide = on;
-    for (const el of [...this.#bars(), ...this.#panels()]) this.#offerLimit(el);
+    for (const el of this.#limited()) this.#offerLimit(el);
   }
   /** The app's choice: hide what Limit rules out. */
   #hide = false;
 
-  /** One bar or panel, told the settings it offers in its ⋮ menu. */
+  /** Every control with a filter menu: a bar, a panel, a grid's headings. TODO 305 */
+  #limited(): Element[] {
+    return [...this.#asked.keys()].filter((el) => 'drawScope' in el || 'drawPresent' in el);
+  }
+
+  /** One control, told the Limit settings its filter menus follow. */
   #offerLimit(el: Element): void {
     el.setAttribute('data-limit-options', this.#limit ? 'on' : 'off');
     el.setAttribute('data-hide-unmatched', this.#hide ? 'on' : 'off');
@@ -740,10 +745,8 @@ export class SherpaProvider extends SherpaElement {
     // No rows ever come, so it is handed its way out now.
     if (asks.shape === 'state' || asks.shape === 'scope') callback(undefined, leave);
     // …and again when answered: the next page with data opens the panel again.
-    if (asks.shape === 'scope') {
-      this.#modes.join(el);
-      this.#offerLimit(el);
-    }
+    if (asks.shape === 'scope') this.#modes.join(el);
+    if ('drawScope' in el || 'drawPresent' in el) this.#offerLimit(el);
   }
 
   /**

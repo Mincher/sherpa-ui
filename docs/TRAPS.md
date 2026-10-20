@@ -7985,7 +7985,8 @@ chip says "Not available here." A chip the View took says where it went
 
 **Greyed by default, HIDDEN on request** — Will, TODO 205. While Limit is on,
 the ⋮ also offers "Hide unmatching filters" (`hideUnmatched` on the provider,
-`data-hide-unmatched` on a bar or panel). The menu then removes a ruled-out
+`data-hide-unmatched` on a bar, a panel or a grid — its heading menus, TODO 305).
+The menu then removes a ruled-out
 row (`data-hide-unavailable` → `data-removed`) and the panel hides a
 ruled-out value chip. A value still PICKED is never hidden, so it can be let
 go.
@@ -8003,6 +8004,7 @@ go.
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source-types.ts`

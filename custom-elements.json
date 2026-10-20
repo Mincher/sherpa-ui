@@ -2309,6 +2309,20 @@
               }
             },
             {
+              "name": "data-hide-unmatched",
+              "description": "on | off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305",
+              "type": {
+                "text": "'on' | 'off'"
+              }
+            },
+            {
+              "name": "data-limit-options",
+              "description": "on | off — the host's \"Limit to matching filters\". Written by the provider.",
+              "type": {
+                "text": "'on' | 'off'"
+              }
+            },
+            {
               "name": "data-locked",
               "type": {
                 "text": "boolean"

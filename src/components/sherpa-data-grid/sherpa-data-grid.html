@@ -28,6 +28,10 @@
                     is narrowing; those columns' headings take data-status="active".
                     Written by SherpaDataSource — a host driving the grid by hand
                     can write it too.
+    data-limit-options  on | off — the host's "Limit to matching filters". Written by
+                    the provider.
+    data-hide-unmatched  on | off — while Limit is on, a heading menu hides what it
+                    rules out. Written by the provider. TODO 305
     data-column-values  the WHOLE column's values, so a filter menu offers them
                     all even when the drawn rows carry only some: `field:a|b|c`
                     per entry, NEWLINE separated. A value no drawn row carries
