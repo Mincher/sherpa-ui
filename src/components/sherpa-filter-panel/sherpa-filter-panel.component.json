@@ -303,6 +303,15 @@
                     },
                     "children": [
                       {
+                        "el": "sherpa-button",
+                        "class": "field-clear",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "arrow-rotate-left"
+                        }
+                      },
+                      {
                         "el": "span",
                         "class": "field-group sherpa-group",
                         "children": [
@@ -366,14 +375,6 @@
                     "class": "field-add-condition",
                     "attrs": {
                       "data-icon-start": "plus"
-                    }
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "field-clear",
-                    "attrs": {
-                      "data-type": "icon",
-                      "data-icon-start": "arrow-rotate-left"
                     }
                   },
                   {

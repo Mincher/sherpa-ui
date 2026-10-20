@@ -41,7 +41,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0m | 357 | BUG — a favourited View is named after its Context in the nav's Favorites ("Records"), not the View ("All customers") (Will) | bug |
 | ✅ | 0n | 358 | UX — a filter whose every pick is ruled out stays ACTIVE, wears 0 and applies, instead of greyed and set aside (Will) | filters |
 | ✅ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
-| ⬜ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
+| ✅ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1305,11 +1305,18 @@ Experiments › keep content on, nothing covers and the flow works. Waits on Wil
 Clear filters, `filters-clear` and the provider's answer to it are deleted. TRAP
 `T-a-container-shows-its-datas-state`.
 
-### `[ ]` ⬜ 360 — UX: a panel section's Reset goes left of the change-scope button
+### `[x]` ✅ 360 — UX: a panel section's Reset goes left of the change-scope button
 
 Will, 2026-10-20: *"I don't like where the reset button is in filter panel
 sections. I'd prefer it to the left of the change scope button. Make sure it's
 the same size as the change scope button."*
+
+**✅ Done 2026-10-20.** A field's Reset is in its header, left of Send to, at
+its size (`data-size="sm"`), shown once something is set. It sits BESIDE the
+Send-to group, not in it: a hidden Reset in the group would square Send to's
+corners (the group squares by position). The action row now holds only Add
+condition (Advanced) and, remote, Discard and Apply. Test:
+`reforged-filter-panel-component` (left of it, same width and height).
 
 ---
 

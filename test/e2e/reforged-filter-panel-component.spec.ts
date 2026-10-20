@@ -748,6 +748,8 @@ test('Send to is alone in the header; Reset is in the action row, once there is 
       const f = sr.querySelector('.field[data-field="' + field + '"]');
       const row = f.querySelector('.field-row');
       return {
+        // Reset, left of Send to and its size (Will, 360).
+        reset: seen(f.querySelector('.field-acts')).map((b) => [b.className, Math.round(b.getBoundingClientRect().height)]),
         head: seen(f.querySelector('.field-group')).map((b) => [b.className,
           [getComputedStyle(b.shadowRoot.querySelector('button')).borderStartStartRadius,
             getComputedStyle(b.shadowRoot.querySelector('button')).borderStartEndRadius]]),
@@ -755,14 +757,26 @@ test('Send to is alone in the header; Reset is in the action row, once there is 
         last: f.lastElementChild === row,
       };
     };
-    return { view: read('region'), data: read('status'), idle: read('plan'), nowhere: read('customer') };
-  })()`) as Record<string, { head: [string, string[]][]; row: string[] | null; last: boolean }>;
+    const size = (field) => {
+      const f = sr.querySelector('.field[data-field="' + field + '"]');
+      const at = (sel) => f.querySelector(sel)?.getBoundingClientRect();
+      const reset = at('.field-clear');
+      const send = at('.field-raise');
+      return { left: reset.right <= send.left, height: reset.height === send.height, width: reset.width === send.width };
+    };
+    return { view: read('region'), data: read('status'), idle: read('plan'), nowhere: read('customer'), size: size('status') };
+  })()`) as Record<string, { reset: [string, number][]; head: [string, string[]][]; row: string[] | null; last: boolean }>;
 
-  expect(r['view']).toEqual({ head: [], row: ['field-clear'], last: true });
-  expect(r['data']).toEqual({ head: [['field-raise', ['4px', '4px']]], row: ['field-clear'], last: true });
-  // NO ANSWER YET: Send to is there all the same; nothing to reset, so no row.
-  expect(r['idle']).toEqual({ head: [['field-raise', ['4px', '4px']]], row: null, last: true });
-  expect(r['nowhere']).toEqual({ head: [], row: null, last: true });
+  expect(r['view']).toMatchObject({ head: [], row: null, last: true });
+  expect(r['view'].reset.map(([c]) => c)).toEqual(['field-clear']);
+  expect(r['data']).toMatchObject({ head: [['field-raise', ['4px', '4px']]], row: null, last: true });
+  expect(r['data'].reset.map(([c]) => c)).toEqual(['field-clear']);
+  // NO ANSWER YET: Send to is there all the same; nothing to reset.
+  expect(r['idle']).toMatchObject({ head: [['field-raise', ['4px', '4px']]], row: null, last: true });
+  expect(r['idle'].reset).toEqual([]);
+  expect(r['nowhere']).toMatchObject({ head: [], row: null, last: true });
+  // Reset is LEFT of Send to, and the same size.
+  expect(r['size']).toEqual({ left: true, height: true, width: true });
 });
 
 /** In ADVANCED the action row leads with Add condition — the inline menu's own
@@ -809,7 +823,7 @@ test('a remote panel shows a waiting field\'s Apply and Discard, and Apply all i
       heard,
     };
   })()`) as { row: string[]; footer: boolean; heard: [string, unknown][] };
-  expect(r.row).toEqual(['field-clear', 'field-discard', 'field-apply']);
+  expect(r.row).toEqual(['field-discard', 'field-apply']);
   expect(r.footer).toBe(true);
   expect(r.heard).toEqual([['filter-apply', {}], ['filter-discard', {}]]);
 });

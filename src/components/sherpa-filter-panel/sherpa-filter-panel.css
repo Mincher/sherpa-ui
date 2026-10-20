@@ -98,7 +98,7 @@
   block-size: var(--sherpa-theme-content-size-large, 16px);
 }
 
-/* Reset and its ▾, and a field's Clear and Send to: each pair one control. */
+/* Reset and its ▾, and a field's Send to, up and down: each set one control. */
 .reset-group,
 .field-group {
   display: inline-flex;
@@ -158,15 +158,15 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 /* THE ACTION ROW, last in the field (Will, TODO 98): Add condition in
-   Advanced; RESET once there is something to clear (Will, 2026-09-24); APPLY
-   and DISCARD, at the right, on a REMOTE field once changed. It is drawn only
-   while one of them is. TRAP T-apply-and-discard-wait-for-a-change */
+   Advanced; APPLY and DISCARD, at the right, on a REMOTE field once changed.
+   It is drawn only while one of them is. RESET is in the header, left of Send
+   to, once there is something to clear (Will, 360). TRAP T-apply-and-discard-wait-for-a-change */
 .field-row {
   display: none;
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-.field:is([data-answered], [data-advanced]) .field-row,
+.field[data-advanced] .field-row,
 :host([data-remote]) .field[data-pending] .field-row { display: flex; }
 .field-row-spacer { flex: 1 1 auto; }
 .field-add-condition { display: none; }

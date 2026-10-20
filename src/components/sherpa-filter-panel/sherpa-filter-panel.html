@@ -167,7 +167,11 @@
         </span>
         <!-- DEFAULT look. No Remove: the scope's Add menu is the whole list. -->
         <span slot="actions" class="field-acts">
-          <!-- Send to, up or down. Reset is the action row's. Will, TODO 98. -->
+          <!-- RESET, left of Send to and its size (Will, 360) — beside the group, not
+               in it: hidden while nothing is set, it would square Send to's corners. -->
+          <sherpa-button class="field-clear" data-type="icon" data-size="sm"
+                         data-icon-start="arrow-rotate-left"></sherpa-button>
+          <!-- Send to, up or down. -->
           <span class="field-group sherpa-group">
             <!-- A component's field, SENT UP to the View's filters. TRAP T-send-to-view-filters -->
             <sherpa-button class="field-raise" data-type="icon" data-size="sm"
@@ -189,12 +193,11 @@
            the field's own menu body, drawn inline — not by a second copy of
            each control. TRAP T-an-inline-menu-is-the-same-menu -->
       <div class="field-body" part="field-body"></div>
-      <!-- ONE ACTION ROW, last in the field, Simple or Advanced: Add condition in
-           Advanced, Reset, and — REMOTE, once changed — Discard and Apply at the
-           right. Will, TODO 98. TRAP T-apply-and-discard-wait-for-a-change -->
+      <!-- ONE ACTION ROW, last in the field: Add condition in Advanced, and —
+           REMOTE, once changed — Discard and Apply at the right. Will, TODO 98.
+           TRAP T-apply-and-discard-wait-for-a-change -->
       <div class="field-row" part="field-row">
         <sherpa-button class="field-add-condition" data-icon-start="plus">Add condition</sherpa-button>
-        <sherpa-button class="field-clear" data-type="icon" data-icon-start="arrow-rotate-left"></sherpa-button>
         <span class="field-row-spacer"></span>
         <sherpa-button class="field-discard" data-type="icon" data-icon-start="cross" aria-label="Discard"></sherpa-button>
         <sherpa-button class="field-apply" data-type="icon" data-icon-start="tick" aria-label="Apply"></sherpa-button>
