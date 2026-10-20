@@ -65,6 +65,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ⬜ | 0zm | 383 | UX — ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
+| ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
