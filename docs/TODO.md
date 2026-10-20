@@ -50,6 +50,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
+| ⬜ | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -720,6 +721,7 @@ against the code). The full plan, with every file:line, is
   each tab's History takes it, so those stores are trusted. A tab woken from
   sleep counts everything as changed. **B:** keep them untrusted now; the channel
   later. Until then they take today's path.
+  **Will, 2026-10-20: A** — *"Yes they share."* Next: 3.5, the tab channel.
   - ✅ **3.1** (2026-10-20) — the bench: pages `lean` and `notheld`, acts
     `save-same` and `save-unread`, `save` now moves a read field, a `walks`
     counter. 57 old acts unchanged, 21 new.
@@ -1451,6 +1453,32 @@ data comes, open or shut. Two tests now open the panel before they read its
 fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
 sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
 3 engines, the coordination gate among them.
+
+### `[ ]` ⬜ 369 — FILTERS: tiered values, and a tree menu
+
+Will, 2026-10-20: *"In the demo app, customers should be able to have sites
+(e.g. office locations). This makes the menu for the customer filter chip a
+nested tree select menu (with checkboxes). Both customers and/or sites are
+selectable. The filter chips for each Customer in the filter panel View Scope
+will need to now have a menu that lists all site values. This is a new level of
+value tiering in filters but I think it should be easy to add. It is only for
+Customers at the moment but the value tiering, and tree menu, implementation
+should be generic for any potential future scenarios that need this."*
+
+What it needs, to design first (read-only), then build:
+- **Data:** Demos' customers gain sites (office locations). A field declares
+  its values' tiers — a value holds child values — once, in the page
+  definition, for ANY field (not a Customer special case).
+- **The filter:** a pick of a parent, a child, or both. A parent picked means all
+  its children; a child picked alone narrows to that child. Counts, greys,
+  set-aside and the walk (347–349) answer at both levels.
+- **The menu:** a TREE of checkboxes — parents, each opening to its children,
+  with a parent's box showing all, some or none of them. One generic menu body,
+  reused by the bar's chip, the panel and a grid heading.
+- **The panel's View scope:** each Customer chip opens a menu of that
+  customer's sites.
+- **Reuse first:** the menu's child menus (`T-a-row-opens-its-child-menu`) and the
+  nav's tree rows; a value as an object (`valueKey`).
 
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
