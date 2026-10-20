@@ -47,7 +47,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
 | ⬜ | 9z | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
-| ⬜ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
+| ❓ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -1433,11 +1433,30 @@ component can then be read by any component to get the context it needs to
 operate in the correct context. … I feel like this simplifies the code base and
 reduces a lot of duplication and fractured query contexts."*
 
-Today each `DataSource` owns ONE Query, and a page can have more than one
-source. **Step 1, running:** a read-only map of where the Query lives today, every
-copy a component keeps, and how sources relate. **Step 2:** a design, at most two
-options, for Will. Structural data-layer work (287 5b, 288 8b–10, 320) waits for
-it.
+**Step 1 ✅, 2026-10-20 — the map:** `docs/history/plan-366-query-context-map.md`.
+- No filter crosses sources. A page has ONE filtered source; Demos' dashboard
+  and the shell's notification list have others, with no filter control.
+- The two-way loop is between ONE source and its controls. A bar sends its WHOLE
+  answer on each change, the source clears what it does not name, then draws it
+  back into every control, the sender too. Guards exist only for that loop: the
+  panel's `#said`, the bar's `#editedAt` and `#pendingAnswers`, the provider's
+  two-frame mute.
+- Beside the Query, in the source: sort, group and search (in `#state`; the
+  design puts them in the Query), an unscoped bar's `saved:<id>` parts, and a
+  compiled filter set by hand (`setFilter` / `setState`).
+- Object doors still open (319's kind): `write()` / `select()` copy one layer,
+  so a caller's `conditions` and `kept` become the Query's; `supersedeColumns`
+  hands the grid the APPLIED readings, and the grid keeps them.
+
+**❓ Will — step 2, the design:** **A** — your QueryContext is the Query each
+Context already has: make every control DRAW-ONLY. It reads its slice and sends a
+one-field request; it never sends its whole answer. Sort, group and search move
+into the Query; the side doors go. Then the guards go. Large: bar, panel, grid,
+legend, provider and many tests. **B** — a new QueryContext object ABOVE the
+sources, one per app Context. It removes nothing: no filter crosses sources
+today, and the two-way loop is below it. My pick: **A**, designed first by a
+read-only workflow, then built in small commits. Structural data-layer work
+(287 5b, 288 8b–10, 320) waits for it.
 
 ---
 
