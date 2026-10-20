@@ -118,7 +118,13 @@
                     "children": [
                       {
                         "el": "span",
-                        "class": "save-word"
+                        "class": "save-word",
+                        "children": [
+                          {
+                            "el": "span",
+                            "class": "save-name"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -182,18 +188,6 @@
                   "data-icon-start": "ellipses-vertical",
                   "aria-label": "More actions",
                   "aria-haspopup": "dialog"
-                }
-              },
-              {
-                "el": "sherpa-quick-filter",
-                "class": "saved-chip",
-                "part": "saved",
-                "attrs": {
-                  "slot": "metadata",
-                  "data-label": "Saved",
-                  "data-dismiss": "",
-                  "data-locked": "",
-                  "data-current": ""
                 }
               },
               {
@@ -509,6 +503,12 @@
             "attrs": {
               "data-word": "presets"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "filters"
+            }
           }
         ]
       }
@@ -633,16 +633,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the host SAVES filters: the header's Save filters saves every scope under one name, and its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope"
-    },
-    {
-      "$type": "prop",
-      "name": "data-saved",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "written BY the panel: a saved set is on, so its Saved chip shows"
+      "description": "the host SAVES filters: the header's Save filters saves every scope under one name; while a set is taken it reads \"Save <name>\", active, and saves over it. Its ▾ holds Save filters as and Delete filters, and its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope"
     },
     {
       "$type": "prop",
@@ -710,18 +701,8 @@
     },
     {
       "$type": "state",
-      "name": "saved",
-      "selector": ":host([data-saved])"
-    },
-    {
-      "$type": "state",
       "name": "remote",
       "selector": ":host([data-remote])"
-    },
-    {
-      "$type": "state",
-      "name": "not-saved",
-      "selector": ":host(:not([data-saved]))"
     }
   ],
   "capabilities": [
@@ -832,7 +813,7 @@
     {
       "$type": "event",
       "name": "filters-apply",
-      "description": "A saved set's row was ticked: apply it.",
+      "description": "A saved set's row was ticked: take it, so the filters match it.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -842,14 +823,17 @@
     {
       "$type": "event",
       "name": "filters-dismiss",
-      "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
+      "description": "A saved set's row was unticked: the scopes it names lose their filters.",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
     },
     {
       "$type": "event",
       "name": "filters-save",
-      "description": "Save filters: over the set on, else as a new one.",
+      "description": "Save filters: over the set last taken (\"Save <name>\"), else under a new name.",
       "bubbles": true,
       "composed": true
     },

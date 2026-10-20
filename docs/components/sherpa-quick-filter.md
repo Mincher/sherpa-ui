@@ -32,7 +32,6 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-count` | text |  | leading count chip (shown when present). A menu sets it only at TWO or more picked values — at one the label already names the value, so a "1" badge would be noise. Hovering the badge reveals .count-tip ABOVE it, listing the chosen values. The bubble is a local copy of the [sherpa-tooltip](sherpa-tooltip.md) look rather than a nested instance: the badge lives in this shadow root, so a light-DOM wrapper component cannot reach it. Reveal is pure CSS on .count-wrap:hover. |
 | `data-current` | boolean | `false` | selected/on state |
 | `data-direction` | `asc` `desc` |  | asc \| desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten |
-| `data-dismiss` | boolean |  | its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105 |
 | `data-full-value` | boolean |  |  |
 | `data-icon` | text |  | start leading icon — an FA class list (Figma default is a funnel) |
 | `data-icon-only` | boolean |  | the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header). With no data-menu it is a TOGGLE: the caret is the whole chip, named by the host's aria-label (a heading's sort, a panel field's f(x)). |
@@ -88,7 +87,6 @@ Each one bubbles.
 |---|---|---|
 | `quick-filter-click` | `{ active: boolean }` | The chip body is toggled. |
 | `quick-filter-change` | `{ scope: 'chip'; values: string[] }` | The menu selection changed. |
-| `quick-filter-dismiss` |  | A data-dismiss chip's right button was pressed. |
 | `jump-select` | `{ label: string; value: string }` | A jump row was picked, and its target scrolled into view. |
 | `group-change` | `{ field: null \| string }` | A GROUP chip picked or cleared its column. |
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` | A SORT chip picked its column or way. |

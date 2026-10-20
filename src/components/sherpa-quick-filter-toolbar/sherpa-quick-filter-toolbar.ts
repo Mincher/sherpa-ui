@@ -98,8 +98,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-favourite': { type: 'boolean', kind: 'behaviour' },
     // The host saves filters: its ⋮ offers Save filters. TRAP T-saved-filters-are-every-scope
     'data-saveable': { type: 'boolean', kind: 'style' },
-    // Written BY the bar: a saved set is on. TRAP T-saved-filters-are-every-scope
-    'data-saved': { type: 'boolean', kind: 'style' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
@@ -317,8 +315,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // `change` reaches here, being in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
-    this.$('.saved-chip')?.addEventListener('quick-filter-dismiss', () => this.emit('filters-dismiss', {}));
-    this.#saved.draw();
     // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-has-no-fill
     for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
       this.addEventListener(type, this.#queuePending);
@@ -547,8 +543,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * savedSets — the reader's saved sets of filters. The Filters menu's Saved
-   * section lists them; the one ON is the Saved chip, in the warning look and
-   * with ` *` while `edited`. Drawn, never reported. Will, TODO 105.
+   * section lists them, each on screen ticked; the ⋮ says "Save <name>" over
+   * the one last taken. Drawn, never reported. Will, TODO 105, 366.
    * TRAP T-saved-filters-are-every-scope
    */
   set savedSets(sets: readonly SavedSet[]) {
@@ -558,8 +554,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   get savedSets(): SavedSet[] {
     return this.#saved.all;
   }
-  /** The reader's saved sets, and the Saved chip. */
-  #saved = new SavedSets(this, () => this.$<SherpaQuickFilter>('.saved-chip'));
+  /** The reader's saved sets. */
+  #saved = new SavedSets(this);
 
   /** Steers given before `populate()` drew a chip, for `#render()` to replay in
    *  order. TRAP T-a-value-before-the-first-render-is-held */
@@ -1105,7 +1101,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.$('.add-btn sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     }
     this.#syncArrangement();
-    if (name === 'data-saveable') this.#saved.draw();
     syncResets(this, this.root, '.act[data-act="clear"]');
   }
 
@@ -1597,7 +1592,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit(act);
         break;
       case 'filters-delete':
-        this.emit('filters-delete', { id: this.#saved.on?.id });
+        this.emit('filters-delete', { id: this.#saved.applied?.id });
         break;
       case 'add':
         // sherpa-button opens its own slotted menu; nothing to do here.
@@ -1622,8 +1617,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (this.hasAttribute('data-custom-view')) view.push(['delete-view']);
     }
     if (folded(act('refresh'))) view.push(['refresh']);
-    // Save filters, for every scope at once. Will, TODO 105.
-    const save = saveRows(this, !!this.#saved.on);
+    // Save filters, for every scope at once: "Save <name>" over the set last taken. Will, TODO 105, 366.
+    const save = saveRows(this, this.#saved.applied);
     openMore(this, this.root, trigger, [first, save, view]);
   }
 
@@ -1648,10 +1643,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        is its chip's on/off instead, and its × removes it.
        TRAP T-the-add-menu-is-the-whole-list */
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
-    // A saved set's row applies it, or — unticked — dismisses it. TODO 105
+    // A saved set's row takes it, or — unticked — takes it off. TODO 105, 366
     const set = this.#saved.pick(want);
     if (set.apply) this.emit('filters-apply', { id: set.apply });
-    else if (set.dismiss) this.emit('filters-dismiss', {});
+    else if (set.dismiss) this.emit('filters-dismiss', { id: set.dismiss });
     // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
     let flipped = false;
     // While the Switch is off, a one-value row turns no chip on: its tick goes back.

@@ -9,17 +9,16 @@
  *
  * Map:
  * - ListedFilter — One filter the menu lists.
- * - SavedSet — One saved set of filters, as the menu and the Saved chip draw it.
+ * - SavedSet — One saved set of filters, as the Filters menu lists it.
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: off with nothing to list, its badge the filters it hides, the old menu gone.
  * - reopenFilters — The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn.
- * - SavedSets — The reader's saved sets, as the host last drew them, and the Saved chip that names the one on.
- * - .set — Keep a copy of the host's sets, and redraw the Saved chip.
+ * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
+ * - .set — Keep a copy of the host's sets.
  * - .all — A copy of each set, as kept.
- * - .on — The set on screen, if any.
+ * - .applied — The one set taken: ticked, what "Save <name>" saves over and Delete deletes.
  * - .listed — What the Filters menu lists: nothing unless the host saves.
- * - .draw — The Saved chip says the set on screen: its name, and ` *` and the warning look once changed.
- * - .pick — A Filters menu's ticks, as a saved-set request: apply one, or dismiss the one on.
+ * - .pick — A Filters menu's ticks, as a saved-set request: take one newly ticked, or take off the one unticked.
  * - OneRows — What each ONE-value row was told — on or off.
  * - .tell — Remember what a fresh Filters list tells its one-value rows.
  * - .has — Is this a one-value row?
@@ -35,7 +34,6 @@
 import type { FilterDef } from './filter-def.js';
 import type { FilterMenuItem } from './filter-menu.js';
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
-import type { SherpaQuickFilter } from '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
 
 const FILTERS_LABEL = 'Filters';
 const ADDED_SECTION = 'Added filters';
@@ -63,8 +61,9 @@ export interface ListedFilter {
 export interface SavedSet {
   id: string;
   label: string;
-  on?: boolean;
-  edited?: boolean;
+  /** The ONE set taken — applied or saved: its row is ticked, and "Save <name>"
+   *  saves over it. Will, 366. */
+  applied?: boolean;
 }
 
 /** A saved set's row value: this, then its id. Its tick APPLIES it. */
@@ -110,8 +109,8 @@ function filtersMenuItems(
     })),
     ...offer.filter((f) => f.readings)
       .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: SAVED_SECTION })),
-    // A reader's saved SETS: a tick applies one, and the one on is ticked. TODO 105
-    ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.on })),
+    // A reader's saved SETS: a tick takes one, and the ONE taken is ticked. TODO 105 · Will, 366
+    ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.applied })),
   ];
 }
 
@@ -147,25 +146,22 @@ export async function reopenFilters(button: HTMLElement | null): Promise<void> {
   if (menu.isConnected) menu.show?.(button);
 }
 
-/** The reader's saved sets, as the host last drew them, and the Saved chip that
- *  names the one on. TODO 105 · TRAP T-saved-filters-are-every-scope */
+/** The reader's saved sets, as the host last drew them, and the ONE taken. No
+ *  chip names it: a set taken LOADS into the chips. Will, 366.
+ *  TODO 105 · TRAP T-saved-filters-are-every-scope */
 export class SavedSets {
   /** The sets, copied. */
   #sets: SavedSet[] = [];
   /** The bar or panel that draws them. */
   readonly #host: HTMLElement;
-  /** Its Saved chip, looked up on each draw. */
-  readonly #chip: () => SherpaQuickFilter | null;
 
-  constructor(host: HTMLElement, chip: () => SherpaQuickFilter | null) {
+  constructor(host: HTMLElement) {
     this.#host = host;
-    this.#chip = chip;
   }
 
-  /** Keep a copy of the host's sets, and redraw the Saved chip. */
+  /** Keep a copy of the host's sets. */
   set(sets: readonly SavedSet[]): void {
     this.#sets = sets.map((set) => ({ ...set }));
-    this.draw();
   }
 
   /** A copy of each set, as kept. */
@@ -173,9 +169,9 @@ export class SavedSets {
     return this.#sets.map((set) => ({ ...set }));
   }
 
-  /** The set on screen, if any. */
-  get on(): SavedSet | undefined {
-    return this.#sets.find((set) => set.on);
+  /** The one set taken: ticked, what "Save <name>" saves over and Delete deletes. */
+  get applied(): SavedSet | undefined {
+    return this.#host.hasAttribute('data-saveable') ? this.#sets.find((set) => set.applied) : undefined;
   }
 
   /** What the Filters menu lists: nothing unless the host saves. */
@@ -183,28 +179,17 @@ export class SavedSets {
     return this.#host.hasAttribute('data-saveable') ? this.#sets : [];
   }
 
-  /** The Saved chip says the set on screen: its name, and ` *` and the warning
-   *  look once changed. `data-saved` on the host shows it. */
-  draw(): void {
-    const chip = this.#chip();
-    const on = this.#host.hasAttribute('data-saveable') ? this.on : undefined;
-    this.#host.toggleAttribute('data-saved', !!on);
-    if (!chip || !on) return;
-    chip.valueLabel = `${on.label}${on.edited ? ' *' : ''}`;
-    if (on.edited) chip.dataset['status'] = 'warning';
-    else chip.removeAttribute('data-status');
-  }
-
-  /** A Filters menu's ticks, as a saved-set request: the set newly ticked is
-   *  applied; the one on, unticked, is dismissed. The set rows are taken out of
-   *  `want`, so the rest is the held filters' answer. */
-  pick(want: Set<string>): { apply?: string; dismiss?: boolean } {
-    const on = this.on?.id;
+  /** A Filters menu's ticks, as a saved-set request: a set newly ticked is
+   *  TAKEN, in place of the one taken; the one taken, unticked, is taken OFF.
+   *  ONE at a time (Will, 366). The set rows are taken out of `want`, so the
+   *  rest is the held filters' answer. */
+  pick(want: Set<string>): { apply?: string; dismiss?: string } {
+    const taken = this.#sets.find((set) => set.applied)?.id;
     const picked = [...want].filter((v) => v.startsWith(SET_ROW)).map((v) => v.slice(SET_ROW.length));
     for (const id of picked) want.delete(`${SET_ROW}${id}`);
-    const apply = picked.find((id) => id !== on);
+    const apply = picked.find((id) => id !== taken);
     if (apply) return { apply };
-    return on && !picked.includes(on) ? { dismiss: true } : {};
+    return taken && !picked.includes(taken) ? { dismiss: taken } : {};
   }
 }
 

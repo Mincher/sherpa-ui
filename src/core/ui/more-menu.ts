@@ -4,13 +4,13 @@
  * TRAP T-the-more-menu-holds-what-folded
  *
  * Map:
- * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off.
+ * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, whether it is off, and a name it says.
  * - MORE_MENU — The ⋮ menu's own markup and sheet: a host lists each FIRST.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all to default — off where they would change nothing.
  * - syncResets — Reset, and Reset all to default, as buttons: off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
- * - saveRows — Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves.
+ * - saveRows — Save filters, or "Save <name>" with Save as and Delete; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
@@ -21,7 +21,7 @@ import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 import { report } from '../data/report.js';
 
 /** One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off. */
-export type MoreRow = readonly [value: string, disabled?: boolean];
+export type MoreRow = readonly [value: string, disabled?: boolean, name?: string];
 
 /** The ⋮ menu's own markup and sheet: a host lists each FIRST. TRAP T-a-family-shares-markup */
 export const MORE_MENU = {
@@ -53,10 +53,11 @@ export function hidesUnmatched(host: HTMLElement): boolean {
   return host.dataset['limitOptions'] === 'on' && host.dataset['hideUnmatched'] === 'on';
 }
 
-/** Save filters, Save filters as, and Delete filters while a set is on — none unless the host saves. TODO 105 */
-export function saveRows(host: HTMLElement, setOn: boolean): MoreRow[] {
+/** Save filters — or "Save <name>", over the set last taken, then Save filters
+ *  as and Delete filters — none unless the host saves. TODO 105 · Will, 366 */
+export function saveRows(host: HTMLElement, applied?: { label: string }): MoreRow[] {
   if (!host.hasAttribute('data-saveable')) return [];
-  return [['filters-save'], ['filters-save-as'], ...(setOn ? [['filters-delete'] as MoreRow] : [])];
+  return applied ? [['filters-save', false, applied.label], ['filters-save-as'], ['filters-delete']] : [['filters-save']];
 }
 
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
@@ -70,9 +71,12 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   const menu = root.querySelector<SherpaMenu>('.more-menu');
   const divider = cloneFirst(root, 'template.more-divider-tpl');
   if (!menu || !divider) return;
-  const drawn = groups.map((rows) => rows.flatMap(([value, disabled]) => {
+  const drawn = groups.map((rows) => rows.flatMap(([value, disabled, name]) => {
     const one = value.startsWith(EXTRA) ? pageRow(host, root, value) : row(root, value);
     one?.toggleAttribute('disabled', !!disabled);
+    // A row that names what it acts on: "Save At risk". Its own word stays otherwise.
+    const said = name ? one?.querySelector('.more-name') : null;
+    if (said) said.textContent = name!;
     return one ? [one] : [];
   }));
   const limit = host.dataset['limitOptions'];

@@ -92,7 +92,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, reach, savedFilters, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -183,25 +183,25 @@
           "$type": "method",
           "name": "saveFilters",
           "args": "label?: string",
-          "description": "SAVE FILTERS — every scope's filters under one name, kept with the page beside its Views. With a name, that set — a set of the same name is saved over, so a host asks first. With none, over the set on screen; none on answers undefined. The set's id. Will, TODO 105."
+          "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first. With none, over the set last taken (\"Save <name>\"); none taken answers undefined. The set's id. Will, TODO 105, 366."
         },
         {
           "$type": "method",
           "name": "applyFilters",
           "args": "id: string",
-          "description": "APPLY a saved set: each scope it names takes its filters; Dismiss puts back what was on screen before the first one."
+          "description": "TAKE a saved set: every scope matches it; one it does not name has no filters."
         },
         {
           "$type": "method",
           "name": "dismissFilters",
-          "args": "",
-          "description": "DISMISS the set on screen: the filters go back as they were before it — or, for one saved from the screen, to the View's own. Never the sort."
+          "args": "id: string",
+          "description": "TAKE a saved set OFF: the scopes it names lose their filters."
         },
         {
           "$type": "method",
           "name": "deleteFilters",
           "args": "id?: string",
-          "description": "DELETE a saved set — the one on screen unless named. Its filters stay."
+          "description": "DELETE a saved set — the one last taken unless named. Its filters stay on screen."
         },
         {
           "$type": "method",
@@ -244,13 +244,8 @@
           "access": "read"
         },
         {
-          "name": "savedFilters",
-          "type": "{ id: string; label: string; edited: boolean } | null",
-          "access": "read"
-        },
-        {
           "name": "savedFilterSets",
-          "type": "{ id: string; label: string }[]",
+          "type": "{ id: string; label: string; applied: boolean }[]",
           "access": "read"
         },
         {

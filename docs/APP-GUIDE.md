@@ -287,11 +287,13 @@ session.persist('/nav/pinned');
 
 ```js
 const named = document.getElementById('save-filters');
+const taken = () => provider.savedFilterSets.find((set) => set.applied);
 const saveAs = async () => {
-  const label = await named.prompt(provider.savedFilters?.label ?? '');
+  const label = await named.prompt('');
   if (label) provider.saveFilters(label);
 };
-provider.addEventListener('filters-save', () => (provider.savedFilters ? provider.saveFilters() : saveAs()));
+// "Save <name>" saves over the set last taken; with none, it asks for a name.
+provider.addEventListener('filters-save', () => (taken() ? provider.saveFilters() : saveAs()));
 provider.addEventListener('filters-save-as', saveAs);
 provider.addEventListener('filters-delete', () => provider.deleteFilters());
 ```
@@ -302,9 +304,10 @@ provider.addEventListener('filters-delete', () => provider.deleteFilters());
   `<sherpa-button commandfor="edit" command="--show">Edit</sherpa-button>`, and
   `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
 - **Save filters** keeps EVERY scope's filters under one name, with the page
-  beside its Views. The Filters menu's Saved section applies one; the Saved
-  chip names it, and its cross puts the filters back. Ask before you save over
-  a name that exists. `T-saved-filters-are-every-scope`
+  beside its Views. The Filters menu's Saved section takes one: every scope
+  then matches it, and its values load into the chips. No chip names it; Save
+  filters reads "Save <name>" and saves over it. Ask before you save over a name
+  that exists. `T-saved-filters-are-every-scope`
 
 ## 11. Start
 

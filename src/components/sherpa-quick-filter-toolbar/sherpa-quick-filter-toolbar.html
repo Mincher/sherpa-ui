@@ -39,11 +39,10 @@
     data-sort-field      the field the Sort chip points at (the standard name)
     data-sort-direction  asc (default) | desc
     data-group-field     the field the Group chip points at (the standard name)
-    data-saveable    the host SAVES filters: its ⋮ offers Save filters and Save
-                  filters as, and Delete filters while a set is on. Its
-                  `savedSets` fill the Filters menu's Saved section and the
-                  Saved chip. TRAP T-saved-filters-are-every-scope
-    data-saved       written BY the bar: a saved set is on, so its Saved chip shows
+    data-saveable    the host SAVES filters: its ⋮ offers Save filters, or "Save
+                  <name>" over the set last taken with Save filters as and
+                  Delete filters. Its `savedSets` fill the Filters menu's Saved
+                  section. TRAP T-saved-filters-are-every-scope
     data-remote      its source fetches from outside the data layer: a
                   multi-select or range menu waits for Apply. Without it,
                   every pick applies at once. Set by a bound source.
@@ -65,11 +64,11 @@
     filter-remove        — a chip was removed. detail: { id, filter, holds }
     filter-add           — chips were added. detail: { ids, filters, holds }
     view-reset           — Reset all to default: put back the View's own filters, in every scope. Cancelable
-    filters-apply        — a saved set's row was ticked: apply it. detail: { id }
-    filters-dismiss      — the Saved chip's cross, or its row unticked: put back the filters as they were. detail: { }
-    filters-save         — Save filters: over the set on, else as a new one. detail: { }
+    filters-apply        — a saved set's row was ticked: take it, so the filters match it. detail: { id }
+    filters-dismiss      — a saved set's row was unticked: the scopes it names lose their filters. detail: { id }
+    filters-save         — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
     filters-save-as      — Save filters as: a new set, by name. detail: { }
-    filters-delete       — Delete filters: forget the set on. detail: { id }
+    filters-delete       — Delete filters: forget the set last taken. detail: { id }
     ai-filter-request    — the AI button
     data-refresh         — the refresh button
     view-save            — Save (view type)
@@ -97,11 +96,6 @@
     <!-- Figma's leading filter Switch: every filter off or on, each keeping its value. -->
     <div class="switch-zone" part="switch">
       <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
-    </div>
-
-    <!-- The SAVED set on screen: its name, and a cross that dismisses it. TODO 105 -->
-    <div class="saved-zone" part="saved">
-      <sherpa-quick-filter class="saved-chip" data-label="Saved" data-dismiss data-locked data-current></sherpa-quick-filter>
     </div>
 
     <div class="chips" part="chips"></div>

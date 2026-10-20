@@ -87,9 +87,8 @@ const KNOWN = {
   // Whether the View on screen is the reader's own: DERIVED from the view and
   // the saved set. TRAP T-a-saved-view-is-the-readers-own
   'sherpa-provider.customView': 'ok: saveView(name) / deleteView() / a View pick — derived',
-  // The saved set on screen, and the page's sets: DERIVED from the store. TODO 105
-  'sherpa-provider.savedFilters': 'ok: saveFilters(name) / applyFilters(id) / dismissFilters() — derived',
-  'sherpa-provider.savedFilterSets': 'ok: saveFilters(name) / deleteFilters(id) — the page\'s store',
+  // The page's sets, which are on screen and the one last taken: DERIVED. TODO 105, 366
+  'sherpa-provider.savedFilterSets': 'ok: saveFilters(name) / applyFilters(id) / dismissFilters(id) / deleteFilters(id) — derived',
   'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
   // Doors a host asks through, not values.
   'sherpa-app-header.notificationsAnchor': 'ok: not a value — the bell element, to anchor a panel to',

@@ -63,23 +63,6 @@
           },
           {
             "el": "div",
-            "class": "saved-zone",
-            "part": "saved",
-            "children": [
-              {
-                "el": "sherpa-quick-filter",
-                "class": "saved-chip",
-                "attrs": {
-                  "data-label": "Saved",
-                  "data-dismiss": "",
-                  "data-locked": "",
-                  "data-current": ""
-                }
-              }
-            ]
-          },
-          {
-            "el": "div",
             "class": "chips",
             "part": "chips"
           },
@@ -610,16 +593,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the host SAVES filters: its ⋮ offers Save filters and Save filters as, and Delete filters while a set is on. Its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope"
-    },
-    {
-      "$type": "prop",
-      "name": "data-saved",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "written BY the bar: a saved set is on, so its Saved chip shows"
+      "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope"
     },
     {
       "$type": "prop",
@@ -714,11 +688,6 @@
       "$type": "state",
       "name": "saveable",
       "selector": ":host([data-saveable])"
-    },
-    {
-      "$type": "state",
-      "name": "saved",
-      "selector": ":host([data-saved])"
     },
     {
       "$type": "state",
@@ -820,7 +789,7 @@
     {
       "$type": "event",
       "name": "filters-apply",
-      "description": "A saved set's row was ticked: apply it.",
+      "description": "A saved set's row was ticked: take it, so the filters match it.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -830,14 +799,17 @@
     {
       "$type": "event",
       "name": "filters-dismiss",
-      "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
+      "description": "A saved set's row was unticked: the scopes it names lose their filters.",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
     },
     {
       "$type": "event",
       "name": "filters-save",
-      "description": "Save filters: over the set on, else as a new one.",
+      "description": "Save filters: over the set last taken (\"Save <name>\"), else under a new name.",
       "bubbles": true,
       "composed": true
     },
@@ -851,7 +823,7 @@
     {
       "$type": "event",
       "name": "filters-delete",
-      "description": "Delete filters: forget the set on.",
+      "description": "Delete filters: forget the set last taken.",
       "bubbles": true,
       "composed": true,
       "detail": {

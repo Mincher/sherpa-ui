@@ -8114,7 +8114,6 @@ go.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/data/query.ts`
-- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/core/data/walk.ts`
@@ -15005,21 +15004,31 @@ query }`, the query in a View's own JSON form with no arrangement — the filter
 half of a View — kept with the PAGE beside its Views (`saveFilterAs`,
 `sherpa:filter-sets:<page>`).
 
-- **Saving**: the panel header's Save filters and its menu (Save filters as,
-  Delete filters), or — in toolbar mode — rows in the filter bar's ⋮. Each
-  asks with `filters-save`, `filters-save-as` or `filters-delete`; the HOST
-  names it, confirms an overwrite, and calls `saveFilters(label?)` or
-  `deleteFilters()`. With no name, it saves over the set on screen.
-- **Applying**: a set's row in the Filters menu's Saved section asks
-  `filters-apply`; each scope the set names takes its filters, and the rest
-  stay as they are. Its Saved chip then names it, in the panel header and on a
-  saving bar.
-- **Edited**: once the filters on screen no longer say what the set says —
-  each field's condition and each saved filter on, not a chip held empty — the
-  chip reads ` *` in the warning look. Save again, or Save as, clears it.
-- **Dismissing**: the chip's cross asks `filters-dismiss` and puts the Query
-  back as it was before the FIRST set was applied — the filters only, not the
-  sort. The tab remembers the set on screen, so a reload keeps the chip.
+No chip names a set (Will, 366): *"Selecting a saved filter definition should
+just apply the state, fields, and values to the filter chip components to match
+the query definition."*
+
+- **Taking**: a set's row in the Filters menu's Saved section asks
+  `filters-apply`. Every scope then MATCHES it: each scope it names takes its
+  filters, and every other scope's filters go — its chips and arrangement stay
+  (`takeSet`). A component's own scope (`declareDefault`) is what it is, and
+  stays. The values load into the ordinary chips.
+- **ONE at a time** (Will, 366: *"Only 1 saved filter definition can be applied
+  at a time."*): the Filters menu ticks only the set TAKEN. Ticking another
+  takes it in its place; unticking the one taken makes the scopes it names lose
+  their filters (`dropSet`, `filters-dismiss { id }`). A first try ticked every
+  set that matched the screen, and two showed ticked.
+- **The set taken** — applied or saved — is remembered in the tab
+  (`sherpa:filter-set-on:<page>`) through a change and a reload, until another
+  is taken, it is unticked or deleted, or the View changes or resets. Save
+  filters then reads "Save <name>", active, and saves over it, change and all;
+  its ▾ (or the bar's ⋮) holds Save filters as and Delete filters. With none
+  taken, Save filters asks for a name. Will, 366: *"This way it is clear that
+  clicking the left side will save over the filter definition and the right
+  will open the Save Filters As menu."*
+- **Saving**: each control asks with `filters-save`, `filters-save-as` or
+  `filters-delete`; the HOST names it, confirms an overwrite by name, and calls
+  `saveFilters(label?)` or `deleteFilters(id?)`.
 - **Old saved filters** — one scope's, kept per DATA before TODO 105 — are
   not read: Sherpa keeps no shim for an app's old stored data (Will, D4,
   2026-10-14). The per-scope card's Edit filter, Save and Delete went with
@@ -15060,8 +15069,9 @@ no answer is the amber warning (`T-a-new-chip-opens-in-default-not-warning`);
 a saved filter IS its answer.
 
 **A reader's saved SETS are listed there too** (TODO 105): a row per set, its
-tick APPLIES it and the one on is ticked — unticked, it is dismissed. A set is
-no chip: picking one asks the host (`T-saved-filters-are-every-scope`).
+tick TAKES it, the ONE taken is ticked, and unticked, the scopes it names lose
+their filters. A set is no chip: picking one asks the host
+(`T-saved-filters-are-every-scope`).
 
 The heading row is a `.menu-row`, so a re-stamp removes it with the rows it
 heads.

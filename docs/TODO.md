@@ -60,6 +60,11 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
+| ⬜ | 0zi | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
+| ⬜ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later) | filters |
+| ⬜ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
+| ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
+| ⬜ | 0zm | 383 | UX — ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1492,6 +1497,19 @@ took one filter click from 176 to 56 ms at 4x CPU.
 
 **✅ Will, 2026-10-20: A, keep 367.**
 
+### `[ ]` ⬜ 383 — UX: one "Filter actions" button
+
+Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
+definitions, Reset, Reset all, Save Filters, Save Filters As into 1 'Filter
+Actions' button. This 'Filter actions' button can still show 'Save
+$filterSetName' if a saved filter definition is active."*
+
+Design first (read-only), then Will picks: what the button's face says with and
+without a set taken; which half saves and which opens the menu; where the
+Filters (Add) list goes; the ⋮ menu's other rows (Limit, Hide unmatched, the
+host's own); the bar and the panel alike; and 376's Hide button and 382's
+active rule inside it. After 366's toolbar commits (20–22).
+
 ### `[ ]` ⬜ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
 
 Will, 2026-10-20: *"Add an icon only 'Hide invalid values' button to the filter
@@ -1530,6 +1548,18 @@ So:
   two days meaning Between in Simple. Old stored readings with `range: true`
   are read once as a Between row. The cell chip (373) stops setting
   `range: false`.
+
+**Design:** [plan-375.md](history/plan-375.md). **Will's answers, 2026-10-20:**
+- NUMBERS ONLY for now. Simple is ONE value box; no Range switch. Advanced is
+  opt-in per filter with the f(x) chip, as for other filters, and holds Between
+  and Not between. A number compares: Equals, Does not equal, Greater, Less,
+  Between, Not between; no Contains. Its menu keeps the word Reset.
+- A Between / Not between row: *"| Condition select | Start value input | End
+  value input |"* on one line, and *"Range Slider"* under it, full width.
+- DATES: as they are, with the Single / Range switch (379 holds the rest).
+- The grid cell chip on a number REPLACES the value.
+- Old queries with a number range: rewrite the test definitions and data to the
+  new model; no conversion code.
 
 ### `[x]` ✅ 374 — ASK: a cell chip on a field the View holds
 
@@ -1649,6 +1679,13 @@ What it needs, to design first (read-only), then build:
 - **Reuse first:** the menu's child menus (`T-a-row-opens-its-child-menu`) and the
   nav's tree rows; a value as an object (`valueKey`).
 
+**Design:** [plan-369.md](history/plan-369.md). **Will's answers, 2026-10-20:** a
+customer ticked matches all its rows; its panel chip shows ON with some sites
+picked, and a press suspends it without clearing the picks; the chip says
+"Northwind: London, Leeds"; the sites open in place as a tree; a remote store
+reads a customer's sites when its row first opens; build the parts that 366
+does not touch now, the panel after 366 commit 20 and the grid after 23.
+
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
 Found measuring 350: one saved-filter click made the grid build 25 checkboxes
@@ -1715,9 +1752,12 @@ grouping, and sorting, should be feeding to the QueryContext when changed. When
 the QueryContext updates it should broadcast the changes out to all components.
 I think we have this. Any input fields that show a value from the QueryContext
 need to be updated. Even if they are hidden."* (377: a shut panel keeps 367.)
-**Will's answers to the build plan, 2026-10-20:** Save and Delete find their
-saved filter BY MATCH (the Filters menu ticks each one on screen; Save always
-asks for a name). Applying one CLEARS every scope it does not name, so the
+**Will's answers to the build plan, 2026-10-20:** ~~Save and Delete find their
+saved filter BY MATCH~~, replaced the same day: *"set the 'Save filters'
+chip/button to active and change its label to read 'Save $filterSetName'"*, and
+*"Only 1 saved filter definition can be applied at a time."* So the tab keeps
+the ONE set taken, through a change and a reload; the Filters menu ticks it;
+"Save <name>" saves over it; its ▾ holds Save filters as and Delete. Applying one CLEARS every scope it does not name, so the
 screen matches it exactly (this replaces 105's "the rest stay"). Unticking one
 CLEARS the filters of the scopes it names. Plan:
 [plan-366-build.md](history/plan-366-build.md).

@@ -426,39 +426,34 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * SAVE FILTERS — every scope's filters under one name, kept with the page
-   * beside its Views. With a name, that set — a set of the same name is saved
-   * over, so a host asks first. With none, over the set on screen; none on
-   * answers undefined. The set's id. Will, TODO 105. TRAP T-saved-filters-are-every-scope
+   * SAVE FILTERS — every scope's filters under a name, kept with the page beside
+   * its Views. A set of the same name is saved over, so a host asks first. With
+   * none, over the set last taken ("Save <name>"); none taken answers undefined.
+   * The set's id. Will, TODO 105, 366. TRAP T-saved-filters-are-every-scope
    */
   saveFilters(label?: string): string | undefined {
     return this.#pages.saveFilters(label);
   }
 
-  /** APPLY a saved set: each scope it names takes its filters; Dismiss puts
-   *  back what was on screen before the first one. TRAP T-saved-filters-are-every-scope */
+  /** TAKE a saved set: every scope matches it; one it does not name has no
+   *  filters. TRAP T-saved-filters-are-every-scope */
   applyFilters(id: string): Promise<boolean> {
     return this.#pages.applyFilters(id);
   }
 
-  /** DISMISS the set on screen: the filters go back as they were before it —
-   *  or, for one saved from the screen, to the View's own. Never the sort. */
-  dismissFilters(): Promise<void> {
-    return this.#pages.dismissFilters();
+  /** TAKE a saved set OFF: the scopes it names lose their filters. */
+  dismissFilters(id: string): Promise<boolean> {
+    return this.#pages.dismissFilters(id);
   }
 
-  /** DELETE a saved set — the one on screen unless named. Its filters stay. */
+  /** DELETE a saved set — the one last taken unless named. Its filters stay on screen. */
   deleteFilters(id?: string): boolean {
     return this.#pages.deleteFilters(id);
   }
 
-  /** The saved set on screen — its id, name, and whether its filters have changed since. */
-  get savedFilters(): { id: string; label: string; edited: boolean } | null {
-    return this.#pages.savedFilters;
-  }
-
-  /** The page's saved sets — what a host asks before it saves over a name. */
-  get savedFilterSets(): { id: string; label: string }[] {
+  /** The page's saved sets, and the ONE taken — what a host asks before it saves
+   *  over a name, or deletes one. */
+  get savedFilterSets(): { id: string; label: string; applied: boolean }[] {
     return this.#pages.savedFilterSets;
   }
 

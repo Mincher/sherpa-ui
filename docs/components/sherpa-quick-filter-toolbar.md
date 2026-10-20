@@ -69,8 +69,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
 | `data-reset-on-populate` | boolean |  |  |
-| `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters and Save filters as, and Delete filters while a set is on. Its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope |
-| `data-saved` | boolean |  | written BY the bar: a saved set is on, so its Saved chip shows |
+| `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
@@ -127,11 +126,11 @@ Each one bubbles.
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |
 | `filter-add` | `{ filters: FilterDef[]; holds: string[]; ids: string[] }` | Chips were added. |
 | `view-reset` |  | Reset all to default: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
-| `filters-apply` | `{ id: string }` | A saved set's row was ticked: apply it. |
-| `filters-dismiss` |  | The Saved chip's cross, or its row unticked: put back the filters as they were. |
-| `filters-save` |  | Save filters: over the set on, else as a new one. |
+| `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
+| `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
+| `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
-| `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set on. |
+| `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set last taken. |
 | `ai-filter-request` |  | The AI button |
 | `data-refresh` |  | The refresh button |
 | `view-save` |  | Save (view type) |
@@ -152,7 +151,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `organise`, `saved`, `switch`, `view-zone`
+`actions`, `bar`, `chips`, `organise`, `switch`, `view-zone`
 
 ## CSS custom properties it reads
 

@@ -26,19 +26,26 @@
 }
 :host([data-limit-options]) .more-btn { display: inline-flex; }
 
-/* Save filters, and the Saved chip — a saving host's, the chip while a set is on. TODO 105 */
+/* Save filters — a saving host's. TODO 105 */
 .head .save-group { display: none; }
 :host([data-saveable]) .head .save-group { display: inline-flex; }
 @container sherpa-filter-panel (max-width: 380px) {
   :host([data-saveable]) .head .save-group { display: none; }
 }
-/* Narrow, it says "Save": the panel's own title keeps its room. */
+/* Narrow, it says "Save": the panel's own title keeps its room — but "Save
+   <name>" while a set is taken, which is the point of it. Will, 366. */
 @container sherpa-filter-panel (max-width: 520px) {
-  .save-word { display: none; }
+  :host(:not(:state(saved-on))) .save-word { display: none; }
 }
-:host(:not([data-saved])) .save-delete { display: none; }
-.saved-chip { display: none; }
-:host([data-saved]) .saved-chip { display: inline-flex; }
+/* A long name is cut short. */
+.save-name {
+  display: inline-block;
+  max-inline-size: 10em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+:host(:not(:state(saved-on))) .save-delete { display: none; }
 
 :host([hidden]) { display: none; }
 

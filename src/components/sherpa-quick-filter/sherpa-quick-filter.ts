@@ -48,7 +48,6 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-readonly-legend-is-a-key-not-a-filter */
     'data-readonly': { type: 'boolean', kind: 'style' },
     /* Its right button DISMISSES, not a menu — the Saved chip. Will, TODO 105 */
-    'data-dismiss': { type: 'boolean', kind: 'style' },
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },
@@ -646,11 +645,6 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The caret opens the menu without toggling the chip. */
   #onCaret = (event: Event): void => {
-    if (this.hasAttribute('data-dismiss')) {
-      event.stopPropagation();
-      this.emit('quick-filter-dismiss', {});
-      return;
-    }
     if (this.#togglesOnly()) return this.#onClick(event);
     // A chip with a MENU always opens it: its rows say what is left.
     if (this.hasAttribute('disabled') || (this.#refused() && !this.hasAttribute('data-menu'))) return;

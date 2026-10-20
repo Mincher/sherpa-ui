@@ -10,12 +10,10 @@
  * - saveFilterAs — Keep filters under a name — over a set of that name — and hand back the whole store.
  * - deleteSavedFilter — Forget one set, and hand back what is left.
  * - filtersOf — The filter half of a View's JSON: each scope's filters, and no arrangement.
- * - sameFilters — Do the filters on screen still say what a set says, over the scopes it names?
- * - AppliedFilters — The set on screen: which, and the filters it was applied over.
- * - loadApplied — The set on screen in this tab, if one is.
- * - keepApplied — Remember the set on screen in this tab, or that none is.
+ * - loadApplied — The set last taken in this tab: what "Save <name>" saves over.
+ * - keepApplied — Remember the set last taken in this tab, or that none is.
  */
-import type { Query, QueryDefaults, ViewScope } from '../data/query.js';
+import type { QueryDefaults, ViewScope } from '../data/query.js';
 import {
   isPlainObject, labelId, readJson, removeKey, storageKind, writeJson,
 } from './web-storage.js';
@@ -37,7 +35,7 @@ export interface SavedFilterOptions {
 
 /** Key prefixes, so a host's own storage keys cannot collide with these. */
 const PREFIX = 'sherpa:filter-sets:';
-/** The set on screen, per tab, so a reload keeps its chip. */
+/** The set last taken, per tab: a reload keeps "Save <name>". */
 const ON_PREFIX = 'sherpa:filter-set-on:';
 
 const isSaved = (v: unknown): v is SavedFilter =>
@@ -79,40 +77,16 @@ export function filtersOf(view: QueryDefaults): QueryDefaults {
   return { v: 1, scopes: scopes as QueryDefaults['scopes'] };
 }
 
-/** Do the filters on screen still say what a set says, over the scopes it
- *  names? Only what FILTERS counts: each field's condition and the saved
- *  filters on — not a chip held empty. */
-export function sameFilters(saved: QueryDefaults, now: QueryDefaults): boolean {
-  const meaning = (scope: Partial<ViewScope> | undefined): string => sortedJson({
-    where: scope?.where ?? {},
-    on: Object.entries(scope?.presets ?? {}).filter(([, on]) => on).map(([id]) => id).sort(),
-  });
-  return Object.keys(saved.scopes).every((id) => meaning(saved.scopes[id]) === meaning(now.scopes[id]));
+/** The set last taken in this tab, by id: what "Save <name>" saves over, after
+ *  the chips change too. Will, 366. TRAP T-saved-filters-are-every-scope */
+export function loadApplied(page: string): string | null {
+  const held = readJson<{ id: string } | null>('session', ON_PREFIX + page, null,
+    (v): v is { id: string } => isPlainObject(v) && typeof v['id'] === 'string');
+  return held?.id ?? null;
 }
 
-/** JSON with every object's keys in order, so two equal answers read the same. */
-function sortedJson(value: unknown): string {
-  const walk = (v: unknown): unknown => (Array.isArray(v) ? v.map(walk)
-    : isPlainObject(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, walk(v[k])])) : v);
-  return JSON.stringify(walk(value));
-}
-
-/** The set on screen: which, and the filters it was applied over — what
- *  Dismiss puts back. `null`: it was saved, not applied — the View's own. */
-export interface AppliedFilters {
-  id: string;
-  before: Query | null;
-}
-
-/** The set on screen in this tab, if one is. */
-export function loadApplied(page: string): AppliedFilters | null {
-  return readJson<AppliedFilters | null>('session', ON_PREFIX + page, null,
-    (v): v is AppliedFilters => isPlainObject(v) && typeof v['id'] === 'string'
-      && (v['before'] === null || isPlainObject(v['before'])));
-}
-
-/** Remember the set on screen in this tab, or that none is. */
-export function keepApplied(page: string, applied: AppliedFilters | null): void {
-  if (applied) writeJson('session', ON_PREFIX + page, applied);
+/** Remember the set last taken in this tab, or that none is. */
+export function keepApplied(page: string, id: string | null): void {
+  if (id) writeJson('session', ON_PREFIX + page, { id });
   else removeKey('session', ON_PREFIX + page);
 }

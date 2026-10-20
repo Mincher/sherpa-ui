@@ -88,10 +88,7 @@
             "type": "button",
             "aria-haspopup": "dialog",
             "aria-expanded": "false",
-            "aria-label": "Choose values",
-            "data-swap-on": "data-dismiss",
-            "data-swap-aria-label": "Dismiss",
-            "data-swap-aria-haspopup": "false"
+            "aria-label": "Choose values"
           },
           "children": [
             {
@@ -112,14 +109,6 @@
               "class": "caret-funnel sherpa-icon-box",
               "attrs": {
                 "data-icon": "filter",
-                "aria-hidden": "true"
-              }
-            },
-            {
-              "el": "i",
-              "class": "caret-dismiss sherpa-icon-box",
-              "attrs": {
-                "data-icon": "cross",
                 "aria-hidden": "true"
               }
             },
@@ -232,15 +221,6 @@
         "desc"
       ],
       "description": "asc | desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten"
-    },
-    {
-      "$type": "prop",
-      "name": "data-dismiss",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105"
     },
     {
       "$type": "prop",
@@ -543,11 +523,6 @@
     },
     {
       "$type": "state",
-      "name": "dismiss",
-      "selector": ":host([data-dismiss])"
-    },
-    {
-      "$type": "state",
       "name": "unsupported",
       "selector": ":host([data-unsupported])"
     },
@@ -619,13 +594,6 @@
         "scope": "'chip'",
         "values": "string[]"
       }
-    },
-    {
-      "$type": "event",
-      "name": "quick-filter-dismiss",
-      "description": "A data-dismiss chip's right button was pressed.",
-      "bubbles": true,
-      "composed": true
     },
     {
       "$type": "event",

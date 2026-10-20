@@ -67,8 +67,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each shows Apply and Discard. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer, so a change waits for its field's Apply. Set by a bound source. |
-| `data-saveable` | boolean |  | the host SAVES filters: the header's Save filters saves every scope under one name, and its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope |
-| `data-saved` | boolean |  | written BY the panel: a saved set is on, so its Saved chip shows |
+| `data-saveable` | boolean |  | the host SAVES filters: the header's Save filters saves every scope under one name; while a set is taken it reads "Save &lt;name>", active, and saves over it. Its ▾ holds Save filters as and Delete filters, and its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
 | `data-sort-direction` | `asc` `desc` `""` |  | the sort in force. Written by the source; the Sort chip shows it. |
 | `data-sort-field` | text |  | the sort in force. Written by the source; the Sort chip shows it. |
 | `open` | text, native |  | the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only |
@@ -112,9 +111,9 @@ Each one bubbles.
 | `filter-remove` | `{ id: string; scope: string }` | A field's Remove. |
 | `group-change` | `{ field: null \| string; scope: string }` | A Group chip or Reset all, with its scope. |
 | `sort-change` | `{ direction: 'asc'; field: null \| string; scope: string }` | A Sort chip or Reset all, with its scope. |
-| `filters-apply` | `{ id: string }` | A saved set's row was ticked: apply it. |
-| `filters-dismiss` |  | The Saved chip's cross, or its row unticked: put back the filters as they were. |
-| `filters-save` |  | Save filters: over the set on, else as a new one. |
+| `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
+| `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
+| `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
 | `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set on. |
 | `view-reset` |  | Reset all to default: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
@@ -132,7 +131,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`field-body`, `field-row`, `filters`, `footer`, `head`, `more`, `panel`, `reset-all`, `reset-more`, `save-filters`, `save-more`, `saved`, `scopes`, `search`
+`field-body`, `field-row`, `filters`, `footer`, `head`, `more`, `panel`, `reset-all`, `reset-more`, `save-filters`, `save-more`, `scopes`, `search`
 
 ## CSS custom properties it reads
 

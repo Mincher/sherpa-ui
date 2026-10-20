@@ -9,8 +9,9 @@
   <template class="more-rows-tpl">
     <button class="more-item" type="button" value="reset"><span class="more-label">Reset filters</span></button>
     <button class="more-item" type="button" value="reset-default"><span class="more-label">Reset all to default</span></button>
-    <button class="more-item" type="button" value="filters-save"><span class="more-label">Save filters</span></button>
-    <button class="more-item" type="button" value="filters-save-as"><span class="more-label">Save filters as</span></button>
+    <!-- "Save <name>" over the set last taken: the name replaces the word. Will, 366. -->
+    <button class="more-item" type="button" value="filters-save"><span class="more-label">Save <span class="more-name">filters…</span></span></button>
+    <button class="more-item" type="button" value="filters-save-as"><span class="more-label">Save filters as…</span></button>
     <button class="more-item" type="button" value="filters-delete"><span class="more-label">Delete filters</span></button>
     <!-- SWITCH rows, as a filter's menu draws one. Will, TODO 178 and 205. -->
     <label class="menu-row more-check"><input type="checkbox" value="limit-options" /><span class="menu-row-label">Limit to matching filters</span></label>

@@ -258,16 +258,6 @@
 
 .caret-icon { display: none; }
 
-/* DISMISS — the right button is a cross, and always shown. TODO 105 */
-.caret-dismiss { display: none; }
-:host([data-dismiss]) .caret { display: inline-flex; margin-inline-start: var(--sherpa-structure-space-snapped, 0px); }
-:host([data-dismiss]) .body {
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-}
-:host([data-dismiss]) .caret-glyph { display: none; }
-:host([data-dismiss]) .caret-dismiss { display: inline-flex; }
-
 :host([data-icon-only][data-icon-start]) .caret-icon {
   display: inline-flex;
   align-items: center;

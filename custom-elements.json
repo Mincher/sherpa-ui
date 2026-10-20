@@ -3515,14 +3515,7 @@
             },
             {
               "name": "data-saveable",
-              "description": "the host SAVES filters: the header's Save filters saves every scope under one name, and its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-saved",
-              "description": "written BY the panel: a saved set is on, so its Saved chip shows",
+              "description": "the host SAVES filters: the header's Save filters saves every scope under one name; while a set is taken it reads \"Save <name>\", active, and saves over it. Its ▾ holds Save filters as and Delete filters, and its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope",
               "type": {
                 "text": "boolean"
               }
@@ -3820,21 +3813,21 @@
             },
             {
               "name": "filters-apply",
-              "description": "A saved set's row was ticked: apply it.",
+              "description": "A saved set's row was ticked: take it, so the filters match it.",
               "type": {
                 "text": "CustomEvent<{ id: string }>"
               }
             },
             {
               "name": "filters-dismiss",
-              "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
+              "description": "A saved set's row was unticked: the scopes it names lose their filters.",
               "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ id: string }>"
               }
             },
             {
               "name": "filters-save",
-              "description": "Save filters: over the set on, else as a new one.",
+              "description": "Save filters: over the set last taken (\"Save <name>\"), else under a new name.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -3918,9 +3911,6 @@
             },
             {
               "name": "save-more"
-            },
-            {
-              "name": "saved"
             },
             {
               "name": "scopes"
@@ -7776,17 +7766,9 @@
             },
             {
               "kind": "field",
-              "name": "savedFilters",
-              "type": {
-                "text": "{ id: string; label: string; edited: boolean } | null"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
               "name": "savedFilterSets",
               "type": {
-                "text": "{ id: string; label: string }[]"
+                "text": "{ id: string; label: string; applied: boolean }[]"
               },
               "readonly": true
             },
@@ -7918,7 +7900,7 @@
                   "optional": true
                 }
               ],
-              "description": "SAVE FILTERS — every scope's filters under one name, kept with the page beside its Views. With a name, that set — a set of the same name is saved over, so a host asks first. With none, over the set on screen; none on answers undefined. The set's id. Will, TODO 105."
+              "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first. With none, over the set last taken (\"Save <name>\"); none taken answers undefined. The set's id. Will, TODO 105, 366."
             },
             {
               "kind": "method",
@@ -7931,13 +7913,20 @@
                   }
                 }
               ],
-              "description": "APPLY a saved set: each scope it names takes its filters; Dismiss puts back what was on screen before the first one."
+              "description": "TAKE a saved set: every scope matches it; one it does not name has no filters."
             },
             {
               "kind": "method",
               "name": "dismissFilters",
-              "parameters": [],
-              "description": "DISMISS the set on screen: the filters go back as they were before it — or, for one saved from the screen, to the View's own. Never the sort."
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "TAKE a saved set OFF: the scopes it names lose their filters."
             },
             {
               "kind": "method",
@@ -7951,7 +7940,7 @@
                   "optional": true
                 }
               ],
-              "description": "DELETE a saved set — the one on screen unless named. Its filters stay."
+              "description": "DELETE a saved set — the one last taken unless named. Its filters stay on screen."
             },
             {
               "kind": "method",
@@ -8144,14 +8133,7 @@
             },
             {
               "name": "data-saveable",
-              "description": "the host SAVES filters: its ⋮ offers Save filters and Save filters as, and Delete filters while a set is on. Its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-saved",
-              "description": "written BY the bar: a saved set is on, so its Saved chip shows",
+              "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope",
               "type": {
                 "text": "boolean"
               }
@@ -8559,21 +8541,21 @@
             },
             {
               "name": "filters-apply",
-              "description": "A saved set's row was ticked: apply it.",
+              "description": "A saved set's row was ticked: take it, so the filters match it.",
               "type": {
                 "text": "CustomEvent<{ id: string }>"
               }
             },
             {
               "name": "filters-dismiss",
-              "description": "The Saved chip's cross, or its row unticked: put back the filters as they were.",
+              "description": "A saved set's row was unticked: the scopes it names lose their filters.",
               "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ id: string }>"
               }
             },
             {
               "name": "filters-save",
-              "description": "Save filters: over the set on, else as a new one.",
+              "description": "Save filters: over the set last taken (\"Save <name>\"), else under a new name.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -8587,7 +8569,7 @@
             },
             {
               "name": "filters-delete",
-              "description": "Delete filters: forget the set on.",
+              "description": "Delete filters: forget the set last taken.",
               "type": {
                 "text": "CustomEvent<{ id: string | undefined }>"
               }
@@ -8671,9 +8653,6 @@
             },
             {
               "name": "organise"
-            },
-            {
-              "name": "saved"
             },
             {
               "name": "switch"
@@ -8761,13 +8740,6 @@
               "description": "asc | desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten",
               "type": {
                 "text": "'asc' | 'desc'"
-              }
-            },
-            {
-              "name": "data-dismiss",
-              "description": "its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105",
-              "type": {
-                "text": "boolean"
               }
             },
             {
@@ -9062,13 +9034,6 @@
               "description": "The menu selection changed.",
               "type": {
                 "text": "CustomEvent<{ scope: 'chip'; values: string[] }>"
-              }
-            },
-            {
-              "name": "quick-filter-dismiss",
-              "description": "A data-dismiss chip's right button was pressed.",
-              "type": {
-                "text": "CustomEvent"
               }
             },
             {

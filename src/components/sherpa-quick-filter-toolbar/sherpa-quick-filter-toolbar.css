@@ -187,8 +187,6 @@
 :host([data-saveable]) .act[data-act="overflow"] { display: inline-flex; }
 
 /* The Saved chip, while a set is on. TODO 105 */
-.saved-zone { display: none; }
-:host([data-saved]) .saved-zone { display: inline-flex; align-items: center; }
 :host([data-no-actions]) .actions-zone { display: none; }
 
 

@@ -1278,12 +1278,7 @@
         },
         {
           "name": "data-saveable",
-          "description": "the host SAVES filters: the header's Save filters saves every scope under one name, and its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-saved",
-          "description": "written BY the panel: a saved set is on, so its Saved chip shows",
+          "description": "the host SAVES filters: the header's Save filters saves every scope under one name; while a set is taken it reads \"Save <name>\", active, and saves over it. Its ▾ holds Save filters as and Delete filters, and its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope",
           "valueSet": "v"
         },
         {
@@ -2757,12 +2752,7 @@
         },
         {
           "name": "data-saveable",
-          "description": "the host SAVES filters: its ⋮ offers Save filters and Save filters as, and Delete filters while a set is on. Its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-saved",
-          "description": "written BY the bar: a saved set is on, so its Saved chip shows",
+          "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope",
           "valueSet": "v"
         },
         {
@@ -2854,11 +2844,6 @@
               "name": "desc"
             }
           ]
-        },
-        {
-          "name": "data-dismiss",
-          "description": "its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105",
-          "valueSet": "v"
         },
         {
           "name": "data-full-value",

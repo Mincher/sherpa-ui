@@ -35,10 +35,11 @@
     data-group-field  the group in force. Written by the source; the Group
                     chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut
     data-saveable   the host SAVES filters: the header's Save filters saves
-                    every scope under one name, and its `savedSets` fill the
-                    Filters menu's Saved section and the Saved chip.
+                    every scope under one name; while a set is taken it reads
+                    "Save <name>", active, and saves over it. Its ▾ holds Save
+                    filters as and Delete filters, and its `savedSets` fill the
+                    Filters menu's Saved section.
                     TRAP T-saved-filters-are-every-scope
-    data-saved      written BY the panel: a saved set is on, so its Saved chip shows
     data-remote     its source fetches from outside the data layer, so a
                     change waits for its field's Apply. Set by a bound source.
     data-apply-on   input: its source applies LIVE, so a value reports while
@@ -58,9 +59,9 @@
     filter-remove — a field's Remove. detail: { scope, id }
     group-change — a Group chip or Reset all, with its scope. detail: { field, scope }
     sort-change — a Sort chip or Reset all, with its scope. detail: { field, direction, scope }
-    filters-apply — a saved set's row was ticked: apply it. detail: { id }
-    filters-dismiss — the Saved chip's cross, or its row unticked: put back the filters as they were. detail: { }
-    filters-save — Save filters: over the set on, else as a new one. detail: { }
+    filters-apply — a saved set's row was ticked: take it, so the filters match it. detail: { id }
+    filters-dismiss — a saved set's row was unticked: the scopes it names lose their filters. detail: { id }
+    filters-save — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
     filters-save-as — Save filters as: a new set, by name. detail: { }
     filters-delete — Delete filters: forget the set on. detail: { id }
     view-reset — Reset all to default: put back the View's own filters, in every scope. Cancelable
@@ -99,11 +100,12 @@
         </sherpa-button>
       </span>
       <!-- SAVE FILTERS — every scope under one name — and its menu, as a View's:
-           Save filters as, and Delete filters while a set is on. Will, TODO 105.
+           Save filters as, and Delete filters while a set is taken. A set taken,
+           it reads "Save <name>", active, and saves over it. Will, TODO 105, 366.
            TRAP T-saved-filters-are-every-scope -->
       <span slot="actions" class="save-group sherpa-group">
         <sherpa-button class="save-filters" part="save-filters" data-size="sm" data-group="start"
-                       data-icon-start="upload" aria-label="Save filters">Save<span class="save-word">&nbsp;filters</span></sherpa-button>
+                       data-icon-start="upload" aria-label="Save filters">Save<span class="save-word">&nbsp;<span class="save-name">filters</span></span></sherpa-button>
         <sherpa-button class="save-more" part="save-more" data-type="icon" data-size="sm"
                        data-group="end" data-icon-start="triangle-down"
                        aria-label="Save options" aria-haspopup="dialog">
@@ -124,9 +126,6 @@
       <!-- ONE search, across every field's name and every value in the panel.
            The metadata row is the header's own bottom row, so it spans the
            full width. -->
-      <!-- The SAVED set on screen: its name, and a cross that dismisses it. TODO 105 -->
-      <sherpa-quick-filter slot="metadata" class="saved-chip" part="saved" data-label="Saved"
-                           data-dismiss data-locked data-current></sherpa-quick-filter>
       <sherpa-input-text slot="metadata" class="search" part="search"
                          data-icon-start="magnifying-glass" data-clearable
                          placeholder="Search filters" autocomplete="off"
@@ -237,5 +236,6 @@
     <span data-word="group">Group by</span>
     <span data-word="sort">Sort by</span>
     <span data-word="presets">Presets</span>
+    <span data-word="filters">filters</span>
   </template>
 </template>

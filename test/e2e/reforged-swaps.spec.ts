@@ -20,36 +20,29 @@ test('a swap follows its host attribute both ways, from the first render', async
     };
     const header = await make('sherpa-container-header', { 'data-collapsible': '' });
     const toggle = () => header.shadowRoot!.querySelector('.toggle')!;
-    const chip = await make('sherpa-quick-filter', { 'data-label': 'Status' });
-    const caret = () => chip.shadowRoot!.querySelector('.caret')!;
     const canvas = await make('sherpa-layout-canvas', { 'data-no-minimap': '' });
     const row = () => canvas.shadowRoot!.querySelector('.minimap-toggle')!.textContent;
 
     const before = {
       toggle: [toggle().getAttribute('aria-label'), toggle().getAttribute('aria-expanded')],
-      caret: [caret().getAttribute('aria-label'), caret().getAttribute('aria-haspopup')],
       row: row(),
     };
     header.toggleAttribute('data-collapsed', true);
-    chip.toggleAttribute('data-dismiss', true);
     canvas.removeAttribute('data-no-minimap');
     await settle();
     const on = {
       toggle: [toggle().getAttribute('aria-label'), toggle().getAttribute('aria-expanded')],
-      caret: [caret().getAttribute('aria-label'), caret().getAttribute('aria-haspopup')],
       row: row(),
     };
     header.removeAttribute('data-collapsed');
-    chip.removeAttribute('data-dismiss');
     await settle();
     const off = {
       toggle: [toggle().getAttribute('aria-label'), toggle().getAttribute('aria-expanded')],
-      caret: [caret().getAttribute('aria-label'), caret().getAttribute('aria-haspopup')],
     };
     return { before, on, off };
   });
   // A canvas born with no minimap says Show from its first render.
-  expect(r.before).toEqual({ toggle: ['Collapse', 'true'], caret: ['Choose values', 'dialog'], row: 'Show minimap' });
-  expect(r.on).toEqual({ toggle: ['Expand', 'false'], caret: ['Dismiss', 'false'], row: 'Hide minimap' });
-  expect(r.off).toEqual({ toggle: ['Collapse', 'true'], caret: ['Choose values', 'dialog'] });
+  expect(r.before).toEqual({ toggle: ['Collapse', 'true'], row: 'Show minimap' });
+  expect(r.on).toEqual({ toggle: ['Expand', 'false'], row: 'Hide minimap' });
+  expect(r.off).toEqual({ toggle: ['Collapse', 'true'] });
 });

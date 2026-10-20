@@ -9,17 +9,16 @@
  * - PageHost — What the open page asks of its provider.
  * - ProviderPage — The open page's Views, saved sets, drafts, kept Query and Reset.
  * - .opened — The page `open()` set up, or null.
- * - .begin — Take a page `open()` set up, and the saved set it had on.
+ * - .begin — Take a page `open()` set up.
  * - .end — The page has gone, with its source.
  * - .listen — The open page's own listeners: Resets, saved sets, and what the bars offer.
  * - .saveView — Save what is on screen as a View of the open page.
  * - .deleteView — Delete the reader's own View, and go to the first.
- * - .saveFilters — Save every scope's filters under one name.
- * - .applyFilters — Apply a saved set.
- * - .dismissFilters — Dismiss the set on screen: the filters go back as they were.
+ * - .saveFilters — Save every scope's filters under a name, or over the set last taken.
+ * - .applyFilters — Take a saved set: the screen then matches it.
+ * - .dismissFilters — Take a saved set off: the scopes it names lose their filters.
  * - .deleteFilters — Delete a saved set; its filters stay.
- * - .savedFilters — The saved set on screen, and whether its filters have changed since.
- * - .savedFilterSets — The page's saved sets.
+ * - .savedFilterSets — The page's saved sets, and the one taken.
  * - .customView — Is the View on screen the reader's own?
  * - .resetView — Put the filters back as the View on screen defines them.
  * - .drawBars — Draw every bar from its scope, as the source describes it.
@@ -35,12 +34,12 @@ import {
 import { labelId } from '../../core/browser/web-storage.js';
 import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
 import {
-  deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, sameFilters, saveFilterAs,
+  deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, saveFilterAs,
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
-import { mergeSet } from '../../core/data/query-edits.js';
+import { dropSet, takeSet } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { ProvideOptions } from './sherpa-provider.js';
 
@@ -96,13 +95,13 @@ export class ProviderPage {
     return this.#opened;
   }
 
-  /** Take a page `open()` set up, and the saved set it had on. */
+  /** Take a page `open()` set up. */
   begin(page: OpenedPage): void {
     this.#opened = page;
-    // The set on screen before a reload, while it is still saved.
-    const applied = loadApplied(page.id);
-    const set = applied ? loadSavedFilters(page.id)[applied.id] : undefined;
-    this.#savedSet = applied && set ? { id: applied.id, label: set.label, query: set.query, before: applied.before } : null;
+    this.#sentSets = '';
+    // The set last taken before a reload, while it is still saved.
+    const id = loadApplied(page.id);
+    this.#applied = id && loadSavedFilters(page.id)[id] ? id : null;
   }
 
   /** The page has gone, with its source. */
@@ -134,15 +133,15 @@ export class ProviderPage {
     el.addEventListener('view-reset', (event) => {
       if (!event.defaultPrevented) void this.resetView();
     }, { signal });
-    /* REQUESTS, as Reset to default is: a saved set's row applies it, and the
-       Saved chip's cross dismisses it. TRAP T-saved-filters-are-every-scope */
-    el.addEventListener('filters-apply', (event) => {
-      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
-      if (!event.defaultPrevented && id) void this.applyFilters(id);
-    }, { signal });
-    el.addEventListener('filters-dismiss', (event) => {
-      if (!event.defaultPrevented) void this.dismissFilters();
-    }, { signal });
+    /* REQUESTS, as Reset to default is: a saved set's row ticked takes it, and
+       unticked takes it off. TRAP T-saved-filters-are-every-scope */
+    for (const type of ['filters-apply', 'filters-dismiss']) {
+      el.addEventListener(type, (event) => {
+        const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+        if (event.defaultPrevented || !id) return;
+        void (type === 'filters-apply' ? this.applyFilters(id) : this.dismissFilters(id));
+      }, { signal });
+    }
   }
 
   /** Save what is on screen as a View of the open page, and put it on the View chip. */
@@ -194,95 +193,99 @@ export class ProviderPage {
     return true;
   }
 
-  /** Save every scope's filters under one name, beside the page's Views. TRAP T-saved-filters-are-every-scope */
+  /** Save every scope's filters under a NAME, beside the page's Views — a set of
+   *  that name is saved over, so a host asks first. With none, over the set last
+   *  taken; none taken answers undefined. It is then the set last taken.
+   *  TRAP T-saved-filters-are-every-scope */
   saveFilters(label?: string): string | undefined {
     const opened = this.#opened;
-    const name = label == null ? this.#savedSet?.label : label.trim();
+    const name = label == null ? this.#takenSet()?.label : label.trim();
     if (!opened || !name) return undefined;
     this.#flush?.();
-    const query = filtersOf(viewQueryOf(opened.source));
-    saveFilterAs(opened.id, name, query);
+    saveFilterAs(opened.id, name, filtersOf(viewQueryOf(opened.source)));
     const id = labelId(name);
-    /* Saved, it is the set on screen. Dismiss puts back what was before the
-       set applied — or, saved from the screen, the View's own filters. */
-    this.#putOn({ id, label: name, query, before: this.#savedSet ? this.#savedSet.before : null });
+    this.#take(id);
     return id;
   }
 
-  /** APPLY a saved set: each scope it names takes its filters; Dismiss puts
-   *  back what was on screen before the first one. TRAP T-saved-filters-are-every-scope */
+  /** TAKE a saved set: every scope matches it, and one it does not name has no
+   *  filters. It loads into the chips; nothing names it after. Will, 366.
+   *  TRAP T-saved-filters-are-every-scope */
   async applyFilters(id: string): Promise<boolean> {
     const opened = this.#opened;
     const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
     if (!opened || !set) return false;
     this.#flush?.();
-    const before = this.#savedSet ? this.#savedSet.before : opened.source.query.applied;
-    await opened.source.setQuery(mergeSet(opened.source.query.applied, set.query));
-    this.#putOn({ id, label: set.label, query: set.query, before });
+    await opened.source.setQuery(takeSet(opened.source.query.applied, set.query, this.#own()));
+    this.#take(id);
     return true;
   }
 
-  /** DISMISS the set on screen: the filters go back as they were before it —
-   *  or, for one saved from the screen, to the View's own. Never the sort. */
-  async dismissFilters(): Promise<void> {
+  /** TAKE a saved set OFF — its row unticked: the scopes it names lose their
+   *  filters. Will, 366. TRAP T-saved-filters-are-every-scope */
+  async dismissFilters(id: string): Promise<boolean> {
     const opened = this.#opened;
-    const on = this.#savedSet;
-    if (!opened || !on) return;
-    this.#putOn(null);
-    if (on.before) return opened.source.setQuery(on.before);
-    const view = this.#view ? opened.library?.()[this.#view] : undefined;
-    await opened.source.setQuery(structuredClone(opened.initial));
-    if (view?.query) await opened.source.setQuery(filtersOf(view.query), { holds: 'keep' });
+    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
+    if (!opened || !set) return false;
+    this.#flush?.();
+    await opened.source.setQuery(dropSet(opened.source.query.applied, set.query, this.#own()));
+    if (this.#applied === id) this.#take(null);
+    return true;
   }
 
-  /** DELETE a saved set — the one on screen unless named. Its filters stay. */
-  deleteFilters(id = this.#savedSet?.id): boolean {
+  /** DELETE a saved set — the one last taken unless named. Its filters stay on screen. */
+  deleteFilters(id = this.#applied ?? ''): boolean {
     const opened = this.#opened;
-    if (!opened || !id || !loadSavedFilters(opened.id)[id]) return false;
+    if (!opened || !loadSavedFilters(opened.id)[id]) return false;
     deleteSavedFilter(opened.id, id);
-    if (this.#savedSet?.id === id) this.#putOn(null);
+    if (this.#applied === id) this.#take(null);
     else this.#saySaved();
     return true;
   }
 
-  /** The saved set on screen — its id, name, and whether its filters have changed since. */
-  get savedFilters(): { id: string; label: string; edited: boolean } | null {
-    const on = this.#savedSet;
-    return on ? { id: on.id, label: on.label, edited: this.#edited() } : null;
-  }
-
-  /** The page's saved sets — what a host asks before it saves over a name. */
-  get savedFilterSets(): { id: string; label: string }[] {
+  /** The page's saved sets, and the ONE taken (`applied`), which "Save <name>"
+   *  saves over — what a host asks before it saves over a name. */
+  get savedFilterSets(): { id: string; label: string; applied: boolean }[] {
     const opened = this.#opened;
-    return opened ? Object.entries(loadSavedFilters(opened.id)).map(([id, { label }]) => ({ id, label })) : [];
+    if (!opened) return [];
+    return Object.entries(loadSavedFilters(opened.id))
+      .map(([id, { label }]) => ({ id, label, applied: id === this.#applied }));
   }
 
-  /** The set on screen, and what Dismiss puts back. */
-  #savedSet: { id: string; label: string; query: QueryDefaults; before: Query | null } | null = null;
+  /** The set last taken in this tab — applied or saved — while it is still saved. Will, 366. */
+  #applied: string | null = null;
 
-  /** Put a set on screen — or none — remember it in this tab, and draw it. */
-  #putOn(set: { id: string; label: string; query: QueryDefaults; before: Query | null } | null): void {
-    this.#savedSet = set;
-    if (this.#opened) keepApplied(this.#opened.id, set ? { id: set.id, before: set.before } : null);
+  /** The set last taken, and its name, or undefined. */
+  #takenSet(): { id: string; label: string } | undefined {
+    const opened = this.#opened;
+    const set = opened && this.#applied ? loadSavedFilters(opened.id)[this.#applied] : undefined;
+    return set && this.#applied ? { id: this.#applied, label: set.label } : undefined;
+  }
+
+  /** A set is taken — or none: remembered in this tab, and every saving control told. */
+  #take(id: string | null): void {
+    this.#applied = id;
+    if (this.#opened) keepApplied(this.#opened.id, id);
     this.#saySaved();
   }
 
-  /** Have the filters changed since the set on screen was applied or saved? */
-  #edited(): boolean {
-    const opened = this.#opened;
-    const on = this.#savedSet;
-    return !!opened && !!on && !sameFilters(on.query, filtersOf(viewQueryOf(opened.source)));
+  /** The scopes a component declared as its OWN: what it is, never a reader's filter. */
+  #own(): Set<string> {
+    const source = this.#opened?.source;
+    if (!source) return new Set();
+    return new Set(Object.keys(source.query.applied.scopes).filter((id) => source.defaultFor(id)));
   }
 
-  /** Each saving control is told the page's sets, and which is on. TODO 105 */
+  /** What the saving controls were last told, so a frame with no change tells nothing. */
+  #sentSets = '';
+
+  /** Each saving control is told the page's sets, and the one taken. TODO 105 */
   #saySaved(): void {
-    const opened = this.#opened;
-    if (!opened) return;
-    const on = this.#savedSet;
-    const edited = this.#edited();
-    const sets: SavedSet[] = Object.entries(loadSavedFilters(opened.id)).map(([id, set]) => ({
-      id, label: set.label, ...(on?.id === id ? { on: true, edited } : {}),
-    }));
+    if (!this.#opened) return;
+    const sets: SavedSet[] = this.savedFilterSets.map(({ id, label, applied }) => ({ id, label, ...(applied ? { applied } : {}) }));
+    const sent = JSON.stringify(sets);
+    if (sent === this.#sentSets) return;
+    this.#sentSets = sent;
     for (const el of [...this.#host.bars(), ...this.#host.panels()] as Array<Element & { savedSets?: SavedSet[] }>) {
       if ('savedSets' in el) el.savedSets = sets;
     }
@@ -316,6 +319,7 @@ export class ProviderPage {
     });
     // The View's own filters are on: nothing of the reader's is left to keep.
     if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
+    if (this.#applied) this.#take(null);
     this.#settle?.();
   }
 
@@ -527,6 +531,8 @@ export class ProviderPage {
       },
       draft: (id) => this.#draftOf(id),
       after: ({ id, rendered }) => {
+        // Another View: its filters are its own, not the set last taken.
+        if (id !== this.#view && this.#applied) this.#take(null);
         this.#view = id;
         this.#settle?.();
         this.#unquietSoon();
@@ -540,6 +546,7 @@ export class ProviderPage {
   takeView(id: string): void {
     if (id === this.#view) return;
     const was = this.#view;
+    if (this.#applied) this.#take(null);
     this.#view = id;
     this.#showView(was, id);
     this.#hear?.();
