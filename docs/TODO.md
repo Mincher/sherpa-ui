@@ -1568,9 +1568,14 @@ saved filter that names a field it lacks, whole. **Will, 2026-10-20:** *"Saved
 filters need to be reworked to provide a single query definition to the single
 query component."* Both kinds — a page's saved filters (the preset library,
 on/off by id) and a reader's saved sets — become ONE query definition (the JSON a
-View uses) handed to the QueryContext. **Step 3, running:** a read-only design of
-that, then a revision that folds it and every checker finding into the plan, then
-the build.
+View uses) handed to the QueryContext. **And:** *"Saved filters shouldn't show as
+a chip in the filter panel header (or filter toolbar) when selected. Selecting a
+saved filter definition should just apply the state, fields, and values to the
+filter chip components to match the query definition."* So a saved filter LOADS:
+no saved chip, no page toggle chip, no ` *` mark, no Dismiss cross. Its fields,
+values and on/off show on the ordinary chips. **Step 3, running:** a read-only
+design of that, then a revision that folds it and every checker finding into the
+plan, then the build.
 
 ---
 
