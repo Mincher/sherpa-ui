@@ -40,9 +40,8 @@ export class SherpaContainer extends SherpaElement {
   } as const;
 
   override onRender(): void {
-    // Retry and Clear filters are REQUESTS: the data layer answers them.
+    // Retry is a REQUEST: the data layer answers it.
     for (const b of this.$$('.retry')) b.addEventListener('button-click', () => this.emit('data-refresh'));
-    for (const b of this.$$('.clear-filters')) b.addEventListener('button-click', () => this.emit('filters-clear'));
     // Dismiss is this card's own: the overlay goes, the last data stays.
     for (const b of this.$$('.dismiss')) {
       b.addEventListener('button-click', () => {

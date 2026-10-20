@@ -903,7 +903,7 @@
         },
         {
           "name": "data-state",
-          "description": "empty | no-matches | error — its default content, IN PLACE of the body. Written by the provider. TRAP T-a-container-shows-its-datas-state",
+          "description": "empty | no-matches | error — empty and error show their default content IN PLACE of the body; no matches covers nothing, so the card's own filters stay in reach. Written by the provider. TRAP T-a-container-shows-its-datas-state",
           "values": [
             {
               "name": "empty"

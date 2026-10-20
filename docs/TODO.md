@@ -40,7 +40,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
 | ✅ | 0m | 357 | BUG — a favourited View is named after its Context in the nav's Favorites ("Records"), not the View ("All customers") (Will) | bug |
 | ✅ | 0n | 358 | UX — a filter whose every pick is ruled out stays ACTIVE, wears 0 and applies, instead of greyed and set aside (Will) | filters |
-| ❓ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
+| ✅ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
+| ⬜ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1287,13 +1288,28 @@ Tests: `present-limits-each-field`, `a-serial-set-chains-its-fields`,
 `reforged-the-view-limits-a-component-scope` (each fails on the old rule).
 TRAP `T-a-ruled-out-value-is-greyed`.
 
-### `[ ]` ❓ 359 — UX: "No matches" covers a card's own filter bar
+### `[x]` ✅ 359 — UX: "No matches" covers a card's own filter bar
 
 Found with 358 (2026-10-20). With 358 a filter at 0 is common, and the Records
 card then shows "No matches" OVER its whole content — the data bar too, since
 the bar lives in the card's body. The chip with its 0 badge is hidden, and
 cannot be pressed off; only the cover's "Clear filters" is left. With Settings ›
 Experiments › keep content on, nothing covers and the flow works. Waits on Will.
+
+- ✅ **Will (2026-10-20): never cover.** **A (pick, chosen):** "No matches" never covers a
+  card; the bar and its 0 chip stay, and the grid says "No rows match the current
+  filters." **B:** the cover over the rows only, the bar moved into the card header.
+
+**✅ Done 2026-10-20.** `sherpa-container` shows nothing for `data-state="no-matches"`
+(empty, error and loading are as they were). The cover's "No matches" panel, its
+Clear filters, `filters-clear` and the provider's answer to it are deleted. TRAP
+`T-a-container-shows-its-datas-state`.
+
+### `[ ]` ⬜ 360 — UX: a panel section's Reset goes left of the change-scope button
+
+Will, 2026-10-20: *"I don't like where the reset button is in filter panel
+sections. I'd prefer it to the left of the change scope button. Make sure it's
+the same size as the change scope button."*
 
 ---
 

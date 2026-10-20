@@ -259,12 +259,14 @@ export class SherpaDataGrid extends SherpaElement {
     switch (name) {
       case 'data-filter-fields':
         this.#syncColumnFilterStatus();
+        this.#syncEmpty();
         return;
       // Read when asked, or drawn by CSS.
       case 'data-total-pages': case 'data-locked': case 'data-column-filters': case 'data-filterable':
         return;
       case 'data-needles':
         this.#syncNeedles();
+        this.#syncEmpty();
         this.#invalidate('body');
         return;
       case 'data-page': case 'data-page-size':
@@ -364,10 +366,20 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* ── Render ─────────────────────────────────────────────────────── */
 
+  /** No rows under a filter or a search — its source's, or its own — is NO MATCHES,
+   *  not empty: the headings and their filters stay, with the message under them.
+   *  TRAP T-grid-no-matches-is-not-empty */
+  #syncEmpty(): void {
+    const none = this.#rows.length === 0;
+    const filtered = this.hasAttribute('data-filter-fields') || this.hasAttribute('data-needles');
+    this.toggleState('empty', none && !filtered);
+    this.toggleState('no-matches', none ? filtered : this.#filters.size > 0 && this.#visibleRows().length === 0);
+  }
+
   /** Draw the head and the body. */
   #render(): void {
     this.#dirty.clear();
-    this.toggleState('empty', this.#rows.length === 0);
+    this.#syncEmpty();
     // "Select all" of nothing is a control that does nothing.
     const advanced = this.#rows.length > 0;
     this.$('.select-all')?.toggleAttribute('data-advanced', advanced);

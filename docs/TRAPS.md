@@ -1321,15 +1321,21 @@ nothing reloads.
 
 **A container shows what its DATA is doing, in place of its body** — Will,
 TODO 58: loading (a spinner and "Loading…"), no data (the data illustration),
-no MATCHES (the search one, and Clear filters), and an error (its own words,
-Retry as the CTA because it resolves it, Dismiss as a plain button). Each has
-a DEFAULT, composed from `sherpa-loader`, `sherpa-empty-state` and
-`sherpa-button`, shown by `data-state` (or `data-loading`); a slotted state
-still replaces its default. Loading wins over the rest. "No data" and "no
-matches" are two states on purpose: a filter that matched nothing is not an
-empty table (`sherpa-a-zero-row-view-reads-as-a-broken-filter`). Retry and
-Clear filters are REQUESTS (`data-refresh`, `filters-clear`); Dismiss is the
-card's own — its overlay goes, the last data stays.
+and an error (its own words, Retry as the CTA because it resolves it, Dismiss
+as a plain button). Each has a DEFAULT, composed from `sherpa-loader`,
+`sherpa-empty-state` and `sherpa-button`, shown by `data-state` (or
+`data-loading`); a slotted state still replaces its default. Loading wins over
+the rest. Retry is a REQUEST (`data-refresh`); Dismiss is the card's own — its
+overlay goes, the last data stays.
+
+**No MATCHES covers nothing** — Will, 2026-10-20 (359). `data-state="no-matches"`
+is still written, and "no data" and "no matches" are still two states (a filter
+that matched nothing is not an empty table,
+`sherpa-a-zero-row-view-reads-as-a-broken-filter`). But the card's own filters
+made it, and must stay in reach: a filter whose every pick is ruled out stays
+active at 0 (`T-a-ruled-out-value-is-greyed`), and a cover over the card hid
+that chip. The rows say it instead — a grid's "No rows match the current
+filters." The old cover's Clear filters, and its `filters-clear`, are gone.
 
 **The PROVIDER draws it, so no page writes it.** It watches each source's
 `loading`, `change` and `error` — BEFORE it answers anyone, as an answer
@@ -1343,7 +1349,7 @@ own loading; the rest are cleared. A page left while it opens ends at once,
 so its timer never marks the next page's cards. Loading and a failure reach every data component's card; empty and
 no matches a ROWS component's only, as a chart under the View alone still has
 its rows. It answers `data-refresh` (a card's Retry, a bar's Refresh) with a
-forced load, and `filters-clear` by resetting every bar. A store that cannot
+forced load. A store that cannot
 answer at `openSource()` no longer stops the page: `declareFromRows` reports
 `values-unread`, and the first load shows the failure on its card.
 
@@ -4525,6 +4531,11 @@ would take the filter input the user is typing in with it.
 `data-no-matches` is a separate flag, set when the visible count is 0 but the
 grid still holds rows. CSS keeps the header and filter row up and shows the
 message under them.
+
+**A bound grid's rows can be 0 because its SOURCE filtered them** — its
+`data-filter-fields` or `data-needles` says so. That is no matches too (359):
+its headings — and a heading filter at 0 (`T-a-ruled-out-value-is-greyed`) —
+stay in reach. Empty is 0 rows with no filter and no search.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 

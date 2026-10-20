@@ -2161,7 +2161,7 @@
             },
             {
               "name": "data-state",
-              "description": "empty | no-matches | error — its default content, IN PLACE of the body. Written by the provider. TRAP T-a-container-shows-its-datas-state",
+              "description": "empty | no-matches | error — empty and error show their default content IN PLACE of the body; no matches covers nothing, so the card's own filters stay in reach. Written by the provider. TRAP T-a-container-shows-its-datas-state",
               "type": {
                 "text": "'empty' | 'no-matches' | 'error'"
               }
@@ -2178,13 +2178,6 @@
             {
               "name": "state-dismiss",
               "description": "Dismiss, on an error: the overlay goes, the last data stays",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "filters-clear",
-              "description": "Clear filters, on no matches",
               "type": {
                 "text": "CustomEvent"
               }

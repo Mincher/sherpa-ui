@@ -141,16 +141,15 @@
 
 /* Loading, or the data's STATE, over the body — by data-state (the provider's)
    or a slotted overlay (`has-*` states). Loading wins. TRAP T-a-container-shows-its-datas-state */
-:host(:is([data-loading], :state(has-empty), :state(has-error), [data-state])) .state { display: flex; }
+/* NO MATCHES covers nothing: the card's own filters made it, and must stay in
+   reach — a chip at 0 to press off (Will, 359). Its rows say so. */
+:host(:is([data-loading], :state(has-empty), :state(has-error), [data-state="empty"], [data-state="error"])) .state { display: flex; }
 :host([data-loading]) .state-loading { display: inline-flex; }
-:host(:not([data-loading]):is(:state(has-empty), [data-state="empty"], [data-state="no-matches"])) .state-empty {
+:host(:not([data-loading]):is(:state(has-empty), [data-state="empty"])) .state-empty {
   display: inline-flex;
 }
 :host(:not([data-loading]):is(:state(has-error), [data-state="error"])) .state-error { display: inline-flex; }
 /* The empty slot's two defaults: no data, or no MATCHES. */
-.no-matches-default { display: none; }
-:host([data-state="no-matches"]) .no-matches-default { display: block; }
-:host([data-state="no-matches"]) .empty-default { display: none; }
 
 /* ── KEEP THE CONTENT — Will, TODO 59. Loading is a bar along the header's
    bottom edge and locks the body; a failure or no data is a banner above the

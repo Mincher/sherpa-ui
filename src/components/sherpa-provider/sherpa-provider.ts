@@ -153,9 +153,6 @@ export class SherpaProvider extends SherpaElement {
       const held = [...this.#asked.keys()].filter((el) => containerOf(el) === from).map((el) => this.#resolve(el));
       for (const source of new Set(held.length ? held : [this.#resolve(from)])) void source?.load({ force: true });
     });
-    this.addEventListener('filters-clear', () => {
-      for (const bar of this.#bars() as Array<Bar & { clearAll?: () => void }>) bar.clearAll?.();
-    });
   }
 
   /**

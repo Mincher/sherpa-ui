@@ -5,8 +5,10 @@
   Public API:
     data-elevation  none (default) | sm | md | lg
     data-loading    show the loading overlay (ratified boolean-verb state)
-    data-state      empty | no-matches | error — its default content, IN PLACE of
-                    the body. Written by the provider. TRAP T-a-container-shows-its-datas-state
+    data-state      empty | no-matches | error — empty and error show their default
+                    content IN PLACE of the body; no matches covers nothing, so the
+                    card's own filters stay in reach. Written by the provider.
+                    TRAP T-a-container-shows-its-datas-state
     data-error          the error's own words, under its heading
     data-keep-content  a state never replaces the body: loading is a bar under the
                     header and the body is locked; a failure or no data is a banner
@@ -36,7 +38,6 @@
   Fires:
     data-refresh  — Retry, on an error
     state-dismiss — Dismiss, on an error: the overlay goes, the last data stays
-    filters-clear — Clear filters, on no matches
 -->
 <template id="default">
   <header class="header" part="header">
@@ -75,12 +76,6 @@
     <slot name="empty" class="state-empty" data-accepts="content">
       <sherpa-empty-state class="empty-default" data-illustration="data" data-size="sm"
                           data-heading="No data yet" data-description="There is nothing here yet."></sherpa-empty-state>
-      <!-- The words as CONTENT: any child, whitespace too, replaces data-description. -->
-      <sherpa-empty-state class="no-matches-default" data-illustration="search" data-size="sm"
-                          data-heading="No matches">
-        <span>Nothing matches these filters.</span>
-        <sherpa-button slot="actions" class="clear-filters">Clear filters</sherpa-button>
-      </sherpa-empty-state>
     </slot>
     <slot name="error" class="state-error" data-accepts="content">
       <sherpa-empty-state class="error-default" data-illustration="error" data-size="sm"

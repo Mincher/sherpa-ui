@@ -170,27 +170,6 @@
                   "data-heading": "No data yet",
                   "data-description": "There is nothing here yet."
                 }
-              },
-              {
-                "el": "sherpa-empty-state",
-                "class": "no-matches-default",
-                "attrs": {
-                  "data-illustration": "search",
-                  "data-size": "sm",
-                  "data-heading": "No matches"
-                },
-                "children": [
-                  {
-                    "el": "span"
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "clear-filters",
-                    "attrs": {
-                      "slot": "actions"
-                    }
-                  }
-                ]
               }
             ]
           },
@@ -356,7 +335,7 @@
         "no-matches",
         "error"
       ],
-      "description": "empty | no-matches | error — its default content, IN PLACE of the body. Written by the provider. TRAP T-a-container-shows-its-datas-state"
+      "description": "empty | no-matches | error — empty and error show their default content IN PLACE of the body; no matches covers nothing, so the card's own filters stay in reach. Written by the provider. TRAP T-a-container-shows-its-datas-state"
     }
   ],
   "slots": [
@@ -546,13 +525,13 @@
     },
     {
       "$type": "state",
-      "name": "state",
-      "selector": ":host([data-state])"
+      "name": "empty",
+      "selector": ":host([data-state=\"empty\"])"
     },
     {
       "$type": "state",
-      "name": "no-matches",
-      "selector": ":host([data-state=\"no-matches\"])"
+      "name": "error",
+      "selector": ":host([data-state=\"error\"])"
     },
     {
       "$type": "state",
@@ -572,13 +551,6 @@
       "$type": "event",
       "name": "state-dismiss",
       "description": "Dismiss, on an error: the overlay goes, the last data stays",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "filters-clear",
-      "description": "Clear filters, on no matches",
       "bubbles": true,
       "composed": true
     }
