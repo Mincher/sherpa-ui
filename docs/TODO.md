@@ -703,10 +703,22 @@ against the code). The full plan, with every file:line, is
   certain is read whole, as before. A review (3 lenses, 11 findings, all
   confirmed) found the key, merge and order faults, fixed before the commit.
   TRAP `T-a-held-set-takes-a-change-in-place`.
-- ⏸️ **Phase 3 (History) moves after 348's walk** (Claude, 2026-10-19). Its
-  gain is "recount only when a field the count uses changed"; 348 replaces the
-  counting with one ordered pass (plan-346-349 W3–W5), so the History plugs into
-  that pass. Built first, it would be rewritten. Phase 4 goes next.
+- 🚧 **Phase 3 (History)** — designed 2026-10-20 after the walk, with a
+  prototype and a check that found three bugs in it (M1–M3):
+  `docs/history/plan-345-phase-3.md`. Commits 3.1 bench acts, 3.2 an idle saved
+  filter tests no row and `walkReads`, 3.3 each store keeps its History, 3.4 the
+  walk runs again only when a field it reads moved. **Will, 2026-10-20:** D1 —
+  last change per field (folded, never grows). D3 — counts only, as the plan
+  said: the page still reloads; patching it in place waits for after 366.
+  **❓ D2 —** Will: *"now you've got me wondering if history should be a
+  singular, source component (like query context) so that the number of tabs,
+  windows, etc. isn't an issue."* Yes: a History lives where the data lives —
+  the tab for memory, the BROWSER for IndexedDB and localStorage, the server for
+  a RestStore (phase 9). **A** (my pick): in phase 3, each write to an IndexedDB
+  or localStorage store is also sent to the other tabs on a `BroadcastChannel`;
+  each tab's History takes it, so those stores are trusted. A tab woken from
+  sleep counts everything as changed. **B:** keep them untrusted now; the channel
+  later. Until then they take today's path.
 - 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner.
   Designed 2026-10-19 (two designs, a judge, a checker):
   `docs/history/plan-345-phase-4.md`. Seven commits: 4.1 failure kinds and a
