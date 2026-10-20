@@ -1393,7 +1393,10 @@ deviation."* When convenient.
 
 **Deferred, much later** (Will, 2026-10-20: *"Focus on 345, and other data and
 performance improvements, as a priority."*). A read-only design ran first; its
-map and design go in `docs/history/` for then.
+maps, design and check are in `docs/history/plan-364-tooltips.md` for then. The
+cause it found: the tip's lift listens on the `document`, and a pointer or Tab
+moving between two parts inside ONE component never reaches the `document`, so
+CSS shows the tip in place, where its box clips it.
 
 
 ### `[x]` ✅ 365 — BUG: "Select all on page" keeps other pages' rows
