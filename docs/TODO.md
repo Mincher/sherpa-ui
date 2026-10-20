@@ -1552,8 +1552,14 @@ read-only workflow, then built in small commits. Structural data-layer work
 query source then they don't need to store their own, do they?"* So: ONE
 QueryContext per app Context holds the only Query. A source keeps NO Query: it
 reads its filter from the QueryContext and loads. The controls read their slice
-there too and send one-field requests, so the two-way loop goes. **Step 2,
-running:** a read-only design, then small commits.
+there too and send one-field requests, so the two-way loop goes.
+
+**Step 2 ✅, 2026-10-20 — the design:** `docs/history/plan-366-design.md` (18
+commits; two checkers found 7 unsafe as written). **Will, 2026-10-20:** D1 A — one
+Apply for the whole Context when any source is remote; D2 A — a superseded chip's
+own answer is kept in the Query (`ScopeQuery.superseded`); D3 A — a source skips a
+saved filter that names a field it lacks, whole. **Step 3, running:** a read-only
+revision that folds every checker finding in, then the build.
 
 ---
 

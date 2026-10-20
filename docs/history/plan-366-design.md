@@ -572,6 +572,8 @@ Commits 6-9 and 17 must be IDENTICAL. If a count moves there, it is a bug in the
 
 ## 8b. Decisions for Will
 
+**Will, 2026-10-20: D1 A, D2 A, D3 A.**
+
 - 1. Remote and local sources in one Context. No page mixes them today. A: the Context keeps a draft when ANY of its sources is remote, and every source reads the applied Query, so there is one Apply for the whole Context. B: each source reads the copy its own store calls for. A local source filters at once while a remote one waits for Apply, so the panel says 'pending' for a field the local chart already shows. My pick: A. It is one rule a reader can see, and it is what happens today in a Context with one source.
 - 2. Where a superseded chip's own answer lives, when the View takes a field from a bar. A: in the Query, as ScopeQuery.superseded. The bar keeps nothing, the bar's re-report and #lower's overwrite go, and the answer survives a reload and a View pick. B: in the bar, as now. The bar keeps that one answer and sends it back as one request when the View lets go, and it is lost on a reload. My pick: A. It is the last answer a control holds of its own, and your ruling says controls keep none.
 - 3. A saved filter that names a field a source does not have. This only happens when a Context has two sources. Your diagram already says a source ignores a reading on a field it lacks. A: skip the WHOLE saved filter on that source, so it never applies half its meaning. B: skip only the missing field and apply the rest. My pick: A.
