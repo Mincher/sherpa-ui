@@ -26,6 +26,7 @@ import {
 import { BaseStore, type StoreOptions } from '../data/base-store.js';
 import { ArrayStore } from '../data/stores.js';
 import { report } from '../data/report.js';
+import { changedFields } from '../data/store-history.js';
 import { readText, removeKey, writeText } from './web-storage.js';
 
 /* ── Options ───────────────────────────────────────────────────────────── */
@@ -239,7 +240,7 @@ export class IdbStore extends BaseStore {
     } else {
       await promised(this.#tx(db, 'readwrite').put({ ...row }));
     }
-    this.announce({ type: 'update', key, row: { ...row } });
+    this.announce({ type: 'update', key, row: { ...row }, fields: changedFields(existing, row, values) });
     return { ...row };
   }
 

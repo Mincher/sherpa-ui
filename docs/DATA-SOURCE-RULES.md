@@ -178,6 +178,12 @@ an insert lists their keys in `trimmed`. Say `rowOrder` — `'insertion'` or
 takes the change in place, with no whole read; a change with no `key` means any
 row may have changed, and the whole set is read again.
 
+**Say which fields changed.** On an update, `fields` lists the fields whose
+values changed. `BaseStore` keeps them in `this.history`: this session's record
+of what changed, by field (`StoreHistory`, and `changedFields(before, after,
+sent)` to work them out). Leave `fields` out when you do not know: the change
+then moves every field.
+
 **Copy in and copy out.** `ArrayStore` does `{ ...row }` on both edges so a
 caller cannot reach in and mutate a stored record by holding a reference. It
 also keeps `SourceBinding.push`'s skip-if-unchanged guard working, which compares the rows
@@ -430,7 +436,7 @@ nothing else. Saved Views, saved filters and the session are the app layer:
 2. A query is data — `[field, op, value]` — so it can be sent somewhere.
 3. `total` is the count **before** paging.
 4. A store holds records and NOTHING about how they are viewed.
-5. A store announces every change, and copies on both edges.
+5. A store announces every change (on an update, the fields it moved), and copies on both edges.
 6. Validation lives on the store, and runs on reads too.
 7. A failed load is a STATE, not a throw — the last good rows stay up.
 8. Several controls narrow one query through NAMED PARTS, so none of them

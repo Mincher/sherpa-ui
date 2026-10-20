@@ -17,6 +17,7 @@
 import { ArrayStore } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type Store } from './store.js';
 import type { StoreOptions } from './stores.js';
+import type { StoreHistory } from './store-history.js';
 
 /** One thing a server can say. */
 export type PushMessage =
@@ -56,6 +57,15 @@ abstract class LiveStore extends EventTarget implements Store {
     this.inner.addEventListener('change', (event) => {
       this.dispatchEvent(new CustomEvent('change', { detail: (event as CustomEvent).detail }));
     });
+  }
+
+  /** Its inner store's History: one store, one record. TRAP T-a-store-keeps-its-history */
+  get history(): StoreHistory {
+    return this.inner.history;
+  }
+  /** Every change reaches its inner store, and is announced there. */
+  get announcesAll(): boolean {
+    return this.inner.announcesAll;
   }
 
   /** Is the connection up? */

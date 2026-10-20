@@ -28,6 +28,7 @@ import {
 // Its own module so IdbStore reaches it too.
 import { BaseStore, type StoreOptions } from './base-store.js';
 import { isMadeUpKey, rowKey } from './row-key.js';
+import { changedFields } from './store-history.js';
 export { BaseStore, type StoreOptions };
 
 /**
@@ -127,7 +128,7 @@ export class ArrayStore extends BaseStore {
       throw new Error(`ArrayStore: another row already has ${this.key} ${String(now)}`);
     }
     this.#rows[i] = row;
-    this.announce({ type: 'update', key, row: this.keyed({ ...row }, row) });
+    this.announce({ type: 'update', key, row: this.keyed({ ...row }, row), fields: changedFields(old, row, values) });
     return this.keyed({ ...row }, row);
   }
 
@@ -509,9 +510,10 @@ export class LocalStore extends BaseStore {
     if (!sameKey(now, readField(rows[i]!, this.key)) && rows.some((r) => sameKey(readField(r, this.key), now))) {
       throw new Error(`LocalStore: another row already has ${this.key} ${String(now)}`);
     }
+    const fields = changedFields(rows[i]!, row, values);
     rows[i] = row;
     this.#write(rows);
-    this.announce({ type: 'update', key, row: { ...row } });
+    this.announce({ type: 'update', key, row: { ...row }, fields });
     return { ...row };
   }
 

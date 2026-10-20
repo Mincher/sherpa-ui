@@ -3774,6 +3774,45 @@ asks the store nothing.
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
+### T-a-store-keeps-its-history
+
+345 phase 3. A source treated every store `change` as "anything may have moved",
+so a save to a field nothing on the page reads redid the walk and every draw.
+Each store now keeps a HISTORY of this session's changes, by field, so a reader
+can ask "did any field I read move since change N?".
+
+- **One clock**, the store's `history.seq`: 0 when the store object is made —
+  once a session (Will, 2026-10-19) — and one more for each change.
+- **Folded** (Will, 2026-10-20, D1): each field keeps only the number of the
+  last change that moved it. It never grows, and a question is one compare per
+  field read. It cannot list the changes one by one.
+- **Which fields:** `changedFields(before, after, sent)` compares the old row
+  and the new as a filter compares them (`valueKey`, and the type). A value
+  SENT as the same object the row held was changed in place, so its old value
+  cannot be read: it counts as changed. A form that sends a nested object back
+  unchanged moves that field too — the safe side.
+- **What a change moves:** an insert, a remove, a trim or a changed key moves
+  the ROWS, which every reader reads. A change with no key (`setRows`,
+  `putAll`, `clear`) or an update that names no `fields` (a RestStore, which
+  has no old row) moves EVERYTHING. A dot path answers to its top field.
+- **It is noted before it is announced**, in `BaseStore.announce`, so a store
+  that dispatches a `change` by hand is not in its History.
+- **Every wrapper hands on the same History:** a live store its inner store's,
+  `spoofRemote` the store's, and a held set passes the store's change on as
+  `change` in its own `change` detail.
+
+A History is the TAB's: a write from another tab to IndexedDB or localStorage
+is not in it (TODO 345, D2).
+
+- Site: `src/core/data/store-history.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/live-stores.ts`
+- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-store-keeps-its-history.test.mjs`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
+
 ### T-a-kept-set-is-checked-each-session
 
 345 phase 4.7 — Will's D2 B (the held set kept in IndexedDB, opt-in per remote

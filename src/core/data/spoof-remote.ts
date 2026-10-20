@@ -50,6 +50,8 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
     sampled: store.sampled ?? false,
     rowOrder: store.rowOrder,
     announcesAll: options.announcesAll ?? store.announcesAll,
+    // The store's own record of what changed. TRAP T-a-store-keeps-its-history
+    history: store.history,
     async load(o?: LoadOptions): Promise<LoadResult> {
       await wait();
       failed();

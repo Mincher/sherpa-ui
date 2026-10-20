@@ -35,6 +35,8 @@ import { keyRow } from './row-key.js';
 /** A store change, as the cache passes it on: did the set take it in place? */
 export interface CacheChangeDetail {
   taken: boolean;
+  /** The store's own change, as it announced it. */
+  change?: StoreChangeDetail;
 }
 
 /** A set as it is kept beyond the session: its rows, and what the schema refused. */
@@ -345,7 +347,7 @@ export class StoreCache extends EventTarget {
       this.#failure = null;
       this.#age++;
     }
-    this.dispatchEvent(new CustomEvent<CacheChangeDetail>('change', { detail: { taken } }));
+    this.dispatchEvent(new CustomEvent<CacheChangeDetail>('change', { detail: { taken, ...(change ? { change } : {}) } }));
   };
 
   /** It can never be held: say why, once. */

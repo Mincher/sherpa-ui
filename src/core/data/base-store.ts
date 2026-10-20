@@ -9,6 +9,7 @@
  */
 import { applyOptions, readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
+import { StoreHistory } from './store-history.js';
 import {
   domainsOf, validate, ValidationError, type FieldDomain, type Issue, type StandardSchema,
 } from './validate.js';
@@ -36,6 +37,8 @@ export abstract class BaseStore extends EventTarget implements Store {
   protected readonly schema: StandardSchema | undefined;
   /** How many rows a READ checks. 0 = all of them. */
   protected readonly sampleSize: number;
+  /** What changed this session, by field. TRAP T-a-store-keeps-its-history */
+  readonly history = new StoreHistory();
 
   constructor(options: StoreOptions = {}) {
     super();
@@ -142,8 +145,9 @@ export abstract class BaseStore extends EventTarget implements Store {
     return row;
   }
 
-  /** Tell every listener the records changed. */
+  /** Tell every listener the records changed — noted in the History first. */
   protected announce(detail: StoreChangeDetail): void {
+    this.history.record(detail, this.key);
     this.dispatchEvent(new CustomEvent('change', { detail }));
   }
 }

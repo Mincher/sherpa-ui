@@ -11,6 +11,7 @@ import { test, expect } from './harness';
  * TRAP T-idb-index-narrows-it-never-answers-it
  * TRAP T-idb-bulk-is-one-transaction
  * TRAP T-a-held-set-takes-a-change-in-place
+ * TRAP T-a-store-keeps-its-history
  */
 
 /** A fresh database per test, so one test's records cannot be another's. */
@@ -57,6 +58,25 @@ test('records survive a full CRUD round trip, and a reload', async ({ page }) =>
   expect(r.total).toBe(1);
   // THE POINT OF THE WHOLE STORE: the record outlived the connection.
   expect(r.afterReload).toEqual([{ id: 1, name: 'Ada', tier: 'Platinum' }]);
+});
+
+/* 345 phase 3: an update names the fields whose values moved, and the History keeps them. */
+test('an update announces only the fields that moved', async ({ page }) => {
+  const r = await page.evaluate(async (database) => {
+    const { IdbStore } = await import('/dist/index.js');
+    const store = new IdbStore({ name: 'customers', key: 'id', database });
+    await store.insert({ id: 1, name: 'Ada', tier: 'Gold', seats: 10 });
+    const heard: unknown[] = [];
+    store.addEventListener('change', (e) => heard.push((e as CustomEvent<{ fields?: string[] }>).detail.fields));
+    const at = store.history.seq;
+    // A form sends every field back; one moved.
+    await store.update(1, { id: 1, name: 'Ada', tier: 'Platinum', seats: 10 });
+    const since = store.history.since(at);
+    store.close();
+    return { heard, since };
+  }, freshDb());
+  expect(r.heard).toEqual([['tier']]);
+  expect(r.since).toEqual({ rows: false, fields: ['tier'] });
 });
 
 test('an INDEX narrows the read without changing the answer', async ({ page }) => {

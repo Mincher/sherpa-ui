@@ -47,6 +47,7 @@
  * - applyOptions — Apply search → filter → sort, then page.
  */
 import type { FieldDomain } from './validate.js';
+import type { StoreHistory } from './store-history.js';
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */
 export type Row = Record<string, unknown>;
@@ -241,6 +242,9 @@ export interface Store extends EventTarget {
    *  place, never copied, by a reader that only reads (the walk). A store
    *  without it is loaded. TRAP T-one-walk-counts-and-limits-in-order */
   scan?(): Promise<readonly Row[]>;
+  /** OPTIONAL: what changed this session, by field. A store without it moves
+   *  every field on each change. TRAP T-a-store-keeps-its-history */
+  readonly history?: StoreHistory;
 }
 
 /** The order a whole read returns rows in, asked no sort. */
@@ -255,6 +259,8 @@ export interface StoreChangeDetail {
   row?: Row;
   /** The keys a cap (`maxRows`) removed with this insert. TRAP T-a-held-set-takes-a-change-in-place */
   trimmed?: readonly unknown[];
+  /** On an update, the fields whose values changed; absent, any may have. TRAP T-a-store-keeps-its-history */
+  fields?: readonly string[];
 }
 
 /* ── Value access ──────────────────────────────────────────────────────── */

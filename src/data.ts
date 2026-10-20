@@ -231,6 +231,8 @@ export { bandCondition, bandEdges, type Threshold } from './core/data/threshold.
 /* A store that ACTS remote — slow, and failing when told to — until there is a
    real one. TRAP T-apply-and-discard-wait-for-a-change */
 export { spoofRemote, type SpoofOptions } from './core/data/spoof-remote.js';
+/* What a store changed this session, by field. TRAP T-a-store-keeps-its-history */
+export { StoreHistory, changedFields } from './core/data/store-history.js';
 export { failureOf, unreached, type Failure, type FailureKind } from './core/data/failure.js';
 export { keepCache, clearKept, type KeepOptions } from './core/browser/cache-keep.js';
 
