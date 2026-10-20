@@ -705,7 +705,7 @@ against the code). The full plan, with every file:line, is
   certain is read whole, as before. A review (3 lenses, 11 findings, all
   confirmed) found the key, merge and order faults, fixed before the commit.
   TRAP `T-a-held-set-takes-a-change-in-place`.
-- 🚧 **Phase 3 (History)** — designed 2026-10-20 after the walk, with a
+- ✅ **Phase 3 (History)** — designed 2026-10-20 after the walk, with a
   prototype and a check that found three bugs in it (M1–M3):
   `docs/history/plan-345-phase-3.md`. Commits 3.1 bench acts, 3.2 an idle saved
   filter tests no row and `walkReads`, 3.3 each store keeps its History, 3.4 the
@@ -721,7 +721,13 @@ against the code). The full plan, with every file:line, is
   each tab's History takes it, so those stores are trusted. A tab woken from
   sleep counts everything as changed. **B:** keep them untrusted now; the channel
   later. Until then they take today's path.
-  **Will, 2026-10-20: A** — *"Yes they share."* Next: 3.5, the tab channel.
+  **Will, 2026-10-20: A** — *"Yes they share."* — then, the same day: *"I was
+  wrong about tabs sharing history. Each tab should have it's own history. The
+  only way to share filter configurations across tabs, windows, or sessions is
+  if they are saved by the user to a custom definition."* So **B**: each tab
+  keeps its own History, and IndexedDB and localStorage stores stay untrusted
+  (today's path). The tab channel, written and not committed, was removed.
+  **Phase 3 is done** (3.1–3.4; page patching waits for 366, D3).
   - ✅ **3.1** (2026-10-20) — the bench: pages `lean` and `notheld`, acts
     `save-same` and `save-unread`, `save` now moves a read field, a `walks`
     counter. 57 old acts unchanged, 21 new.
