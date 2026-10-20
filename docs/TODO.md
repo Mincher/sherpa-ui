@@ -46,6 +46,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0r | 362 | UX — an inactive value is not interactive: a ticked ruled-out menu row or an on value chip refuses a press (Will) | filters |
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
 | ⬜ | 0t | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) | bug |
+| ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1371,6 +1372,17 @@ with tooltip anchoring to buttons being done differently to other components
 as other component tooltips don't have this issue. It would be great if we just
 had 1 tooltip system for all components rather than any duplication and
 deviation."* When convenient.
+
+
+### `[x]` ✅ 365 — BUG: "Select all on page" keeps other pages' rows
+
+Will, 2026-10-20: *"If I choose 'Select all on page' in the data grid, and
+already have rows selected on other pages then those other rows should be
+deselected."*
+
+**✅ Done 2026-10-20.** "Select all on page" clears the selection — other pages'
+keys too — then ticks this page's rows. Test: `reforged-grid-select-all-pages`.
+TRAP `T-select-all-is-the-visible-rows`.
 
 ---
 

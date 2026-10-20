@@ -1942,9 +1942,14 @@ export class SherpaDataGrid extends SherpaElement {
       this.#wantedKeys = null;
     } else if (value === 'all' && this.#askEvery()) {
       return;
-    } else {
-      const rows = value === 'page' ? this.#pageRecords() : this.#visibleRows();
+    } else if (value === 'page') {
+      // THIS page, and only it: a row chosen on another page is let go (Will, 365).
+      const rows = this.#pageRecords();
+      this.#selected.clear();
+      this.#wantedKeys = null;
       for (const record of rows) this.#selected.add(record);
+    } else {
+      for (const record of this.#visibleRows()) this.#selected.add(record);
     }
 
     this.#renderBody();

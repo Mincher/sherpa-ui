@@ -8458,6 +8458,10 @@ row under the filter that narrows that grid, unpaged — and the grid ticks
 their keys, the ones on other pages too. With no source, nobody prevents the
 ask, and the grid ticks what it holds, as before.
 
+**"Select all on page" is THIS page, and only it** (Will, 365): a row chosen on
+another page is let go — its key leaves `#wantedKeys` too, or the merge in
+`#rememberSelection` would hand it back.
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/bind-source.ts`
