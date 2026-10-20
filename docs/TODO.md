@@ -1746,8 +1746,11 @@ does not touch now, the panel after 366 commit 20 and the grid after 23.
 
 **Built, 2026-10-20:** the store's key-Set in-list; a field declares its child;
 the catalogue keeps the children apart; a path pick filters two fields; the walk
-counts, greys and sets aside at both tiers (a site's own read shares the walk's).
-Next: the tree-row helper, the tree menu, the bar's chip face, Demos' sites.
+counts, greys and sets aside at both tiers (a site's own read shares the walk's);
+one tree-row helper for the nav and the menu; the menu draws a tree of tri-state
+boxes; the bar's chip face reads "Contoso, Northwind: London".
+Next: Demos' sites; then the panel (after 366 commit 20), the grid (after 23),
+Demos' child link, and a remote store's read on open (after 345 phase 5).
 
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 

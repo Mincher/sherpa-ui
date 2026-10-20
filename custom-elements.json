@@ -5740,6 +5740,14 @@
             },
             {
               "kind": "field",
+              "name": "itemData",
+              "type": {
+                "text": "Array<{ value: string; label: string; parent?: string }>"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "present",
               "type": {
                 "text": "readonly string[] | null"

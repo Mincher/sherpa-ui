@@ -10434,6 +10434,46 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-tree-menu-keeps-its-ticks-as-data
+
+TODO 369 — Will: a value can hold child values (a Customer's Sites), and its
+menu is a TREE with checkboxes. Items with a `parent` are a tiered list; the
+rows stay ONE flat list in light DOM, a child set in by `data-depth`.
+
+**The ticks are DATA** (`TreePicks`, `src/core/ui/tree-picks.ts`), and the boxes
+are drawn from it: a parent is picked whole, or some of its children are, as
+paths. A parent box is on, some (`indeterminate`) or off. Ticking every child
+does NOT pick the parent — it stays at some (Q1 A: a parent matches every one of
+its rows, a siteless one too). Unticking one child of a picked parent picks the
+others. A child under a picked parent says nothing more, so `values` is always
+the normal form. Select all ticks every parent; Clear empties the data too.
+
+**Sites open IN PLACE** (Q5). A shut parent's children are not drawn until it
+first opens — their ticks live in the data meanwhile. Open or shut is the
+menu's own, kept across `items()`, as the nav keeps its Areas; the walk up the
+chain is `hiddenRows` (`T-parent-chain-walk-not-a-selector`). A search reads
+the DATA: a child that matches shows with its parent held open until the search
+clears.
+
+**The BOX says the tree, not the twisty.** A `sherpa-button` cannot hold
+`aria-expanded` for its inner button (`T-a-host-cannot-hold-aria-expanded`), and
+an id cannot cross its shadow root. So the parent's checkbox carries
+`aria-expanded` and `aria-controls` (ARIA 1.2 allows both on a checkbox), and
+ArrowRight / ArrowLeft open and shut it; the twisty is a pointer's door,
+`aria-hidden` and out of the tab order. A child's box is described by its
+parent's label. A click on the twisty never ticks the row it sits in.
+
+**A chip reads the DATA too** (`menu.itemData`): a shut parent's children are
+not drawn, so its stamped boxes cannot say them. Its face groups by parent —
+"Contoso, Northwind: London" (Q3) — from each value's parent alone, since a chip
+knows the parents and not the child's field.
+
+- Site: `src/core/ui/tree-picks.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/unit/a-tree-keeps-its-ticks-as-data.test.mjs`
+- Site: `test/e2e/reforged-menu-tree.spec.ts`
+- Site: `test/e2e/reforged-a-tiered-chip.spec.ts`
+
 ### T-an-open-panel-follows-the-data-layer
 
 **An open filter panel follows every field another control changes.** It was

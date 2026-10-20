@@ -67,6 +67,7 @@ const KNOWN = {
     'script cannot forge one, so there is nothing to call',
   'sherpa-nav.activeEntry': 'ok: data-current-id attribute',
   'sherpa-menu.dirty': 'ok: derived — the `values` / `conditions` setters against the last Apply; apply() clears it',
+  'sherpa-menu.itemData': 'ok: items() / populate() — the items it was given, read back with their parents',
   'sherpa-notifications.unreadCount': 'ok: populate() — derived from the items',
   'sherpa-quick-filter.menu': 'ok: the slotted <… slot="menu"> element IS the write',
   'sherpa-quick-filter.answered': 'ok: the `reading` setter, the `values` setter, or clear()',

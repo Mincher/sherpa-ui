@@ -23,6 +23,8 @@ import {
   modeOf, readingRows, rowAnswered, rowOffer, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
+import { hiddenRows } from '../../core/ui/tree-rows.js';
+import { TreePicks } from '../../core/ui/tree-picks.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -1050,6 +1052,15 @@ export class SherpaMenu extends SherpaElement {
   #onSearch = (): void => {
     const field = this.$<SherpaInputText>('.search');
     const q = (field?.value ?? '').trim().toLowerCase();
+    const hits = (label: string): boolean => !q || label.toLowerCase().includes(q);
+    /* A TREE searches its DATA: a child that matches shows, its parent held open
+       while the search stands; a parent that matches shows as it was. TODO 369 */
+    const labelOf = new Map(this.#tree ? this.#items.map((item) => [item.value, item.label ?? item.value]) : []);
+    if (this.#tree) {
+      this.#searchOpen = new Set(q ? this.#items.flatMap((item) => (item.parent !== undefined && hits(item.label ?? item.value) ? [item.parent] : [])) : []);
+      for (const parent of this.#searchOpen) this.#drawKids(parent);
+      this.#drawOpen();
+    }
     let shown = 0;
     // A SECTION heading shows while a row under it does — never on its own name.
     let heading: HTMLElement | null = null;
@@ -1064,7 +1075,10 @@ export class SherpaMenu extends SherpaElement {
       }
       // A composed row draws its name in its own shadow root, so say it here.
       const text = row.getAttribute('data-label') ?? row.textContent ?? '';
-      const hit = !q || text.toLowerCase().includes(q);
+      const value = this.#tree ? row.querySelector('input')?.value : undefined;
+      const parent = row.dataset['parent'];
+      const hit = value === undefined ? hits(text)
+        : hits(labelOf.get(value) ?? text) || this.#searchOpen.has(value) || (parent !== undefined && hits(labelOf.get(parent) ?? ''));
       // JS writes the flag; CSS owns the hiding.
       row.toggleAttribute('data-filtered-out', !hit);
       if (hit) {
@@ -1194,6 +1208,7 @@ export class SherpaMenu extends SherpaElement {
     const dates = this.#calendarValues();
     if (dates) return dates;
     if (this.#heldValues) return [...this.#heldValues];
+    if (this.#tree) return this.#tree.values;
     // Not stamped yet: its items' own picks. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     if (!this.#stamped && this.#items.length) return this.#items.filter((item) => item.selected).map((item) => item.value);
     return this.#inputs()
@@ -1281,7 +1296,11 @@ export class SherpaMenu extends SherpaElement {
       this.#heldValues = [...next];
       return;
     }
-    if (!this.#setBodyValues(next)) {
+    if (this.#tree) {
+      this.#heldValues = null;
+      this.#tree.set(next);
+      this.#drawTicks();
+    } else if (!this.#setBodyValues(next)) {
       const inputs = this.#inputs();
       this.#heldValues = inputs.length ? null : [...next];
       // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
@@ -1316,11 +1335,30 @@ export class SherpaMenu extends SherpaElement {
     this.#items = [...next];
     // Items that name their picks are newer than picks held for them.
     if (next.some((item) => item.selected !== undefined)) this.#heldValues = null;
+    this.#tree = next.some((item) => item.parent !== undefined)
+      ? new TreePicks(next, next.filter((item) => item.selected).map((item) => item.value)) : null;
+    this.#indexOf = new Map(next.map((item, i) => [item.value, i]));
     this.#stampItems();
+  }
+
+  /** Each item's value, label and parent, from the items — a row not drawn yet
+   *  too, as a shut parent's children are. TRAP T-a-tree-menu-keeps-its-ticks-as-data */
+  get itemData(): Array<{ value: string; label: string; parent?: string }> {
+    return this.#items.map(({ value, label, parent }) => ({ value, label: label ?? value, ...(parent !== undefined ? { parent } : {}) }));
   }
 
   /** The items last given. Kept, so a late render can still stamp them. */
   #items: MenuItem[] = [];
+  /** A tiered list's ticks, as data; null for a flat one. TRAP T-a-tree-menu-keeps-its-ticks-as-data */
+  #tree: TreePicks | null = null;
+  /** Each tree parent's open or shut, kept across items(), as the nav keeps its Areas. */
+  #opened = new Map<string, boolean>();
+  /** Parents a search holds open, for a child it matched. */
+  #searchOpen = new Set<string>();
+  /** Parents whose children are drawn: a shut one's wait for its first open. */
+  #kidsDrawn = new Set<string>();
+  /** Each item's place, by value: a tree row's id. */
+  #indexOf = new Map<string, number>();
   /** Its items have been drawn as rows at least once. */
   #stamped = false;
 
@@ -1405,37 +1443,13 @@ export class SherpaMenu extends SherpaElement {
     );
     if (!tpl?.content.firstElementChild) return;
 
-    const name = this.#group;
     const held = this.#heldValues ? valueSet(this.#heldValues) : null;
     this.#heldValues = null;
-    const stamp = (item: MenuItem): HTMLElement | null => {
-      const row = (item.pickable === false ? this.clone('template.menu-bare-tpl') : null) ?? this.clone(tpl);
-      if (!row) return null;
-      const box = row.querySelector('input');
-      if (box) {
-        box.value = item.value;
-        box.checked = held ? held.has(item.value) : !!item.selected;
-        if (single) box.name = name;
-      }
-      const label = item.label ?? item.value;
-      row.querySelector('.menu-row-label')!.textContent = label;
-      /* AN ATTRIBUTE, drawn by CSS: the row is light DOM, and `::slotted` cannot
-         reach its children — only the row itself and its pseudo-elements.
-         Said to assistive tech too, since generated content is not reliably. */
-      if (item.note) {
-        row.dataset['note'] = item.note;
-        box?.setAttribute('aria-description', item.note);
-      }
-      if (item.drill) this.#addDrill(row, item.value, label, item.count ?? 0);
-      const remove = item.remove ? this.clone('template.menu-remove-tpl') : null;
-      if (remove) {
-        row.dataset['remove'] = '';
-        remove.dataset['value'] = item.value;
-        remove.setAttribute('aria-label', `Remove ${label}`);
-        row.append(remove);
-      }
-      return row;
-    };
+    if (this.#tree && held) this.#tree.set(this.#items.map((item) => item.value).filter((v) => held.has(v)));
+    this.#kidsDrawn.clear();
+    // Not in items(): a menu not yet upgraded has no states to set.
+    this.toggleState('tree', !!this.#tree);
+    const stamp = (item: MenuItem): HTMLElement | null => this.#stampRow(item, tpl, held);
 
     /* SELECT ALL is the MENU's row, not the caller's — one of the two used to
        add its own and the other did not, so the same field read two ways. A
@@ -1448,6 +1462,11 @@ export class SherpaMenu extends SherpaElement {
     const rows: Element[] = [];
     let section: string | undefined;
     for (const item of this.#items) {
+      // A shut parent's children wait for its first open: their ticks are the tree's.
+      if (item.parent !== undefined) {
+        if (!this.#isOpen(item.parent)) continue;
+        this.#kidsDrawn.add(item.parent);
+      }
       if (item.section && item.section !== section) {
         const head = this.clone('template.menu-section-tpl');
         if (head) {
@@ -1474,6 +1493,8 @@ export class SherpaMenu extends SherpaElement {
        action, which a chip appends after this. */
     this.prepend(...out);
     this.#stamped = true;
+    this.#drawTicks();
+    this.#drawOpen();
     this.#markPresent();
 
     /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
@@ -1481,6 +1502,125 @@ export class SherpaMenu extends SherpaElement {
        would sit with an empty caret over a ticked row.
        TRAP T-chip-empty-check-waits-for-onconnect */
     this.emit('menu-items', { values: this.values });
+  }
+
+  /** One item's row: its box, label, note and ends. */
+  #stampRow(item: MenuItem, tpl: HTMLTemplateElement, held: { has: (v: unknown) => boolean } | null): HTMLElement | null {
+    const row = (item.pickable === false ? this.clone('template.menu-bare-tpl') : null) ?? this.clone(tpl);
+    if (!row) return null;
+    const box = row.querySelector('input');
+    if (box) {
+      box.value = item.value;
+      box.checked = held ? held.has(item.value) : !!item.selected;
+      if (this.dataset['select'] === 'single') box.name = this.#group;
+    }
+    const label = item.label ?? item.value;
+    row.querySelector('.menu-row-label')!.textContent = label;
+    /* AN ATTRIBUTE, drawn by CSS: the row is light DOM, and `::slotted` cannot
+       reach its children — only the row itself and its pseudo-elements.
+       Said to assistive tech too, since generated content is not reliably. */
+    if (item.note) {
+      row.dataset['note'] = item.note;
+      box?.setAttribute('aria-description', item.note);
+    }
+    if (item.drill) this.#addDrill(row, item.value, label, item.count ?? 0);
+    const remove = item.remove ? this.clone('template.menu-remove-tpl') : null;
+    if (remove) {
+      row.dataset['remove'] = '';
+      remove.dataset['value'] = item.value;
+      remove.setAttribute('aria-label', `Remove ${label}`);
+      row.append(remove);
+    }
+    if (this.#tree) this.#treeRow(row, item);
+    return row;
+  }
+
+  /* ── A tree of tiered values. TODO 369 · TRAP T-a-tree-menu-keeps-its-ticks-as-data ── */
+
+  /** A tree row: a child's place under its parent; a parent's twisty. */
+  #treeRow(row: HTMLElement, item: MenuItem): void {
+    const box = row.querySelector('input');
+    if (item.parent !== undefined) {
+      row.dataset['parent'] = item.parent;
+      row.dataset['depth'] = '1';
+      row.id = this.#rowId(item.value);
+      // Said with its parent's name: "London, Northwind".
+      box?.setAttribute('aria-describedby', this.#rowId(item.parent, 'label'));
+      return;
+    }
+    row.dataset['tree'] = '';
+    row.querySelector('.menu-row-label')!.id = this.#rowId(item.value, 'label');
+    if (!this.#tree!.kids(item.value).length) return;
+    const twisty = this.clone('template.menu-twisty-tpl');
+    if (!twisty) return;
+    row.dataset['twisty'] = '';
+    twisty.dataset['value'] = item.value;
+    row.prepend(twisty);
+  }
+
+  /** A tree row's id, unique to this menu. */
+  #rowId(value: string, part = 'row'): string {
+    return `${this.#group}-${part}-${this.#indexOf.get(value) ?? -1}`;
+  }
+
+  /** Each drawn box from the tree's ticks: on, off, or — a parent — some. */
+  #drawTicks(): void {
+    const tree = this.#tree;
+    if (!tree) return;
+    const single = this.dataset['select'] === 'single';
+    const picked = new Set(tree.values);
+    for (const box of this.#inputs()) {
+      const shows = tree.box(box.value);
+      box.checked = single ? picked.has(box.value) : shows === 'on';
+      box.indeterminate = !single && shows === 'some';
+    }
+  }
+
+  /** Is a tree parent open — by the reader, or by a search that matched a child? */
+  #isOpen(parent: string): boolean {
+    return (this.#opened.get(parent) ?? false) || this.#searchOpen.has(parent);
+  }
+
+  /** Each parent's box says open or shut, and names its children; a shut one's are hidden. */
+  #drawOpen(): void {
+    if (!this.#tree) return;
+    const kids = this.#own<HTMLElement>('.menu-row[data-parent]');
+    const parentOf = new Map(kids.map((row) => [row.id, row.dataset['parent']!]));
+    const under = Map.groupBy(kids, (row) => row.dataset['parent']!);
+    const open = new Map<string, boolean>();
+    for (const row of this.#own<HTMLElement>('.menu-row[data-twisty]')) {
+      const box = row.querySelector('input');
+      if (!box) continue;
+      const on = this.#isOpen(box.value);
+      open.set(box.value, on);
+      box.setAttribute('aria-expanded', String(on));
+      const ids = (under.get(box.value) ?? []).map((k) => k.id);
+      if (ids.length) box.setAttribute('aria-controls', ids.join(' '));
+      else box.removeAttribute('aria-controls');
+      row.querySelector('.menu-row-twisty')?.setAttribute('data-icon-start', on ? 'chevron-down' : 'chevron-right');
+    }
+    const hidden = hiddenRows(parentOf.keys(), parentOf, open);
+    for (const row of kids) row.toggleAttribute('data-shut', hidden.has(row.id));
+  }
+
+  /** Open or shut a parent; its children are drawn the first time it opens. */
+  #setOpen(parent: string, open: boolean): void {
+    this.#opened.set(parent, open);
+    if (open) this.#drawKids(parent);
+    this.#drawOpen();
+  }
+
+  /** Draw a parent's children under it, once. */
+  #drawKids(parent: string): void {
+    if (this.#kidsDrawn.has(parent)) return;
+    const tpl = this.$<HTMLTemplateElement>(this.dataset['select'] === 'single' ? 'template.menu-radio-tpl' : 'template.menu-check-tpl');
+    const at = this.#own<HTMLElement>('.menu-row[data-twisty]').find((row) => row.querySelector('input')?.value === parent);
+    if (!tpl || !at) return;
+    this.#kidsDrawn.add(parent);
+    const rows = this.#items.filter((item) => item.parent === parent).flatMap((item) => this.#stampRow(item, tpl, null) ?? []);
+    at.after(...rows);
+    this.#drawTicks();
+    this.#markPresent();
   }
 
   /* ── Private ─────────────────────────────────────────────────────── */
@@ -1803,12 +1943,25 @@ export class SherpaMenu extends SherpaElement {
     // Read the SET, not the box. TRAP T-indeterminate-reports-false
     // A ruled-out box is never ticked by Select all. TRAP T-a-ruled-out-value-is-greyed
     const boxes = this.#inputs().filter((b) => !b.disabled);
-    const on = boxes.some((b) => !b.checked);
-    for (const box of boxes) box.checked = on;
+    if (this.#tree) {
+      // A tree ticks every parent. TRAP T-a-tree-menu-keeps-its-ticks-as-data
+      const can = this.#canTick(boxes);
+      this.#tree.all(this.#tree.allBox(can) !== 'on', can);
+      this.#drawTicks();
+    } else {
+      const on = boxes.some((b) => !b.checked);
+      for (const box of boxes) box.checked = on;
+    }
     input.indeterminate = false;
     this.#syncSelectAll();
     this.#followPicks();
     if (!this.#commits) this.emit('menu-change', { values: this.values });
+  }
+
+  /** What Select all may tick: a value whose box is drawn and not refused. */
+  #canTick(boxes: readonly HTMLInputElement[]): (value: string) => boolean {
+    const open = new Set(boxes.map((b) => b.value));
+    return (value) => open.has(value);
   }
 
   /** Point select-all at the set: all, some (indeterminate) or none. Rewritten
@@ -1818,6 +1971,12 @@ export class SherpaMenu extends SherpaElement {
     this.#markPresent();
     const all = this.#allRow();
     if (!all) return;
+    if (this.#tree) {
+      const shows = this.#tree.allBox(this.#canTick(this.#inputs().filter((b) => !b.disabled)));
+      all.checked = shows === 'on';
+      all.indeterminate = shows === 'some';
+      return;
+    }
     const boxes = this.#inputs().filter((b) => !b.disabled || b.checked);
     const on = boxes.filter((b) => b.checked).length;
     all.checked = boxes.length > 0 && on === boxes.length;
@@ -1918,6 +2077,7 @@ export class SherpaMenu extends SherpaElement {
     const at = event.composedPath()[0];
     if ((at instanceof HTMLInputElement && at.type !== 'checkbox' && at.type !== 'radio')
       || at instanceof HTMLTextAreaElement || (at instanceof HTMLElement && at.isContentEditable)) return;
+    if (this.#treeKey(event)) return;
     const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
     if (event.key === 'ArrowRight' && row) this.#drillInto(row);
     else if (event.key === 'ArrowLeft' && this.hasAttribute('data-drill')) this.emit('menu-back');
@@ -1925,6 +2085,25 @@ export class SherpaMenu extends SherpaElement {
     event.preventDefault();
     event.stopPropagation();
   };
+
+  /** In a tree, ArrowRight opens a parent, and ArrowLeft shuts it — from a child,
+   *  its parent, which takes the focus. Was the key the tree's? */
+  #treeKey(event: KeyboardEvent): boolean {
+    if (!this.#tree || (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft')) return false;
+    const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-twisty], .menu-row[data-parent]');
+    if (!row) return false;
+    const open = event.key === 'ArrowRight';
+    const parent = row.dataset['parent'];
+    if (parent !== undefined) {
+      if (open) return false;
+      this.#setOpen(parent, false);
+      this.#own<HTMLElement>('.menu-row[data-twisty]').find((r) => r.querySelector('input')?.value === parent)
+        ?.querySelector('input')?.focus();
+    } else this.#setOpen(row.querySelector('input')?.value ?? '', open);
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
 
   /** A row changed: report it, or hold it for Apply. */
   #onChange = (event: Event): void => {
@@ -1936,6 +2115,11 @@ export class SherpaMenu extends SherpaElement {
     if (input.closest('.qf-all')) {
       this.#onSelectAll(input);
       return;
+    }
+    if (this.#tree) {
+      if (input.type === 'radio') this.#tree.set([input.value]);
+      else this.#tree.tick(input.value, input.checked);
+      this.#drawTicks();
     }
     this.#syncSelectAll();
     this.#followPicks();
@@ -2025,6 +2209,8 @@ export class SherpaMenu extends SherpaElement {
    * calendar's date attributes. TRAP T-clear-empties-both-body-shapes */
   #onClear = (): void => {
     for (const input of this.#own<HTMLInputElement>('input')) input.checked = false;
+    this.#tree?.set([]);
+    this.#drawTicks();
     // A FILTER menu's typed value is part of what Clear empties.
     if (this.dataset['type'] === 'filter') this.conditionValue = '';
     /* BOTH HALVES. Clear means "no filter", and a menu with two modes holds
@@ -2088,6 +2274,15 @@ export class SherpaMenu extends SherpaElement {
       event.preventDefault();
       event.stopPropagation();
       this.emit('menu-row-remove', { value: remove.dataset['value'] ?? '' });
+      return;
+    }
+    // A tree parent's twisty opens or shuts it, and does NOT tick. TODO 369
+    const twisty = target.closest<HTMLElement>('.menu-row-twisty');
+    if (twisty) {
+      event.preventDefault();
+      event.stopPropagation();
+      const parent = twisty.dataset['value'] ?? '';
+      this.#setOpen(parent, !this.#isOpen(parent));
       return;
     }
     const row = target.closest<HTMLElement>('.menu-row[data-drill]');

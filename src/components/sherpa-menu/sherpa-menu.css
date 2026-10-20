@@ -425,9 +425,23 @@
     var(--sherpa-style-border-base, #b3b3c3);
 }
 
+/* A TREE of tiered values: a parent's twisty first, a top row with none set
+   in by its width, a child one step further. TODO 369 */
+.rows ::slotted(.menu-row[data-tree]:not([data-twisty])),
+:host(:state(tree)) .rows ::slotted(.qf-all) {
+  padding-inline-start: calc(var(--sherpa-theme-padding-md, 8px) + var(--sherpa-display-mode-space-base, 16px)
+    + var(--sherpa-theme-gap-md, 8px));
+}
+.rows ::slotted(.menu-row[data-depth="1"]) {
+  padding-inline-start: calc(var(--sherpa-theme-padding-md, 8px)
+    + 2 * (var(--sherpa-display-mode-space-base, 16px) + var(--sherpa-theme-gap-md, 8px)));
+}
+
 /* `display: none`, not a filter class, so a hidden row also leaves the tab
    order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
+/* …and a child under a shut parent. */
+.rows ::slotted([data-shut]) { display: none; }
 /* …and a value REMOVED: one a serial set's chain does not offer, or, hiding
    unmatched, one the filters before it rule out. TRAP T-a-filter-set-groups-or-chains */
 .rows ::slotted([data-removed]) { display: none; }

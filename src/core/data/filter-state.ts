@@ -326,8 +326,9 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const text = (reading.text ?? '').trim();
 
   /* A TIERED field's child picks are PATHS: a path whose parent is picked shows
-     picked, and the parent says it already. TODO 369 */
-  const parentOf = facts.child ? facts.parentOf : undefined;
+     picked, and the parent says it already. A control that draws the tree knows
+     its parents, and not the child's field. TODO 369 */
+  const parentOf = facts.parentOf?.size ? facts.parentOf : undefined;
   const pickedKeys = new Set(all.filter((_, i) => picked.has(raws[i])));
   const values: ValueEntry[] = all.map((value, i) => {
     const parent = parentOf?.get(value);
@@ -388,7 +389,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     time: type === 'date' && !!facts.time,
     mode,
     range,
-    ...(parentOf ? { child: facts.child! } : {}),
+    ...(parentOf && facts.child ? { child: facts.child } : {}),
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,

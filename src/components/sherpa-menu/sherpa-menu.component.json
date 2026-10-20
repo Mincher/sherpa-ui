@@ -293,6 +293,25 @@
               ]
             },
             {
+              "el": "template",
+              "class": "menu-twisty-tpl",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "menu-row-twisty",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-right",
+                    "data-no-tab": "",
+                    "data-no-tip": "",
+                    "aria-hidden": "true"
+                  }
+                }
+              ]
+            },
+            {
               "el": "sherpa-container-footer",
               "class": "footer",
               "part": "footer",
@@ -814,6 +833,25 @@
                     "data-size": "xs",
                     "data-look": "transparent",
                     "data-icon-start": "cross"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-twisty-tpl",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "menu-row-twisty",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-right",
+                    "data-no-tab": "",
+                    "data-no-tip": "",
+                    "aria-hidden": "true"
                   }
                 }
               ]
@@ -1346,7 +1384,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty, present, offered). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty, itemData, present, offered). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1629,6 +1667,11 @@
         {
           "name": "dirty",
           "type": "boolean",
+          "access": "read"
+        },
+        {
+          "name": "itemData",
+          "type": "Array<{ value: string; label: string; parent?: string }>",
           "access": "read"
         },
         {

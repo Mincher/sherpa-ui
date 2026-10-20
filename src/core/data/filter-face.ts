@@ -65,7 +65,8 @@ export function filterFace(state: FilterState): FilterFace {
   const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
   const picks = lead
     ? (lead.picked ?? []).map((v) => labelOf.get(valueKey(v)) ?? String(v))
-    : state.values.filter((v) => v.state === 'picked').map((v) => v.label);
+    : state.values.some((v) => v.parent) ? byParent(state.values)
+      : state.values.filter((v) => v.state === 'picked').map((v) => v.label);
   const named = op !== DEFAULT_OP;
   const condition = named ? opName(op, state.type === 'date') : '';
   const typed = (OP_TAKES[op] ?? 'list') === 'text';
@@ -107,6 +108,15 @@ export function filterFace(state: FilterState): FilterFace {
     tip: state.condition === 'advanced' ? counted
       : (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
   };
+}
+
+/** A tiered field's picks, by parent: a whole one by its name, one with some
+ *  children picked as `Northwind: London, Leeds` (Will, 369 Q3). */
+function byParent(values: FilterState['values']): string[] {
+  const whole = new Set(values.filter((v) => !v.parent && v.state === 'picked').map((v) => v.value));
+  const some = Map.groupBy(values.filter((v) => v.parent && v.state === 'picked' && !whole.has(v.parent)), (v) => v.parent!);
+  return values.filter((v) => !v.parent && (whole.has(v.value) || some.has(v.value)))
+    .map((v) => (whole.has(v.value) ? v.label : `${v.label}: ${some.get(v.value)!.map((k) => k.label).join(', ')}`));
 }
 
 /** The ONE mark a control wears when conditions are applied. */

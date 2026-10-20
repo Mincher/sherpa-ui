@@ -897,7 +897,10 @@ export class SherpaQuickFilter extends SherpaElement {
     // A DATE that offers Advanced is a filter menu too: its rows are in its reading. TODO 21d
     const list = body === 'number' || isFilter ? menu?.reading : undefined;
     // A menu nested in the chip's answers for itself. TRAP T-a-nested-menu-answers-for-itself
-    const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
+    /* A TREE's children are not drawn until their parent opens: its items say
+       them, with their parents. TODO 369 */
+    const tree = menu?.itemData?.some((i) => i.parent !== undefined) ? menu.itemData : null;
+    const all = tree ? tree.map((i) => i.value) : [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => i.closest('sherpa-menu') === menu && !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
     return fieldState(
@@ -908,7 +911,9 @@ export class SherpaQuickFilter extends SherpaElement {
            list said "nothing to pick", and the chip said nothing at all.
            TRAP T-a-chip-says-its-own-answer */
         ...(body === 'number' || body === 'date' ? { type: body } : { values: all }),
-        labels: Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
+        labels: tree ? Object.fromEntries(tree.map((i) => [i.value, i.label]))
+          : Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
+        ...(tree ? { parentOf: new Map(tree.flatMap((i) => (i.parent !== undefined ? [[i.value, i.parent] as const] : []))) } : {}),
       },
       list ? { ...list, picked: values } : {
         picked: values,

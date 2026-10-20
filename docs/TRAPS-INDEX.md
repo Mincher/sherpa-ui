@@ -479,7 +479,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (112)
+## Menus, tips and overlays (113)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](TRAPS.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -518,6 +518,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-slotted-row-is-outside-its-own-popover](TRAPS.md#t-a-slotted-row-is-outside-its-own-popover) — menu
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — top-layer-tips
 - [T-a-tooltip-is-always-in-the-top-layer](TRAPS.md#t-a-tooltip-is-always-in-the-top-layer) — tooltip
+- [T-a-tree-menu-keeps-its-ticks-as-data](TRAPS.md#t-a-tree-menu-keeps-its-ticks-as-data) — menu
 - [T-a-tree-rule-beats-slotted](TRAPS.md#t-a-tree-rule-beats-slotted) — menu
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — notifications
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — menu
@@ -750,7 +751,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (100)
+## SherpaElement and the shared sheets (101)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -784,6 +785,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-anchor, sherpa-element
+- [T-a-tree-menu-keeps-its-ticks-as-data](TRAPS.md#t-a-tree-menu-keeps-its-ticks-as-data) — tree-picks
 - [T-a-tree-rule-beats-slotted](TRAPS.md#t-a-tree-rule-beats-slotted) — sherpa-base
 - [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — sherpa-element
 - [T-a-wrapping-span-hides-its-own-row](TRAPS.md#t-a-wrapping-span-hides-its-own-row) — components
