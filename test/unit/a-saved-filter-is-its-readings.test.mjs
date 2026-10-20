@@ -53,9 +53,13 @@ test('an answer is saved as it was: rows when Advanced, ticks or ends when Simpl
     { conditions: [{ op: 'contains', text: 'Da' }] });
   const rows = [{ op: 'contains', text: 'Da' }, { join: 'or', op: 'eq', picked: ['Ravi'] }];
   assert.deepEqual(savedReading(fieldState(owner, { conditions: rows })), { conditions: rows });
+  // A number's range is a row (TODO 375); a date's ends stay Simple.
   const seats = { field: 'seats', type: 'number' };
-  assert.deepEqual(savedReading(fieldState(seats, { range: true, picked: [10, 50] })),
-    { picked: [10, 50], range: true });
+  assert.deepEqual(savedReading(fieldState(seats, { mode: 'advanced', conditions: [{ op: 'between', picked: [10, 50] }] })),
+    { conditions: [{ op: 'between', picked: [10, 50] }] });
+  const made = { field: 'made', type: 'date' };
+  assert.deepEqual(savedReading(fieldState(made, { range: true, picked: ['2026-01-05', '2026-02-06'] })),
+    { picked: ['2026-01-05', '2026-02-06'], range: true });
   // Nothing answered, nothing to save.
   assert.equal(savedReading(fieldState(plan, {})), undefined);
   // What it saves applies the SAME filter.

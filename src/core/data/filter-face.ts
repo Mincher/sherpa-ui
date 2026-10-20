@@ -73,8 +73,10 @@ export function filterFace(state: FilterState): FilterFace {
   /* TWO ENDS read as a range, and a DAY as a day — the one way every control
      says them. TRAP T-a-date-reads-one-way · TRAP T-date-label-reads-in-full
      TRAP T-a-chip-says-its-own-answer */
-  const dated = state.type === 'date' && !lead;
-  const ends = !typed && state.range && picks.length === 2;
+  // …and so does an Advanced Between or Not between row. TODO 375
+  const rangeRow = !!lead && (OP_TAKES[lead.op] ?? 'list') === 'range';
+  const dated = state.type === 'date' && (!lead || rangeRow);
+  const ends = !typed && (state.range || rangeRow) && picks.length === 2;
   const span = ends ? (dated ? formatDate(picks[0]!, picks[1]) : `${picks[0]} to ${picks[1]}`) : '';
   const said = state.type === 'date' ? picks.map((day) => formatDate(day)) : picks;
 

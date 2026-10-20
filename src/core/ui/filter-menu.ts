@@ -85,9 +85,8 @@ export function menuFor(
   if (def.label) menu.setAttribute('data-heading', def.label);
   menu.setAttribute('data-select', one ? 'single' : 'multiple');
 
-  // A NUMBER opens as a RANGE; a def that says otherwise wins.
-  // TRAP T-a-default-is-not-an-override
-  const asRange = def.range ?? kind === 'number';
+  // A DATE that says so opens as a range (the View's). A number's range is an Advanced row. TODO 375
+  const asRange = kind === 'date' && !!def.range;
   /* APPLY IS FOR A REMOTE FETCH (Will, 2026-09-27). A LOCAL pick applies at
      once — multi-select and ranges too — and the menu is FIXED, so the Range
      switch cannot turn Apply on. Remote, the select mode decides.
@@ -115,7 +114,6 @@ export function menuFor(
     // No list to search, only a value to type or drag.
     menu.removeAttribute('data-search');
     menu.setAttribute('data-body', 'number');
-    if (asRange) menu.setAttribute('data-range', '');
     menu.setAttribute('data-min', String(def.min ?? 0));
     menu.setAttribute('data-max', String(def.max ?? 100));
     if (def.step != null) menu.setAttribute('data-step', String(def.step));

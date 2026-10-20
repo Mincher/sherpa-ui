@@ -56,7 +56,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
 | ✅ | 0zc | 373 | UX — hover a grid cell: an icon-only filter chip at its right adds that cell's value to the filter, and a second press takes it off (Will) | filters |
 | ✅ | 0zd | 374 | ASK — a cell chip on a field the VIEW holds (Customer, Region in Demos): Will — show it INACTIVE on hover, as the heading is | filters |
-| 🚧 | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
+| ✅ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
 | ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
@@ -67,7 +67,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zm | 383 | UX — ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | ⬜ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
-| ⬜ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) | data |
+| ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1500,6 +1500,36 @@ took one filter click from 176 to 56 ms at 4x CPU.
 
 **✅ Will, 2026-10-20: A, keep 367.**
 
+### `[x]` ✅ 386 — BUG?: Advanced conditions and the query chain
+
+Will, 2026-10-20: *"Possible Bug: Advanced filter conditions potentially aren't
+limiting other filter fields and values in the query chain."*
+
+A read-only check reproduced it in node over every path — the walk, counts,
+greys, set-aside, a serial chain, a remote store not held, the panel and the
+bar — and an Advanced answer DOES limit every field after it. A second agent
+tried to refute that and found two real gaps:
+1. **The panel:** pressing a list field's f(x) builds its menu late, and nothing
+   gives that menu the scope's present/offered lists, so its new rows' value
+   pickers are not greyed until the walk runs again. Fix: `#markPresent` after
+   `#giveMenu` in `#setCustom`. Probably what Will saw.
+2. **The compiler (latent):** an `in` / `notin` row compiles wrong — `notin`
+   with two picks becomes `in`, one pick matches every row. The menu never
+   offers them, but a hand-written reading, a saved filter or the MCP can.
+   Fix: map `in`→`eq`, `notin`→`ne` before `picksClause` in `rowClause`.
+
+**✅ Fixed 2026-10-20:** both, each with a test that fails without it: a panel
+menu built by f(x) is told what the filters before it leave
+(`reforged-filter-panel-component.spec.ts`), and `in` / `notin` rows compile
+as `eq` / `ne` (`one-condition-system.test.mjs`). A guard,
+`an-advanced-answer-limits-what-follows.test.mjs`, holds the chain for
+contains, OR rows and `ne`, held and step by step.
+
+Also noted, for Will to judge: an answered field no scope HOLDS is placed after
+every held field, so it limits the rows but not the held fields' lists; per-value
+counts and set-aside are for Simple picks only, by design; a superseded chip's
+rows are never greyed.
+
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 
 Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
@@ -1528,7 +1558,7 @@ and its icon. **Will, 2026-10-20:** *"'Hide unmatching filters' should be
 inactive, not hidden, when 'Limit matching filters' is not selected."* So it is
 always there, and inactive while Limit is off.
 
-### `[~]` 🚧 375 — FILTERS: a range is an Advanced condition
+### `[x]` ✅ 375 — FILTERS: a range is an Advanced condition
 
 Will, 2026-10-20: *"For numerical and date fields a 'range' is an advanced
 filter. To use a range, the user will enable advanced filter mode and then set
@@ -1563,6 +1593,18 @@ So:
 - The grid cell chip on a number REPLACES the value.
 - Old queries with a number range: rewrite the test definitions and data to the
   new model; no conversion code.
+
+**✅ Done 2026-10-20 (numbers).** Part 1: every number offers Advanced (unless
+`advanced: false`), and its rows ask Between and Not between — condition, From,
+To on one line, a slider under them that moves both. `notbetween` is a new op
+(every value outside, and a row with none); a range row is both ends or no
+answer; the number menu keeps Reset; a grid cell's chip replaces a number.
+Part 2: the Range switch and the Simple slider go for a number — Simple is one
+value box, two numbers are a list (`in`), and `FieldReading.kept` and TRAP
+`T-both-shapes-are-kept` are retired. A number range from a View's `where`, a
+grid clause or a reading is an Advanced row. A Between row reads "37 to 120" on
+its chip. The tests that set number ranges the old way were rewritten (Will:
+no conversion code). Dates: 379.
 
 ### `[x]` ✅ 374 — ASK: a cell chip on a field the View holds
 

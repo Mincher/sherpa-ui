@@ -5536,12 +5536,6 @@
               }
             },
             {
-              "name": "data-from",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
               "name": "data-has-value",
               "description": "written BY the menu: the typed value is not empty, so the input's Clear button shows.",
               "type": {
@@ -5653,12 +5647,6 @@
               "name": "data-time",
               "type": {
                 "text": "boolean"
-              }
-            },
-            {
-              "name": "data-to",
-              "type": {
-                "text": "string"
               }
             },
             {

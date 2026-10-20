@@ -164,7 +164,7 @@ export function presetClauses(
 
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
-  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, kept: 0, suspended: 0,
+  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0,
 } satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -181,9 +181,7 @@ export function answerOf(reading: FieldReading): FieldReading {
 export function readingAnswered(reading: FieldReading): boolean {
   return (reading.picked ?? []).length > 0
     || (reading.text ?? '').trim() !== ''
-    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0)
-    // The other shape's answer is worth keeping too. TRAP T-both-shapes-are-kept
-    || (!!reading.kept && readingAnswered(reading.kept));
+    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
 }
 
 /** Do two readings give the same answer? Only the answer keys count. */

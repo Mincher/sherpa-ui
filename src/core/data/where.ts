@@ -92,7 +92,8 @@ function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'fi
 function rowReading(row: FieldCondition, type?: FieldType): FieldReading {
   // A date from today, and Not between, have no Simple answer: each is a row. TRAP T-a-relative-date-stays-relative
   if (row.op === 'last' || row.op === 'next' || row.op === 'notbetween') return { conditions: [row], mode: 'advanced' };
-  if (row.op === 'between') return { picked: [...(row.picked ?? [])], range: true };
+  // A date's range is its Simple answer; a number's is an Advanced row. TODO 375
+  if (row.op === 'between') return type === 'date' ? { picked: [...(row.picked ?? [])], range: true } : { conditions: [row], mode: 'advanced' };
   if (OP_TAKES[row.op] === 'text') return { op: row.op, text: row.text ?? '' };
   const picked = [...(row.picked ?? [])];
   // Several values on a number or a date are a LIST here, not two ends.

@@ -60,11 +60,16 @@ test('off is kept, not applied; no answer is no condition', () => {
     { status: { picked: ['trial'], suspended: true } });
 });
 
-test('two values on a number field are a LIST, not two ends', () => {
+test('two values on a number field are a LIST, and its range is a Between row', () => {
   assert.deepEqual(readingsOf({ seats: { in: [5, 9] } }, () => ({ type: 'number' })),
-    { seats: { picked: [5, 9], range: false } });
+    { seats: { picked: [5, 9] } });
+  // A number's range is an Advanced row (TODO 375); a date's is its two ends.
   assert.deepEqual(readingsOf({ seats: { between: [5, 9] } }, () => ({ type: 'number' })),
-    { seats: { picked: [5, 9], range: true } });
+    { seats: { conditions: [{ op: 'between', picked: [5, 9] }], mode: 'advanced' } });
+  assert.deepEqual(readingsOf({ seats: { notbetween: [5, 9] } }, () => ({ type: 'number' })),
+    { seats: { conditions: [{ op: 'notbetween', picked: [5, 9] }], mode: 'advanced' } });
+  assert.deepEqual(readingsOf({ made: { between: ['2026-01-05', '2026-02-06'] } }, () => ({ type: 'date' })),
+    { made: { picked: ['2026-01-05', '2026-02-06'], range: true } });
 });
 
 test('a reading in the old form is not read — it is reported, and filters nothing', () => {

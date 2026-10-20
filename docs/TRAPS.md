@@ -1120,9 +1120,7 @@ number chip OFF, value kept, so the Query held a suspended answer after a
 Reset; the panel's Reset and a field's Clear unticked value chips and cleared
 rows, and left a number field as it was. One door each now — the toolbar's
 `#emptyChip`, the panel's `#empty` — and both write `{ picked: [] }` to the
-menu, which empties every body it owns. `values = []` is NOT that for a
-number: it empties the shape in force and keeps the other
-(`T-both-shapes-are-kept`).
+menu, which empties every body it owns.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
@@ -1151,36 +1149,6 @@ Query was empty and the toolbar said otherwise. `#answerScopes` draws the
 bars once, at the end.
 
 - Site: `src/core/data/data-source.ts`
-
-### T-both-shapes-are-kept
-
-**A number filter has two shapes — one value, or two ends — and its reading
-keeps BOTH** — TODO 132, Will: switching back to Simple "does not retain any
-original simple values". The shape in force is `picked` (or `text`) with
-`range`; the other is `kept: { picked, op, text }`, remembered and never
-applied. It is in the READING, not only in the menu, because a filter panel
-REBUILDS a field's menu when its answer changes: a value held only in the old
-menu's input is gone. `readingAnswered()` counts a `kept` answer, so a range
-with nothing moved still holds the value typed before, and `READING_KEYS` names
-every key of `FieldReading`, so leaving one off is a type error.
-
-In the menu: `#bodyReading()` writes both; `set reading` draws both and takes
-the shape from `range`; a bare `values =` writes only the shape it names — two
-are the ends, one the value, and none empties the shape in force without
-switching it. Cancel restores the whole reading, so the shape goes back too.
-The same idea as `T-both-answers-are-kept`, for Simple and Advanced.
-
-A HOST passes the whole reading on, never its values: the toolbar's
-`setChipReading` cut a number down to values, so a range from the panel came
-back in whatever shape the chip's menu was in. And "none names no shape"
-holds for a DATE too — a cleared range calendar came back as a single day.
-
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/query.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/unit/both-shapes-are-kept.test.mjs`
 
 ### T-the-router-owns-the-url
 
@@ -1923,6 +1891,7 @@ filter added on the bar lands after the other saved filters; a field at the end.
 - Site: `test/unit/a-store-scan-reads-in-place.test.mjs`
 - Site: `scripts/check-bench.mjs`
 - Site: `test/unit/the-walk-holds-under-change.test.mjs`
+- Site: `test/unit/an-advanced-answer-limits-what-follows.test.mjs`
 
 ### T-a-view-keeps-a-draft
 
@@ -2536,8 +2505,8 @@ even though no value moved. The menu says it as it says a value change: a
 plain `change` for an inline host, its draft marked dirty for Apply, and
 `menu-change` where it does not wait. When the menu took over its own bodies
 the flip kept only `menu-range-change`, which nothing hears, so a switch to
-Range filtered nothing until an end was moved — TODO 131. Each shape keeps
-what it held: `T-both-shapes-are-kept`.
+Range filtered nothing until an end was moved — TODO 131. Since TODO 375 the
+switch is a DATE's only: a number's range is an Advanced row.
 
 `sherpa-switch` re-dispatches its native `change` as a COMPOSED one, which is
 why this reaches the toolbar where a bare checkbox's would not.
@@ -2545,10 +2514,7 @@ why this reaches the toolbar where a bare checkbox's would not.
 `time` joins this list later — the same calendar with `data-has-time`, not a new
 template.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 
 ---
 
@@ -8198,6 +8164,12 @@ The switch moving the menu between the two modes at runtime is
 `T-range-switch-swaps-not-rebuilds`; what it does to the Apply footer is
 `T-commit-follows-select-mode`.
 
+
+**Since TODO 375 only a DATE does.** Will, 2026-10-20: *"For numerical and date
+fields a 'range' is an advanced filter… We no longer need the range toggle."* A
+number's Simple body is one value, and its range is an Advanced row: Between or
+Not between, two boxes and a slider under them. (A date keeps its switch for
+now: TODO 379.)
 - Site: `src/core/ui/filter-def.ts`
 
 ### T-toggle-chip-has-no-count
@@ -12760,9 +12732,12 @@ set in its OWN `onChange` — the toolbar seeds the bounds before the element is
 upgraded, so any later write to an end is a real change. Clear restores the
 bounds first and drops the flag second, because the restore re-sets it.
 
+Since TODO 375 a number's slider is in its Between row, and the row's two boxes
+are the answer: an untouched slider shows the whole span, and empty boxes
+answer nothing.
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
-- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-default-is-not-an-override
 
@@ -12788,7 +12763,6 @@ flag that decides whether the menu defers to an Apply button. They read the same
 expression rather than repeating the condition.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-sub-pixel-border-reads-back-as-1px
 

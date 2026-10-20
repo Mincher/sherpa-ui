@@ -20,10 +20,9 @@
  * - FilterState — everything any control needs to draw one field — its answer as rows, and its type
  * - ConditionType — simple or advanced — which kind of answer a field has, decided once
  * - FieldType — What KIND of field this is.
- * - isRanged — A field whose picks are ENDS, not a list to tick.
+ * - isRanged — A field whose Simple picks are ENDS, not a list to tick: a date.
  * - FieldFacts — What a caller knows about a field before anything is chosen.
  * - FieldReading — What is true right now, which decides the STATES.
- * - KeptAnswer — One shape's answer, as `FieldReading.kept` holds it.
  * - FieldCondition — One row of a multi-condition filter.
  * - rowOffer — What row `index` may offer: the values the rows before it in its AND chain leave.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
@@ -126,9 +125,10 @@ export type ConditionType = 'simple' | 'advanced';
 /** What KIND of field this is. The same three `OPS_FOR_TYPE` names. */
 export type FieldType = 'text' | 'number' | 'date';
 
-/** A field whose picks are ENDS, not a list to tick. */
+/** A field whose Simple picks are ENDS, not a list to tick: a DATE. A number's
+ *  range is an Advanced row. Will, TODO 375 */
 export function isRanged(type: FieldType | undefined): boolean {
-  return type === 'number' || type === 'date';
+  return type === 'date';
 }
 
 /** What a caller knows about a field before anything is chosen. */
@@ -177,26 +177,15 @@ export interface FieldReading {
    *  redrawn as the picks change, until the reader edits a row. */
   mirror?: boolean;
   /**
-   * Its picks are the ENDS of a range, not a list of values.
-   *
-   * A number field answered two ways: a SLIDER gives two ends (`between`), a
-   * ticked LIST gives two values (`in`). The type alone cannot tell them
-   * apart. Left out, a ranged field with no declared value list is read as
-   * ends — there is nothing to tick. TRAP T-the-field-type-decides-the-clause
+   * A DATE's picks are the ENDS of a range, not a list of days. Left out, a
+   * date with no declared value list is read as ends. A number has no Simple
+   * range: two numbers are a list, and a range is an Advanced row (TODO 375).
+   * TRAP T-the-field-type-decides-the-clause
    */
   range?: boolean;
-  /**
-   * The answer of the shape NOT in force — the one value while a range
-   * applies, the two ends while one value does — so the Range switch loses
-   * nothing. Kept, never applied. TRAP T-both-shapes-are-kept
-   */
-  kept?: KeptAnswer;
   /** Remembered but not applied. TRAP T-grid-suspend-is-not-clear */
   suspended?: boolean;
 }
-
-/** One shape's answer, as `FieldReading.kept` holds it. */
-export type KeptAnswer = Pick<FieldReading, 'picked' | 'op' | 'text'>;
 
 /** One row of a multi-condition filter. */
 export interface FieldCondition {
@@ -288,10 +277,9 @@ export function rowsFromPicks(body: 'number' | 'date' | undefined, simple: Field
     if (a != null && b != null) return [{ op: 'between', picked: [a, b] }];
     return a != null ? [{ op: DEFAULT_OP, picked: [a] }] : undefined;
   }
-  // A number: one value under its op, or a range as At least AND At most.
+  // A number: its one value under its op.
   if (body === 'number') {
     const typed = (simple.text ?? '').trim();
-    if (simple.range && a != null && b != null) return [{ op: 'gte', text: a }, { op: 'lte', join: 'and', text: b }];
     if (typed) return [{ op: simple.op ?? DEFAULT_OP, text: typed }];
     return a != null ? [{ op: simple.op ?? DEFAULT_OP, picked: [a] }] : undefined;
   }
@@ -312,7 +300,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      unchanged. TRAP T-the-field-type-decides-the-clause */
   /* ENDS or a LIST. Said plainly when a control knows; otherwise a ranged
      field with nothing to tick can only be answering with ends. */
-  const range = reading.range ?? (isRanged(type) && !facts.values?.length);
+  const range = isRanged(type) && (reading.range ?? !facts.values?.length);
   /* NO DECLARED LIST means the picks ARE the values. "Everything ticked is no
      filter" can only be judged against a list someone named — a column menu
      that set `plan in [Pro, Free]` is filtering, whatever else exists.
@@ -483,7 +471,9 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
   }
   const picked = [...(row.picked ?? [])];
   if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
-  return picksClause(state.field, cast(picked, state.type), row.op);
+  /* A row's `in` / `notin` is its `eq` / `ne` over several picks: as given, `notin`
+     with two picks compiled to `in`, and with one matched every row. TODO 386 */
+  return picksClause(state.field, cast(picked, state.type), ROW_OPS[row.op] ?? row.op);
 }
 
 /** The last moment of a day (`2026-09-03`) or a minute (`2026-09-03T14:00`);

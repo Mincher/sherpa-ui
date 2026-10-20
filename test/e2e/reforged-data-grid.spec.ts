@@ -1541,9 +1541,9 @@ test('a column filter button never sorts the column it sits in', async ({ page }
   expect(r.menuOpen).toBe(true);
 });
 
-test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, and coerces its ends', async ({ page }) => {
-  /* The heading IS the chip's menu (Will, TODO 86): Simple is one value or a
-     range; "at least" is an Advanced row, where the field offers Advanced.
+test('a NUMBER column filters by one value, an Advanced condition, or a Between row, and coerces its ends', async ({ page }) => {
+  /* The heading IS the chip's menu (Will, TODO 86): Simple is one value; "at
+     least" and a range are Advanced rows (TODO 375).
      TRAP T-a-heading-opens-the-chips-menu */
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
@@ -1583,15 +1583,6 @@ test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, a
     // startswith…) is absent — "starts with" on a spend column is not a question.
     const conditions = (menu().dataset['conditions'] ?? '').split(',').filter(Boolean);
 
-    /* SINGLE first — and a number column now OPENS as a range, so the switch
-       has to be turned OFF to get there. That default is the point of
-       T-a-default-is-not-an-override; this test is about the two SHAPES, and
-       it still walks both, starting from the other end. */
-    const off = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
-    off.checked = false;
-    off.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-    await settle();
-
     // SINGLE: one value, which is "equals". OPEN, as a reader has it: a shut
     // menu has no draft for Apply to take.
     (menu() as NumberMenu & { show(t: Element): void }).show(chip());
@@ -1611,40 +1602,19 @@ test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, a
     menu().mode = 'simple';
     await settle();
 
-    // RANGE: the switch re-points the menu rather than rebuilding it, so what
-    // was typed on the single side is still there on the way back.
-    // OPEN, as a reader has it: a shut menu has no draft for Apply to take.
-    (chip().querySelector('sherpa-menu') as HTMLElement & { show(t: Element): void }).show(chip());
+    // RANGE: an Advanced Between row (TODO 375). Its slider spans the COLUMN's
+    // real values, not 0..100 — a spend column left at 0..100 would crush every
+    // row at the far left. TRAP T-grid-slider-spans-real-values
+    (menu() as NumberMenu & { show(t: Element): void }).show(chip());
     await settle();
-    const sw = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
-    sw.checked = true;
-    sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    menu().mode = 'advanced';
+    menu().conditions = [{ op: 'between', picked: ['5', '50'] } as never];
     await settle();
+    const slider = menu().shadowRoot!.querySelector<HTMLElement & { range: [number, number] }>('.condition-row .condition-slider')!;
     const ranged = {
-      mode: chip().querySelector('sherpa-menu')!.hasAttribute('data-range'),
-      // The condition picker goes: a range IS `between`, which the slider's two
-      // thumbs say more plainly than a list could.
-      opHidden: getComputedStyle(chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement>('.body-op')!).display,
-      sliderShown: getComputedStyle(chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement>('.body-number-range')!).display,
-      // The single value survives the flip — both shapes are in the DOM, so
-      // nothing is rebuilt and nothing typed is lost.
-      kept: chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value,
-      // The slider spans the COLUMN's real values, not its own 0..100 default
-      // — a spend column left at 0..100 would crush every row at the far left.
-      bounds: [
-        chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!.getAttribute('min'),
-        chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!.getAttribute('max'),
-      ],
+      switch: !!menu().shadowRoot!.querySelector('.body-range-switch')?.getClientRects().length,
+      bounds: [menu().dataset['min'], menu().dataset['max']], slider: slider.range,
     };
-
-    // The slider keeps its ends in its own attributes, which is where the grid
-    // reads them from.
-    const slider = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!;
-    slider.setAttribute('data-value-start', '5');
-    slider.setAttribute('data-value-end', '50');
-    /* A DRAG marks it TOUCHED, and an UNtouched span is not a filter — a range
-       nobody moved excludes nothing. TRAP T-a-full-range-is-still-a-range */
-    slider.setAttribute('data-touched', '');
     await apply();
 
     return { conditions, ranged, events };
@@ -1662,14 +1632,8 @@ test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, a
   expect(row['clause']).toEqual(['spend', 'gte', 100]);
   expect(row['label']).toBe('At least: 100');
 
-  // Range mode swaps the shape without a rebuild.
-  expect(r.ranged.mode).toBe(true);
-  expect(r.ranged.opHidden).toBe('none');
-  expect(r.ranged.sliderShown).not.toBe('none');
-  expect(r.ranged.kept).toBe('100');
-  // The COLUMN's own span, not the slider's 0..100 default.
-  // TRAP T-grid-slider-spans-real-values
-  expect(r.ranged.bounds).toEqual(['5', '50']);
+  // No Range switch: the range is an Advanced row, its slider on the column's span.
+  expect(r.ranged).toEqual({ switch: false, bounds: ['5', '50'], slider: [5, 50] });
 
   // A span: the store's own `between`, ends coerced.
   const both = r.events[r.events.length - 1] as Record<string, unknown>;
@@ -2727,7 +2691,7 @@ test('data-filter-fields lights the column CHIP, and survives a re-render', asyn
  *
  * TRAP T-number-of-null-is-zero
  */
-test('a number column with BLANKS bounds its slider on the real values', async ({ page }) => {
+test('a number column with BLANKS bounds its menu on the real values', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>; populate(d: unknown): void;
@@ -2746,9 +2710,9 @@ test('a number column with BLANKS bounds its slider on the real values', async (
     });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-    const slider = el.shadowRoot!
-      .querySelector('.head-cell[data-field="spend"] sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!;
-    return { min: slider.getAttribute('min'), max: slider.getAttribute('max') };
+    // The ends a Between row's slider and the one box take. TODO 375
+    const menu = el.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="spend"] sherpa-menu')!;
+    return { min: menu.dataset['min'] ?? null, max: menu.dataset['max'] ?? null };
   });
 
   expect(r.min).toBe('120');
@@ -2798,7 +2762,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
 
     // TYPED — "contains ar" is a condition, not a ticked list.
     el.setColumnFilter('name', ['name', 'contains', 'ar']);
-    // A RANGE is a filter, and it is not a condition.
+    // A number's RANGE is an Advanced row now (TODO 375): a condition too.
     el.setColumnFilter('spend', ['spend', 'between', [10, 50]]);
     await settle();
     const on = { name: read('name'), spend: read('spend') };
@@ -2810,8 +2774,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
 
   // Mark and colour come from the same answer, so they cannot disagree.
   expect(r.on.name).toEqual({ current: true, condition: 'advanced', icon: 'function' });
-  // A range is filtered but NOT Advanced — it keeps the plain active look.
-  expect(r.on.spend).toEqual({ current: true, condition: 'simple', icon: null });
+  expect(r.on.spend).toEqual({ current: true, condition: 'advanced', icon: 'function' });
   // And clearing takes both off.
   expect(r.off).toEqual({ current: false, condition: null, icon: null });
 });

@@ -26,14 +26,14 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
     const menu = (id: string) => chip(id).querySelector('sherpa-menu') as Menu;
     const sr = menu('seats').shadowRoot;
     const shown = (sel: string) => { const n = sr.querySelector<HTMLElement>(sel); return !!n && n.getClientRects().length > 0; };
-    // Simple: a range, from elsewhere.
-    bar.setChipReading('seats', { picked: ['20', '80'], range: true });
+    // Simple: ONE value, from elsewhere (a number has no Simple range, TODO 375).
+    bar.setChipReading('seats', { picked: ['20'] });
     await window.__settled();
     menu('seats').show(chip('seats'));
     await window.__settled();
     const simple = { type: menu('seats').dataset['type'], fx: shown('.use-advanced'), body: shown('.body-number'), rows: shown('.condition-rows') };
 
-    // f(x): the range comes over as At least AND At most.
+    // f(x): the value comes over as an Equals row.
     sr.querySelector<HTMLElement>('.use-advanced')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
     await window.__settled();
     const ops = [...sr.querySelectorAll<HTMLElement & { value: string }>('.condition-row .condition')].map((c) => c.value);
@@ -45,7 +45,7 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
     };
     // The chip's whole reading: the rows in force, the body kept.
     const reading = chip('seats').reading;
-    // Back to Simple: the range is still there.
+    // Back to Simple: the value is still there.
     sr.querySelector<HTMLElement>('.use-advanced')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
     await window.__settled();
     const back = { mode: menu('seats').mode, body: shown('.body-number'), picked: (menu('seats').reading as { picked?: unknown[] }).picked };
@@ -59,15 +59,12 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
   expect(r.simple).toEqual({ type: 'filter', fx: true, body: true, rows: false });
   expect(r.advanced).toMatchObject({
     mode: 'advanced', body: false, rows: true,
-    conditions: [{ op: 'gte', text: '20' }, { op: 'lte', join: 'and', text: '80' }],
-    typed: ['text', 'text'],
+    conditions: [{ op: 'eq', picked: ['20'] }],
+    typed: ['text'],
   });
-  expect(r.advanced.ops).toEqual(['gte', 'lte']);
-  expect(r.reading).toMatchObject({
-    mode: 'advanced', range: true, picked: ['20', '80'],
-    conditions: [{ op: 'gte', text: '20' }, { op: 'lte', join: 'and', text: '80' }],
-  });
-  expect(r.back).toEqual({ mode: 'simple', body: true, picked: ['20', '80'] });
+  expect(r.advanced.ops).toEqual(['eq']);
+  expect(r.reading).toMatchObject({ mode: 'advanced', picked: ['20'], conditions: [{ op: 'eq', picked: ['20'] }] });
+  expect(r.back).toEqual({ mode: 'simple', body: true, picked: ['20'] });
   expect(r.plain).toEqual({ type: null, advanced: false });
 });
 
@@ -102,11 +99,13 @@ test('a bound source filters by a number\'s Advanced rows, `=` included', async 
       either: await total({ mode: 'advanced', conditions: [{ op: 'lt', text: '10' }, { op: 'gt', join: 'or', text: '200' }] }),
       // Exactly 50: a number's `=` is its one pick.
       equals: await total({ mode: 'advanced', conditions: [{ op: 'eq', picked: ['50'] }] }),
-      // Simple again: the body's range.
-      simple: await total({ mode: 'simple', picked: ['40', '150'], range: true, conditions: [{ op: 'eq', picked: ['50'] }] }),
+      // Between 40 and 150: 50 and 120. TODO 375
+      between: await total({ mode: 'advanced', conditions: [{ op: 'between', picked: ['40', '150'] }] }),
+      // Simple again: the body's one value.
+      simple: await total({ mode: 'simple', picked: ['120'], conditions: [{ op: 'eq', picked: ['50'] }] }),
     };
   });
-  expect(r).toEqual({ either: 2, equals: 1, simple: 2 });
+  expect(r).toEqual({ either: 2, equals: 1, between: 2, simple: 1 });
 });
 
 test('in the panel, a number field\'s f(x) carries its number into the rows, and back', async ({ page }) => {

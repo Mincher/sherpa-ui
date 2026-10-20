@@ -27,7 +27,8 @@ function counted(extra = {}) {
   return store;
 }
 
-const move = (source, n) => source.select('seats', [0, n], { range: true });
+// A Between row's ends moving, as its slider moves them (TODO 375).
+const move = (source, n) => source.select('seats', [], { mode: 'advanced', conditions: [{ op: 'between', picked: [0, n] }] });
 
 test('live: five moves, one load — once the moves stop', async () => {
   const store = counted();

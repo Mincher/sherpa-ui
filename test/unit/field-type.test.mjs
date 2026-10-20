@@ -38,11 +38,15 @@ const ids = (src) => src.rows.map((r) => r.id);
 
 /* ── A range field ──────────────────────────────────────────────────── */
 
-test('two picks on a NUMBER are a range, sorted numerically', async () => {
+test('two picks on a NUMBER are a LIST, as numbers; its range is a Between row, sorted numerically', async () => {
   const src = await source();
   src.select('seats', ['9', '500']);
   await settle();
-
+  // A number has no Simple range: two values are `in` (TODO 375).
+  assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'in', [9, 500]]);
+  assert.deepEqual(ids(src), [3, 4]);
+  src.select('seats', [], { conditions: [{ op: 'between', picked: ['500', '9'] }], mode: 'advanced' });
+  await settle();
   // Sorted as TEXT this is ["500","9"] and the range matches nothing.
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [9, 500]]);
   assert.deepEqual(ids(src), [2, 3, 4]);
@@ -66,11 +70,11 @@ test('two picks on a DATE are a range, sorted lexically', async () => {
   assert.deepEqual(ids(src), [2, 3]);
 });
 
-test('a range field needs no declared value list', async () => {
+test('a number needs no declared value list', async () => {
   const src = await source();
   // Nothing called `declareValues('seats', …)`, and it still filters.
   assert.deepEqual(src.valuesFor('seats'), []);
-  src.select('seats', ['1', '10']);
+  src.select('seats', [], { conditions: [{ op: 'between', picked: ['1', '10'] }], mode: 'advanced' });
   await settle();
   assert.deepEqual(ids(src), [1, 4]);
 });
@@ -87,10 +91,10 @@ test('a number answered from a LIST is `in`, not a range', async () => {
   assert.deepEqual(ids(src), [1, 3]);
 });
 
-test('a ranged reading still says `between` when the field has a list', async () => {
+test('a Between row says `between` when the field has a list', async () => {
   const src = await source();
   src.declareValues('seats', [5, 50, 500, 9]);
-  src.select('seats', ['5', '500'], { range: true });
+  src.select('seats', [], { conditions: [{ op: 'between', picked: ['5', '500'] }], mode: 'advanced' });
   await settle();
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [5, 500]]);
   assert.deepEqual(ids(src), [1, 2, 3, 4]);

@@ -26,7 +26,8 @@ test('a toolbar chip says a number, a range and a date — and its matches, on o
     const value = (id: string): string => chip(id).shadowRoot!.querySelector('.caret-label')!.textContent ?? '';
     const settle = async (): Promise<void> => { await window.__settled(); await eval(wait); };
 
-    bar.setChipReading('seats', { picked: ['37', '120'], range: true });
+    // A number's range is an Advanced Between row (TODO 375).
+    bar.setChipReading('seats', { conditions: [{ op: 'between', picked: ['37', '120'] }], mode: 'advanced' });
     bar.setChipReading('created', { picked: ['2024-01-05', '2024-02-06'], range: true });
     bar.setChipReading('plan', { picked: ['Pro', 'Free'] });
     await settle();
@@ -40,17 +41,18 @@ test('a toolbar chip says a number, a range and a date — and its matches, on o
     chip('seats').results = 28;
     const off = tip('seats');
 
-    bar.setChipReading('seats', { picked: ['12'], range: false });
+    bar.setChipReading('seats', { picked: ['12'], mode: 'simple' });
     await settle();
     return { said, counted, off, one: [value('seats'), tip('seats')], described: chip('plan').shadowRoot!.querySelector('.body')!.getAttribute('aria-description') };
   }, frames);
 
-  expect(r.said.seats).toEqual(['37 to 120', '37 to 120']);
+  // A Between row reads as the range did; its tip is an Advanced one's. Will, 26 Sept; TODO 375
+  expect(r.said.seats).toEqual(['37 to 120', '1 condition applied']);
   expect(r.said.created[0]).toBe(r.said.created[1]);
   expect(r.said.created[0]).toMatch(/05 .* to 06 .* 2024/);
   expect(r.said.plan).toBe('Pro, Free');
-  expect(r.counted).toEqual({ seats: '37 to 120 - 28 matches', plan: 'Pro, Free - 1 match' });
-  expect(r.off).toBe('37 to 120 - 28 matches');
+  expect(r.counted).toEqual({ seats: '1 condition applied - 28 matches', plan: 'Pro, Free - 1 match' });
+  expect(r.off).toBe('1 condition applied - 28 matches');
   expect(r.one).toEqual(['12', '12 - 28 matches']);
   // The same words for a screen reader, on the button.
   expect(r.described).toBe('Pro, Free - 1 match');
@@ -209,7 +211,7 @@ test('a chip reads, draws and empties its own answer: a list, a number and a dat
     // DRAWN — silent, as every steer is.
     let heard = 0;
     bar.addEventListener('quick-filter-change', () => { heard += 1; });
-    chip('seats').reading = { picked: ['37', '120'], range: true };
+    chip('seats').reading = { picked: ['37'] };
     chip('created').reading = { picked: ['2024-01-05', '2024-02-06'], range: true };
     chip('plan').reading = { picked: ['Pro'] };
     await settle();
@@ -238,11 +240,11 @@ test('a chip reads, draws and empties its own answer: a list, a number and a dat
     expect(r.empty[id]).toMatchObject({ on: false, answered: false, off: true });
     expect(r.cleared[id]).toMatchObject({ on: false, answered: false, off: true });
   }
-  expect(r.drawn.seats).toEqual({ on: true, answered: true, picked: ['37', '120'], off: undefined });
+  expect(r.drawn.seats).toEqual({ on: true, answered: true, picked: ['37'], off: undefined });
   expect(r.drawn.created).toEqual({ on: true, answered: true, picked: ['2024-01-05', '2024-02-06'], off: undefined });
   expect(r.drawn.plan).toEqual({ on: true, answered: true, picked: ['Pro'], off: undefined });
   expect(r.reported).toEqual({
-    seats: [['37', '120'], false], created: [['2024-01-05', '2024-02-06'], false], plan: [['Pro'], false],
+    seats: [['37'], false], created: [['2024-01-05', '2024-02-06'], false], plan: [['Pro'], false],
   });
   expect(r.suspended).toEqual({ on: false, answered: true, picked: ['Pro'], off: true });
   expect(r.rows).toMatchObject({ on: true, answered: true, mode: 'advanced' });

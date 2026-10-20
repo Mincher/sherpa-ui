@@ -17,9 +17,10 @@ import { fieldState, filterFace, formatDate } from '../../dist/data.js';
 const face = (facts, reading) => filterFace(fieldState({ field: 'f', ...facts }, reading));
 
 test('a number with no list: its picks are its values', () => {
-  const two = face({ type: 'number' }, { picked: ['37', '120'], range: true });
+  // A number's range is an Advanced Between row (TODO 375): it reads as a range, and its tip counts it.
+  const two = face({ type: 'number' }, { conditions: [{ op: 'between', picked: ['37', '120'] }], mode: 'advanced' });
   assert.equal(two.value, '37 to 120');
-  assert.equal(two.tip, '37 to 120');
+  assert.equal(two.tip, '1 condition applied');
   assert.equal(two.current, true);
 
   const one = face({ type: 'number' }, { picked: ['12'], range: false });
@@ -33,7 +34,7 @@ test('a number with no list: its picks are its values', () => {
 });
 
 test('an EMPTY value list is "nothing to pick" — the mistake the chip made', () => {
-  assert.equal(face({ type: 'number', values: [] }, { picked: ['37', '120'], range: true }).tip, '');
+  assert.equal(face({ type: 'number', values: [] }, { picked: ['37'] }).tip, '');
 });
 
 test('a date reads as a day, and two as a span', () => {
@@ -77,7 +78,8 @@ test('a saved filter reads a line per condition, under each field\'s own name', 
   assert.deepEqual(lines({}, { op: 'eq', picked: ['Unassigned'] }), ['Equals Unassigned']);
   // Several picks are ONE line, and say "any of".
   assert.deepEqual(lines({ values: ['Pro', 'Free', 'Team'] }, { picked: ['Pro', 'Free'] }), ['Is one of Pro, Free']);
-  assert.deepEqual(lines({ type: 'number' }, { picked: ['37', '120'], range: true }), ['Between 37 and 120']);
+  assert.deepEqual(lines({ type: 'number' }, { conditions: [{ op: 'between', picked: ['37', '120'] }], mode: 'advanced' }), ['Between 37 and 120']);
+  assert.deepEqual(lines({ type: 'number' }, { conditions: [{ op: 'notbetween', picked: ['37', '120'] }], mode: 'advanced' }), ['Not between 37 and 120']);
   // Rows say how they join.
   assert.deepEqual(lines({}, { mode: 'advanced', conditions: [
     { op: 'contains', text: 'ab' }, { join: 'or', op: 'startswith', text: 'U' }, { join: 'and', op: 'ne', picked: ['x'] },

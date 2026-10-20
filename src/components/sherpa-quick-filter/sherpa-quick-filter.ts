@@ -339,8 +339,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const menu = this.#fieldMenu();
     if (!menu) return;
     const body = menu.dataset['body'];
-    /* A NUMBER takes its WHOLE reading: which shape is in force, and the one
-       kept. TRAP T-both-shapes-are-kept · TRAP T-a-menu-owns-its-own-bodies */
+    /* A NUMBER takes its WHOLE reading: its one value, and its rows.
+       TRAP T-a-menu-owns-its-own-bodies */
     if (body === 'number') {
       menu.reading = next;
       // In Advanced its ROWS answer it. TRAP T-a-number-has-advanced-rows

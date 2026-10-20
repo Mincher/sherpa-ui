@@ -20,7 +20,7 @@ import {
   DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  modeOf, readingRows, rowAnswered, rowOffer, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
+  modeOf, readingRows, rowAnswered, rowOffer, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -118,16 +118,12 @@ export class SherpaMenu extends SherpaElement {
        filters. Will, TODO 205. TRAP T-a-ruled-out-value-is-greyed */
     'data-hide-unavailable': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
-    /* A number body's ends and step. They CLAMP the field as well as the
-       slider — typing 500 into a 0..100 filter asks for a row that cannot
-       exist. TRAP T-grid-slider-spans-real-values */
+    /* A number's ends and step. They CLAMP its box and a range row's slider —
+       typing 500 into a 0..100 filter asks for a row that cannot exist.
+       TRAP T-grid-slider-spans-real-values */
     'data-min': { type: 'string', kind: 'style' },
     'data-max': { type: 'string', kind: 'style' },
     'data-step': { type: 'string', kind: 'style' },
-    /* A HELD range's two ends, so a rebuilt heading does not forget itself.
-       TRAP T-range-switch-swaps-not-rebuilds */
-    'data-from': { type: 'string', kind: 'style' },
-    'data-to': { type: 'string', kind: 'style' },
     /* The days a DATE body may pick. A set, not a span. */
     'data-available': { type: 'string', kind: 'style' },
     /* The HOST pinned `data-commit`, so flipping Range must not move it. A
@@ -138,7 +134,7 @@ export class SherpaMenu extends SherpaElement {
     /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
     'data-inline': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
-    /* A RANGE body offers two ends; `data-commit` holds its Apply until asked. */
+    /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
     'data-commit': { type: 'boolean', kind: 'style' },
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
@@ -446,30 +442,14 @@ export class SherpaMenu extends SherpaElement {
       if (this.hasAttribute('data-range')) return { picked: [...values], op: DEFAULT_OP, range: true };
       return { picked: [...values], op: this.op, range: false };
     }
-    /* A NUMBER keeps BOTH shapes: the one in force, and the other as `kept`.
-       TRAP T-both-shapes-are-kept */
-    const one = this.#oneAnswer();
-    const ends = this.#endsAnswer();
-    const range = this.hasAttribute('data-range');
-    const [now, other] = range ? [{ ...ends, op: DEFAULT_OP }, one] : [{ picked: [], ...one }, ends];
-    return { ...now, range, ...(other.picked?.length || other.text ? { kept: other } : {}) };
-  }
-
-  /** The ONE-value shape's answer: a pick under `=`, typed text under an op that takes text.
-   *  TRAP T-one-number-is-a-pick-under-equals */
-  #oneAnswer(): KeptAnswer {
+    /* A NUMBER's Simple answer is ONE value: a pick under `=`, typed text under an
+       op that takes text. Its range is an Advanced row. Will, TODO 375.
+       TRAP T-one-number-is-a-pick-under-equals */
     const one = this.$<SherpaInputText>('.body-number-one')?.value.trim() ?? '';
     // The number body's own select is the live operator. TRAP T-a-menu-owns-its-own-bodies
     const op = this.op;
     if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
     return { picked: one ? [one] : [], op };
-  }
-
-  /** The RANGE shape's answer: its two ends, once a reader has moved one.
-   *  TRAP T-a-full-range-is-still-a-range */
-  #endsAnswer(): KeptAnswer {
-    const slider = this.$<SherpaSlider>('.body-number-range');
-    return { picked: slider?.hasAttribute('data-touched') ? slider.range.map(String) : [] };
   }
 
   set reading(next: FieldReading) {
@@ -481,17 +461,9 @@ export class SherpaMenu extends SherpaElement {
     const typed = (next.text ?? '').trim();
     const body = this.dataset['body'];
     if (body === 'number') {
-      /* BOTH shapes, and which is in force. The reading SAYS the shape; an old
-         one that does not is two ends when it has two values.
-         TRAP T-both-shapes-are-kept */
-      const picked = (next.picked ?? []).map(valueKey);
-      // No shape named and nothing answered: the shape in force stays.
-      const range = next.range ?? (picked.length > 1 || (!picked.length && !typed && this.hasAttribute('data-range')));
-      const one: KeptAnswer = range ? next.kept ?? {} : next;
-      const ends = range ? picked : (next.kept?.picked ?? []).map(valueKey);
-      if (one.op) this.#setBodyOp(one.op);
-      this.#setShape(range);
-      this.#setNumberBody(((one.text ?? '').trim() || valueKey(one.picked?.[0] ?? '')), ends);
+      // ONE value in Simple; a range is an Advanced row. Will, TODO 375
+      if (next.op) this.#setBodyOp(next.op);
+      this.#setNumberBody(typed || valueKey(next.picked?.[0] ?? ''));
       /* …and its ROWS, where it offers them: only the reading's own rows — a
          Simple `> 2` is the body's, not a row. TRAP T-a-number-has-advanced-rows */
       if (this.#offersAdvanced()) {
@@ -1224,40 +1196,32 @@ export class SherpaMenu extends SherpaElement {
       .map((i) => i.value);
   }
 
-  /** A NUMBER menu's value, or null. TRAP T-a-full-range-is-still-a-range */
+  /** A NUMBER menu's one value, or null when this is not one. */
   #numericValues(): string[] | null {
     if (this.dataset['body'] !== 'number') return null;
     const field = this.$<SherpaInputText>('.body-number-one');
-    const slider = this.$<SherpaSlider>('.body-number-range');
-    if (!field && !slider) return null;
-    if (this.hasAttribute('data-range')) {
-      if (!slider || !slider.hasAttribute('data-touched')) return [];
-      const [lo, hi] = slider.range;
-      return [String(lo), String(hi)];
-    }
-    const raw = field?.value.trim() ?? '';
+    if (!field) return null;
+    const raw = field.value.trim();
     return raw === '' ? [] : [raw];
   }
   /**
-   * A DATE or NUMBER body takes its values as it reports them — two are a
-   * range — or the getter reads what no caller could ever set. False for a list.
-   * TRAP T-a-menu-owns-its-own-bodies
+   * A DATE or NUMBER body takes its values as it reports them — a number ONE,
+   * a date one day or two ends — or the getter reads what no caller could ever
+   * set. False for a list. TRAP T-a-menu-owns-its-own-bodies
    */
   #setBodyValues(next: readonly string[]): boolean {
     const body = this.dataset['body'];
     if (body !== 'date' && body !== 'number') return false;
-    /* Two values are two ends and one is one value; NONE names no shape, so
-       the shape in force stays. A cleared range calendar came back as a
-       single-day one. TRAP T-both-shapes-are-kept */
-    const range = next.length > 1 || (next.length === 0 && this.hasAttribute('data-range'));
-    this.#setShape(range);
+    // A number holds ONE value; its range is an Advanced row. Will, TODO 375
     if (body === 'number') {
-      // ONLY THE SHAPE NAMED is written. The other keeps what it holds.
-      const one = this.$<SherpaInputText>('.body-number-one')?.value ?? '';
-      const ends = this.#endsAnswer().picked as string[];
-      this.#setNumberBody(range ? one : (next[0] ?? ''), range ? [...next] : ends);
+      this.#setNumberBody(next[0] ?? '');
       return true;
     }
+    /* Two days are two ends and one is one day; NONE names no shape, so the
+       shape in force stays. A cleared range calendar came back as a
+       single-day one. */
+    const range = next.length > 1 || (next.length === 0 && this.hasAttribute('data-range'));
+    this.#setShape(range);
     if (body === 'date') {
       const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
       // Not stamped yet: HELD, and the shape above is said NOW. TRAP T-a-value-before-the-first-render-is-held
@@ -1277,28 +1241,17 @@ export class SherpaMenu extends SherpaElement {
     return true;
   }
 
-  /** One value or two ends: the shape, and the commit rule that follows it. */
+  /** A date's one day or two ends: the shape, and the commit rule that follows it. */
   #setShape(range: boolean): void {
     if (range === this.hasAttribute('data-range')) return;
     this.set('data-range', range);
     if (!this.hasAttribute('data-commit-fixed')) this.set('data-commit', range);
   }
 
-  /** Write BOTH number shapes: the one value, and the two ends — none puts the
-   *  slider back on its bounds, untouched. TRAP T-a-full-range-is-still-a-range */
-  #setNumberBody(one: string, ends: readonly string[]): void {
+  /** Write a number's one value. */
+  #setNumberBody(one: string): void {
     const field = this.$<SherpaInputText>('.body-number-one');
     if (field && field.value !== one) field.value = one;
-    const slider = this.$<SherpaSlider>('.body-number-range');
-    if (slider && ends.length > 1) {
-      slider.setAttribute('data-value-start', ends[0]!);
-      slider.setAttribute('data-value-end', ends[1]!);
-      slider.setAttribute('data-touched', '');
-    } else if (slider?.hasAttribute('data-touched')) {
-      // The reset writes both ends, which re-flags it, so the flag comes off LAST.
-      slider.range = [Number(slider.getAttribute('min') ?? 0), Number(slider.getAttribute('max') ?? 100)];
-      slider.removeAttribute('data-touched');
-    }
     this.#syncBody();
   }
 
@@ -1618,30 +1571,13 @@ export class SherpaMenu extends SherpaElement {
       if (picker.value !== op) picker.value = op;
     }
     const field = this.$<HTMLElement>('.body-number-one');
-    const slider = this.$<HTMLElement>('.body-number-range');
-    const min = this.dataset['min'] ?? '0';
-    const max = this.dataset['max'] ?? '100';
-    for (const el of [field, slider]) {
-      if (!el) continue;
-      el.setAttribute('min', min);
-      el.setAttribute('max', max);
-      if (this.dataset['step']) el.setAttribute('step', this.dataset['step']);
+    if (field) {
+      field.setAttribute('min', this.dataset['min'] ?? '0');
+      field.setAttribute('max', this.dataset['max'] ?? '100');
+      if (this.dataset['step']) field.setAttribute('step', this.dataset['step']);
     }
     // …and every range row's slider. TODO 375
     for (const row of this.#rowEls()) if (row.dataset['takes'] === 'range') this.#rangeSlider(row);
-    /* A HELD range wins; otherwise a fresh one opens at both ends and excludes
-       nothing. `data-touched` says the reader has moved it since.
-       TRAP T-a-full-range-is-still-a-range */
-    const from = this.dataset['from'];
-    const to = this.dataset['to'];
-    if (slider && from && to && !slider.hasAttribute('data-touched')) {
-      slider.setAttribute('data-value-start', from);
-      slider.setAttribute('data-value-end', to);
-      slider.setAttribute('data-touched', '');
-    } else if (slider && !slider.hasAttribute('data-touched')) {
-      slider.setAttribute('data-value-start', min);
-      slider.setAttribute('data-value-end', max);
-    }
     // A single held value goes in the field.
     const one = this.dataset['value'];
     if (one && field instanceof HTMLInputElement && field.value === '') field.value = one;
@@ -2001,10 +1937,10 @@ export class SherpaMenu extends SherpaElement {
     this.#report();
   };
 
-  /** The number field or slider changed. */
+  /** The number field changed. */
   #onBodyChange = (event: Event): void => {
     const from = event.target as Element;
-    if (!from.matches('.body-number-one, .body-number-range')) return;
+    if (!from.matches('.body-number-one')) return;
     this.#passOn(event);
     // LIVE, it reports while it moves; its source waits for the moves to stop. TODO 107
     if (event.type === 'change' || this.dataset['applyOn'] === 'input') this.#report();
@@ -2101,11 +2037,10 @@ export class SherpaMenu extends SherpaElement {
       s.removeAttribute('data-touched');
     }
     /* A NUMBER BODY is the menu's own, in its shadow root — the sweeps above
-       reach slotted children only, so Clear left its field and its handles as
-       they were. BOTH shapes go back to where they started.
+       reach slotted children only, so Clear left its field as it was.
        TRAP T-a-number-is-reset-not-cleared */
     if (this.dataset['body'] === 'number') {
-      this.#setNumberBody('', []);
+      this.#setNumberBody('');
       this.#syncDirty();
     }
     this.emit('menu-clear');

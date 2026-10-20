@@ -1222,108 +1222,6 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
   expect(got.plain.reported).toEqual({});
 });
 
-/**
- * A NUMBER filter is one chip with two shapes — "equals this" and "between these
- * two" — flipped by a Range switch at the top of its menu.
- *
- * Two separate chips would make the user choose the shape before they know which
- * they want, and changing their mind would mean taking one off the bar and adding
- * the other.
- */
-test('a NUMBER chip flips between a single field and a two-ended slider', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
-    /* `range: false` EXPLICITLY. A number chip now opens as a range by default
-       (T-a-default-is-not-an-override), and this test is about the FLIP between
-       the two shapes — so it declares the side it wants to start on. That the
-       declaration wins over the default is half the trap, and this asserts it. */
-    el.populate([
-      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000, step: 10,
-        range: false, active: true },
-    ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
-    /* THE BODY IS THE MENU'S OWN, in its shadow root — a slotted body is styled
-       by whoever handed it over, which is why there were two spellings.
-       TRAP T-a-menu-owns-its-own-bodies */
-    const menu = el.shadowRoot!.querySelector('.chip[data-id="spend"] sherpa-menu') as
-      HTMLElement & { shadowRoot: ShadowRoot };
-    const shown = (sel: string): boolean => {
-      const node = menu.shadowRoot.querySelector(sel);
-      return !!node && getComputedStyle(node).display !== 'none';
-    };
-    const slider = menu.shadowRoot.querySelector<HTMLElement & { range: [number, number] }>('.body-number-range')!;
-    const field = menu.shadowRoot.querySelector<HTMLInputElement>('.body-number-one')!;
-    const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
-
-    const flip = async (): Promise<void> => {
-      const sw = menu.shadowRoot.querySelector('.body-range-switch') as HTMLElement & {
-        rendered?: Promise<void>;
-        shadowRoot: ShadowRoot;
-      };
-      await sw.rendered;
-      sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
-      await settle();
-    };
-
-    const snap = (): Record<string, unknown> => ({
-      ranged: menu.hasAttribute('data-range'),
-      field: shown('.body-number-one'),
-      slider: shown('.body-number-range'),
-      // One number is TYPED text; a range is its two ends.
-      picks: ((r) => {
-        const v = r ? (r['text'] ? [r['text'] as string] : r.picked ?? []) : [];
-        return v.length ? v : null;
-      })(el.readings['spend']),
-    });
-
-    const opened = snap();
-    // The bounds reach BOTH shapes, so typing 5000 into a 0..1000 filter cannot
-    // ask for a row that cannot exist.
-    const bounds = {
-      slider: [slider.getAttribute('min'), slider.getAttribute('max'), slider.getAttribute('step')],
-      field: [field.getAttribute('min'), field.getAttribute('max')],
-    };
-
-    field.value = '250';
-    field.dispatchEvent(new Event('change', { bubbles: true }));
-    await settle();
-    const typed = snap();
-
-    await flip();
-    const ranged = snap();
-
-    slider.range = [200, 600];
-    await settle();
-    const dragged = snap();
-
-    await flip();
-    const back = snap();
-
-    return { opened, bounds, typed, ranged, dragged, back };
-  });
-
-  // Opens SINGLE, because the definition said so — the DEFAULT for a number is
-  // now a range, and an explicit `range: false` overrules it.
-  expect(r.opened).toEqual({ ranged: false, field: true, slider: false, picks: null });
-  expect(r.bounds.slider).toEqual(['0', '1000', '10']);
-  expect(r.bounds.field).toEqual(['0', '1000']);
-
-  expect(r.typed.picks).toEqual(['250']);
-
-  // Flipped ON, a FULL-SPAN range excludes nothing, so it reports no pick at all
-  // — otherwise the chip would paint as an active filter that is not filtering.
-  expect(r.ranged).toEqual({ ranged: true, field: false, slider: true, picks: null });
-
-  // Both ends, in order.
-  expect(r.dragged.picks).toEqual(['200', '600']);
-
-  // Flipping BACK restores what was typed. Both shapes are in the DOM from the
-  // start and CSS reveals one, so a flip is an attribute write, not a rebuild.
-  expect(r.back).toEqual({ ranged: false, field: true, slider: false, picks: ['250'] });
-});
-
 /** A DATE chip gets the same switch, over its calendar rather than beside it. */
 test('a DATE chip carries the Range switch as a full-width row above its calendar', async ({
   page,
@@ -1387,93 +1285,67 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
  * A RANGE has two ends, so the pick is not finished on the first one — applying
  * there would filter to a span the user has not named yet. On a REMOTE source
  * the Range switch moves a DATE menu between auto-apply and Apply/Cancel at
- * runtime; LOCALLY nothing waits for Apply (Will, 2026-09-27). A NUMBER is the
- * exception: it is typed, so it always waits for Apply (Will, TODO 94).
+ * runtime; LOCALLY nothing waits for Apply (Will, 2026-09-27). A NUMBER has no
+ * Range switch (its range is an Advanced row, TODO 375): it is typed, so it
+ * always waits for Apply (Will, TODO 94).
  * TRAP T-commit-follows-select-mode · TRAP T-a-number-waits-for-apply
  */
-test('the Range switch brings Apply/Cancel on a remote source, and leads its own label', async ({ page }) => {
+test('a date\'s Range switch brings Apply/Cancel on a remote source and leads its label; a number has none, and waits', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const read = async (def: unknown, id: string, remote = true): Promise<Record<string, unknown>> => {
       const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined,
         remote ? { 'data-remote': '' } : {});
       el.populate([def]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
+      await window.__settled();
       const menu = el.shadowRoot!.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as HTMLElement & {
         show(): void;
         shadowRoot: ShadowRoot;
       };
       menu.show();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
+      await window.__settled();
       const shown = (sel: string): boolean => {
         const n = menu.shadowRoot.querySelector(sel);
         return !!n && getComputedStyle(n).display !== 'none';
       };
+      const state = () => ({ commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') });
+      if (!shown('.body-range')) return { switch: false, single: state() };
       const row = menu.shadowRoot.querySelector('.body-range')!;
-      const sw = row.querySelector('sherpa-switch') as HTMLElement & {
-        rendered?: Promise<void>;
-        shadowRoot: ShadowRoot;
-      };
+      const sw = row.querySelector('sherpa-switch') as HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot };
       await sw.rendered;
-
       // The CONTROL leads and the label follows, exactly where a value row puts
       // its checkbox and its text — so every control shares one left edge.
-      const leads =
-        sw.getBoundingClientRect().left < row.querySelector('.body-range-label')!.getBoundingClientRect().left;
-
-      const single = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') };
+      const leads = sw.getBoundingClientRect().left < row.querySelector('.body-range-label')!.getBoundingClientRect().left;
+      const single = state();
       sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
-      const ranged = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') };
+      await window.__settled();
+      const ranged = state();
       // …and back, so the flip is not one-way.
       sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
-      const back = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply') };
-
-      return { leads, single, ranged, back };
+      await window.__settled();
+      return { switch: true, leads, single, ranged, back: state() };
     };
-
     return {
-      /* `range: false` so both kinds start on the SINGLE side and the sequence
-         below (single → ranged → back) reads the same for each. A number now
-         defaults to a range — T-a-default-is-not-an-override. */
-      number: await read(
-        { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 100, range: false, active: true },
-        'spend',
-      ),
       date: await read({ id: 'created', label: 'Created', kind: 'date', active: true }, 'created'),
-      // A chip whose DEFINITION named `commit` keeps what it asked for — the
-      // switch supplies the default a host left out, it does not overrule one.
-      pinned: await read(
-        { id: 'pinned', label: 'Pinned', kind: 'number', min: 0, max: 100,
-          commit: false, range: false, active: true },
-        'pinned',
-      ),
-      // LOCAL: a span applies as it is set — no Apply to wait for.
-      local: await read(
-        { id: 'local', label: 'Local', kind: 'number', min: 0, max: 100, range: false, active: true },
-        'local', false,
-      ),
+      number: await read({ id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 100, active: true }, 'spend'),
+      // LOCAL: still typed, still waits.
+      local: await read({ id: 'local', label: 'Local', kind: 'number', min: 0, max: 100, active: true }, 'local', false),
+      // A chip whose DEFINITION named `commit` keeps what it asked for.
+      pinned: await read({ id: 'pinned', label: 'Pinned', kind: 'number', min: 0, max: 100, commit: false, active: true }, 'pinned'),
     };
   });
 
-  for (const kind of ['number', 'date'] as const) {
-    expect(r[kind].leads, `${kind}: switch leads its label`).toBe(true);
-  }
   // A DATE: one day is the whole answer, a span defers.
-  expect(r.date.single).toEqual({ commits: false, apply: false, cancel: false });
-  expect(r.date.ranged).toEqual({ commits: true, apply: true, cancel: true });
-  expect(r.date.back).toEqual({ commits: false, apply: false });
-  // A NUMBER waits for Apply on both sides, remote or local.
-  for (const one of [r.number.single, r.number.ranged, r.local.single, r.local.ranged]) {
-    expect(one).toEqual({ commits: true, apply: true, cancel: true });
-  }
-  expect(r.number.back).toEqual({ commits: true, apply: true });
-
+  expect(r.date).toEqual({
+    switch: true, leads: true,
+    single: { commits: false, apply: false, cancel: false },
+    ranged: { commits: true, apply: true, cancel: true },
+    back: { commits: false, apply: false, cancel: false },
+  });
+  // A NUMBER has no switch, and waits for Apply, remote or local.
+  expect(r.number).toEqual({ switch: false, single: { commits: true, apply: true, cancel: true } });
+  expect(r.local).toEqual({ switch: false, single: { commits: true, apply: true, cancel: true } });
   // A definition that NAMED `commit: false` keeps it.
-  expect(r.pinned.single).toEqual({ commits: false, apply: false, cancel: false });
-  expect(r.pinned.ranged).toEqual({ commits: false, apply: false, cancel: false });
+  expect(r.pinned).toEqual({ switch: false, single: { commits: false, apply: false, cancel: false } });
 });
 
 /**

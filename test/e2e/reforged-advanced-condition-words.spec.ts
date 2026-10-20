@@ -143,8 +143,8 @@ test('a grid column set to Is not keeps its NOT, and reads as Advanced', async (
   expect(r.not).toEqual({ clause: ['plan', 'notin', ['Pro', 'Free']], condition: 'advanced', icon: 'function' });
   expect(r.oneOf).toEqual({ clause: ['plan', 'in', ['Pro', 'Free']], condition: 'simple', icon: null });
   expect(r.typed).toEqual({ clause: ['plan', 'contains', 'ro'], condition: 'advanced', icon: 'function' });
-  // A range is filtered, and it is a SIMPLE condition — as a toolbar chip reads it.
-  expect(r.range).toEqual({ clause: ['spend', 'between', [10, 20]], condition: 'simple', icon: null });
+  // A number's range is an Advanced Between row (TODO 375) — as a toolbar chip reads it.
+  expect(r.range).toEqual({ clause: ['spend', 'between', [10, 20]], condition: 'advanced', icon: 'function' });
   expect(r.off).toEqual({ condition: null, icon: null });
 });
 

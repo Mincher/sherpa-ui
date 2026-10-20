@@ -47,11 +47,13 @@ test('a report that carries `readings` is believed, so its field TYPE is honoure
   const el = bar();
   bindSource(src, el, { steerOnly: true });
 
-  el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: { seats: { picked: ['5', '50'], range: true } } } }));
+  // A number's range is an Advanced Between row (TODO 375).
+  el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: { seats: {
+    conditions: [{ op: 'between', picked: ['5', '50'] }], mode: 'advanced' } } } }));
   await settle();
 
   // A RANGE, cast to numbers: 5..50 keeps two rows and drops the 500.
-  assert.equal(src.selection('seats').range, true);
+  assert.equal(src.selection('seats').condition, 'advanced');
   assert.deepEqual(ids(src), [1, 2]);
   /* The old builder said `in ["5","50"]` — a LIST, of STRINGS, against rows
      holding numbers, so it matched nothing at all. */

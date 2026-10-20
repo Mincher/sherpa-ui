@@ -186,14 +186,14 @@ test('each PICKED value has a count of its own — and only a list answer in for
   }, { scope: 'data' });
   await source.setQuery({ v: 1, scopes: {
     view: { holds: ['region'], readings: { region: { picked: ['EMEA', 'AMER'] } } },
-    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { picked: ['5', '9'], range: true } } },
+    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { mode: 'advanced', conditions: [{ op: 'between', picked: ['5', '9'] }] } } },
   } });
   // The View's two values: each over everything. The field's own count is both.
   assert.deepEqual(await source.valueResults('view'), { region: { EMEA: 2, AMER: 2 } });
   assert.deepEqual(await source.results('view'), { region: 4 });
   /* A component's values: each within the View's rows. `status` has two values
      and both are picked — as a field that filters nothing, but each chip still
-     counts its own. A RANGE has no values to count. */
+     counts its own. A RANGE — a Between row (TODO 375) — has no values to count. */
   assert.deepEqual(await source.valueResults('data'), { status: { open: 3, shut: 1 } });
 
   // Rows answer it: no values. Off: none. Emptied: none.

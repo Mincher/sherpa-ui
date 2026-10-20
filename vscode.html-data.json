@@ -2099,9 +2099,6 @@
           "description": "names the list that was replaced — the breadcrumb's text"
         },
         {
-          "name": "data-from"
-        },
-        {
           "name": "data-has-value",
           "description": "written BY the menu: the typed value is not empty, so the input's Clear button shows."
         },
@@ -2194,9 +2191,6 @@
         {
           "name": "data-time",
           "valueSet": "v"
-        },
-        {
-          "name": "data-to"
         },
         {
           "name": "data-type",

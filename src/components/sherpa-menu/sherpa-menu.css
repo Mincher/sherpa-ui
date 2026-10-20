@@ -613,8 +613,8 @@
 .body-range,
 .body-number { display: none; }
 
-/* NUMBER and DATE both lead with the Range switch. */
-:host([data-body="number"]) .body-range,
+/* A DATE leads with the Range switch. A number has none: its range is an
+   Advanced row (Will, TODO 375). */
 :host([data-body="date"]) .body-range {
   display: flex;
   align-items: center;
@@ -631,12 +631,6 @@
     var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* ONE END OR TWO. Both exist from the start, so flipping Range keeps what was
-   typed on the other side. TRAP T-range-switch-swaps-not-rebuilds */
-:host([data-body="number"]) .body-number-range { display: none; }
-:host([data-body="number"][data-range]) .body-number-one { display: none; }
-:host([data-body="number"][data-range]) .body-number-range { display: block; }
-
 .body-range-label {
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-base, 14px);
@@ -647,14 +641,11 @@
 .body-op { display: none; }
 :host([data-body="number"][data-conditions]) .body-op { display: block; }
 
-/* A RANGE has no operator to choose — it IS `between`. */
-:host([data-body="number"][data-range]) .body-op { display: none; }
-
 /* A NUMBER in a FILTER menu: its Simple body is the chip's (no operator — the
    rows are where conditions go), and in Advanced the rows take its place.
    TRAP T-a-number-has-advanced-rows */
 :host([data-type="filter"][data-body="number"]) .body-op { display: none; }
-:host([data-body="number"][data-mode="advanced"]) :is(.body-range, .body-number) { display: none; }
+:host([data-body="number"][data-mode="advanced"]) .body-number { display: none; }
 :host([data-body="date"][data-mode="advanced"]) .body-range { display: none; }
 
 /* READ-ONLY: the answer is shown and nothing here changes it — no footer, no

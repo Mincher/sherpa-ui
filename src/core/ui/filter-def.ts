@@ -52,13 +52,14 @@ export interface FilterDef extends OffersAdvanced {
   select?: 'single' | 'multiple';
   /** Its leading glyph. TRAP T-only-five-filter-chips-carry-an-icon */
   icon?: string;
-  /** A number filter's slider ends and field clamp. Default 0..100. */
+  /** A number filter's box clamp, and a range row's slider ends. Default 0..100. */
   min?: number;
   max?: number;
   step?: number;
   /** ISO days a DATE filter may pick. A SET, not a span; every other day draws inactive. */
   availableDates?: string[];
-  /** Start in RANGE mode. The reader may still flip it. */
+  /** A DATE starts in RANGE mode; the reader may still flip it. A number has no
+   *  range in Simple: it is an Advanced row (TODO 375). */
   range?: boolean;
   /** A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
   time?: boolean;

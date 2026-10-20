@@ -130,14 +130,6 @@
                     "data-type": "number",
                     "aria-label": "Value"
                   }
-                },
-                {
-                  "el": "sherpa-slider",
-                  "class": "body-number-range",
-                  "attrs": {
-                    "data-type": "range",
-                    "data-show-value": ""
-                  }
                 }
               ]
             },
@@ -529,14 +521,6 @@
                   "attrs": {
                     "data-type": "number",
                     "aria-label": "Value"
-                  }
-                },
-                {
-                  "el": "sherpa-slider",
-                  "class": "body-number-range",
-                  "attrs": {
-                    "data-type": "range",
-                    "data-show-value": ""
                   }
                 }
               ]
@@ -1042,14 +1026,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-from",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-has-value",
       "type": "string",
       "observed": false,
@@ -1203,14 +1179,6 @@
       "$type": "prop",
       "name": "data-time",
       "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
-      "name": "data-to",
-      "type": "string",
       "observed": true,
       "declared": true,
       "kind": "style"

@@ -985,8 +985,8 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   #fill(menu: SherpaMenu, items: FilterMenuItem[], state: FieldReading | undefined): void {
     if (items.length) menu.items?.(items);
-    // `range` and `kept`: a number's shape, and the shape not in force. TRAP T-both-shapes-are-kept
-    if (!state || (!readingRows(state).length && !state.mode && !state.mirror && state.range == null && !state.kept)) return;
+    // `range`: a date's shape.
+    if (!state || (!readingRows(state).length && !state.mode && !state.mirror && state.range == null)) return;
     this.#answering.push(Promise.resolve(menu.rendered).then(() => {
       menu.reading = state;
       // SILENT, so its chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
@@ -1521,6 +1521,10 @@ export class SherpaFilterPanel extends SherpaElement {
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
       this.#giveMenu(held, body as HTMLElement, true, true, atDraw);
+      /* Built LATE: it takes what the filters before it leave now, or its rows'
+         values are not greyed until the walk runs again. TODO 386
+         TRAP T-a-ruled-out-value-is-greyed */
+      this.#markPresent(held);
     }
     if (held.menu) {
       /* The MENU refuses Advanced mode unless the field opted in, and a

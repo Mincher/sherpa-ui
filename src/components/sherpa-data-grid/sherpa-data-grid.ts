@@ -574,7 +574,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!def) return JSON.stringify([col.type ?? 'text', false]);
     const { options: _options, min: _min, max: _max, availableDates: _days, ...shape } = def;
     // TRAP T-a-default-is-not-an-override
-    return JSON.stringify([col.type ?? 'text', true, { ...shape, range: def.range ?? kindOf(def) === 'number' },
+    return JSON.stringify([col.type ?? 'text', true, { ...shape, range: !!def.range },
       this.dataset['bounds'] ?? '', this.dataset['applyOn'] ?? '']);
   }
   /** Each heading cell's key, as it was made. */
@@ -738,7 +738,8 @@ export class SherpaDataGrid extends SherpaElement {
       ...own, ...ends, id: col.field, label: col.header ?? own.label ?? col.field, commit: true,
       ...(kind === 'text' && !own.select ? { select: 'multiple' as const } : {}),
       // A HELD shape wins. TRAP T-a-default-is-not-an-override
-      ...(kind !== 'text' && held ? { range: !!held.range } : {}),
+      // A date's range is its own shape; a number's is an Advanced row. TODO 375
+      ...(kind === 'date' && held ? { range: !!held.range } : {}),
     };
   }
 
@@ -979,9 +980,13 @@ export class SherpaDataGrid extends SherpaElement {
       return { conditions: rows, mode: 'advanced' };
     }
     const [, clauseOp, value] = clause as [string, string, unknown];
-    if (clauseOp === 'between' && Array.isArray(value)) {
+    if ((clauseOp === 'between' || clauseOp === 'notbetween') && Array.isArray(value)) {
       const [from, to] = value.map((v) => String(v ?? ''));
-      return from && to ? { picked: [from, to], range: true } : null;
+      if (!from || !to) return null;
+      // A date's range is its Simple answer; any other is an Advanced row. TODO 375
+      const dated = this.#columns.find((c) => c.field === field)?.type === 'date';
+      return dated && clauseOp === 'between' ? { picked: [from, to], range: true }
+        : { conditions: [{ op: clauseOp, picked: [from, to] }], mode: 'advanced' };
     }
     const op = readingOp(clauseOp);
     const picked = (Array.isArray(value) ? value : [value]).map((v) => String(v ?? '')).filter(Boolean);

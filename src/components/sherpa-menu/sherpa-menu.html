@@ -143,7 +143,7 @@
          because a body handed over as a slotted child is styled by whoever
          handed it over — which is how one Range switch came to be spelled
          `qf-range-*` in the toolbar and `head-filter-range-*` in the grid,
-         with two sets of rules to keep in step.
+         with two sets of rules to keep in step. The Range switch is a DATE's.
          TRAP T-a-menu-owns-its-own-bodies -->
     <div class="body-range" part="body-range">
       <sherpa-switch class="body-range-switch" data-type="simple"
@@ -151,9 +151,7 @@
       <span class="body-range-label">Range</span>
     </div>
 
-    <!-- BOTH SHAPES ALWAYS EXIST and CSS reveals one, so flipping Range keeps
-         what was typed on the other side.
-         TRAP T-range-switch-swaps-not-rebuilds -->
+    <!-- A NUMBER's Simple body: ONE value. Its range is an Advanced row. Will, TODO 375. -->
     <div class="body-number" part="body-number">
       <!-- The operator, where the host offers a choice of one. A chip does not;
            a grid column heading does. Shown only when `data-conditions` names
@@ -164,8 +162,6 @@
            TRAP T-a-number-input-wears-sherpas-steppers -->
       <sherpa-input-text class="body-number-one" data-type="number"
                          aria-label="Value"></sherpa-input-text>
-      <sherpa-slider class="body-number-range" data-type="range"
-                     data-show-value></sherpa-slider>
     </div>
 
     <!-- THE DATE BODY: stamped into this menu's LIGHT DOM on data-body="date",
@@ -305,9 +301,9 @@
     <!-- Without this the card collapses to an empty box and reads as broken. -->
     <p class="no-matches" part="no-matches" role="status">No matches</p>
 
-    <!-- A NUMBER that offers Advanced is a FILTER menu too: in Simple it is
-         the same body as any number, in Advanced the rows above. Both shapes
-         always exist. Will, TODO 90. TRAP T-a-number-has-advanced-rows -->
+    <!-- A NUMBER is a FILTER menu too: in Simple its one value, in Advanced the
+         rows above, Between among them. A DATE's Range switch is here as well.
+         Will, TODO 90, 375. TRAP T-a-number-has-advanced-rows -->
     <div class="body-range" part="body-range">
       <sherpa-switch class="body-range-switch" data-type="simple"
                      aria-label="Range"></sherpa-switch>
@@ -318,8 +314,6 @@
                          aria-label="Condition"></sherpa-input-text>
       <sherpa-input-text class="body-number-one" data-type="number"
                          aria-label="Value"></sherpa-input-text>
-      <sherpa-slider class="body-number-range" data-type="range"
-                     data-show-value></sherpa-slider>
     </div>
 
     <div class="rows" part="rows">

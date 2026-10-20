@@ -972,3 +972,22 @@ test('the header\'s Save filters keeps the space between its two words', async (
   expect(gap.shown).toBe(true);
   expect(gap.space).toBeGreaterThan(1);
 });
+
+/** A field's f(x) builds its menu LATE: that menu takes what the filters before
+ *  it leave at once, so its rows' values are greyed as the chips were. TODO 386
+ *  TRAP T-a-ruled-out-value-is-greyed */
+test('a menu built by f(x) is told what the filters before it leave', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    // The filters before Owner leave Dana only.
+    el.drawPresent({ owner: ['Dana'] }, 'data');
+    await new Promise((r) => setTimeout(r, 60));
+    const before = !!sr.querySelector('.field[data-field="owner"] sherpa-menu');
+    flip('.field[data-field="owner"] .field-advanced');
+    await new Promise((r) => setTimeout(r, 150));
+    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu');
+    return { before, present: menu ? [...(menu.present ?? [])] : null };
+  })()`) as { before: boolean; present: string[] | null };
+  expect(r.before).toBe(false);
+  expect(r.present).toEqual(['Dana']);
+});

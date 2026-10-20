@@ -40,7 +40,6 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-conditions` | text |  | FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set. |
 | `data-drill` | boolean |  | the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked. |
 | `data-drill-from` | text |  | names the list that was replaced — the breadcrumb's text |
-| `data-from` | text |  |  |
 | `data-has-value` | text |  | written BY the menu: the typed value is not empty, so the input's Clear button shows. |
 | `data-heading` | text |  | optional heading (rendered upper-case at 10/16) |
 | `data-hide-unavailable` | boolean |  |  |
@@ -58,7 +57,6 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-step` | text |  |  |
 | `data-takes` | `list` `text` |  | written BY the menu from data-op: list \| text. CSS reads it to reveal the rows or the text box. |
 | `data-time` | boolean |  |  |
-| `data-to` | text |  |  |
 | `data-type` | `list` `calendar` `filter` | `list` | list \| calendar \| filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu. |
 | `data-value` | text |  | FILTER type only: what was TYPED under a typing condition. An ATTRIBUTE because a variant re-stamp replaces the whole shadow tree, and a value living only in the box is lost. |
 | `open` | boolean, native | `false` | native-ish boolean: reflects/controls the popover |

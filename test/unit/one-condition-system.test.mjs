@@ -47,11 +47,12 @@ test('several ticks in ONE field are EQUALS X OR EQUALS Y — `in`, still defaul
   assert.deepEqual(s.clause, ['plan', 'in', ['Free', 'Pro']]);
 });
 
-test('a dragged RANGE is the field\'s own body answering — default, and `between`', () => {
+test('two numbers in Simple are a LIST — `in`, still default; a range is an Advanced row', () => {
+  // A number has no Simple range (TODO 375).
   const s = shape(SEATS, { picked: ['500', '9'] });
   assert.equal(s.condition, 'simple');
-  assert.deepEqual(s.rows, [{ op: 'between', picked: ['500', '9'] }]);
-  assert.deepEqual(s.clause, ['seats', 'between', [9, 500]]);
+  assert.deepEqual(s.rows, [{ op: 'eq', picked: ['500', '9'] }]);
+  assert.deepEqual(s.clause, ['seats', 'in', [500, 9]]);
 });
 
 /* ── Advanced filters ───────────────────────────────────────── */
@@ -130,4 +131,16 @@ test('a range row with ONE end is no answer, and narrows nothing', () => {
     assert.equal(s.clause, undefined, op);
     assert.equal(s.condition, null, op);
   }
+});
+
+/* ── A row's `in` / `notin` — TODO 386 ─────────────────────────── */
+
+test('an `in` or `notin` row is its `eq` or `ne` over the picks, with one pick or several', () => {
+  const REGION = { field: 'region', values: ['EMEA', 'AMER', 'APAC', 'LATAM'] };
+  const clause = (op, picked) => shape(REGION, { conditions: [{ op, picked }], mode: 'advanced' }).clause;
+  // Before: `notin` with two picks compiled to `in`, and with one matched every row.
+  assert.deepEqual(clause('notin', ['EMEA', 'APAC']), ['region', 'notin', ['EMEA', 'APAC']]);
+  assert.deepEqual(clause('notin', ['EMEA']), ['region', 'ne', 'EMEA']);
+  assert.deepEqual(clause('in', ['EMEA']), ['region', 'eq', 'EMEA']);
+  assert.deepEqual(clause('in', ['EMEA', 'APAC']), ['region', 'in', ['EMEA', 'APAC']]);
 });
