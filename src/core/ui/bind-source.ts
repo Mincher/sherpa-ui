@@ -294,8 +294,16 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
          TRAP T-one-query-one-owner · TRAP T-a-heading-asks-through-the-source */
       const scope = bind?.scope;
       const field = detail['field'];
-      if (typeof scope !== 'string' || typeof field !== 'string') return;
-      source.answerColumn(scope, field, (detail['reading'] ?? null) as FieldReading | null);
+      if (typeof field !== 'string') return;
+      const reading = (detail['reading'] ?? null) as FieldReading | null;
+      // A grid in no scope has no place for it in the Query: it is drawn back as it asked. 366 step 23
+      if (typeof scope !== 'string') {
+        el.drawReading?.(field, reading ?? {}, '');
+        return;
+      }
+      source.query.setReading(scope, field, reading);
+      // A heading's Apply is its field's. TRAP T-apply-and-discard-wait-for-a-change
+      source.query.commit({ field });
       return;
     }
     case 'filter-apply':

@@ -54,7 +54,6 @@
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
  * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
- * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
@@ -1604,17 +1603,6 @@ export class DataSource extends EventTarget {
     this.#context.commit();
   }
 
-  /** A HEADING's answer is its field's, in its grid's scope — and a field no
-   *  scope holds yet gets its normal chip on that scope's bar.
-   *  TRAP T-a-heading-asks-through-the-source */
-  answerColumn(scope: string, field: string, reading: FieldReading | null): void {
-    const fresh = !!reading && !this.#context.scopeOf(field) && this.#context.canHold(scope, field);
-    if (fresh) this.#context.hold(scope, [...this.#context.scope(scope), field]);
-    this.#member.select(field, reading?.picked ?? [], reading ?? {});
-    // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
-    this.#context.commit();
-    if (fresh) this.#binding.drawBars(scope);
-  }
 
   /** The grid's own page count, when every matching row is already in hand:
    *  the pager's numbers publish again, and nothing loads. */

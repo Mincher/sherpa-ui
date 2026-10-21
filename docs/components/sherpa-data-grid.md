@@ -125,15 +125,15 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 |---|---|
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: a heading's menu removes the rest, but keeps a pick. |
-| `setColumnFilter(field: string, clause: unknown[] \| null)` | Set one column's filter from OUTSIDE. — SILENT, and takes the clause `column-filter-change` reports. |
+| `setColumnFilter(field: string, clause: unknown[] \| null)` | Set one column's filter from OUTSIDE. — SILENT unbound, and takes the clause `column-filter-change` reports; BOUND, it asks as a reader would. |
 | `supersedeColumns(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string)` | supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds, each with the answer it holds there. A named heading SHOWS that answer, read-only, with the superseded look and tip, so no contradicting pick can be made in it; a heading not named is released. Will, 2026-09-26. |
 | `columnClause(field: string)` | One column's filter as a ready FilterClause, or null. — a SUSPENDED clause is returned too. |
 | `columnReading(field: string)` | One column's filter as a READING, or null — what a saved view set on it. |
 | `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this grid one column's answer, whoever set it: a chip, the panel, a restored Query. SILENT. |
 | `columnLabel(field: string)` | One column filter AS A READER SEES IT — "Contains: ana", "Is not: churned". |
-| `suspendColumnFilter(field: string, suspended = true)` | Suspend or resume, never lose. . |
+| `suspendColumnFilter(field: string, suspended = true)` | Suspend or resume, never lose; bound, it asks. . |
 | `openColumnFilter(field: string, anchor?: HTMLElement)` | Open one column's filter menu, anchored where the caller says. — one menu serves both. |
-| `clearColumnFilter(field?: string)` | Drop one column's heading filter from OUTSIDE; nothing drops them all. . |
+| `clearColumnFilter(field?: string)` | Drop one column's heading filter from OUTSIDE; nothing drops them all. Unbound it is silent; bound, it asks for each it holds. . |
 | `findStep(direction: 1 \| -1 = 1)` | findStep(direction) — move to the next or previous MATCH, and show it. Past this page's last it asks for the next page (`page-change`) and lands on its first; before the first, the previous page's last — round from the end to the start, as a browser's own find. Answers where it is on this page: `{ index, count }`, `index` -1 while a page loads. |
 | `actionsFor(count: number)` | The actions for the CURRENT selection — one row: all; two or more: only `multi`. . |
 | `neighbour(by: number)` | The row `by` rows from the current one, in the order drawn — or null. |

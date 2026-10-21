@@ -941,7 +941,7 @@
           "$type": "method",
           "name": "setColumnFilter",
           "args": "field: string, clause: unknown[] | null",
-          "description": "Set one column's filter from OUTSIDE. — SILENT, and takes the clause `column-filter-change` reports."
+          "description": "Set one column's filter from OUTSIDE. — SILENT unbound, and takes the clause `column-filter-change` reports; BOUND, it asks as a reader would."
         },
         {
           "$type": "method",
@@ -977,7 +977,7 @@
           "$type": "method",
           "name": "suspendColumnFilter",
           "args": "field: string, suspended = true",
-          "description": "Suspend or resume, never lose. ."
+          "description": "Suspend or resume, never lose; bound, it asks. ."
         },
         {
           "$type": "method",
@@ -989,7 +989,7 @@
           "$type": "method",
           "name": "clearColumnFilter",
           "args": "field?: string",
-          "description": "Drop one column's heading filter from OUTSIDE; nothing drops them all. ."
+          "description": "Drop one column's heading filter from OUTSIDE; nothing drops them all. Unbound it is silent; bound, it asks for each it holds. ."
         },
         {
           "$type": "method",

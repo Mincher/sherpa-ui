@@ -40,7 +40,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context
 - [T-a-find-asks-its-host-to-step](TRAPS.md#t-a-find-asks-its-host-to-step) — data-source
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — data-source, store
-- [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — data-source, query-context
+- [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — query-context
 - [T-a-heading-holds-a-whole-reading](TRAPS.md#t-a-heading-holds-a-whole-reading) — data, filter-state
 - [T-a-held-set-takes-a-change-in-place](TRAPS.md#t-a-held-set-takes-a-change-in-place) — data-source, held-set, store, store-cache, stores
 - [T-a-kept-set-is-checked-each-session](TRAPS.md#t-a-kept-set-is-checked-each-session) — store-cache

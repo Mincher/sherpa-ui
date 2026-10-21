@@ -8784,10 +8784,14 @@ toolbar.addEventListener('filter-remove', (e) => {
 });
 ```
 
-It does NOT re-fire `column-filter-change`: the caller is the one who asked, so
-telling them what they just did would be an echo, and a host that routes the
-event back into its query would clear it TWICE. Same silence as `select()` and
-`setColumnFilter` — `T-grid-read-without-write-is-half-an-api`.
+UNBOUND, it does NOT re-fire `column-filter-change`: the caller is the one
+who asked, so telling them what they just did would be an echo, and a host
+that routes the event back into its query would clear it TWICE. Same silence
+as `setColumnFilter` — `T-grid-read-without-write-is-half-an-api`. BOUND
+(`data-locked`), it ASKS instead — `setColumnFilter`, `clearColumnFilter` and
+`suspendColumnFilter` each send the one `column-filter-change` a reader's act
+would, and the source draws the answer back; the same answer twice is a
+no-op, so the echo dies there (366 step 23).
 
 Pass NOTHING to clear every column at once, which is what a toolbar's "clear
 all" means.
@@ -16607,15 +16611,17 @@ field's normal chip onto the bar by hand (`showChip`) — and a second listener
 headings the View held.
 
 `column-filter-change` is a steering event now, for a grid bound to a scope:
-the heading's reading is its field's, and a field no scope holds is held in
-the grid's scope first — so its bar is drawn the field's normal chip, from
-the Query. A field the View holds is sent to every grid below it with its
+the heading's reading is its field's — `query.setReading(scope, field,
+reading)`, then `commit({ field })` — and a field no scope holds is held in
+the grid's scope first, so its bar is drawn the field's normal chip, from the
+Query. A BOUND heading asks, then is drawn: it writes neither its filters nor
+what it drew before it reports, and `drawReading` fills them (366 step 23). A field the View holds is sent to every grid below it with its
 APPLIED answer (`supersedeColumns`), shown read-only; the source sends it
 when the View's holds change, when a View answer is drawn, and on commit.
 
-Only a SCOPED grid: an unscoped one is a page's to wire, as before.
+Only a SCOPED grid: an unscoped one has no place for it in the Query, so its
+answer is drawn straight back to it, and a page wires the rest.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/query-context.ts`

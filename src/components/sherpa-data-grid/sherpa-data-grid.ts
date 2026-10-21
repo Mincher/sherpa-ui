@@ -838,25 +838,20 @@ export class SherpaDataGrid extends SherpaElement {
 
     const cleared = event.type === 'menu-clear';
     const held = cleared ? null : this.#readColumnFilter(chip);
+    // Only an explicit CLEAR empties the controls: Apply lands here on a
+    // half-built range, which is unfinished, not wrong.
+    if (cleared) this.#emptyMenu(chip);
+    // BOUND, it asks: it reports, and its source draws the answer back. 366 step 23
+    if (this.hasAttribute('data-locked')) {
+      this.#reportColumn(field, held);
+      return;
+    }
 
     if (held) {
       this.#columnFilters.set(field, held);
     } else {
       this.#columnFilters.delete(field);
       chip.removeAttribute('data-current');
-      // Only an explicit CLEAR empties the controls: Apply lands here on a
-      // half-built range, which is unfinished, not wrong.
-      if (cleared) {
-        /* The shared filter menu keeps its typed value in an ATTRIBUTE, which
-           is the whole reason it survives a re-stamp — so clearing has to
-           reach that, not only the boxes. TRAP T-one-field-one-filter-menu */
-        const fm = chip.querySelector<SherpaMenu>('sherpa-menu');
-        if (fm?.getAttribute('data-type') === 'filter') fm.setAttribute('data-value', '');
-        // The MENU empties its own answer, whatever its body: ticks, rows, a number, a day.
-        if (fm) fm.reading = {};
-        // And Cancel's answer with it: a kept menu that closes must not tick the old answer back. TRAP T-a-heading-cell-is-kept
-        fm?.takeBaseline();
-      }
     }
 
     // What the menu holds now is what it was drawn: a push of the same answer writes nothing.
@@ -865,6 +860,19 @@ export class SherpaDataGrid extends SherpaElement {
     this.#renderBody();
     this.#reportColumn(field, held);
   };
+
+  /** A heading's menu emptied: its typed value, its answer and Cancel's. */
+  #emptyMenu(chip: HTMLElement): void {
+    /* The shared filter menu keeps its typed value in an ATTRIBUTE, which is
+       the whole reason it survives a re-stamp — so clearing has to reach
+       that, not only the boxes. TRAP T-one-field-one-filter-menu */
+    const fm = chip.querySelector<SherpaMenu>('sherpa-menu');
+    if (fm?.getAttribute('data-type') === 'filter') fm.setAttribute('data-value', '');
+    // The MENU empties its own answer, whatever its body: ticks, rows, a number, a day.
+    if (fm) fm.reading = {};
+    // And Cancel's answer with it: a kept menu that closes must not tick the old answer back. TRAP T-a-heading-cell-is-kept
+    fm?.takeBaseline();
+  }
 
   /** Report one column's answer: the heading's menu or a cell's chip set it. */
   #reportColumn(field: string, held: FieldReading | null): void {
@@ -947,13 +955,17 @@ export class SherpaDataGrid extends SherpaElement {
 
   /**
    * Set one column's filter from OUTSIDE. TRAP
-   * T-grid-read-without-write-is-half-an-api — SILENT, and takes the clause
-   * `column-filter-change` reports.
+   * T-grid-read-without-write-is-half-an-api — SILENT unbound, and takes the
+   * clause `column-filter-change` reports; BOUND, it asks as a reader would.
    */
   setColumnFilter(field: string, clause: unknown[] | null): void {
     const held = clause ? this.#readingFromClause(field, clause) : null;
+    if (this.hasAttribute('data-locked')) {
+      this.#reportColumn(field, held);
+      return;
+    }
     if (!held) {
-      this.clearColumnFilter(field);
+      this.#clearColumns(field);
       return;
     }
     this.#columnFilters.set(field, held);
@@ -1054,7 +1066,7 @@ export class SherpaDataGrid extends SherpaElement {
     /* HELD AS IT IS — both answers and the mode. Through a clause only the
        answer in force came back. TRAP T-both-answers-are-kept */
     if (!answersAnything(reading)) {
-      this.clearColumnFilter(field);
+      this.#clearColumns(field);
       return;
     }
     // The answer it holds already: nothing to draw. TODO 355
@@ -1082,10 +1094,14 @@ export class SherpaDataGrid extends SherpaElement {
     return held ? this.#columnFilterLabel(field, held) : null;
   }
 
-  /** Suspend or resume, never lose. TRAP T-grid-suspend-is-not-clear. */
+  /** Suspend or resume, never lose; bound, it asks. TRAP T-grid-suspend-is-not-clear. */
   suspendColumnFilter(field: string, suspended = true): void {
     const held = this.#columnFilters.get(field);
     if (!held || !!held.suspended === suspended) return;
+    if (this.hasAttribute('data-locked')) {
+      this.#reportColumn(field, { ...held, suspended });
+      return;
+    }
     this.#columnFilters.set(field, { ...held, suspended });
     this.#syncColumnFilterStatus();
     // The MATCH MARKS go too: a suspended filter hides no rows, so marking what
@@ -1112,9 +1128,19 @@ export class SherpaDataGrid extends SherpaElement {
 
   /**
    * Drop one column's heading filter from OUTSIDE; nothing drops them all.
+   * Unbound it is silent; bound, it asks for each it holds.
    * TRAP T-grid-clear-from-outside-is-silent.
    */
   clearColumnFilter(field?: string): void {
+    if (this.hasAttribute('data-locked')) {
+      for (const f of field ? [field] : [...this.#columnFilters.keys()]) if (this.#columnFilters.has(f)) this.#reportColumn(f, null);
+      return;
+    }
+    this.#clearColumns(field);
+  }
+
+  /** Drop one column's filter, or every one, and draw the heading. SILENT. */
+  #clearColumns(field?: string): void {
     if (field) {
       if (!this.#columnFilters.delete(field)) return;
     } else {

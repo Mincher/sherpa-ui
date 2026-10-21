@@ -2511,7 +2511,7 @@
                   }
                 }
               ],
-              "description": "Set one column's filter from OUTSIDE. — SILENT, and takes the clause `column-filter-change` reports."
+              "description": "Set one column's filter from OUTSIDE. — SILENT unbound, and takes the clause `column-filter-change` reports; BOUND, it asks as a reader would."
             },
             {
               "kind": "method",
@@ -2606,7 +2606,7 @@
                   "optional": true
                 }
               ],
-              "description": "Suspend or resume, never lose. ."
+              "description": "Suspend or resume, never lose; bound, it asks. ."
             },
             {
               "kind": "method",
@@ -2640,7 +2640,7 @@
                   "optional": true
                 }
               ],
-              "description": "Drop one column's heading filter from OUTSIDE; nothing drops them all. ."
+              "description": "Drop one column's heading filter from OUTSIDE; nothing drops them all. Unbound it is silent; bound, it asks for each it holds. ."
             },
             {
               "kind": "method",

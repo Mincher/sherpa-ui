@@ -666,12 +666,13 @@ export class QueryContext extends EventTarget {
       this.#write(scope, field, next, at);
       return;
     }
-    // A heading's answer to a field no scope holds is held in its grid's scope. TRAP T-a-heading-asks-through-the-source
-    if (reading && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field)) this.hold(scope, [...this.scope(scope), field]);
+    // A heading's answer to a field no scope holds is held in its grid's scope, and its bar draws the chip. TRAP T-a-heading-asks-through-the-source
+    const fresh = !!reading && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field);
+    if (fresh) this.hold(scope, [...this.scope(scope), field]);
     const picked = reading?.picked ?? [];
     const next: FieldReading = { ...answerOf(reading ?? {}), picked: this.#knows(field)?.raws(field, picked) ?? [...picked] };
-    if (sameReading(readingOf(this.#live.draft, field), readingAnswered(next) ? next : undefined)) return;
-    this.#select(field, picked, reading ?? {});
+    if (!sameReading(readingOf(this.#live.draft, field), readingAnswered(next) ? next : undefined)) this.#select(field, picked, reading ?? {});
+    if (fresh) this.#tell({ kind: 'bars', scope });
   }
 
   /** Clear all, Reset all: every answer homed in these scopes goes — a

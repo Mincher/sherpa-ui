@@ -360,7 +360,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | ✅ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
-| ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour, after Will's test run and 302/311 | refactor |
+| ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour. Closes with 366: its steps 20–22 do it (Will, 2026-10-21: A) | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
@@ -1933,11 +1933,13 @@ Apply then commits its own field only. Step 19: a superseded chip's own
 answer is the Query's (`ScopeQuery.superseded`, D2 A): kept when the View
 takes the field, given back when it lets go; no bar re-reports it.
 
-**❓ Before step 20 — TODO 320's overlap.** Steps 20–22 (the panel and the bar
-send one request per act; a bound bar paints from its live slice) do 320's
-work, and 320 waits for Will's test run and for 302 and 311. A: 366 does it now,
-and 320 closes with 366 (the plan's pick). B: 20–22 wait for that run; 23–26
-go first. Meanwhile 23–25 go ahead: they need none of 20–22.
+**✅ Ruled — TODO 320's overlap: A** (Will, 2026-10-21, "302/311: A"). Steps
+20–22 (the panel and the bar send one request per act; a bound bar paints
+from its live slice) do 320's work now, and 320 closes with 366.
+
+Step 23: a bound grid heading asks, then is drawn — its doors send the one
+`column-filter-change` a reader would, the steer calls `setReading` and
+`commit({ field })`, and `answerColumn` goes.
 
 ---
 
