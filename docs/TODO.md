@@ -73,6 +73,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zs | 389 | FLAKE — Demos `reforged-layout-resize.spec.ts:109` ("with the nav pinned…") fails ~3 in 10 alone in Chromium, at HEAD before 366 step 13 too: it reads `/layout/dashboard` two frames after a drag, where the test above it polls for the save | tests |
 | ⬜ | 0zt | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
 | ⬜ | 0zu | 391 | BUG — a DRILLED tree (the Filters menu's door into a tiered field, bar or panel) cannot open a parent: its children stamp into the home menu, which the drill emptied. Its picks keep a child it did not show (369) | filters |
+| ❓ | 0zv | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -844,7 +845,7 @@ against the code). The full plan, with every file:line, is
   `data-loading` shows a Loading row; `menuFor` sets it for a loading filter,
   and a loading filter is a list, not a yes/no; the bar draws a chip again when
   its values come; the panel and a grid heading are drawn fresh anyway.
-  Next: 5.3 369's remote children.
+  **Phase 5 is done**, less 369's remote children: ❓ TODO 392.
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
