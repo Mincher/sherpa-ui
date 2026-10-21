@@ -485,26 +485,38 @@ export class SherpaQuickFilter extends SherpaElement {
        sorts by nothing, and a reader who has not chosen has done nothing
        wrong. TRAP T-an-organise-chip-has-no-values */
     if (!field) {
+      if (this.#drawn()) return;
       this.current = false;
       this.#drawArrangement();
       return;
     }
     if (this.dataset['kind'] === 'group') {
-      this.current = !this.current;
-      this.#drawArrangement();
-      this.emit('group-change', { field: this.current ? field : null });
+      const on = !this.current;
+      if (!this.#drawn()) {
+        this.current = on;
+        this.#drawArrangement();
+      }
+      this.emit('group-change', { field: on ? field : null });
       return;
     }
     const next = nextSort(field, this.current ? field : null, this.direction);
     this.#applySort(next.field, next.direction);
   }
 
+  /** LOCKED, the chip reports and its host draws it: it writes no state of its
+   *  own. 366 step 22 · TRAP T-locked-chip-relays-and-nothing-else */
+  #drawn(): boolean {
+    return this.hasAttribute('data-locked');
+  }
+
   /** A column was picked from the menu: apply it and say so. */
   #arrangeFromMenu(): void {
     const field = this.column;
     if (this.dataset['kind'] === 'group') {
-      this.current = !!field;
-      this.#drawArrangement();
+      if (!this.#drawn()) {
+        this.current = !!field;
+        this.#drawArrangement();
+      }
       this.emit('group-change', { field: field || null });
       return;
     }
@@ -521,10 +533,12 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-one-cycle-for-one-value
    */
   #applySort(field: string | null, direction: SortDirection | null): void {
-    // A suspended chip rewinds to `asc` — that is where a resume starts.
-    this.set('data-direction', direction ?? 'asc');
-    this.current = direction !== null;
-    this.#drawArrangement();
+    if (!this.#drawn()) {
+      // A suspended chip rewinds to `asc` — that is where a resume starts.
+      this.set('data-direction', direction ?? 'asc');
+      this.current = direction !== null;
+      this.#drawArrangement();
+    }
     this.emit('sort-change', {
       field: direction === null ? null : field,
       direction: direction ?? 'asc',
@@ -717,7 +731,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /**
    * Flag "on, but filtering by nothing" so CSS can warn.
-   * TRAP T-empty-flag-needs-rows-to-count — PERSISTENT, LOCKED and ORGANISE are exempt.
+   * TRAP T-empty-flag-needs-rows-to-count — PERSISTENT and ORGANISE are exempt.
    */
   #syncEmpty(): void {
     /* `data-filters-nothing` means ON BUT FILTERING NOTHING. An organise chip never
@@ -750,10 +764,10 @@ export class SherpaQuickFilter extends SherpaElement {
     if (empty && menu) this.#recheckEmpty(menu);
   }
 
-  /** A chip whose state is its own — not a selector, not the host's, not an arrangement. */
+  /** A chip that answers a filter — not a selector, not an arrangement. Locked
+   *  too: its host draws its answer, and it still says what that answer is. */
   #answersForItself(): boolean {
-    return !this.hasAttribute('data-persistent') && !this.hasAttribute('data-locked')
-      && !this.#arranges();
+    return !this.hasAttribute('data-persistent') && !this.#arranges();
   }
 
   /**

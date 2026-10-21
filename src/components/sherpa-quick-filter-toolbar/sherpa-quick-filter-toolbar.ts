@@ -243,8 +243,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // TRAP T-path-not-target-finds-chip-host — match the TAG, not `.chip`.
     const chip = this.pathFind(event, 'sherpa-quick-filter');
     if (!chip) return;
-    // A date chip turns itself ON by picking — it has no body toggle.
-    chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
+    // A date chip turns itself ON by picking — it has no body toggle. Locked, it is drawn.
+    if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
     this.#emitChange(this.#answerRequest(chip));
   };
 
@@ -413,6 +413,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Paint every chip from a whole map; with no chips yet, held. */
   #paintValues(next: Record<string, readonly string[]>): void {
+    this.#painted.clear();
     // The WHOLE set, so it replaces every steer held before it.
     if (!this.#chips().length) {
       this.#held = { values: { ...next }, chips: new Map(), ...(this.#held.supersede ? { supersede: this.#held.supersede } : {}) };
@@ -463,6 +464,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Paint ONE chip's picks; with no chips yet, held. */
   #paintPicks(id: string, picks: readonly string[]): void {
+    this.#painted.delete(id);
     if (!this.#chips().length) {
       this.#held.chips.set(id, { picks: [...picks] });
       return;
@@ -510,7 +512,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Paint ONE chip's reading — a door's, or a source's draw; with no chips yet, held.
    *  A draw never goes through a door, so it never becomes a request. 366 step 21 */
   #paintReading(id: string, reading: FieldReading): void {
-    this.#edited(id);
+    this.#painted.delete(id);
     if (!this.#chips().length) {
       this.#held.chips.set(id, { reading: { ...reading } });
       return;
@@ -654,10 +656,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** One chip's answer, and whether it is ON. OFF keeps the answer and applies
-   *  none of it. TRAP T-grid-suspend-is-not-clear */
+   *  none of it. The answer it last painted is not painted again, so an open
+   *  menu keeps its draft. 366 step 22 · TRAP T-grid-suspend-is-not-clear */
   #drawChip(id: string, reading: FieldReading): void {
+    const said = readingAnswered(reading) ? JSON.stringify(reading) : '';
+    const was = this.#painted.get(id);
+    if (was === said || (was === undefined && this.#drafting(id))) return;
     this.#paintReading(id, reading);
     if (reading.suspended) this.#setChipActive(id, false);
+    this.#painted.set(id, said);
+  }
+
+  /** What each chip was last drawn, by id — `''` for empty. A door's own paint
+   *  drops it; a new chip has none. */
+  #painted = new Map<string, string>();
+
+  /** Is the reader working in this chip's menu — open, with a draft not applied? */
+  #drafting(id: string): boolean {
+    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    return !!chip?.hasAttribute('data-open') && !!this.#filterMenu(id)?.dirty;
   }
 
   /** The chip that answers a field: its def's `field`, else its id. */
@@ -775,6 +792,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
 
     list.replaceChildren();
+    // A chip that stays shows what it was drawn; a new one has been drawn nothing.
+    for (const id of this.#painted.keys()) if (!live.has(id)) this.#painted.delete(id);
     /* The allow-list applies to the chips already ON the bar, not only to what
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */
@@ -796,9 +815,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          back, two writes for one click. TRAP T-locked-chip-relays-and-nothing-else */
       if (f.persistent) {
         chip.setAttribute('data-persistent', '');
-        chip.setAttribute('data-locked', '');
         chip.setAttribute('data-current', '');
       }
+      this.#lock(chip);
       /* THE KIND DECIDES. A boolean has nothing to open; everything else does
          — a date or number carries its own body, and so does an Advanced one,
          which can only be asked "contains" and never ticked from a list of 240.
@@ -1033,9 +1052,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.toggleAttribute('data-current', true);
       return;
     }
-    // On or off keeps the answer; a toggle answers no field. TRAP T-grid-suspend-is-not-clear
+    /* On or off keeps the answer; a toggle answers no field. A locked chip did
+       not flip, so it asks for the other state. TRAP T-grid-suspend-is-not-clear */
     const field = this.#fieldFor(chip.dataset['id'] ?? '');
-    this.#emitChange(field != null && chip.reading ? { field, suspended: !chip.current } : undefined);
+    const on = chip.hasAttribute('data-locked') ? !chip.current : chip.current;
+    this.#emitChange(field != null && chip.reading ? { field, suspended: !on } : undefined);
   };
 
   /** The Switch flipped: its own act, so the bar's `change` listeners never hear it. */
@@ -1125,22 +1146,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
+    if (name === 'data-locked') for (const chip of [...this.#chips(), ...this.$$<HTMLElement>('.organise-chip')]) this.#lock(chip);
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
       for (const chip of this.#chips()) this.#markPresent(chip);
       this.$('.add-btn sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     }
     this.#syncArrangement();
     syncResets(this, this.root, '.act[data-act="clear"]');
-  }
-
-  /** How many chip changes this bar has made itself. */
-  #edits = 0;
-  /** Each chip's last change by this bar, as that count. */
-  #editedAt = new Map<string, number>();
-
-  /** This bar changed a chip itself: a draw begun before is older than it. */
-  #edited(id: string): void {
-    this.#editedAt.set(id, ++this.#edits);
   }
 
   /** ONE reader act, as a request — none for an act no field hears. `values`
@@ -1168,6 +1180,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #emptyChip(chip: SherpaQuickFilter): void {
     const id = chip.dataset['id'] ?? '';
     this.#pendingAnswers.delete(id);
+    this.#painted.set(id, '');
     // The CHIP empties itself; the def says which condition a list opens on.
     chip.clear(this.#filters.find((f) => f.id === id)?.op ?? DEFAULT_OP);
   }
@@ -1311,16 +1324,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * drawScope(scope) — draw what a scope holds, SILENTLY, from the description
-   * the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of
-   * it. A PERSISTENT chip (the View) is the host's to set, so it is left alone.
+   * drawScope(scope, live) — draw what a scope holds, SILENTLY, from the
+   * description the panel is drawn each of: its chips and each field's answer.
+   * Nothing is reported — the source already holds all of it. A PERSISTENT
+   * chip (the View) is the host's to set, so it is left alone.
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
    */
-  async drawScope(scope: ScopeDescription): Promise<void> {
+  async drawScope(scope: ScopeDescription, live?: () => ScopeDescription): Promise<void> {
     this.#scoped = true;
-    // A chip this bar changes while this draw waits is newer than the draw. TRAP T-a-stale-draw-keeps-the-bars-own-change
-    const began = this.#edits;
-    const newer = (id: string): boolean => (this.#editedAt.get(id) ?? 0) > began;
     // A list this bar kept before a source drew it goes to the source, below.
     const handover = this.#switchedOff;
     this.#switchedOff = null;
@@ -1358,17 +1369,20 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const persistent = new Set(this.#chips()
       .filter((c) => c.hasAttribute('data-persistent')).map((c) => c.dataset['id']));
     const answered = new Set<string>();
-    for (const { id: field, state } of fields) {
+    /* THE ANSWERS AS THEY ARE NOW, read after the waits: a change made while
+       this draw waited is in them. TRAP T-a-stale-draw-keeps-the-bars-own-change */
+    for (const { id: field, state } of (live?.() ?? scope).filters) {
       if (!state) continue;
       const id = this.#idOf(field);
       answered.add(id);
-      if (!persistent.has(id) && !newer(id)) this.#drawChip(id, state);
+      if (!persistent.has(id)) this.#drawChip(id, state);
     }
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
     for (const def of this.#filters) {
       const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
-      if (!chip || answered.has(def.id) || persistent.has(def.id) || newer(def.id)) continue;
+      if (!chip || answered.has(def.id) || persistent.has(def.id)) continue;
+      if (this.#painted.get(def.id) === '' || this.#drafting(def.id)) continue;
       if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
@@ -1376,7 +1390,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     else if (handover?.length && scope.suspended) {
       // On in the request, so the source's keepOff lists them as its own.
       const mine = this.#chips().filter((chip) => handover.includes(chip.dataset['id'] ?? ''));
-      for (const chip of mine) chip.current = true;
+      for (const chip of mine) if (!chip.hasAttribute('data-locked')) chip.current = true;
       this.#emitChange(mine.flatMap((chip) => this.#answerRequest(chip) ?? []));
     }
   }
@@ -1642,7 +1656,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const chip = this.#chips().find((c) => c.dataset['id'] === id);
       // `flip` LAST: it records.
       if (!chip || chip.hasAttribute('data-persistent') || still || !this.#oneRows.flip(id, on)) continue;
-      chip.current = on;
+      if (!chip.hasAttribute('data-locked')) chip.current = on;
       flipped = true;
       const field = this.#fieldFor(id);
       if (field != null && chip.reading) flips.push({ field, suspended: !on });
@@ -1848,7 +1862,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (column) chip.dataset['column'] = column;
     chip.setAttribute('data-icon-start', icon);
     this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options });
+    this.#lock(chip);
     return chip;
+  }
+
+  /** LOCKED, a chip reports and is drawn: a selector always, and in a bound
+   *  bar each chip whose state the source keeps — a toggle answers no field,
+   *  so it stays its own. 366 step 22 · TRAP T-locked-chip-relays-and-nothing-else */
+  #lock(chip: HTMLElement): void {
+    const id = chip.dataset['id'] ?? '';
+    const kept = chip.classList.contains('organise-chip') || this.#fieldFor(id) != null;
+    chip.toggleAttribute('data-locked', chip.hasAttribute('data-persistent') || (this.hasAttribute('data-locked') && kept));
   }
 
   /** The committed value of one organise chip's menu. */
@@ -1876,34 +1900,35 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       );
       if (filterChip) {
         event.stopImmediatePropagation();
-        this.#edited(filterChip.dataset['id'] ?? '');
         /* The chip's OWN answer: `values` reports only chips already ON, so an
            off chip could never commit itself on — every date chip's first pick.
            A TYPED condition is an answer too, so this cannot read ticked rows
            alone: "Contains Ravi" filtered 100 rows down to 22 while its chip
-           read OFF. TRAP T-an-operator-decides-pick-or-type */
-        filterChip.toggleAttribute(
-          'data-current',
-          filterChip.hasAttribute('data-persistent')
-            || this.#chipPicks(filterChip).length > 0
-            || filterChip.answered,
-        );
-        filterChip.refresh();
+           read OFF. Locked, it is drawn. TRAP T-an-operator-decides-pick-or-type */
+        if (!filterChip.hasAttribute('data-locked') || filterChip.hasAttribute('data-persistent')) {
+          filterChip.toggleAttribute(
+            'data-current',
+            filterChip.hasAttribute('data-persistent')
+              || this.#chipPicks(filterChip).length > 0
+              || filterChip.answered,
+          );
+          filterChip.refresh();
+        }
         this.#emitChange(this.#answerRequest(filterChip));
       }
       return;
     }
     event.stopImmediatePropagation();
 
-    // ON while it holds a choice — that is what makes a grouping visible.
+    // ON while it holds a choice — that is what makes a grouping visible. Locked, it is drawn.
     const id = chip.dataset['id'];
-    const picked = !!this.#menuValue(id ?? '');
-    chip.toggleAttribute('data-current', picked);
+    const column = this.#menuValue(id ?? '') ?? null;
+    if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', !!column);
 
-    if (id === 'group') this.emit('group-change', { field: this.groupField });
+    if (id === 'group') this.emit('group-change', { field: column });
     else if (id === 'sort') {
       // Resumes in the remembered direction — the tri-state cycle is body-only.
-      this.emit('sort-change', { field: this.sortField, direction: this.sortDirection });
+      this.emit('sort-change', { field: column, direction: this.sortDirection });
     }
   };
 }

@@ -5987,6 +5987,11 @@ Measured with a real mouse click on a persistent chip with no menu: **two
 `data-persistent` still earns its place — it says the chip stays on the bar when
 off, which is a different fact from who owns its state.
 
+**366 step 22: in a BOUND bar every chip whose state the source keeps is
+locked** — each field chip and Group and Sort. Its click and its menu ask; the
+source draws it back. A toggle answers no field, so nothing would ever draw
+it: it stays unlocked.
+
 ### T-empty-flag-needs-rows-to-count
 
 `data-filters-nothing` flags "on, but filtering by nothing" so CSS can paint the chip
@@ -6001,13 +6006,11 @@ Two kinds of chip are exempt, and the flag is the amber-paint bug in both:
   WAITING FOR ITS ROWS. Painting it amber was the intermittent view-chip
   warning — the flag was read before the rows existed to count
   (`T-persistent-chip-is-a-selector`).
-- **LOCKED.** It cannot be judged this way at all, because a locked chip's menu
-  is not a list of its values: a data grid's column-filter menu holds a
-  condition and a typed value. Either
-  way "no rows ticked" says nothing about whether the chip is filtering, and
-  reading it as "on but empty" painted a WORKING filter in the amber warning
-  state — the exact colour that means "this is doing nothing"
-  (`T-locked-chip-relays-and-nothing-else`).
+- **LOCKED, until 366 step 22.** A data grid's column-filter menu held a
+  condition and a typed value, and reading "no rows ticked" as "on but empty"
+  painted a WORKING filter amber. The flag reads typed answers and Advanced
+  rows now, and every chip of a bound bar is locked, so a locked chip is
+  judged like any other (`T-locked-chip-relays-and-nothing-else`).
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
@@ -12596,7 +12599,8 @@ After: `[["status",4,false],["plan",4,false],["tier",4,false],["owner",4,false]]
 answers `values` from its items' own `selected`, and the bar asks the MENU for
 a chip's picks instead of reading `input:checked` itself. So a rebuilt bar
 reads its picks in the same task. The waits above are older than this, and
-some may now be removable — each needs its own proof.
+some may now be removable — each needs its own proof. A BOUND bar paints from
+its live slice after them (366 step 22), so a wait costs it latency only.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
@@ -16396,11 +16400,17 @@ cleared it: the source kept the filter (100 → 24 rows) while the chip read off
 A grid bound late redraws its scope's bars, so a page that was still binding hit
 it; Firefox's later frames made it show there first.
 
-So the bar counts its own changes (`#edited(id)`), and a draw skips any chip
-changed after it began: its picks, its emptying, a saved filter's on/off. The
-bar has reported that change, so the source holds it; the next draw draws it.
+So a draw reads the scope LIVE after its waits — the binding hands it `live`,
+`() => source.describe(scope)` — and paints that: a change made while it
+waited is already in the Query, so it is in the paint. 366 step 22 replaced the
+bar's count of its own changes (`#edited`) with this.
+
+And a draw paints no chip it already shows: the bar keeps what it last drew
+per chip (`''` for empty). A chip whose menu is open with a draft is left
+alone, so another field's change does not throw the reader's ticks away.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-an-open-menu-keeps-its-draft.spec.ts`
 
 ### T-a-pin-a-page-can-re-point
 

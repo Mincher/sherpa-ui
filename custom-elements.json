@@ -8447,9 +8447,16 @@
                   "type": {
                     "text": "ScopeDescription"
                   }
+                },
+                {
+                  "name": "live",
+                  "type": {
+                    "text": "()"
+                  },
+                  "optional": true
                 }
               ],
-              "description": "drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone."
+              "description": "drawScope(scope, live) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone."
             },
             {
               "kind": "method",

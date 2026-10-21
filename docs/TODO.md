@@ -1955,6 +1955,16 @@ scope's holds. The bench's fake no longer writes its draws into the shared
 `#keepAnswer` / `#pendingAnswers` move to step 22, with the paint from the
 live slice.
 
+Step 22: in a bound bar every chip that answers a field is locked, and Group
+and Sort too; a toggle answers no field and stays its own. A locked chip's
+click and menu ask, and the bar writes no on/off for it. `drawScope(desc,
+live)` paints the live slice after its waits, so `#edits` / `#editedAt` /
+`#edited` go. The bar keeps what it last drew per chip, and a redraw leaves a
+chip with an open draft alone (`reforged-an-open-menu-keeps-its-draft`).
+`#keepAnswer` stays: a reader's Add rebuilds a bound bar and no draw follows
+it (a hold redraws only the panel), so the rebuild repaints what the chip
+showed. Demos panel-apply: 120 of 120 (10 runs, 3 engines).
+
 Step 23: a bound grid heading asks, then is drawn — its doors send the one
 `column-filter-change` a reader would, the steer calls `setReading` and
 `commit({ field })`, and `answerColumn` goes.

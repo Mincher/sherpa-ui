@@ -233,8 +233,9 @@ export interface BoundControl {
   readonly id?: string;
   /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
   drawReading?: (field: string, reading: FieldReading, scope: string) => void;
-  /** A whole scope, drawn SILENTLY — its chips, answers and presets — as the panel draws each. */
-  drawScope?: (scope: ScopeDescription) => void | Promise<void>;
+  /** A whole scope, drawn SILENTLY — its chips, answers and presets — as the panel draws
+   *  each; `live` reads it again, for a bar that paints after a wait. */
+  drawScope?: (scope: ScopeDescription, live?: () => ScopeDescription) => void | Promise<void>;
   /** Each answered chip's results — the rows its own answer matches. */
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */

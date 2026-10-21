@@ -195,16 +195,22 @@ export class SourceBinding {
   /** Draw every bar over one scope, as the panel draws it — after a request
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
-    for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(this.#host.describe(scope));
+    for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(...this.#slice(scope));
   }
 
   /** Draw every bar over one scope each; settles when all have drawn. */
   drawEveryBar(): Promise<unknown> {
     const drawn: Array<void | Promise<void>> = [];
     for (const [el, { scope }] of this.#bound) {
-      if (typeof scope === 'string' && el.drawScope) drawn.push(el.drawScope(this.#host.describe(scope)));
+      if (typeof scope === 'string' && el.drawScope) drawn.push(el.drawScope(...this.#slice(scope)));
     }
     return Promise.all(drawn);
+  }
+
+  /** A scope as a bar is drawn it: described now, and LIVE — read again after the
+   *  bar's waits, so a change made meanwhile is in what it paints. 366 step 22 */
+  #slice(scope: string): [ScopeDescription, () => ScopeDescription] {
+    return [this.#host.describe(scope), () => this.#host.describe(scope)];
   }
 
   /** A control over several scopes — the panel — is drawn each WHOLE, once
