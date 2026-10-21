@@ -1176,12 +1176,15 @@ export class DataSource extends EventTarget {
   }
 
   /** Try the store again: `down`, a fresh read; `unreached`, a read behind the rows
-   *  shown, with no loading; `ok`, nothing. A page's retry, its tab shown, `online`. */
+   *  shown, with no loading; `ok`, a store that may miss a writer is asked what
+   *  moved, behind the rows; else nothing. A page's retry, its tab shown, `online`.
+   *  TRAP T-a-remote-store-says-what-changed */
   recheck(): void {
     const reach = this.reach;
+    const cache = this.#closed ? null : this.#cache;
     if (reach === 'down') void this.load({ force: true });
     // The rows stay, and say they are unconfirmed, until the read lands.
-    else if (reach === 'unreached') this.#cache?.recheck(this.#holdRows, this.#need());
+    else if (reach === 'unreached' || (cache?.tracks && cache.set && this.#plan === 'held')) cache?.recheck(this.#holdRows, this.#need());
   }
 
   /** Closed: it no longer hears its store, and holds nothing. */

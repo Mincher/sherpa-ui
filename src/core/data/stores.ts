@@ -24,6 +24,7 @@ import {
   type Row,
   type RowOrder,
   type StoreChangeDetail,
+  type StoreChanges,
 } from './store.js';
 // Its own module so IdbStore reaches it too.
 import { BaseStore, type StoreOptions } from './base-store.js';
@@ -272,6 +273,9 @@ export interface RestStoreOptions extends StoreOptions {
   buildQuery?: (options: LoadOptions) => URLSearchParams;
   /** The order the server lists rows in, asked no sort, when it is one of these. TRAP T-a-held-set-takes-a-change-in-place */
   rowOrder?: RowOrder;
+  /** What moved since a mark: `GET <changesUrl>?since=<at>` answers `{ at, rows, fields }`.
+   *  Without it, a page opened again reads the whole set. TRAP T-a-remote-store-says-what-changed */
+  changesUrl?: string;
 }
 
 /**
@@ -284,9 +288,22 @@ export class RestStore extends BaseStore {
   /** The endpoint, and how its query parameters are spelled. */
   #options: RestStoreOptions;
 
+  /** What moved since a mark — only with a `changesUrl`. TRAP T-a-remote-store-says-what-changed */
+  readonly changes?: (since?: unknown) => Promise<StoreChanges>;
+
   constructor(options: RestStoreOptions) {
     super(options);
     this.#options = options;
+    const url = options.changesUrl;
+    if (url) this.changes = (since) => this.#changes(url, since);
+  }
+
+  /** Ask what moved; a reply that does not say which fields moved every field. */
+  async #changes(url: string, since: unknown): Promise<StoreChanges> {
+    const query = since == null ? '' : `?since=${encodeURIComponent(String(since))}`;
+    const body = await this.#request<Partial<StoreChanges> | null>(`${url}${query}`, { method: 'GET' });
+    const fields = body?.fields;
+    return { at: body?.at, rows: !!body?.rows, fields: Array.isArray(fields) ? fields : 'all' };
   }
 
   /** Only a `totalPath` says how many rows match: without one, the total is the rows sent. */

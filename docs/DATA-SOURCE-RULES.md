@@ -347,7 +347,11 @@ counts nothing again, when the store says `announcesAll` and names its
 the next page over the same store object answers from it at once. A store that
 says `announcesAll: true` — every change to its rows comes through it, as an
 `ArrayStore`'s does — is trusted as it is; any other (a server another client
-writes, a store another tab writes) is read again before a new page trusts it.
+writes, a store another tab writes) is read again before a new page trusts it —
+unless it says `changes(since)`: what moved since a mark, as `{ at, rows,
+fields }` (`RestStore` does, with a `changesUrl`). Then a page that opens again,
+or a tab shown, asks what moved and reads only those columns again; a row that
+came or went reads the whole set. Never on a toggle.
 So **make each store ONCE** and hand the same object to every page: a new
 object is a new store, with nothing held.
 

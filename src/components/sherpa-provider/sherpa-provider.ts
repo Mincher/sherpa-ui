@@ -366,9 +366,10 @@ export class SherpaProvider extends SherpaElement {
     return { ...this.#reach };
   }
 
-  /** Try every source that cannot reach its store again — a page's Retry. */
+  /** Try every source that cannot reach its store again, and ask one that may
+   *  miss a writer what moved — a page's Retry, its tab shown. TRAP T-a-remote-store-says-what-changed */
   recheck(): void {
-    for (const source of Object.values(this.#sources)) if (source.reach !== 'ok') source.recheck();
+    for (const source of Object.values(this.#sources)) source.recheck();
   }
 
   /** The page's reach, as last said. */
@@ -398,9 +399,10 @@ export class SherpaProvider extends SherpaElement {
     this.emit('reach-change', { ...next });
   }
 
-  /** The network back, or the tab shown again: a store that could not be reached is tried again. */
+  /** The network back, or the tab shown again: a store that could not be
+   *  reached is tried again, and one that may miss a writer is asked what moved. */
   #onBack = (): void => {
-    if (document.visibilityState === 'visible' && this.#reach.reach !== 'ok') this.recheck();
+    if (document.visibilityState === 'visible') this.recheck();
   };
 
   /** Leave the page, or one still opening: its source goes, and nothing in the

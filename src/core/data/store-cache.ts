@@ -17,6 +17,7 @@
  * - .failedAt — The cap the last whole read failed at, or 0.
  * - .failure — Why the last whole read failed, while it stands — its kind and message.
  * - .never — The store's own facts forbid holding it.
+ * - .tracks — A page that opens again, or a tab shown, asks the store what moved, not for the whole set.
  * - .over — The largest cap a set was refused at, for its size.
  * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
  * - .keep — Keep the set beyond the session, and start from the copy kept last time.
@@ -100,6 +101,8 @@ export class StoreCache extends EventTarget {
   #heard = false;
   /** A refusal or a drop: a kept copy that lands after it is never shown. */
   #noRestore = false;
+  /** The store's mark when the set was last read or checked, or undefined. TRAP T-a-remote-store-says-what-changed */
+  #at: unknown;
 
   constructor(store: Store) {
     super();
@@ -148,13 +151,20 @@ export class StoreCache extends EventTarget {
     return this.#over;
   }
 
+  /** A page that opens again, or a tab shown, asks the store what moved, not
+   *  for the whole set: it says `changes`, and may miss a writer. */
+  get tracks(): boolean {
+    return !!this.store.changes && !this.store.announcesAll;
+  }
+
   /** Read the set again BEHIND the one held: it stays, and answers, until the
    *  read lands — then `set` fires. A read in flight serves. TRAP T-a-read-is-planned */
   recheck(cap: number, fields: readonly string[] | null = null): void {
     this.#widest = Math.max(this.#widest, cap);
     this.#want(fields);
     if (this.#reading) return;
-    const reading = this.#readWhole(this.#failedAt ? cap : this.#widest);
+    const asks = this.tracks && this.#at !== undefined && !!this.#set && !this.#due && !this.#failedAt;
+    const reading = asks ? this.#readChanges(cap) : this.#readWhole(this.#failedAt ? cap : this.#widest);
     this.#reading = reading;
     void reading.finally(() => {
       if (this.#reading === reading) this.#reading = null;
@@ -309,12 +319,42 @@ export class StoreCache extends EventTarget {
     }
   }
 
+  /** Ask the store what moved since the mark: nothing — the set is confirmed;
+   *  some fields — those columns are read again, joined by key; a row came or
+   *  went, or it cannot tell — the whole set. TRAP T-a-remote-store-says-what-changed */
+  async #readChanges(cap: number): Promise<void> {
+    const age = this.#age;
+    const set = this.#set!;
+    try {
+      const moved = await this.store.changes!(this.#at);
+      if (age !== this.#age || set !== this.#set) return;
+      if (moved.rows || moved.fields === 'all' || !moved.fields) return await this.#readWhole(this.#widest);
+      const held = set.fields;
+      const fields = moved.fields.filter((f) => !held || held.some((h) => h.split('.')[0] === f));
+      if (fields.length) {
+        const { rows, total } = await this.store.load({ take: cap + 1, fields });
+        if (age !== this.#age || set !== this.#set) return;
+        if (total !== rows.length || !set.join(rows, fields, this.store.key!)) return await this.#readWhole(this.#widest);
+      }
+      this.#at = moved.at;
+      this.#gen++;
+      this.#write();
+      this.dispatchEvent(new Event('set'));
+    } catch (error) {
+      if (age !== this.#age) return;
+      this.#failed(error, cap);
+    }
+  }
+
   /** The whole read: held, refused, or — failed — left to the store until a change or a Refresh. */
   async #readWhole(cap: number): Promise<void> {
     const age = this.#age;
     try {
       const fields = this.#projection();
+      // The mark, asked as the read is sent: a change after it is asked of next time.
+      const marking = this.tracks ? this.store.changes!().then((c) => c.at, () => undefined) : undefined;
       const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: cap + 1, ...(fields ? { fields } : {}) });
+      const at = await marking;
       if (age !== this.#age) return;
       const counted = { rows: rows.length, total };
       if (totalUnknown) return this.#unheld(() => this.#refuse('its totalPath read no number, so its total is only the rows it sent', cap, counted));
@@ -328,6 +368,7 @@ export class StoreCache extends EventTarget {
         return this.#unheld(() => this.#refuse(`it sent ${rows.length} of its ${total} rows — does the server cap a response, or ignore take?`, cap, counted));
       }
       this.#set = new HeldSet(rows, { ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}) }, fields ?? null);
+      this.#at = at;
       this.#due = false;
       // Reached again: the failure is over.
       this.#failedAt = 0;

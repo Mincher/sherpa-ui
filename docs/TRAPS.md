@@ -10393,6 +10393,33 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-remote-store-says-what-changed
+
+**A store that may miss a writer, and says `changes`, is asked what moved since
+its mark — never on a toggle.** TODO 345 phase 9 (Will, D1 A). A held set over a
+server another client writes was read whole again each time a page opened over
+it. Now the cache keeps the store's MARK — asked as each whole read is sent — and
+a check asks `changes(mark)`: nothing moved, and the set is confirmed; some
+fields, and those columns alone are read again, joined by key; a row came or
+went, or the store cannot tell (`fields: 'all'`), and the whole set is read. A
+check runs when a page opens again (its behind check) and when the provider
+rechecks — a Retry, `online`, the tab shown. Never inside a toggle (340): a
+toggle can show data one step old. A change the cache heard is asked about
+again at the next check; it costs a read then, never a wrong row.
+`RestStore` says `changes` with a `changesUrl` (`GET …?since=<at>` →
+`{ at, rows, fields }`); `spoofRemote` answers it from its store's History, and
+its `missed` drops a change as another client's write. There is no timer: a page
+that wants one calls `provider.recheck()`.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/store-cache.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/unit/a-remote-store-says-what-changed.test.mjs`
+- Site: `scripts/check-bench.mjs`
+
 ### T-a-held-set-reads-the-pages-fields
 
 **A held set reads the fields its pages ask for, and a column it lacks on its

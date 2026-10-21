@@ -886,6 +886,17 @@ against the code). The full plan, with every file:line, is
   acts did not move. DATA-SOURCE-RULES says a whole record is `store.byKey()`.
   Demos needs no change: Records declares and shows all 15 fields. Untested in
   browsers (10x less testing): node tests only, until the end of 345.
+- ✅ **Phase 9 — remote History (D1 A).** **Done 2026-10-21:**
+  `Store.changes(since)` → `{ at, rows, fields }`; `RestStore` says it with a
+  `changesUrl`; `spoofRemote` answers from its store's History, and its `missed`
+  drops a change as another client's write. A store that may miss a writer
+  keeps a MARK with each whole read; a page opened again, a Retry, `online` or
+  the tab shown asks what moved: nothing — confirmed; fields — those columns
+  alone; a row came or went — the whole set. Never on a toggle. No timer (a page
+  calls `provider.recheck()`). Bench `rest/`: open and reopen ask the mark too
+  (changes 1 and 2); `missed-change` 0; `recheck` 1 changes + 1 load of the
+  owner column (20,000 cells); `recheck-again` 1 changes, 0 loads. TRAP
+  `T-a-remote-store-says-what-changed`. **All nine phases are done.**
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it

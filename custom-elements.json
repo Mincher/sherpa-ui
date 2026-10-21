@@ -7863,7 +7863,7 @@
               "kind": "method",
               "name": "recheck",
               "parameters": [],
-              "description": "Try every source that cannot reach its store again — a page's Retry."
+              "description": "Try every source that cannot reach its store again, and ask one that may miss a writer what moved — a page's Retry, its tab shown."
             },
             {
               "kind": "method",

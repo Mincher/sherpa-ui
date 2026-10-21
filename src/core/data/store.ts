@@ -23,6 +23,7 @@
  * - Filter — a clause or a group; the one filter shape the whole layer speaks
  * - LoadOptions — What a caller asks a store for.
  * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
+ * - StoreChanges — What moved in a store since a mark, and the mark now.
  * - Store — where records come from; the same interface whatever backs it
  * - RowOrder — The order a whole read returns rows in, asked no sort.
  * - StoreChangeDetail — Fired after an insert, update or remove.
@@ -189,6 +190,16 @@ export interface LoadOptions {
   fields?: readonly string[];
 }
 
+/** What moved in a store since a mark, and the mark now: `rows` — a row came
+ *  or went; `fields` — the fields whose values moved, or `'all'` when it cannot
+ *  tell. TRAP T-a-remote-store-says-what-changed */
+export interface StoreChanges {
+  /** The mark now, opaque: the next ask sends it back. */
+  at: unknown;
+  rows?: boolean;
+  fields?: readonly string[] | 'all';
+}
+
 /** What a load returns: the rows, plus the total BEFORE paging. */
 export interface LoadResult {
   rows: Row[];
@@ -254,6 +265,10 @@ export interface Store extends EventTarget {
   /** OPTIONAL: what changed this session, by field. A store without it moves
    *  every field on each change. TRAP T-a-store-keeps-its-history */
   readonly history?: StoreHistory;
+  /** OPTIONAL: what moved since a mark — a remote store's History; asked with
+   *  none, the mark now. Asked when a page opens again or its tab is shown,
+   *  never on a toggle. TRAP T-a-remote-store-says-what-changed */
+  changes?(since?: unknown): Promise<StoreChanges>;
 }
 
 /** The order a whole read returns rows in, asked no sort. */

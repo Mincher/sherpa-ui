@@ -29,13 +29,13 @@ const LEAN = 'test/unit/fixtures/lean.page.json';
 const N = 10_000;
 const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
-export const GATED = ['loads', 'counts', 'distinct', 'fields', 'rows', 'cells', 'compiles', 'clones', 'scans'];
+export const GATED = ['loads', 'counts', 'distinct', 'changes', 'fields', 'rows', 'cells', 'compiles', 'clones', 'scans'];
 // The fakes are read from these specs, so a change to one changes the bench.
 const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
   .map((tag) => `src/components/${tag}/${tag}.component.json`);
 const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, LEAN, ...SPECS];
 // `walks` and `draws` are printed, never gated.
-const counters = { loads: 0, counts: 0, distinct: 0, fields: 0, rows: 0, cells: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
+const counters = { loads: 0, counts: 0, distinct: 0, changes: 0, fields: 0, rows: 0, cells: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
 
 /* ── The data layer, bundled from src/ with compile() counted ─────────── */
 
@@ -209,10 +209,18 @@ async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tier
   if (tiered) Object.assign(def.fields, { customer: { ...def.fields.customer, child: 'site' }, site: { label: 'Site' } });
   const rows = tiered ? ROWS.map((r) => ({ ...r, site: `Site ${1 + (r.id % 6)}` })) : ROWS.map((r) => ({ ...r }));
   const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
-  const seen = remote ? L.spoofRemote(store, { delay: 0, ...(announcesAll === false ? { announcesAll } : {}) }) : store;
+  // While on, a change is MISSED: another client's write. 345 phase 9
+  const deaf = { on: false };
+  const spoof = remote && L.spoofRemote(store, { delay: 0, missed: () => deaf.on, ...(announcesAll === false ? { announcesAll } : {}) });
+  // Each ask of what moved, counted. TRAP T-a-remote-store-says-what-changed
+  if (spoof?.changes) {
+    const changes = spoof.changes;
+    spoof.changes = (since) => { counters.changes++; return changes(since); };
+  }
+  const seen = spoof || store;
   // The fields its grid shows, as the provider names them. 345 phase 8
   const columns = (whole.ui?.grid?.columns ?? []).map((c) => c.field);
-  return { L, def, columns, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen, columns) };
+  return { L, def, columns, deaf, inner: store, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen, columns) };
 }
 
 /** One page over a store: its source, and its controls bound as the provider binds them. */
@@ -287,6 +295,14 @@ const ACTS = {
   'fetch-on': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: false, commit: true } }),
   // A field held for the first time asks its values; held again, nothing. 345 phase 5
   'add-field': (p) => p.source.query.hold('data', [...p.source.query.scope('data'), 'seats']),
+  // Another client moves an owner; the page hears nothing until it asks what moved — once, then nothing new. 345 phase 9
+  'missed-change': async (p) => {
+    p.deaf.on = true;
+    await p.inner.update(18, { owner: 'Owner 07' });
+    p.deaf.on = false;
+  },
+  recheck: (p) => p.source.recheck(),
+  'recheck-again': (p) => p.source.recheck(),
   // A component that reads a field no other does: its column alone; a second, nothing; one that names none, every field. 345 phase 8
   'add-column': (p) => p.L.bindSource(p.source, control('sherpa-barchart', 'spend-chart'), { readonly: true, fields: ['spend'] }),
   'add-column-again': (p) => p.L.bindSource(p.source, control('sherpa-barchart', 'spend-chart-2'), { readonly: true, fields: ['spend'] }),
@@ -303,7 +319,7 @@ const PAGES = {
   records: { remote: false, acts: MAIN },
   remote: { remote: true, acts: [...MAIN, 'apply-fetch', 'fetch-off', 'fetch-on'], fetch: ['seats'] },
   // A store that may miss a writer (a server another client writes): a reopen shows its set and checks it behind.
-  rest: { remote: true, announcesAll: false, acts: MAIN },
+  rest: { remote: true, announcesAll: false, acts: [...MAIN, 'missed-change', 'recheck', 'recheck-again'] },
   lean: { page: LEAN, remote: false, acts: ['change-unused', 'change-shown', 'change-held', 'answer-held', 'change-answered', 'add', 'delete'] },
   // A remote store not held: every count and tally is a request.
   notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete', 'add-field', 'add-field-again'] },
@@ -360,7 +376,7 @@ export async function bench() {
 }
 
 /** The reads that leave the data layer. */
-const ASKS = ['loads', 'counts', 'distinct'];
+const ASKS = ['loads', 'counts', 'distinct', 'changes'];
 
 /** Each act on the remote page, after it opens, that asked the store: its whole
  *  set is held, so the client answers. A rule, never a baseline — Will, TODO 340.
@@ -368,13 +384,16 @@ const ASKS = ['loads', 'counts', 'distinct'];
 export function asked(costs) {
   // A rest/ open and reopen read the set ONCE — the reopen behind the set it shows. TRAP T-a-read-is-planned
   // …and a field the store answers is asked once on Apply. TRAP T-a-server-field-is-asked-once-per-answer
-  const once = new Set(['rest/open', 'rest/reopen', 'remote/apply-fetch']);
+  // …and a rest/ page asks what moved: as it reads, as it opens again, and on a recheck,
+  // which reads only the moved column — then nothing. TRAP T-a-remote-store-says-what-changed
+  const want = {
+    'rest/open': { loads: 1, changes: 1 }, 'rest/reopen': { loads: 1, changes: 2 }, 'remote/apply-fetch': { loads: 1 },
+    'rest/recheck': { loads: 1, changes: 1 }, 'rest/recheck-again': { changes: 1 },
+  };
   return Object.entries(costs)
     .filter(([act]) => act.startsWith('remote/') || act.startsWith('rest/'))
-    .filter(([act, c]) => (act === 'remote/open' ? false
-      : once.has(act) ? c.loads !== 1 || c.counts > 0 || c.distinct > 0
-        : ASKS.some((k) => c[k] > 0)))
-    .map(([act, c]) => `${act} asked the store: ${ASKS.map((k) => `${k} ${c[k]}`).join(', ')}${once.has(act) ? ' (want: loads 1)' : ''}`);
+    .filter(([act, c]) => act !== 'remote/open' && ASKS.some((k) => c[k] !== (want[act]?.[k] ?? 0)))
+    .map(([act, c]) => `${act} asked the store: ${ASKS.map((k) => `${k} ${c[k]}`).join(', ')}${want[act] ? ` (want: ${JSON.stringify(want[act])})` : ''}`);
 }
 
 /** Each cost above the baseline, and each act one side lacks. */

@@ -9,7 +9,7 @@
  * - SpoofOptions — How slow each load is, and how often one fails.
  * - spoofRemote — Wrap a store so its loads act as if they left the data layer.
  */
-import type { LoadOptions, LoadResult, Row, Store } from './store.js';
+import type { LoadOptions, LoadResult, Row, Store, StoreChanges } from './store.js';
 
 /** How slow each load is, and how often one fails — a number, or a function read
  *  at each load, so ONE wrapper serves a whole app while a setting changes. */
@@ -20,6 +20,9 @@ export interface SpoofOptions {
   fail?: number | (() => number);
   /** Does it act as a store whose every change is announced? Default: the store's own say. */
   announcesAll?: boolean;
+  /** True while a change is MISSED — not passed on, as a page misses another
+   *  client's write; its History still says it moved. Default: none is. */
+  missed?: () => boolean;
 }
 
 /** Wrap a store so its loads act as if they left the data layer. Writes pass straight through. */
@@ -37,7 +40,7 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
   const relay = (e: Event): void => {
     const wrapper = to.deref();
     if (!wrapper) store.removeEventListener('change', relay);
-    else wrapper.dispatchEvent(new CustomEvent('change', { detail: (e as CustomEvent).detail }));
+    else if (!options.missed?.()) wrapper.dispatchEvent(new CustomEvent('change', { detail: (e as CustomEvent).detail }));
   };
   store.addEventListener('change', relay);
   const inner = store.distinct?.bind(store);
@@ -68,6 +71,15 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
         await wait();
         failed();
         return inner(fields, o);
+      },
+    } : {}),
+    // What moved since a mark, from its History. TRAP T-a-remote-store-says-what-changed
+    ...(store.history ? {
+      async changes(since?: unknown): Promise<StoreChanges> {
+        await wait();
+        failed();
+        const history = store.history!;
+        return { at: history.seq, ...(since == null ? { rows: false, fields: [] } : history.since(Number(since))) };
       },
     } : {}),
     byKey: (key: unknown) => store.byKey(key),

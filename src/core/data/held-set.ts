@@ -51,7 +51,7 @@ export class HeldSet {
   /** Take a column read in: each row's `fields`, found by its `key`. False, and
    *  nothing taken, when the read is not the same rows — a change it never heard. */
   join(rows: readonly Row[], fields: readonly string[], key: string): boolean {
-    if (!this.#fields || rows.length !== this.#rows.length) return false;
+    if (rows.length !== this.#rows.length) return false;
     const read = new Map(rows.map((r) => [valueKey(readField(r, key)), r]));
     const found = this.#rows.map((r) => read.get(valueKey(readField(r, key))));
     if (read.size !== rows.length || found.some((r) => !r)) return false;
@@ -62,7 +62,7 @@ export class HeldSet {
       for (const top of tops) if (top in found[i]!) next[top] = found[i]![top];
       this.#rows[i] = next;
     }
-    for (const f of fields) this.#fields.add(f);
+    for (const f of fields) this.#fields?.add(f);
     return true;
   }
 
