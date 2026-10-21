@@ -119,7 +119,7 @@ test('the comparison is the QUERY\'s, so casing cannot break a pick', async () =
 test('selecting ANNOUNCES the field, so other controls re-read', async () => {
   const source = await ready();
   const heard = [];
-  source.addEventListener('selection-change', (e) => heard.push(e.detail.field));
+  source.query.addEventListener('query-change', (e) => heard.push(...e.detail.fields));
   source.query.select('plan', ['Pro']);
   source.query.select('plan', []);
   assert.deepEqual(heard, ['plan', 'plan'], 'clearing is a change too');

@@ -38,6 +38,7 @@ import {
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
+import type { QueryChangeDetail } from '../../core/data/query-context.js';
 import { VIEW, type Query, type QueryDefaults, type SavedFilter } from '../../core/data/query.js';
 import { dropSet, takeSet } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
@@ -117,19 +118,21 @@ export class ProviderPage {
     if (!opened) return;
     const { source } = opened;
     const el = this.#host.el;
-    source.addEventListener('scope-change', () => this.#offer(), { signal });
+    // A scope moved: what each bar may add moved with it.
+    const scoped = (e: Event): boolean => (e as CustomEvent<QueryChangeDetail>).detail.scopes.length > 0;
+    source.query.addEventListener('query-change', (e) => { if (scoped(e)) this.#offer(); }, { signal });
     /* After every load — a filter, a sort, a View — and every scope change,
        which moves a filter and loads nothing; once a frame. TODO 231 */
     let frame = 0;
-    for (const type of ['change', 'scope-change']) {
-      source.addEventListener(type, () => {
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => {
-          this.#sayResets();
-          this.#saySaved();
-        });
-      }, { signal });
-    }
+    const say = (): void => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        this.#sayResets();
+        this.#saySaved();
+      });
+    };
+    source.addEventListener('change', say, { signal });
+    source.query.addEventListener('query-change', (e) => { if (scoped(e)) say(); }, { signal });
     /* A REQUEST. A host that asks the reader first — a confirm dialog —
        prevents it, and calls resetView() itself. TRAP T-reset-to-default-is-the-views-own */
     el.addEventListener('view-reset', (event) => {
@@ -467,7 +470,7 @@ export class ProviderPage {
     };
     // After a pick or a reset, the page's kept Query is the one on screen.
     this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
-    for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
+    source.query.addEventListener('query-change', keep, { signal });
     // A preset switched is a report, and no selection changes.
     this.#host.el.addEventListener('quick-filter-change', keep, { signal });
     signal.addEventListener('abort', () => {

@@ -784,7 +784,6 @@ export class DataSource extends EventTarget {
   #hear(change: QueryChange): void | Promise<void> {
     switch (change.kind) {
       case 'offer':
-        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
         // What its menus may add moved: the walk tallies it.
         if (this.#loaded) this.#walkSoon();
         return;
@@ -802,7 +801,6 @@ export class DataSource extends EventTarget {
         this.#recompose();
         // The shared filter did not move, so no load will push it: push it here.
         this.#binding.pushTo(change.narrows);
-        this.dispatchEvent(new CustomEvent('selection-change', { detail: { field: change.field, scope: change.scope } }));
         // A panel shows a part too, and is told as a bar is. TRAP T-one-query-one-owner
         if (this.#narrowing.has(change.scope)) {
           const drawn = structuredClone(this.#draft.scopes[change.scope]?.readings[change.field] ?? { picked: [] });
@@ -810,23 +808,18 @@ export class DataSource extends EventTarget {
         }
         return;
       case 'select':
+        // The requery first, so a listener sees the state the rows were fetched for.
         this.#recompose();
-        // AFTER the requery, so a listener sees the state the rows were fetched for.
-        this.dispatchEvent(new CustomEvent('selection-change', { detail: { field: change.field } }));
         this.#draw(change.field);
         return;
       case 'hold':
         if (change.moved.length) this.#recompose();
-        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
         for (const field of change.moved) this.#draw(field);
         if (change.scope === VIEW) this.#syncSuperseded(true);
         this.#binding.drawScopesSoon();
         return;
       case 'move':
         if (change.moved) this.#recompose();
-        // ONE event, naming every scope that changed — a listener never sees the
-        // field in neither place, or in both.
-        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: change.scopes } }));
         return;
       case 'recompose':
         this.#recompose();
@@ -837,10 +830,7 @@ export class DataSource extends EventTarget {
         this.#syncColumns();
         return;
       case 'drawn':
-        for (const field of change.fields) {
-          this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
-          this.#draw(field);
-        }
+        for (const field of change.fields) this.#draw(field);
         if (change.bars) this.#binding.drawBars(change.bars);
         if (change.pending) this.#syncPending();
         return;
@@ -848,7 +838,6 @@ export class DataSource extends EventTarget {
         this.#binding.drawBars(change.scope);
         return;
       case 'arranged':
-        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
         // The old count was measured against the OLD grouping. Drop it and wait for
         // the next draw. TRAP T-grouped-paging-belongs-to-the-view
         if (change.group) this.#viewPages = null;
@@ -870,11 +859,7 @@ export class DataSource extends EventTarget {
     // Re-arranged, or searched: page one, and a load, whatever the filter did.
     const order = (a: Arrangement): string => JSON.stringify([a.sort, a.group, a.search]);
     if (order(now) !== order(was)) this.#requery();
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
-    for (const field of new Set([...before, ...this.selectedFields])) {
-      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
-      this.#draw(field);
-    }
+    for (const field of new Set([...before, ...this.selectedFields])) this.#draw(field);
     await this.#binding.drawEveryBar();
     // Drawn, never reported: the Query is already the answer.
     this.#syncSuperseded(false);
@@ -1304,7 +1289,7 @@ export class DataSource extends EventTarget {
   #walkKey(): string {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, withoutArrangement(this.#applied),
+    return JSON.stringify([this.#age, this.#member.walkVersion(), this.#walkAge, this.#limitOptions, withoutArrangement(this.#applied),
       components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }

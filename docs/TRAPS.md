@@ -4311,9 +4311,9 @@ so.
 counterpart. Each is a place a host can write state that nothing downstream
 will ever hear about.
 
-**`DataSource.select()` is the answer for a FIELD**, and the reason the legend
+**`query.select()` is the answer for a FIELD**, and the reason the legend
 no longer mirrors a chip at all. It writes the field's selection, re-queries,
-and then emits `selection-change` — one write, one announcement, and every
+and then `query-change` names the field — one write, one announcement, and every
 control over that field re-reads `selection(field)` instead of being pushed to.
 The silent setters above are what those controls are DRAWN with, downstream of
 the announcement, which is exactly where silence belongs.
@@ -5659,7 +5659,7 @@ The fix is that the SOURCE owns the field, not any control:
 | | |
 |---|---|
 | `declareValues(field, values)` | every value, so each control offers the same rows — and the same STRINGS |
-| `select(field, picked)` | the one write; re-queries, then emits `selection-change` |
+| `select(field, picked)` | the one write; re-queries, then `query-change` names the field |
 | `selection(field)` | a `FilterState`, the one answer each control draws from |
 
 The filter is composed from the FIELDS' readings, scope by scope, so a field
@@ -10213,8 +10213,8 @@ field selection:
 
 **A component binding draws its OWN answer, not the field's.** The View's is a
 different, wider question, and drawing it on a component control would claim the
-reader picked something they did not. It also means `selection-change` never
-fires for a part, so the binding redraws itself on write.
+reader picked something they did not. It also means a part's write is not the
+field's selection, so the binding redraws itself on write.
 
 **A component scope REFUSES a source with no `contribute()`** rather than
 falling back to `select()` — that fallback is the exact clobber this scope
@@ -10415,7 +10415,7 @@ a field, the data and the bar followed, and the panel still showed the old
 answer — so its next Apply, with nothing touched, put that answer back.
 Measured on the Records page: 25 rows went back to 100.
 
-The page steers the panel from the same `selection-change` it steers the bar
+The page steers the panel from the same `query-change` it steers the bar
 from, with `setFieldReading(id, reading)`. ONE field, not a refill: a refill
 redraws every field and throws away the reader's unapplied picks. The steer
 is that field's last Apply too, so Discard keeps it.
@@ -11496,7 +11496,7 @@ is there.
 Two details that are easy to get wrong:
 
 - **`hold()` on an unchanged list fires nothing.** A bar re-renders on
-  `scope-change`, so a no-op that wakes it is a redraw loop waiting to happen.
+  `query-change`, so a no-op that wakes it is a redraw loop waiting to happen.
 - **`scope()` answers a COPY.** A caller that mutates the answer must not reach
   into the registry through it.
 
@@ -15019,7 +15019,7 @@ this?" would forbid every first filter.
 | `offer(name, fields)` | a component's own fields. The view needs none |
 | `fields(name)` | its own, or for the view the union of every component's |
 | `canHold(name, field)` | `name === VIEW` or the component has it |
-| `move(field, from, to)` | ONE call, ONE `scope-change` naming every scope it touched |
+| `move(field, from, to)` | ONE call, ONE `query-change` naming every scope it touched |
 
 **`move()` is one call because the removal is not optional.** Two `hold()`s
 can be interrupted between them, and a field filtered in both the view and a
@@ -17705,7 +17705,7 @@ Three things follow from the declaring, and each was a hole without it:
 - **A write from anywhere narrows the one chart.** The panel has no pointer to
   the chart; `write()` finds `only` in the declaration. Without it the scope
   came back WIDE and narrowed every component.
-- **Both views are told.** The legend hears `selection-change`; a panel is
+- **Both views are told.** The legend hears `query-change`; a panel is
   drawn `drawReading(field, reading, scope)` — and takes it BY SCOPE, because
   a chart's field is often the grid's or the View's too.
 
@@ -17737,7 +17737,7 @@ the View said "Disk" while the legend showed every item on, and a legend
 press narrowed one chart under a View filter nobody had changed from there.
 
 `bindSelection` asks at each draw and each write — `source.query.holds('view',
-field)` — so nothing is cached, and it hears `scope-change` to redraw when
+field)` — so nothing is cached, and it hears `query-change` (a scope moved) to redraw when
 the View takes the field or lets it go. Taken, the binding DROPS its own
 answer: two answers to one field, one of them hidden, is the bug. A press
 writes plain picks; rows the View kept stay kept, in Simple mode.
@@ -17776,7 +17776,9 @@ filter restored over empty chips.
 A `Query` holds scopes; each scope holds fields, each field's `FieldReading`,
 and — for one scope — sort, group and search. It lives in a `QueryContext`
 with what the page declares about it (366 step 12): `source.query` IS that
-context, and a source given none makes its own.
+context, and a source given none makes its own. Every change is the context's: it
+edits the Query, each source hears it and does its own work, and then ONE
+`query-change { fields, scopes }` tells the page (366 step 17).
 `compile(query, facts)` is the ONE place it becomes a filter, and it is pure:
 a field the View holds is answered there alone, a suspended reading applies
 nothing, and a scope that `narrows` reaches only those components. The

@@ -94,28 +94,34 @@ test('pending and dirty: a remote member\'s edit, until Apply', () => {
   assert.equal(query.dirty(), false);
 });
 
-test('a declaration is the context\'s, and every member hears it at once (366 step 14)', () => {
+test('a change is the context\'s: every member hears it, then ONE query-change (366 steps 14, 17)', () => {
   const query = new QueryContext();
   const one = new DataSource({ store: store(), query });
   const two = new DataSource({ store: store(), query });
   const heard = [];
-  one.addEventListener('scope-change', () => heard.push('one'));
-  two.addEventListener('scope-change', () => heard.push('two'));
+  query.addEventListener('query-change', (e) => heard.push({ ...e.detail, filters: [one.state.filter, two.state.filter] }));
   query.offer('data', ['plan']);
-  assert.deepEqual(heard, ['one', 'two'], 'in the order they joined, before offer returns');
   assert.deepEqual(query.fields('data'), ['plan']);
   // The same offer again changes nothing, and no one hears it.
   query.offer('data', ['plan']);
-  assert.deepEqual(heard, ['one', 'two']);
+  query.hold(VIEW, ['plan']);
+  query.select('plan', ['Pro']);
+  // Both members compiled before the page was told.
+  assert.deepEqual(heard, [
+    { fields: [], scopes: ['data'], filters: [undefined, undefined] },
+    { fields: [], scopes: [VIEW], filters: [undefined, undefined] },
+    { fields: ['plan'], scopes: [], filters: [['plan', 'eq', 'Pro'], ['plan', 'eq', 'Pro']] },
+  ]);
   query.declareScope('data', { label: 'Records' });
   assert.equal(query.scopeLabel('data'), 'Records');
+  assert.equal(heard.length, 3, 'a label is no query change');
 });
 
 test('an edit on the context recompiles, reloads and redraws its source (366 step 15)', async () => {
   const query = new QueryContext();
   const source = new DataSource({ store: store(), query });
   const heard = [];
-  source.addEventListener('selection-change', (e) => heard.push(e.detail.field));
+  query.addEventListener('query-change', (e) => heard.push(...e.detail.fields));
   await source.load();
   query.hold(VIEW, ['plan']);
   query.select('plan', ['Pro']);

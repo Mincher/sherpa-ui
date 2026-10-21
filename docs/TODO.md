@@ -1913,7 +1913,9 @@ the filter edits — `select`, `write`, `hold`, `move`, `request`, `release`,
 — are the context's; it edits the Query and each source runs its follow-ups. Step 16:
 `setSort`, `setGroup`, `resumeSort`, `clearSort`, `setSearch`, `setQuery`,
 `export` and `import` are the context's too; `SourceState` is `QueryState`,
-and a View is applied to a `query`, not a source.
+and a View is applied to a `query`, not a source. Step 17: one event —
+the context fires `query-change { fields, scopes }` after every source has
+heard; sources fire neither `scope-change` nor `selection-change`.
 
 ---
 

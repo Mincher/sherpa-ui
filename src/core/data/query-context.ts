@@ -8,9 +8,10 @@
  * - QueryChange — What the context did, as each member hears it.
  * - QueryMember — What a source tells the context it joins.
  * - MemberBind — How a member bound a control.
+ * - QueryChangeDetail — What `query-change` says: the fields whose answers moved, and the scopes whose holds or arrangement did.
  * - QueryLive — The Query and the declarations, live: written in place, never copied.
  * - QueryHandle — What a member holds of its context.
- * - QueryContext — The Query of one app Context, shared by every source in it.
+ * - QueryContext — The Query of one app Context, shared by every source in it. Fires `query-change`.
  * - .applied — The Query the rows are under. A copy.
  * - .draft — What the reader is editing. A copy.
  * - .remote — Does any member's store wait for Apply?
@@ -111,6 +112,13 @@ export interface QueryMember {
 /** A change to the arrangement: what it names, and nothing else. */
 type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
 
+/** What `query-change` says: the fields whose answers moved, and the scopes
+ *  whose holds or arrangement did. */
+export interface QueryChangeDetail {
+  fields: string[];
+  scopes: string[];
+}
+
 /** How a member bound a control. */
 export interface MemberBind {
   id: string;
@@ -151,6 +159,8 @@ export interface QueryHandle {
   live(): Readonly<QueryLive>;
   /** A bind id no other member has made. */
   mintId(): string;
+  /** Moves with each declaration a walk reads — a part, a set. */
+  walkVersion(): number;
   /** Does any member show rows in this scope? */
   showsRows(scope: string): boolean;
   /** How any member bound this control. */
@@ -159,16 +169,23 @@ export interface QueryHandle {
   leave(): void;
 }
 
-/** The Query of one app Context, shared by every source in it. */
-export class QueryContext {
+/**
+ * The Query of one app Context, shared by every source in it. After each
+ * change, once every member has heard it, it fires ONE `query-change`.
+ * 366 step 17 · TRAP T-one-query-one-owner
+ */
+export class QueryContext extends EventTarget {
   /** The one Query, and the declarations. */
   readonly #live: QueryLive;
   /** Every source that joined. */
   readonly #members = new Set<QueryMember>();
   /** Binds made, for an id when the element has none. */
   #binds = 0;
+  /** Declarations a walk reads: a part, a set. */
+  #walks = 0;
 
   constructor() {
+    super();
     const applied: Query = { v: 1, scopes: {} };
     this.#live = {
       applied, draft: applied,
@@ -296,6 +313,7 @@ export class QueryContext {
    * TRAP T-a-chart-scope-is-its-legend-field
    */
   declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
+    this.#walks++;
     if (part) this.#live.parts.set(scope, part);
     else this.#live.parts.delete(scope);
     this.#tell({ kind: 'part', scope, ...(part ? { field: part.field } : {}) });
@@ -310,6 +328,7 @@ export class QueryContext {
   /** A scope's filter sets, in order. A field is in one set at most; a second
    *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
   declareSets(scope: string, sets: readonly FilterSet[]): void {
+    this.#walks++;
     const taken = new Set<string>();
     this.#live.sets.set(scope, sets.map((set) => ({
       ...structuredClone(set),
@@ -663,6 +682,7 @@ export class QueryContext {
     this.#live.draft = this.remote ? structuredClone(next) : next;
     rehome(this.#live.draft);
     await Promise.all([...this.#members].map((m) => m.heard({ kind: 'query', was, before })));
+    this.#announce({ fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes });
   }
 
   /** The whole question as JSON — the Query as applied, with its arrangement.
@@ -738,9 +758,26 @@ export class QueryContext {
     return undefined;
   }
 
-  /** Each member hears what the context did, at once, in the order they joined. */
+  /** Each member hears what the context did, at once, in the order they joined;
+   *  then, if a field's answer or a scope's holds moved, the page is told. */
   #tell(change: QueryChange): void {
-    for (const member of this.#members) member.heard(change);
+    for (const member of this.#members) void member.heard(change);
+    const said = ((): QueryChangeDetail | null => {
+      switch (change.kind) {
+        case 'write': case 'select': return { fields: [change.field], scopes: [] };
+        case 'drawn': return { fields: change.fields, scopes: [] };
+        case 'offer': case 'hold': return { fields: [], scopes: [change.scope] };
+        case 'move': return { fields: [], scopes: change.scopes };
+        case 'arranged': return { fields: [], scopes: this.scopes };
+        default: return null;
+      }
+    })();
+    if (said) this.#announce(said);
+  }
+
+  /** ONE event for anything listening to the Query. */
+  #announce(detail: QueryChangeDetail): void {
+    this.dispatchEvent(new CustomEvent('query-change', { detail }));
   }
 
   /** A source joins: it gets its handle. A remote one splits the draft from
@@ -751,6 +788,7 @@ export class QueryContext {
     return {
       live: () => this.#live,
       mintId: () => `bind-${++this.#binds}`,
+      walkVersion: () => this.#walks,
       showsRows: (scope) => [...this.#members].some((m) => m.showsRows(scope)),
       bindOf: (el) => this.#bindOf(el),
       leave: () => { this.#members.delete(member); },

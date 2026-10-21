@@ -47,6 +47,17 @@ test('a sort, a page and a search count nothing again', async () => {
   assert.equal(drawn.length, before);
 });
 
+test('a set moves the walk; a scope\'s label does not (366 step 17)', async () => {
+  const { source, drawn } = await setup();
+  const before = drawn.length;
+  source.query.declareScope('data', { label: 'Accounts' });
+  await tick();
+  assert.equal(drawn.length, before, 'a label counts nothing again');
+  source.query.declareSets('data', [{ id: 'one', fields: ['status'] }]);
+  await tick();
+  assert.ok(drawn.length > before, 'a set is the order the chips count in');
+});
+
 test('a change to the rows counts again, though the Query is the same', async () => {
   const { store, drawn } = await setup();
   const before = drawn.length;

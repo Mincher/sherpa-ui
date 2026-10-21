@@ -68,7 +68,7 @@ test('an empty list FORGETS a scope, and the answer is a copy', async () => {
 test('scope-change fires on a real change, and NOT on a no-op', async () => {
   const src = await source();
   let heard = 0;
-  src.addEventListener('scope-change', () => { heard += 1; });
+  src.query.addEventListener('query-change', (e) => { if (e.detail.scopes.length) heard += 1; });
 
   src.query.hold('data', ['owner', 'plan']);
   assert.equal(heard, 1);

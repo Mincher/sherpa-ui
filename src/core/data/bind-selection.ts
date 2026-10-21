@@ -20,17 +20,18 @@ import { report } from './report.js';
 import type { BoundControl } from './data-source-types.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import { VIEW } from './query.js';
+import type { QueryChangeDetail } from './query-context.js';
 
 /**
  * Enough of a DataSource to own a FIELD's selection, keyed by FIELD: two
  * controls over one field both reach the query. TRAP T-one-field-one-filter-menu
  */
-export interface Selector extends EventTarget {
+export interface Selector {
   selection: (field: string) => FilterState;
   declareValues: (field: string, values: readonly unknown[]) => void;
   /** Its QueryContext. Does a scope hold a field? A control that narrows one
    *  component asks of the View. TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
-  query: {
+  query: EventTarget & {
     select: (field: string, picked: readonly unknown[], reading?: FieldReading) => void;
     /** A control that narrows ONE component writes its own scope.
      *  `reach`, not `scope`: TRAP T-three-things-called-scope */
@@ -157,28 +158,25 @@ export function bindSelection<T extends EventTarget>(
   };
 
   const onControlChange = (): void => { write(read(control)); };
-  const onSelectionChange = (e: Event): void => {
-    if ((e as CustomEvent<{ field: string }>).detail?.field !== field) return;
-    redraw();
-  };
-
-
-  /** The View took the field, or let it go: what this control shows changed.
-   *  Taken, its own answer is dropped — the View's is the one in force. */
-  const onScopeChange = (): void => {
-    if (raised() && source.query.reading(key, field)) source.query.write(key, field, undefined, only ? { only } : {});
-    redraw();
+  /* A scope moved: the View took the field, or let it go — taken, its own
+     answer is dropped, the View's being the one in force. Then its field's
+     answer, if that moved. */
+  const onQueryChange = (e: Event): void => {
+    const { fields, scopes } = (e as CustomEvent<QueryChangeDetail>).detail;
+    if (reach === 'component' && scopes.length) {
+      if (raised() && source.query.reading(key, field)) source.query.write(key, field, undefined, only ? { only } : {});
+      redraw();
+    }
+    if (fields.includes(field)) redraw();
   };
 
   control.addEventListener(event, onControlChange);
-  source.addEventListener('selection-change', onSelectionChange);
-  if (reach === 'component') source.addEventListener('scope-change', onScopeChange);
+  source.query.addEventListener('query-change', onQueryChange);
   redraw();
 
   const destroy = (): void => {
     control.removeEventListener(event, onControlChange);
-    source.removeEventListener('selection-change', onSelectionChange);
-    source.removeEventListener('scope-change', onScopeChange);
+    source.query.removeEventListener('query-change', onQueryChange);
     // Its scope outlives its control otherwise, and nothing else can name it.
     if (reach === 'component') source.query.write(key, field, undefined);
   };

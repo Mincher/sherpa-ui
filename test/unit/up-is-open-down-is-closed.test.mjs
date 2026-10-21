@@ -55,7 +55,7 @@ test('RAISING a filter takes it out of EVERY component, in one event', async () 
   src.query.hold('grid', ['owner', 'plan']);
   src.query.hold('tickets', ['owner']);
   const events = [];
-  src.addEventListener('scope-change', (e) => events.push(e.detail));
+  src.query.addEventListener('query-change', (e) => { if (e.detail.scopes.length) events.push(e.detail); });
 
   assert.equal(src.query.move('owner', 'grid', VIEW), true);
 
@@ -104,7 +104,7 @@ test('a component REFUSES a field it does not have, and says so', async () => {
 test('offer() on an unchanged list fires nothing — a bar re-renders on it', async () => {
   const src = await source();
   let fired = 0;
-  src.addEventListener('scope-change', () => { fired += 1; });
+  src.query.addEventListener('query-change', () => { fired += 1; });
   src.query.offer('grid', ['status', 'plan', 'owner']);
   assert.equal(fired, 0);
 });
