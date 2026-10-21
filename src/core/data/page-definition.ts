@@ -82,11 +82,6 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
   const fields = Object.keys(def.fields ?? {});
   const children = checkTiers(def);
   for (const [field, facts] of Object.entries(def.fields ?? {})) source.declareField(field, facts);
-  await source.declareFromRows(fields);
-  // A tiered field's children, once its parents are known. TODO 369
-  for (const [field, facts] of Object.entries(def.fields ?? {})) {
-    if (facts.child && children.has(facts.child)) await source.declareChildren(field);
-  }
   for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
     if (facts.label || facts.arranges != null) {
       source.query.declareScope(scope, {
@@ -107,6 +102,13 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
       }
     }
     if (facts.sets?.length) source.query.declareSets(scope, facts.sets);
+  }
+  /* The values LAST, so a store it does not hold is asked only for what the
+     page holds. 345 phase 5 · TRAP T-a-field-reads-its-values-when-needed */
+  await source.declareFromRows(fields, { lazy: true });
+  // A tiered field's children, once its parents are known. TODO 369
+  for (const [field, facts] of Object.entries(def.fields ?? {})) {
+    if (facts.child && children.has(facts.child)) await source.declareChildren(field);
   }
   return source;
 }

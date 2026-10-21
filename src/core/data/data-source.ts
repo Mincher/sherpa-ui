@@ -27,6 +27,7 @@
  * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
+ * - .readValues — Read these fields' values now, where they wait; the controls over them are drawn again.
  * - .addable — What a scope may still add, each noting where it lives now.
  * - .valuesFor — What `declareValues` was told, as the data holds it.
  * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
@@ -476,10 +477,18 @@ export class DataSource extends EventTarget {
    * — the store's distinct() where it has one, else one load — and only when a
    * field needs it. TRAP T-the-data-says-what-a-field-may-hold
    */
-  async declareFromRows(fields: readonly string[]): Promise<void> {
+  async declareFromRows(fields: readonly string[], options: { lazy?: boolean } = {}): Promise<void> {
     await this.#catalogue.fromRows(fields, async (open) => {
       await this.#hold();
       const reads = this.#reads;
+      /* A remote store it does NOT hold is asked a field's values when the field
+         is needed — at open, what the page holds and answers; the rest later.
+         345 phase 5 · TRAP T-a-field-reads-its-values-when-needed */
+      if (reads.distinct && options.lazy && this.#remote && reads === this.store) {
+        const asked = open.filter((f) => this.#needs(f));
+        for (const f of open) if (!asked.includes(f)) this.#unread.add(f);
+        return asked.length ? reads.distinct(asked, {}) : {};
+      }
       if (reads.distinct) return reads.distinct(open, {});
       const age = this.#rowsAge;
       const { rows } = await reads.load({});
@@ -505,6 +514,49 @@ export class DataSource extends EventTarget {
     this.#age++;
   }
 
+  /**
+   * readValues(fields) — read these fields' values now, where they wait: one
+   * read for every field asked in a turn. The controls over them are drawn
+   * again when they land. A no-op for a field already read.
+   * TRAP T-a-field-reads-its-values-when-needed
+   */
+  readValues(fields: Iterable<string>): void {
+    for (const f of fields) if (this.#unread.has(f)) this.#wanted.add(f);
+    if (!this.#wanted.size || this.#wantSoon) return;
+    this.#wantSoon = true;
+    queueMicrotask(() => {
+      this.#wantSoon = false;
+      void this.#readWanted();
+    });
+  }
+
+  /** The fields asked for, read; then every control over them drawn again. */
+  async #readWanted(): Promise<void> {
+    const fields = [...this.#wanted];
+    this.#wanted.clear();
+    if (!fields.length || this.#closed) return;
+    await this.declareFromRows(fields);
+    for (const f of fields) this.#unread.delete(f);
+    for (const scope of new Set(fields.flatMap((f) => this.#context.scopes.filter((id) => this.#context.scope(id).includes(f))))) {
+      this.#binding.drawBars(scope);
+    }
+    this.#binding.drawScopesSoon();
+    // A grid's headings are given their filters with its rows.
+    this.#binding.publish();
+  }
+
+  /** Does the page need this field's values now: held in a scope, or answered? */
+  #needs(field: string): boolean {
+    return this.#context.scopeOf(field) != null || Object.values(this.#draft.scopes).some((s) => field in s.readings);
+  }
+
+  /** Fields whose values wait to be read: a remote store not held. */
+  #unread = new Set<string>();
+  /** Fields asked for since the last read began. */
+  #wanted = new Set<string>();
+  /** A read is due at the end of this turn. */
+  #wantSoon = false;
+
   /** What `declareField` was told. */
   fieldFacts(field: string): FieldDeclaration {
     return this.#catalogue.copyOf(field);
@@ -526,7 +578,9 @@ export class DataSource extends EventTarget {
    *  the rows HOLD, never a lower-cased copy a heading's menu would not share.
    *  TRAP T-a-field-is-declared-once · TRAP T-one-comparison-rule-for-query-and-ui */
   filterDef(field: string): FieldFilter {
-    return this.#catalogue.filterDef(field);
+    const def = this.#catalogue.filterDef(field);
+    // Its values are on their way: a menu says so. 345 phase 5
+    return this.#unread.has(field) ? { ...def, loading: true } : def;
   }
 
   /** The scope whose Group or Sort set the rows' arrangement — while it still
@@ -818,8 +872,11 @@ export class DataSource extends EventTarget {
         // The requery first, so a listener sees the state the rows were fetched for.
         this.#recompose();
         this.#draw(change.field);
+        this.readValues([change.field]);
         return;
       case 'hold':
+        // A field just held needs its values. 345 phase 5
+        this.readValues(this.#context.scope(change.scope));
         if (change.moved.length) this.#recompose();
         for (const field of change.moved) this.#draw(field);
         if (change.scope === VIEW) this.#syncSuperseded();
@@ -852,6 +909,9 @@ export class DataSource extends EventTarget {
         this.#requery();
         return;
       case 'query':
+        // What the Query holds and answers needs its values. 345 phase 5
+        this.readValues(this.#context.scopes.flatMap((id) => this.#context.scope(id)));
+        this.readValues(Object.values(this.#draft.scopes).flatMap((s) => Object.keys(s.readings)));
         return this.#heardQuery(change.was, change.before);
     }
   }

@@ -727,14 +727,18 @@ export class SherpaProvider extends SherpaElement {
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'
-        ? { as: (rows, src) => ({
-          rows,
-          groups: src.state.group && src.loaded ? src.groups() : null,
-          /* Each FILTER as the source defines it, as a chip's is — the whole
-             column too, which one page cannot say. TRAP T-a-heading-opens-the-chips-menu */
-          ...(asks.filters ? { filters: Object.fromEntries(asks.filters(el)
-            .map((f) => [f, src.filterDef(f)])) } : {}),
-        }) }
+        ? { as: (rows, src) => {
+          const filtered = asks.filters?.(el);
+          // Its columns' values are needed now. TRAP T-a-field-reads-its-values-when-needed
+          if (filtered) src.readValues(filtered);
+          return {
+            rows,
+            groups: src.state.group && src.loaded ? src.groups() : null,
+            /* Each FILTER as the source defines it, as a chip's is — the whole
+               column too, which one page cannot say. TRAP T-a-heading-opens-the-chips-menu */
+            ...(filtered ? { filters: Object.fromEntries(filtered.map((f) => [f, src.filterDef(f)])) } : {}),
+          };
+        } }
         : {}),
       deliver: (payload) => callback(payload, leave),
     });

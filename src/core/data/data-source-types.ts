@@ -65,6 +65,8 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   /** `swatch`: the data-viz series a chart draws this value in, from 1. `parent`:
    *  a tiered field's child value names its parent's key (TODO 369). */
   options?: { value: string; label: string; swatch?: number; parent?: string }[];
+  /** Its values are still being read: a menu shows a loading row. 345 phase 5 */
+  loading?: boolean;
   /** A date's days that have records — every other day draws inactive. */
   availableDates?: string[];
   /** Its picks are ENDS from the start — the View's date. TRAP T-a-range-is-bounded-by-the-data */

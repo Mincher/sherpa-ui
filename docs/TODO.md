@@ -832,6 +832,17 @@ against the code). The full plan, with every file:line, is
     paint over it. Tests: `a-held-set-yields-when-it-cannot-answer` (7) and 2 in
     `reforged-a-kept-set-survives-a-reload` — each fails on the old code.
 
+- 🚧 **Phase 5 — values on demand.** **5.1 ✅ (2026-10-21):** a REMOTE store the
+  source does not hold is asked a field's values only when the field is needed:
+  `openSource` declares the scopes first, then reads what they hold and what
+  the Query answers; the rest wait (`filterDef` says `loading`) until held,
+  answered, or a grid's filtered column (`source.readValues`). The bench counts
+  `fields`: notheld/open 7 value fields, not 12; `add-field` 1; again 0. Held and
+  local stores read every field at once, as before. TRAP
+  `T-a-field-reads-its-values-when-needed`. Untested in browsers (Will, 10x less
+  testing): the full run is at the end of phase 5. Next: 5.2 the menu's loading
+  row and the bar's refresh, 5.3 369's remote children.
+
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
     floats over the top of the content area and takes no room — CLS stays 0;

@@ -29,13 +29,13 @@ const LEAN = 'test/unit/fixtures/lean.page.json';
 const N = 10_000;
 const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
-export const GATED = ['loads', 'counts', 'distinct', 'rows', 'compiles', 'clones', 'scans'];
+export const GATED = ['loads', 'counts', 'distinct', 'fields', 'rows', 'compiles', 'clones', 'scans'];
 // The fakes are read from these specs, so a change to one changes the bench.
 const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
   .map((tag) => `src/components/${tag}/${tag}.component.json`);
 const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, LEAN, ...SPECS];
 // `walks` and `draws` are printed, never gated.
-const counters = { loads: 0, counts: 0, distinct: 0, rows: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
+const counters = { loads: 0, counts: 0, distinct: 0, fields: 0, rows: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
 
 /* ── The data layer, bundled from src/ with compile() counted ─────────── */
 
@@ -138,7 +138,8 @@ function counted(store) {
   store.totalCount = (o) => { counters.counts++; return total(o); };
   if (typeof store.distinct === 'function') {
     const distinct = store.distinct.bind(store);
-    store.distinct = (...a) => { counters.distinct++; return distinct(...a); };
+    // …and how many fields each asks for. 345 phase 5
+    store.distinct = (...a) => { counters.distinct++; counters.fields += a[0]?.length ?? 0; return distinct(...a); };
   }
   return store;
 }
@@ -269,6 +270,13 @@ const ACTS = {
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
   'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),
   'move-site': (p) => p.store.update(17, { site: 'Site 9' }),
+  // A field held for the first time asks its values; held again, nothing. 345 phase 5
+  'add-field': (p) => p.source.query.hold('data', [...p.source.query.scope('data'), 'seats']),
+  'add-field-again': (p) => {
+    const held = p.source.query.scope('data').filter((f) => f !== 'seats');
+    p.source.query.hold('data', held);
+    p.source.query.hold('data', [...held, 'seats']);
+  },
 };
 const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'sort', 'heading', 'search', 'raise',
   'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside', 'apply-saved'];
@@ -279,7 +287,7 @@ const PAGES = {
   rest: { remote: true, announcesAll: false, acts: MAIN },
   lean: { page: LEAN, remote: false, acts: ['change-unused', 'change-shown', 'change-held', 'answer-held', 'change-answered', 'add', 'delete'] },
   // A remote store not held: every count and tally is a request.
-  notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete'] },
+  notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete', 'add-field', 'add-field-again'] },
   tiered: { remote: false, tiered: true, acts: ['pick-site', 'pick-both', 'move-site'] },
 };
 

@@ -10393,6 +10393,26 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-field-reads-its-values-when-needed
+
+**A remote store a source does not hold is asked a field's values only when
+the field is needed.** TODO 345 phase 5. Its page declares its scopes FIRST,
+then reads values for what they hold and what the Query answers; every other
+field waits in `#unread`. A field held later, answered, or shown as a grid's
+filtered column (`readValues`) is read then — one `distinct` for every field
+asked in a turn — and the bars, the panel and the grid are drawn again with
+it. Until then its filter says `loading`.
+
+Only there: a store it HOLDS answers `distinct` from the held set on the
+client, and a local store has its rows already, so both read every field at
+once, as before. The bench counts the fields asked (`fields`): the not-held
+page's open asks for 7 fields of values, not 12, an added field asks for 1,
+and the same field held again for none.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
 ### T-a-value-holds-child-values
 
 **A field's values can hold child values: a Customer's Sites.** TODO 369. The
