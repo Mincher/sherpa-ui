@@ -676,11 +676,11 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
-      "description": "One field changed, or Reset all.",
+      "description": "One reader act, as a request: one field, or Reset all.",
       "bubbles": true,
       "composed": true,
       "detail": {
-        "readings": "Record<string, Record<string, FieldReading>>",
+        "request": "QueryRequest",
         "scope": "'panel'",
         "values": "Record<string, Record<string, string[]>>"
       }
@@ -760,7 +760,6 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "'asc'",
         "field": "null | string",
         "scope": "string"
       }
@@ -853,7 +852,7 @@
           "$type": "method",
           "name": "setFieldReading",
           "args": "id: string, given: FieldReading, scope?: string",
-          "description": "setFieldReading(id, reading) — steer ONE field with a whole reading: what another control set while the panel shows. SILENT, like every steer, and it is that field's last Apply now, so Discard keeps it. A field drawn as one chip — Group, Sort, a date — is left alone."
+          "description": "setFieldReading(id, reading) — steer ONE field with a whole reading. Bound (`data-locked`), it is a REQUEST: the source owns the answer and draws it back. Unbound, it is drawn, SILENT like every steer. A field drawn as one chip — Group, Sort — is left alone."
         },
         {
           "$type": "method",

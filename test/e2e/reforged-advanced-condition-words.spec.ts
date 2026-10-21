@@ -160,7 +160,7 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     await window.__settled();
     const heard: unknown[] = [];
     // The switch is in the field's answer, as every report carries it.
-    panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.readings.data.owner.mode));
+    panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.request.reading.mode));
     const sr = panel.shadowRoot!;
     const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced')!
       .shadowRoot!.querySelector<HTMLElement>('.caret')!.click();

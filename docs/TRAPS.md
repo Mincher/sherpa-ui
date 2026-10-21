@@ -12082,10 +12082,16 @@ now — picked, conditions and typed text, per scope and field — so there is
 nothing left to fix up. All four reaching methods are deleted, and neither
 component names the other.
 
+**366 step 20: each act is ONE REQUEST.** The event carries
+`{ scope: 'panel', request }`: one field's `{ scope, field, reading }`, or
+Reset all's `{ scope, reset: { organise: true } }` for each scope, as one
+list. The source's QueryContext applies it, and drops an answer already in
+force, so the panel no longer keeps what it last said. A bound panel's
+`setFieldReading` is a request too; `drawReading` only paints.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `src/core/ui/bind-source.ts`
 
 ### T-closest-stops-at-the-shadow-boundary
 

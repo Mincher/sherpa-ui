@@ -68,7 +68,7 @@ test('a part is ONE Simple filter: a chip per value, each with its series, and n
 test("a panel's answer to a part narrows its chart ALONE, and a legend's write is drawn in the panel", async () => {
   const { source, seen, chart, panel, drawn } = await setup();
   panel.dispatchEvent(new CustomEvent('quick-filter-change', {
-    detail: { readings: { 'picks:bar': { sev: { picked: ['critical'] } } } },
+    detail: { scope: 'panel', request: { scope: 'picks:bar', field: 'sev', reading: { picked: ['critical'] } } },
   }));
   await tick();
   assert.deepEqual(seen.get('bar'), [1, 3]);
@@ -84,7 +84,7 @@ test("a panel's answer to a part narrows its chart ALONE, and a legend's write i
 
   // Emptied, it narrows nothing, and the panel is told that too.
   panel.dispatchEvent(new CustomEvent('quick-filter-change', {
-    detail: { readings: { 'picks:bar': { sev: { picked: [] } } } },
+    detail: { scope: 'panel', request: { scope: 'picks:bar', field: 'sev', reading: { picked: [] } } },
   }));
   await tick();
   assert.deepEqual(seen.get('bar'), [1, 2, 3, 4]);

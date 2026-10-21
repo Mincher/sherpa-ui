@@ -97,7 +97,7 @@ test('a change reports its own field alone, as it is made — a local panel show
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
-    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.readings));
+    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.request));
     const chip = (field, value) => sr.querySelector('.field[data-field="' + field + '"] .value[data-value="' + value + '"]');
     chip('status', 'churned').shadowRoot.querySelector('.body').click();
     await new Promise((r) => setTimeout(r, 150));
@@ -105,12 +105,12 @@ test('a change reports its own field alone, as it is made — a local panel show
     await new Promise((r) => setTimeout(r, 150));
     const shown = (sel) => [...sr.querySelectorAll(sel)].some((n) => n.getClientRects().length > 0);
     return { heard, footer: shown('.panel-footer') || shown('.field-apply') || shown('.field-discard') };
-  })()`) as { heard: Record<string, Record<string, { picked: string[] }>>[]; footer: boolean };
+  })()`) as { heard: { scope: string; field: string; reading: { picked: string[] } }[]; footer: boolean };
 
   expect(r.footer).toBe(false);
-  expect(r.heard.map((h) => Object.keys(h['data'] ?? {}))).toEqual([['status'], ['owner']]);
-  expect(r.heard[0]!['data']!['status']!.picked).toEqual(['active', 'churned']);
-  expect(r.heard[1]!['data']!['owner']!.picked).toEqual(['Dana']);
+  expect(r.heard.map((h) => [h.scope, h.field])).toEqual([['data', 'status'], ['data', 'owner']]);
+  expect(r.heard[0]!.reading.picked).toEqual(['active', 'churned']);
+  expect(r.heard[1]!.reading.picked).toEqual(['Dana']);
 });
 
 /**
@@ -165,7 +165,7 @@ test('the condition button flags the field and hides its chips', async ({ page }
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
-    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.readings.data.owner.mode));
+    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.request.reading.mode));
     const read = () => ({
       flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-advanced'),
       pressed: sr.querySelector('.field[data-field="owner"] .field-advanced').shadowRoot.querySelector('.caret').getAttribute('aria-pressed'),
@@ -250,10 +250,10 @@ test('a field header\'s label, count and buttons start at the top of its row', a
 
 /**
  * RESET ALL clears BOTH scopes — picks, Group and Sort — and applies
- * at once, as the toolbar's Reset does. Both header buttons wear the DEFAULT
- * look. Will, 2026-09-26.
+ * at once, as the toolbar's Reset does: ONE request. Both header buttons wear
+ * the DEFAULT look. Will, 2026-09-26 · 366 step 20
  */
-test('Reset all clears every scope, Group and Sort too, and applies', async ({ page }) => {
+test('Reset all clears every scope, Group and Sort too, as one request', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
@@ -263,24 +263,20 @@ test('Reset all clears every scope, Group and Sort too, and applies', async ({ p
     const before = q('.value[data-current]').map((c) => c.dataset.value);
     press('.reset-all');
     await new Promise((r) => setTimeout(r, 150));
-    const applied = heard.find(([n]) => n === 'quick-filter-change');
     return {
       before, after: q('.value[data-current]').length,
-      picked: applied ? Object.values(applied[1].readings).flatMap((f) =>
-        Object.values(f).flatMap((x) => x.picked ?? [])) : null,
-      organise: heard.filter(([n]) => n !== 'quick-filter-change'),
+      heard: heard.map(([n, d]) => [n, d.request]),
       looks: ['.reset-all'].map((s) => sr.querySelector(s).getAttribute('data-look')),
     };
-  })()`) as { before: string[]; after: number; picked: string[] | null;
-    organise: unknown[]; looks: (string | null)[] };
+  })()`) as { before: string[]; after: number; heard: unknown[]; looks: (string | null)[] };
 
   expect(r.before.length).toBeGreaterThan(0);
   expect(r.after).toBe(0);
-  expect(r.picked).toEqual([]);
-  expect(r.organise).toEqual([
-    ['group-change', { scope: 'data', field: null }],
-    ['sort-change', { scope: 'data', field: null, direction: 'asc' }],
-  ]);
+  // Group and Sort go with it: the reset says so, and no event of their own.
+  expect(r.heard).toEqual([['quick-filter-change', [
+    { scope: 'view', reset: { organise: true } },
+    { scope: 'data', reset: { organise: true } },
+  ]]]);
   expect(r.looks).toEqual([null]);
 });
 

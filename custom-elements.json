@@ -3597,7 +3597,7 @@
                   "optional": true
                 }
               ],
-              "description": "setFieldReading(id, reading) — steer ONE field with a whole reading: what another control set while the panel shows. SILENT, like every steer, and it is that field's last Apply now, so Discard keeps it. A field drawn as one chip — Group, Sort, a date — is left alone."
+              "description": "setFieldReading(id, reading) — steer ONE field with a whole reading. Bound (`data-locked`), it is a REQUEST: the source owns the answer and draws it back. Unbound, it is drawn, SILENT like every steer. A field drawn as one chip — Group, Sort — is left alone."
             },
             {
               "kind": "method",
@@ -3757,9 +3757,9 @@
           "events": [
             {
               "name": "quick-filter-change",
-              "description": "One field changed, or Reset all.",
+              "description": "One reader act, as a request: one field, or Reset all.",
               "type": {
-                "text": "CustomEvent<{ readings: Record<string, Record<string, FieldReading>>; scope: 'panel'; values: Record<string, Record<string, string[]>> }>"
+                "text": "CustomEvent<{ request: QueryRequest; scope: 'panel'; values: Record<string, Record<string, string[]>> }>"
               }
             },
             {
@@ -3808,7 +3808,7 @@
               "name": "sort-change",
               "description": "A Sort chip or Reset all, with its scope.",
               "type": {
-                "text": "CustomEvent<{ direction: 'asc'; field: null | string; scope: string }>"
+                "text": "CustomEvent<{ field: null | string; scope: string }>"
               }
             },
             {

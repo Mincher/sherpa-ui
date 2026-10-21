@@ -221,6 +221,7 @@ export {
   VIEW,
   type Query,
   type QueryDefaults,
+  type QueryRequest,
   type SavedFilter,
   type ViewScope,
   type ScopeQuery,

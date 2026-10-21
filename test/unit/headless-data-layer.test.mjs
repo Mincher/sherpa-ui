@@ -886,8 +886,8 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   assert.equal(after.find((d) => d.scope === 'grid').filters[0].appliedAt, 'View filters');
   assert.deepEqual(after.find((d) => d.scope === 'view').filters.map((f) => f.id), ['plan']);
 
-  // Its answer — the changed field, in its scope.
-  ask('quick-filter-change', { readings: { view: { plan: { picked: ['Free'] } } } });
+  // Its answer — the changed field's request, in its scope.
+  ask('quick-filter-change', { scope: 'panel', request: { scope: 'view', field: 'plan', reading: { picked: ['Free'] } } });
   await settle();
   assert.deepEqual(source.query.applied.scopes.view.readings.plan.picked, ['Free']);
 

@@ -31,7 +31,7 @@ import { report } from '../../core/data/report.js';
 import { modeOf, readingRows, ruleOut, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { valueKey, type SortDirection } from '../../core/data/store.js';
-import { VIEW } from '../../core/data/query.js';
+import { VIEW, type QueryRequest } from '../../core/data/query.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
@@ -142,9 +142,6 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Every drawn field, by `${scope}:${id}`. */
   #held = new Map<string, Held>();
-  /** What each field last said to — or was told by — the source, as JSON, so an
-   *  echo is not reported again. */
-  #said = new Map<string, string>();
   /** The scopes as last given. */
   #scopes: PanelScope[] = [];
   /** Each scope's Filters list: the removable fields it holds, then what it may add. */
@@ -354,13 +351,26 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /**
-   * setFieldReading(id, reading) — steer ONE field with a whole reading: what
-   * another control set while the panel shows. SILENT, like every steer, and
-   * it is that field's last Apply now, so Discard keeps it. A field drawn as
-   * one chip — Group, Sort, a date — is left alone.
+   * setFieldReading(id, reading) — steer ONE field with a whole reading. Bound
+   * (`data-locked`), it is a REQUEST: the source owns the answer and draws it
+   * back. Unbound, it is drawn, SILENT like every steer. A field drawn as one
+   * chip — Group, Sort — is left alone.
    * TRAP T-an-open-panel-follows-the-data-layer
    */
   setFieldReading(id: string, given: FieldReading, scope?: string): void {
+    const at = scope ?? this.#scopeOf(id);
+    if (this.hasAttribute('data-locked') && at != null) return this.#ask({ scope: at, field: id, reading: given });
+    this.#paint(id, given, scope);
+  }
+
+  /** The scope a field is drawn in: the first that shows it. */
+  #scopeOf(id: string): string | undefined {
+    for (const held of this.#held.values()) if (held.def.id === id) return held.scope;
+    return this.#scopes.find((s) => s.filters?.some((f) => f.id === id))?.scope;
+  }
+
+  /** Draw ONE field's whole reading, in its scope or the first. TRAP T-an-open-panel-follows-the-data-layer */
+  #paint(id: string, given: FieldReading, scope?: string): void {
     /* OFF filters nothing, and a panel has no "off": it shows no answer. The
        Query keeps it, for the chip that switched it off.
        TRAP T-a-suspended-answer-is-drawn-as-off */
@@ -373,7 +383,7 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#early.set(key, { id, reading: given, scope });
       return;
     }
-    for (const [key, held] of this.#held) {
+    for (const held of this.#held.values()) {
       // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
       if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
       const menu = held.menu;
@@ -400,7 +410,6 @@ export class SherpaFilterPanel extends SherpaElement {
         const given = held.menu;
         if (given) given.reading = { ...reading, picked: [...want] };
       }
-      this.#said.set(key, JSON.stringify(this.#readingOf(held)));
       this.#syncAnswered(held);
       return;
     }
@@ -413,7 +422,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * answer back over the Query. TRAP T-a-panel-follows-the-query-open-or-shut
    */
   drawReading(field: string, reading: FieldReading, scope: string): void {
-    if (this.#stale || this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading, scope);
+    if (this.#stale || this.#held.has(`${scope}:${field}`)) this.#paint(field, reading, scope);
   }
 
   /**
@@ -685,7 +694,7 @@ export class SherpaFilterPanel extends SherpaElement {
     // A field steered before it was drawn takes that answer now, in order.
     const early = [...this.#early.values()];
     this.#early.clear();
-    for (const { id, reading, scope } of early) this.setFieldReading(id, reading, scope);
+    for (const { id, reading, scope } of early) this.#paint(id, reading, scope);
   }
 
   /** Answers steered before their field was drawn, by `scope:field`.
@@ -965,11 +974,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#answering = [];
     void Promise.all(answers)
       .then(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))))
-      .then(() => {
-        this.#syncAllAnswered();
-        // What the fields now say is what the source drew: no echo to report.
-        for (const [key, held] of this.#held) this.#said.set(key, JSON.stringify(this.#readingOf(held)));
-      });
+      .then(() => this.#syncAllAnswered());
   }
 
   /**
@@ -1588,27 +1593,22 @@ export class SherpaFilterPanel extends SherpaElement {
   };
 
   /**
-   * REPORT a change as it is made — ONE field, or every field on Reset all.
-   * No footer: locally it applies at once; over a remote source it is the
-   * draft, and the field's own Apply sends it. Will, 2026-09-27 (TODO 62).
-   * Only the CHANGED field: sending every field would switch one that is OFF
-   * back on. An echo of what the source just drew is not reported.
-   * TRAP T-the-panel-reports-its-own-reading
+   * REPORT a change as it is made: ONE field's request, in its scope. Locally
+   * it applies at once; over a remote source it is the draft, and the field's
+   * own Apply sends it. Only the CHANGED field: sending every field would
+   * switch one that is OFF back on. The source drops an echo.
+   * 366 step 20 · TRAP T-the-panel-reports-its-own-reading
    */
-  #report(held?: Held): void {
-    if (held) this.#followPicks(held);
-    let readings = this.readings;
-    if (held) {
-      if (arranges(kindOf(held.def))) return;
-      const key = `${held.scope}:${held.def.id}`;
-      const reading = this.#readingOf(held);
-      const said = JSON.stringify(reading);
-      if (this.#said.get(key) === said) return;
-      this.#said.set(key, said);
-      readings = { [held.scope]: { [held.def.id]: reading } };
-    }
-    /* `values` rides along for a host that only wants the ticks. */
-    this.emit('quick-filter-change', { scope: 'panel', readings, values: this.values });
+  #report(held: Held): void {
+    this.#followPicks(held);
+    if (arranges(kindOf(held.def))) return;
+    this.#ask({ scope: held.scope, field: held.def.id, reading: this.#readingOf(held) });
+  }
+
+  /** ONE reader act, as a request to the source. `values` rides along for a
+   *  host that only wants the ticks. 366 step 20 */
+  #ask(request: QueryRequest): void {
+    this.emit('quick-filter-change', { scope: 'panel', request, values: this.values });
   }
 
   /**
@@ -1676,18 +1676,12 @@ export class SherpaFilterPanel extends SherpaElement {
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => askSwitches(this, event, (name, on) => this.emit(name, { on }));
 
-  /** RESET ALL: every field in both scopes, Group and Sort too, then applied —
-   *  as the toolbar's Reset is. Will, 2026-09-26. */
+  /** RESET ALL: every field in every scope, Group and Sort too — ONE request,
+   *  as the toolbar's Reset is. Will, 2026-09-26 · 366 step 20 */
   #onResetAll = (): void => {
     for (const held of this.#held.values()) this.#empty(held);
-    for (const scope of new Set([...this.#held.values()].map((h) => h.scope))) {
-      if (this.#held.has(`${scope}:group`)) this.emit('group-change', { scope, field: null });
-      if (this.#held.has(`${scope}:sort`)) {
-        this.emit('sort-change', { scope, field: null, direction: 'asc' });
-      }
-    }
     this.#syncAllAnswered();
-    this.#report();
+    this.#ask(this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } })));
   };
 }
 

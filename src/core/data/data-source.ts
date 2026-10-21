@@ -20,7 +20,6 @@
  * - .totalPages — Pages at the current size, at least 1.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
- * - .answerScopes — The panel's answer: each field it changed.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
@@ -408,20 +407,6 @@ export class DataSource extends EventTarget {
       }
     }
     return out;
-  }
-
-  /** The panel's answer: each field it changed. */
-  answerScopes(readings: Record<string, Record<string, FieldReading>> | undefined): void {
-    for (const [scope, fields] of Object.entries(readings ?? {})) {
-      for (const [id, reading] of Object.entries(fields)) {
-        // A chart's own field narrows that chart alone. TRAP T-a-chart-scope-is-its-legend-field
-        if (this.#narrowing.has(scope)) {
-          this.#member.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
-          continue;
-        }
-        this.#member.select(id, reading.picked ?? [], reading);
-      }
-    }
   }
 
   /** The ONE scope a View field is sent down to: the one it came UP from,

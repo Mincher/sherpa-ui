@@ -248,12 +248,6 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
          reading becomes a query; the control is never read.
          TRAP T-one-query-builder-in-the-data-layer */
       const holds = Array.isArray(detail['holds']) ? (detail['holds'] as string[]) : undefined;
-      /* A control over SEVERAL scopes — the panel — reports the ONE field it
-         changed, in its scope. TRAP T-the-panel-reports-its-own-reading */
-      if (Array.isArray(bind?.scope)) {
-        source.answerScopes(detail['readings'] as Record<string, Record<string, FieldReading>> | undefined);
-        return;
-      }
       const readings = (detail['readings'] as Record<string, FieldReading> | undefined) ?? pickedReadings(detail['values']);
       // A SCOPED bar answers in the Query. TRAP T-one-query-one-owner
       if (typeof bind?.scope === 'string') {

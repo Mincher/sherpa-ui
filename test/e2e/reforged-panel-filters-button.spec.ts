@@ -127,7 +127,7 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
-    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.readings?.data?.status?.picked));
+    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.request?.field === 'status' ? e.detail.request.reading.picked : undefined));
     await shut();
     menu().show(btn());
     await settle();

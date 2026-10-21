@@ -85,7 +85,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 
 | Method | What it does |
 |---|---|
-| `setFieldReading(id: string, given: FieldReading, scope?: string)` | setFieldReading(id, reading) — steer ONE field with a whole reading: what another control set while the panel shows. SILENT, like every steer, and it is that field's last Apply now, so Discard keeps it. A field drawn as one chip — Group, Sort, a date — is left alone. |
+| `setFieldReading(id: string, given: FieldReading, scope?: string)` | setFieldReading(id, reading) — steer ONE field with a whole reading. Bound (`data-locked`), it is a REQUEST: the source owns the answer and draws it back. Unbound, it is drawn, SILENT like every steer. A field drawn as one chip — Group, Sort — is left alone. |
 | `drawReading(field: string, reading: FieldReading, scope: string)` | drawReading(field, reading, scope) — a bound source tells the panel one field's answer, in the scope that holds it. OPEN OR SHUT: a shut panel that skipped this opened on an old answer, and its next report wrote that answer back over the Query. |
 | `drawResults(results: Readonly<Record<string, number>>, scope?: string)` | drawResults(results, scope) — a bound source tells the panel the rows each answer in a scope matches within the filters before it, by field or saved-filter id. A field drawn as ONE chip, and a saved filter's chip, wear it; a field drawn as a run or a body has no one chip, so its HEADER wears it. SILENT. |
 | `drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string)` | drawValueResults(results, scope) — a bound source tells the panel the rows each PICKED value matches on its own, by field then value: each chip of a run wears its own count, and one that is not picked wears none. The header keeps the field's. SILENT. Will, TODO 172. |
@@ -103,14 +103,14 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ readings: Record<string, Record<string, FieldReading>>; scope: 'panel'; values: Record<string, Record<string, string[]>> }` | One field changed, or Reset all. |
+| `quick-filter-change` | `{ request: QueryRequest; scope: 'panel'; values: Record<string, Record<string, string[]>> }` | One reader act, as a request: one field, or Reset all. |
 | `filter-apply` | `{ field: string; id: string; scope: string }` | A changed field's Apply, remote only; with no field, Apply all. |
 | `filter-discard` | `{ field: string; id: string; scope: string }` | A changed field's Discard, remote only; with no field, Discard all. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It closed. |
 | `filter-add` | `{ from: string; ids: string[]; scope: 'view' \| string }` | A REQUEST: the Filters menu committed, or a field sent up or down. |
 | `filter-remove` | `{ id: string; scope: string }` | A field's Remove. |
 | `group-change` | `{ field: null \| string; scope: string }` | A Group chip or Reset all, with its scope. |
-| `sort-change` | `{ direction: 'asc'; field: null \| string; scope: string }` | A Sort chip or Reset all, with its scope. |
+| `sort-change` | `{ field: null \| string; scope: string }` | A Sort chip or Reset all, with its scope. |
 | `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
 | `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |

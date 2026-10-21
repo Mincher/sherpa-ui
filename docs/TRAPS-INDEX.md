@@ -224,7 +224,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (71)
+## The join and the app layer (70)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -291,7 +291,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — provider
 - [T-the-outlet-keeps-the-nav](TRAPS.md#t-the-outlet-keeps-the-nav) — outlet
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — provider
-- [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — bind-source
 - [T-the-provider-owns-the-panel-mode](TRAPS.md#t-the-provider-owns-the-panel-mode) — provider
 - [T-the-provider-says-the-pages-reach](TRAPS.md#t-the-provider-says-the-pages-reach) — provider
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router

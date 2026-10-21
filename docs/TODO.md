@@ -1937,6 +1937,11 @@ takes the field, given back when it lets go; no bar re-reports it.
 20–22 (the panel and the bar send one request per act; a bound bar paints
 from its live slice) do 320's work now, and 320 closes with 366.
 
+Step 20: the panel sends one request per act — `{ scope: 'panel', request }`,
+one field's `{ scope, field, reading }`, or Reset all's `reset: { organise }`
+for each scope as one list. A bound panel's `setFieldReading` is a request;
+`drawReading` paints. `answerScopes` and the panel's `#said` go.
+
 Step 23: a bound grid heading asks, then is drawn — its doors send the one
 `column-filter-change` a reader would, the steer calls `setReading` and
 `commit({ field })`, and `answerColumn` goes.

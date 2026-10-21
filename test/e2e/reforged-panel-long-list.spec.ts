@@ -36,7 +36,7 @@ test('more than 16 values is one chip; its menu holds them, and a pick reports t
       menuSwitch: menu.hasAttribute('data-advanced'),
     };
     const heard: unknown[] = [];
-    panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.readings.data.owner.picked));
+    panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.request.reading.picked));
     menu.values = ['owner-3', 'owner-7'];
     menu.dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true, detail: { values: menu.values } }));
     await window.__settled();
