@@ -54,6 +54,9 @@ export interface FieldDeclaration {
   /** The field holding this one's CHILD values — a Customer's Site. A child has
    *  no filter of its own: its picks are in this field's reading. TODO 369 */
   child?: string;
+  /** `server`: its filter is ASKED of the store, never worked out from rows held —
+   *  once per answer, for the keys it matches. TRAP T-a-server-field-is-asked-once-per-answer */
+  fetch?: 'server';
 }
 
 /** A field's filter as any bar or panel draws it — its declaration and values. */

@@ -86,6 +86,10 @@
         "child": {
           "description": "The field holding this one's CHILD values — a Customer's Site. A child has no filter of its own: its picks are in this field's reading.",
           "type": "string"
+        },
+        "fetch": {
+          "description": "server: its filter is asked of the store, never worked out from the rows held — once per answer, for the keys it matches. Its menus have Apply.",
+          "enum": ["server"]
         }
       }
     },

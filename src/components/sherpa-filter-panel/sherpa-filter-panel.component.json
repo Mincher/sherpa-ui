@@ -502,6 +502,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-fetch-fields",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
+    },
+    {
+      "$type": "prop",
       "name": "data-group-field",
       "type": "string",
       "observed": true,

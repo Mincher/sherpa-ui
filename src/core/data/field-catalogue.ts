@@ -176,6 +176,8 @@ export class FieldCatalogue {
     const options = values.flatMap((v) => [{ value: v, label: labels?.[v] ?? v }, ...(kids.get(v) ?? [])]);
     return {
       id: field, label: label ?? field, ...rest,
+      // The store answers it, once per Apply: its menus wait for theirs. 345 phase 6
+      ...(rest.fetch === 'server' ? { commit: true } : {}),
       ...(body ? { kind: body } : {}),
       ...(options.length ? { options } : {}),
       ...(days.length ? { availableDates: days } : {}),

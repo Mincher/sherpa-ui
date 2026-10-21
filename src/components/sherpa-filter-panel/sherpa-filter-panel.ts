@@ -117,6 +117,8 @@ export class SherpaFilterPanel extends SherpaElement {
   static override observed = ['open'];
 
   static override props = {
+    // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
+    'data-fetch-fields': { type: 'string', kind: 'behaviour' },
     /* The host offers "Limit to matching filters", on or off. Will, TODO 178. */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
     // …and, while it is on, hides what it rules out. Will, TODO 205.

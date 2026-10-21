@@ -742,6 +742,7 @@ export class SherpaProvider extends SherpaElement {
         : {}),
       deliver: (payload) => callback(payload, leave),
     });
+    this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec, asks.picks) : undefined;
     const unown = this.#own(el, source);
     asked.unbind = () => {
@@ -754,6 +755,19 @@ export class SherpaProvider extends SherpaElement {
     // …and again when answered: the next page with data opens the panel again.
     if (asks.shape === 'scope') this.#modes.join(el);
     if ('drawScope' in el || 'drawPresent' in el) this.#offerLimit(el);
+  }
+
+  /** The fields a component says the STORE answers — `data-fetch-fields`, or a
+   *  grid column's `fetch` — told to its source. Each only turns it ON.
+   *  TRAP T-a-server-field-is-asked-once-per-answer */
+  #fetchFields(el: Element, source: DataSource): void {
+    const named = (el.getAttribute('data-fetch-fields') ?? '').split(/\s+/).filter(Boolean);
+    const columns = ((el as { columns?: Array<{ field: string; fetch?: string }> }).columns ?? [])
+      .filter((c) => c.fetch === 'server').map((c) => c.field);
+    for (const field of new Set([...named, ...columns])) {
+      const facts = source.fieldFacts(field);
+      if (facts.fetch !== 'server') source.declareField(field, { ...facts, fetch: 'server' });
+    }
   }
 
   /**

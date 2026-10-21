@@ -184,6 +184,8 @@ export interface CompileFacts {
   mine?: (scope: string) => boolean;
   /** Does this source have the field? A reading on one it lacks is skipped. */
   has?: (field: string) => boolean;
+  /** A field the STORE answers: its answer as the keys it matched, once fetched. */
+  fetched?: (field: string, reading: FieldReading) => Filter | undefined;
 }
 
 /** A reading without the picks set aside. */
@@ -316,7 +318,8 @@ export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlyS
   const clauses: Filter[] = [];
   for (const [field, reading] of Object.entries(scope.readings)) {
     if (!appliesIn(viewHolds, id, field, facts.fixed) || reading.suspended || (facts.has && !facts.has(field))) continue;
-    const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
+    const clause = facts.fetched?.(field, reading)
+      ?? readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
     if (clause) clauses.push(clause);
   }
   return clauses;

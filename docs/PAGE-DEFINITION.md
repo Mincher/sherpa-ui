@@ -86,6 +86,10 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `"site": { "label": "Site" }`. A child has no filter of its own: its picks are
   in its parent's reading, so no scope holds, offers or sets it, and
   `offers: "all"` leaves it out. Not under a number or a date (TODO 369).
+- **A field's `fetch: "server"`** says its filter is ASKED of the store, never
+  worked out from the rows held: each Apply asks once for the keys it matches,
+  and its toggle stays a client update. A filtering component's
+  `data-fetch-fields`, or a grid column's `fetch`, can turn it on too (345).
 - **A number field's `thresholds`** are its bands, declared once:
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved

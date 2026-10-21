@@ -814,8 +814,49 @@ export class DataSource extends EventTarget {
       drop: (scope, field) => this.#setAside.get(scope)?.[field],
       mine: this.#mine,
       has: this.#has,
+      fetched: this.#fetched,
     };
   }
+
+  /** A field the STORE answers: its answer as the keys it matched — asked once per
+   *  answer, so its toggle and a Switch stay client updates. Until they come, its
+   *  clause as it reads. 345 phase 6 · TRAP T-a-server-field-is-asked-once-per-answer */
+  #fetched = (field: string, reading: FieldReading): Filter | undefined => {
+    const key = this.store.key;
+    if (this.#catalogue.get(field)?.fetch !== 'server' || !key) return undefined;
+    const { suspended: _off, ...on } = answerOf(reading);
+    const answer = JSON.stringify(on);
+    const got = this.#fetchedKeys.get(field);
+    if (got?.answer === answer) return [key, 'in', [...got.keys]];
+    if (this.#fetching.get(field) !== answer) void this.#fetchKeys(field, on, answer);
+    return undefined;
+  };
+
+  /** Ask the store which keys one field's answer matches, then compile again. */
+  async #fetchKeys(field: string, reading: FieldReading, answer: string): Promise<void> {
+    this.#fetching.set(field, answer);
+    const clause = readingClause({ field, ...this.#catalogue.facts(field) }, reading);
+    try {
+      const { rows } = await this.store.load(clause ? { filter: clause } : {});
+      if (this.#fetching.get(field) !== answer || this.#closed) return;
+      this.#fetchedKeys.set(field, { answer, keys: rows.map((row) => readField(row, this.store.key!)) });
+    } catch (error) {
+      report({
+        code: 'fetch-field-failed',
+        message: 'A field the store answers could not be asked; it filters by the rows held until it can.',
+        at: { field, error: error instanceof Error ? error.message : String(error) },
+      });
+      return;
+    } finally {
+      if (this.#fetching.get(field) === answer) this.#fetching.delete(field);
+    }
+    this.#recompose();
+  }
+
+  /** Each server field's last answer and the keys it matched. */
+  #fetchedKeys = new Map<string, { answer: string; keys: readonly unknown[] }>();
+  /** Each server field's answer being asked now. */
+  #fetching = new Map<string, string>();
 
   /* ── Draft and applied — a REMOTE source only ─────────────────────────
    * TRAP T-apply-and-discard-wait-for-a-change */

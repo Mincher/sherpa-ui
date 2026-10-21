@@ -100,6 +100,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-apply-on': DATA_PROPS['data-apply-on'],
     // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
     'data-pending': { type: 'string', kind: 'behaviour' },
+    // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
+    'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
 
   /** The filter defs this bar holds, in order. */

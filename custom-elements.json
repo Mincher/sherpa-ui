@@ -2288,6 +2288,13 @@
               }
             },
             {
+              "name": "data-fetch-fields",
+              "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider.",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-filter-fields",
               "description": "space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status=\"active\". Written by SherpaDataSource — a host driving the grid by hand can write it too.",
               "type": {
@@ -3454,6 +3461,13 @@
               "name": "data-dirty",
               "type": {
                 "text": "boolean"
+              }
+            },
+            {
+              "name": "data-fetch-fields",
+              "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider.",
+              "type": {
+                "text": "string"
               }
             },
             {
@@ -8072,6 +8086,13 @@
               "description": "the ★ is lit (view type) — the value, IN",
               "type": {
                 "text": "boolean"
+              }
+            },
+            {
+              "name": "data-fetch-fields",
+              "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider.",
+              "type": {
+                "text": "string"
               }
             },
             {

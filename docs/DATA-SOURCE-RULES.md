@@ -288,6 +288,14 @@ Each read-back here is a copy, or — a reading, `defaultFor` — the Query's ow
 FROZEN: spread it to change it, and send it back. `partFacts`' `only` is the
 element itself, and `rows` is the source's own array, so never change it.
 
+### A field the server answers
+
+A field marked `fetch: "server"` — in its page definition, a filtering
+component's `data-fetch-fields`, or a grid column's `fetch` — is answered by
+the store, not by the rows held: each Apply asks `load({ filter })` once for
+the keys its answer matches, and the source filters what it holds by them.
+Off and on again ask nothing; a new answer asks again. Its menus have Apply.
+
 ### A remote store's whole set is HELD
 
 A store with `remote: true` is read ONCE for its whole set — once for every page

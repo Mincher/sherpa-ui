@@ -439,6 +439,36 @@
     "clones": 11,
     "scans": 4
   },
+  "remote/apply-fetch": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 9162,
+    "compiles": 3,
+    "clones": 9,
+    "scans": 5
+  },
+  "remote/fetch-off": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 0,
+    "compiles": 2,
+    "clones": 1,
+    "scans": 3
+  },
+  "remote/fetch-on": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 0,
+    "compiles": 2,
+    "clones": 1,
+    "scans": 3
+  },
   "rest/open": {
     "loads": 1,
     "counts": 0,

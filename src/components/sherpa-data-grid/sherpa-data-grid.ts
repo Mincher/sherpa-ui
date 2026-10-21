@@ -62,6 +62,8 @@ import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filt
 export interface GridColumn extends OffersAdvanced {
   field: string;
   header?: string;
+  /** `server`: its filter is asked of the store; its provider tells the source. 345 phase 6 */
+  fetch?: 'server';
   /** number → right-aligned mono cells; anything else → default text. */
   type?: string;
   sortable?: boolean;
@@ -127,6 +129,8 @@ export class SherpaDataGrid extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
+    // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
+    'data-fetch-fields': { type: 'string', kind: 'behaviour' },
     'data-total-pages': DATA_PROPS['data-total-pages'],
     'data-column-filters': { type: 'boolean', kind: 'style' },
     'data-filterable': { type: 'boolean', kind: 'style' },

@@ -193,10 +193,12 @@ function control(tag, id, holds = []) {
 
 /** The page, opened and bound as the provider binds it. A tiered page's Customer has Sites:
  *  six, from the row's id, so the other pages' rows stay as they are. */
-async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered }) {
+async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered, fetch }) {
   const whole = JSON.parse(readFileSync(path, 'utf8'));
   const def = whole.source;
   if (holdRows != null) def.holdRows = holdRows;
+  // A field the store answers, as its page definition says. 345 phase 6
+  for (const f of fetch ?? []) def.fields[f] = { ...def.fields[f], fetch: 'server' };
   if (tiered) Object.assign(def.fields, { customer: { ...def.fields.customer, child: 'site' }, site: { label: 'Site' } });
   const rows = tiered ? ROWS.map((r) => ({ ...r, site: `Site ${1 + (r.id % 6)}` })) : ROWS.map((r) => ({ ...r }));
   const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
@@ -270,6 +272,10 @@ const ACTS = {
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
   'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),
   'move-site': (p) => p.store.update(17, { site: 'Site 9' }),
+  // A field the store answers: Apply asks once for its keys; off and on again ask nothing. 345 phase 6
+  'apply-fetch': (p) => p.data.answer({ seats: { mode: 'advanced', conditions: [{ op: 'gt', text: '40' }] } }),
+  'fetch-off': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: true, commit: true } }),
+  'fetch-on': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: false, commit: true } }),
   // A field held for the first time asks its values; held again, nothing. 345 phase 5
   'add-field': (p) => p.source.query.hold('data', [...p.source.query.scope('data'), 'seats']),
   'add-field-again': (p) => {
@@ -282,7 +288,7 @@ const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'so
   'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside', 'apply-saved'];
 const PAGES = {
   records: { remote: false, acts: MAIN },
-  remote: { remote: true, acts: MAIN },
+  remote: { remote: true, acts: [...MAIN, 'apply-fetch', 'fetch-off', 'fetch-on'], fetch: ['seats'] },
   // A store that may miss a writer (a server another client writes): a reopen shows its set and checks it behind.
   rest: { remote: true, announcesAll: false, acts: MAIN },
   lean: { page: LEAN, remote: false, acts: ['change-unused', 'change-shown', 'change-held', 'answer-held', 'change-answered', 'add', 'delete'] },
@@ -346,7 +352,8 @@ const ASKS = ['loads', 'counts', 'distinct'];
  *  TRAP T-a-remote-source-holds-its-whole-set */
 export function asked(costs) {
   // A rest/ open and reopen read the set ONCE — the reopen behind the set it shows. TRAP T-a-read-is-planned
-  const once = new Set(['rest/open', 'rest/reopen']);
+  // …and a field the store answers is asked once on Apply. TRAP T-a-server-field-is-asked-once-per-answer
+  const once = new Set(['rest/open', 'rest/reopen', 'remote/apply-fetch']);
   return Object.entries(costs)
     .filter(([act]) => act.startsWith('remote/') || act.startsWith('rest/'))
     .filter(([act, c]) => (act === 'remote/open' ? false

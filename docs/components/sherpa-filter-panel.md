@@ -59,6 +59,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE, so a value reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-dirty` | boolean |  |  |
+| `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the group in force. Written by the source; the Group chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut |
 | `data-heading` | text | `Filters` | the panel's own title |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |

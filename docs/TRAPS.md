@@ -10393,6 +10393,29 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-server-field-is-asked-once-per-answer
+
+**A field marked `fetch: "server"` is answered by the store — once per answer,
+for the keys it matches.** TODO 345 phase 6 (Will, A: the names). A held set
+filters on the client, which is what keeps a toggle, a Switch and a cycle free
+of requests (340); a field whose meaning only the server knows cannot be
+worked out that way. So its APPLIED answer is asked of the store once,
+`load({ filter })`, and the keys that come back are its clause, `[key, 'in',
+keys]`, which the held set runs like any other. The answer is the cache key:
+off and on again reuse it, a new answer asks again. Until the keys come, the
+clause as it reads. Its menus have Apply, so a tick is not a request.
+
+It is turned ON from three places, and none can turn it off: the page
+definition, a filtering component's `data-fetch-fields`, and a grid column's
+`fetch` — the provider tells the source. Until phase 7 the ask reads whole
+rows; with projection it reads the key alone.
+
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/unit/a-server-field-is-asked-once.test.mjs`
+- Site: `scripts/check-bench.mjs`
+
 ### T-a-field-reads-its-values-when-needed
 
 **A remote store a source does not hold is asked a field's values only when

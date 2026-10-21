@@ -59,6 +59,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-bounds` | text |  |  |
 | `data-custom-view` | boolean |  |  |
 | `data-favourite` | boolean |  | the ★ is lit (view type) — the value, IN |
+| `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178. |

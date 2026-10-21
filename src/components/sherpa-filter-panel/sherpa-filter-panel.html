@@ -18,6 +18,8 @@
       bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
 
   Public API:
+    data-fetch-fields  the fields the STORE answers, space-separated: each Apply
+                    asks it once for the keys they match. Read by the provider.
     data-at-default  the filters already ARE the View's default: "Reset all to
                     default" is inactive. Written by the provider. TODO 231.
     data-nothing-to-reset  nothing is left to clear: Reset is inactive. Written by
