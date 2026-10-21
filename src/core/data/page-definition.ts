@@ -81,12 +81,12 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
   }
   for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
     if (facts.label || facts.arranges != null) {
-      source.declareScope(scope, {
+      source.query.declareScope(scope, {
         ...(facts.label ? { label: facts.label } : {}), ...(facts.arranges != null ? { arranges: facts.arranges } : {}),
       });
     }
     // A child is never offered on its own: its picks are its parent's. TODO 369
-    if (facts.offers) source.offer(scope, facts.offers === 'all' ? fields.filter((f) => !children.has(f)) : facts.offers);
+    if (facts.offers) source.query.offer(scope, facts.offers === 'all' ? fields.filter((f) => !children.has(f)) : facts.offers);
     if (facts.holds) source.hold(scope, facts.holds);
     for (const set of facts.sets ?? []) {
       for (const field of set.fields) {
@@ -98,7 +98,7 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
         });
       }
     }
-    if (facts.sets?.length) source.declareSets(scope, facts.sets);
+    if (facts.sets?.length) source.query.declareSets(scope, facts.sets);
   }
   return source;
 }

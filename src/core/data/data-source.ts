@@ -26,7 +26,6 @@
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
  * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
  * - .write — Write ONE scope's reading of ONE field — a component's own answer.
- * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
@@ -40,8 +39,6 @@
  * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
- * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges.
- * - .declareSets — A scope's filter sets, in order.
  * - .addable — What a scope may still add, each noting where it lives now.
  * - .valuesFor — What `declareValues` was told, as the data holds it.
  * - .select — Select values for a FIELD — the VIEW scope.
@@ -51,7 +48,6 @@
  * - .selection — one field's whole state, ready for any control to draw
  * - .selectedFields — Every field currently selected.
  * - .hold — Say what a scope holds now.
- * - .offer — Say which fields a component scope HAS.
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
@@ -97,7 +93,7 @@ import {
   keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
-import { QueryContext, type QueryHandle } from './query-context.js';
+import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import { cacheOf, type CacheChangeDetail, type StoreCache } from './store-cache.js';
@@ -173,8 +169,6 @@ export class DataSource extends EventTarget {
   get #draft(): Query { return this.#member.live().draft; }
   set #draft(query: Query) { this.#member.live().draft = query; }
   get #defaults(): Map<string, ScopeQuery> { return this.#member.live().defaults; }
-  get #scopeLabels(): Map<string, string> { return this.#member.live().labels; }
-  get #arranges(): Map<string, boolean> { return this.#member.live().arranges; }
   get #sets(): Map<string, FilterSet[]> { return this.#member.live().sets; }
   get #offers(): Map<string, string[]> { return this.#member.live().offers; }
   get #narrowing(): Map<string, { field: string; only: BoundControl; label?: string }> { return this.#member.live().parts; }
@@ -212,6 +206,7 @@ export class DataSource extends EventTarget {
     this.#context = options.query ?? new QueryContext();
     this.#member = this.#context.join({
       remote: this.#remote, showsRows: (scope) => this.#binding.showsRows(scope), bindOf: (el) => this.#binding.get(el),
+      heard: (change) => this.#hear(change),
     });
     this.#autoLoad = options.autoLoad ?? true;
     this.#limitOptions = options.limitOptions ?? false;
@@ -486,22 +481,6 @@ export class DataSource extends EventTarget {
     }
   }
 
-  /**
-   * Declare a PART — the scope of ONE field that narrows ONE component, a
-   * chart's legend field — so a panel draws it before it is answered, and a
-   * write to it from anywhere narrows that component. `undefined` forgets it.
-   * TRAP T-a-chart-scope-is-its-legend-field
-   */
-  declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
-    this.#age++;
-    // A legend declared after the last load is told what the View leaves it.
-    if (this.#loaded) this.#walkSoon();
-    if (part) this.#narrowing.set(scope, part);
-    else this.#narrowing.delete(scope);
-    // Sent up, the View holds its field — and draws only a field it knows.
-    if (part && !this.#catalogue.has(part.field)) this.declareField(part.field);
-    this.#binding.drawScopesSoon();
-  }
 
 
   /**
@@ -787,11 +766,6 @@ export class DataSource extends EventTarget {
     return this.#catalogue.filterDef(field);
   }
 
-  /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
-  declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {
-    if (facts.label != null) this.#scopeLabels.set(scope, facts.label);
-    if (facts.arranges != null) this.#arranges.set(scope, facts.arranges);
-  }
 
 
 
@@ -829,30 +803,6 @@ export class DataSource extends EventTarget {
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
   }
 
-  /** A scope's filter sets, in order. A field is in one set at most; a second
-   *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
-  declareSets(scope: string, sets: readonly FilterSet[]): void {
-    this.#age++;
-    const taken = new Set<string>();
-    this.#sets.set(scope, sets.map((set) => ({
-      ...structuredClone(set),
-      fields: set.fields.filter((field) => {
-        if (!taken.has(field)) {
-          taken.add(field);
-          return true;
-        }
-        report({
-          code: 'field-in-two-sets',
-          message: `declareSets: "${field}" is in two of scope "${scope}"'s sets; it stays in the first.`,
-          at: { scope, set: set.id, field },
-        });
-        return false;
-      }),
-    })));
-    // The order every chip counts in moved: count, and draw, again.
-    if (this.#loaded) this.#walkSoon();
-    this.#binding.drawScopesSoon();
-  }
 
 
 
@@ -1089,17 +1039,6 @@ export class DataSource extends EventTarget {
    * TRAP T-up-is-open-down-is-closed */
 
 
-  /** Say which fields a component scope HAS. The view needs none: up is open. */
-  offer(name: string, fields: readonly string[]): void {
-    const next = [...new Set(fields)];
-    const before = this.#offers.get(name);
-    if (before && before.length === next.length && before.every((f, i) => f === next[i])) return;
-    if (next.length) this.#offers.set(name, next);
-    else this.#offers.delete(name);
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
-    // What its menus may add moved: the walk tallies it.
-    if (this.#loaded) this.#walkSoon();
-  }
 
 
 
@@ -1252,6 +1191,23 @@ export class DataSource extends EventTarget {
   /** The same, for this class's own branches. */
   get #remote(): boolean {
     return !!this.store.remote;
+  }
+
+  /** A declaration its context made: today's follow-ups, in today's order. 366 step 14 */
+  #hear(change: QueryChange): void {
+    if (change.kind === 'offer') {
+      this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
+      // What its menus may add moved: the walk tallies it.
+      if (this.#loaded) this.#walkSoon();
+      return;
+    }
+    this.#age++;
+    // A legend declared after the last load is told what the View leaves it; a
+    // set's order is the order every chip counts in.
+    if (this.#loaded) this.#walkSoon();
+    // Sent up, the View holds its field — and draws only a field it knows.
+    if (change.kind === 'part' && change.field && !this.#catalogue.has(change.field)) this.declareField(change.field);
+    this.#binding.drawScopesSoon();
   }
 
   /** A definition as a whole Query: definitionOf, over this source. */

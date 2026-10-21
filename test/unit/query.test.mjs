@@ -130,7 +130,7 @@ test('the source keeps each reading in the scope that holds its field, and compi
 test('moving a field moves its reading with it — and the rows do not change', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
-  src.offer('grid', ['status']);
+  src.query.offer('grid', ['status']);
   src.hold('grid', ['status']);
   src.select('status', ['trial']);
   const before = ids(src.state.filter);
@@ -156,7 +156,7 @@ test('the Query a source hands out is a copy — writing to it steers nothing', 
 test('a scope\'s whole answer clears what it no longer names — never a field raised out of it', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
-  src.offer('grid', ['status', 'region']);
+  src.query.offer('grid', ['status', 'region']);
   src.hold('grid', ['status', 'region']);
   src.answer('grid', { status: { picked: ['active'] }, region: { picked: ['EMEA'] } });
   assert.deepEqual(ids(src.state.filter), [1, 4]);

@@ -44,7 +44,7 @@ class Bar extends EventTarget {
 async function setup(readings, { mode = 'serial', limit = false } = {}) {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), limitOptions: limit });
   await source.declareFromRows(['customer', 'region']);
-  source.declareSets(VIEW, [{ id: 'account', mode, fields: ['customer', 'region', 'tier'] }]);
+  source.query.declareSets(VIEW, [{ id: 'account', mode, fields: ['customer', 'region', 'tier'] }]);
   const bar = new Bar(readings);
   bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();
@@ -94,8 +94,8 @@ test('a filter before the set limits the chain, though the top is unanswered', a
 test('a component scope\'s chain starts inside the View', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await source.declareFromRows(['customer', 'region']);
-  source.offer('data', ['customer', 'region']);
-  source.declareSets('data', [{ id: 'acct', mode: 'serial', fields: ['customer', 'region'] }]);
+  source.query.offer('data', ['customer', 'region']);
+  source.query.declareSets('data', [{ id: 'acct', mode: 'serial', fields: ['customer', 'region'] }]);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
   await source.setQuery({ v: 1, scopes: {
     view: { holds: ['zone'], readings: { zone: { picked: ['north'] } } },

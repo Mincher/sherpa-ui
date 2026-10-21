@@ -267,9 +267,9 @@ source:
 | told with | read with |
 |---|---|
 | `hold(scope, fields)` | `query.scope(scope)` — the fields it holds; `query.scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
-| `declareField` · `declareValues` · `declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `query.sets(scope)` |
-| `declareScope` | `query.scopeFacts(scope)`; `query.scopeLabel()` and `query.arranges()` add their fallbacks |
-| `declarePart` · `declareDefault` | `query.partFacts(scope)` · `query.defaultFor(scope)` |
+| `declareField` · `declareValues` · `query.declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `query.sets(scope)` |
+| `query.declareScope` | `query.scopeFacts(scope)`; `query.scopeLabel()` and `query.arranges()` add their fallbacks |
+| `query.declarePart` · `declareDefault` | `query.partFacts(scope)` · `query.defaultFor(scope)` |
 | `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
 
 Each read-back here is a copy, or — a reading, `defaultFor` — the Query's own,

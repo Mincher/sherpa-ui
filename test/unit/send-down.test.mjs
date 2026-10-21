@@ -27,9 +27,9 @@ async function setup() {
   source.declareField('region', { label: 'Region' });
   source.declareValues('plan', ['Pro', 'Free']);
   source.declareValues('region', ['EMEA', 'APAC']);
-  source.declareScope('view', { label: 'View filters' });
-  source.declareScope('data', { label: 'Customer records' });
-  source.offer('data', ['plan', 'region']);
+  source.query.declareScope('view', { label: 'View filters' });
+  source.query.declareScope('data', { label: 'Customer records' });
+  source.query.offer('data', ['plan', 'region']);
   source.hold('view', ['region']);
   const seen = new Map();
   const stub = (name, more = {}) => Object.assign(new EventTarget(), {
@@ -54,11 +54,11 @@ test('a View field names ONE scope to go down to: the first that has it, a compo
   const { source, chart, sendTo } = await setup();
   assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // A chart's own scope has the field too: still one, the page's first. Will, TODO 346.
-  source.declarePart('picks:bar', { field: 'region', only: chart, label: 'By region' });
+  source.query.declarePart('picks:bar', { field: 'region', only: chart, label: 'By region' });
   assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // In the page's order: a scope offered first is named first.
-  source.declareScope('other', { label: 'Other records' });
-  source.offer('other', ['region']);
+  source.query.declareScope('other', { label: 'Other records' });
+  source.query.offer('other', ['region']);
   assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // A field no scope below has: nowhere to send it.
   source.declareField('owner', { label: 'Owner' });
@@ -83,7 +83,7 @@ test('SENT DOWN, the View lets go and the answer goes with the field', async () 
 
 test('a field goes back down to where it CAME UP from — a chart\'s own scope — though another scope has it too', async () => {
   const { source, seen, chart, send, sendTo } = await setup();
-  source.declarePart('picks:bar', { field: 'plan', only: chart, label: 'By plan' });
+  source.query.declarePart('picks:bar', { field: 'plan', only: chart, label: 'By plan' });
   source.write('picks:bar', 'plan', { picked: ['Pro'] });
   send('view', 'plan', 'picks:bar');
   await tick();
@@ -105,8 +105,8 @@ test('a field goes back down to where it CAME UP from — a chart\'s own scope �
    scope A. A filter should only ever be in 1 scope at any time." */
 test('A to the View to B: the field is in B alone, and A does not get it back', async () => {
   const { source, seen, send } = await setup();
-  source.declareScope('other', { label: 'Other records' });
-  source.offer('other', ['plan', 'region']);
+  source.query.declareScope('other', { label: 'Other records' });
+  source.query.offer('other', ['plan', 'region']);
   // A holds Plan, answered; it goes UP, and A keeps its place for it.
   source.hold('data', ['plan']);
   source.answer('data', { plan: { picked: ['Pro'] } });
@@ -130,7 +130,7 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
    is kept IN the Query. */
 test('where a View field came up from is in the Query, so a reload still returns it there', async () => {
   const first = await setup();
-  first.source.declarePart('picks:bar', { field: 'plan', only: first.chart, label: 'By plan' });
+  first.source.query.declarePart('picks:bar', { field: 'plan', only: first.chart, label: 'By plan' });
   first.source.write('picks:bar', 'plan', { picked: ['Pro'] });
   first.send('view', 'plan', 'picks:bar');
   await tick();
@@ -138,7 +138,7 @@ test('where a View field came up from is in the Query, so a reload still returns
   assert.deepEqual(kept.scopes.view.from, { plan: 'picks:bar' });
 
   const again = await setup();
-  again.source.declarePart('picks:bar', { field: 'plan', only: again.chart, label: 'By plan' });
+  again.source.query.declarePart('picks:bar', { field: 'plan', only: again.chart, label: 'By plan' });
   await again.source.setQuery(kept);
   assert.deepEqual(again.sendTo('plan'), { scope: 'picks:bar', label: 'By plan', origin: true });
 

@@ -25,7 +25,7 @@ function page() {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   source.declareField('plan', { label: 'Plan' });
   source.declareField('name', { label: 'Name' });
-  for (const scope of ['view', 'data', 'chart']) source.offer(scope, ['plan', 'name']);
+  for (const scope of ['view', 'data', 'chart']) source.query.offer(scope, ['plan', 'name']);
   const grid = control();
   bindSource(source, grid, { scope: 'data', shows: 'grid' });
   bindSource(source, control(), { scope: 'chart', shows: 'chart', readonly: true });
@@ -38,14 +38,14 @@ test('a grid\'s scope arranges; a chart\'s and the View do not, unless they say 
   assert.equal(source.query.arranges('chart'), false);
   assert.equal(source.query.arranges('view'), false);
   assert.equal(source.describe('chart').sort, undefined);
-  source.declareScope('view', { arranges: true });
+  source.query.declareScope('view', { arranges: true });
   assert.equal(source.query.arranges('view'), true);
   assert.deepEqual(source.describe('view').sort.map((c) => c.field), ['plan', 'name']);
 });
 
 test('a sort shows in the scope that set it, and a View keeps it there', async () => {
   const { source, grid } = page();
-  source.declareScope('view', { arranges: true });
+  source.query.declareScope('view', { arranges: true });
   grid.dispatchEvent(new CustomEvent('sort-change', { detail: { field: 'name', direction: 'desc' } }));
   await source.load();
   assert.equal(source.describe('data').sortField, 'name');
@@ -55,7 +55,7 @@ test('a sort shows in the scope that set it, and a View keeps it there', async (
   assert.equal(out.view?.sort, undefined);
   // Read back, it is that scope's again.
   const again = page().source;
-  again.declareScope('view', { arranges: true });
+  again.query.declareScope('view', { arranges: true });
   await again.import(source.export());
   assert.equal(again.describe('data').sortField, 'name');
   assert.equal(again.describe('view').sortField, undefined);

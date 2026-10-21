@@ -110,8 +110,8 @@ test('what a chip counts moves with the shared set', async () => {
   const { store } = remote();
   const source = new DataSource({ store });
   source.declareValues('tier', ['gold', 'silver']);
-  source.declareScope('data', { label: 'Records' });
-  source.offer('data', ['tier']);
+  source.query.declareScope('data', { label: 'Records' });
+  source.query.offer('data', ['tier']);
   source.hold('data', ['tier']);
   source.answer('data', { tier: { picked: ['gold'] } });
   source.commit?.();

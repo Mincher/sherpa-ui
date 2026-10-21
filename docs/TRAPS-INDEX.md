@@ -37,7 +37,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-field-is-declared-once](TRAPS.md#t-a-field-is-declared-once) — data-source, data-source-types
 - [T-a-filter-applies-down-its-scope](TRAPS.md#t-a-filter-applies-down-its-scope) — bind-selection, data-source
 - [T-a-filter-report-is-the-whole-answer](TRAPS.md#t-a-filter-report-is-the-whole-answer) — data-source
-- [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition
+- [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context
 - [T-a-find-asks-its-host-to-step](TRAPS.md#t-a-find-asks-its-host-to-step) — data-source
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — data-source, store
 - [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — data-source

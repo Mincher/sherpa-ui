@@ -54,12 +54,12 @@ test('each read of the Query is the context\'s (366 step 13)', () => {
   const query = new QueryContext();
   const source = new DataSource({ store: store(), query });
   const chart = { id: 'chart' };
-  source.offer('data', ['plan', 'id']);
+  source.query.offer('data', ['plan', 'id']);
   source.hold(VIEW, ['plan']);
   source.hold('data', ['id']);
-  source.declareScope('data', { label: 'Records', arranges: true });
-  source.declareSets('data', [{ id: 'set', fields: ['id'] }]);
-  source.declarePart('legend', { field: 'plan', only: chart, label: 'Plan' });
+  source.query.declareScope('data', { label: 'Records', arranges: true });
+  source.query.declareSets('data', [{ id: 'set', fields: ['id'] }]);
+  source.query.declarePart('legend', { field: 'plan', only: chart, label: 'Plan' });
   source.declareDefault('grid', { id: { picked: [1] } });
   source.select('plan', ['Pro']);
 
@@ -92,4 +92,21 @@ test('pending and dirty: a remote member\'s edit, until Apply', () => {
   remote.commit();
   assert.equal(query.pending('plan'), false);
   assert.equal(query.dirty(), false);
+});
+
+test('a declaration is the context\'s, and every member hears it at once (366 step 14)', () => {
+  const query = new QueryContext();
+  const one = new DataSource({ store: store(), query });
+  const two = new DataSource({ store: store(), query });
+  const heard = [];
+  one.addEventListener('scope-change', () => heard.push('one'));
+  two.addEventListener('scope-change', () => heard.push('two'));
+  query.offer('data', ['plan']);
+  assert.deepEqual(heard, ['one', 'two'], 'in the order they joined, before offer returns');
+  assert.deepEqual(query.fields('data'), ['plan']);
+  // The same offer again changes nothing, and no one hears it.
+  query.offer('data', ['plan']);
+  assert.deepEqual(heard, ['one', 'two']);
+  query.declareScope('data', { label: 'Records' });
+  assert.equal(query.scopeLabel('data'), 'Records');
 });

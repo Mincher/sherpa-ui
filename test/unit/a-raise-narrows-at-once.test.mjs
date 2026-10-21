@@ -20,7 +20,7 @@ const settle = () => new Promise((r) => setTimeout(r, 30));
 test('a field raised to the View narrows a chart over every row at once', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   source.declareValues('plan', ['Free', 'Pro']);
-  source.offer('data', ['plan']);
+  source.query.offer('data', ['plan']);
   const drawn = [];
   const chart = { id: 'chart', populate: (rows) => drawn.push(rows.map((r) => r.id)),
     setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} };

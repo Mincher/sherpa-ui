@@ -24,7 +24,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 async function setup() {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   source.declareValues('sev', ['critical', 'warning', 'info']);
-  source.declareScope('view', { label: 'View filters' });
+  source.query.declareScope('view', { label: 'View filters' });
   const seen = new Map();
   const stub = (name, more = {}) => Object.assign(new EventTarget(), {
     id: name, setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
@@ -41,7 +41,7 @@ async function setup() {
   bindSource(source, other, { rows: 'all', readonly: true });
   bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
   await source.load();
-  source.declarePart('picks:bar', { field: 'sev', only: chart, label: 'Alerts by severity' });
+  source.query.declarePart('picks:bar', { field: 'sev', only: chart, label: 'Alerts by severity' });
   await tick();
   return { source, seen, chart, other, panel, drawn };
 }
@@ -111,7 +111,7 @@ test('SENT UP, the answer goes to the View with its field, and the chart lets go
 
 test('a part forgotten is drawn no more', async () => {
   const { source, drawn } = await setup();
-  source.declarePart('picks:bar', undefined);
+  source.query.declarePart('picks:bar', undefined);
   await tick();
   assert.deepEqual(drawn.scopes.at(-1).map((s) => s.scope), ['view']);
 });

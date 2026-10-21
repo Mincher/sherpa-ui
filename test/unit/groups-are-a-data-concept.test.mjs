@@ -79,8 +79,8 @@ test('a FILTER narrows the groups, because they count matching rows', async () =
    keep the VIEW's rows, and the groups were counted from those. */
 test('a filter in a COMPONENT scope narrows the groups, with a summary bound beside it', async () => {
   const src = await source();
-  src.declareScope('view', { label: 'View filters' });
-  src.declareScope('data', { label: 'Records' });
+  src.query.declareScope('view', { label: 'View filters' });
+  src.query.declareScope('data', { label: 'Records' });
   const chart = Object.assign(new EventTarget(), {
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });

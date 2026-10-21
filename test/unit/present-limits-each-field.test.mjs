@@ -49,7 +49,7 @@ async function setup({ view = {}, data = null, limit = true } = {}) {
   bar.report();
   let grid = null;
   if (data) {
-    source.offer('data', ['status']);
+    source.query.offer('data', ['status']);
     grid = new Bar(data, ['status']);
     bindSource(source, grid, { steerOnly: true, scope: 'data' });
     grid.report();

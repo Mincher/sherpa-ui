@@ -1803,6 +1803,7 @@ may still add it.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-one-walk-counts-and-limits-in-order
 
@@ -17691,7 +17692,7 @@ filter: the legend's field, a chip per legend item, each with its series'
 swatch. No Advanced, nothing to add, nothing to save. Will, TODO 52.
 
 It is the scope the legend already writes (`picks:<legend id>`, narrowing its
-chart alone), DECLARED: `source.declarePart(scope, { field, only, label })`.
+chart alone), DECLARED: `source.query.declarePart(scope, { field, only, label })`.
 Three things follow from the declaring, and each was a hole without it:
 
 - **It is drawn before it is answered.** An unanswered scope is pruned from the

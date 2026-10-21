@@ -5,6 +5,7 @@
  * DOM-free. TRAP T-one-query-one-owner
  *
  * Map:
+ * - QueryChange — A declaration the context made, as each member hears it.
  * - QueryMember — What a source tells the context it joins.
  * - QueryLive — The Query and the declarations, live: written in place, never copied.
  * - QueryHandle — What a member holds of its context.
@@ -27,12 +28,23 @@
  * - .sets — A scope's filter sets, as declared.
  * - .pending — Has this field been changed and not yet applied?
  * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
+ * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
+ * - .declareScope — Name a scope as a reader sees it, and say if it arranges.
+ * - .declareSets — A scope's filter sets, in order.
+ * - .offer — Say which fields a component scope HAS.
  * - .join — A source joins: it gets its handle.
  */
 import type { BoundControl, FilterSet } from './data-source-types.js';
 import { copyQuery, freezeReading, sameReading, VIEW, type Query, type ScopeQuery } from './query.js';
 import { answerIn, answersOf, holderOf, holdsField } from './query-edits.js';
 import type { FieldReading } from './filter-state.js';
+import { report } from './report.js';
+
+/** A declaration the context made, as each member hears it. */
+export type QueryChange =
+  | { kind: 'part'; scope: string; field?: string }
+  | { kind: 'sets'; scope: string }
+  | { kind: 'offer'; scope: string };
 
 /** What a source tells the context it joins. */
 export interface QueryMember {
@@ -42,6 +54,8 @@ export interface QueryMember {
   showsRows(scope: string): boolean;
   /** How it bound this control, if it did. */
   bindOf(el: BoundControl): { scope?: string | readonly string[] } | undefined;
+  /** A declaration the context made: its follow-ups. Called at once, in join order. */
+  heard(change: QueryChange): void;
 }
 
 /** The Query and the declarations, live: written in place, never copied. */
@@ -213,6 +227,61 @@ export class QueryContext {
       : [...new Set([...Object.keys(this.#live.applied.scopes), ...Object.keys(this.#live.draft.scopes)])];
     return ids.some((id) => JSON.stringify(answersOf(this.#live.applied.scopes[id]))
       !== JSON.stringify(answersOf(this.#live.draft.scopes[id])));
+  }
+
+  /**
+   * Declare a PART — the scope of ONE field that narrows ONE component, a
+   * chart's legend field — so a panel draws it before it is answered, and a
+   * write to it from anywhere narrows that component. `undefined` forgets it.
+   * TRAP T-a-chart-scope-is-its-legend-field
+   */
+  declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
+    if (part) this.#live.parts.set(scope, part);
+    else this.#live.parts.delete(scope);
+    this.#tell({ kind: 'part', scope, ...(part ? { field: part.field } : {}) });
+  }
+
+  /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
+  declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {
+    if (facts.label != null) this.#live.labels.set(scope, facts.label);
+    if (facts.arranges != null) this.#live.arranges.set(scope, facts.arranges);
+  }
+
+  /** A scope's filter sets, in order. A field is in one set at most; a second
+   *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
+  declareSets(scope: string, sets: readonly FilterSet[]): void {
+    const taken = new Set<string>();
+    this.#live.sets.set(scope, sets.map((set) => ({
+      ...structuredClone(set),
+      fields: set.fields.filter((field) => {
+        if (!taken.has(field)) {
+          taken.add(field);
+          return true;
+        }
+        report({
+          code: 'field-in-two-sets',
+          message: `declareSets: "${field}" is in two of scope "${scope}"'s sets; it stays in the first.`,
+          at: { scope, set: set.id, field },
+        });
+        return false;
+      }),
+    })));
+    this.#tell({ kind: 'sets', scope });
+  }
+
+  /** Say which fields a component scope HAS. The view needs none: up is open. */
+  offer(name: string, fields: readonly string[]): void {
+    const next = [...new Set(fields)];
+    const before = this.#live.offers.get(name);
+    if (before && before.length === next.length && before.every((f, i) => f === next[i])) return;
+    if (next.length) this.#live.offers.set(name, next);
+    else this.#live.offers.delete(name);
+    this.#tell({ kind: 'offer', scope: name });
+  }
+
+  /** Each member hears a declaration, at once, in the order they joined. */
+  #tell(change: QueryChange): void {
+    for (const member of this.#members) member.heard(change);
   }
 
   /** A source joins: it gets its handle. A remote one splits the draft from

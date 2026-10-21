@@ -14,11 +14,11 @@ const open = () => new DataSource({ store: new ArrayStore([{ id: 1, region: 'EME
 test('partFacts() reads back declarePart; `only` is the element itself', () => {
   const source = open();
   const chart = {};
-  source.declarePart('picks:region', { field: 'region', only: chart });
+  source.query.declarePart('picks:region', { field: 'region', only: chart });
   const got = source.query.partFacts('picks:region');
   assert.equal(got.field, 'region');
   assert.equal(got.only, chart);
-  source.declarePart('picks:region', undefined);
+  source.query.declarePart('picks:region', undefined);
   assert.equal(source.query.partFacts('picks:region'), undefined);
 });
 
@@ -38,6 +38,6 @@ test('scopeFacts() reads back declareScope, not the fallbacks', () => {
   const source = open();
   assert.deepEqual(source.query.scopeFacts('grid'), {});
   assert.equal(source.query.scopeLabel('grid'), 'grid');
-  source.declareScope('grid', { label: 'Records', arranges: true });
+  source.query.declareScope('grid', { label: 'Records', arranges: true });
   assert.deepEqual(source.query.scopeFacts('grid'), { label: 'Records', arranges: true });
 });

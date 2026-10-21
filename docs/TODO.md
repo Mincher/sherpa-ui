@@ -1905,7 +1905,9 @@ provider keeps. Step 12: a `QueryContext` holds the Query and the page's
 declarations; `source.query` IS it, and a source given none makes its own. Step 13:
 the Query's reads — `reading`, `scope`, `scopes`, `holds`, `scopeOf`,
 `fields`, `canHold`, `defaultFor`, `partFacts`, `scopeFacts`, `scopeLabel`,
-`arranges`, `sets`, `pending`, `dirty` — are `source.query.X` only.
+`arranges`, `sets`, `pending`, `dirty` — are `source.query.X` only. Step 14:
+`declarePart`, `declareScope`, `declareSets` and `offer` are the context's,
+and each member hears them at once (`declareDefault` moves with `write`).
 
 ---
 

@@ -854,7 +854,7 @@ export class SherpaProvider extends SherpaElement {
     /* The chart's OWN scope, so a filter panel draws it — named as the chart
        is. TRAP T-a-chart-scope-is-its-legend-field */
     const label = nameOf(only);
-    source.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
+    source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
     // What the filters before it leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
     const hear = (event: Event): void => {
       const left = (event as CustomEvent<{ byScope: Record<string, Record<string, string[]>> }>).detail.byScope[key];
@@ -863,7 +863,7 @@ export class SherpaProvider extends SherpaElement {
     source.addEventListener('present', hear);
     return () => {
       source.removeEventListener('present', hear);
-      source.declarePart(key, undefined);
+      source.query.declarePart(key, undefined);
       unbind();
     };
   }

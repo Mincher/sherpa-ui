@@ -842,8 +842,8 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
   // Conditions only: no list to tick.
   assert.equal(source.filterDef('email').options, undefined);
 
-  source.declareScope('view', { label: 'App header' });
-  source.offer('grid', ['plan', 'seats', 'email', 'undeclared']);
+  source.query.declareScope('view', { label: 'App header' });
+  source.query.offer('grid', ['plan', 'seats', 'email', 'undeclared']);
   source.hold('grid', ['plan']);
   source.hold('view', ['seats']);
   // Held here is not offered, nor below the View what the View holds; undeclared never.
@@ -859,10 +859,10 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' }) });
   source.declareField('plan', { label: 'Plan', select: 'multiple' });
   source.declareValues('plan', ['Free', 'Pro']);
-  source.declareScope('view', { label: 'View filters' });
+  source.query.declareScope('view', { label: 'View filters' });
   // No grid is bound here, so it SAYS it arranges. TODO 99
-  source.declareScope('grid', { arranges: true });
-  source.offer('grid', ['plan']);
+  source.query.declareScope('grid', { arranges: true });
+  source.query.offer('grid', ['plan']);
   const drawn = [];
   const panel = Object.assign(new EventTarget(), {
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
@@ -904,8 +904,8 @@ test('a grid heading answers through the source, and is told what the View holds
   const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro', region: 'EMEA' }], { key: 'id' }) });
   source.declareField('plan', { label: 'Plan' });
   source.declareField('region', { label: 'Region' });
-  source.declareScope('view', { label: 'View filters' });
-  source.offer('data', ['plan', 'region']);
+  source.query.declareScope('view', { label: 'View filters' });
+  source.query.offer('data', ['plan', 'region']);
   const stub = (extra) => Object.assign(new EventTarget(), {
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, ...extra });
   const columns = [];

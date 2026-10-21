@@ -158,7 +158,7 @@ test('a legend declared after the last load is told what the View leaves it', as
   await ticks(12);
   const heard = [];
   source.addEventListener('present', (e) => heard.push(e.detail.byScope));
-  source.declarePart('legend', { field: 'status', only: chart });
+  source.query.declarePart('legend', { field: 'status', only: chart });
   await ticks(12);
   // Litware's rows are all trials: with Limit off, the View still greys "active" (Q1 A).
   assert.deepEqual(heard.at(-1)?.legend, { status: ['trial'] });

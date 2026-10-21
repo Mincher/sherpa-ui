@@ -19,8 +19,8 @@ async function setup() {
   const store = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
   const source = new DataSource({ store, pageSize: 2 });
   source.declareValues('status', ['active', 'trial']);
-  source.declareScope('data', { label: 'Records' });
-  source.offer('data', ['status']);
+  source.query.declareScope('data', { label: 'Records' });
+  source.query.offer('data', ['status']);
   source.hold('data', ['status']);
   const drawn = [];
   const bar = Object.assign(new EventTarget(), {
@@ -59,13 +59,13 @@ test('a change to the rows counts again, though the Query is the same', async ()
 
 test('a scope\'s sets moving counts again: the order the chips count in is new', async () => {
   const { source, drawn } = await setup();
-  source.offer('data', ['status', 'name']);
+  source.query.offer('data', ['status', 'name']);
   source.hold('data', ['status', 'name']);
   source.answer('data', { status: { picked: ['active'] }, name: { picked: ['a', 'c'] } });
   await tick();
   assert.deepEqual(drawn.at(-1), ['data', { status: 2, name: 1 }]);
   // The Query is the same; the set puts Name first.
-  source.declareSets('data', [{ id: 'who', fields: ['name', 'status'] }]);
+  source.query.declareSets('data', [{ id: 'who', fields: ['name', 'status'] }]);
   await tick();
   assert.deepEqual(drawn.at(-1), ['data', { name: 2, status: 1 }]);
 });

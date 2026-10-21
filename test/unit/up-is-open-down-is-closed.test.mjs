@@ -27,8 +27,8 @@ async function source() {
   const src = new DataSource({ store: new ArrayStore([], { key: 'id' }) });
   await src.ready;
   // Two components, each with its OWN fields. `owner` is in both.
-  src.offer('grid', ['status', 'plan', 'owner']);
-  src.offer('tickets', ['priority', 'owner']);
+  src.query.offer('grid', ['status', 'plan', 'owner']);
+  src.query.offer('tickets', ['priority', 'owner']);
   return src;
 }
 
@@ -105,7 +105,7 @@ test('offer() on an unchanged list fires nothing — a bar re-renders on it', as
   const src = await source();
   let fired = 0;
   src.addEventListener('scope-change', () => { fired += 1; });
-  src.offer('grid', ['status', 'plan', 'owner']);
+  src.query.offer('grid', ['status', 'plan', 'owner']);
   assert.equal(fired, 0);
 });
 

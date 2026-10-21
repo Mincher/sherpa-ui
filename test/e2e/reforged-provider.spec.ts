@@ -119,7 +119,7 @@ test('mode buttons wait for the provider to draw; nothing throws', async ({ page
     // At once: nothing has drawn yet.
     provider.filterMode = 'toolbars';
     const src = source(2, 'p');
-    src.offer('data', ['name']);
+    src.query.offer('data', ['name']);
     await provider.provide({ sources: { s: src } });
     await settle();
     return { bar: !!bar.querySelector('[data-filter-mode]'), panel: !!panel.querySelector('[data-filter-mode]'), reports };
@@ -350,7 +350,7 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     const heard = [];
     provider.addEventListener('filter-mode-change', (e) => heard.push(e.detail.mode));
     const src = source(2, 'p');
-    src.offer('data', ['name']);
+    src.query.offer('data', ['name']);
     src.declareField('name', { label: 'Name' });
     await provider.provide({ sources: { s: src } });
     await settle();
@@ -388,7 +388,7 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     provider.append(bar);
     root.append(provider);
     const src = source(2, 'p');
-    src.offer('data', ['name']);
+    src.query.offer('data', ['name']);
     src.declareField('name', { label: 'Name' });
     await provider.provide({ sources: { s: src } });
     await settle();
