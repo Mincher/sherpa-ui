@@ -1,4 +1,4 @@
-# Handover — 2026-10-19
+# Handover — 2026-10-21
 
 For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 `docs/PRINCIPLES.md` first, as always; this says where the work stands.
@@ -27,6 +27,27 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 - `../Sherpa Starter` has no git remote; its commit `1eb862f` is local only.
 - A peer session (`sherpa-demos-a7`) may exist. Never stash. Stage only your
   own files, and only when `git diff --cached` is empty.
+
+## Where the work stands (2026-10-21)
+
+**TODO 366 is ✅: one Query per app Context**, in 26 steps (`docs/history/plan-366-build.md`;
+each step's note is in 366's section of `docs/TODO.md`). TODO 320 closed with it.
+
+| What it gave | TRAP |
+|---|---|
+| A `QueryContext` holds the Query — applied and draft — and every declaration; sources join it, and `source.query` IS it. The provider makes one per page; a Context gets it as `ctx.query` | `T-a-context-holds-the-only-query` |
+| The arrangement and the search are in the Query; a superseded chip's own answer too (`ScopeQuery.superseded`) | `T-one-query-one-owner`, `T-a-superseded-chip-suspends-it-is-never-removed` |
+| One-field doors (`setReading`, `suspend`, `take`, `reset`, `batch`); a request whose answer is in force is a no-op; one `query-change` per change | `T-one-query-one-owner` |
+| Every filter control — the bar, the panel, a grid heading — sends ONE request per act and paints only what it is drawn; a bound bar locks its chips | `T-a-control-sends-one-request`, `T-locked-chip-relays-and-nothing-else` |
+| The page keeper hears `query-change` and reads `by`; `ProviderState` is v2 | `T-a-view-keeps-a-draft`, `T-a-page-goes-out-as-json` |
+| Several sources may share one Query: each compiles only its own scopes and the fields it has | `T-a-source-compiles-only-what-it-has` |
+
+- The branch is NOT pushed since 2026-10-19; Demos has local commits too.
+  Push is Will's call.
+- Known flakes, both older than 366: TODO 389 (Demos layout resize) and 390
+  (WebKit Settings overlay, about 1 in 40).
+- **Next:** 369's remaining parts (the panel, the grid, Demos' child link, the
+  remote lazy read); 345's phases; 350 (performance); the ❓ rows.
 
 ## Done since the first handover: TODO 344 and the stock-take
 
