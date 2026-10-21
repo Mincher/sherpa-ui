@@ -32,7 +32,7 @@ import {
 } from '../../core/data/store.js';
 import {
   clauseConditions, fieldState, readingClause, readingRows,
-  type FieldCondition, type FieldReading, type FieldType, type FilterState,
+  type FieldCondition, type FieldFacts, type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
 import { sameReading } from '../../core/data/query.js';
@@ -533,7 +533,8 @@ export class SherpaDataGrid extends SherpaElement {
     let before: Element | null = headRow.querySelector(':scope > .select-head');
     this.#shownColumns().forEach((col, i) => {
       const held = this.#shown(col.field);
-      const def = FILTERABLE.has(col.type ?? 'text') ? this.#filterDef(col, held) : null;
+      // A tiered field's CHILD has no filter of its own: its picks are its parent's. TODO 369
+      const def = FILTERABLE.has(col.type ?? 'text') && !this.#parentOf(col.field) ? this.#filterDef(col, held) : null;
       const key = this.#cellKey(col, def);
       let th = kept.get(col.field);
       kept.delete(col.field);
@@ -920,10 +921,25 @@ export class SherpaDataGrid extends SherpaElement {
     return fieldState(this.#facts(field), { ...held, suspended: false });
   }
 
-  /** What the grid knows of a field: its name and its column type. */
-  #facts(field: string): { field: string; type?: FieldType } {
+  /** What the grid knows of a field: its name, its column type — and, for a
+   *  tiered field, its child and each child pick's parent and name. TODO 369 */
+  #facts(field: string): FieldFacts {
     const type = this.#columns.find((c) => c.field === field)?.type;
-    return { field, ...(type ? { type: type as FieldType } : {}) };
+    const given = this.#givenFilters[field];
+    const kids = given?.child ? (given.options ?? []).filter((o) => o.parent) : [];
+    return {
+      field, ...(type ? { type: type as FieldType } : {}),
+      ...(given?.child && kids.length ? {
+        child: given.child,
+        parentOf: new Map(kids.map((o) => [o.value, o.parent!])),
+        labels: Object.fromEntries(kids.map((o) => [o.value, o.label])),
+      } : {}),
+    };
+  }
+
+  /** The tiered field a field is the CHILD of, in the filters it was given. TODO 369 */
+  #parentOf(field: string): string | undefined {
+    return Object.entries(this.#givenFilters).find(([, f]) => f.child === field)?.[0];
   }
 
   /**
@@ -1380,6 +1396,14 @@ export class SherpaDataGrid extends SherpaElement {
     const row = this.#rowOf.get(td.parentElement!);
     const raw = row?.[field];
     if (raw == null || raw === '') return null;
+    /* A CHILD's cell picks its PATH on the parent field: this site of this
+       customer. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
+    const parent = this.#parentOf(field);
+    if (parent) {
+      const value = { [parent]: row?.[parent], [field]: raw };
+      return { field: parent, kind, value, key: valueKey(value), header: this.#givenFilters[parent]?.label ?? parent,
+        text: td.textContent?.trim() || String(raw), held: this.#superseded.has(parent) };
+    }
     // A date is filtered by its DAY: one day is "On", two would be "Between".
     const day = kind === 'date' ? /^\d{4}-\d{2}-\d{2}/.exec(raw instanceof Date ? raw.toISOString() : String(raw))?.[0] : undefined;
     if (kind === 'date' && !day) return null;

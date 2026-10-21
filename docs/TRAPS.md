@@ -10411,6 +10411,8 @@ no menu and a body press is never mistaken for an empty chip's open.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-a-tiered-panel-chip.spec.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-a-tiered-grid.spec.ts`
 
 ### T-a-tree-menu-keeps-its-ticks-as-data
 

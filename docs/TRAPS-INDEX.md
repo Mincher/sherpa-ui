@@ -585,7 +585,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (91)
+## The data grid (92)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -609,6 +609,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-select-keeps-its-own-shape](TRAPS.md#t-a-native-select-keeps-its-own-shape) — pagination
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — data-grid
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — pagination
+- [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — data-grid
 - [T-a-restored-filter-still-needs-its-chip](TRAPS.md#t-a-restored-filter-still-needs-its-chip) — data-grid
 - [T-a-row-holds-two-selection-boxes](TRAPS.md#t-a-row-holds-two-selection-boxes) — data-grid
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-grid

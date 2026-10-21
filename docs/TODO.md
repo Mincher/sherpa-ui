@@ -1819,6 +1819,13 @@ menu (not yet tested). A drilled tree cannot open a parent: TODO 391. A bar's
 pick on the field replaces the whole answer, `off` too.
 TRAP `T-a-parent-pick-is-the-parent`.
 
+**The grid ✅, 2026-10-21.** The Customer heading's menu is the tree (the
+source's filter carries `child` and each site's `parent`); a child column (Site)
+has no heading filter; the grid's field facts carry the child, so a path's
+clause is `customer eq … and site eq …`; a Site cell's chip picks that cell's
+path on Customer, and is inactive while the View holds Customer.
+`reforged-a-tiered-grid` (3 cases, 3 engines). Next: Demos' child link.
+
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
 Found measuring 350: one saved-filter click made the grid build 25 checkboxes
