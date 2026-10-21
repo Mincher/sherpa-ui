@@ -1,11 +1,11 @@
 {
   "app.js": {
-    "js": 403587,
+    "js": 403653,
     "files": 61,
     "fetched": 0
   },
   "components.js": {
-    "js": 851872,
+    "js": 854557,
     "files": 108,
     "fetched": 217926
   },
@@ -60,7 +60,7 @@
     "fetched": 0
   },
   "components/sherpa-chart-legend/sherpa-chart-legend.js": {
-    "js": 385403,
+    "js": 385528,
     "files": 35,
     "fetched": 0
   },
@@ -95,7 +95,7 @@
     "fetched": 0
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "js": 501650,
+    "js": 501803,
     "files": 51,
     "fetched": 0
   },
@@ -120,7 +120,7 @@
     "fetched": 0
   },
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
-    "js": 499578,
+    "js": 502263,
     "files": 53,
     "fetched": 0
   },
@@ -240,17 +240,17 @@
     "fetched": 0
   },
   "components/sherpa-provider/sherpa-provider.js": {
-    "js": 348825,
+    "js": 348891,
     "files": 42,
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 471137,
+    "js": 471290,
     "files": 46,
     "fetched": 0
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
-    "js": 266325,
+    "js": 266450,
     "files": 21,
     "fetched": 0
   },
@@ -340,12 +340,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 128125,
+    "js": 128191,
     "files": 40,
     "fetched": 0
   },
   "index.js": {
-    "js": 1009228,
+    "js": 1011951,
     "files": 151,
     "fetched": 217926
   }

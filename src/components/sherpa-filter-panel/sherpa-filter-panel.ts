@@ -92,6 +92,10 @@ interface Held {
   values: HTMLElement;
   /** The menu the panel BUILT for this field, where it needs one. */
   menu?: SherpaMenu;
+  /** A TIERED field's picks, parents and children, and those kept off — as
+   *  drawn, by value key — and each parent's children. Its chips are its
+   *  parents. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
+  tiers?: { picks: Set<string>; off: Set<string>; kids: Map<string, string[]> };
 }
 
 /** One filter a scope draws, in its order: a field, or Group or Sort. */
@@ -177,6 +181,9 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
+    // A parent's children, as a menu built when its caret asks, gone when it shuts. TODO 369
+    this.$('.scopes')?.addEventListener('quick-filter-open', this.#onKidsOpen);
+    this.$('.scopes')?.addEventListener('menu-close', this.#onKidsClose);
     // Rows and bodies change their answer without a chip click.
     for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
@@ -328,6 +335,8 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field's whole answer: the chips are Simple's, the menu's rows are
    *  Advanced's, and the menu says which is in force. TRAP T-both-answers-are-kept */
   #readingOf(held: Held): FieldReading {
+    const tiers = held.tiers;
+    if (tiers) return { picked: [...tiers.picks], ...(tiers.off.size ? { off: [...tiers.off] } : {}) };
     const menu = held.menu;
     // A NUMBER body answers for itself, as it does on a bar chip.
     if (menu?.dataset['body'] === 'number') return menu.reading;
@@ -386,6 +395,13 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const held of this.#held.values()) {
       // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
       if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
+      if (held.tiers) {
+        held.tiers.picks = new Set((reading.picked ?? []).map(valueKey));
+        held.tiers.off = new Set((given.off ?? []).map(valueKey));
+        this.#paintTiers(held);
+        this.#syncAnswered(held);
+        return;
+      }
       const menu = held.menu;
       const chip = this.#answerChip(held);
       if (this.#oneChip(held)) {
@@ -529,6 +545,7 @@ export class SherpaFilterPanel extends SherpaElement {
       chip.toggleAttribute('data-unavailable', why !== null);
     }
     if (held.menu) Object.assign(held.menu, { present: left, offered });
+    for (const kids of held.values.querySelectorAll<SherpaMenu>('sherpa-menu[data-kids]')) Object.assign(kids, { present: left, offered });
   }
 
   /** A field's results, on its header's badge — or none. Will, TODO 133. */
@@ -880,13 +897,25 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     // A tiered field's children are its parents' menus, not chips of their own. TODO 369
+    const kids = new Map<string, string[]>();
+    for (const o of options) if (o.parent) kids.set(o.parent, [...kids.get(o.parent) ?? [], o.value]);
     for (const option of values ? options.filter((o) => !o.parent) : []) {
       const one = this.#valueChip(option.value, option.label ?? option.value,
         { current: !!option.selected, ...(option.swatch ? { swatch: option.swatch } : {}) });
+      /* LOCKED: the panel draws a parent from its picks. One with children
+         opens them from its caret. TRAP T-locked-chip-relays-and-nothing-else */
+      if (one && kids.size) one.setAttribute('data-locked', '');
+      if (one && kids.has(option.value)) one.setAttribute('data-menu', '');
       if (one) values!.append(one);
     }
 
     const held: Held = { def, scope, box, values: values ?? box };
+    if (kids.size) {
+      held.tiers = {
+        picks: new Set((def.state?.picked ?? []).map(valueKey)), off: new Set((def.state?.off ?? []).map(valueKey)), kids,
+      };
+      this.#paintTiers(held);
+    }
 
     /* A field ANSWERED BY ITS MENU — a number, a range, a condition-only field
        — draws that menu INLINE, in its own body. */
@@ -1192,7 +1221,7 @@ export class SherpaFilterPanel extends SherpaElement {
       label: held.def.label,
       ...(held.def.select ? { select: held.def.select } : {}),
       options: (held.def.options ?? []).map((o) => ({
-        value: o.value, label: o.label ?? o.value, selected: picked.has(o.value),
+        value: o.value, label: o.label ?? o.value, selected: picked.has(o.value), ...(o.parent ? { parent: o.parent } : {}),
       })),
     };
     const { menu, items } = menuFor(this.root, def);
@@ -1216,7 +1245,19 @@ export class SherpaFilterPanel extends SherpaElement {
     const menu = this.#drill.menu;
     const built = this.#built;
     this.#drill.out();
-    if (built && home === built.menu) {
+    if (built?.held.tiers && home === built.menu) {
+      /* The tree's picks are the field's — and a child it did not show, under a
+         parent not ticked whole, keeps its pick. TODO 369 */
+      const t = built.held.tiers;
+      const picks = new Set(values);
+      for (const [p, kids] of t.kids) if (!picks.has(p)) for (const k of kids) if (t.picks.has(k)) picks.add(k);
+      t.picks = picks;
+      t.off.clear();
+      this.#dropBuilt();
+      this.#paintTiers(built.held);
+      this.#syncAnswered(built.held);
+      this.#report(built.held);
+    } else if (built && home === built.menu) {
       const want = new Set(values);
       for (const one of built.held.values.querySelectorAll<HTMLElement>('.value')) {
         if (this.#heldOfChip(one) !== built.held) continue;
@@ -1253,8 +1294,77 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /* ── Reading ──────────────────────────────────────────────────────── */
 
+  /* ── A tiered field: its parents are chips, its children their menus. TODO 369 ── */
+
+  /** Draw each parent chip: ON while it, or any child of it, is picked. */
+  #paintTiers(held: Held): void {
+    const t = held.tiers;
+    if (!t) return;
+    for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
+      if (this.#heldOfChip(chip) !== held) continue;
+      const p = chip.dataset['value'] ?? '';
+      chip.toggleAttribute('data-current', [p, ...t.kids.get(p) ?? []].some((k) => t.picks.has(k)));
+    }
+  }
+
+  /** A press on a parent: on goes OFF and keeps its picks; off comes back on;
+   *  with none, the parent is picked whole. Will, TODO 369 (Q2) */
+  #flipParent(t: NonNullable<Held['tiers']>, p: string): void {
+    const mine = [p, ...t.kids.get(p) ?? []];
+    if (mine.some((k) => t.picks.has(k))) {
+      for (const k of mine) if (t.picks.delete(k)) t.off.add(k);
+    } else if (mine.some((k) => t.off.has(k))) {
+      for (const k of mine) if (t.off.delete(k)) t.picks.add(k);
+    } else {
+      t.picks.add(p);
+    }
+  }
+
+  /** A parent's children menu applied: these children are its picks — the
+   *  parent itself only while it stays whole. TRAP T-a-parent-pick-is-the-parent */
+  #takeKids(t: NonNullable<Held['tiers']>, p: string, values: readonly string[]): void {
+    const kids = t.kids.get(p) ?? [];
+    const want = new Set(values);
+    const whole = t.picks.has(p) && kids.every((k) => want.has(k));
+    for (const k of [p, ...kids]) {
+      t.off.delete(k);
+      if (!whole) t.picks.delete(k);
+    }
+    if (!whole) for (const k of kids) if (want.has(k)) t.picks.add(k);
+  }
+
+  /** A parent's caret asked: its children's menu, built now, ticked from the picks. */
+  #onKidsOpen = (event: Event): void => {
+    const chip = this.pathFind(event, '.value');
+    const held = chip ? this.#heldOfChip(chip) : undefined;
+    const t = held?.tiers;
+    if (!chip || !held || !t) return;
+    const p = chip.dataset['value'] ?? '';
+    const on = chip.hasAttribute('data-current');
+    const label = (v: string): string => held.def.options?.find((o) => o.value === v)?.label ?? v;
+    const { menu, items } = menuFor(this.root, {
+      id: held.def.id, label: label(p), select: 'multiple',
+      options: (t.kids.get(p) ?? []).map((k) => ({
+        value: k, label: label(k), selected: t.picks.has(p) || t.picks.has(k) || (!on && t.off.has(k)),
+      })),
+    });
+    // It COMMITS, as every filter menu in the panel does. TRAP T-a-chip-menu-in-the-panel-commits
+    menu.setAttribute('data-commit', '');
+    menu.setAttribute('data-kids', '');
+    chip.append(menu);
+    this.#fill(menu, items, undefined);
+    this.#markPresent(held);
+  };
+
+  /** A children menu shut: it goes, so a shut chip holds no menu. */
+  #onKidsClose = (event: Event): void => {
+    const menu = event.target as HTMLElement | null;
+    if (menu?.hasAttribute('data-kids')) menu.remove();
+  };
+
   /** The values ticked in one field's run — or a long list's one chip's menu. */
   #picked(held: Held): string[] {
+    if (held.tiers) return [...held.tiers.picks];
     if (this.#answerChip(held) && held.menu?.dataset['body'] !== 'date') return [...held.menu?.values ?? []];
     return [...held.values.querySelectorAll<HTMLElement>('.value[data-current]')]
       .map((c) => c.dataset['value'] ?? '')
@@ -1311,6 +1421,14 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!one || one.hasAttribute('data-unavailable')) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
+    // A PARENT is on or off, and keeps its children's picks. Will, TODO 369
+    if (held.tiers) {
+      this.#flipParent(held.tiers, one.dataset['value'] ?? '');
+      this.#paintTiers(held);
+      this.#syncAnswered(held);
+      this.#report(held);
+      return;
+    }
     /* ONE OF THIS FIELD'S VALUES, not one of the run. A section can hold two
        SEPARATE controls — `Organise` is a heading over Group and Sort, and it
        is not their field — so they share a `.values` container while answering
@@ -1507,6 +1625,12 @@ export class SherpaFilterPanel extends SherpaElement {
   /** EMPTY one field, whatever answers it: its value chips, and its menu's
    *  rows, number or days. TRAP T-empty-is-every-kind-of-answer */
   #empty(held: Held): void {
+    if (held.tiers) {
+      held.tiers.picks.clear();
+      held.tiers.off.clear();
+      this.#paintTiers(held);
+      return;
+    }
     // ONE chip that answers a field empties itself. TRAP T-a-chip-says-its-own-answer
     const chip = this.#answerChip(held);
     if (chip) return chip.clear();
@@ -1529,6 +1653,13 @@ export class SherpaFilterPanel extends SherpaElement {
     const chip = this.pathFind(event, '.value');
     if (chip) {
       const held = this.#heldOfChip(chip);
+      if (held?.tiers) {
+        this.#takeKids(held.tiers, chip.dataset['value'] ?? '', ((event as CustomEvent).detail?.values ?? []) as string[]);
+        this.#paintTiers(held);
+        this.#syncAnswered(held);
+        this.#report(held);
+        return;
+      }
       if (held) {
         const picked = ((event as CustomEvent).detail?.values ?? []) as string[];
         chip.toggleAttribute('data-current', picked.length > 0);

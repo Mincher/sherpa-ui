@@ -597,6 +597,13 @@
     },
     {
       "$type": "event",
+      "name": "quick-filter-open",
+      "description": "The caret was pressed on a chip with no menu yet: its host appends one now, and the chip opens it.",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
       "name": "jump-select",
       "description": "A jump row was picked, and its target scrolled into view.",
       "bubbles": true,

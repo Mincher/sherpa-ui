@@ -192,6 +192,9 @@ export interface FieldReading {
   range?: boolean;
   /** Remembered but not applied. TRAP T-grid-suspend-is-not-clear */
   suspended?: boolean;
+  /** Picks KEPT and not in force: a tiered parent switched off keeps its
+   *  children's picks for when it comes on. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
+  off?: readonly unknown[];
 }
 
 /** One row of a multi-condition filter. */

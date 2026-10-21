@@ -452,10 +452,8 @@ export class QueryContext extends EventTarget {
    * TRAP T-a-filter-applies-down-its-scope
    */
   #select(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
-    // A control hands back the KEY it was given, so it maps to the value the row holds. TRAP T-a-value-can-be-an-object
-    const raws = this.#knows(field)?.raws(field, picked) ?? [...picked];
     // Its OWN copy: a caller that edits its object after changes nothing here.
-    const next: FieldReading = copyReading({ ...answerOf(reading), picked: raws });
+    const next: FieldReading = copyReading(this.#raw(field, picked, reading));
     /* CONDITIONS count. A field answered only by rows has no picked values and
        no typed text. TRAP T-many-conditions-are-one-reading */
     setReading(this.#live.draft, field, readingAnswered(next) ? next : undefined);
@@ -675,7 +673,7 @@ export class QueryContext extends EventTarget {
     const fresh = !!reading && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field);
     if (fresh) this.hold(scope, [...this.scope(scope), field]);
     const picked = reading?.picked ?? [];
-    const next: FieldReading = { ...answerOf(reading ?? {}), picked: this.#knows(field)?.raws(field, picked) ?? [...picked] };
+    const next = this.#raw(field, picked, reading ?? {});
     if (!sameReading(readingOf(this.#live.draft, field), readingAnswered(next) ? next : undefined)) this.#select(field, picked, reading ?? {});
     if (fresh) this.#tell({ kind: 'bars', scope });
   }
@@ -874,6 +872,13 @@ export class QueryContext extends EventTarget {
       if (sortSuspended) s.sortSuspended = { ...sortSuspended };
       if (search) s.search = search;
     }
+  }
+
+  /** A reading's answer, its picks as the values the rows hold: a control hands
+   *  back the KEY it was given. Picks kept off too. TRAP T-a-value-can-be-an-object */
+  #raw(field: string, picked: readonly unknown[], reading: FieldReading): FieldReading {
+    const raws = (keys: readonly unknown[]): unknown[] => this.#knows(field)?.raws(field, keys) ?? [...keys];
+    return { ...answerOf(reading), picked: raws(picked), ...(reading.off ? { off: raws(reading.off) } : {}) };
   }
 
   /** The source that shows rows in a scope; none for a scope of the page's. */

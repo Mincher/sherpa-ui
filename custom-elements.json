@@ -9038,6 +9038,13 @@
               }
             },
             {
+              "name": "quick-filter-open",
+              "description": "The caret was pressed on a chip with no menu yet: its host appends one now, and the chip opens it.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
               "name": "jump-select",
               "description": "A jump row was picked, and its target scrolled into view.",
               "type": {

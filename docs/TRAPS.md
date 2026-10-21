@@ -5976,6 +5976,7 @@ This is the `data-locked` half of the state-ownership rule: `data-<thing>` in,
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 **A PERSISTENT chip is a locked chip.** "Always on, and its body does not flip
 it" — the toolbar's own words at its `data-persistent` site — is exactly what
@@ -10391,6 +10392,25 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
+
+### T-a-parent-pick-is-the-parent
+
+**A tiered field's parent picked is the PARENT: every row of it, rows with no
+child too.** TODO 369, Will's Q1 A. A child pick is a PATH, `{ customer,
+site }`, in the same field's reading; ticking every child does not pick the
+parent. In the panel each parent is a chip, locked and drawn from the picks:
+ON while it or any child of it is picked. A press turns it OFF and KEEPS its
+picks (Will's Q2), so they move to the reading's `off` — picks kept and not in
+force, which count as an answer and compile to nothing. The next press brings
+them back; with none, the parent is picked whole.
+
+A parent's caret asks for its children's menu (`quick-filter-open`): built
+then, shown once it has drawn, and removed when it shuts, so a shut chip holds
+no menu and a body press is never mistaken for an empty chip's open.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-a-tiered-panel-chip.spec.ts`
 
 ### T-a-tree-menu-keeps-its-ticks-as-data
 
