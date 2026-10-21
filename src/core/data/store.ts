@@ -184,6 +184,9 @@ export interface LoadOptions {
   /** Paging. `skip` rows in, `take` rows out. */
   skip?: number;
   take?: number;
+  /** A PROJECTION: only these fields of each row, and its key. A store that
+   *  does not say `projects` sends whole rows. TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
+  fields?: readonly string[];
 }
 
 /** What a load returns: the rows, plus the total BEFORE paging. */
@@ -223,6 +226,9 @@ export interface Store extends EventTarget {
   /** Its loads reach OUTSIDE the data layer, so a filter change waits for Apply.
    *  TRAP T-apply-and-discard-wait-for-a-change */
   readonly remote?: boolean;
+  /** It honours `LoadOptions.fields`: it can send only the fields a load names,
+   *  and check each row on those. TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
+  readonly projects?: boolean;
   /** A load's `total` counts every match, not just the rows it sent — so a
    *  remote store's whole set can be held. TRAP T-a-remote-source-holds-its-whole-set */
   readonly reportsTotal?: boolean;

@@ -10393,6 +10393,24 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-projected-row-is-checked-on-what-it-was-sent
+
+**A load may name its `fields`; a store that says `projects` sends each row's
+key and those fields alone, and checks a projected row only on them.** TODO
+345 phase 7. A whole-row check of a projected row fails every `required()`
+field it was not sent, so the row is dropped as invalid when nothing is wrong
+with it. `rules()` keeps its map of field checks (`rulesOf`), and a projected
+row is run through `validateField` per field it carries. A schema from
+another library can only judge a whole row, so a store with one says
+`projects: false` and a caller sends whole rows to it. `RestStore` asks with
+`fields=`; a spoofed remote passes on what its store says. Today only the
+fetched field's ask (`T-a-server-field-is-asked-once-per-answer`) names
+fields, and asks for the key alone.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `test/unit/a-load-projects-its-fields.test.mjs`
+
 ### T-a-server-field-is-asked-once-per-answer
 
 **A field marked `fetch: "server"` is answered by the store — once per answer,
@@ -10407,8 +10425,8 @@ clause as it reads. Its menus have Apply, so a tick is not a request.
 
 It is turned ON from three places, and none can turn it off: the page
 definition, a filtering component's `data-fetch-fields`, and a grid column's
-`fetch` — the provider tells the source. Until phase 7 the ask reads whole
-rows; with projection it reads the key alone.
+`fetch` — the provider tells the source. A store that projects is asked for
+the key alone.
 
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/data-source.ts`

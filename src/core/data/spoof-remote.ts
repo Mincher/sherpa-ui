@@ -49,6 +49,7 @@ export function spoofRemote(store: Store, options: SpoofOptions = {}): Store {
     reportsTotal: store.reportsTotal ?? false,
     sampled: store.sampled ?? false,
     rowOrder: store.rowOrder,
+    projects: store.projects ?? false,
     announcesAll: options.announcesAll ?? store.announcesAll,
     // The store's own record of what changed. TRAP T-a-store-keeps-its-history
     history: store.history,

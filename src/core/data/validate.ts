@@ -27,6 +27,7 @@
  * - FieldRules — A field's rules — one, or several run in order.
  * - RuleMap — A record's rules, keyed by field.
  * - rules — Turn rules into a Standard Schema, so built-in and third-party are one kind of thing to every caller.
+ * - rulesOf — Each field's rules, as a schema made by `rules` holds them; none for any other.
  * - domainsOf — Each field's domain, as a schema made by `rules` says it; `{}` for any other schema.
  * - validateField — Run one field's rules on its own, for a field validating as it is typed.
  * - issuesFor — Every issue for one field, path flattened, as a message list.
@@ -240,7 +241,7 @@ export type RuleMap = Readonly<Record<string, FieldRules>>;
  */
 export function rules<T extends Record<string, unknown> = Record<string, unknown>>(
   map: RuleMap,
-): StandardSchema<unknown, T> & { readonly domains: Readonly<Record<string, FieldDomain>> } {
+): StandardSchema<unknown, T> & { readonly domains: Readonly<Record<string, FieldDomain>>; readonly rules: RuleMap } {
   const domains: Record<string, FieldDomain> = {};
   for (const [field, fieldRules] of Object.entries(map)) {
     const list = Array.isArray(fieldRules) ? fieldRules : [fieldRules as Rule];
@@ -254,6 +255,8 @@ export function rules<T extends Record<string, unknown> = Record<string, unknown
   }
   return {
     domains,
+    // Each field's own: a row sent some fields is checked on those alone.
+    rules: map,
     '~standard': {
       version: 1,
       // Named so a caller debugging a mixed setup can tell whose schema spoke.
@@ -278,6 +281,11 @@ export function rules<T extends Record<string, unknown> = Record<string, unknown
       },
     },
   };
+}
+
+/** Each field's rules, as a schema made by `rules` holds them; none for any other. */
+export function rulesOf(schema: StandardSchema | undefined): RuleMap | undefined {
+  return (schema as { rules?: RuleMap } | undefined)?.rules;
 }
 
 /** Each field's domain, as a schema made by `rules` says it; `{}` for any other schema. */

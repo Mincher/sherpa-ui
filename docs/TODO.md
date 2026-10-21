@@ -852,9 +852,17 @@ against the code). The full plan, with every file:line, is
   store — each Apply asks once for the keys its answer matches, and the source
   filters what it holds by them; off and on again ask nothing. The provider
   turns it on from `data-fetch-fields` (bar, panel, grid) or a grid column's
-  `fetch`; its menus have Apply. Bench `remote/apply-fetch` 1 load (whole rows
-  until phase 7), `fetch-off` and `fetch-on` 0. TRAP
+  `fetch`; its menus have Apply. Bench `remote/apply-fetch` 1 load (the key
+  alone, by phase 7), `fetch-off` and `fetch-on` 0. TRAP
   `T-a-server-field-is-asked-once-per-answer`.
+- ✅ **Phase 7 — projected reads, no change in behaviour.** **Done
+  2026-10-21:** a load may name `fields`, and a store that says `projects`
+  sends each row's key and those fields alone — `RestStore` asks with
+  `fields=`. A projected row is checked on the fields it was sent, by the
+  `rules()` map (`rulesOf`); a store with another library's schema does not
+  project. Phase 6's ask reads the key alone. Bench unchanged. TRAP
+  `T-a-projected-row-is-checked-on-what-it-was-sent`. Untested in browsers: a
+  node test only (`test/unit/a-load-projects-its-fields.test.mjs`).
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it

@@ -837,7 +837,9 @@ export class DataSource extends EventTarget {
     this.#fetching.set(field, answer);
     const clause = readingClause({ field, ...this.#catalogue.facts(field) }, reading);
     try {
-      const { rows } = await this.store.load(clause ? { filter: clause } : {});
+      // The KEYS alone, where the store can send just them. 345 phase 7
+      const projected = this.store.projects ? { fields: [this.store.key] } : {};
+      const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected });
       if (this.#fetching.get(field) !== answer || this.#closed) return;
       this.#fetchedKeys.set(field, { answer, keys: rows.map((row) => readField(row, this.store.key!)) });
     } catch (error) {

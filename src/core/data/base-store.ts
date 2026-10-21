@@ -11,7 +11,7 @@ import { applyOptions, readField, type LoadOptions, type LoadResult, type Row, t
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
 import {
-  domainsOf, validate, ValidationError, type FieldDomain, type Issue, type StandardSchema,
+  domainsOf, rulesOf, validate, validateField, ValidationError, type FieldDomain, type Issue, type RuleMap, type StandardSchema,
 } from './validate.js';
 
 /** Options every store shares. */
@@ -53,6 +53,21 @@ export abstract class BaseStore extends EventTarget implements Store {
     return true;
   }
 
+  /** It can send only the fields a load names: its rows are checked field by
+   *  field (a `rules()` schema), or not at all. Another library's schema checks
+   *  a whole row, so a store that has one sends whole rows.
+   *  TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
+  get projects(): boolean {
+    return !this.schema || !!rulesOf(this.schema);
+  }
+
+  /** One row as a projection sends it: its key and the named fields. */
+  protected project(row: Row, fields: readonly string[]): Row {
+    const out: Row = { [this.key]: row[this.key] };
+    for (const f of fields) if (f in row) out[f] = row[f];
+    return out;
+  }
+
   /** A read checks only its first rows. TRAP T-schema-sample-cost */
   get sampled(): boolean {
     return !!this.schema && this.sampleSize > 0;
@@ -89,9 +104,12 @@ export abstract class BaseStore extends EventTarget implements Store {
    * Drop arriving rows the schema refuses — one bad row must not empty a grid.
    * TRAP T-read-check-drops-where-a-write-throws
    */
-  protected async checkRows(result: LoadResult): Promise<LoadResult> {
+  protected async checkRows(result: LoadResult, fields?: readonly string[]): Promise<LoadResult> {
     for (const row of result.rows) this.keyed(row);
     if (!this.schema) return result;
+    // A PROJECTED row is checked on the fields it was sent, and no other.
+    const map = fields && rulesOf(this.schema);
+    if (fields && map) return this.#checkFields(result, fields, map);
 
     // 0 checks everything: the guard is opt-OUT.
     const limit = this.sampleSize && this.sampleSize > 0
@@ -123,6 +141,27 @@ export abstract class BaseStore extends EventTarget implements Store {
     };
   }
 
+  /** Rows sent some fields, each checked on those fields' rules alone. */
+  async #checkFields(result: LoadResult, fields: readonly string[], map: RuleMap): Promise<LoadResult> {
+    const rows: Row[] = [];
+    const issues: Issue[] = [];
+    for (const row of result.rows) {
+      let bad: Issue | undefined;
+      for (const f of fields) {
+        const fieldRules = map[f];
+        const message = fieldRules ? await validateField(fieldRules, row[f]) : undefined;
+        if (message) {
+          bad = { message, path: [f] };
+          break;
+        }
+      }
+      if (bad) issues.push(bad);
+      else rows.push(row);
+    }
+    const dropped = result.rows.length - rows.length;
+    return dropped ? { ...result, rows, total: Math.max(0, result.total - dropped), dropped, issues: issues.slice(0, 5) } : { ...result, rows };
+  }
+
   /**
    * A PAGE of the rows the schema accepts: checked FIRST, then searched,
    * sorted and cut. Cut first, a refused row left its page short, and the
@@ -130,7 +169,10 @@ export abstract class BaseStore extends EventTarget implements Store {
    */
   protected async page(rows: readonly Row[], options: LoadOptions = {}): Promise<LoadResult> {
     const { rows: accepted, dropped, issues } = await this.checkRows({ rows: [...rows], total: rows.length });
-    const result = applyOptions(accepted, options);
+    const paged = applyOptions(accepted, options);
+    // A projection sends the fields it names, each row by its original's key.
+    const fields = options.fields;
+    const result = fields ? { ...paged, rows: paged.rows.map((r) => this.keyed(this.project(r, fields), r)) } : paged;
     return dropped ? { ...result, dropped, ...(issues ? { issues } : {}) } : result;
   }
 

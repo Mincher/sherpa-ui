@@ -312,9 +312,9 @@ export class RestStore extends BaseStore {
     const counted = typeof reported === 'string' && reported.trim() !== '' ? Number(reported) : reported;
     const known = typeof counted === 'number' && Number.isFinite(counted);
     const total = known ? counted : rows.length;
-    // A bad read DROPS the row; a bad write throws —
+    // A bad read DROPS the row; a bad write throws — a projected one, on what it was sent.
     // TRAP T-read-check-drops-where-a-write-throws
-    const checked = await this.checkRows({ rows, total });
+    const checked = await this.checkRows({ rows, total }, options.fields);
     // A totalPath that read no number: say so, so the whole set is never held from it.
     return this.#options.totalPath && !known ? { ...checked, totalUnknown: true } : checked;
   }
@@ -423,6 +423,8 @@ function defaultQuery(options: LoadOptions): URLSearchParams {
   if (options.group) q.append('group', options.group);
   if (options.sort?.length) q.append('sort', JSON.stringify(options.sort));
   if (options.filter) q.append('filter', JSON.stringify(options.filter));
+  // A projection: the server may send these fields alone.
+  if (options.fields?.length) q.append('fields', options.fields.join(','));
   return q;
 }
 
