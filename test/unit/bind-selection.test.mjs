@@ -123,17 +123,17 @@ test('the selection REACHES the query', async () => {
   assert.deepEqual(source.rows.map((r) => r.id), [1, 2, 3], 'the churned row went');
 });
 
-test('it ANDs with a named contribute part, and survives its changes', async () => {
+test('it ANDs with another field\'s selection, and survives its changes', async () => {
   const source = sourceWith();
   const el = controlStub();
   bind(el, source, 'status', STATES);
 
   el.toggle('churned');
-  source.contribute('search', ['plan', 'eq', 'Pro']);
+  source.select('plan', ['Pro']);
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [2, 3], 'both applied');
 
-  source.contribute('search', undefined);
+  source.select('plan', []);
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [1, 2, 3], 'the selection held');
 });

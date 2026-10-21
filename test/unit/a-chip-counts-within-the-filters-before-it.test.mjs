@@ -73,10 +73,11 @@ test('a set\'s fields count together, where its first stands', async () => {
   assert.deepEqual(await source.results('data'), { plan: 3, seats: 1, status: 1 });
 });
 
-test('a part another component contributes narrows every chip (347)', async () => {
+test('a page scope no component answers narrows every chip (347)', async () => {
   const source = await page();
-  await source.setQuery(query({ region: { picked: ['EMEA', 'APAC'] } }, { status: { picked: ['open'] } }));
-  source.contribute('only-pro', ['plan', 'eq', 'pro']);
+  const q = query({ region: { picked: ['EMEA', 'APAC'] } }, { status: { picked: ['open'] } });
+  q.scopes.page = { holds: ['plan'], readings: { plan: { picked: ['pro'] } } };
+  await source.setQuery(q);
   await source.load();
   assert.deepEqual(await source.results('view'), { region: 2 });
   assert.deepEqual(await source.results('data'), { status: 1 });

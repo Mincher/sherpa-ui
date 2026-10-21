@@ -85,7 +85,7 @@ test('a bound source filters by a number\'s Advanced rows, `=` included', async 
     const bar = await window.__mount<Bar & { setChipReading(id: string, r: unknown): void; report(): void }>('sherpa-quick-filter-toolbar', [
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, advanced: true },
     ], { style: 'inline-size: 1200px' });
-    bindSource(source, bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true, scope: 'view' });
     await source.load();
     const total = async (reading: unknown): Promise<number> => {
       bar.setChipReading('seats', reading);

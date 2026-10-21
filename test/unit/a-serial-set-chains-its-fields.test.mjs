@@ -82,7 +82,8 @@ test('a field is never ruled out by one BELOW it — even with Limit on, and Reg
 
 test('a filter before the set limits the chain, though the top is unanswered', async () => {
   const { source } = await setup({});
-  source.contribute('part', ['region', 'in', ['EMEA', 'AMER']]);
+  // A whole filter set by hand is the View's base: it stands before the set.
+  source.setFilter(['region', 'in', ['EMEA', 'AMER']]);
   await source.load();
   assert.deepEqual(sorted(await source.offered(VIEW)), { region: ['AMER', 'EMEA'] });
 });
@@ -97,8 +98,8 @@ test('a component scope\'s chain starts inside the View', async () => {
     view: { holds: [], readings: {} },
     data: { holds: ['customer', 'region'], readings: {} },
   } });
-  // What the View leaves — here a part — narrows the chain, though its top is unanswered.
-  source.contribute('view-part', ['customer', 'eq', 'Tailspin']);
+  // What the View leaves — here a filter set by hand — narrows the chain, though its top is unanswered.
+  source.setFilter(['customer', 'eq', 'Tailspin']);
   await source.load();
   assert.deepEqual(sorted(await source.offered('data')), { region: ['AMER', 'LATAM'] });
 });

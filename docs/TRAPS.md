@@ -1817,7 +1817,7 @@ saved filter is no step: taken, it is the field chips it fills (366). A serial s
 the View does not hold are its chain: the first is its top, the rest below.
 
 **One plan** (`planWalk`), from the APPLIED Query: the View first, from every row,
-behind a base step of the parts (`contribute`) and the page's own scopes; then
+behind a base step of the page's own scopes; then
 each other scope from the View's end; then each chart part from its host's. A
 step counts the rows that REACH it and match its answer — OFF counts and narrows
 nothing (123); each plain pick counts its own (172). A list field is RULED — what greys it and sets its picks aside —
@@ -2863,18 +2863,6 @@ back to the last answer, and that a true no-op still skips.
 - Site: `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs`
 - Site: `src/core/data/timing.ts`
 
-### T-parts-order-must-be-stable
-
-`#parts` is a **Map**, so a key is REPLACED rather than appended and iteration
-order is stable.
-
-The composed filter must not re-order itself between loads. If it did,
-`#stateKey()` would see a change where there is none and the identical-key skip
-(`T-no-op-load-guard`) would stop working — every no-op contribution would cost
-a full load again.
-
-- Site: `src/core/data/data-source.ts`
-
 ### T-set-state-merges-page-last
 
 `setState()` is MERGED, not replaced: a caller restoring a filter and a sort must
@@ -2884,11 +2872,10 @@ setters, so one call is ONE load whatever was set (see `#schedule`).
 
 Two rules inside it:
 
-1. **A restored `filter` REPLACES, and clears the named parts with it** — the
+1. **A restored `filter` REPLACES, and clears every reading with it** — the
    same claim `setFilter` makes. A saved view says what the whole query is;
-   leaving a stale contribution behind would AND something the definition never
-   mentioned into it. A host that composes by contribution restores the PARTS
-   instead: `contribute('view', snapshot.source.filter)` after this.
+   leaving a stale reading behind would AND something the definition never
+   mentioned into it.
 2. **PAGE LAST, and not clamped here.** The total it would be clamped against
    belongs to the PREVIOUS filter. The load below re-clamps against the new one,
    which is the only honest moment to do it.
@@ -2897,36 +2884,6 @@ It does NOT persist. Where state is kept, and whether it survives a reload, is
 the host's call (sessionStorage, a URL, a server table) — a source that wrote to
 storage would choose for every app that binds one. That is why
 `persist-view.ts` is a separate helper.
-
-- Site: `src/core/data/data-source.ts`
-
-### T-contribute-beats-last-writer
-
-`setFilter` replaces the WHOLE filter — the blunt instrument, and still the right
-one when a single writer owns the whole query. `contribute(key, filter)` owns ONE
-NAMED PART:
-
-```js
-source.contribute('chips',   filterFromChips(...));
-source.contribute('columns', ['and', ...clauses]);
-source.contribute('view',    preset.filter);
-```
-
-Every part is ANDed. A key is replaced by its next contribution and removed by
-`undefined`, so each writer changes only what it owns and cannot clobber
-another's.
-
-A real screen filters from several altitudes — app header, view toolbar, column
-headings, a saved view — all writing one `filter`. With `setFilter` alone the
-LAST WRITER WINS, so every view rebuilds the whole filter by hand from variables
-it keeps in step itself; the records example had four.
-
-Provenance survives as a bonus: "clear just the column filters" is
-`contribute('columns', undefined)`, not a recomposition.
-
-**`setFilter` CLEARS every contribution**, because the two are different claims
-about the same value and quietly ANDing them would make `setFilter` not mean what
-it says.
 
 - Site: `src/core/data/data-source.ts`
 
@@ -5727,8 +5684,8 @@ The fix is that the SOURCE owns the field, not any control:
 | `select(field, picked)` | the one write; re-queries, then emits `selection-change` |
 | `selection(field)` | a `FilterState`, the one answer each control draws from |
 
-The filter is composed from the FIELDS plus the named `contribute` parts, so a
-field can only ever contribute one clause. A control that also contributes by
+The filter is composed from the FIELDS' readings, scope by scope, so a field
+can only ever give one clause. A control that also contributes by
 hand must exclude what the source owns — a chip reports both its picks AND a
 ready clause, and stripping only the picks let the clause ride in anyway.
 
@@ -10247,7 +10204,7 @@ Two scopes, and before this they shared one slot.
 | scope | reaches | writes |
 |---|---|---|
 | **view** | every component in the View — it cascades DOWN | the FIELD's one selection, `select()` |
-| **component** | that component only | a NAMED PART, `contribute()` |
+| **component** | that component only (`only`) | its OWN scope, `write(scope, field, reading, { only })` |
 
 `select(field, …)` is keyed by field alone, so a second writer does not narrow,
 it **replaces**. Measured: a View chip picked `mac + win`, a legend switched
@@ -10279,7 +10236,6 @@ exists to prevent.
 - Site: `src/core/data/bind-selection.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
-- Site: `src/core/data/data-source-types.ts`
 
 ### T-one-filters-button
 
@@ -11695,7 +11651,6 @@ axes will be read as the wrong one, and the reader will not know they did.
 
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/unit/scope-registry.test.mjs`
-- Site: `src/core/data/data-source-types.ts`
 
 ### T-a-chip-knows-what-kind-it-is
 
@@ -12367,6 +12322,7 @@ longer the grid bar's to clear, and the bar's next report cannot wipe it.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/an-unscoped-bar-is-reported.test.mjs`
 
 ### T-a-group-is-a-data-layer-concept
 

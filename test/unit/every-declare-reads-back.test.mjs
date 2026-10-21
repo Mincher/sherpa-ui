@@ -33,17 +33,6 @@ test('defaultFor() reads back declareDefault, as a copy', () => {
   assert.equal(source.defaultFor('own:tile'), undefined);
 });
 
-test('contribution() reads back contribute, as a copy', () => {
-  const source = open();
-  source.contribute('legend', ['region', 'ne', 'APAC']);
-  assert.deepEqual(source.contribution('legend'), ['region', 'ne', 'APAC']);
-  assert.deepEqual(source.contributions, ['legend']);
-  source.contribution('legend').push('x');
-  assert.deepEqual(source.contribution('legend'), ['region', 'ne', 'APAC']);
-  source.contribute('legend', undefined);
-  assert.equal(source.contribution('legend'), undefined);
-});
-
 test('scopeFacts() reads back declareScope, not the fallbacks', () => {
   const source = open();
   assert.deepEqual(source.scopeFacts('grid'), {});

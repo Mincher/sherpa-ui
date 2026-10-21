@@ -1857,7 +1857,9 @@ stored scope key the Query does not keep is dropped and said once
 (`unknown-scope-key`). S4 (2026-10-21): no control draws a saved-filter
 chip — the bar's and the panel's saved chips and cards, `saved-filter-menu.ts`,
 the panel's Presets section, a chip's given answer and the saved-filter words
-(`sayReadings`, `conditionLines`) are gone.
+(`sayReadings`, `conditionLines`) are gone. Step 5 (2026-10-21): named parts
+(`contribute`), `apply` and the unscoped bar go; a bar with no scope is reported
+(`bar-without-scope`), and a component reach needs `only`.
 
 ---
 

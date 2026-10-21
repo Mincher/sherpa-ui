@@ -38,7 +38,6 @@ function facts(over = {}) {
     fields: () => ['region', 'customer'],
     components: new Set(),
     fixed: new Set(),
-    parts: [],
     narrowing: new Map(),
     limit: true,
     now: new Date('2026-10-20T12:00:00Z'),

@@ -87,10 +87,3 @@ test('the saved form keeps the pick list, and reads back as itself', async () =>
   const not = src.whereOf({ customer: { op: 'ne', picked: ['Contoso', at('Northwind', 'London')] } });
   assert.deepEqual(not, { customer: { notin: ['Contoso', at('Northwind', 'London')] } });
 });
-
-test('a component\'s own answer maps a path key to its object, as a pick does', async () => {
-  const src = await source();
-  src.apply({ customer: { picked: [valueKey(at('Northwind', 'Leeds'))] } }, { reach: 'component', key: 'chart' });
-  await settle();
-  assert.deepEqual(ids(src), [1]);
-});

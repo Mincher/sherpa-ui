@@ -45,7 +45,7 @@ async function source() {
 test('a report that carries `readings` is believed, so its field TYPE is honoured', async () => {
   const src = await source();
   const el = bar();
-  bindSource(src, el, { steerOnly: true });
+  bindSource(src, el, { steerOnly: true, scope: 'view' });
 
   // A number's range is an Advanced Between row (TODO 375).
   el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: { seats: {
@@ -62,7 +62,7 @@ test('a report that carries `readings` is believed, so its field TYPE is honoure
 test('a report WITHOUT `readings` has its values read as parameters, not a clause', async () => {
   const src = await source();
   const el = bar();
-  bindSource(src, el, { steerOnly: true });
+  bindSource(src, el, { steerOnly: true, scope: 'view' });
 
   el.dispatchEvent(new CustomEvent('quick-filter-change', {
     detail: { values: { owner: ['Dana', 'Pia'] }, active: ['whatever'] },
@@ -82,8 +82,8 @@ test('a column filter narrows, and does NOT wipe what else is applied', async ()
   const el = bar();
   bindSource(src, el, { steerOnly: true });
 
-  // A component part and a field selection are both live.
-  src.contribute('legend', ['seats', 'lte', 500]);
+  // Two fields' selections are both live.
+  src.select('seats', [], { mode: 'advanced', conditions: [{ op: 'lt', text: '500' }] });
   src.select('owner', ['Dana', 'Ravi']);
   await settle();
   assert.deepEqual(ids(src), [1, 2]);
@@ -95,11 +95,11 @@ test('a column filter narrows, and does NOT wipe what else is applied', async ()
   await settle();
 
   assert.deepEqual(ids(src), [2]);
-  assert.deepEqual(src.contributions, ['legend']);
+  assert.equal(src.selection('seats').condition, 'advanced');
 
   // Emptying the box clears that field only.
   el.dispatchEvent(new CustomEvent('filter-change', { detail: { field: 'owner', value: '' } }));
   await settle();
-  assert.deepEqual(ids(src), [1, 2, 3]);
-  assert.deepEqual(src.contributions, ['legend']);
+  assert.deepEqual(ids(src), [1, 2]);
+  assert.equal(src.selection('seats').condition, 'advanced');
 });

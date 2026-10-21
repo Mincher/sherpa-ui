@@ -223,8 +223,12 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
         source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, ...suspended, ...reset });
         return;
       }
-      // An unscoped bar's report is its whole answer.
-      source.answerUnscoped(el, readings);
+      // Every bar answers a scope: one bound with none has nowhere to put it.
+      report({
+        code: 'bar-without-scope',
+        message: 'bindSource: a bar reported its filters, but it was bound with no scope, so they are not applied.',
+        at: { tag: (el as { localName?: string }).localName ?? '', id: (el as { id?: string }).id ?? '' },
+      });
       return;
     }
     case 'filter-add':

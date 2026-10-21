@@ -3,7 +3,6 @@
  * JSON and callbacks, no code.
  *
  * Map:
- * - ApplyAt — HOW FAR a control's reading reaches.
  * - FieldDeclaration — What a field IS, said once — its kind, its name, and how a control answers it.
  * - FieldFilter — A field's filter as any bar or panel draws it — its declaration and values.
  * - SourceState — A source's whole question as JSON: its applied Query, arrangement and saved filters.
@@ -24,16 +23,6 @@ import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store 
 import type { FieldReading, FieldType } from './filter-state.js';
 import type { Query } from './query.js';
 import type { Threshold } from './threshold.js';
-
-/** HOW FAR a control's reading reaches. TRAP T-a-filter-applies-down-its-scope
- *  `reach`, not `scope`: SCOPE is which surface holds a filter, and the two
- *  were one word doing two jobs. TRAP T-three-things-called-scope */
-export interface ApplyAt {
-  /** `view` writes each field's own slot; `component` owns one named part. */
-  reach?: 'view' | 'component';
-  /** Required for `component` — the part's name. */
-  key?: string;
-}
 
 /** What a field IS, said once — its kind, its name, and how a control answers
  *  it. JSON. TRAP T-a-field-is-declared-once */

@@ -35,7 +35,6 @@ function facts(over = {}) {
     fields: (scope) => (scope === 'view' ? ['customer', 'region', 'status'] : scope === 'data' ? ['status', 'customer'] : []),
     components: new Set(['data']),
     fixed: new Set(),
-    parts: [],
     narrowing: new Map(),
     limit: true,
     now: new Date('2026-10-19T12:00:00Z'),
@@ -172,15 +171,15 @@ test('a relative date is read at the plan\'s moment, made absolute once', () => 
   assert.equal(walkInOrder(rows, { ...plan, now: new Date('2027-01-01T12:00:00Z') }).ends.view, 0);
 });
 
-test('the parts and the page\'s own scopes are the View\'s base: every chip counts within them', () => {
+test('the page\'s own scopes are the View\'s base: every chip counts within them', () => {
   const q = query({
     view: { holds: ['customer'], readings: { customer: { picked: ['Contoso'] } } },
-    page: { holds: ['status'], readings: { status: { picked: ['active'] } } },
+    page: { holds: ['status', 'region'], readings: { status: { picked: ['active'] }, region: { picked: ['EMEA', 'AMER'] } } },
   });
-  const w = walk(q, { parts: [['region', 'in', ['EMEA', 'AMER']]] });
+  const w = walk(q);
   assert.deepEqual(w.results.view, { customer: 2 });
   // The page's own scope is walked too, from the View's end.
-  assert.deepEqual(w.results.page, { status: 2 });
+  assert.deepEqual(w.results.page, { status: 2, region: 2 });
 });
 
 test('a chart part starts inside its host, is greyed by it, and is never set aside', () => {

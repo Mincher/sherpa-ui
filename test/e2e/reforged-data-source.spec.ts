@@ -395,7 +395,7 @@ test('source: quick-filter chips become a real filter — OR within a chip, AND 
     root.appendChild(el);
 
     const source = new DataSource({ store: new ArrayStore(data) });
-    bindSource(source, el);
+    bindSource(source, el, { scope: 'view' });
     await source.load();
 
     // One chip, two values: OR.
@@ -635,7 +635,7 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
       { field: 'seats', header: 'Seats', type: 'number' },
     ];
     const source = new DataSource({ store: new ArrayStore(data) });
-    bindSource(source, grid, { as: (rows: unknown[]) => ({ columns, rows }) });
+    bindSource(source, grid, { scope: 'view', as: (rows: unknown[]) => ({ columns, rows }) });
     await source.load();
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     await settle();

@@ -198,7 +198,7 @@ test('a bound source filters the ROWS by a typed number, and by Between and Not 
     const source = new DataSource({ store: new ArrayStore(rows) });
     source.declareField('seats', { label: 'Seats', type: 'number' });
     // STEER ONLY: the bar keeps the chips it was given.
-    bindSource(source, bar, { steerOnly: true });
+    bindSource(source, bar, { steerOnly: true, scope: 'view' });
     await source.load();
     const total = (): number => source.debugState().total;
     const menu = bar.shadowRoot!.querySelector('.chip[data-id="seats"] sherpa-menu') as Menu;

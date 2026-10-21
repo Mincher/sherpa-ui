@@ -37,7 +37,7 @@ Today the answer to "what is this page filtered by?" lives in:
 | each toolbar | its chips, their picks, conditions, on/off |
 | the filter panel | its own copy, a draft, and "what was applied" |
 | each grid heading | one condition per column |
-| `DataSource` | field readings, named parts, one-component parts, the COMPILED filter, sort, group, search, page |
+| `DataSource` | field readings, one-component parts, the COMPILED filter, sort, group, search, page |
 | `records.js` | the glue: header readings → a `global` part, a mirror back into chips and headings, the panel's refill |
 | the session | each bar's `answers` (21e) |
 | a saved view | a compiled filter, plus method calls on elements |

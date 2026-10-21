@@ -268,7 +268,6 @@ Each thing you tell a source, you can ask back — one door each:
 | `declareField` · `declareValues` · `declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `sets(scope)` |
 | `declareScope` | `scopeFacts(scope)`; `scopeLabel()` and `arranges()` add their fallbacks |
 | `declarePart` · `declareDefault` | `partFacts(scope)` · `defaultFor(scope)` |
-| `contribute(key, filter)` | `contribution(key)`; `contributions` — every key |
 | `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
 
 Each read-back here is a copy — `partFacts`' `only` is the element itself — and
@@ -360,21 +359,17 @@ offline too — marked stale, and reads them again behind. Put the user or
 tenant in `name`, bump `version` when the rows' shape changes, and call
 `clearKept()` at sign-out: the rows outlive the session.
 
-### The filter is NAMED PARTS, not one value
+### The filter is ONE Query, in scopes
 
 Several controls narrow one query at once — a toolbar's chips, a grid's column
-headings, a chart legend, a saved view. Each owns a named part, and the source
-ANDs them:
+headings, a chart legend, a saved view. Each answers a SCOPE of the Query, and
+the source ANDs them: a bar answers the scope it is bound to (`scope`), and a
+legend that narrows one chart writes that chart's own scope (`write(scope,
+field, reading, { only })`). A bar bound with no scope is reported
+(`bar-without-scope`), never applied.
 
-```js
-source.contribute('chips',   ['tier', 'in', ['gold', 'silver']]);
-source.contribute('columns', ['name', 'contains', 'ada']);
-source.contribute('legend',  ['plan', 'ne', 'Free']);
-source.contribute('chips',   undefined);   // that part only, removed
-```
-
-`setFilter()` replaces the WHOLE filter and clears every part, so it is what a
-saved view uses and not what a control uses. A control that calls it wipes
+`setFilter()` replaces the WHOLE filter and clears every reading, so it is what
+a saved view uses and not what a control uses. A control that calls it wipes
 whatever the others had said.
 
 ### Two scopes: a component EXTENDS a view, never alters it

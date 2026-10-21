@@ -26,17 +26,13 @@
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
  * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
- * - .setFilter — Replace the WHOLE filter, clearing every contribution.
- * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
+ * - .setFilter — Replace the WHOLE filter, clearing every field's reading.
  * - .write — Write ONE scope's reading of ONE field — a component's own answer.
  * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
  * - .partFacts — What `declarePart` was told for this scope, or undefined.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .defaultFor — A component's own default, as `declareDefault` left it — not its answer now. A copy.
  * - .reading — One scope's reading of one field, or undefined.
- * - .contributions — Every named part currently applied — the component-scope filters.
- * - .contribution — One named part's filter, as `contribute` left it, or undefined.
- * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .answerScopes — The panel's answer: each field it changed.
@@ -98,14 +94,13 @@
  * - .boundElements — Every component currently bound.
  * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
  * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
- * - .answerUnscoped — An unscoped bar's whole answer: dropped fields cleared, each saved filter on as its own part.
  * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
-  DEFAULT_OP, andFilter, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
+  DEFAULT_OP, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
 } from './store.js';
-import { readingClause, stateClause } from './filter-state.js';
+import { readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
 import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
@@ -129,11 +124,11 @@ import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
 } from './store.js';
 import type {
-  ApplyAt, AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
+  AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
   FilterSet, HeldFilter, ScopeDescription, SourceState, ViewState,
 } from './data-source-types.js';
 export type {
-  ApplyAt, AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
+  AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
   FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows, SourceState, ViewState,
 } from './data-source-types.js';
 
@@ -179,8 +174,6 @@ export class DataSource extends EventTarget {
   #inFlightKey: string | null = null;
   /** The key the load in flight was ASKED with, before the walk set picks aside. */
   #inFlightAsked: string | null = null;
-  /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
-  #parts = new Map<string, Filter>();
   /**
    * THE QUERY — which scope holds each field, and each field's reading, in the
    * reader's terms. The filter is compiled from it, never kept beside it.
@@ -390,7 +383,6 @@ export class DataSource extends EventTarget {
    *  TRAP T-set-state-merges-page-last */
   setState(next: Partial<ViewState>): void {
     if ('filter' in next) {
-      this.#parts.clear();
       // A whole filter REPLACES every field selection too, or a restored view
       // keeps ticks the query no longer carries.
       clearReadings(this.#draft, (f) => this.#catalogue.carriesOver(f));
@@ -496,30 +488,13 @@ export class DataSource extends EventTarget {
     this.#requery();
   }
 
-  /** Replace the WHOLE filter, clearing every contribution. TRAP T-contribute-beats-last-writer */
+  /** Replace the WHOLE filter, clearing every field's reading. */
   setFilter(filter: Filter | undefined): void {
-    this.#parts.clear();
     clearReadings(this.#draft, (f) => this.#catalogue.carriesOver(f));
     if (this.#remote) this.#applied = structuredClone(this.#draft);
     this.#filter = filter;
     this.#viewFilter = null;
     this.#requery();
-  }
-
-  /**
-   * Own ONE NAMED PART — the COMPONENT scope. Parts are ANDed with each other
-   * and with every field selection, so a part can only ever narrow further; it
-   * can never widen past what the View already allows, and it never touches
-   * another component's part or the View's own selection.
-   *
-   * `undefined` removes one.
-   *
-   * TRAP T-contribute-beats-last-writer · TRAP T-a-filter-applies-down-its-scope
-   */
-  contribute(key: string, filter: Filter | undefined): void {
-    if (filter) this.#parts.set(key, filter);
-    else this.#parts.delete(key);
-    this.#recompose();
   }
 
   /**
@@ -632,51 +607,6 @@ export class DataSource extends EventTarget {
   /** What `compile` narrows each bound component by, alone — by bind id. */
   #only: Record<string, Filter> = {};
 
-  /** Every named part currently applied — the component-scope filters. */
-  get contributions(): string[] {
-    return [...this.#parts.keys()];
-  }
-
-  /** One named part's filter, as `contribute` left it, or undefined. A copy. */
-  contribution(key: string): Filter | undefined {
-    const part = this.#parts.get(key);
-    return part ? structuredClone(part) : undefined;
-  }
-
-  /**
-   * Apply a whole control's READING of several fields, at one scope.
-   *
-   * This is the door a UI uses: it names its fields and what a reader did to
-   * each — picked values, a condition, an or-chain — and the data layer turns
-   * that into a query. A control that builds a clause is a control that has
-   * to know a field's type, and that is how one rule became three.
-   *
-   * VIEW is one slot per field: every other control over the same field reads
-   * the answer back. COMPONENT is one named part, ANDed under the View, so it
-   * narrows further and can never widen past it — and naming no fields clears
-   * that part. TRAP T-a-filter-applies-down-its-scope
-   */
-  apply(readings: Readonly<Record<string, FieldReading>>, at: ApplyAt = {}): void {
-    if (at.reach === 'component') {
-      const key = at.key;
-      if (!key) throw new Error('apply: a component reach needs a `key`');
-      /* A control hands back KEYS: mapped to the values, as `select` does — a
-         path key to its object. TODO 369 · TRAP T-a-value-can-be-an-object */
-      const clauses = Object.entries(readings)
-        .map(([field, reading]) => {
-          const declared = this.#catalogue.byKey(field);
-          const picked = reading.picked?.map((v) => declared.get(valueKey(v)) ?? v);
-          return stateClause(this.#catalogue.stateFor(field, picked ? { ...reading, picked } : reading));
-        })
-        .filter((c): c is NonNullable<typeof c> => !!c);
-      this.contribute(key, andFilter(clauses));
-      return;
-    }
-    for (const [field, reading] of Object.entries(readings)) {
-      this.select(field, reading.picked ?? [], reading);
-    }
-  }
-
   /**
    * ONE SCOPE'S WHOLE ANSWER — a bar's report. Each reading lands at its
    * field's home; a reading that lives in this scope and is not named here is
@@ -686,7 +616,7 @@ export class DataSource extends EventTarget {
   answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
     const was = Object.keys(this.#draft.scopes[scope]?.readings ?? {});
     for (const field of was) if (!(field in readings)) this.select(field, []);
-    this.apply(readings);
+    for (const [field, reading] of Object.entries(readings)) this.select(field, reading.picked ?? [], reading);
   }
 
   /**
@@ -1013,7 +943,7 @@ export class DataSource extends EventTarget {
    * `reading` carries the rest of the question — the condition and its text.
    *
    * ONE SLOT PER FIELD, so this is the View's. A component that narrows only
-   * ITSELF must `contribute()` a named part instead: a second writer here does
+   * ITSELF must `write()` its own scope instead: a second writer here does
    * not narrow, it REPLACES — measured, a legend switching one series off
    * overwrote the View chip's own two picks, and the chip then re-drew showing
    * the legend's answer as if the reader had chosen it.
@@ -1311,7 +1241,6 @@ export class DataSource extends EventTarget {
       // …and what the reader is editing, where it differs. TRAP T-apply-and-discard-wait-for-a-change
       ...(this.#remote ? { draft: structuredClone(this.#draft), dirty: this.dirty() } : {}),
       selections: Object.fromEntries(this.selectedFields.map((f) => [f, this.selection(f)])),
-      parts: Object.fromEntries(this.#parts),
       // …and what narrows ONE component alone, by bind id.
       only: this.#only,
       scopes: Object.fromEntries(this.scopes.map((id) => [id, this.scope(id)])),
@@ -1349,13 +1278,12 @@ export class DataSource extends EventTarget {
     if (still && this.#loaded) this.#walkSoon();
   }
 
-  /** Compile the applied Query under every part. Says whether the SHARED filter
+  /** Compile the applied Query. Says whether the SHARED filter
    *  stood still, and — remote — whether nothing a load reads moved. */
   #compileNow(): { still: boolean; same: boolean } {
     const { filter, view, scoped, only } = compile(this.#applied, this.#compileFacts());
-    const parts = [...this.#parts.values()];
-    const next = andFilter([...parts, ...(filter ? [filter] : [])]);
-    const viewed = andFilter([...parts, ...(view ? [view] : [])]);
+    const next = filter;
+    const viewed = view;
     // The SHARED filter stood still: no load follows, whatever one component's own did.
     const still = JSON.stringify(next) === JSON.stringify(this.#filter);
     const same = this.#remote && still && JSON.stringify(only) === JSON.stringify(this.#only);
@@ -1883,7 +1811,7 @@ export class DataSource extends EventTarget {
   #walkKey(): string {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, this.#applied, [...this.#parts],
+    return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, this.#applied,
       this.#viewFilter === null ? this.#filter ?? null : null, components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }
@@ -1911,7 +1839,6 @@ export class DataSource extends EventTarget {
       fields: (scope) => this.fields(scope),
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
-      parts: [...this.#parts.values()],
       ...(this.#viewFilter === null && this.#filter ? { hand: this.#filter } : {}),
       narrowing,
       limit: this.#limitOptions,
@@ -2210,15 +2137,6 @@ export class DataSource extends EventTarget {
     // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
     this.commit();
     if (fresh) this.#binding.drawBars(scope);
-  }
-
-  /** An UNSCOPED bar's whole answer: a field it answered before and names no
-   *  longer is cleared (its own only). TRAP T-a-filter-report-is-the-whole-answer */
-  answerUnscoped(by: BoundControl, readings: Readonly<Record<string, FieldReading>>): void {
-    const bind = this.#binding.get(by);
-    for (const field of bind?.answered ?? []) if (!(field in readings)) this.select(field, []);
-    if (bind) bind.answered = new Set(Object.keys(readings));
-    this.apply(readings);
   }
 
   /** Move fields into a scope — sent DOWN from the View to the one scope

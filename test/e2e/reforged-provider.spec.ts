@@ -259,8 +259,8 @@ test('a provider applies a View pick, keeps the Query, and restores it on its ow
     await src.load();
     await settle();
     const before = drawn(g);
-    // A pick reported from inside, as the View chip reports it.
-    g.dispatchEvent(new CustomEvent('quick-filter-change', {
+    // A pick reported, as the View chip reports it — its bar is scoped, so the provider hears it.
+    provider.dispatchEvent(new CustomEvent('quick-filter-change', {
       bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['odd'] } },
     }));
     await settle();
@@ -307,7 +307,7 @@ test('a provider exports its state as JSON; another takes it in and draws the sa
     const a = source(4, 'j');
     await one.provider.provide({ sources: { s: a }, views: VIEWS });
     await a.load();
-    one.g.dispatchEvent(new CustomEvent('quick-filter-change', {
+    one.provider.dispatchEvent(new CustomEvent('quick-filter-change', {
       bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['odd'] } },
     }));
     await settle();
@@ -321,7 +321,7 @@ test('a provider exports its state as JSON; another takes it in and draws the sa
     await settle();
     const taken = { rows: drawn(two.g), view: two.provider.view };
     // The View it LEFT is heard: a pick of it is not mistaken for the one on screen.
-    two.g.dispatchEvent(new CustomEvent('quick-filter-change', {
+    two.provider.dispatchEvent(new CustomEvent('quick-filter-change', {
       bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['all'] } },
     }));
     await settle();

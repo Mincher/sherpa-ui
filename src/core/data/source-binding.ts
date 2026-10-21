@@ -51,10 +51,6 @@ export interface Bound {
   shows?: AttachFacts['shows'];
   /** Where its view, rows and pending fields go. */
   sink: BindSink;
-  /** An unscoped bar's fields it answered last. */
-  answered?: Set<string>;
-  /** …and its saved filters' part keys. */
-  saved?: Set<string>;
 }
 
 /** What the binding asks its source, live, at each push and draw. */

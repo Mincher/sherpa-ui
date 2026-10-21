@@ -27,7 +27,7 @@ const facts = (over = {}) => ({
   field: (f) => (f === 'seats' || f === 'health' ? { type: 'number' } : {}),
   isList: (f) => LIST.has(f), plainPicks: () => true, sets: () => [],
   fields: (scope) => (scope === 'view' ? ['customer', 'region'] : ['status', 'tier']),
-  components: new Set(['data']), fixed: new Set(), parts: [], narrowing: new Map(),
+  components: new Set(['data']), fixed: new Set(), narrowing: new Map(),
   limit: true, now: new Date('2026-10-20T00:00:00Z'), ...over,
 });
 const query = (extra = {}) => ({ v: 1, scopes: {
@@ -36,11 +36,11 @@ const query = (extra = {}) => ({ v: 1, scopes: {
   ...extra,
 } });
 
-/** Every plan the walk can be given: Limit on and off, a part, a hand filter, a chart part, a component's own scope. */
+/** Every plan the walk can be given: Limit on and off, a page's own scope, a hand filter, a chart part, a component's own scope. */
 const PLANS = {
   limit: planWalk(query(), facts()),
   'limit off': planWalk(query(), facts({ limit: false })),
-  part: planWalk(query(), facts({ parts: [['seats', 'lt', 400]] })),
+  'page scope': planWalk(query({ page: { holds: [], readings: { seats: { mode: 'advanced', conditions: [{ op: 'lt', text: '400' }] } } } }), facts()),
   hand: planWalk({ v: 1, scopes: { view: { holds: [], readings: {} } } }, facts({ hand: ['seats', 'gt', 100] })),
   'chart part': planWalk(query({ legend: { holds: [], readings: { status: { picked: ['trial'] } }, narrows: ['chart'] } }),
     facts({ narrowing: new Map([['legend', { field: 'status', host: 'data' }]]) })),

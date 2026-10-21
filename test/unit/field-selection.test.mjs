@@ -75,14 +75,6 @@ test('TWO FIELDS narrow together — they AND, they do not replace', async () =>
   assert.deepEqual(source.selectedFields.sort(), ['plan', 'region']);
 });
 
-test('a field selection ANDs with a named contribute() part', async () => {
-  const source = await ready();
-  source.contribute('view', ['region', 'eq', 'EMEA']);
-  source.select('plan', ['Pro']);
-  await source.load();
-  assert.deepEqual(source.rows.map((r) => r.id), [2], 'both applied, neither lost');
-});
-
 test('an EMPTY selection clears the field', async () => {
   const source = await ready();
   source.select('plan', ['Pro']);

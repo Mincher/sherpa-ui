@@ -19,7 +19,7 @@ import {
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { summariseBanded, type SummarySpec } from '../../core/data/aggregate.js';
-import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
+import { bindSelection } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
@@ -839,7 +839,7 @@ export class SherpaProvider extends SherpaElement {
     const only = picks.narrows === 'host' ? up(el) : el;
     // One part per component, or the second would replace the first.
     const key = `picks:${el.id || field}`;
-    const unbind = bindSelection(el, source as unknown as Selector, {
+    const unbind = bindSelection(el, source, {
       field,
       values,
       read: (c) => c.picked,
@@ -849,6 +849,7 @@ export class SherpaProvider extends SherpaElement {
       ...(only ? { only } : {}),
       key,
     }).destroy;
+    // No host to narrow: bindSelection said so, and bound nothing.
     if (!only) return unbind;
     /* The chart's OWN scope, so a filter panel draws it — named as the chart
        is. TRAP T-a-chart-scope-is-its-legend-field */

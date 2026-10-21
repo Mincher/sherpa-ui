@@ -1104,7 +1104,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * What a reader DID to each field — the parameters, not an answer.
    *
-   * This is what a host sends to the data layer (`source.apply(bar.readings)`),
+   * This is what a host sends to the data layer — `answerScope(scope, { readings })`,
    * which turns it into a query. A bar that builds a clause has to know a
    * field's TYPE, and that is how one filtering rule became three.
    *

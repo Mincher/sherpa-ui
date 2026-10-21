@@ -183,7 +183,7 @@ test('asked step by step, tallies under one filter go as one request, and a fail
   // Two held fields and a tap, nothing answered: all three under no filter.
   const plan = planWalk({ v: 1, scopes: { view: { holds: ['customer', 'region'], readings: {} } } }, {
     field: () => ({}), isList: () => true, plainPicks: () => true, sets: () => [],
-    fields: () => ['customer', 'region', 'status'], components: new Set(), fixed: new Set(), parts: [],
+    fields: () => ['customer', 'region', 'status'], components: new Set(), fixed: new Set(),
     narrowing: new Map(), limit: true, now: new Date(),
   });
   const walk = await walkStepwise(store, plan);

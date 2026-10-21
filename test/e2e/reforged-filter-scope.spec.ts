@@ -8,9 +8,9 @@ import { test, expect } from './fixture';
  * picks — measured, the chip then re-drew showing the legend's answer as if the
  * reader had chosen it.
  *
- * A component binding contributes a NAMED PART instead. Parts are ANDed under
- * every field selection, which gives the whole rule for free: it narrows
- * further, it cannot widen past the View, and the View's own state is untouched.
+ * A component binding writes its OWN scope instead, narrowing the one component
+ * it names (`only`), ANDed under the View: it narrows further, it cannot widen
+ * past the View, and the View's own state is untouched.
  *
  * TRAP T-a-filter-applies-down-its-scope
  */
@@ -37,116 +37,6 @@ const SETUP = `
   const seen = () => [...new Set(src.rows.map((r) => r.os))].sort().join('+') || '(none)';
 `;
 
-test('a component filter narrows further and leaves the view untouched', async ({ page }) => {
-  const r = await page.evaluate(`(async () => {
-    ${SETUP}
-    const legend = new EventTarget();
-    legend.picked = ['mac', 'win', 'linux'];
-    const bound = bindSelection(legend, src, {
-      field: 'os', values: ['mac', 'win', 'linux'],
-      read: (l) => l.picked,
-      draw: (l, picked) => { l.drawn = [...picked]; },
-      event: 'toggle', reach: 'component', key: 'legend',
-    });
-    await settle();
-
-    src.select('os', ['mac', 'win']);
-    await settle();
-    const view = seen();
-
-    // The legend switches mac off. It must narrow, not replace.
-    legend.picked = ['win'];
-    legend.dispatchEvent(new Event('toggle'));
-    await settle();
-
-    const viewPicked = src.selection('os').values
-      .filter((v) => v.state === 'picked').map((v) => v.value).sort().join('+');
-
-    const narrowed = seen();
-    bound.destroy();
-    await settle();
-    return { view, narrowed, viewPicked, afterDestroy: seen() };
-  })()`) as { view: string; narrowed: string; viewPicked: string; afterDestroy: string };
-
-  expect(r.view).toBe('mac+win');
-  // NARROWED, not replaced.
-  expect(r.narrowed).toBe('win');
-  // The View still holds what the reader chose — this is the whole bug.
-  expect(r.viewPicked).toBe('mac+win');
-  // A part dies with its control; nothing else can name it.
-  expect(r.afterDestroy).toBe('mac+win');
-});
-
-test('a component filter cannot widen past the view', async ({ page }) => {
-  const r = await page.evaluate(`(async () => {
-    ${SETUP}
-    const legend = new EventTarget();
-    legend.picked = ['mac', 'win', 'linux'];
-    bindSelection(legend, src, {
-      field: 'os', values: ['mac', 'win', 'linux'],
-      read: (l) => l.picked,
-      draw: (l, picked) => { l.drawn = [...picked]; },
-      event: 'toggle', reach: 'component', key: 'legend',
-    });
-    await settle();
-
-    // The View excludes linux for everyone.
-    src.select('os', ['mac', 'win']);
-    await settle();
-
-    // The legend asks for ONLY linux — a value the View has already removed.
-    legend.picked = ['linux'];
-    legend.dispatchEvent(new Event('toggle'));
-    await settle();
-
-    return { rows: src.rows.length, seen: seen(), drawn: (legend.drawn ?? []).join('+') };
-  })()`) as { rows: number; seen: string; drawn: string };
-
-  // Nothing. A series the View filtered out cannot be switched back on.
-  expect(r.rows).toBe(0);
-  expect(r.seen).toBe('(none)');
-  // It draws its OWN answer, not the View's — saying otherwise would claim the
-  // reader picked something they did not.
-  expect(r.drawn).toBe('linux');
-});
-
-test('two components over one field do not fight', async ({ page }) => {
-  const r = await page.evaluate(`(async () => {
-    ${SETUP}
-    const make = (key, picked) => {
-      const el = new EventTarget();
-      el.picked = picked;
-      bindSelection(el, src, {
-        field: 'os', values: ['mac', 'win', 'linux'],
-        read: (l) => l.picked,
-        draw: () => {},
-        event: 'toggle', reach: 'component', key,
-      });
-      return el;
-    };
-    const chart = make('chart', ['mac', 'win', 'linux']);
-    const table = make('table', ['mac', 'win', 'linux']);
-    await settle();
-
-    chart.picked = ['mac', 'win'];
-    chart.dispatchEvent(new Event('toggle'));
-    await settle();
-    const afterChart = seen();
-
-    // A SECOND component narrows again. It must not replace the first.
-    table.picked = ['win', 'linux'];
-    table.dispatchEvent(new Event('toggle'));
-    await settle();
-
-    return { afterChart, afterBoth: seen(), parts: src.contributions.sort().join(',') };
-  })()`) as { afterChart: string; afterBoth: string; parts: string };
-
-  expect(r.afterChart).toBe('mac+win');
-  // The intersection of the two, not the last writer's answer.
-  expect(r.afterBoth).toBe('win');
-  expect(r.parts).toBe('chart,table');
-});
-
 test('the default scope is VIEW, so nothing that ignores this changes', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
@@ -169,34 +59,38 @@ test('the default scope is VIEW, so nothing that ignores this changes', async ({
       // A view binding writes the FIELD, so the source reports it.
       fieldPicked: src.selection('os').values
         .filter((v) => v.state === 'picked').map((v) => v.value).join('+'),
-      parts: src.contributions.length,
+      scopes: Object.keys(src.query.applied.scopes),
     };
-  })()`) as { seen: string; fieldPicked: string; parts: number };
+  })()`) as { seen: string; fieldPicked: string; scopes: string[] };
 
   expect(r.seen).toBe('mac');
   expect(r.fieldPicked).toBe('mac');
-  // No named part at all — a view binding uses the field's own slot.
-  expect(r.parts).toBe(0);
+  // No scope of its own — a view binding uses the field's own slot.
+  expect(r.scopes).toEqual(['view']);
 });
 
-test('a component scope REFUSES a source that cannot hold a part', async ({ page }) => {
-  const message = await page.evaluate(`(async () => {
-    const { bindSelection } = await import('/dist/data.js');
-    // A bare Selector: select/selection/declareValues, no contribute.
-    const thin = Object.assign(new EventTarget(), {
-      select() {}, selection: () => ({ values: [] }), declareValues() {},
+test('a component reach with no `only` is reported, and binds nothing', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const { onReport } = await import('/dist/data.js');
+    const seenCodes = [];
+    const undo = onReport((x) => seenCodes.push(x.code));
+    const legend = new EventTarget();
+    legend.picked = ['win'];
+    bindSelection(legend, src, {
+      field: 'os', values: ['mac', 'win', 'linux'], read: (l) => l.picked, draw: () => {},
+      event: 'toggle', reach: 'component',
     });
-    try {
-      bindSelection(new EventTarget(), thin, {
-        field: 'os', values: ['mac'], read: () => [], draw: () => {},
-        event: 'toggle', reach: 'component',
-      });
-      return '(no throw)';
-    } catch (e) { return String(e.message); }
-  })()`) as string;
+    legend.dispatchEvent(new Event('toggle'));
+    await src.load();
+    undo();
+    return { codes: seenCodes, seen: seen(), scopes: Object.keys(src.query.applied.scopes) };
+  })()`) as { codes: string[]; seen: string; scopes: string[] };
 
   // Falling back to select() would be the exact clobber this scope prevents.
-  expect(message).toContain('needs a source with contribute()');
+  expect(r.codes).toEqual(['component-reach-without-only']);
+  expect(r.seen).toBe('linux+mac+win');
+  expect(r.scopes).toEqual([]);
 });
 
 /**
@@ -293,13 +187,51 @@ test('a legend with `only` narrows its chart, never the grid beside it', async (
     await settle();
     const d = src.debugState();
     return { chart: got.get('chart'), grid: got.get('grid'), total: d.total,
-      shared: Object.keys(d.parts), legend: d.query.scopes.legend, own: Object.keys(d.only) };
+      shared: d.filter ?? null, legend: d.query.scopes.legend, own: Object.keys(d.only) };
   })()`) as Record<string, unknown>;
   expect(r['chart']).toBe('linux+win');
   expect(r['grid']).toBe('linux+mac+mac+win');
   expect(r['total']).toBe(4);
-  expect(r['shared']).toEqual([]);
+  expect(r['shared']).toBeNull();
   // A SCOPE in the Query, narrowing the chart alone. TRAP T-one-query-one-owner
   expect(r['legend']).toEqual({ holds: ['os'], readings: { os: { picked: ['win', 'linux'] } }, narrows: ['chart'] });
   expect(r['own']).toEqual(['chart']);
+});
+
+/* TWO legends over one field, each with `only`: each narrows its own chart, and
+   neither fights the other or the View. TRAP T-a-component-part-narrows-one-component */
+test('two legends with `only` each narrow their own chart', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const got = new Map();
+    const bound = (name) => ({ id: name, populate: (rows) => got.set(name, rows.map((x) => x.os).sort().join('+')),
+      addEventListener() {}, removeEventListener() {}, setAttribute() {}, removeAttribute() {},
+      hasAttribute: () => false, getAttribute: () => null, dataset: {} });
+    const one = bound('one');
+    const two = bound('two');
+    bindSource(src, one, { readonly: true, rows: 'all' });
+    bindSource(src, two, { readonly: true, rows: 'all' });
+    const legend = (only, key) => {
+      const l = new EventTarget();
+      l.off = [];
+      bindSelection(l, src, {
+        field: 'os', values: ['mac', 'win', 'linux'],
+        read: (x) => ['mac', 'win', 'linux'].filter((v) => !x.off.includes(v)),
+        draw: () => {}, event: 'legend-item-click', reach: 'component', key, only,
+      });
+      return l;
+    };
+    const a = legend(one, 'legend-one');
+    const b = legend(two, 'legend-two');
+    await src.load();
+    a.off = ['mac'];
+    a.dispatchEvent(new Event('legend-item-click'));
+    b.off = ['win', 'linux'];
+    b.dispatchEvent(new Event('legend-item-click'));
+    await settle();
+    return { one: got.get('one'), two: got.get('two'), total: src.debugState().total };
+  })()`) as Record<string, unknown>;
+  expect(r['one']).toBe('linux+win');
+  expect(r['two']).toBe('mac+mac');
+  expect(r['total']).toBe(4);
 });

@@ -40,8 +40,8 @@ const RECORDS = {
 test('a Query keeps the rows today\'s DataSource keeps for the same answers', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
-  // TODAY: the header as a named part, the grid's fields as selections.
-  src.apply({ region: { picked: ['EMEA'] } }, { reach: 'component', key: 'global' });
+  // TODAY: the header's answer and the grid's fields, each a selection.
+  src.select('region', ['EMEA']);
   src.select('status', ['active']);
   src.select('owner', [], RECORDS.scopes.grid.readings.owner);
   const compiled = compile(RECORDS);
