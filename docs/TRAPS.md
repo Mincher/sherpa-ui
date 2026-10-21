@@ -17772,6 +17772,30 @@ to a frozen reading throws a `TypeError` in a module — loud, never silent.
 - Site: `test/unit/a-reading-is-frozen-in-the-query.test.mjs`
 - Site: `src/core/data/query-context.ts`
 
+### T-a-source-compiles-only-what-it-has
+
+**Sources that share one Context's Query each compile only what is theirs.**
+366 step 25. A scope another source shows rows in is THAT source's: its
+readings narrow that source alone, and its sort sorts that source alone. A
+reading on a field a source lacks — a View's `severity` over a customers
+source — is skipped there, not compiled into a filter that matches no row.
+Each skip is listed in `debugState().skipped`: a scope's id, or `scope.field`.
+
+What a source "has" is what it can know without guessing: a declared field,
+declared values, its store's `domains` or `time`, or a key in a loaded row.
+A load that matched no rows says nothing, so it never makes a field missing.
+And the rule applies only with two sources or more: alone, a source applies
+every reading, as before, and a page's bench is unchanged.
+
+Sorting keeps one arranging scope per SOURCE: a sort in one source's scope
+clears that source's arrangement and the page's, never the other source's.
+With one source every scope is its own, so this is today's single scope.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/two-sources-one-query.test.mjs`
+
 ### T-one-query-one-owner
 
 **A page's data is under ONE Query, in the reader's terms, and a filter is

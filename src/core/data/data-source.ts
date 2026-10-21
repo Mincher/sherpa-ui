@@ -231,11 +231,41 @@ export class DataSource extends EventTarget {
     return structuredClone(this.#filter ? { ...state, filter: this.#filter } : state);
   }
 
-  /** How the rows are arranged: the Query's, in the ONE scope that arranges.
-   *  TRAP T-group-and-sort-are-component-scope */
+  /** How the rows are arranged: the Query's, in the ONE scope of this source's
+   *  that arranges. TRAP T-group-and-sort-are-component-scope */
   #arrangement(): Arrangement {
-    return arrangementOf(this.#applied);
+    return arrangementOf(this.#applied, this.#mine);
   }
+
+  /** Is a scope this source's — no OTHER source shows rows in it? With one
+   *  source, every scope is. 366 step 25 · TRAP T-a-source-compiles-only-what-it-has */
+  #mine = (scope: string): boolean => !this.#member.showsRows(scope) || this.#binding.showsRows(scope);
+
+  /** Does this source have the field — declared, its values declared, in its
+   *  store's contract, its time, or in a row it loaded? Alone on its Query, or
+   *  before it knows any field, yes: only another source's field is skipped. */
+  #has = (field: string): boolean => this.#context.members < 2
+    || this.#catalogue.knows(field) || !!this.store.domains?.[field] || this.store.time === field
+    || this.#seen.has(field) || (!this.#seen.size && !this.#catalogue.knowsAny());
+
+  /** The fields its loaded rows hold, from the first rows of each load. */
+  #seen = new Set<string>();
+
+  /** Note the fields these rows hold; did it learn one? */
+  #saw(rows: readonly Row[]): boolean {
+    const was = this.#seen.size;
+    for (const row of rows.slice(0, 20)) for (const field of Object.keys(row)) this.#seen.add(field);
+    return this.#seen.size > was;
+  }
+
+  /** Does the applied Query answer a field this source lacks? */
+  #lacksAny(): boolean {
+    return Object.entries(this.#applied.scopes)
+      .some(([id, s]) => (id === VIEW || this.#mine(id)) && Object.keys(s.readings).some((f) => !this.#has(f)));
+  }
+
+  /** What the last compile left out: another source's scope, or a field this one lacks. */
+  #skipped: string[] = [];
 
   /** Its QueryContext: `query.applied` is the Query the rows are under, and
    *  `query.draft` what the reader is editing — a copy each. TRAP T-one-query-one-owner */
@@ -664,6 +694,8 @@ export class DataSource extends EventTarget {
       // that narrows nothing. TRAP T-a-record-has-a-time-of-its-own
       time: this.store.time ?? null,
       bound: this.#binding.debug(),
+      // What it left out: another source's scope, or `scope.field` for a field it lacks.
+      skipped: [...this.#skipped],
       loaded: this.#loaded,
       // How it answers, and whether its store can be reached. TRAP T-a-read-is-planned
       plan: this.#plan,
@@ -704,7 +736,8 @@ export class DataSource extends EventTarget {
   /** Compile the applied Query. Says whether the SHARED filter
    *  stood still, and — remote — whether nothing a load reads moved. */
   #compileNow(): { still: boolean; same: boolean } {
-    const { filter, view, scoped, only } = compile(this.#applied, this.#compileFacts());
+    const { filter, view, scoped, only, skipped } = compile(this.#applied, this.#compileFacts());
+    this.#skipped = skipped ?? [];
     const next = filter;
     const viewed = view;
     // The SHARED filter stood still: no load follows, whatever one component's own did.
@@ -725,6 +758,8 @@ export class DataSource extends EventTarget {
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
       drop: (scope, field) => this.#setAside.get(scope)?.[field],
+      mine: this.#mine,
+      has: this.#has,
     };
   }
 
@@ -1164,6 +1199,8 @@ export class DataSource extends EventTarget {
       this.#result = result;
       this.#lastLoadKey = key;
       this.#loaded = true;
+      // Its rows say which fields it has: one it lacks leaves the filter. TRAP T-a-source-compiles-only-what-it-has
+      if (this.#context.members > 1 && this.#saw(result.rows) && this.#lacksAny()) queueMicrotask(() => this.#recompose());
 
       /* A SUMMARY sees every matching row. When nothing was windowed the page
          IS everything, so the second ask is skipped.
@@ -1292,6 +1329,8 @@ export class DataSource extends EventTarget {
       narrowing,
       limit: this.#limitOptions,
       now: new Date(),
+      mine: this.#mine,
+      has: this.#has,
     });
   }
 

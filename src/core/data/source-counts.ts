@@ -101,6 +101,9 @@ export interface WalkFacts {
   /** Limit to matching filters. */
   limit: boolean;
   now: Date;
+  /** Is a scope this source's, and does it have a field? As compile asks. TRAP T-a-source-compiles-only-what-it-has */
+  mine?: (scope: string) => boolean;
+  has?: (field: string) => boolean;
 }
 
 /**
@@ -114,11 +117,13 @@ export interface WalkFacts {
 export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   const viewHolds = heldInView(applied);
   // An unknown saved filter is compile's to report; here it applies nothing.
-  const compiling: CompileFacts = { field: facts.field, components: facts.components, fixed: facts.fixed };
+  const compiling: CompileFacts = {
+    field: facts.field, components: facts.components, fixed: facts.fixed, ...(facts.has ? { has: facts.has } : {}),
+  };
   const page: Filter[] = [];
   const others: string[] = [];
   for (const [id, scope] of Object.entries(applied.scopes)) {
-    if (id === VIEW || narrowsOne(scope)) continue;
+    if (id === VIEW || narrowsOne(scope) || (facts.mine && !facts.mine(id))) continue;
     if (!facts.components.has(id)) page.push(...scopeClauses(id, scope, viewHolds, compiling));
     others.push(id);
   }
@@ -133,6 +138,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
     const steps: WalkStep[] = [];
     for (const e of answerOrder(applied, facts.sets(scope), scope)) {
       const f = e.id;
+      if (facts.has && !facts.has(f)) continue;
       if (!appliesIn(viewHolds, scope, f, facts.fixed)) continue;
       const reading = q?.readings[f];
       const { suspended, ...answer } = reading ?? {};
@@ -172,7 +178,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
     const sets = facts.sets(scope);
     const taps: WalkTap[] = [];
     for (const f of new Set([...facts.fields(scope), ...extra])) {
-      if (stepped.has(f) || !facts.isList(f) || (scope !== VIEW && viewHolds.has(f))) continue;
+      if (stepped.has(f) || !facts.isList(f) || (scope !== VIEW && viewHolds.has(f)) || (facts.has && !facts.has(f))) continue;
       // Where it would stand: after its set's last step here, else at the end.
       const set = sets.find((x) => x.fields.includes(f));
       const last = set ? steps.findLastIndex((s) => !!s.field && set.fields.includes(s.field)) : -1;

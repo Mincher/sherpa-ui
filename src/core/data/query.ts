@@ -96,9 +96,10 @@ export const arranging = (s: ScopeQuery): boolean =>
   !!s.sort?.length || s.group != null || !!s.sortSuspended || !!s.search;
 
 /** How a Query arranges its rows; none, an empty arrangement. 366 step 8 */
-export function arrangementOf(query: Query): Arrangement {
+export function arrangementOf(query: Query, mine?: (scope: string) => boolean): Arrangement {
   for (const [scope, s] of Object.entries(query.scopes)) {
-    if (!arranging(s)) continue;
+    // Another source's own scope arranges that source's rows. 366 step 25
+    if (!arranging(s) || (mine && !mine(scope))) continue;
     return {
       sort: s.sort ?? [], group: s.group ?? null, ...(s.sortSuspended ? { sortSuspended: s.sortSuspended } : {}),
       search: s.search ?? '', scope,
@@ -178,6 +179,11 @@ export interface CompileFacts {
   /** The picked values the filters BEFORE them rule out, as value keys: they stay
    *  in the reading and leave the filter. TRAP T-a-ruled-out-value-is-greyed */
   drop?: (scope: string, field: string) => readonly string[] | undefined;
+  /** Is a scope this source's — no other source shows rows in it? Absent, every
+   *  one is. The View's answers reach every source. TRAP T-a-source-compiles-only-what-it-has */
+  mine?: (scope: string) => boolean;
+  /** Does this source have the field? A reading on one it lacks is skipped. */
+  has?: (field: string) => boolean;
 }
 
 /** A reading without the picks set aside. */
@@ -201,6 +207,9 @@ export interface Compiled {
   sort: SortSpec[];
   group: string | null;
   search: string;
+  /** What this source left out: another source's scope, or `scope.field` for a
+   *  field it lacks. Absent when nothing was. */
+  skipped?: string[];
 }
 
 /** The id of the page's own scope, which every component scope sits under. */
@@ -305,7 +314,7 @@ export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: 
 export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlySet<string>, facts: CompileFacts = {}): Filter[] {
   const clauses: Filter[] = [];
   for (const [field, reading] of Object.entries(scope.readings)) {
-    if (!appliesIn(viewHolds, id, field, facts.fixed) || reading.suspended) continue;
+    if (!appliesIn(viewHolds, id, field, facts.fixed) || reading.suspended || (facts.has && !facts.has(field))) continue;
     const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
     if (clause) clauses.push(clause);
   }
@@ -330,9 +339,16 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   const scoped: Record<string, Filter> = {};
   const only: Record<string, Filter[]> = {};
   const viewHolds = heldInView(query);
+  const skipped: string[] = [];
   let arranged: ScopeQuery | undefined;
 
   for (const [id, scope] of Object.entries(query.scopes)) {
+    const mine = !facts.mine || facts.mine(id);
+    if (!mine && id !== VIEW) {
+      skipped.push(id);
+      continue;
+    }
+    if (facts.has) for (const field of Object.keys(scope.readings)) if (!facts.has(field)) skipped.push(`${id}.${field}`);
     const clauses = scopeClauses(id, scope, viewHolds, facts);
 
     if (scope.narrows?.length) {
@@ -346,7 +362,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
       }
     }
 
-    if (arranging(scope)) {
+    if (arranging(scope) && mine) {
       if (arranged) {
         report({
           code: 'two-arranging-scopes',
@@ -372,5 +388,6 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   if (filter) out.filter = filter;
   const viewed = andFilter(view);
   if (viewed) out.view = viewed;
+  if (skipped.length) out.skipped = skipped;
   return out;
 }

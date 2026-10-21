@@ -15,6 +15,7 @@
  * - .applied — The Query the rows are under. A copy.
  * - .draft — What the reader is editing. A copy.
  * - .remote — Does any member's store wait for Apply?
+ * - .members — How many sources share this Query.
  * - .reading — One scope's reading of one field, or undefined. The Query's own, frozen.
  * - .scope — The fields a scope holds, in order — hold()'s read-back.
  * - .scopes — Every scope that holds a field, by id.
@@ -219,6 +220,11 @@ export class QueryContext extends EventTarget {
   /** Does any member's store wait for Apply? */
   get remote(): boolean {
     return [...this.#members].some((m) => m.remote);
+  }
+
+  /** How many sources share this Query. */
+  get members(): number {
+    return this.#members.size;
   }
 
   /** One scope's reading of one field, or undefined. The Query's own, frozen.
@@ -844,14 +850,19 @@ export class QueryContext extends EventTarget {
    *  else the one that arranges now, else the View; every other scope loses
    *  it. It compiles nothing. 366 step 8 · TRAP T-group-and-sort-are-component-scope */
   #arrange(next: ArrangeEdit, scope?: string): void {
-    const now = arrangementOf(this.#live.applied);
+    /* ONE arranging scope per SOURCE: a scope another source shows rows in
+       keeps its own. With one source, every scope is its. 366 step 25 */
+    const owner = scope ? this.#owner(scope) : undefined;
+    const theirs = (id: string): boolean => !!owner && !!this.#owner(id) && this.#owner(id) !== owner;
+    const now = arrangementOf(this.#live.applied, (id) => !theirs(id));
     const at = scope ?? now.scope ?? VIEW;
     const sort = next.sort ?? now.sort;
     const group = 'group' in next ? next.group ?? null : now.group;
     const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
     const search = next.search ?? now.search;
     for (const query of new Set([this.#live.applied, this.#live.draft])) {
-      for (const s of Object.values(query.scopes)) {
+      for (const [id, s] of Object.entries(query.scopes)) {
+        if (theirs(id)) continue;
         delete s.sort;
         delete s.group;
         delete s.sortSuspended;
@@ -864,6 +875,11 @@ export class QueryContext extends EventTarget {
       if (sortSuspended) s.sortSuspended = { ...sortSuspended };
       if (search) s.search = search;
     }
+  }
+
+  /** The source that shows rows in a scope; none for a scope of the page's. */
+  #owner(scope: string): QueryMember | undefined {
+    return [...this.#members].find((m) => m.showsRows(scope));
   }
 
   /** A View's plain conditions as readings: each field by the member that knows it. */

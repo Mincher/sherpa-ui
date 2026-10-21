@@ -264,9 +264,9 @@ export class SherpaProvider extends SherpaElement {
     if (shut && !Object.keys(this.#sources).length) {
       for (const panel of this.#panels()) panel.hide?.('page');
     }
-    // The Views are over the ONE source; a subtree of several names none.
+    // The Views are over ONE Query: a subtree whose sources share none names none. 366 step 25
     const [source, ...more] = Object.values(this.#sources);
-    if (!options.views || !source || more.length) return Promise.resolve();
+    if (!options.views || !source || more.some((other) => other.query !== source.query)) return Promise.resolve();
     return this.#pages.views(source, options);
   }
 

@@ -1975,6 +1975,16 @@ two-frame `#writing` / `#quietly` / `#unquietSoon` and the provider's own
 queries }`; a v1 state reports `unknown-state`. New Demos test
 `a-change-right-after-a-pick-is-kept` fails on the old build in every engine.
 
+Step 25: several sources share one QueryContext. `CompileFacts` gains
+`mine(scope)` (no other source shows rows in it) and `has(field)` (declared,
+its values, the store's `domains` / `time`, or a key in a loaded row). compile
+and `planWalk` skip another source's scope and a field a source lacks, and
+list each in `debugState().skipped`; `has` is strict only with two sources or
+more, so a single-source page is unchanged (bench identical). Sorting keeps
+one arranging scope per source. A second `openSource` into a shared Query is
+reported; the provider's Views need every source on one Query.
+`two-sources-one-query.test.mjs` proves the six rules.
+
 Step 23: a bound grid heading asks, then is drawn — its doors send the one
 `column-filter-change` a reader would, the steer calls `setReading` and
 `commit({ field })`, and `answerColumn` goes.

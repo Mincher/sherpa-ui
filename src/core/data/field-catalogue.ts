@@ -10,6 +10,8 @@
  * - .declare — Add to a field's declared kind and label.
  * - .get — A field's declaration, live, or undefined.
  * - .has — Has this field been declared?
+ * - .knows — Is this field declared, or its values?
+ * - .knowsAny — Is any field declared, or any field's values?
  * - .carriesOver — Does this field keep its answer across Views?
  * - .copyOf — A copy of a field's declaration.
  * - .declared — Every declared field, live.
@@ -97,6 +99,16 @@ export class FieldCatalogue {
   /** Has this field been declared? */
   has(field: string): boolean {
     return this.#fields.has(field);
+  }
+
+  /** Is this field declared, or its values? */
+  knows(field: string): boolean {
+    return this.#fields.has(field) || this.#domains.has(field);
+  }
+
+  /** Is any field declared, or any field's values? */
+  knowsAny(): boolean {
+    return this.#fields.size > 0 || this.#domains.size > 0;
   }
 
   /** Does this field keep its answer across Views? */

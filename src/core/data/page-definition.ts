@@ -65,6 +65,10 @@ export interface PageDefinition {
 /** Build a page's source from its definition, over the app's store — into the
  *  Context's Query when given one. */
 export async function openSource(def: SourceDefinition, store: Store, options: { query?: QueryContext } = {}): Promise<DataSource> {
+  // ONE definition per Context: a second would declare its scopes again. 366 step 25
+  if (options.query?.members) {
+    report({ code: 'context-has-a-definition', message: 'openSource: this Query already has a source opened from a definition; a second declares its scopes again.' });
+  }
   const source = new DataSource({
     store,
     // The Context's Query, when the page shares one. 366 step 24
