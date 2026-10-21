@@ -20,7 +20,8 @@ export interface PlanInputs {
   need: { cap: number };
   /** The store's held set, if any, and what refuses one. */
   held: {
-    set: { size: number; gen: number; due: boolean } | null;
+    /** `covers` — its rows carry every field the page needs. */
+    set: { size: number; gen: number; due: boolean; covers: boolean } | null;
     /** The store's facts forbid holding it. */
     never: boolean;
     /** The largest cap a set was refused at, for its size. */
@@ -48,6 +49,8 @@ export function planRead({ need, held, history, reach }: PlanInputs): { plan: Pl
   if (set.due && (held.never || need.cap <= held.over)) return { plan: 'store', behind: false };
   // Known out of date, and the store answered last: read it first, as before.
   if (set.due && !failed) return { plan: 'fetch', behind: false };
+  // Without a column the page needs: read it first. TRAP T-a-held-set-reads-the-pages-fields
+  if (!set.covers && !failed) return { plan: 'fetch', behind: false };
   // The store could not give it again: the last set, unconfirmed.
   if (failed) return { plan: 'held-stale', behind: !reach.tried };
   /* A copy kept from an earlier session (gen 0), or a set held before this page

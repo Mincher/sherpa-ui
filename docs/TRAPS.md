@@ -10393,6 +10393,25 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-held-set-reads-the-pages-fields
+
+**A held set reads the fields its pages ask for, and a column it lacks on its
+own, joined to its rows by key.** TODO 345 phase 8. A store's one cache keeps
+every field a page has asked for (null — every field, for good once any page
+asks for all) and sends them with each read, where the store `projects` and
+has a key. A page that needs a column the set lacks plans `fetch`: the cache
+reads that column alone, `take` its cap, and `join`s it by key — a copy of each
+row, never the store's own. A read that is not the same rows — a change the
+cache never heard — makes the set due, and it is read again with every field.
+Offline, a set without the column is shown as it is, unconfirmed. A source
+that cannot say which fields it reads asks for all of them, as before.
+
+- Site: `src/core/data/held-set.ts`
+- Site: `src/core/data/store-cache.ts`
+- Site: `src/core/data/read-plan.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-held-set-reads-the-pages-fields.test.mjs`
+
 ### T-a-projected-row-is-checked-on-what-it-was-sent
 
 **A load may name its `fields`; a store that says `projects` sends each row's

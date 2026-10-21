@@ -1178,7 +1178,7 @@ export class DataSource extends EventTarget {
     const reach = this.reach;
     if (reach === 'down') void this.load({ force: true });
     // The rows stay, and say they are unconfirmed, until the read lands.
-    else if (reach === 'unreached') this.#cache?.recheck(this.#holdRows);
+    else if (reach === 'unreached') this.#cache?.recheck(this.#holdRows, this.#need());
   }
 
   /** Closed: it no longer hears its store, and holds nothing. */
@@ -1219,7 +1219,10 @@ export class DataSource extends EventTarget {
     const set = cache.set;
     return planRead({
       need: { cap: this.#holdRows },
-      held: { set: set ? { size: set.size, gen: cache.gen, due: cache.due } : null, never: cache.never, over: cache.over, failedAt: cache.failedAt },
+      held: {
+        set: set ? { size: set.size, gen: cache.gen, due: cache.due, covers: set.covers(this.#need()) } : null,
+        never: cache.never, over: cache.over, failedAt: cache.failedAt,
+      },
       history: { announcesAll: !!this.store.announcesAll, since: this.#since },
       reach: { tried: this.#tried },
     });
@@ -1247,20 +1250,26 @@ export class DataSource extends EventTarget {
          once a page, at open or a first load: never on a toggle (340). */
       if (behind) {
         this.#tried = true;
-        cache.recheck(this.#holdRows);
+        cache.recheck(this.#holdRows, this.#need());
       }
       if (plan !== 'fetch') return;
-      const before = `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}`;
+      const moved = (): string => `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}:${cache.set?.fields}`;
+      const before = moved();
       const held = cache.set;
-      await cache.hold(this.#holdRows);
+      await cache.hold(this.#holdRows, this.#need());
       // A read that just failed WAS this page's check: no second one at once.
       if (cache.failed) this.#tried = true;
       // Nothing moved — no read could be sent, and no kept copy landed: the store answers.
-      if (`${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}` === before && cache.set === held) {
+      if (moved() === before && cache.set === held) {
         this.#plan = 'store';
         return;
       }
     }
+  }
+
+  /** The fields this page reads from a row, or null — every field. TRAP T-a-held-set-reads-the-pages-fields */
+  #need(): readonly string[] | null {
+    return null;
   }
 
   /** A Refresh: the store's set is read again before it is used — never by a closed source. */

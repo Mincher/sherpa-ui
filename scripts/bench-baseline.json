@@ -5,6 +5,7 @@
     "distinct": 1,
     "fields": 12,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 1,
     "clones": 7,
     "scans": 6
@@ -15,6 +16,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 2558,
+    "cells": 38370,
     "compiles": 1,
     "clones": 1,
     "scans": 4
@@ -25,6 +27,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 0,
     "scans": 0
@@ -35,6 +38,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 25,
+    "cells": 375,
     "compiles": 0,
     "clones": 1,
     "scans": 1
@@ -45,6 +49,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 13,
+    "cells": 195,
     "compiles": 3,
     "clones": 1,
     "scans": 3
@@ -55,6 +60,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 25,
+    "cells": 375,
     "compiles": 1,
     "clones": 11,
     "scans": 3
@@ -65,6 +71,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 13,
+    "cells": 195,
     "compiles": 1,
     "clones": 5,
     "scans": 3
@@ -75,6 +82,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 2546,
+    "cells": 38190,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -85,6 +93,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 4,
+    "cells": 60,
     "compiles": 1,
     "clones": 1,
     "scans": 3
@@ -95,6 +104,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 898,
+    "cells": 13470,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -105,6 +115,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 429,
+    "cells": 6435,
     "compiles": 1,
     "clones": 12,
     "scans": 4
@@ -115,6 +126,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 3520,
+    "cells": 52800,
     "compiles": 2,
     "clones": 1,
     "scans": 4
@@ -125,6 +137,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 1,
     "clones": 7,
     "scans": 4
@@ -135,6 +148,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10026,
+    "cells": 150390,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -145,6 +159,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10026,
+    "cells": 150390,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -155,6 +170,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10026,
+    "cells": 150390,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -165,6 +181,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10026,
+    "cells": 150390,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -175,6 +192,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -185,6 +203,7 @@
     "distinct": 1,
     "fields": 12,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 1,
     "clones": 7,
     "scans": 6
@@ -195,6 +214,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 272,
+    "cells": 4080,
     "compiles": 1,
     "clones": 1,
     "scans": 4
@@ -205,6 +225,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 1,
+    "cells": 15,
     "compiles": 5,
     "clones": 1,
     "scans": 4
@@ -215,6 +236,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 2,
     "clones": 10,
     "scans": 4
@@ -225,6 +247,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10000,
+    "cells": 150000,
     "compiles": 0,
     "clones": 7,
     "scans": 7
@@ -235,6 +258,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 4
@@ -245,6 +269,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 0,
     "scans": 0
@@ -255,6 +280,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 1
@@ -265,6 +291,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 4,
     "clones": 1,
     "scans": 3
@@ -275,6 +302,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 12,
     "scans": 3
@@ -285,6 +313,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 6,
     "scans": 3
@@ -295,6 +324,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -305,6 +335,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 3
@@ -315,6 +346,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -325,6 +357,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 1,
     "clones": 11,
     "scans": 2
@@ -335,6 +368,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 3,
     "clones": 2,
     "scans": 4
@@ -345,6 +379,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 1,
     "clones": 8,
     "scans": 4
@@ -355,6 +390,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -365,6 +401,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -375,6 +412,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -385,6 +423,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -395,6 +434,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -405,6 +445,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 7,
     "scans": 6
@@ -415,6 +456,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 4
@@ -425,6 +467,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 6,
     "clones": 1,
     "scans": 4
@@ -435,6 +478,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 11,
     "scans": 4
@@ -445,6 +489,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 9162,
+    "cells": 9162,
     "compiles": 3,
     "clones": 9,
     "scans": 5
@@ -455,6 +500,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 3
@@ -465,6 +511,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 3
@@ -475,6 +522,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10000,
+    "cells": 150000,
     "compiles": 0,
     "clones": 7,
     "scans": 7
@@ -485,6 +533,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 4
@@ -495,6 +544,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 0,
     "scans": 0
@@ -505,6 +555,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 1
@@ -515,6 +566,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 4,
     "clones": 1,
     "scans": 3
@@ -525,6 +577,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 12,
     "scans": 3
@@ -535,6 +588,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 6,
     "scans": 3
@@ -545,6 +599,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -555,6 +610,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 3
@@ -565,6 +621,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -575,6 +632,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 1,
     "clones": 11,
     "scans": 2
@@ -585,6 +643,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 3,
     "clones": 2,
     "scans": 4
@@ -595,6 +654,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 1,
     "clones": 8,
     "scans": 4
@@ -605,6 +665,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -615,6 +676,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -625,6 +687,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -635,6 +698,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -645,6 +709,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -655,6 +720,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10000,
+    "cells": 150000,
     "compiles": 0,
     "clones": 8,
     "scans": 11
@@ -665,6 +731,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 1,
     "scans": 4
@@ -675,6 +742,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 6,
     "clones": 1,
     "scans": 4
@@ -685,6 +753,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 2,
     "clones": 11,
     "scans": 4
@@ -695,6 +764,7 @@
     "distinct": 1,
     "fields": 8,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 1,
     "clones": 6,
     "scans": 6
@@ -705,6 +775,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -715,6 +786,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -725,6 +797,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -735,6 +808,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 25,
+    "cells": 375,
     "compiles": 1,
     "clones": 1,
     "scans": 3
@@ -745,6 +819,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -755,6 +830,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10026,
+    "cells": 150390,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -765,6 +841,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -775,6 +852,7 @@
     "distinct": 2,
     "fields": 13,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 7,
     "scans": 6
@@ -785,6 +863,7 @@
     "distinct": 3,
     "fields": 9,
     "rows": 25,
+    "cells": 375,
     "compiles": 4,
     "clones": 1,
     "scans": 14
@@ -795,6 +874,7 @@
     "distinct": 3,
     "fields": 9,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 15
@@ -805,6 +885,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -815,6 +896,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -825,6 +907,7 @@
     "distinct": 3,
     "fields": 9,
     "rows": 10026,
+    "cells": 150390,
     "compiles": 0,
     "clones": 1,
     "scans": 15
@@ -835,6 +918,7 @@
     "distinct": 3,
     "fields": 9,
     "rows": 10025,
+    "cells": 150375,
     "compiles": 0,
     "clones": 1,
     "scans": 15
@@ -845,6 +929,7 @@
     "distinct": 1,
     "fields": 1,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 14,
     "scans": 2
@@ -855,6 +940,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 0,
+    "cells": 0,
     "compiles": 0,
     "clones": 5,
     "scans": 0
@@ -865,6 +951,7 @@
     "distinct": 1,
     "fields": 13,
     "rows": 10025,
+    "cells": 160400,
     "compiles": 1,
     "clones": 7,
     "scans": 6
@@ -875,6 +962,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 66,
+    "cells": 1056,
     "compiles": 1,
     "clones": 1,
     "scans": 4
@@ -885,6 +973,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 314,
+    "cells": 5024,
     "compiles": 1,
     "clones": 1,
     "scans": 4
@@ -895,6 +984,7 @@
     "distinct": 0,
     "fields": 0,
     "rows": 314,
+    "cells": 5024,
     "compiles": 0,
     "clones": 1,
     "scans": 4

@@ -61,10 +61,10 @@ export abstract class BaseStore extends EventTarget implements Store {
     return !this.schema || !!rulesOf(this.schema);
   }
 
-  /** One row as a projection sends it: its key and the named fields. */
+  /** One row as a projection sends it: its key and the named fields — a path's whole top field. */
   protected project(row: Row, fields: readonly string[]): Row {
     const out: Row = { [this.key]: row[this.key] };
-    for (const f of fields) if (f in row) out[f] = row[f];
+    for (const top of fields.map((f) => f.split('.')[0]!)) if (top in row) out[top] = row[top];
     return out;
   }
 

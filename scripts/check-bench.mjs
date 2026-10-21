@@ -29,13 +29,13 @@ const LEAN = 'test/unit/fixtures/lean.page.json';
 const N = 10_000;
 const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
-export const GATED = ['loads', 'counts', 'distinct', 'fields', 'rows', 'compiles', 'clones', 'scans'];
+export const GATED = ['loads', 'counts', 'distinct', 'fields', 'rows', 'cells', 'compiles', 'clones', 'scans'];
 // The fakes are read from these specs, so a change to one changes the bench.
 const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
   .map((tag) => `src/components/${tag}/${tag}.component.json`);
 const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, LEAN, ...SPECS];
 // `walks` and `draws` are printed, never gated.
-const counters = { loads: 0, counts: 0, distinct: 0, fields: 0, rows: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
+const counters = { loads: 0, counts: 0, distinct: 0, fields: 0, rows: 0, cells: 0, compiles: 0, clones: 0, scans: 0, draws: 0, walks: 0 };
 
 /* ── The data layer, bundled from src/ with compile() counted ─────────── */
 
@@ -134,7 +134,14 @@ const ROWS = (() => {
 function counted(store) {
   const load = store.load.bind(store);
   const total = store.totalCount.bind(store);
-  store.load = async (o) => { counters.loads++; const r = await load(o); counters.rows += r.rows.length; return r; };
+  // …and every field of every row each sends. 345 phase 8
+  store.load = async (o) => {
+    counters.loads++;
+    const r = await load(o);
+    counters.rows += r.rows.length;
+    for (const row of r.rows) counters.cells += Object.keys(row).length;
+    return r;
+  };
   store.totalCount = (o) => { counters.counts++; return total(o); };
   if (typeof store.distinct === 'function') {
     const distinct = store.distinct.bind(store);

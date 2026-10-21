@@ -15,7 +15,7 @@ const base = {
   reach: { tried: false },
 };
 const at = (patch) => planRead({ ...base, ...patch, held: { ...base.held, ...patch.held } });
-const set = (more = {}) => ({ size: 10, gen: 1, due: false, ...more });
+const set = (more = {}) => ({ size: 10, gen: 1, due: false, covers: true, ...more });
 
 test('no set: fetch it, unless the store refuses one or a read failed at this cap', () => {
   assert.deepEqual(at({}), { plan: 'fetch', behind: false });
@@ -49,4 +49,9 @@ test('a set held before the page, over a store that may miss a writer: shown at 
 
 test('a store whose every change comes through it: its set is current', () => {
   assert.deepEqual(at({ held: { set: set() } }), { plan: 'held', behind: false });
+});
+
+test('a set without a column the page needs: read it first — unless the store cannot be reached', () => {
+  assert.deepEqual(at({ held: { set: set({ covers: false }) } }), { plan: 'fetch', behind: false });
+  assert.deepEqual(at({ held: { set: set({ covers: false }), failedAt: 100 } }), { plan: 'held-stale', behind: true });
 });

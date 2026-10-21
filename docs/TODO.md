@@ -863,6 +863,16 @@ against the code). The full plan, with every file:line, is
   project. Phase 6's ask reads the key alone. Bench unchanged. TRAP
   `T-a-projected-row-is-checked-on-what-it-was-sent`. Untested in browsers: a
   node test only (`test/unit/a-load-projects-its-fields.test.mjs`).
+- 🚧 **Phase 8 — the decision series: a held set reads the page's fields.**
+  Four steps: 8.1 the cache reads the fields asked and a missing column alone,
+  joined by key; 8.2 the source works out its need; 8.3 the provider names a
+  grid's columns and a summary's fields; 8.4 the docs say a held row carries
+  the page's fields only, and a whole record is `store.byKey()`. Records and
+  Demos declare every field, so they read what they read today. **8.1 ✅
+  (2026-10-21):** `HeldSet.fields`, `covers`, `join`; `StoreCache.hold(cap,
+  fields)`; `planRead` plans `fetch` for a set without a column; the bench
+  counts `cells` (rows × fields). No source names fields yet: no change. TRAP
+  `T-a-held-set-reads-the-pages-fields`.
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it

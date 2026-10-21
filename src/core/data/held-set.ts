@@ -8,6 +8,9 @@
  * - .size — How many rows it holds.
  * - .rows — Every row it holds, in place — to keep a copy, never to change.
  * - .refused — What the schema refused when the set was read.
+ * - .fields — The fields its rows were read with, or null — every field.
+ * - .covers — Do its rows carry these fields? null asks for every field.
+ * - .join — Take a column read in: each row's fields, by its key; false when the rows are not the same rows.
  * - .patch — Take one store change in place; false when it cannot, and the set must be read again.
  * - .load — What a load asks, each row a copy keyed as its original, so a host's edit never reaches the set.
  * - .totalCount — The matches, unpaged and unsorted.
@@ -15,7 +18,7 @@
  * - .distinct — Each field's values among the matches, read in place.
  */
 import {
-  applyOptions, distinctOf, readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
+  applyOptions, distinctOf, readField, sameKey, valueKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
 } from './store.js';
 import { carryKey, isMadeUpKey, keyRow, rowKey } from './row-key.js';
 
@@ -25,10 +28,42 @@ export class HeldSet {
   readonly #rows: Row[];
   /** What the store's schema refused when the set was read, said on every load. TRAP T-dropped-rows-must-be-countable */
   readonly #refused: Pick<LoadResult, 'dropped' | 'issues'>;
+  /** The fields its rows were read with, or null — every field. TRAP T-a-held-set-reads-the-pages-fields */
+  readonly #fields: Set<string> | null;
 
-  constructor(rows: readonly Row[], refused: Pick<LoadResult, 'dropped' | 'issues'> = {}) {
+  constructor(rows: readonly Row[], refused: Pick<LoadResult, 'dropped' | 'issues'> = {}, fields: readonly string[] | null = null) {
     this.#rows = [...rows];
     this.#refused = refused.dropped ? refused : {};
+    this.#fields = fields ? new Set(fields) : null;
+  }
+
+  /** The fields its rows were read with, or null — every field. */
+  get fields(): readonly string[] | null {
+    return this.#fields ? [...this.#fields] : null;
+  }
+
+  /** Do its rows carry these fields? null asks for every field. */
+  covers(fields: readonly string[] | null): boolean {
+    const held = this.#fields;
+    return !held || (!!fields && fields.every((f) => held.has(f)));
+  }
+
+  /** Take a column read in: each row's `fields`, found by its `key`. False, and
+   *  nothing taken, when the read is not the same rows — a change it never heard. */
+  join(rows: readonly Row[], fields: readonly string[], key: string): boolean {
+    if (!this.#fields || rows.length !== this.#rows.length) return false;
+    const read = new Map(rows.map((r) => [valueKey(readField(r, key)), r]));
+    const found = this.#rows.map((r) => read.get(valueKey(readField(r, key))));
+    if (read.size !== rows.length || found.some((r) => !r)) return false;
+    const tops = fields.map((f) => f.split('.')[0]!);
+    // A copy each, keyed as before: the rows a store sent may still be its own.
+    for (const [i, row] of this.#rows.entries()) {
+      const next = carryKey(row, Object.fromEntries(Object.entries(row).filter(([f]) => !tops.includes(f))));
+      for (const top of tops) if (top in found[i]!) next[top] = found[i]![top];
+      this.#rows[i] = next;
+    }
+    for (const f of fields) this.#fields.add(f);
+    return true;
   }
 
   /** How many rows it holds. */
@@ -125,12 +160,12 @@ export class HeldSet {
     return Promise.resolve(applyOptions(this.#rows, rest).total);
   }
 
-  /** Each field's values among the matches, read in place. */
   /** Every row, in place. */
   scan(): Promise<readonly Row[]> {
     return Promise.resolve(this.#rows);
   }
 
+  /** Each field's values among the matches, read in place. */
   distinct(fields: readonly string[], options: LoadOptions = {}): Promise<Record<string, unknown[]>> {
     const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
     return Promise.resolve(distinctOf(applyOptions(this.#rows, rest).rows, fields));
