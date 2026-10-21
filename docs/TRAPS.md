@@ -10418,6 +10418,8 @@ that wants one calls `provider.recheck()`.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-remote-store-says-what-changed.test.mjs`
+- Site: `test/unit/a-reopen-checks-behind.test.mjs`
+- Site: `test/unit/a-store-has-one-cache.test.mjs`
 - Site: `scripts/check-bench.mjs`
 
 ### T-a-held-set-reads-the-pages-fields

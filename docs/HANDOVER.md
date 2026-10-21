@@ -1,4 +1,4 @@
-# Handover — 2026-10-21
+# Handover — 2026-10-22
 
 For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 `docs/PRINCIPLES.md` first, as always; this says where the work stands.
@@ -13,8 +13,9 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 - **Commit every item.** Push only when Will asks (he asked on 2026-10-17 and
   2026-10-19). Never push `backup/main-before-secret-fix`: it holds a Figma
   token. Never read, edit or stage `.mcp.json`: it holds a plaintext token.
-- **Testing is on** (Will, 2026-10-17: keep testing until he says stop). Run
-  focused specs per change, and the full suite at milestones.
+- **Test 10x less** (Will, 2026-10-21). Per change: type-check, build, the
+  pre-commit gates, and the ONE new or changed spec, in Chromium only. Full
+  suites (every repo, every engine) only at the END of a TODO item.
 - Bugs found mid-work are QUEUED in the TODO, not fixed in passing.
 - A done item keeps its row and its section, marked ✅. Nothing is deleted.
 
@@ -28,7 +29,26 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 - A peer session (`sherpa-demos-a7`) may exist. Never stash. Stage only your
   own files, and only when `git diff --cached` is empty.
 
-## Where the work stands (2026-10-21)
+## Where the work stands (2026-10-22)
+
+**TODO 345 is built: all nine phases.** A remote store is held once per store,
+read only for the fields a page uses, and asked what moved instead of read
+again whole. Each phase's note is in 345's section of `docs/TODO.md`.
+
+| Phase | What it gave | TRAP |
+|---|---|---|
+| 5 | A remote store not held reads a field's values only when the field is needed; a menu says Loading | `T-a-field-reads-its-values-when-needed` |
+| 6 | `"fetch": "server"` / `data-fetch-fields`: a field the store answers, asked once per answer for its keys | `T-a-server-field-is-asked-once-per-answer` |
+| 7 | `LoadOptions.fields`, `Store.projects`, RestStore `fields=`; a projected row is checked on what it was sent | `T-a-projected-row-is-checked-on-what-it-was-sent` |
+| 8 | A page from a definition reads only its fields: declared, held, answered, sorted, searched, and what its components name; a later column is read alone, joined by key | `T-a-held-set-reads-the-pages-fields` |
+| 9 | `Store.changes(since)` (RestStore `changesUrl`): a reopen or a tab shown asks what moved and reads only those columns | `T-a-remote-store-says-what-changed` |
+
+- 369 (tiered values) is done but for its remote part, TODO 392, which waits
+  for Will (A).
+- Commits since the push of 2026-10-21 are local. Push is Will's call.
+- **Next:** 350 (performance: re-measure after 366 and 345); the ❓ rows.
+
+## Where the work stood (2026-10-21)
 
 **TODO 366 is ✅: one Query per app Context**, in 26 steps (`docs/history/plan-366-build.md`;
 each step's note is in 366's section of `docs/TODO.md`). TODO 320 closed with it.

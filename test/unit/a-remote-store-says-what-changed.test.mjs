@@ -64,3 +64,22 @@ test('a RestStore asks its changesUrl, with the mark it was given', async () => 
     globalThis.fetch = realFetch;
   }
 });
+
+test('a page opened again asks what moved: nothing, so it reads nothing, and its rows are confirmed', async () => {
+  const inner = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
+  let loads = 0;
+  const load = inner.load.bind(inner);
+  inner.load = (o) => { loads++; return load(o); };
+  const store = spoofRemote(inner, { delay: 0, announcesAll: false });
+  const first = new DataSource({ store });
+  await first.load();
+  first.close();
+  loads = 0;
+  const page = new DataSource({ store });
+  const stale = [];
+  page.addEventListener('change', (e) => stale.push(!!e.detail.stale));
+  await page.load();
+  for (let i = 0; i < 5; i++) await settle();
+  assert.equal(loads, 0);
+  assert.deepEqual([stale[0], stale.at(-1)], [true, false]);
+});

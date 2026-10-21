@@ -18,7 +18,10 @@ function remote(delay) {
   const load = inner.load.bind(inner);
   const seen = { loads: 0 };
   inner.load = (o) => { seen.loads++; return load(o); };
-  return { inner, store: spoofRemote(inner, { delay, announcesAll: false }), seen };
+  const store = spoofRemote(inner, { delay, announcesAll: false });
+  // A store that cannot say what moved: a RestStore with no changesUrl. TRAP T-a-remote-store-says-what-changed
+  delete store.changes;
+  return { inner, store, seen };
 }
 
 test('a reopened page shows its rows at once, stale, then confirmed by one read behind', async () => {
