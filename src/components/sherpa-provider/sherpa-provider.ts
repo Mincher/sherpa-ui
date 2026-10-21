@@ -24,6 +24,7 @@ import { valueKey, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
+import { QueryContext } from '../../core/data/query-context.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
@@ -64,11 +65,12 @@ export interface OpenOptions {
 }
 
 /** A subtree's whole state, as JSON — each source's question and the View on
- *  screen — to send out and take back in. TRAP T-a-page-goes-out-as-json */
+ *  screen — to send out and take back in. v2: `queries`, by source name.
+ *  366 step 24 · TRAP T-a-page-goes-out-as-json */
 export interface ProviderState {
-  v: 1;
+  v: 2;
   view?: string;
-  sources: Record<string, QueryState>;
+  queries: Record<string, QueryState>;
 }
 
 /** The attribute a summary needs before it asks; without it a page populates it.
@@ -290,7 +292,8 @@ export class SherpaProvider extends SherpaElement {
     let opened: DataSource | undefined;
     let made: DataSource | undefined;
     try {
-      const source = (made = def && store ? await openSource(def, store) : undefined);
+      // The Context's ONE Query: its source joins it. 366 step 24
+      const source = (made = def && store ? await openSource(def, store, { query: new QueryContext() }) : undefined);
       if (source) this.#made.add(source);
       opening?.stop();
       if (page.signal.aborted) return undefined;
@@ -302,7 +305,7 @@ export class SherpaProvider extends SherpaElement {
       const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
       // The page as DEFINED, before a kept Query: what Reset all to default starts from.
       this.#pages.begin({
-        id: definition.id, store: def.store, source, library, initial: source.query.applied,
+        id: definition.id, store: def.store, source, query: source.query, library, initial: source.query.applied,
         savedFilters: savedFiltersOf(definition),
       });
       // A View this page does not have is the first.
@@ -640,10 +643,10 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-a-page-goes-out-as-json
    */
   export(): ProviderState {
-    const sources: Record<string, QueryState> = {};
-    for (const [name, source] of Object.entries(this.#sources)) sources[name] = source.query.export();
+    const queries: Record<string, QueryState> = {};
+    for (const [name, source] of Object.entries(this.#sources)) queries[name] = source.query.export();
     const view = this.#pages.view;
-    return { v: 1, ...(view ? { view } : {}), sources };
+    return { v: 2, ...(view ? { view } : {}), queries };
   }
 
   /**
@@ -652,11 +655,11 @@ export class SherpaProvider extends SherpaElement {
    * of the old View is heard. A source it does not name is left as it is.
    */
   async import(state: ProviderState): Promise<void> {
-    if (state?.v !== 1) {
-      report({ code: 'unknown-state', message: 'sherpa-provider: not a v1 state, so nothing was taken in.' });
+    if (state?.v !== 2) {
+      report({ code: 'unknown-state', message: 'sherpa-provider: not a v2 state, so nothing was taken in.' });
       return;
     }
-    for (const [name, given] of Object.entries(state.sources ?? {})) {
+    for (const [name, given] of Object.entries(state.queries ?? {})) {
       const source = this.#sources[name];
       if (source) await source.query.import(given);
       else report({ code: 'provider-unknown-source', message: `sherpa-provider: no source "${name}" to take in.`, at: { source: name } });

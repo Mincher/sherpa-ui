@@ -13,6 +13,7 @@
  */
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from './data-source.js';
+import type { QueryContext } from './query-context.js';
 import { report } from './report.js';
 
 /** One app, as JSON: its Contexts, the one it opens on, its nav sections and
@@ -55,8 +56,8 @@ export interface SettingsPage {
   template: string;
 }
 
-/** What every Context's init is handed: the session, the View, its source,
- *  its chrome and a signal. */
+/** What every Context's init is handed: the session, the View, its source and
+ *  Query, its chrome and a signal. */
 export interface ContextInit {
   /** What outlives a Context: the reader's choices. */
   session: SessionStore;
@@ -64,6 +65,8 @@ export interface ContextInit {
   view: string | null;
   /** Its page's source, when it has a definition. */
   source?: DataSource;
+  /** The Context's ONE Query, which its source and controls share. 366 step 24 */
+  query?: QueryContext;
   /** Aborts when the Context goes. */
   signal: AbortSignal;
   /** The header this Context fills. */

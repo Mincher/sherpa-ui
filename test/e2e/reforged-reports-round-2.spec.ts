@@ -33,17 +33,21 @@ test('open() configures a plain element, says a refused value, and never waits f
   expect(r.seen).toEqual(expect.arrayContaining(['provider-unknown-setting', 'provider-refused-setting', 'provider-undefined-element']));
 });
 
-test('import() says a source it does not have', async ({ page }) => {
+test('import() says a source it does not have, and a state of the old shape', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const provider = document.createElement('sherpa-provider');
     root.append(provider);
     await provider.open(page({}), { stores: { s: store() } });
-    await provider.import({ v: 1, sources: { nope: {} } });
+    await provider.import({ v: 2, queries: { nope: {} } });
+    const unknown = [...seen];
+    // v1 named its queries \`sources\`. 366 step 24
+    await provider.import({ v: 1, sources: {} });
     undo();
-    return seen;
-  })()`) as string[];
-  expect(r).toContain('provider-unknown-source');
+    return { unknown, old: seen.slice(unknown.length) };
+  })()`) as { unknown: string[]; old: string[] };
+  expect(r.unknown).toContain('provider-unknown-source');
+  expect(r.old).toEqual(['unknown-state']);
 });
 
 test('a View applied with gaps reaches onReport, not only the console', async ({ page }) => {

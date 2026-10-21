@@ -14,6 +14,7 @@
 import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
 import { report } from './report.js';
 import type { Store } from './store.js';
+import type { QueryContext } from './query-context.js';
 import { isSavedFilter, type SavedFilter } from './query.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
@@ -61,10 +62,13 @@ export interface PageDefinition {
   ui?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 }
 
-/** Build a page's source from its definition, over the app's store. */
-export async function openSource(def: SourceDefinition, store: Store): Promise<DataSource> {
+/** Build a page's source from its definition, over the app's store — into the
+ *  Context's Query when given one. */
+export async function openSource(def: SourceDefinition, store: Store, options: { query?: QueryContext } = {}): Promise<DataSource> {
   const source = new DataSource({
     store,
+    // The Context's Query, when the page shares one. 366 step 24
+    ...(options.query ? { query: options.query } : {}),
     ...(def.pageSize ? { pageSize: def.pageSize } : {}),
     ...(def.applyOn ? { applyOn: def.applyOn } : {}),
     ...(def.debounce != null ? { debounce: def.debounce } : {}),

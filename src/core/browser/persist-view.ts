@@ -315,7 +315,7 @@ export function onViewPicked(
   host: EventTarget | null | undefined,
   views: ViewLibrary | (() => ViewLibrary),
   targets: {
-    query?: { setQuery(query: QueryDefaults, options?: { holds: 'keep' }): Promise<void> };
+    query?: { setQuery(query: QueryDefaults, options?: { holds?: 'keep'; by?: string }): Promise<void> };
     elements?: Record<string, HTMLElement>;
   },
   options: {
@@ -441,7 +441,9 @@ export function onViewPicked(
       } | null;
       if (bar?.values && bar.values[VIEW_CHIP]?.[0] !== id) bar.setChipValues?.(VIEW_CHIP, [id]);
       const draft = options.draft?.(id, view);
-      const put = draft ? targets.query.setQuery(draft) : targets.query.setQuery(view.query, { holds: 'keep' });
+      // A pick, not the reader's filters: a keeper of them is told so. 366 step 24
+      const put = draft ? targets.query.setQuery(draft, { by: 'view' })
+        : targets.query.setQuery(view.query, { holds: 'keep', by: 'view' });
       void put.then(() => {
         const waiting = applyElements(view.ui ?? {}, elements, report);
         if (waiting) void waiting.then(() => done(report));

@@ -113,10 +113,12 @@ export interface QueryMember {
 type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
 
 /** What `query-change` says: the fields whose answers moved, and the scopes
- *  whose holds or arrangement did. */
+ *  whose holds or arrangement did — and, for a whole Query put on, who put it:
+ *  `by` is the caller's own tag, which a keeper reads. 366 step 24 */
 export interface QueryChangeDetail {
   fields: string[];
   scopes: string[];
+  by?: string;
 }
 
 /** A scope keeps no answer for this field now. */
@@ -795,10 +797,11 @@ export class QueryContext extends EventTarget {
    * defaults. Resolves once every member has drawn it.
    *
    * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
-   * the chips it has, and every answer is a clean slate.
+   * the chips it has, and every answer is a clean slate. `by` rides on the
+   * `query-change` it fires.
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
    */
-  async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep' } = {}): Promise<void> {
+  async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep'; by?: string } = {}): Promise<void> {
     if (query?.v !== 1 || typeof query.scopes !== 'object') {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
       return;
@@ -814,7 +817,9 @@ export class QueryContext extends EventTarget {
     this.#live.draft = this.remote ? structuredClone(next) : next;
     rehome(this.#live.draft);
     await Promise.all([...this.#members].map((m) => m.heard({ kind: 'query', was, before })));
-    this.#announce({ fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes });
+    this.#announce({
+      fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes, ...(options.by ? { by: options.by } : {}),
+    });
   }
 
   /** The whole question as JSON — the Query as applied, with its arrangement.

@@ -38,7 +38,7 @@ import {
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
-import type { QueryChangeDetail } from '../../core/data/query-context.js';
+import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
 import { VIEW, type Query, type QueryDefaults, type SavedFilter } from '../../core/data/query.js';
 import { dropSet, takeSet } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
@@ -59,6 +59,8 @@ export interface OpenedPage {
   id: string;
   store: string;
   source: DataSource;
+  /** The Context's Query: the one the page's controls and Views write. 366 step 24 */
+  query: QueryContext;
   library: (() => ViewLibrary) | null;
   initial: Query;
   /** The page's own saved filters, as its definition ships them. Will, 366 */
@@ -166,13 +168,11 @@ export class ProviderPage {
       clearDraft(this.#drafts.page, labelId(name));
     }
     // Read BEFORE the redraw: a rebuilt bar's first report is empty.
-    const kept = opened.source.query.applied;
+    const kept = opened.query.applied;
     const id = labelId(name);
     // The View chip lists it either way; only a plain save moves to it.
-    await this.#quietly(async () => {
-      await this.drawBars(options.stay ? this.#view : id);
-      await opened.source.query.setQuery(kept);
-    });
+    await this.drawBars(options.stay ? this.#view : id);
+    await opened.query.setQuery(kept, { by: 'provider' });
     // Reported, so the URL and the nav follow the View just saved.
     if (!options.stay) this.#viewBar()?.report?.();
     return id;
@@ -224,7 +224,7 @@ export class ProviderPage {
     const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
-    await opened.source.query.setQuery(takeSet(opened.source.query.applied, set.query, this.#own()));
+    await opened.query.setQuery(takeSet(opened.query.applied, set.query, this.#own()), { by: 'reader' });
     this.#take(id);
     return true;
   }
@@ -236,7 +236,7 @@ export class ProviderPage {
     const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
-    await opened.source.query.setQuery(dropSet(opened.source.query.applied, set.query, this.#own()));
+    await opened.query.setQuery(dropSet(opened.query.applied, set.query, this.#own()), { by: 'reader' });
     if (this.#applied === id) this.#take(null);
     return true;
   }
@@ -331,10 +331,8 @@ export class ProviderPage {
     const opened = this.#opened;
     if (!opened) return;
     const view = this.#view ? opened.library?.()[this.#view] : undefined;
-    await this.#quietly(async () => {
-      await opened.source.query.setQuery(structuredClone(opened.initial));
-      if (view?.query) await opened.source.query.setQuery(view.query, { holds: 'keep' });
-    });
+    await opened.query.setQuery(structuredClone(opened.initial), { by: 'provider' });
+    if (view?.query) await opened.query.setQuery(view.query, { holds: 'keep', by: 'provider' });
     // The View's own filters are on: nothing of the reader's is left to keep.
     if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
     if (this.#applied) this.#take(null);
@@ -454,11 +452,12 @@ export class ProviderPage {
       if (key && session) session.set(key, { view: this.#view, query: source.query.applied });
       this.#keepDraft();
     };
-    /* The READER's changes only: a pick or a reset writes the source too, and
-       kept then, the new View's filters were saved under the old View's name.
-       TRAP T-a-view-keeps-a-draft */
-    const keep = (): void => {
-      if (this.#writing) return;
+    /* The READER's changes only: a pick or a reset writes the Query too, says
+       who by, and kept then, the new View's filters were saved under the old
+       View's name. TRAP T-a-view-keeps-a-draft */
+    const keep = (event: Event): void => {
+      const by = (event as CustomEvent<QueryChangeDetail>).detail?.by;
+      if (by && by !== 'reader') return;
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(write);
     };
@@ -471,8 +470,6 @@ export class ProviderPage {
     // After a pick or a reset, the page's kept Query is the one on screen.
     this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
     source.query.addEventListener('query-change', keep, { signal });
-    // A preset switched is a report, and no selection changes.
-    this.#host.el.addEventListener('quick-filter-change', keep, { signal });
     signal.addEventListener('abort', () => {
       cancelAnimationFrame(frame);
       this.#flush = this.#settle = null;
@@ -486,8 +483,6 @@ export class ProviderPage {
   #flush: (() => void) | null = null;
   /** Keep the Query on screen as the page's own, after the provider wrote it. */
   #settle: (() => void) | null = null;
-  /** The PROVIDER is writing the source — a View pick, a reset — so nothing heard is the reader's. */
-  #writing = false;
 
   /** The draft a reader left on one View, if drafts are kept. */
   #draftOf(id: string): QueryDefaults | undefined {
@@ -500,22 +495,6 @@ export class ProviderPage {
     const d = this.#drafts;
     if (!d || !this.#view) return;
     saveDraft(d.page, this.#view, viewQueryOf(d.source), draftSig(d.library()[this.#view]), d.mode());
-  }
-
-  /** Run a write of the provider's own, and hear nothing of it as the reader's:
-   *  a bar redrawn by it reports a frame or two later. */
-  async #quietly(work: () => Promise<void>): Promise<void> {
-    this.#writing = true;
-    try {
-      await work();
-    } finally {
-      this.#unquietSoon();
-    }
-  }
-
-  /** The reader is heard again, two frames on. */
-  #unquietSoon(): void {
-    requestAnimationFrame(() => requestAnimationFrame(() => { this.#writing = false; }));
   }
 
   /** Listen for View picks again, knowing the View on screen now. */
@@ -543,17 +522,13 @@ export class ProviderPage {
       applied: this.#view ?? null,
       into: el.querySelector<HTMLElement>('[data-view-content]'),
       // The old View's draft is written before its answers go. TRAP T-a-view-keeps-a-draft
-      before: () => {
-        this.#flush?.();
-        this.#writing = true;
-      },
+      before: () => this.#flush?.(),
       draft: (id) => this.#draftOf(id),
       after: ({ id, rendered }) => {
         // Another View: its filters are its own, not the set last taken.
         if (id !== this.#view && this.#applied) this.#take(null);
         this.#view = id;
         this.#settle?.();
-        this.#unquietSoon();
         this.#viewBar()?.toggleAttribute('data-custom-view', this.customView);
         this.#host.viewChanged(id, rendered?.elements);
       },

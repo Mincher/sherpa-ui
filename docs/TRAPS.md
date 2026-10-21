@@ -1916,9 +1916,12 @@ Four things that are not obvious:
 
 - **Only the READER's changes write it.** A pick and a reset write the
   source too, and heard then, the NEW View's filters were saved under the
-  OLD View's name (its id changes only after the pick's async write). While
-  the provider writes (`#writing`, in provider-page.ts), nothing is heard as the reader's, and it
-  stays so for two frames, as a redrawn bar reports late.
+  OLD View's name (its id changes only after the pick's async write). So a
+  whole Query put on says who put it — `setQuery(q, { by })` rides on its
+  `query-change` — and the keeper keeps only a change with no `by`, or
+  `by: 'reader'` (a saved set taken). A pick is `'view'`, a reset or a save
+  `'provider'`. 366 step 24 replaced a two-frame "provider is writing" flag,
+  which also dropped a reader's change made in those frames.
 - **A pick FLUSHES first**: a change still waiting for its frame is written,
   under the View it was made on, before the pick's own write.
 - **A draft is read INSIDE the pick** (`onViewPicked`'s `draft` hook), in
@@ -16497,6 +16500,8 @@ its View filters alone.
 
 **A page's whole state goes out as JSON and comes back: `provider.export()` /
 `provider.import(state)`, over `source.query.export()` / `source.query.import(state)`.**
+Since 366 step 24 the provider's state is `{ v: 2, view?, queries }`, each
+source's Query by name; a v1 state (`sources`) is reported, `unknown-state`.
 Provider P5, 2026-09-27. A source's state is its Query as APPLIED, its sort,
 group and search in the View scope (the shape a View's JSON already uses),
 and every saved filter it names — readings and label — so a service that

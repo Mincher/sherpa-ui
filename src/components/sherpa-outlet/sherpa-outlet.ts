@@ -381,7 +381,7 @@ export class SherpaOutlet extends SherpaElement {
     const header = this.#header;
     const ctx: ContextInit = {
       session: options.session, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
-      ...(source ? { source } : {}), ...(header ? { header } : {}),
+      ...(source ? { source, query: source.query } : {}), ...(header ? { header } : {}),
     };
     const teardown = await module?.init?.(this, ctx);
     // A newer load has begun: this one's own teardown runs now.

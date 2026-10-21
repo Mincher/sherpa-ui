@@ -1965,6 +1965,16 @@ chip with an open draft alone (`reforged-an-open-menu-keeps-its-draft`).
 it (a hold redraws only the panel), so the rebuild repaints what the chip
 showed. Demos panel-apply: 120 of 120 (10 runs, 3 engines).
 
+Step 24: the provider opens each page into a new `QueryContext`
+(`openSource(def, store, { query })`); `OpenedPage.query` and
+`ContextInit.query` hand it on. `setQuery(q, { by })` puts `by` on its
+`query-change`, and the keeper keeps only the reader's changes — a pick is
+`'view'`, a reset or a save `'provider'`, a saved set `'reader'`. The
+two-frame `#writing` / `#quietly` / `#unquietSoon` and the provider's own
+`quick-filter-change` listener go. `ProviderState` is v2, `{ v: 2, view?,
+queries }`; a v1 state reports `unknown-state`. New Demos test
+`a-change-right-after-a-pick-is-kept` fails on the old build in every engine.
+
 Step 23: a bound grid heading asks, then is drawn — its doors send the one
 `column-filter-change` a reader would, the steer calls `setReading` and
 `commit({ field })`, and `answerColumn` goes.
