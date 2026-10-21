@@ -1861,7 +1861,9 @@ the panel's Presets section, a chip's given answer and the saved-filter words
 (`contribute`), `apply` and the unscoped bar go; a bar with no scope is reported
 (`bar-without-scope`), and a component reach needs `only`. Step 6: a reading
 is frozen in the Query — copied in, handed out frozen (TRAP
-`T-a-reading-is-frozen-in-the-query`).
+`T-a-reading-is-frozen-in-the-query`). Step 7: a hold or a move that moves an
+answer recompiles at once, new field facts recompile an answer held, and a bind
+over the unpaged rows loads again when only the View's filter moved.
 
 ---
 

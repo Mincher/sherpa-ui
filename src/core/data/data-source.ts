@@ -775,6 +775,7 @@ export class DataSource extends EventTarget {
   declareValues(field: string, values: readonly unknown[]): void {
     this.#age++;
     this.#catalogue.declareValues(field, values);
+    this.#recomposeFor([field]);
   }
 
   /**
@@ -788,6 +789,14 @@ export class DataSource extends EventTarget {
   declareField(field: string, facts: FieldDeclaration = {}): void {
     this.#age++;
     this.#catalogue.declare(field, facts);
+    this.#recomposeFor([field]);
+  }
+
+  /** A field's facts moved: an answer the Query holds for it compiles again,
+   *  with its type and values as they are now. 366 step 7 */
+  #recomposeFor(fields: readonly string[]): void {
+    const answered = (f: string): boolean => eachScope(this.#applied).some(([, s]) => f in s.readings);
+    if (fields.some(answered)) this.#recompose();
   }
 
   /**
@@ -811,6 +820,7 @@ export class DataSource extends EventTarget {
     });
     // Each field's facts moved: what was counted is out of date.
     this.#age++;
+    this.#recomposeFor(fields);
   }
 
   /** A tiered field's child values, from the rows the walk reads — one read for
@@ -1123,11 +1133,14 @@ export class DataSource extends EventTarget {
     const was = homes(this.#draft);
     scopeEntry(this.#draft, name).holds = next;
     rehome(this.#draft);
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
     /* RAISING CARRIES THE ANSWER, and lowering brings it back: an answer that
-       moved scope is drawn where it lives now. TRAP T-up-is-open-down-is-closed */
+       moved scope narrows from where it lives now, at once, and is drawn there.
+       TRAP T-up-is-open-down-is-closed */
     const now = homes(this.#draft);
-    for (const [field, home] of now) if (was.get(field) !== home) this.#draw(field);
+    const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
+    if (moved.length) this.#recompose();
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
+    for (const field of moved) this.#draw(field);
     if (name === VIEW) this.#syncSuperseded(true);
     this.#binding.drawScopesSoon();
   }
@@ -1213,8 +1226,12 @@ export class DataSource extends EventTarget {
       });
       return false;
     }
+    const was = homes(this.#draft);
     const touched = moveHold(this.#draft, field, from, to);
     rehome(this.#draft);
+    // An answer that moved narrows from where it lives now, at once. TRAP T-up-is-open-down-is-closed
+    const now = homes(this.#draft);
+    if ([...now].some(([f, home]) => was.get(f) !== home)) this.#recompose();
     // ONE event, naming every scope that changed — a listener never sees the
     // field in neither place, or in both.
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: touched } }));
@@ -1477,9 +1494,12 @@ export class DataSource extends EventTarget {
 
   /* ── Loading ───────────────────────────────────────────────────────── */
 
-  /** The ViewState as one comparable string. Key order is stable by construction. */
+  /** The ViewState as one comparable string. Key order is stable by construction.
+   *  A bind over the unpaged rows reads the View's filter and each scope's own,
+   *  so a move between them — the shared filter the same — loads again. 366 step 7 */
   #stateKey(): string {
-    return JSON.stringify(this.#loadOptions());
+    const unpaged = this.#binding.wantsAllRows() ? [this.#viewFilter ?? null, this.#scoped] : null;
+    return JSON.stringify(unpaged ? [this.#loadOptions(), unpaged] : this.#loadOptions());
   }
 
   /** Build the load options the store is asked with. */

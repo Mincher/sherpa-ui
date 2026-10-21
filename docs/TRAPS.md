@@ -14481,6 +14481,8 @@ that follows is what makes it read as unset.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/source-counts.ts`
+- Site: `test/unit/a-raise-narrows-at-once.test.mjs`
+
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the
@@ -15057,6 +15059,7 @@ the one part of a slotted row the menu's sheet can reach, and read out through
 - Site: `src/data.ts`
 - Site: `test/unit/up-is-open-down-is-closed.test.mjs`
 - Site: `test/e2e/reforged-menu-row-note.spec.ts`
+- Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 
 ### T-a-record-has-a-time-of-its-own
 
