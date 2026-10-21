@@ -47,7 +47,7 @@ test('the customer list holds no site, and a path key reads back as its object',
   assert.equal(src.valuesFor('customer').some((v) => typeof v === 'object'), false);
   src.select('customer', [path('Northwind', 'Leeds')]);
   // The reading holds the PATH, as the data holds values: an object.
-  assert.deepEqual(src.reading('data', 'customer')?.picked, [{ customer: 'Northwind', site: 'Leeds' }]);
+  assert.deepEqual(src.query.reading('data', 'customer')?.picked, [{ customer: 'Northwind', site: 'Leeds' }]);
 });
 
 test('a parent with a declared domain still has its children', async () => {

@@ -7854,7 +7854,7 @@ steers one arbitrary component.
 
 **Only SOME scopes arrange** — Will, TODO 99 step 4 (B): *"Only certain
 component scopes, and possibly view scope, will have group and sort."*
-`source.arranges(scope)` is what the scope declares (`arranges` in the page
+`source.query.arranges(scope)` is what the scope declares (`arranges` in the page
 JSON, or `declareScope`); left out, a scope over a grid or a list arranges, and
 the View and a chart's scope do not. A scope that starts to arrange when its
 grid joins redraws its bars and panel, and a bar's `drawScope` draws its Group
@@ -7883,6 +7883,7 @@ a load each — not built until a page has two.
 - Site: `src/core/data/query-edits.ts`
 - Site: `test/unit/the-arrangement-is-in-the-query.test.mjs`
 - Site: `test/unit/the-search-is-in-the-query.test.mjs`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -17729,7 +17730,7 @@ Before, a legend always wrote its chart's own scope. With the field sent up,
 the View said "Disk" while the legend showed every item on, and a legend
 press narrowed one chart under a View filter nobody had changed from there.
 
-`bindSelection` asks at each draw and each write — `source.holds('view',
+`bindSelection` asks at each draw and each write — `source.query.holds('view',
 field)` — so nothing is cached, and it hears `scope-change` to redraw when
 the View takes the field or lets it go. Taken, the binding DROPS its own
 answer: two answers to one field, one of them hidden, is the bug. A press
@@ -17756,6 +17757,7 @@ to a frozen reading throws a `TypeError` in a module — loud, never silent.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-reading-is-frozen-in-the-query.test.mjs`
+- Site: `src/core/data/query-context.ts`
 
 ### T-one-query-one-owner
 

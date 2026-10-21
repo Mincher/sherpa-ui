@@ -49,3 +49,47 @@ test('a remote source splits the draft once; a draft that exists is kept', () =>
   remote.commit();
   assert.deepEqual(picked(query.applied), ['Free']);
 });
+
+test('each read of the Query is the context\'s (366 step 13)', () => {
+  const query = new QueryContext();
+  const source = new DataSource({ store: store(), query });
+  const chart = { id: 'chart' };
+  source.offer('data', ['plan', 'id']);
+  source.hold(VIEW, ['plan']);
+  source.hold('data', ['id']);
+  source.declareScope('data', { label: 'Records', arranges: true });
+  source.declareSets('data', [{ id: 'set', fields: ['id'] }]);
+  source.declarePart('legend', { field: 'plan', only: chart, label: 'Plan' });
+  source.declareDefault('grid', { id: { picked: [1] } });
+  source.select('plan', ['Pro']);
+
+  assert.deepEqual(query.scope(VIEW), ['plan']);
+  assert.deepEqual([...query.scopes].sort(), ['data', 'grid', VIEW], 'a default holds its field');
+  assert.equal(query.holds(VIEW, 'plan'), true);
+  assert.equal(query.scopeOf('id'), 'data');
+  assert.deepEqual(query.fields('data'), ['plan', 'id']);
+  assert.deepEqual(query.fields(VIEW), ['plan', 'id'], 'up is open');
+  assert.equal(query.canHold('data', 'other'), false, 'down is closed');
+  assert.deepEqual(query.reading(VIEW, 'plan').picked, ['Pro']);
+  assert.ok(Object.isFrozen(query.reading(VIEW, 'plan')));
+  assert.deepEqual(query.defaultFor('grid'), { id: { picked: [1] } });
+  assert.deepEqual(query.partFacts('legend'), { field: 'plan', only: chart, label: 'Plan' });
+  assert.deepEqual(query.scopeFacts('data'), { label: 'Records', arranges: true });
+  assert.equal(query.scopeLabel('other'), 'other');
+  assert.equal(query.arranges(VIEW), false);
+  assert.deepEqual(query.sets('data').map((s) => s.id), ['set']);
+  assert.equal(query.pending('plan'), false, 'never, with no remote member');
+  assert.equal(query.dirty(), false);
+});
+
+test('pending and dirty: a remote member\'s edit, until Apply', () => {
+  const query = new QueryContext();
+  const remote = new DataSource({ store: spoofRemote(store(), { delay: 0 }), query });
+  remote.hold(VIEW, ['plan']);
+  remote.select('plan', ['Free']);
+  assert.equal(query.pending('plan'), true);
+  assert.equal(query.dirty(VIEW), true);
+  remote.commit();
+  assert.equal(query.pending('plan'), false);
+  assert.equal(query.dirty(), false);
+});

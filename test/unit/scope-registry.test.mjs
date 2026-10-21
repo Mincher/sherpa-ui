@@ -32,10 +32,10 @@ test('a scope holds fields, in the order it was given them', async () => {
   src.hold('view', ['customer', 'region']);
   src.hold('data', ['owner', 'plan']);
 
-  assert.deepEqual(src.scope('view'), ['customer', 'region']);
-  assert.deepEqual(src.scopes.sort(), ['data', 'view']);
+  assert.deepEqual(src.query.scope('view'), ['customer', 'region']);
+  assert.deepEqual(src.query.scopes.sort(), ['data', 'view']);
   // A scope nobody named is empty, never undefined.
-  assert.deepEqual(src.scope('nowhere'), []);
+  assert.deepEqual(src.query.scope('nowhere'), []);
 });
 
 test('holds() answers for one scope; scopeOf() finds the owner', async () => {
@@ -43,26 +43,26 @@ test('holds() answers for one scope; scopeOf() finds the owner', async () => {
   src.hold('view', ['customer']);
   src.hold('data', ['owner']);
 
-  assert.equal(src.holds('view', 'customer'), true);
-  assert.equal(src.holds('data', 'customer'), false);
+  assert.equal(src.query.holds('view', 'customer'), true);
+  assert.equal(src.query.holds('data', 'customer'), false);
 
   /* THIS IS WHAT SUPERSEDING IS. A field the view holds is not the data bar's
      to narrow — and neither bar has to know the other is there. */
-  assert.equal(src.scopeOf('customer'), 'view');
-  assert.equal(src.scopeOf('owner'), 'data');
-  assert.equal(src.scopeOf('nobody'), null);
+  assert.equal(src.query.scopeOf('customer'), 'view');
+  assert.equal(src.query.scopeOf('owner'), 'data');
+  assert.equal(src.query.scopeOf('nobody'), null);
 });
 
 test('an empty list FORGETS a scope, and the answer is a copy', async () => {
   const src = await source();
   src.hold('data', ['owner']);
-  const held = src.scope('data');
+  const held = src.query.scope('data');
   held.push('tampered');
   // A caller cannot reach in through the answer.
-  assert.deepEqual(src.scope('data'), ['owner']);
+  assert.deepEqual(src.query.scope('data'), ['owner']);
 
   src.hold('data', []);
-  assert.deepEqual(src.scopes, []);
+  assert.deepEqual(src.query.scopes, []);
 });
 
 test('scope-change fires on a real change, and NOT on a no-op', async () => {

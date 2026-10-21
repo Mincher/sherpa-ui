@@ -245,7 +245,7 @@ test('a field a scope lets go of, held nowhere else, loses its answer — removi
   assert.deepEqual(src.query.applied.scopes[VIEW].readings, { region: { picked: ['EMEA'] } });
   // Status is let go of and held nowhere: gone, and the rows come back.
   src.hold('grid', []);
-  assert.equal(src.reading(VIEW, 'status'), undefined);
+  assert.equal(src.query.reading(VIEW, 'status'), undefined);
   assert.equal(src.selection('status').fieldState, 'off');
   assert.deepEqual(ids(src.state.filter), [1, 2, 4]);
 });
@@ -253,7 +253,7 @@ test('a field a scope lets go of, held nowhere else, loses its answer — removi
 test('an EMPTY condition row is no answer — a cleared menu keeps one', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   src.select('owner', [], { op: 'contains', text: '', conditions: [{ op: 'eq' }], suspended: true });
-  assert.equal(src.reading(VIEW, 'owner'), undefined);
+  assert.equal(src.query.reading(VIEW, 'owner'), undefined);
   assert.deepEqual(src.selectedFields, []);
 });
 
@@ -270,8 +270,8 @@ test('a LOCAL source applies at once — nothing is ever pending', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   src.select('status', ['trial']);
   assert.deepEqual(ids(src.state.filter), [2]);
-  assert.equal(src.pending('status'), false);
-  assert.equal(src.dirty(), false);
+  assert.equal(src.query.pending('status'), false);
+  assert.equal(src.query.dirty(), false);
 });
 
 test('a REMOTE source edits a draft: pending until commit, and the rows wait', async () => {
@@ -281,13 +281,13 @@ test('a REMOTE source edits a draft: pending until commit, and the rows wait', a
   // The reader sees the draft; the rows are still under the applied Query.
   assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['trial']);
   assert.equal(src.state.filter, undefined);
-  assert.equal(src.pending('status'), true);
-  assert.equal(src.dirty('grid'), true);
-  assert.equal(src.dirty(VIEW), false);
+  assert.equal(src.query.pending('status'), true);
+  assert.equal(src.query.dirty('grid'), true);
+  assert.equal(src.query.dirty(VIEW), false);
   src.commit({ scope: 'grid' });
   assert.deepEqual(ids(src.state.filter), [2]);
-  assert.equal(src.pending('status'), false);
-  assert.equal(src.dirty(), false);
+  assert.equal(src.query.pending('status'), false);
+  assert.equal(src.query.dirty(), false);
 });
 
 test('Discard puts the applied answer back over the draft, and draws it', async () => {
@@ -302,10 +302,10 @@ test('Discard puts the applied answer back over the draft, and draws it', async 
   src.select('status', ['active']);
   src.commit();
   src.select('status', ['trial']);
-  assert.equal(src.pending('status'), true);
+  assert.equal(src.query.pending('status'), true);
   drawn.length = 0;
   src.discard({ scope: 'grid' });
-  assert.equal(src.pending('status'), false);
+  assert.equal(src.query.pending('status'), false);
   assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['active']);
   assert.deepEqual(drawn, [['status', ['active']]]);
 });
@@ -333,7 +333,7 @@ test('a legend narrows its chart at once, even on a remote source — its rows a
   });
   bindSource(src, chart, { readonly: true, rows: 'all' });
   src.write('legend', 'status', { picked: ['active'] }, { only: chart });
-  assert.equal(src.dirty(), false);
+  assert.equal(src.query.dirty(), false);
   assert.deepEqual(Object.keys(src.debugState().only), ['chart']);
 });
 
@@ -354,10 +354,10 @@ test('ONE field can be applied or discarded alone — the panel\'s per-field App
   src.select('owner', ['Dana Whitlock']);
   src.commit({ field: 'status' });
   assert.deepEqual(ids(src.state.filter), [2]);
-  assert.equal(src.pending('status'), false);
-  assert.equal(src.pending('owner'), true);
+  assert.equal(src.query.pending('status'), false);
+  assert.equal(src.query.pending('owner'), true);
   src.discard({ field: 'owner' });
-  assert.equal(src.pending('owner'), false);
+  assert.equal(src.query.pending('owner'), false);
   assert.equal(src.selection('owner').fieldState, 'off');
 });
 

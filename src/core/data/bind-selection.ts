@@ -32,10 +32,12 @@ export interface Selector extends EventTarget {
   /** A control that narrows ONE component writes its own scope.
    *  `reach`, not `scope`: TRAP T-three-things-called-scope */
   write: (scope: string, field: string, reading: FieldReading | undefined, at?: { only?: BoundControl }) => void;
-  reading: (scope: string, field: string) => FieldReading | undefined;
-  /** Does a scope hold a field? A control that narrows one component asks of
-   *  the View. TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
-  holds: (scope: string, field: string) => boolean;
+  /** Its QueryContext. Does a scope hold a field? A control that narrows one
+   *  component asks of the View. TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
+  query: {
+    reading: (scope: string, field: string) => FieldReading | undefined;
+    holds: (scope: string, field: string) => boolean;
+  };
 }
 
 /** How one control reads and draws a field. */
@@ -115,7 +117,7 @@ export function bindSelection<T extends EventTarget>(
   /** THE VIEW HOLDS THIS FIELD, so its answer is the one in force: a control
    *  over ONE component shows it and changes it, and keeps none of its own.
    *  TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
-  const raised = (): boolean => reach === 'component' && source.holds(VIEW, field);
+  const raised = (): boolean => reach === 'component' && source.query.holds(VIEW, field);
 
   /**
    * What this control draws. A VIEW binding shows the field's one selection, so
@@ -125,7 +127,7 @@ export function bindSelection<T extends EventTarget>(
    */
   const picked = (): string[] => {
     // ITS OWN SCOPE's answer, from the source — so a restored Query draws it.
-    if (reach === 'component' && !raised()) return (source.reading(key, field)?.picked ?? []).map(String);
+    if (reach === 'component' && !raised()) return (source.query.reading(key, field)?.picked ?? []).map(String);
     return source.selection(field).values.filter((v) => v.state === 'picked').map((v) => v.value);
   };
 
@@ -139,7 +141,7 @@ export function bindSelection<T extends EventTarget>(
     const answer = want.length === values.length ? [] : want;
     if (raised()) {
       // Its picks are Simple's: rows the View kept stay kept, and out of force.
-      const held = source.reading(VIEW, field);
+      const held = source.query.reading(VIEW, field);
       source.select(field, answer, held?.conditions?.length ? { ...held, mode: 'simple' } : {});
       return;
     }
@@ -164,7 +166,7 @@ export function bindSelection<T extends EventTarget>(
   /** The View took the field, or let it go: what this control shows changed.
    *  Taken, its own answer is dropped — the View's is the one in force. */
   const onScopeChange = (): void => {
-    if (raised() && source.reading(key, field)) source.write(key, field, undefined, only ? { only } : {});
+    if (raised() && source.query.reading(key, field)) source.write(key, field, undefined, only ? { only } : {});
     redraw();
   };
 

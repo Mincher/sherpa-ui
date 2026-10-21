@@ -54,7 +54,7 @@ test('a source keeps both answers, the mode and the mirror', async () => {
   source.write('data', 'owner', { ...BOTH, mode: 'simple', mirror: false });
   await source.load();
   assert.equal(source.debugState().total, 1);
-  assert.deepEqual(source.reading('data', 'owner'), { ...BOTH, mode: 'simple', mirror: false });
+  assert.deepEqual(source.query.reading('data', 'owner'), { ...BOTH, mode: 'simple', mirror: false });
 
   source.write('data', 'owner', { ...BOTH, mode: 'advanced', mirror: false });
   await source.load();

@@ -34,12 +34,12 @@ function page() {
 
 test('a grid\'s scope arranges; a chart\'s and the View do not, unless they say so', () => {
   const { source } = page();
-  assert.equal(source.arranges('data'), true);
-  assert.equal(source.arranges('chart'), false);
-  assert.equal(source.arranges('view'), false);
+  assert.equal(source.query.arranges('data'), true);
+  assert.equal(source.query.arranges('chart'), false);
+  assert.equal(source.query.arranges('view'), false);
   assert.equal(source.describe('chart').sort, undefined);
   source.declareScope('view', { arranges: true });
-  assert.equal(source.arranges('view'), true);
+  assert.equal(source.query.arranges('view'), true);
   assert.deepEqual(source.describe('view').sort.map((c) => c.field), ['plan', 'name']);
 });
 

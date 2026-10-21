@@ -98,7 +98,7 @@ test('SENT UP, the answer goes to the View with its field, and the chart lets go
     detail: { scope: 'view', ids: ['sev'], from: 'picks:bar' },
   }));
   await tick();
-  assert.deepEqual(source.scope('view'), ['sev']);
+  assert.deepEqual(source.query.scope('view'), ['sev']);
   assert.deepEqual(source.query.applied.scopes.view.readings.sev.picked, ['critical']);
   assert.equal(source.query.applied.scopes['picks:bar'], undefined);
   // EVERY component is narrowed now.

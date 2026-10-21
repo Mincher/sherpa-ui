@@ -70,6 +70,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
 | ✅ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
 | ❓ | 0zr | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
+| ⬜ | 0zs | 389 | FLAKE — Demos `reforged-layout-resize.spec.ts:109` ("with the nav pinned…") fails ~3 in 10 alone in Chromium, at HEAD before 366 step 13 too: it reads `/layout/dashboard` two frames after a drag, where the test above it polls for the save | tests |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1578,6 +1579,15 @@ door is wanted:
 
 My pick: A, until a page asks — it is the plan's ruling, said as a loss.
 
+### `[ ]` ⬜ 389 — FLAKE: Demos' layout-resize test reads a save it did not wait for
+
+Found 2026-10-21, running Demos for 366 step 13: `reforged-layout-resize.spec.ts:109`
+("with the nav pinned the page has 8 columns…") fails 3 in 10 alone in
+Chromium with `Object.keys(kept)` holding only `12`. Measured on step 12's
+build too (3 in 10), so it is not 366. It reads `/layout/dashboard` two frames
+after the drag; the test above it (`:80`) polls for the save. First step: poll
+for the `8` key the same way, then see whether the save itself is late.
+
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 
 Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
@@ -1892,7 +1902,10 @@ Step 10: a ViewSnapshot is `{ v: 2, query, elements }`, put back by
 `setFilter`, `setState` and the starting `filter` option go — the Query is the
 one way in; `state.filter` stays, read only. 388 asks what a page with no
 provider keeps. Step 12: a `QueryContext` holds the Query and the page's
-declarations; `source.query` IS it, and a source given none makes its own.
+declarations; `source.query` IS it, and a source given none makes its own. Step 13:
+the Query's reads — `reading`, `scope`, `scopes`, `holds`, `scopeOf`,
+`fields`, `canHold`, `defaultFor`, `partFacts`, `scopeFacts`, `scopeLabel`,
+`arranges`, `sets`, `pending`, `dirty` — are `source.query.X` only.
 
 ---
 

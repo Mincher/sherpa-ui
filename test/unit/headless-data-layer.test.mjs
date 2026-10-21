@@ -850,7 +850,7 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
   assert.deepEqual(source.addable('grid').map((d) => [d.id, d.note]), [['email', undefined]]);
   // UP IS OPEN: the View is offered a component's field, and told where it lives.
   assert.deepEqual(source.addable('view').map((d) => [d.id, d.note]), [['plan', 'grid'], ['email', undefined]]);
-  assert.equal(source.scopeLabel('grid'), 'grid');
+  assert.equal(source.query.scopeLabel('grid'), 'grid');
 });
 
 /* THE PANEL ASKS for its scopes: the source describes each WHOLE, and hears its
@@ -894,7 +894,7 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   // REMOVE lets it go.
   ask('filter-remove', { scope: 'grid', id: 'plan' });
   await settle();
-  assert.equal(source.scope('grid').includes('plan'), false);
+  assert.equal(source.query.scope('grid').includes('plan'), false);
 });
 
 /* A HEADING asks through the source: its answer is its field's, in its grid's
@@ -916,7 +916,7 @@ test('a grid heading answers through the source, and is told what the View holds
   bindSource(source, bar, { steerOnly: true, scope: 'data' });
 
   grid.dispatchEvent(new CustomEvent('column-filter-change', { detail: { field: 'plan', reading: { picked: ['Pro'] } } }));
-  assert.deepEqual(source.scope('data'), ['plan']);
+  assert.deepEqual(source.query.scope('data'), ['plan']);
   assert.deepEqual(source.query.applied.scopes.data.readings.plan.picked, ['Pro']);
   assert.deepEqual(barDrawn.at(-1), ['plan']);
 

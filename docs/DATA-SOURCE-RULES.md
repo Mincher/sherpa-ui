@@ -260,14 +260,16 @@ because a query is exactly as long-lived as the view asking it.
 
 ### Reading it back
 
-Each thing you tell a source, you can ask back — one door each:
+Each thing you tell a source, you can ask back — one door each. What the Query
+holds is read from `source.query`, its QueryContext; what a field IS, from the
+source:
 
 | told with | read with |
 |---|---|
-| `hold(scope, fields)` | `scope(scope)` — the fields it holds; `scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
-| `declareField` · `declareValues` · `declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `sets(scope)` |
-| `declareScope` | `scopeFacts(scope)`; `scopeLabel()` and `arranges()` add their fallbacks |
-| `declarePart` · `declareDefault` | `partFacts(scope)` · `defaultFor(scope)` |
+| `hold(scope, fields)` | `query.scope(scope)` — the fields it holds; `query.scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
+| `declareField` · `declareValues` · `declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `query.sets(scope)` |
+| `declareScope` | `query.scopeFacts(scope)`; `query.scopeLabel()` and `query.arranges()` add their fallbacks |
+| `declarePart` · `declareDefault` | `query.partFacts(scope)` · `query.defaultFor(scope)` |
 | `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
 
 Each read-back here is a copy, or — a reading, `defaultFor` — the Query's own,

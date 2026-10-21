@@ -72,8 +72,8 @@ test('SENT DOWN, the View lets go and the answer goes with the field', async () 
   await tick();
   send('data', 'region', 'view');
   await tick();
-  assert.deepEqual(source.scope('view'), []);
-  assert.deepEqual(source.scope('data'), ['region']);
+  assert.deepEqual(source.query.scope('view'), []);
+  assert.deepEqual(source.query.scope('data'), ['region']);
   assert.deepEqual(source.query.applied.scopes.data.readings.region.picked, ['EMEA']);
   assert.equal(source.query.applied.scopes.view, undefined);
   assert.deepEqual(seen.get('grid'), [1, 2]);
@@ -93,7 +93,7 @@ test('a field goes back down to where it CAME UP from â€” a chart\'s own scope â
 
   send('picks:bar', 'plan', 'view');
   await tick();
-  assert.deepEqual(source.scope('view'), ['region']);
+  assert.deepEqual(source.query.scope('view'), ['region']);
   assert.deepEqual(source.query.applied.scopes['picks:bar'].readings.plan.picked, ['Pro']);
   // The chart alone again.
   assert.deepEqual(seen.get('bar'), [1, 3]);
@@ -112,15 +112,15 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
   source.answer('data', { plan: { picked: ['Pro'] } });
   send('view', 'plan', 'data');
   await tick();
-  assert.deepEqual(source.scope('view'), ['region', 'plan']);
-  assert.deepEqual(source.scope('data'), ['plan']);
+  assert.deepEqual(source.query.scope('view'), ['region', 'plan']);
+  assert.deepEqual(source.query.scope('data'), ['plan']);
 
   // DOWN to B: every other scope lets go, and the answer lands in B.
   send('other', 'plan', 'view');
   await tick();
-  assert.deepEqual(source.scope('view'), ['region']);
-  assert.deepEqual(source.scope('data'), []);
-  assert.deepEqual(source.scope('other'), ['plan']);
+  assert.deepEqual(source.query.scope('view'), ['region']);
+  assert.deepEqual(source.query.scope('data'), []);
+  assert.deepEqual(source.query.scope('other'), ['plan']);
   assert.deepEqual(source.query.applied.scopes.other.readings.plan.picked, ['Pro']);
   assert.equal(source.query.applied.scopes.data, undefined);
   assert.deepEqual(seen.get('grid'), [1, 3]);

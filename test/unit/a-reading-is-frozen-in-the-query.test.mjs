@@ -63,7 +63,7 @@ test('after the Switch goes off, the reading it turned off is frozen too', async
   source.hold('view', ['region']);
   source.select('region', ['EMEA']);
   source.suspendScope('view');
-  const off = source.reading('view', 'region');
+  const off = source.query.reading('view', 'region');
   assert.equal(off.suspended, true);
   assert.throws(() => { off.picked.push('APAC'); }, TypeError);
 });
@@ -71,5 +71,5 @@ test('after the Switch goes off, the reading it turned off is frozen too', async
 test('reading() hands out the same object twice', () => {
   const source = make();
   source.select('owner', ['Dana']);
-  assert.equal(source.reading('view', 'owner'), source.reading('view', 'owner'));
+  assert.equal(source.query.reading('view', 'owner'), source.query.reading('view', 'owner'));
 });

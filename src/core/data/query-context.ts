@@ -12,10 +12,27 @@
  * - .applied — The Query the rows are under. A copy.
  * - .draft — What the reader is editing. A copy.
  * - .remote — Does any member's store wait for Apply?
+ * - .reading — One scope's reading of one field, or undefined. The Query's own, frozen.
+ * - .scope — The fields a scope holds, in order — hold()'s read-back.
+ * - .scopes — Every scope that holds a field, by id.
+ * - .holds — Is this field held HERE?
+ * - .scopeOf — Which scope holds this field, or null.
+ * - .fields — The fields a scope may hold.
+ * - .canHold — May this scope hold this field?
+ * - .defaultFor — A component's own default, as `declareDefault` left it — not its answer now.
+ * - .partFacts — What `declarePart` was told for this scope, or undefined.
+ * - .scopeFacts — What `declareScope` was told — not the fallbacks `scopeLabel()` and `arranges()` answer with.
+ * - .scopeLabel — A scope's name as a reader sees it, or its id.
+ * - .arranges — Does Group and Sort arrange this scope's rows?
+ * - .sets — A scope's filter sets, as declared.
+ * - .pending — Has this field been changed and not yet applied?
+ * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
  * - .join — A source joins: it gets its handle.
  */
 import type { BoundControl, FilterSet } from './data-source-types.js';
-import { copyQuery, type Query, type ScopeQuery } from './query.js';
+import { copyQuery, freezeReading, sameReading, VIEW, type Query, type ScopeQuery } from './query.js';
+import { answerIn, answersOf, holderOf, holdsField } from './query-edits.js';
+import type { FieldReading } from './filter-state.js';
 
 /** What a source tells the context it joins. */
 export interface QueryMember {
@@ -98,6 +115,104 @@ export class QueryContext {
   /** Does any member's store wait for Apply? */
   get remote(): boolean {
     return [...this.#members].some((m) => m.remote);
+  }
+
+  /** One scope's reading of one field, or undefined. The Query's own, frozen.
+   *  TRAP T-a-reading-is-frozen-in-the-query */
+  reading(scope: string, field: string): FieldReading | undefined {
+    const held = this.#live.draft.scopes[scope]?.readings[field];
+    return held ? freezeReading(held) : undefined;
+  }
+
+  /** The fields a scope HOLDS, in order — `hold()`'s read-back. A copy. */
+  scope(name: string): string[] {
+    return [...(this.#live.draft.scopes[name]?.holds ?? [])];
+  }
+
+  /** Every scope that holds a field, by id — `scope()` reads one of them. */
+  get scopes(): string[] {
+    return Object.keys(this.#live.draft.scopes).filter((id) => this.#live.draft.scopes[id]!.holds.length);
+  }
+
+  /** Is this field held HERE? */
+  holds(name: string, field: string): boolean {
+    return holdsField(this.#live.draft, name, field);
+  }
+
+  /**
+   * Which scope holds this field, or null — the View first, when it does.
+   *
+   * This is what SUPERSEDING is: a field the view scope holds is not the data
+   * bar's to narrow, and neither bar has to know the other is there.
+   */
+  scopeOf(field: string): string | null {
+    return holderOf(this.#live.draft, field);
+  }
+
+  /**
+   * The fields a scope may hold. A COMPONENT's are its own; the VIEW's are
+   * every component's, because any field may be raised to narrow everything.
+   */
+  fields(name: string): string[] {
+    if (name === VIEW) return [...new Set([...this.#live.offers.values()].flat())];
+    return [...(this.#live.offers.get(name) ?? [])];
+  }
+
+  /** May this scope hold this field? Up is open; down is closed. */
+  canHold(name: string, field: string): boolean {
+    return name === VIEW || (this.#live.offers.get(name) ?? []).includes(field);
+  }
+
+  /** A component's own default, as `declareDefault` left it, or undefined — not
+   *  its answer now, which `reading()` reads. Frozen. TRAP T-a-reading-is-frozen-in-the-query */
+  defaultFor(scope: string): Readonly<Record<string, FieldReading>> | undefined {
+    return this.#live.defaults.get(scope)?.readings;
+  }
+
+  /** What `declarePart` was told for this scope, or undefined. `only` is the element itself. */
+  partFacts(scope: string): { field: string; only: BoundControl; label?: string } | undefined {
+    const part = this.#live.parts.get(scope);
+    return part ? { ...part } : undefined;
+  }
+
+  /** What `declareScope` was told — not the fallbacks `scopeLabel()` and `arranges()` answer with. */
+  scopeFacts(scope: string): { label?: string; arranges?: boolean } {
+    const label = this.#live.labels.get(scope);
+    const arranges = this.#live.arranges.get(scope);
+    return { ...(label != null ? { label } : {}), ...(arranges != null ? { arranges } : {}) };
+  }
+
+  /** A scope's name as a reader sees it, or its id. */
+  scopeLabel(scope: string): string {
+    return this.#live.labels.get(scope) ?? scope;
+  }
+
+  /** Does Group and Sort arrange this scope's rows? As declared — else a
+   *  component scope that shows a grid or a list does, and the View does not.
+   *  Will, TODO 99. TRAP T-group-and-sort-are-component-scope */
+  arranges(scope: string): boolean {
+    return this.#live.arranges.get(scope)
+      ?? (scope !== VIEW && [...this.#members].some((m) => m.showsRows(scope)));
+  }
+
+  /** A scope's filter sets, as declared. */
+  sets(scope: string): FilterSet[] {
+    return structuredClone(this.#live.sets.get(scope) ?? []);
+  }
+
+  /** Has this field been changed and not yet applied? Never, with no remote member. */
+  pending(field: string): boolean {
+    if (!this.remote) return false;
+    return !sameReading(answerIn(this.#live.applied, field), answerIn(this.#live.draft, field));
+  }
+
+  /** Has anything in this scope — or in any scope — been changed and not applied? */
+  dirty(scope?: string): boolean {
+    if (!this.remote) return false;
+    const ids = scope ? [scope]
+      : [...new Set([...Object.keys(this.#live.applied.scopes), ...Object.keys(this.#live.draft.scopes)])];
+    return ids.some((id) => JSON.stringify(answersOf(this.#live.applied.scopes[id]))
+      !== JSON.stringify(answersOf(this.#live.draft.scopes[id])));
   }
 
   /** A source joins: it gets its handle. A remote one splits the draft from

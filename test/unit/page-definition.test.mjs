@@ -92,8 +92,8 @@ test('openSource builds the page\'s source: fields, labels, scopes and holds', a
       data: { label: 'Alerts', offers: 'all' },
     },
   }, store);
-  assert.deepEqual(source.scope('view'), ['customer', 'region']);
-  assert.equal(source.scopeLabel('data'), 'Alerts');
+  assert.deepEqual(source.query.scope('view'), ['customer', 'region']);
+  assert.equal(source.query.scopeLabel('data'), 'Alerts');
   const region = source.filterDef('region');
   // The schema's order, and the reader's name for a value.
   assert.deepEqual(region.options, [
@@ -126,11 +126,11 @@ test('a scope lists its filter SETS; a field in two, or one it does not hold, is
   stop();
   // TRAP T-a-filter-set-groups-or-chains
   assert.deepEqual(said, [['set-field-not-held', 'tier'], ['field-in-two-sets', 'region']]);
-  assert.deepEqual(source.sets('view'), [
+  assert.deepEqual(source.query.sets('view'), [
     { id: 'account', label: 'Account', mode: 'serial', fields: ['customer', 'region', 'tier'] },
     { id: 'again', fields: [] },
   ]);
-  assert.deepEqual(source.describe('view').sets, source.sets('view'));
+  assert.deepEqual(source.describe('view').sets, source.query.sets('view'));
   assert.equal(source.describe('data').sets, undefined);
 });
 

@@ -287,7 +287,7 @@ export class ProviderPage {
   #own(): Set<string> {
     const source = this.#opened?.source;
     if (!source) return new Set();
-    return new Set(Object.keys(source.query.applied.scopes).filter((id) => source.defaultFor(id)));
+    return new Set(Object.keys(source.query.applied.scopes).filter((id) => source.query.defaultFor(id)));
   }
 
   /** What the saving controls were last told, so a frame with no change tells nothing. */

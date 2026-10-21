@@ -54,7 +54,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — data-source, data-source-types
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — data-source-types
 - [T-a-read-is-planned](TRAPS.md#t-a-read-is-planned) — data-source, data-source-types, read-plan, store-cache
-- [T-a-reading-is-frozen-in-the-query](TRAPS.md#t-a-reading-is-frozen-in-the-query) — data-source, query
+- [T-a-reading-is-frozen-in-the-query](TRAPS.md#t-a-reading-is-frozen-in-the-query) — data-source, query, query-context
 - [T-a-record-has-a-time-of-its-own](TRAPS.md#t-a-record-has-a-time-of-its-own) — base-store, data-source, store
 - [T-a-refused-row-never-shortens-a-page](TRAPS.md#t-a-refused-row-never-shortens-a-page) — base-store
 - [T-a-relative-date-stays-relative](TRAPS.md#t-a-relative-date-stays-relative) — filter-state, store, stores, where
@@ -103,7 +103,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-filter-fields-flattens-the-tree](TRAPS.md#t-filter-fields-flattens-the-tree) — store
 - [T-filter-is-data-not-a-predicate](TRAPS.md#t-filter-is-data-not-a-predicate) — store
 - [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — data-source, filter-state
-- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — data-source, query, query-edits
+- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — data-source, query, query-context, query-edits
 - [T-grouped-page-change-publishes-without-loading](TRAPS.md#t-grouped-page-change-publishes-without-loading) — data-source
 - [T-grouped-paging-belongs-to-the-view](TRAPS.md#t-grouped-paging-belongs-to-the-view) — data-source
 - [T-idb-is-the-only-real-local-store](TRAPS.md#t-idb-is-the-only-real-local-store) — data

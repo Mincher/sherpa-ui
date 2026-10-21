@@ -219,7 +219,7 @@ source.query.draft     // what the reader is editing
 - **Pending (46)** is one derived fact: `draft.readings[f]` differs from
   `applied.readings[f]`. The chip reads it and wears the pending look.
 - **Dirty (66)** is the same test over a scope. The shared footer reads
-  `source.dirty(scope)` and turns its commit and revert off when false — no
+  `source.query.dirty(scope)` and turns its commit and revert off when false — no
   host tracks it.
 - **Discard** copies `applied` back over `draft` for that scope.
 - **Result counts (60, 348)** are the rows that reach each chip under `applied`
@@ -313,7 +313,7 @@ computed by a component from another component.
 **Goes**: the `global`, `columns`, `saved:*` and `legend:*` parts (they become
 scope readings); `ownParts` (becomes `narrows`); the bars' `answers` /
 `restoreAnswers`; the panel's `#applied` / `#syncDirty` (become
-`source.dirty`); the grid's `ColumnFilter` model and `supersedeColumns`; the
+`source.query.dirty`); the grid's `ColumnFilter` model and `supersedeColumns`; the
 selection mirror, `syncHeadings`, `syncColumns` and the panel glue in
 `records.js`; `persistView`'s `filter` option; the Context's `as` closures,
 as aggregation moves in.

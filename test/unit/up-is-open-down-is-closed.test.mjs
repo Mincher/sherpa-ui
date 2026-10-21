@@ -38,16 +38,16 @@ test('the view is named once, and it is the same word as reach', () => {
 
 test('UP IS OPEN: the view may hold any field any component has', async () => {
   const src = await source();
-  assert.deepEqual(src.fields(VIEW).sort(), ['owner', 'plan', 'priority', 'status']);
-  assert.equal(src.canHold(VIEW, 'priority'), true);
+  assert.deepEqual(src.query.fields(VIEW).sort(), ['owner', 'plan', 'priority', 'status']);
+  assert.equal(src.query.canHold(VIEW, 'priority'), true);
 });
 
 test('DOWN IS CLOSED: a component may hold only its own fields', async () => {
   const src = await source();
-  assert.deepEqual(src.fields('grid'), ['status', 'plan', 'owner']);
-  assert.equal(src.canHold('grid', 'plan'), true);
+  assert.deepEqual(src.query.fields('grid'), ['status', 'plan', 'owner']);
+  assert.equal(src.query.canHold('grid', 'plan'), true);
   // `priority` is the tickets component's, not the grid's.
-  assert.equal(src.canHold('grid', 'priority'), false);
+  assert.equal(src.query.canHold('grid', 'priority'), false);
 });
 
 test('RAISING a filter takes it out of EVERY component, in one event', async () => {
@@ -59,10 +59,10 @@ test('RAISING a filter takes it out of EVERY component, in one event', async () 
 
   assert.equal(src.move('owner', 'grid', VIEW), true);
 
-  assert.deepEqual(src.scope(VIEW), ['owner']);
-  assert.deepEqual(src.scope('grid'), ['plan']);
+  assert.deepEqual(src.query.scope(VIEW), ['owner']);
+  assert.deepEqual(src.query.scope('grid'), ['plan']);
   // The OTHER component loses it too: the view narrows them all.
-  assert.deepEqual(src.scope('tickets'), []);
+  assert.deepEqual(src.query.scope('tickets'), []);
   // ONE event, so no listener ever sees `owner` in both places or in neither.
   assert.equal(events.length, 1);
   assert.deepEqual(events[0].scopes.sort(), ['grid', 'tickets', 'view']);
@@ -72,17 +72,17 @@ test('LOWERING it leaves the view and lands in one component', async () => {
   const src = await source();
   src.hold(VIEW, ['owner', 'status']);
   assert.equal(src.move('owner', VIEW, 'tickets'), true);
-  assert.deepEqual(src.scope(VIEW), ['status']);
-  assert.deepEqual(src.scope('tickets'), ['owner']);
-  assert.deepEqual(src.scope('grid'), []);
+  assert.deepEqual(src.query.scope(VIEW), ['status']);
+  assert.deepEqual(src.query.scope('tickets'), ['owner']);
+  assert.deepEqual(src.query.scope('grid'), []);
 });
 
 test('COMPONENT and COMPONENT are NOT exclusive — both may hold `owner`', async () => {
   const src = await source();
   src.hold('grid', ['owner']);
   src.hold('tickets', ['owner']);
-  assert.deepEqual(src.scope('grid'), ['owner']);
-  assert.deepEqual(src.scope('tickets'), ['owner']);
+  assert.deepEqual(src.query.scope('grid'), ['owner']);
+  assert.deepEqual(src.query.scope('tickets'), ['owner']);
 });
 
 test('a component REFUSES a field it does not have, and says so', async () => {
@@ -95,8 +95,8 @@ test('a component REFUSES a field it does not have, and says so', async () => {
 
   assert.equal(moved, false);
   // Nothing changed: the refusal is not half a move.
-  assert.deepEqual(src.scope(VIEW), ['priority']);
-  assert.deepEqual(src.scope('grid'), []);
+  assert.deepEqual(src.query.scope(VIEW), ['priority']);
+  assert.deepEqual(src.query.scope('grid'), []);
   assert.deepEqual(seen.map((r) => r.code), ['scope-refused']);
   assert.equal(seen[0].at.to, 'grid');
 });
