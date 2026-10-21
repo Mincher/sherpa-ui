@@ -112,6 +112,7 @@ import {
   keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
+import { QueryContext, type QueryHandle } from './query-context.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import { cacheOf, type CacheChangeDetail, type StoreCache } from './store-cache.js';
@@ -148,6 +149,7 @@ export class DataSource extends EventTarget {
     rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
+    mintId: () => this.#member.mintId(),
   });
   /** The last load's answer: the rows, and the total before paging. */
   #result: LoadResult = { rows: [], total: 0 };
@@ -175,20 +177,22 @@ export class DataSource extends EventTarget {
   #inFlightKey: string | null = null;
   /** The key the load in flight was ASKED with, before the walk set picks aside. */
   #inFlightAsked: string | null = null;
-  /**
-   * THE QUERY — which scope holds each field, and each field's reading, in the
-   * reader's terms. The filter is compiled from it, never kept beside it.
-   * One reading per field, in the scope that holds it — so a chip, a column
-   * heading and a legend cannot show two answers.
-   * TRAP T-one-query-one-owner · TRAP T-one-field-one-filter-menu
-   */
-  #applied: Query = { v: 1, scopes: {} };
-  /**
-   * What the reader is EDITING. Every write lands here. On a local store it IS
-   * `#applied` — one object, so a change applies at once. On a REMOTE store it
-   * is a copy, and `commit()` sends it. TRAP T-apply-and-discard-wait-for-a-change
-   */
-  #draft: Query = this.#applied;
+  /** The Query and the page's declarations are its context's. 366 step 12 */
+  readonly #context: QueryContext;
+  /** What it holds of the context: the live Query, its ids, its fellow members. */
+  readonly #member: QueryHandle;
+  /* Read and written through these, so each method reads as it did. QueryLive says what each is.
+     The filter is compiled from the Query, never kept beside it. TRAP T-one-query-one-owner */
+  get #applied(): Query { return this.#member.live().applied; }
+  set #applied(query: Query) { this.#member.live().applied = query; }
+  get #draft(): Query { return this.#member.live().draft; }
+  set #draft(query: Query) { this.#member.live().draft = query; }
+  get #defaults(): Map<string, ScopeQuery> { return this.#member.live().defaults; }
+  get #scopeLabels(): Map<string, string> { return this.#member.live().labels; }
+  get #arranges(): Map<string, boolean> { return this.#member.live().arranges; }
+  get #sets(): Map<string, FilterSet[]> { return this.#member.live().sets; }
+  get #offers(): Map<string, string[]> { return this.#member.live().offers; }
+  get #narrowing(): Map<string, { field: string; only: BoundControl; label?: string }> { return this.#member.live().parts; }
   /** The last compile, so a load does not redo it. Written by `#compileNow`. */
   #filter: Filter | undefined;
   /** What a component OUTSIDE every component scope is under — the View alone.
@@ -198,14 +202,6 @@ export class DataSource extends EventTarget {
   #scoped: Record<string, Filter> = {};
   /** What each field IS: its kind, label and values. TRAP T-the-field-type-decides-the-clause */
   readonly #catalogue = new FieldCatalogue();
-  /** Each component's OWN default filter, by its scope — put back under any
-   *  Query that does not name that scope. TRAP T-a-component-default-outlives-a-view */
-  #defaults = new Map<string, ScopeQuery>();
-  /** Each scope's name as a reader sees it. */
-  #scopeLabels = new Map<string, string>();
-  /** Each PART: the one field it answers, and the one component it narrows.
-   *  TRAP T-a-chart-scope-is-its-legend-field */
-  #narrowing = new Map<string, { field: string; only: BoundControl; label?: string }>();
 
   /* ── A remote store's whole set, held. Will, TODO 340 ─────────────────
    * TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
@@ -227,8 +223,11 @@ export class DataSource extends EventTarget {
   constructor(options: DataSourceOptions) {
     super();
     this.store = options.store;
-    // REMOTE: the reader edits a copy, and Apply sends it.
-    if (this.#remote) this.#draft = { v: 1, scopes: {} };
+    // REMOTE: the reader edits a copy, and Apply sends it — the context splits it.
+    this.#context = options.query ?? new QueryContext();
+    this.#member = this.#context.join({
+      remote: this.#remote, showsRows: (scope) => this.#binding.showsRows(scope), bindOf: (el) => this.#binding.get(el),
+    });
     this.#autoLoad = options.autoLoad ?? true;
     this.#limitOptions = options.limitOptions ?? false;
     this.#applyOn = options.applyOn ?? 'change';
@@ -280,10 +279,10 @@ export class DataSource extends EventTarget {
     return arrangementOf(this.#applied);
   }
 
-  /** The Query the rows are under. A copy. On a local source the two are one
-   *  object, and so are their copies. TRAP T-one-query-one-owner */
-  get query(): { applied: Query; draft: Query } {
-    return structuredClone({ applied: this.#applied, draft: this.#draft });
+  /** Its QueryContext: `query.applied` is the Query the rows are under, and
+   *  `query.draft` what the reader is editing — a copy each. TRAP T-one-query-one-owner */
+  get query(): QueryContext {
+    return this.#context;
   }
 
   /** This source's whole question as JSON — the Query as applied, and how its
@@ -837,10 +836,8 @@ export class DataSource extends EventTarget {
    *  Will, TODO 99. TRAP T-group-and-sort-are-component-scope */
   arranges(scope: string): boolean {
     return this.#arranges.get(scope)
-      ?? (scope !== VIEW && this.#binding.showsRows(scope));
+      ?? (scope !== VIEW && this.#member.showsRows(scope));
   }
-  /** Each scope's own word on whether it arranges. */
-  #arranges = new Map<string, boolean>();
 
   /** The scope whose Group or Sort set the rows' arrangement — while it still
    *  arranges; else none, and every arranging scope shows it. */
@@ -906,8 +903,6 @@ export class DataSource extends EventTarget {
     return structuredClone(this.#sets.get(scope) ?? []);
   }
 
-  /** Each scope's filter sets. */
-  #sets = new Map<string, FilterSet[]>();
 
   /** A scope's name as a reader sees it, or its id. */
   scopeLabel(scope: string): string {
@@ -1166,8 +1161,6 @@ export class DataSource extends EventTarget {
    * exist across multiple component scopes."
    * TRAP T-up-is-open-down-is-closed */
 
-  /** What each COMPONENT scope has — its own fields, not what it holds now. */
-  #offers = new Map<string, string[]>();
 
   /** Say which fields a component scope HAS. The view needs none: up is open. */
   offer(name: string, fields: readonly string[]): void {
@@ -1609,6 +1602,7 @@ export class DataSource extends EventTarget {
    */
   close(): void {
     this.#closed = true;
+    this.#member.leave();
     (this.#cache ?? this.store).removeEventListener('change', this.#onStoreChange);
     this.#cache?.removeEventListener('set', this.#onSet);
     clearTimeout(this.#liveWait);
@@ -1822,7 +1816,7 @@ export class DataSource extends EventTarget {
 
   /** The component scope a chart part's element is bound into, if any. */
   #hostOf(el: BoundControl): string | undefined {
-    const scope = this.#binding.get(el)?.scope;
+    const scope = this.#member.bindOf(el)?.scope;
     return typeof scope === 'string' && scope !== VIEW ? scope : undefined;
   }
 

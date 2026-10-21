@@ -28,6 +28,7 @@
  * - eachScope — Each scope that answers for the page, by id, as a copy.
  * - heldInView — The fields the View holds, which are answered there alone.
  * - answerOf — The ANSWER keys of a reading only, not its label or the values it offers.
+ * - copyQuery — A Query's own copy, all the way down — no clone a load pays for.
  * - copyReading — A reading's own copy, all the way down — what a caller hands in.
  * - freezeReading — Freeze a reading all the way down — what the Query keeps and hands out.
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
@@ -227,6 +228,11 @@ function copyDeep<T>(v: T): T {
     return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, copyDeep(x)])) as T;
   }
   return v;
+}
+
+/** A Query's own copy, all the way down — no clone a load pays for. */
+export function copyQuery(query: Query): Query {
+  return copyDeep(query);
 }
 
 /** A reading's own copy, all the way down — what a caller hands in, so a

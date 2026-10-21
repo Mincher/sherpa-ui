@@ -1891,7 +1891,8 @@ Step 10: a ViewSnapshot is `{ v: 2, query, elements }`, put back by
 `setQuery`; `persistView` keeps each component's state only. Step 11:
 `setFilter`, `setState` and the starting `filter` option go — the Query is the
 one way in; `state.filter` stays, read only. 388 asks what a page with no
-provider keeps.
+provider keeps. Step 12: a `QueryContext` holds the Query and the page's
+declarations; `source.query` IS it, and a source given none makes its own.
 
 ---
 

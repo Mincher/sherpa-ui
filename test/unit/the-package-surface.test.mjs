@@ -86,5 +86,5 @@ test('sherpa-ui/components and sherpa-ui/app resolve, and each holds its own hal
     assert.ok(name in app, `app lacks ${name}`);
     assert.ok(!(name in components), `components carries the app layer's ${name}`);
   }
-  for (const name of ['SherpaButton', 'SherpaProvider', 'DataSource', 'whereOf']) assert.ok(name in all, `sherpa-ui lacks ${name}`);
+  for (const name of ['SherpaButton', 'SherpaProvider', 'DataSource', 'QueryContext', 'whereOf']) assert.ok(name in all, `sherpa-ui lacks ${name}`);
 });

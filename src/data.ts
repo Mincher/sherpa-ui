@@ -79,6 +79,8 @@ export {
   type FilterSet,
   type SourceState,
 } from './core/data/data-source.js';
+// The Query of one app Context: every source over the page joins it. 366
+export { QueryContext } from './core/data/query-context.js';
 /* A component joined to a source by hand — the provider does it for a page. TODO 196 */
 export { bindSource, type BindOptions } from './core/ui/bind-source.js';
 /* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */

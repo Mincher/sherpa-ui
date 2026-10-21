@@ -78,7 +78,7 @@ export default [
           '**/core/browser/session.js', '**/core/browser/persist-view.js', '**/core/browser/route.js',
           '**/core/browser/view-files.js', '**/core/browser/view-drafts.js', '**/core/browser/view-sync.js',
           '**/core/browser/view-markup.js', '**/core/browser/saved-filters.js', '**/core/ui/bind-settings.js',
-          '**/core/data/app-definition.js', '**/sherpa-provider/*', '**/sherpa-router/*', '**/sherpa-outlet/*', '**/app.js',
+          '**/core/data/app-definition.js', '**/core/data/query-context.js', '**/sherpa-provider/*', '**/sherpa-router/*', '**/sherpa-outlet/*', '**/app.js',
         ],
         message: 'A display component may not import the app layer: it stays opt-in. TRAP T-the-app-layer-is-opt-in',
       }] }],

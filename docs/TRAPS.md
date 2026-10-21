@@ -5672,7 +5672,6 @@ binding went from 194 lines to 152.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -5682,6 +5681,7 @@ binding went from 194 lines to 152.
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -16222,6 +16222,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-view-is-json
 
@@ -16571,6 +16572,7 @@ or `write` reports `component-part-on-a-page`. Bad JSON reports
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-heading-asks-through-the-source
 
@@ -17714,6 +17716,7 @@ it knows, so declaring a part declares its field.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/unit/chart-scope.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-legend-follows-the-view-when-it-holds-the-field
 
@@ -17763,7 +17766,9 @@ that disagreed: a chip and the source, a heading and a selection, a compiled
 filter restored over empty chips.
 
 A `Query` holds scopes; each scope holds fields, each field's `FieldReading`,
-the saved filters that are on, and — for one scope — sort, group and search.
+and — for one scope — sort, group and search. It lives in a `QueryContext`
+with what the page declares about it (366 step 12): `source.query` IS that
+context, and a source given none makes its own.
 `compile(query, facts)` is the ONE place it becomes a filter, and it is pure:
 a field the View holds is answered there alone, a suspended reading applies
 nothing, and a scope that `narrows` reaches only those components. The
@@ -17804,6 +17809,8 @@ dropped reads "contains an" as nothing.
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `test/unit/query-context.test.mjs`
 
 ### T-the-data-says-what-a-field-may-hold
 

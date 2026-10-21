@@ -16,12 +16,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-category-keeps-its-colour](TRAPS.md#t-a-category-keeps-its-colour) — aggregate
 - [T-a-change-redoes-only-what-reads-it](TRAPS.md#t-a-change-redoes-only-what-reads-it) — data-source, walk
 - [T-a-changed-key-moves-the-row](TRAPS.md#t-a-changed-key-moves-the-row) — stores
-- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — data-source, data-source-types
+- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — data-source, data-source-types, query-context
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — cycle
 - [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — data-source
 - [T-a-chip-says-its-own-answer](TRAPS.md#t-a-chip-says-its-own-answer) — filter-face
 - [T-a-closed-source-hears-nothing](TRAPS.md#t-a-closed-source-hears-nothing) — data-source, spoof-remote
-- [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — data-source, query, query-edits
+- [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — data-source, query, query-context, query-edits
 - [T-a-component-part-narrows-one-component](TRAPS.md#t-a-component-part-narrows-one-component) — bind-selection, data-source, query, source-binding
 - [T-a-condition-badge-says-that-not-which](TRAPS.md#t-a-condition-badge-says-that-not-which) — data, filter-face
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — store
@@ -86,7 +86,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-open-panel-follows-the-data-layer](TRAPS.md#t-an-open-panel-follows-the-data-layer) — source-binding
 - [T-an-operator-decides-pick-or-type](TRAPS.md#t-an-operator-decides-pick-or-type) — store
 - [T-an-untouched-select-is-not-an-answer](TRAPS.md#t-an-untouched-select-is-not-an-answer) — filter-state
-- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — data, data-source, data-source-types, spoof-remote, store, stores
+- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — data, data-source, data-source-types, query-context, spoof-remote, store, stores
 - [T-array-store-copies-both-ways](TRAPS.md#t-array-store-copies-both-ways) — stores
 - [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — filter-face, filter-state, query
 - [T-coalesce-microtask-not-debounce](TRAPS.md#t-coalesce-microtask-not-debounce) — data-source, data-source-types, timing
@@ -125,9 +125,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-condition-system](TRAPS.md#t-one-condition-system) — data, filter-face, filter-state
 - [T-one-cycle-for-one-value](TRAPS.md#t-one-cycle-for-one-value) — cycle
 - [T-one-datum-shape-for-chart-and-legend](TRAPS.md#t-one-datum-shape-for-chart-and-legend) — chart-datum
-- [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — bind-selection, data, data-source
+- [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — bind-selection, data, query-context
 - [T-one-function-places-label-and-gridline](TRAPS.md#t-one-function-places-label-and-gridline) — format-tick
-- [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — data, data-source, query
+- [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — data, data-source, query, query-context
 - [T-one-scale-for-every-chart](TRAPS.md#t-one-scale-for-every-chart) — format-tick
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — data, filter-face, filter-state
 - [T-one-total-for-the-ring-and-the-label](TRAPS.md#t-one-total-for-the-ring-and-the-label) — chart-datum, data

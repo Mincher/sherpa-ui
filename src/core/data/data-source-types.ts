@@ -22,6 +22,7 @@
 import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 import type { FieldReading, FieldType } from './filter-state.js';
 import type { Query } from './query.js';
+import type { QueryContext } from './query-context.js';
 import type { Threshold } from './threshold.js';
 
 /** What a field IS, said once — its kind, its name, and how a control answers
@@ -154,6 +155,8 @@ export interface ViewState {
 
 export interface DataSourceOptions {
   store: Store;
+  /** The QueryContext it joins. Left out, it makes its own. 366 step 12 */
+  query?: QueryContext;
   /** Rows per page. Omit for no paging. */
   pageSize?: number;
   /** Fields a free-text search looks at. Omit to search every field. */

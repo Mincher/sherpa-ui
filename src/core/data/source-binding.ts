@@ -69,14 +69,14 @@ export interface BindHost {
   only(id: string): Filter | undefined;
   /** A component scope's own answer. */
   scoped(scope: string): Filter | undefined;
+  /** A bind id no other bind in its context has. */
+  mintId(): string;
 }
 
 /** Every bound component, by element. */
 export class SourceBinding {
   /** Every bound component, and how it is bound. */
   #bound = new Map<BoundControl, Bound>();
-  /** Binds made, for an id when the element has none. */
-  #binds = 0;
   /** The source this binding draws from. */
   readonly #host: BindHost;
 
@@ -87,7 +87,7 @@ export class SourceBinding {
   /** Bind a component, with the id a scope's `narrows` names it by. */
   add(el: BoundControl, facts: AttachFacts, sink: BindSink): void {
     this.#bound.set(el, {
-      id: facts.id ?? (el.id || `bind-${++this.#binds}`),
+      id: facts.id ?? (el.id || this.#host.mintId()),
       readonly: facts.readonly ?? false,
       steerOnly: facts.steerOnly ?? false,
       rows: facts.rows ?? 'page',
