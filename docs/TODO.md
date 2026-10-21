@@ -1859,7 +1859,9 @@ chip — the bar's and the panel's saved chips and cards, `saved-filter-menu.ts`
 the panel's Presets section, a chip's given answer and the saved-filter words
 (`sayReadings`, `conditionLines`) are gone. Step 5 (2026-10-21): named parts
 (`contribute`), `apply` and the unscoped bar go; a bar with no scope is reported
-(`bar-without-scope`), and a component reach needs `only`.
+(`bar-without-scope`), and a component reach needs `only`. Step 6: a reading
+is frozen in the Query — copied in, handed out frozen (TRAP
+`T-a-reading-is-frozen-in-the-query`).
 
 ---
 

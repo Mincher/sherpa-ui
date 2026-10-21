@@ -24,6 +24,8 @@
  * - eachScope — Each scope that answers for the page, by id, as a copy.
  * - heldInView — The fields the View holds, which are answered there alone.
  * - answerOf — The ANSWER keys of a reading only, not its label or the values it offers.
+ * - copyReading — A reading's own copy, all the way down — what a caller hands in.
+ * - freezeReading — Freeze a reading all the way down — what the Query keeps and hands out.
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
  * - sameReading — Do two readings give the same answer? Only the answer keys count.
  * - filterKey — A filter as one string, its AND and OR children in one order.
@@ -171,6 +173,33 @@ export function answerOf(reading: FieldReading): FieldReading {
   const out: Record<string, unknown> = {};
   for (const key of READING_KEYS) if (reading[key] !== undefined) out[key] = reading[key];
   return out as FieldReading;
+}
+
+/** A value's own copy, all the way down: arrays and plain objects; the rest as it is. */
+function copyDeep<T>(v: T): T {
+  if (Array.isArray(v)) return v.map(copyDeep) as T;
+  if (v && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype) {
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, copyDeep(x)])) as T;
+  }
+  return v;
+}
+
+/** A reading's own copy, all the way down — what a caller hands in, so a
+ *  change it makes after is not the Query's. TRAP T-a-reading-is-frozen-in-the-query */
+export function copyReading(reading: FieldReading): FieldReading {
+  return copyDeep(reading);
+}
+
+/** Freeze a reading all the way down — what the Query keeps and hands out, so
+ *  no caller can change it by editing what it was given. TRAP T-a-reading-is-frozen-in-the-query */
+export function freezeReading(reading: FieldReading): FieldReading {
+  const deep = (v: unknown): void => {
+    if (!v || typeof v !== 'object' || Object.isFrozen(v)) return;
+    Object.freeze(v);
+    for (const x of Object.values(v)) deep(x);
+  };
+  deep(reading);
+  return reading;
 }
 
 /** Does a reading answer anything? CONDITIONS count — a field answered only by

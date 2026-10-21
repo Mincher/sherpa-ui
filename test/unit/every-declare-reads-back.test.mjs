@@ -22,12 +22,13 @@ test('partFacts() reads back declarePart; `only` is the element itself', () => {
   assert.equal(source.partFacts('picks:region'), undefined);
 });
 
-test('defaultFor() reads back declareDefault, as a copy', () => {
+test('defaultFor() reads back declareDefault, frozen: the same object, and a push throws', () => {
   const source = open();
   source.declareDefault('own:tile', { region: { picked: ['EMEA'] } });
   const got = source.defaultFor('own:tile');
   assert.deepEqual(got, { region: { picked: ['EMEA'] } });
-  got.region.picked.push('AMER');
+  assert.equal(source.defaultFor('own:tile'), got);
+  assert.throws(() => { got.region.picked.push('AMER'); }, TypeError);
   assert.deepEqual(source.defaultFor('own:tile').region.picked, ['EMEA']);
   source.declareDefault('own:tile', undefined);
   assert.equal(source.defaultFor('own:tile'), undefined);

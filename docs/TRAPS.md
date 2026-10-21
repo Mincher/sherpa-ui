@@ -17748,6 +17748,24 @@ writes plain picks; rows the View kept stay kept, in Simple mode.
 - Site: `test/unit/chart-scope.test.mjs`
 
 
+### T-a-reading-is-frozen-in-the-query
+
+**What the source hands out is the Query's own, frozen; what it takes in is
+copied** (366 step 6, finishing 319). `select()` and `write()` copied one layer,
+so a caller's condition rows became the Query's, and `supersedeColumns` handed
+a grid the APPLIED readings, which the grid kept: an edit on either side moved
+the other, with no event.
+
+Now `copyReading` copies what comes in, all the way down; `#freezeReadings`
+freezes every reading in both copies at each recompose (every write passes
+there); `reading()` and `defaultFor()` hand out the frozen original, with no
+clone. A caller that wants to change one spreads it and sends it back. An edit
+to a frozen reading throws a `TypeError` in a module — loud, never silent.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-reading-is-frozen-in-the-query.test.mjs`
+
 ### T-one-query-one-owner
 
 **A page's data is under ONE Query, in the reader's terms, and a filter is

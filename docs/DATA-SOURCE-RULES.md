@@ -270,8 +270,9 @@ Each thing you tell a source, you can ask back — one door each:
 | `declarePart` · `declareDefault` | `partFacts(scope)` · `defaultFor(scope)` |
 | `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
 
-Each read-back here is a copy — `partFacts`' `only` is the element itself — and
-`rows` is the source's own array, so never change it.
+Each read-back here is a copy, or — a reading, `defaultFor` — the Query's own,
+FROZEN: spread it to change it, and send it back. `partFacts`' `only` is the
+element itself, and `rows` is the source's own array, so never change it.
 
 ### A remote store's whole set is HELD
 

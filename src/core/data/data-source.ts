@@ -106,7 +106,7 @@ import { SourceBinding } from './source-binding.js';
 import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, compile, eachScope, emptyScope, filterKey, readingAnswered, sameReading, VIEW,
+  answerOf, compile, copyReading, eachScope, emptyScope, filterKey, freezeReading, readingAnswered, sameReading, VIEW,
   type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -520,7 +520,7 @@ export class DataSource extends EventTarget {
     const entry = scopeEntry(this.#draft, scope);
     if (bind) entry.narrows = [bind.id];
     if (reading && readingAnswered(reading)) {
-      entry.readings[field] = answerOf(reading);
+      entry.readings[field] = copyReading(answerOf(reading));
       if (!entry.holds.includes(field)) entry.holds = [...entry.holds, field];
     } else {
       Reflect.deleteProperty(entry.readings, field);
@@ -587,21 +587,24 @@ export class DataSource extends EventTarget {
     for (const field of Object.keys(was)) if (!(field in readings)) this.write(scope, field, undefined);
     for (const [field, reading] of Object.entries(readings)) this.write(scope, field, reading, at);
     const written = this.#draft.scopes[scope];
-    if (written) this.#defaults.set(scope, structuredClone(written));
-    else this.#defaults.delete(scope);
+    if (written) {
+      const own = structuredClone(written);
+      for (const r of Object.values(own.readings)) freezeReading(r);
+      this.#defaults.set(scope, Object.freeze(own));
+    } else this.#defaults.delete(scope);
   }
 
   /** A component's own default, as `declareDefault` left it, or undefined — not
-   *  its answer now, which `reading()` reads. A copy. */
-  defaultFor(scope: string): Record<string, FieldReading> | undefined {
-    const held = this.#defaults.get(scope);
-    return held ? structuredClone(held.readings) : undefined;
+   *  its answer now, which `reading()` reads. Frozen. TRAP T-a-reading-is-frozen-in-the-query */
+  defaultFor(scope: string): Readonly<Record<string, FieldReading>> | undefined {
+    return this.#defaults.get(scope)?.readings;
   }
 
-  /** One scope's reading of one field, or undefined. A copy. */
+  /** One scope's reading of one field, or undefined. The Query's own, frozen.
+   *  TRAP T-a-reading-is-frozen-in-the-query */
   reading(scope: string, field: string): FieldReading | undefined {
     const held = this.#draft.scopes[scope]?.readings[field];
-    return held ? structuredClone(held) : undefined;
+    return held ? freezeReading(held) : undefined;
   }
 
   /** What `compile` narrows each bound component by, alone — by bind id. */
@@ -955,7 +958,8 @@ export class DataSource extends EventTarget {
        TRAP T-a-value-can-be-an-object */
     const declared = this.#catalogue.byKey(field);
     const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
-    const next: FieldReading = { ...answerOf(reading), picked: raws };
+    // Its OWN copy: a caller that edits its object after changes nothing here.
+    const next: FieldReading = copyReading({ ...answerOf(reading), picked: raws });
     /* CONDITIONS count. A field answered only by rows — "starts with Go", or
        an or-chain over two owners — has no picked values and no typed text, so
        this deleted the reading and the filter never applied.
@@ -1266,6 +1270,7 @@ export class DataSource extends EventTarget {
     // An answer that came into force in a scope switched off is switched off too.
     const off = keepOff(this.#draft);
     if (this.#applied !== this.#draft) keepOff(this.#applied);
+    this.#freezeReadings();
     if (off.length) this.#binding.drawScopesSoon();
     /* A DRAFT edit on a remote source changes nothing applied: no load, and
        the page stays where it is. It only changes what is pending. */
@@ -1276,6 +1281,14 @@ export class DataSource extends EventTarget {
        is OFF, or one chart's own, changed, and its badge wears a number.
        TRAP T-a-chip-counts-within-the-filters-before-it */
     if (still && this.#loaded) this.#walkSoon();
+  }
+
+  /** Every reading the Query keeps, in both copies, frozen: what a control is
+   *  handed cannot change it. TRAP T-a-reading-is-frozen-in-the-query */
+  #freezeReadings(): void {
+    for (const query of new Set([this.#draft, this.#applied])) {
+      for (const scope of Object.values(query.scopes)) for (const r of Object.values(scope.readings)) freezeReading(r);
+    }
   }
 
   /** Compile the applied Query. Says whether the SHARED filter
