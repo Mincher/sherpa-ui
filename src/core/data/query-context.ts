@@ -1,8 +1,7 @@
 /**
  * query-context.ts — the Query of one app Context, and what its page declares
  * about it. Every source over the page joins it, so there is one Query.
- * 366 step 12: a context of one — each source still makes its own.
- * DOM-free. TRAP T-one-query-one-owner
+ * DOM-free. TRAP T-one-query-one-owner · TRAP T-a-context-holds-the-only-query
  *
  * Map:
  * - QueryChange — What the context did, as each member hears it.

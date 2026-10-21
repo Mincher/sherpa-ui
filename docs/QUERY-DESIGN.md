@@ -49,8 +49,11 @@ this design proposes is to have ONE.
 
 ## 2. The rules
 
-1. **One Query per source.** Every filter, sort, group, search, page,
-   segment and aggregate the reader has set up, in one plain-data object.
+1. **One Query per app Context.** Every filter, sort, group, search,
+   segment and aggregate the reader has set up, in one plain-data object: the
+   Context's `QueryContext`. Every source on the page joins it, and each
+   compiles only what is its own. The PAGE of rows stays per source. (Was
+   "one Query per source" until 366.)
 2. **The Query is in the READER'S terms.** Fields, picks, conditions, on/off
    — never a compiled clause. A clause is OUTPUT, made on demand, never saved.
 3. **Controls are VIEWS of the Query.** A chip, a panel field, a column
@@ -280,17 +283,22 @@ the rest. See question 1.
 
 ## 8. Controls
 
-Every filter control does two things only:
+Every filter control does two things only: it PAINTS what it is drawn, and it
+sends ONE REQUEST per reader act (366). A request is a `QueryRequest` — a
+field's `{ field, reading }`, an on or off `{ field, suspended }`, a scope's
+Switch `{ suspended }`, Clear all `{ reset }` — or a list, which is one change:
 
 ```ts
-source.query.applied.scopes[scope]          // READ its slice (or the draft)
-source.write(scope, { field, reading })     // REQUEST a change
-source.hold(scope, fields) / source.move(field, from, to)
-source.apply(scope) / source.discard(scope) // only where the scope is remote
+// out: the event carries it; bindSource routes it to the Context's doors
+el.emit('quick-filter-change', { scope: 'bar', request: { field, reading, commit: true } });
+// in: the source draws the control its slice, never through a public door
+el.drawScope(description, live) / el.drawReading(field, reading, scope)
 ```
 
-The source pushes each bound control its slice on every change — as it pushes
-`data-sort-field` today. So:
+A draw never becomes a request, and the Context drops a request whose answer
+is already in force — so an echo dies in one round. Bound (`data-locked`), a
+control's doors (`setChipValues`, `setFieldReading`, …) ask as its reader
+would. So:
 
 | control | today | with the Query |
 |---|---|---|

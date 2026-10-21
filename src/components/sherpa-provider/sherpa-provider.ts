@@ -292,7 +292,7 @@ export class SherpaProvider extends SherpaElement {
     let opened: DataSource | undefined;
     let made: DataSource | undefined;
     try {
-      // The Context's ONE Query: its source joins it. 366 step 24
+      // The Context's ONE Query: its source joins it. TRAP T-a-context-holds-the-only-query
       const source = (made = def && store ? await openSource(def, store, { query: new QueryContext() }) : undefined);
       if (source) this.#made.add(source);
       opening?.stop();

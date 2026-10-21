@@ -262,7 +262,10 @@ because a query is exactly as long-lived as the view asking it.
 
 Each thing you tell a source, you can ask back — one door each. What the Query
 holds is read from `source.query`, its QueryContext; what a field IS, from the
-source:
+source. Sources may SHARE a QueryContext — `new DataSource({ store, query })`,
+one per app Context. Each compiles only what is its own: a scope another
+source shows rows in, and a field it lacks, are skipped and listed in
+`debugState().skipped`:
 
 | told with | read with |
 |---|---|

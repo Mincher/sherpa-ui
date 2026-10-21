@@ -216,15 +216,17 @@ export const { store: customerStore, ready: customersReady } = localRecords({
 ## 7. A Context module
 
 ```js
-export async function init(root, { source, session, view, signal, header, panels, label, id }) {
+export async function init(root, { source, query, session, view, signal, header, panels, label, id }) {
   root.querySelector('#add').addEventListener('click', () => openForm(source.store), { signal });
   await header?.populate({ breadcrumb: [] });
 }
 ```
 
 - Every Context, Settings page and panel gets the same `ctx`. `source` is the
-  page's, when it has a definition. `signal` aborts when it goes; or return a
-  teardown. `id` is its key in `app.json`, so one module can serve many.
+  page's, when it has a definition, and `query` its Context's ONE Query: a
+  second source joins it with `new DataSource({ store, query })`. `signal`
+  aborts when it goes; or return a teardown. `id` is its key in `app.json`, so
+  one module can serve many.
 - Reach the header and the panels through `ctx`, never `document`. A part a
   component does not offer is a door to ask for, not a shadow root to reach
   into. `T-a-shadow-reach-is-a-missing-door`

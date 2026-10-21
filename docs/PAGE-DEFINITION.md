@@ -154,7 +154,9 @@ every field, value and scope, holds each scope's first fields, fills
 the header's chips from the View scope, and does what `provide()` does today —
 the kept Query on its own View, the View picks, the session, the panel mode.
 Leaving a page closes it. A Context module keeps only its own business:
-`init(root, { source })` wires add, edit and delete.
+`init(root, { source })` wires add, edit and delete. The source is opened into
+the Context's ONE Query, `ctx.query`: one definition per Context, and a second
+source joins it with `new DataSource({ store, query })`.
 
 A page with no data (Chat, Settings) has no `source`, and the provider shuts
 the panel as it does now (G1).

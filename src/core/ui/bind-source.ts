@@ -236,7 +236,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'quick-filter-change': {
       /* ONE READER ACT, AS A REQUEST: it goes to the Query's doors, in the
          request's scope or the bind's. An event with none asks nothing.
-         366 steps 18, 21 · TRAP T-one-query-one-owner */
+         TRAP T-a-control-sends-one-request */
       const request = detail['request'] as QueryRequest | undefined;
       if (!request) return;
       const at = typeof bind?.scope === 'string' ? bind.scope : undefined;

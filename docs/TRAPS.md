@@ -16541,7 +16541,8 @@ are its CONFIGURATION (`T-configuration-is-not-data`), set through the View.
 
 Three things to know. `onViewPicked` sets the View chip through the element
 that REPORTED the pick — a host above it has no chips. The Views are over the
-subtree's ONE source; a subtree with several gets none. And the provider fires
+subtree's ONE Query: a subtree whose sources do not all share one gets none
+(366). And the provider fires
 `view-change` with the View's id, and its content's elements by id, for a
 page that still wants them.
 
@@ -17771,6 +17772,40 @@ to a frozen reading throws a `TypeError` in a module — loud, never silent.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-reading-is-frozen-in-the-query.test.mjs`
 - Site: `src/core/data/query-context.ts`
+
+### T-a-context-holds-the-only-query
+
+**One Query per app Context, and the Context holds it.** 366. A
+`QueryContext` holds the Query — applied and draft — and every declaration a
+page makes about it: scopes, offers, parts, sets, defaults. A source keeps no
+Query of its own; it JOINS the Context's (`new DataSource({ store, query })`)
+and reads it live, and `source.query` is that Context. The provider makes one
+per page it opens, and a Context's module gets it as `ctx.query`.
+
+Before this, each source held its own Query, and four controls each held a
+copy of their answer beside it; every bug of the filter rewrite was one holder
+copying another wrongly. Every edit now goes through the Context's doors, each
+member hears it at once, and the Context fires ONE `query-change` for it.
+
+- Site: `src/core/data/query-context.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+### T-a-control-sends-one-request
+
+**A filter control sends ONE request per reader act, and paints only what it
+is drawn.** 366. The request — a `QueryRequest` — names one field's answer, an
+on or off, a Switch, a reset, or a list that is one change; `bindSource`
+routes it to the Context's doors. A control never sends its WHOLE answer: that
+cleared every field a rebuilt control had not drawn yet.
+
+Two things end every loop. A draw never goes through a public door, so a draw
+never becomes a request. And the Context drops a request whose answer is
+already in force, so an echo dies in one round. A bound control's doors ask as
+its reader would; unbound, they stay silent writes.
+
+- Site: `src/core/ui/bind-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-source-compiles-only-what-it-has
 

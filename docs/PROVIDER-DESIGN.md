@@ -100,6 +100,13 @@ It is thin: a DOM adapter over the DOM-free data layer. It holds no data of
 its own. Providers NEST — an inner subtree answers what it provides, and a key
 it does not provide keeps travelling up.
 
+**One Query per Context (366).** `open()` makes the page's `QueryContext` and
+opens its source into it; a Context's module gets it as `ctx.query`, and a
+second source joins it with `new DataSource({ store, query: ctx.query })`. Its
+Views apply only when every source it provides shares one Query. The keeper
+keeps the reader's changes: a whole Query the provider puts on says who put it
+(`setQuery(q, { by })`), and only a change with no `by`, or `'reader'`, is kept.
+
 ---
 
 ## 4. What a component can ask for

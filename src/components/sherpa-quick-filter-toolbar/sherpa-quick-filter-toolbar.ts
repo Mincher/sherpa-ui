@@ -1157,7 +1157,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** ONE reader act, as a request — none for an act no field hears. `values`
    *  and `active` ride along for a host that wants the ticks, the View chip's
-   *  among them. 366 step 21 */
+   *  among them. TRAP T-a-control-sends-one-request */
   #emitChange(request?: QueryRequest): void {
     this.#keepOffChips();
     this.emit('quick-filter-change', {

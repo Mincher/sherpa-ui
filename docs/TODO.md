@@ -47,7 +47,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
 | ⬜ | 9z | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
-| 🚧 | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Map first, then a design for Will | explore |
+| ✅ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Done 2026-10-21: 26 steps | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
 | 🚧 | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
@@ -360,7 +360,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | ✅ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
-| ⬜ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour. Closes with 366: its steps 20–22 do it (Will, 2026-10-21: A) | refactor |
+| ✅ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour. Closed with 366: its steps 20–22 did it (Will, 2026-10-21: A) | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
 | 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
@@ -1816,7 +1816,7 @@ the box its mode shows, and none when the grid is not selectable; a change of
 `data-select` or `data-selectable` draws the rows again. Grid tests: 548 pass,
 3 engines. TRAP `T-a-row-holds-two-selection-boxes`.
 
-### `[~]` 🚧 366 — DATA: one QueryContext for the app Context
+### `[x]` ✅ 366 — DATA: one QueryContext for the app Context
 
 Will, 2026-10-20: *"I still think we could have a singular QueryContext
 component in the data layer that holds the query conditions, for the current
@@ -1984,6 +1984,12 @@ more, so a single-source page is unchanged (bench identical). Sorting keeps
 one arranging scope per source. A second `openSource` into a shared Query is
 reported; the provider's Views need every source on one Query.
 `two-sources-one-query.test.mjs` proves the six rules.
+
+Step 26 ✅: the docs — QUERY-DESIGN rule 1 is "one Query per app Context",
+and §8 the request protocol; PROVIDER-DESIGN, PAGE-DEFINITION,
+DATA-SOURCE-RULES and APP-GUIDE name `ctx.query` and shared sources. New traps
+`T-a-context-holds-the-only-query` and `T-a-control-sends-one-request`.
+**366 is done, 2026-10-21, and 320 closes with it.**
 
 Step 23: a bound grid heading asks, then is drawn — its doors send the one
 `column-filter-change` a reader would, the steer calls `setReading` and

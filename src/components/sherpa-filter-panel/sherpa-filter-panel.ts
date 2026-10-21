@@ -1606,7 +1606,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** ONE reader act, as a request to the source. `values` rides along for a
-   *  host that only wants the ticks. 366 step 20 */
+   *  host that only wants the ticks. TRAP T-a-control-sends-one-request */
   #ask(request: QueryRequest): void {
     this.emit('quick-filter-change', { scope: 'panel', request, values: this.values });
   }

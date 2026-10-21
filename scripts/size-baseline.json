@@ -103,7 +103,7 @@
   "src/core/data/live-stores.ts": 326,
   "src/core/data/page-definition.ts": 167,
   "src/core/data/pointer.ts": 62,
-  "src/core/data/query-context.ts": 956,
+  "src/core/data/query-context.ts": 955,
   "src/core/data/query-edits.ts": 399,
   "src/core/data/query.ts": 394,
   "src/core/data/read-plan.ts": 58,
