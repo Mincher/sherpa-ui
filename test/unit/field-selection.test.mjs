@@ -46,7 +46,7 @@ test('a field with nothing selected is OFF, and every value is offered', async (
 test('TWO READERS, ONE ANSWER — the whole point', async () => {
   const source = await ready();
   // A chip selects. A column heading asks. Neither knows the other exists.
-  source.select('plan', ['Pro']);
+  source.query.select('plan', ['Pro']);
 
   const chip = source.selection('plan');
   const column = source.selection('plan');
@@ -60,7 +60,7 @@ test('TWO READERS, ONE ANSWER — the whole point', async () => {
 
 test('the selection REACHES THE QUERY, with no contribute() call', async () => {
   const source = await ready();
-  source.select('plan', ['Pro']);
+  source.query.select('plan', ['Pro']);
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [2, 3]);
 });
@@ -68,8 +68,8 @@ test('the selection REACHES THE QUERY, with no contribute() call', async () => {
 test('TWO FIELDS narrow together — they AND, they do not replace', async () => {
   const source = await ready();
   source.declareValues('region', ['AMER', 'APAC', 'EMEA']);
-  source.select('plan', ['Pro']);
-  source.select('region', ['EMEA']);
+  source.query.select('plan', ['Pro']);
+  source.query.select('region', ['EMEA']);
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [2]);
   assert.deepEqual(source.selectedFields.sort(), ['plan', 'region']);
@@ -77,8 +77,8 @@ test('TWO FIELDS narrow together — they AND, they do not replace', async () =>
 
 test('an EMPTY selection clears the field', async () => {
   const source = await ready();
-  source.select('plan', ['Pro']);
-  source.select('plan', []);
+  source.query.select('plan', ['Pro']);
+  source.query.select('plan', []);
   await source.load();
   assert.equal(source.selection('plan').fieldState, 'off');
   assert.deepEqual(source.selectedFields, []);
@@ -89,8 +89,8 @@ test('an EMPTY selection clears the field', async () => {
 
 test('SUSPENDED keeps the values and stops filtering', async () => {
   const source = await ready();
-  source.select('plan', ['Pro']);
-  source.suspendSelection('plan');
+  source.query.select('plan', ['Pro']);
+  source.query.suspendSelection('plan');
   await source.load();
   const s = source.selection('plan');
   assert.equal(s.fieldState, 'suspended', 'TRAP T-grid-suspend-is-not-clear');
@@ -100,7 +100,7 @@ test('SUSPENDED keeps the values and stops filtering', async () => {
 
 test('EVERYTHING selected is the same rows as no filter', async () => {
   const source = await ready();
-  source.select('plan', PLANS);
+  source.query.select('plan', PLANS);
   await source.load();
   assert.equal(source.selection('plan').fieldState, 'off', 'TRAP T-everything-on-is-no-filter');
   assert.equal(source.rows.length, 4);
@@ -108,7 +108,7 @@ test('EVERYTHING selected is the same rows as no filter', async () => {
 
 test('the comparison is the QUERY\'s, so casing cannot break a pick', async () => {
   const source = await ready();
-  source.select('plan', ['pro']);
+  source.query.select('plan', ['pro']);
   await source.load();
   assert.equal(source.selection('plan').values.find((v) => v.value === 'Pro').state, 'picked');
   assert.deepEqual(source.rows.map((r) => r.id), [2, 3]);
@@ -120,8 +120,8 @@ test('selecting ANNOUNCES the field, so other controls re-read', async () => {
   const source = await ready();
   const heard = [];
   source.addEventListener('selection-change', (e) => heard.push(e.detail.field));
-  source.select('plan', ['Pro']);
-  source.select('plan', []);
+  source.query.select('plan', ['Pro']);
+  source.query.select('plan', []);
   assert.deepEqual(heard, ['plan', 'plan'], 'clearing is a change too');
 });
 

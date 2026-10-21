@@ -77,7 +77,7 @@ test("a panel's answer to a part narrows its chart ALONE, and a legend's write i
   assert.deepEqual(drawn.readings.at(-1), ['picks:bar', 'sev', ['critical']]);
 
   // The legend's own door. The panel is told, in the part's scope.
-  source.write('picks:bar', 'sev', { picked: ['info'] }, { only: chart });
+  source.query.write('picks:bar', 'sev', { picked: ['info'] }, { only: chart });
   await tick();
   assert.deepEqual(seen.get('bar'), [2]);
   assert.deepEqual(drawn.readings.at(-1), ['picks:bar', 'sev', ['info']]);
@@ -93,7 +93,7 @@ test("a panel's answer to a part narrows its chart ALONE, and a legend's write i
 
 test('SENT UP, the answer goes to the View with its field, and the chart lets go of it', async () => {
   const { source, seen, panel } = await setup();
-  source.write('picks:bar', 'sev', { picked: ['critical'] });
+  source.query.write('picks:bar', 'sev', { picked: ['critical'] });
   panel.dispatchEvent(new CustomEvent('filter-add', {
     detail: { scope: 'view', ids: ['sev'], from: 'picks:bar' },
   }));
@@ -140,8 +140,8 @@ test('while the VIEW holds its field, a legend shows the View\'s answer and chan
   assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
 
   // The View TAKES the field: the legend's own answer is dropped, and it shows the View's.
-  source.hold('view', ['sev']);
-  source.select('sev', ['info']);
+  source.query.hold('view', ['sev']);
+  source.query.select('sev', ['info']);
   await tick();
   assert.equal(source.query.applied.scopes['picks:bar'], undefined);
   assert.deepEqual(legend.picked, ['info']);
@@ -156,7 +156,7 @@ test('while the VIEW holds its field, a legend shows the View\'s answer and chan
   assert.deepEqual(legend.picked, ['warning', 'info']);
 
   // The View lets go: the legend answers for its chart alone again.
-  source.hold('view', []);
+  source.query.hold('view', []);
   await tick();
   press(['critical']);
   await tick();

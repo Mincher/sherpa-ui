@@ -46,16 +46,16 @@ test('back to the last finished answer, while a different load is in flight', as
   await src.ready;
 
   // 1. Filter to ACTIVE, and let that load finish.
-  src.select('status', ['active']);
+  src.query.select('status', ['active']);
   await tick(); store.openAll(); await tick(); await tick();
   assert.equal(src.total, 2);
 
   // 2. Clear it — that load is now IN FLIGHT and has not landed.
-  src.select('status', []);
+  src.query.select('status', []);
   await tick();
 
   // 3. …and back to ACTIVE before it lands. Same key as step 1.
-  src.select('status', ['active']);
+  src.query.select('status', ['active']);
   await tick();
 
   // Let everything land, in order.

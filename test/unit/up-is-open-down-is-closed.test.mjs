@@ -52,12 +52,12 @@ test('DOWN IS CLOSED: a component may hold only its own fields', async () => {
 
 test('RAISING a filter takes it out of EVERY component, in one event', async () => {
   const src = await source();
-  src.hold('grid', ['owner', 'plan']);
-  src.hold('tickets', ['owner']);
+  src.query.hold('grid', ['owner', 'plan']);
+  src.query.hold('tickets', ['owner']);
   const events = [];
   src.addEventListener('scope-change', (e) => events.push(e.detail));
 
-  assert.equal(src.move('owner', 'grid', VIEW), true);
+  assert.equal(src.query.move('owner', 'grid', VIEW), true);
 
   assert.deepEqual(src.query.scope(VIEW), ['owner']);
   assert.deepEqual(src.query.scope('grid'), ['plan']);
@@ -70,8 +70,8 @@ test('RAISING a filter takes it out of EVERY component, in one event', async () 
 
 test('LOWERING it leaves the view and lands in one component', async () => {
   const src = await source();
-  src.hold(VIEW, ['owner', 'status']);
-  assert.equal(src.move('owner', VIEW, 'tickets'), true);
+  src.query.hold(VIEW, ['owner', 'status']);
+  assert.equal(src.query.move('owner', VIEW, 'tickets'), true);
   assert.deepEqual(src.query.scope(VIEW), ['status']);
   assert.deepEqual(src.query.scope('tickets'), ['owner']);
   assert.deepEqual(src.query.scope('grid'), []);
@@ -79,18 +79,18 @@ test('LOWERING it leaves the view and lands in one component', async () => {
 
 test('COMPONENT and COMPONENT are NOT exclusive — both may hold `owner`', async () => {
   const src = await source();
-  src.hold('grid', ['owner']);
-  src.hold('tickets', ['owner']);
+  src.query.hold('grid', ['owner']);
+  src.query.hold('tickets', ['owner']);
   assert.deepEqual(src.query.scope('grid'), ['owner']);
   assert.deepEqual(src.query.scope('tickets'), ['owner']);
 });
 
 test('a component REFUSES a field it does not have, and says so', async () => {
   const src = await source();
-  src.hold(VIEW, ['priority']);
+  src.query.hold(VIEW, ['priority']);
   const seen = [];
   const undo = onReport((r) => seen.push(r));
-  const moved = src.move('priority', VIEW, 'grid');
+  const moved = src.query.move('priority', VIEW, 'grid');
   undo();
 
   assert.equal(moved, false);
@@ -111,7 +111,7 @@ test('offer() on an unchanged list fires nothing — a bar re-renders on it', as
 
 test('debugState says what each scope HAS as well as what it holds', async () => {
   const src = await source();
-  src.hold('grid', ['plan']);
+  src.query.hold('grid', ['plan']);
   const d = src.debugState();
   assert.deepEqual(d.offers.grid, ['status', 'plan', 'owner']);
   assert.deepEqual(d.scopes.grid, ['plan']);

@@ -145,13 +145,13 @@ test('a grid scope filter narrows the grid, never a tile; a View filter narrows 
     const drawn = () => grid.shadowRoot.querySelectorAll('.body .row').length;
     const tile = () => provider.querySelector('#count').dataset.value;
     // The grid's scope HOLDS plan, so the answer is the grid's alone.
-    source.hold('data', ['plan']);
+    source.query.hold('data', ['plan']);
     source.answer('data', { plan: { picked: ['Pro'] } });
     await settle();
     const scoped = { grid: drawn(), tile: tile() };
     source.answer('data', {});
-    source.hold('data', []);
-    source.hold('view', ['plan']);
+    source.query.hold('data', []);
+    source.query.hold('view', ['plan']);
     source.answer('view', { plan: { picked: ['Enterprise', 'Pro'] } });
     await settle();
     return { scoped, viewed: { grid: drawn(), tile: tile() }, reports };

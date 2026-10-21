@@ -85,8 +85,8 @@ test('a field is never ruled out by one BELOW it — even with Limit on, and Reg
 test('a filter before the set limits the chain, though the top is unanswered', async () => {
   const { source } = await setup({});
   // Zone is held before the set, so its answer stands before the chain.
-  source.hold(VIEW, ['zone', 'customer', 'region']);
-  source.select('zone', ['north']);
+  source.query.hold(VIEW, ['zone', 'customer', 'region']);
+  source.query.select('zone', ['north']);
   await source.load();
   assert.deepEqual(sorted(await source.offered(VIEW)), { region: ['AMER', 'EMEA'] });
 });

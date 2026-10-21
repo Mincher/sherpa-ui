@@ -56,14 +56,14 @@ test('Save filters keeps every scope under a name; the button then says it, acti
     const source = await open();
     await settle();
     const before = save();
-    source.select('plan', ['Pro']);
-    source.select('tier', ['gold']);
+    source.query.select('plan', ['Pro']);
+    source.query.select('tier', ['gold']);
     await source.load();
     const id = provider.saveFilters('Gold Pro');
     await settle();
     const stored = JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}');
     const saved = { save: save(), told: told(), read: provider.savedFilterSets };
-    source.select('plan', ['Free']);
+    source.query.select('plan', ['Free']);
     await source.load();
     await settle();
     const edited = { save: save(), told: told() };
@@ -98,7 +98,7 @@ test('a set taken: every scope matches it, one it does not name is cleared, anot
     localStorage.setItem('sherpa:filter-sets:plans', JSON.stringify({ silver: { label: 'Silver',
       query: { v: 1, scopes: { view: { holds: ['tier'], where: { tier: { eq: 'silver' } } } } } } }));
     const source = await open();
-    source.select('plan', ['Free']);
+    source.query.select('plan', ['Free']);
     await source.load();
     await settle();
     const listed = told();

@@ -465,10 +465,10 @@ test('the trend, delta and status all follow a filter', async ({ page }) => {
     });
 
     const all = snap();
-    src.select('region', ['EMEA']);
+    src.query.select('region', ['EMEA']);
     await settle();
     const emea = snap();
-    src.select('region', ['AMER']);
+    src.query.select('region', ['AMER']);
     await settle();
     const amer = snap();
     return { all, emea, amer };

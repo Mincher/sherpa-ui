@@ -30,7 +30,7 @@ async function setup() {
   source.query.declareScope('view', { label: 'View filters' });
   source.query.declareScope('data', { label: 'Customer records' });
   source.query.offer('data', ['plan', 'region']);
-  source.hold('view', ['region']);
+  source.query.hold('view', ['region']);
   const seen = new Map();
   const stub = (name, more = {}) => Object.assign(new EventTarget(), {
     id: name, setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
@@ -62,7 +62,7 @@ test('a View field names ONE scope to go down to: the first that has it, a compo
   assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // A field no scope below has: nowhere to send it.
   source.declareField('owner', { label: 'Owner' });
-  source.hold('view', ['region', 'owner']);
+  source.query.hold('view', ['region', 'owner']);
   assert.equal(sendTo('owner'), undefined);
 });
 
@@ -84,7 +84,7 @@ test('SENT DOWN, the View lets go and the answer goes with the field', async () 
 test('a field goes back down to where it CAME UP from — a chart\'s own scope — though another scope has it too', async () => {
   const { source, seen, chart, send, sendTo } = await setup();
   source.query.declarePart('picks:bar', { field: 'plan', only: chart, label: 'By plan' });
-  source.write('picks:bar', 'plan', { picked: ['Pro'] });
+  source.query.write('picks:bar', 'plan', { picked: ['Pro'] });
   send('view', 'plan', 'picks:bar');
   await tick();
   assert.deepEqual(seen.get('grid'), [1, 3]);
@@ -108,7 +108,7 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
   source.query.declareScope('other', { label: 'Other records' });
   source.query.offer('other', ['plan', 'region']);
   // A holds Plan, answered; it goes UP, and A keeps its place for it.
-  source.hold('data', ['plan']);
+  source.query.hold('data', ['plan']);
   source.answer('data', { plan: { picked: ['Pro'] } });
   send('view', 'plan', 'data');
   await tick();
@@ -131,7 +131,7 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
 test('where a View field came up from is in the Query, so a reload still returns it there', async () => {
   const first = await setup();
   first.source.query.declarePart('picks:bar', { field: 'plan', only: first.chart, label: 'By plan' });
-  first.source.write('picks:bar', 'plan', { picked: ['Pro'] });
+  first.source.query.write('picks:bar', 'plan', { picked: ['Pro'] });
   first.send('view', 'plan', 'picks:bar');
   await tick();
   const kept = JSON.parse(JSON.stringify(first.source.query.applied));

@@ -83,8 +83,8 @@ test('a column filter narrows, and does NOT wipe what else is applied', async ()
   bindSource(src, el, { steerOnly: true });
 
   // Two fields' selections are both live.
-  src.select('seats', [], { mode: 'advanced', conditions: [{ op: 'lt', text: '500' }] });
-  src.select('owner', ['Dana', 'Ravi']);
+  src.query.select('seats', [], { mode: 'advanced', conditions: [{ op: 'lt', text: '500' }] });
+  src.query.select('owner', ['Dana', 'Ravi']);
   await settle();
   assert.deepEqual(ids(src), [1, 2]);
 

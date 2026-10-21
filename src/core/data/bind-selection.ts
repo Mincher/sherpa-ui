@@ -26,15 +26,15 @@ import { VIEW } from './query.js';
  * controls over one field both reach the query. TRAP T-one-field-one-filter-menu
  */
 export interface Selector extends EventTarget {
-  select: (field: string, picked: readonly unknown[], reading?: FieldReading) => void;
   selection: (field: string) => FilterState;
   declareValues: (field: string, values: readonly unknown[]) => void;
-  /** A control that narrows ONE component writes its own scope.
-   *  `reach`, not `scope`: TRAP T-three-things-called-scope */
-  write: (scope: string, field: string, reading: FieldReading | undefined, at?: { only?: BoundControl }) => void;
   /** Its QueryContext. Does a scope hold a field? A control that narrows one
    *  component asks of the View. TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
   query: {
+    select: (field: string, picked: readonly unknown[], reading?: FieldReading) => void;
+    /** A control that narrows ONE component writes its own scope.
+     *  `reach`, not `scope`: TRAP T-three-things-called-scope */
+    write: (scope: string, field: string, reading: FieldReading | undefined, at?: { only?: BoundControl }) => void;
     reading: (scope: string, field: string) => FieldReading | undefined;
     holds: (scope: string, field: string) => boolean;
   };
@@ -142,18 +142,18 @@ export function bindSelection<T extends EventTarget>(
     if (raised()) {
       // Its picks are Simple's: rows the View kept stay kept, and out of force.
       const held = source.query.reading(VIEW, field);
-      source.select(field, answer, held?.conditions?.length ? { ...held, mode: 'simple' } : {});
+      source.query.select(field, answer, held?.conditions?.length ? { ...held, mode: 'simple' } : {});
       return;
     }
     if (reach === 'component') {
       // ANDed under the view's, so it can only narrow further.
-      source.write(key, field, answer.length ? { picked: answer } : undefined, only ? { only } : {});
+      source.query.write(key, field, answer.length ? { picked: answer } : undefined, only ? { only } : {});
       /* Draw its OWN answer back. `selection-change` never fires for a scope's
          own answer, so a control driven by `set()` would keep its last draw. */
       redraw();
       return;
     }
-    source.select(field, answer);
+    source.query.select(field, answer);
   };
 
   const onControlChange = (): void => { write(read(control)); };
@@ -166,7 +166,7 @@ export function bindSelection<T extends EventTarget>(
   /** The View took the field, or let it go: what this control shows changed.
    *  Taken, its own answer is dropped — the View's is the one in force. */
   const onScopeChange = (): void => {
-    if (raised() && source.query.reading(key, field)) source.write(key, field, undefined, only ? { only } : {});
+    if (raised() && source.query.reading(key, field)) source.query.write(key, field, undefined, only ? { only } : {});
     redraw();
   };
 
@@ -180,7 +180,7 @@ export function bindSelection<T extends EventTarget>(
     source.removeEventListener('selection-change', onSelectionChange);
     source.removeEventListener('scope-change', onScopeChange);
     // Its scope outlives its control otherwise, and nothing else can name it.
-    if (reach === 'component') source.write(key, field, undefined);
+    if (reach === 'component') source.query.write(key, field, undefined);
   };
   signal?.addEventListener('abort', destroy, { once: true });
 

@@ -41,9 +41,9 @@ test('a Query keeps the rows today\'s DataSource keeps for the same answers', as
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
   // TODAY: the header's answer and the grid's fields, each a selection.
-  src.select('region', ['EMEA']);
-  src.select('status', ['active']);
-  src.select('owner', [], RECORDS.scopes.grid.readings.owner);
+  src.query.select('region', ['EMEA']);
+  src.query.select('status', ['active']);
+  src.query.select('owner', [], RECORDS.scopes.grid.readings.owner);
   const compiled = compile(RECORDS);
   assert.deepEqual(ids(compiled.filter), ids(src.state.filter));
   assert.deepEqual(ids(compiled.filter), [1, 4]);
@@ -116,10 +116,10 @@ test('a scope no component answers trickles down with the View', () => {
 test('the source keeps each reading in the scope that holds its field, and compiles its filter from them', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
-  src.hold('grid', ['status']);
-  src.select('status', ['active']);
+  src.query.hold('grid', ['status']);
+  src.query.select('status', ['active']);
   // A field no bar holds is the View's — it narrows everyone.
-  src.select('owner', ['Dana Whitlock']);
+  src.query.select('owner', ['Dana Whitlock']);
   const { applied } = src.query;
   assert.deepEqual(applied.scopes.grid.readings, { status: { picked: ['active'] } });
   assert.deepEqual(Object.keys(applied.scopes[VIEW].readings), ['owner']);
@@ -131,16 +131,16 @@ test('moving a field moves its reading with it — and the rows do not change', 
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
   src.query.offer('grid', ['status']);
-  src.hold('grid', ['status']);
-  src.select('status', ['trial']);
+  src.query.hold('grid', ['status']);
+  src.query.select('status', ['trial']);
   const before = ids(src.state.filter);
-  src.move('status', 'grid', VIEW);
+  src.query.move('status', 'grid', VIEW);
   const { applied } = src.query;
   assert.equal(applied.scopes.grid, undefined, 'a scope that holds and answers nothing is forgotten');
   assert.deepEqual(applied.scopes[VIEW], { holds: ['status'], readings: { status: { picked: ['trial'] } } });
   assert.deepEqual(ids(src.state.filter), before);
   // Clearing the field clears it from the Query, not just from the filter.
-  src.select('status', []);
+  src.query.select('status', []);
   assert.deepEqual(src.query.applied.scopes[VIEW].readings, {});
   assert.equal(src.state.filter, undefined);
 });
@@ -148,7 +148,7 @@ test('moving a field moves its reading with it — and the rows do not change', 
 test('the Query a source hands out is a copy — writing to it steers nothing', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
-  src.select('region', ['APAC']);
+  src.query.select('region', ['APAC']);
   src.query.applied.scopes[VIEW].readings.region.picked = ['EMEA'];
   assert.deepEqual(src.selection('region').rows[0].picked, ['APAC']);
 });
@@ -157,12 +157,12 @@ test('a scope\'s whole answer clears what it no longer names — never a field r
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
   src.query.offer('grid', ['status', 'region']);
-  src.hold('grid', ['status', 'region']);
+  src.query.hold('grid', ['status', 'region']);
   src.answer('grid', { status: { picked: ['active'] }, region: { picked: ['EMEA'] } });
   assert.deepEqual(ids(src.state.filter), [1, 4]);
   // Region is RAISED: its answer goes with it, and the grid's next report
   // does not name it.
-  src.move('region', 'grid', VIEW);
+  src.query.move('region', 'grid', VIEW);
   src.answer('grid', { status: { picked: ['active'] } });
   assert.deepEqual(src.query.applied.scopes[VIEW].readings, { region: { picked: ['EMEA'] } });
   assert.deepEqual(ids(src.state.filter), [1, 4]);
@@ -180,15 +180,15 @@ test('a bar bound with a scope is DRAWN each answer in its scope, whoever set it
     drawReading: (field, reading) => drawn.push([field, reading]),
   });
   bindSource(src, bar, { steerOnly: true, scope: 'grid' });
-  src.hold('grid', ['status']);
+  src.query.hold('grid', ['status']);
   // A heading, a legend or the panel — not the bar — answers Status.
-  src.select('status', [], { conditions: [{ op: 'contains', text: 'tri' }] });
+  src.query.select('status', [], { conditions: [{ op: 'contains', text: 'tri' }] });
   // Region is the View's, so this bar is not told.
-  src.select('region', ['EMEA']);
+  src.query.select('region', ['EMEA']);
   assert.deepEqual(drawn, [['status', { picked: [], conditions: [{ op: 'contains', text: 'tri' }] }]]);
   /* SUSPENDED is drawn too, and SAYS it is off — so a panel does not go on
      showing an answer that filters nothing. TRAP T-a-suspended-answer-is-drawn-as-off */
-  src.suspendSelection('status');
+  src.query.suspendSelection('status');
   assert.equal(drawn.length, 2);
   assert.deepEqual(drawn[1], ['status', {
     picked: [], conditions: [{ op: 'contains', text: 'tri' }], suspended: true,
@@ -203,18 +203,18 @@ test('a control bound over SEVERAL scopes — the panel — is drawn each, told 
     drawReading: (field, _reading, scope) => drawn.push([field, scope]),
   });
   bindSource(src, panel, { readonly: true, steerOnly: true, scope: [VIEW, 'grid'] });
-  src.hold('grid', ['status']);
-  src.select('status', ['active']);
-  src.select('region', ['EMEA']);
+  src.query.hold('grid', ['status']);
+  src.query.select('status', ['active']);
+  src.query.select('region', ['EMEA']);
   assert.deepEqual(drawn, [['status', 'grid'], ['region', VIEW]]);
 });
 
 test('setQuery restores the WHOLE Query and draws each bound scope — nothing replays a control', async () => {
   const kept = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  kept.hold('grid', ['status']);
+  kept.query.hold('grid', ['status']);
   // A bar's reading carries its label and values; only the ANSWER is kept.
-  kept.select('status', ['active'], { label: 'Status', values: ['active', 'trial'] });
-  kept.select('region', ['EMEA']);
+  kept.query.select('status', ['active'], { label: 'Status', values: ['active', 'trial'] });
+  kept.query.select('region', ['EMEA']);
   const saved = JSON.parse(JSON.stringify(kept.query.applied));
   assert.deepEqual(saved.scopes.grid.readings.status, { picked: ['active'] });
 
@@ -236,15 +236,15 @@ test('setQuery restores the WHOLE Query and draws each bound scope — nothing r
 
 test('a field a scope lets go of, held nowhere else, loses its answer — removing a chip is a clear', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.hold('grid', ['status', 'region']);
-  src.select('status', ['active']);
-  src.select('region', ['EMEA']);
+  src.query.hold('grid', ['status', 'region']);
+  src.query.select('status', ['active']);
+  src.query.select('region', ['EMEA']);
   // Region moves UP: still held, so its answer goes with it.
-  src.hold(VIEW, ['region']);
-  src.hold('grid', ['status']);
+  src.query.hold(VIEW, ['region']);
+  src.query.hold('grid', ['status']);
   assert.deepEqual(src.query.applied.scopes[VIEW].readings, { region: { picked: ['EMEA'] } });
   // Status is let go of and held nowhere: gone, and the rows come back.
-  src.hold('grid', []);
+  src.query.hold('grid', []);
   assert.equal(src.query.reading(VIEW, 'status'), undefined);
   assert.equal(src.selection('status').fieldState, 'off');
   assert.deepEqual(ids(src.state.filter), [1, 2, 4]);
@@ -252,7 +252,7 @@ test('a field a scope lets go of, held nowhere else, loses its answer — removi
 
 test('an EMPTY condition row is no answer — a cleared menu keeps one', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.select('owner', [], { op: 'contains', text: '', conditions: [{ op: 'eq' }], suspended: true });
+  src.query.select('owner', [], { op: 'contains', text: '', conditions: [{ op: 'eq' }], suspended: true });
   assert.equal(src.query.reading(VIEW, 'owner'), undefined);
   assert.deepEqual(src.selectedFields, []);
 });
@@ -268,7 +268,7 @@ const remote = async (fail = 0) => {
 
 test('a LOCAL source applies at once — nothing is ever pending', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.select('status', ['trial']);
+  src.query.select('status', ['trial']);
   assert.deepEqual(ids(src.state.filter), [2]);
   assert.equal(src.query.pending('status'), false);
   assert.equal(src.query.dirty(), false);
@@ -276,15 +276,15 @@ test('a LOCAL source applies at once — nothing is ever pending', async () => {
 
 test('a REMOTE source edits a draft: pending until commit, and the rows wait', async () => {
   const src = await remote();
-  src.hold('grid', ['status']);
-  src.select('status', ['trial']);
+  src.query.hold('grid', ['status']);
+  src.query.select('status', ['trial']);
   // The reader sees the draft; the rows are still under the applied Query.
   assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['trial']);
   assert.equal(src.state.filter, undefined);
   assert.equal(src.query.pending('status'), true);
   assert.equal(src.query.dirty('grid'), true);
   assert.equal(src.query.dirty(VIEW), false);
-  src.commit({ scope: 'grid' });
+  src.query.commit({ scope: 'grid' });
   assert.deepEqual(ids(src.state.filter), [2]);
   assert.equal(src.query.pending('status'), false);
   assert.equal(src.query.dirty(), false);
@@ -298,13 +298,13 @@ test('Discard puts the applied answer back over the draft, and draws it', async 
     drawReading: (field, reading) => drawn.push([field, reading.picked]),
   });
   bindSource(src, bar, { steerOnly: true, scope: 'grid' });
-  src.hold('grid', ['status']);
-  src.select('status', ['active']);
-  src.commit();
-  src.select('status', ['trial']);
+  src.query.hold('grid', ['status']);
+  src.query.select('status', ['active']);
+  src.query.commit();
+  src.query.select('status', ['trial']);
   assert.equal(src.query.pending('status'), true);
   drawn.length = 0;
-  src.discard({ scope: 'grid' });
+  src.query.discard({ scope: 'grid' });
   assert.equal(src.query.pending('status'), false);
   assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['active']);
   assert.deepEqual(drawn, [['status', ['active']]]);
@@ -317,11 +317,11 @@ test('a bound control is TOLD what is pending and whether its scope is dirty', a
     setAttribute: (n, v) => { attrs[n] = v; }, removeAttribute: (n) => { delete attrs[n]; }, hasAttribute: () => false,
   });
   bindSource(src, bar, { steerOnly: true, scope: 'grid' });
-  src.hold('grid', ['status', 'owner']);
-  src.select('status', ['trial']);
+  src.query.hold('grid', ['status', 'owner']);
+  src.query.select('status', ['trial']);
   assert.equal(attrs['data-pending'], 'status');
   assert.equal(attrs['data-dirty'], '');
-  src.commit();
+  src.query.commit();
   assert.equal(attrs['data-pending'], undefined);
   assert.equal(attrs['data-dirty'], undefined);
 });
@@ -332,7 +332,7 @@ test('a legend narrows its chart at once, even on a remote source — its rows a
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });
   bindSource(src, chart, { readonly: true, rows: 'all' });
-  src.write('legend', 'status', { picked: ['active'] }, { only: chart });
+  src.query.write('legend', 'status', { picked: ['active'] }, { only: chart });
   assert.equal(src.query.dirty(), false);
   assert.deepEqual(Object.keys(src.debugState().only), ['chart']);
 });
@@ -349,14 +349,14 @@ test('spoofRemote waits, fails when told, and marks the store remote', async () 
 
 test('ONE field can be applied or discarded alone — the panel\'s per-field Apply', async () => {
   const src = await remote();
-  src.hold('grid', ['status', 'owner']);
-  src.select('status', ['trial']);
-  src.select('owner', ['Dana Whitlock']);
-  src.commit({ field: 'status' });
+  src.query.hold('grid', ['status', 'owner']);
+  src.query.select('status', ['trial']);
+  src.query.select('owner', ['Dana Whitlock']);
+  src.query.commit({ field: 'status' });
   assert.deepEqual(ids(src.state.filter), [2]);
   assert.equal(src.query.pending('status'), false);
   assert.equal(src.query.pending('owner'), true);
-  src.discard({ field: 'owner' });
+  src.query.discard({ field: 'owner' });
   assert.equal(src.query.pending('owner'), false);
   assert.equal(src.selection('owner').fieldState, 'off');
 });
@@ -366,8 +366,8 @@ test('ONE field can be applied or discarded alone — the panel\'s per-field App
 
 test('a View\'s JSON goes onto a clean slate: chips kept, answers shown, rows arranged', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.hold('grid', ['status', 'region']);
-  src.select('region', ['APAC']);
+  src.query.hold('grid', ['status', 'region']);
+  src.query.select('region', ['APAC']);
   await src.setQuery({ v: 1, scopes: { grid: {
     readings: { owner: { picked: ['Dana Whitlock'] } },
     sort: [{ field: 'health', direction: 'desc' }],
@@ -386,7 +386,7 @@ test('a View\'s JSON goes onto a clean slate: chips kept, answers shown, rows ar
  *  TRAP T-reset-to-default-is-the-views-own */
 test('atDefault: the answers and arrangement against the page as defined with a View over it', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.hold(VIEW, ['status', 'region']);
+  src.query.hold(VIEW, ['status', 'region']);
   const base = src.query.applied;
   const view = { v: 1, scopes: { [VIEW]: { readings: { status: { picked: ['active'] } }, sort: [{ field: 'name', direction: 'asc' }] } } };
   // As a Reset to default leaves it.
@@ -395,9 +395,9 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   assert.equal(src.atDefault(base, view), true);
   assert.equal(src.atDefault(base), false, 'the page as defined has no filter');
   // A reader's change, in any answer…
-  src.select('region', ['EMEA']);
+  src.query.select('region', ['EMEA']);
   assert.equal(src.atDefault(base, view), false);
-  src.select('region', []);
+  src.query.select('region', []);
   assert.equal(src.atDefault(base, view), true);
   // …or in the arrangement the View names.
   src.setSort('name', 'desc');
@@ -410,26 +410,26 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   assert.equal(JSON.stringify(src.query.applied), before);
   // A filter REMOVED from the default is a change too, and so is one MOVED to
   // another scope. Will, 2026-10-12.
-  src.hold(VIEW, ['status']);
+  src.query.hold(VIEW, ['status']);
   assert.equal(src.atDefault(base, view), false, 'region was taken off');
-  src.hold('grid', ['region']);
+  src.query.hold('grid', ['region']);
   assert.equal(src.atDefault(base, view), false, 'region moved to the grid');
-  src.hold('grid', []);
-  src.hold(VIEW, ['status', 'region']);
+  src.query.hold('grid', []);
+  src.query.hold(VIEW, ['status', 'region']);
   assert.equal(src.atDefault(base, view), true);
 });
 
 /** Is there anything a Reset would clear? TODO 231 */
 test('answered: a reading that filters, a saved filter on, or the rows arranged', () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.hold(VIEW, ['region']);
-  src.hold('grid', ['status']);
+  src.query.hold(VIEW, ['region']);
+  src.query.hold('grid', ['status']);
   assert.equal(src.answered(), false);
-  src.select('status', ['active']);
+  src.query.select('status', ['active']);
   assert.equal(src.answered('grid'), true);
   assert.equal(src.answered(VIEW), false, 'one scope at a time');
   assert.equal(src.answered(), true);
-  src.select('status', []);
+  src.query.select('status', []);
   assert.equal(src.answered(), false);
   src.setSort('region');
   assert.equal(src.answered(VIEW), true, 'a Reset clears the arrangement too');

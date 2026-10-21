@@ -195,11 +195,11 @@ test('each PICKED value has a count of its own — and only a list answer in for
   assert.deepEqual(await source.valueResults('data'), { status: { open: 3, shut: 1 } });
 
   // Rows answer it: no values. Off: none. Emptied: none.
-  source.select('status', [], { mode: 'advanced', conditions: [{ op: 'contains', text: 'op' }] });
+  source.query.select('status', [], { mode: 'advanced', conditions: [{ op: 'contains', text: 'op' }] });
   assert.deepEqual(await source.valueResults('data'), {});
-  source.suspendSelection('region');
+  source.query.suspendSelection('region');
   assert.deepEqual(await source.valueResults('view'), {});
-  source.select('region', []);
+  source.query.select('region', []);
   assert.deepEqual(await source.valueResults('view'), {});
 });
 
@@ -229,11 +229,11 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
 
   /* OFF keeps its number: what the answer WOULD match. Will, TODO 123. An
      off View answer narrows nothing, so the chip below counts over every row. */
-  source.suspendSelection('region');
+  source.query.suspendSelection('region');
   assert.deepEqual(await source.results('view'), { region: 2 });
   assert.deepEqual(await source.results('data'), { status: 3 });
   // EMPTIED, a field has no number.
-  source.select('status', []);
+  source.query.select('status', []);
   assert.deepEqual(await source.results('data'), {});
 });
 

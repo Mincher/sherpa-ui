@@ -1649,6 +1649,7 @@ caller with no pointer can send a field anywhere, and the 168 rule holds.
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -3517,6 +3518,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-native-wears-the-button-class
 
@@ -4078,11 +4080,11 @@ back on.
 
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/core/data/query-context.ts`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
@@ -10220,8 +10222,8 @@ exists to prevent.
 `scope` defaults to `view`, so every existing binding is unchanged.
 
 - Site: `src/core/data/bind-selection.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-one-filters-button
 
@@ -10579,9 +10581,9 @@ writes. A reading carries EITHER — never both.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -14390,13 +14392,13 @@ whose value has to be a string to live in an attribute — but a control wanting
 to right-align or sort numerically must read the row, not the state.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/validate.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/value-types.test.mjs`
 - Site: `src/core/data/field-catalogue.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-one-comparison-rule-for-query-and-ui
 
@@ -15048,6 +15050,7 @@ the one part of a slotted row the menu's sheet can reach, and read out through
 - Site: `test/unit/up-is-open-down-is-closed.test.mjs`
 - Site: `test/e2e/reforged-menu-row-note.spec.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-record-has-a-time-of-its-own
 
@@ -16550,7 +16553,7 @@ Query vanished at the first View pick: `setQuery` replaces the whole Query, and
 a View is a clean slate.
 
 The provider reads the attribute (the component's own, never inherited) into
-readings and calls `source.declareDefault('own:<id>', readings, { only: el })`: a scope
+readings and calls `source.query.declareDefault('own:<id>', readings, { only: el })`: a scope
 that narrows that one component, like a legend's. The source keeps it as a
 DEFAULT and puts it back under any Query that does not name that scope — a
 View, or a restore from before the component joined. A View's JSON may name
@@ -16569,7 +16572,6 @@ or `write` reports `component-part-on-a-page`. Bad JSON reports
 `provider-bad-readings`, and the component filters nothing of its own.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/data/query.ts`
@@ -17663,7 +17665,7 @@ bound to that ONE source obeys every part, so switching a series off in the
 bar chart's legend narrowed the grid, the metrics and the donut too.
 
 So a legend's answer is a SCOPE in the Query that `narrows` its one chart:
-`source.write(scope, field, reading, { only: el })`, which
+`source.query.write(scope, field, reading, { only: el })`, which
 `bindSelection(…, { only })` calls. `compile()` keeps it out of the shared
 filter and returns it under `only[bindId]`; `SourceBinding.push` applies it to that
 component's rows, and the push guard re-pushes when it changes. A bind's id is
@@ -17678,12 +17680,12 @@ The stub source the older scope tests use records `contributions` and never
 applies them, which is why none of them caught it; the new test uses a real
 `DataSource` with a chart and a grid bound.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/source-binding.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-chart-scope-is-its-legend-field
 

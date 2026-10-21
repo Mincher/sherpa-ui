@@ -1907,7 +1907,10 @@ the Query's reads — `reading`, `scope`, `scopes`, `holds`, `scopeOf`,
 `fields`, `canHold`, `defaultFor`, `partFacts`, `scopeFacts`, `scopeLabel`,
 `arranges`, `sets`, `pending`, `dirty` — are `source.query.X` only. Step 14:
 `declarePart`, `declareScope`, `declareSets` and `offer` are the context's,
-and each member hears them at once (`declareDefault` moves with `write`).
+and each member hears them at once (`declareDefault` moves with `write`). Step 15:
+the filter edits — `select`, `write`, `hold`, `move`, `request`, `release`,
+`suspendScope`, `suspendSelection`, `commit`, `discard` and `declareDefault`
+— are the context's; it edits the Query and each source runs its follow-ups.
 
 ---
 

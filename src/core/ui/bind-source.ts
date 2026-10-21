@@ -240,16 +240,16 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
         const ids = detail['ids'];
         const from = detail['from'];
         if (typeof detail['scope'] === 'string' && Array.isArray(ids)) {
-          source.request(detail['scope'], ids.map(String), typeof from === 'string' ? from : undefined);
+          source.query.request(detail['scope'], ids.map(String), typeof from === 'string' ? from : undefined);
         }
         return;
       }
       // A scoped bar's chips ARE its scope's holds, said in its event. TRAP T-a-bar-reports-its-holds
       const holds = detail['holds'];
-      if (typeof scope === 'string' && Array.isArray(holds)) source.hold(scope, holds.map(String));
+      if (typeof scope === 'string' && Array.isArray(holds)) source.query.hold(scope, holds.map(String));
       // The panel ASKS a scope to let one go. TRAP T-a-panel-asks-for-its-scopes
       else if (Array.isArray(scope) && typeof detail['scope'] === 'string' && typeof detail['id'] === 'string') {
-        source.release(detail['scope'], detail['id']);
+        source.query.release(detail['scope'], detail['id']);
       }
       return;
     }
@@ -269,8 +269,8 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       // TRAP T-apply-and-discard-wait-for-a-change
       const field = detail['field'];
       const at = typeof field === 'string' ? { field } : {};
-      if (type === 'filter-apply') source.commit(at);
-      else source.discard(at);
+      if (type === 'filter-apply') source.query.commit(at);
+      else source.query.discard(at);
       return;
     }
     case 'filter-change': {
@@ -283,7 +283,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
          every chip and every component part.
          TRAP T-one-query-builder-in-the-data-layer */
       const text = value == null ? '' : String(value);
-      source.select(field, [], { op: 'contains', text });
+      source.query.select(field, [], { op: 'contains', text });
       return;
     }
     case 'page-change': {

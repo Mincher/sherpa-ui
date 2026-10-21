@@ -32,7 +32,7 @@ test('a saved filter names a band, and filters by what the field declares', asyn
   const rows = [55, 60, 79, 80, 95].map((health, i) => ({ id: i + 1, health }));
   const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
   source.declareField('health', { type: 'number', min: 0, max: 100, thresholds: HEALTH });
-  source.select('health', [], source.readingsOf({ health: { band: 'Watch' } }).health);
+  source.query.select('health', [], source.readingsOf({ health: { band: 'Watch' } }).health);
   await source.load();
   assert.equal(source.debugState().total, 2);
   const heard = [];

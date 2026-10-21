@@ -86,8 +86,8 @@ test('a filter in a COMPONENT scope narrows the groups, with a summary bound bes
   });
   bindSource(src, chart, { rows: 'all', readonly: true });
   src.setGroup('team');
-  src.hold('data', ['team']);
-  src.write('data', 'team', { picked: ['Blue', 'Red'] });
+  src.query.hold('data', ['team']);
+  src.query.write('data', 'team', { picked: ['Blue', 'Red'] });
   await settle();
   assert.deepEqual(src.groups(), [
     { key: 'Blue', value: 'Blue', count: 3 },

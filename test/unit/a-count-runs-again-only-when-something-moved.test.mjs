@@ -21,7 +21,7 @@ async function setup() {
   source.declareValues('status', ['active', 'trial']);
   source.query.declareScope('data', { label: 'Records' });
   source.query.offer('data', ['status']);
-  source.hold('data', ['status']);
+  source.query.hold('data', ['status']);
   const drawn = [];
   const bar = Object.assign(new EventTarget(), {
     id: 'bar', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
@@ -60,7 +60,7 @@ test('a change to the rows counts again, though the Query is the same', async ()
 test('a scope\'s sets moving counts again: the order the chips count in is new', async () => {
   const { source, drawn } = await setup();
   source.query.offer('data', ['status', 'name']);
-  source.hold('data', ['status', 'name']);
+  source.query.hold('data', ['status', 'name']);
   source.answer('data', { status: { picked: ['active'] }, name: { picked: ['a', 'c'] } });
   await tick();
   assert.deepEqual(drawn.at(-1), ['data', { status: 2, name: 1 }]);

@@ -29,8 +29,8 @@ async function source() {
 
 test('a scope holds fields, in the order it was given them', async () => {
   const src = await source();
-  src.hold('view', ['customer', 'region']);
-  src.hold('data', ['owner', 'plan']);
+  src.query.hold('view', ['customer', 'region']);
+  src.query.hold('data', ['owner', 'plan']);
 
   assert.deepEqual(src.query.scope('view'), ['customer', 'region']);
   assert.deepEqual(src.query.scopes.sort(), ['data', 'view']);
@@ -40,8 +40,8 @@ test('a scope holds fields, in the order it was given them', async () => {
 
 test('holds() answers for one scope; scopeOf() finds the owner', async () => {
   const src = await source();
-  src.hold('view', ['customer']);
-  src.hold('data', ['owner']);
+  src.query.hold('view', ['customer']);
+  src.query.hold('data', ['owner']);
 
   assert.equal(src.query.holds('view', 'customer'), true);
   assert.equal(src.query.holds('data', 'customer'), false);
@@ -55,13 +55,13 @@ test('holds() answers for one scope; scopeOf() finds the owner', async () => {
 
 test('an empty list FORGETS a scope, and the answer is a copy', async () => {
   const src = await source();
-  src.hold('data', ['owner']);
+  src.query.hold('data', ['owner']);
   const held = src.query.scope('data');
   held.push('tampered');
   // A caller cannot reach in through the answer.
   assert.deepEqual(src.query.scope('data'), ['owner']);
 
-  src.hold('data', []);
+  src.query.hold('data', []);
   assert.deepEqual(src.query.scopes, []);
 });
 
@@ -70,14 +70,14 @@ test('scope-change fires on a real change, and NOT on a no-op', async () => {
   let heard = 0;
   src.addEventListener('scope-change', () => { heard += 1; });
 
-  src.hold('data', ['owner', 'plan']);
+  src.query.hold('data', ['owner', 'plan']);
   assert.equal(heard, 1);
 
   // The same list again is not news — a bar re-renders on this event.
-  src.hold('data', ['owner', 'plan']);
+  src.query.hold('data', ['owner', 'plan']);
   assert.equal(heard, 1);
 
-  src.hold('data', ['owner']);
+  src.query.hold('data', ['owner']);
   assert.equal(heard, 2);
 });
 
@@ -85,9 +85,9 @@ test('debugState says everything the source thinks is true', async () => {
   const src = await source();
   src.declareField('plan', { type: 'text', label: 'Plan' });
   src.declareValues('owner', ['Dana', 'Ravi']);
-  src.hold('data', ['owner']);
+  src.query.hold('data', ['owner']);
   src.setSort('owner', 'desc');
-  src.select('owner', ['Dana']);
+  src.query.select('owner', ['Dana']);
   await new Promise((r) => setTimeout(r, 40));
 
   const d = src.debugState();

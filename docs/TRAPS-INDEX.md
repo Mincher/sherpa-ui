@@ -21,8 +21,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — data-source
 - [T-a-chip-says-its-own-answer](TRAPS.md#t-a-chip-says-its-own-answer) — filter-face
 - [T-a-closed-source-hears-nothing](TRAPS.md#t-a-closed-source-hears-nothing) — data-source, spoof-remote
-- [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — data-source, query, query-context, query-edits
-- [T-a-component-part-narrows-one-component](TRAPS.md#t-a-component-part-narrows-one-component) — bind-selection, data-source, query, source-binding
+- [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — query, query-context, query-edits
+- [T-a-component-part-narrows-one-component](TRAPS.md#t-a-component-part-narrows-one-component) — bind-selection, query, query-context, source-binding
 - [T-a-condition-badge-says-that-not-which](TRAPS.md#t-a-condition-badge-says-that-not-which) — data, filter-face
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — store
 - [T-a-condition-tip-counts-its-rows](TRAPS.md#t-a-condition-tip-counts-its-rows) — filter-face
@@ -35,7 +35,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-failure-has-a-kind](TRAPS.md#t-a-failure-has-a-kind) — data-source, failure, spoof-remote
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — data-source-types, query-edits
 - [T-a-field-is-declared-once](TRAPS.md#t-a-field-is-declared-once) — data-source, data-source-types
-- [T-a-filter-applies-down-its-scope](TRAPS.md#t-a-filter-applies-down-its-scope) — bind-selection, data-source
+- [T-a-filter-applies-down-its-scope](TRAPS.md#t-a-filter-applies-down-its-scope) — bind-selection, query-context
 - [T-a-filter-report-is-the-whole-answer](TRAPS.md#t-a-filter-report-is-the-whole-answer) — data-source
 - [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context
 - [T-a-find-asks-its-host-to-step](TRAPS.md#t-a-find-asks-its-host-to-step) — data-source
@@ -72,7 +72,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types, query
 - [T-a-threshold-is-a-fact-of-the-field](TRAPS.md#t-a-threshold-is-a-fact-of-the-field) — aggregate, data-source-types, filter-state, threshold, where
 - [T-a-tooltip-is-not-an-axis](TRAPS.md#t-a-tooltip-is-not-an-axis) — format-tick
-- [T-a-value-can-be-an-object](TRAPS.md#t-a-value-can-be-an-object) — aggregate, data, data-source, field-catalogue, filter-state, store, validate
+- [T-a-value-can-be-an-object](TRAPS.md#t-a-value-can-be-an-object) — aggregate, data, field-catalogue, filter-state, query-context, store, validate
 - [T-a-view-held-heading-shows-and-refuses](TRAPS.md#t-a-view-held-heading-shows-and-refuses) — query, source-binding
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — data-source, query
 - [T-adapter-lives-at-the-binding](TRAPS.md#t-adapter-lives-at-the-binding) — source-binding
@@ -102,7 +102,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-fetch-does-not-reject-on-404](TRAPS.md#t-fetch-does-not-reject-on-404) — stores
 - [T-filter-fields-flattens-the-tree](TRAPS.md#t-filter-fields-flattens-the-tree) — store
 - [T-filter-is-data-not-a-predicate](TRAPS.md#t-filter-is-data-not-a-predicate) — store
-- [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — data-source, filter-state
+- [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — data-source, filter-state, query-context
 - [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — data-source, query, query-context, query-edits
 - [T-grouped-page-change-publishes-without-loading](TRAPS.md#t-grouped-page-change-publishes-without-loading) — data-source
 - [T-grouped-paging-belongs-to-the-view](TRAPS.md#t-grouped-paging-belongs-to-the-view) — data-source
@@ -112,7 +112,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-live-store-into-shares-one-feed](TRAPS.md#t-live-store-into-shares-one-feed) — live-stores
 - [T-local-store-is-not-for-bulk-data](TRAPS.md#t-local-store-is-not-for-bulk-data) — stores
 - [T-loose-equal-is-case-insensitive](TRAPS.md#t-loose-equal-is-case-insensitive) — store, walk
-- [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — data-source, filter-state, query
+- [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — filter-state, query, query-context
 - [T-max-rows-is-oldest-out-by-insertion](TRAPS.md#t-max-rows-is-oldest-out-by-insertion) — base-store, stores
 - [T-narrowing-constructor-is-not-useless](TRAPS.md#t-narrowing-constructor-is-not-useless) — live-stores
 - [T-no-op-load-guard](TRAPS.md#t-no-op-load-guard) — data-source, source-binding
@@ -153,7 +153,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-schema-guard-belongs-at-the-store](TRAPS.md#t-schema-guard-belongs-at-the-store) — base-store, stores
 - [T-schema-sample-cost](TRAPS.md#t-schema-sample-cost) — base-store
 - [T-select-all-is-the-visible-rows](TRAPS.md#t-select-all-is-the-visible-rows) — data-source
-- [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — data-source, data-source-types, query, query-edits
+- [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — data-source, data-source-types, query, query-context, query-edits
 - [T-series-count-is-ten-not-eleven](TRAPS.md#t-series-count-is-ten-not-eleven) — chart-datum, format-tick
 - [T-signal-not-a-teardown-list](TRAPS.md#t-signal-not-a-teardown-list) — bind-selection
 - [T-socket-send-refuses-rather-than-queues](TRAPS.md#t-socket-send-refuses-rather-than-queues) — live-stores
@@ -165,12 +165,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-data-entry-loads-no-dom](TRAPS.md#t-the-data-entry-loads-no-dom) — data
 - [T-the-data-says-what-a-field-may-hold](TRAPS.md#t-the-data-says-what-a-field-may-hold) — base-store, data-source, page-definition, store, validate
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data, data-source, field-catalogue, filter-state
-- [T-the-filter-switch-keeps-what-it-turned-off](TRAPS.md#t-the-filter-switch-keeps-what-it-turned-off) — data-source, data-source-types, query, query-edits
+- [T-the-filter-switch-keeps-what-it-turned-off](TRAPS.md#t-the-filter-switch-keeps-what-it-turned-off) — data-source-types, query, query-context, query-edits
 - [T-the-last-band-includes-its-top](TRAPS.md#t-the-last-band-includes-its-top) — aggregate
 - [T-the-top-gridline-rounds-to-its-magnitude](TRAPS.md#t-the-top-gridline-rounds-to-its-magnitude) — format-tick
 - [T-three-things-called-scope](TRAPS.md#t-three-things-called-scope) — bind-selection
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — filter-state
-- [T-up-is-open-down-is-closed](TRAPS.md#t-up-is-open-down-is-closed) — data, data-source
+- [T-up-is-open-down-is-closed](TRAPS.md#t-up-is-open-down-is-closed) — data, data-source, query-context
 - [T-view-state-lives-in-one-object](TRAPS.md#t-view-state-lives-in-one-object) — data-source
 
 ## Storage, saved Views and the URL (48)

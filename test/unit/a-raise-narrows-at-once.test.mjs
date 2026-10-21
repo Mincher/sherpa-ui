@@ -27,14 +27,14 @@ test('a field raised to the View narrows a chart over every row at once', async 
   const grid = { id: 'grid', populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} };
   bindSource(source, grid, { scope: 'data' });
   bindSource(source, chart, { readonly: true, rows: 'all' });
-  source.hold('data', ['plan']);
-  source.select('plan', ['Pro']);
+  source.query.hold('data', ['plan']);
+  source.query.select('plan', ['Pro']);
   await source.load();
   await settle();
   // The grid's own answer: the chart over the View sees every row.
   assert.deepEqual(drawn.at(-1), [1, 2, 3]);
   // RAISED: the View holds it now, and narrows the chart too.
-  source.move('plan', 'data', VIEW);
+  source.query.move('plan', 'data', VIEW);
   await source.load();
   await settle();
   assert.deepEqual(drawn.at(-1), [1, 3]);

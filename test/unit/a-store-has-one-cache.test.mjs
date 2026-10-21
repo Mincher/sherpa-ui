@@ -112,9 +112,9 @@ test('what a chip counts moves with the shared set', async () => {
   source.declareValues('tier', ['gold', 'silver']);
   source.query.declareScope('data', { label: 'Records' });
   source.query.offer('data', ['tier']);
-  source.hold('data', ['tier']);
+  source.query.hold('data', ['tier']);
   source.answer('data', { tier: { picked: ['gold'] } });
-  source.commit?.();
+  source.query.commit();
   await source.load();
   assert.deepEqual(await source.results('data'), { tier: 3 });
   await store.insert({ id: 7, tier: 'gold' });

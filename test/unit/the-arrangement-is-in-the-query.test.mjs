@@ -26,7 +26,7 @@ test('setSort lands in the scope it names, in the Query', () => {
 test('a filter edit after a sort, in a scope that holds nothing, keeps the sort', async () => {
   const source = make();
   source.setSort('name', 'asc', 'data');
-  source.select('plan', ['Pro']);
+  source.query.select('plan', ['Pro']);
   await source.load();
   assert.deepEqual(scopes(source).data.sort, [{ field: 'name', direction: 'asc' }]);
   assert.deepEqual(source.rows.map((r) => r.id), [1, 3]);

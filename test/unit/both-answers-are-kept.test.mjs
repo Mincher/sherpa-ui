@@ -51,12 +51,12 @@ test('a source keeps both answers, the mode and the mirror', async () => {
     { id: 1, owner: 'Dana' }, { id: 2, owner: 'Ravi' }, { id: 3, owner: 'Rex' }, { id: 4, owner: 'Mo' },
   ]) });
   await source.load();
-  source.write('data', 'owner', { ...BOTH, mode: 'simple', mirror: false });
+  source.query.write('data', 'owner', { ...BOTH, mode: 'simple', mirror: false });
   await source.load();
   assert.equal(source.debugState().total, 1);
   assert.deepEqual(source.query.reading('data', 'owner'), { ...BOTH, mode: 'simple', mirror: false });
 
-  source.write('data', 'owner', { ...BOTH, mode: 'advanced', mirror: false });
+  source.query.write('data', 'owner', { ...BOTH, mode: 'advanced', mirror: false });
   await source.load();
   // Ravi and Rex start with R.
   assert.equal(source.debugState().total, 2);

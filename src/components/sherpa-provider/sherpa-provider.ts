@@ -769,8 +769,8 @@ export class SherpaProvider extends SherpaElement {
       return undefined;
     }
     const scope = `own:${el.id || this.#ownId(el)}`;
-    source.declareDefault(scope, source.readingsOf(where), { only: el as Populatable });
-    return () => source.declareDefault(scope, undefined);
+    source.query.declareDefault(scope, source.readingsOf(where), { only: el as Populatable });
+    return () => source.query.declareDefault(scope, undefined);
   }
 
   /** A name for a component with no id, kept while it lives. */

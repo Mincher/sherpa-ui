@@ -25,12 +25,9 @@
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
  * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
- * - .write — Write ONE scope's reading of ONE field — a component's own answer.
- * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .answerScopes — The panel's answer: each field it changed.
- * - .release — A scope lets ONE field go.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
@@ -41,19 +38,12 @@
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
  * - .addable — What a scope may still add, each noting where it lives now.
  * - .valuesFor — What `declareValues` was told, as the data holds it.
- * - .select — Select values for a FIELD — the VIEW scope.
  * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
- * - .suspendScope — A bar's filter Switch: OFF stops every filter in force in a scope, keeping each; ON brings them back.
- * - .suspendSelection — Stop applying a field without forgetting it.
  * - .selection — one field's whole state, ready for any control to draw
  * - .selectedFields — Every field currently selected.
- * - .hold — Say what a scope holds now.
- * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
  * - .applyOn — Once per act, or LIVE while a value moves — never live when remote. Fixed by the options.
- * - .commit — SEND the draft — Apply, on a remote source.
- * - .discard — Put the applied answers back over the draft — Discard, on a remote source.
  * - .setSearch — the search text, across searchFields
  * - .setPage — which page to show
  * - .setPageSize — rows per page, or null for all
@@ -73,7 +63,6 @@
  * - .boundElements — Every component currently bound.
  * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
  * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
- * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
@@ -85,12 +74,11 @@ import { SourceBinding } from './source-binding.js';
 import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, arrangementOf, compile, copyReading, eachScope, emptyScope, filterKey, freezeReading, readingAnswered,
+  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
-  cameFrom, copyField, copyScope, definitionOf, homeOf, homes,
-  keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings,
+  cameFrom, definitionOf, homeOf, keepOff, readingOf, rehome, scopeEntry, viewHeldReadings,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
 import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
@@ -207,6 +195,11 @@ export class DataSource extends EventTarget {
     this.#member = this.#context.join({
       remote: this.#remote, showsRows: (scope) => this.#binding.showsRows(scope), bindOf: (el) => this.#binding.get(el),
       heard: (change) => this.#hear(change),
+      has: (field) => this.#catalogue.has(field),
+      raws: (field, picked) => {
+        const declared = this.#catalogue.byKey(field);
+        return picked.map((v) => declared.get(valueKey(v)) ?? v);
+      },
     });
     this.#autoLoad = options.autoLoad ?? true;
     this.#limitOptions = options.limitOptions ?? false;
@@ -436,81 +429,9 @@ export class DataSource extends EventTarget {
     this.#requery();
   }
 
-  /**
-   * Write ONE scope's reading of ONE field — a component's own answer, which no
-   * other control shares. `only` makes the scope NARROW that one bound
-   * component: a legend's switched-off series filter ITS chart, and nothing
-   * else. Its rows must be EVERY matching row — one page would lie about the
-   * total. `undefined` removes the reading.
-   * TRAP T-a-component-part-narrows-one-component · TRAP T-one-query-one-owner
-   */
-  write(scope: string, field: string, reading: FieldReading | undefined, at: { only?: BoundControl } = {}): void {
-    // A declared part narrows its own component, whoever writes it — a panel too.
-    const only = at.only ?? this.#narrowing.get(scope)?.only;
-    const bind = only ? this.#binding.get(only) : undefined;
-    if (reading && only && bind?.rows !== 'all') {
-      report({
-        code: 'component-part-on-a-page',
-        message: 'write: a scope that narrows one component needs a bound `rows: "all"` component.',
-        at: { scope, field },
-      });
-      return;
-    }
-    const entry = scopeEntry(this.#draft, scope);
-    if (bind) entry.narrows = [bind.id];
-    if (reading && readingAnswered(reading)) {
-      entry.readings[field] = copyReading(answerOf(reading));
-      if (!entry.holds.includes(field)) entry.holds = [...entry.holds, field];
-    } else {
-      Reflect.deleteProperty(entry.readings, field);
-      entry.holds = entry.holds.filter((f) => f !== field);
-    }
-    const narrows = entry.narrows ?? [];
-    prune(this.#draft);
-    /* A scope that narrows ONE component filters rows already here — no fetch,
-       so no Apply, even on a remote source. */
-    if (this.#remote && narrows.length) copyScope(this.#draft, this.#applied, scope);
-    this.#recompose();
-    // The shared filter did not move, so no load will push it: push it here.
-    this.#binding.pushTo(narrows);
-    this.dispatchEvent(new CustomEvent('selection-change', { detail: { field, scope } }));
-    // A panel shows a part too, and is told as a bar is. TRAP T-one-query-one-owner
-    if (this.#narrowing.has(scope)) {
-      const drawn = structuredClone(this.#draft.scopes[scope]?.readings[field] ?? { picked: [] });
-      this.#binding.drawPanelReading(field, drawn, scope);
-    }
-  }
 
 
 
-  /**
-   * A component's OWN default filter — readings that narrow `only` it — as its
-   * scope in the Query. It is put back under any Query that does not name that
-   * scope, so a View pick keeps it; `undefined` forgets it and its scope.
-   * TRAP T-a-component-default-outlives-a-view
-   */
-  declareDefault(
-    scope: string,
-    readings: Readonly<Record<string, FieldReading>> | undefined,
-    at: { only?: BoundControl } = {},
-  ): void {
-    const was = this.#draft.scopes[scope]?.readings ?? {};
-    if (!readings) {
-      this.#defaults.delete(scope);
-      for (const field of Object.keys(was)) this.write(scope, field, undefined);
-      return;
-    }
-    // Its OWN before the first write compiles, so a View-held field cannot set it aside.
-    this.#defaults.set(scope, emptyScope());
-    for (const field of Object.keys(was)) if (!(field in readings)) this.write(scope, field, undefined);
-    for (const [field, reading] of Object.entries(readings)) this.write(scope, field, reading, at);
-    const written = this.#draft.scopes[scope];
-    if (written) {
-      const own = structuredClone(written);
-      for (const r of Object.values(own.readings)) freezeReading(r);
-      this.#defaults.set(scope, Object.freeze(own));
-    } else this.#defaults.delete(scope);
-  }
 
 
 
@@ -525,8 +446,8 @@ export class DataSource extends EventTarget {
    */
   answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
     const was = Object.keys(this.#draft.scopes[scope]?.readings ?? {});
-    for (const field of was) if (!(field in readings)) this.select(field, []);
-    for (const [field, reading] of Object.entries(readings)) this.select(field, reading.picked ?? [], reading);
+    for (const field of was) if (!(field in readings)) this.#context.select(field, []);
+    for (const [field, reading] of Object.entries(readings)) this.#context.select(field, reading.picked ?? [], reading);
   }
 
   /**
@@ -605,25 +526,15 @@ export class DataSource extends EventTarget {
       for (const [id, reading] of Object.entries(fields)) {
         // A chart's own field narrows that chart alone. TRAP T-a-chart-scope-is-its-legend-field
         if (this.#narrowing.has(scope)) {
-          this.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
+          this.#context.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
           continue;
         }
-        this.select(id, reading.picked ?? [], reading);
+        this.#context.select(id, reading.picked ?? [], reading);
       }
     }
   }
 
-  /** A scope TAKES fields: each is held. */
-  #take(scope: string, ids: readonly string[]): void {
-    const fields = ids.filter((id) => !this.#context.holds(scope, id));
-    if (fields.length) this.hold(scope, [...this.#context.scope(scope), ...fields]);
-    this.#binding.drawBars(scope);
-  }
 
-  /** Remember, or forget, where a View field came up from, in both copies. */
-  #setCameFrom(field: string, from: string | undefined): void {
-    for (const query of new Set([this.#draft, this.#applied])) setCameFrom(query, field, from);
-  }
 
   /** The ONE scope a View field is sent down to: the one it came UP from,
    *  while that still has it, else the first that has it — a component's, in
@@ -636,42 +547,7 @@ export class DataSource extends EventTarget {
     return [...this.#offers.keys(), ...this.#narrowing.keys()].find(has);
   }
 
-  /** SEND a View field DOWN: the View lets go of it, and its answer goes to
-   *  the one scope named. TRAP T-send-to-view-filters */
-  #lower(field: string, to: string): void {
-    if (!this.#context.holds(VIEW, field)) return;
-    const answer = this.#context.reading(VIEW, field);
-    const part = this.#narrowing.get(to);
-    if (!part && !this.#context.canHold(to, field)) return;
-    /* ONE SCOPE AT A TIME. A scope the field came up from still holds its
-       place; left so, the field showed there AGAIN as it landed in another —
-       and its answer could land in either. Each lets go first, while the View
-       still holds the answer. Will, TODO 168. TRAP T-send-to-view-filters */
-    for (const [id, scope] of eachScope(this.#draft)) {
-      if (id === VIEW || id === to || !scope.holds.includes(field)) continue;
-      this.hold(id, scope.holds.filter((f) => f !== field));
-      this.#binding.drawBars(id);
-    }
-    // Held BELOW first, so the answer moves there and is not cleared.
-    if (!part && !this.#context.holds(to, field)) this.hold(to, [...this.#context.scope(to), field]);
-    this.hold(VIEW, this.#context.scope(VIEW).filter((f) => f !== field));
-    // A chart's own scope takes the picks; the View's answer went with its hold.
-    if (part) this.write(to, field, answer?.picked?.length ? { picked: [...answer.picked] } : undefined);
-    /* THE VIEW'S ANSWER WINS, whole — its mode and its rows. The bar below is
-       freed as the View lets go, and reports the answer IT kept from before
-       the field went up: an old one. TRAP T-send-to-view-filters */
-    else if (answer) this.select(field, answer.picked ?? [], answer);
-    this.#setCameFrom(field, undefined);
-    this.commit();
-    this.#binding.drawBars(VIEW);
-    if (!part) this.#binding.drawBars(to);
-  }
 
-  /** A scope lets ONE field go. */
-  release(scope: string, id: string): void {
-    this.hold(scope, this.#context.scope(scope).filter((f) => f !== id));
-    this.#binding.drawBars(scope);
-  }
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
 
@@ -830,36 +706,6 @@ export class DataSource extends EventTarget {
     return this.#catalogue.valuesFor(field);
   }
 
-  /**
-   * Select values for a FIELD — the VIEW scope. Every control over that field
-   * reads the same answer back from `selection()`; an empty list clears it.
-   * `reading` carries the rest of the question — the condition and its text.
-   *
-   * ONE SLOT PER FIELD, so this is the View's. A component that narrows only
-   * ITSELF must `write()` its own scope instead: a second writer here does
-   * not narrow, it REPLACES — measured, a legend switching one series off
-   * overwrote the View chip's own two picks, and the chip then re-drew showing
-   * the legend's answer as if the reader had chosen it.
-   * TRAP T-a-filter-applies-down-its-scope
-   */
-  select(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
-    /* A control hands back the KEY it was given, so it maps to the value the
-       row holds. A raw value is left alone.
-       TRAP T-a-value-can-be-an-object */
-    const declared = this.#catalogue.byKey(field);
-    const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
-    // Its OWN copy: a caller that edits its object after changes nothing here.
-    const next: FieldReading = copyReading({ ...answerOf(reading), picked: raws });
-    /* CONDITIONS count. A field answered only by rows — "starts with Go", or
-       an or-chain over two owners — has no picked values and no typed text, so
-       this deleted the reading and the filter never applied.
-       TRAP T-many-conditions-are-one-reading */
-    setReading(this.#draft, field, readingAnswered(next) ? next : undefined);
-    this.#recompose();
-    // AFTER the requery, so a listener sees the state the rows were fetched for.
-    this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
-    this.#draw(field);
-  }
 
   /**
    * TELL EACH BAR over this field's scope what it now holds — a chip, a heading
@@ -920,45 +766,7 @@ export class DataSource extends EventTarget {
     return groupSummaries(rows, field);
   }
 
-  /**
-   * A bar's filter Switch. OFF stops every answer in force in this scope,
-   * keeping each; ON brings back exactly those. While it is off,
-   * nothing comes into force there. TRAP T-the-filter-switch-keeps-what-it-turned-off
-   */
-  suspendScope(scope: string, suspended = true): void {
-    if (suspended === !!this.#draft.scopes[scope]?.suspended) return;
-    const entry = scopeEntry(this.#draft, scope);
-    let fields: string[];
-    if (suspended) {
-      entry.suspended = { fields: [] };
-      this.#recompose();
-      fields = [...entry.suspended.fields];
-    } else {
-      const off = entry.suspended!;
-      delete entry.suspended;
-      fields = off.fields.filter((f) => f in entry.readings);
-      for (const f of fields) {
-        const { suspended: _off, ...on } = entry.readings[f]!;
-        entry.readings[f] = on;
-      }
-      prune(this.#draft);
-      this.#recompose();
-    }
-    // The Switch is its scope's Apply, remote too.
-    this.commit({ scope });
-    for (const field of fields) {
-      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
-      this.#draw(field);
-    }
-    this.#binding.drawBars(scope);
-  }
 
-  /** Stop applying a field without forgetting it. TRAP T-grid-suspend-is-not-clear */
-  suspendSelection(field: string, suspended = true): void {
-    const held = readingOf(this.#draft, field);
-    if (!held) return;
-    this.select(field, held.picked ?? [], { ...held, suspended });
-  }
 
   /**
    * One field's whole state — picked, unpicked, the condition — ready for a
@@ -986,36 +794,6 @@ export class DataSource extends EventTarget {
 
 
 
-  /** Say what a scope holds now. An empty list forgets the scope. */
-  hold(name: string, fields: readonly string[]): void {
-    const next = [...fields];
-    const before = this.#draft.scopes[name]?.holds ?? [];
-    // A no-op must not wake every listener — a bar re-renders on this.
-    if (before.length === next.length && before.every((f, i) => f === next[i])) return;
-    /* LET GO, and held nowhere else: its answer goes with it. Removing a chip
-       is a clear — without this the filter moved to the View, and kept
-       filtering with no chip on screen. Cleared FIRST, while this scope still
-       holds it, so the controls over this scope are drawn the clear.
-       TRAP T-one-query-one-owner */
-    const elsewhere = (field: string): boolean => eachScope(this.#draft)
-      .some(([id, s]) => id !== name && s.holds.includes(field));
-    for (const field of before) {
-      if (!next.includes(field) && !elsewhere(field) && readingOf(this.#draft, field)) this.select(field, []);
-    }
-    const was = homes(this.#draft);
-    scopeEntry(this.#draft, name).holds = next;
-    rehome(this.#draft);
-    /* RAISING CARRIES THE ANSWER, and lowering brings it back: an answer that
-       moved scope narrows from where it lives now, at once, and is drawn there.
-       TRAP T-up-is-open-down-is-closed */
-    const now = homes(this.#draft);
-    const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
-    if (moved.length) this.#recompose();
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
-    for (const field of moved) this.#draw(field);
-    if (name === VIEW) this.#syncSuperseded(true);
-    this.#binding.drawScopesSoon();
-  }
 
   /** Each grid below the View is told the fields the View holds, as APPLIED. */
   #syncColumns(): void {
@@ -1042,35 +820,6 @@ export class DataSource extends EventTarget {
 
 
 
-  /**
-   * Move a filter between scopes — ONE call, because the removal is not
-   * optional. Two `hold()`s could be interrupted between them, and a field
-   * filtered in both the view and a component has nobody owning it.
-   *
-   * RAISED to the view, it leaves EVERY component: the view narrows them all.
-   * LOWERED, it leaves the view and lands in one component. Returns whether
-   * it moved; a component that does not have the field refuses, and says so.
-   */
-  move(field: string, from: string, to: string): boolean {
-    if (!this.#context.canHold(to, field)) {
-      report({
-        code: 'scope-refused',
-        message: 'move: a component scope may hold only its own fields.',
-        at: { field, from, to, offers: (this.#offers.get(to) ?? []).join(',') },
-      });
-      return false;
-    }
-    const was = homes(this.#draft);
-    const touched = moveHold(this.#draft, field, from, to);
-    rehome(this.#draft);
-    // An answer that moved narrows from where it lives now, at once. TRAP T-up-is-open-down-is-closed
-    const now = homes(this.#draft);
-    if ([...now].some(([f, home]) => was.get(f) !== home)) this.#recompose();
-    // ONE event, naming every scope that changed — a listener never sees the
-    // field in neither place, or in both.
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: touched } }));
-    return true;
-  }
 
   /**
    * EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
@@ -1193,21 +942,74 @@ export class DataSource extends EventTarget {
     return !!this.store.remote;
   }
 
-  /** A declaration its context made: today's follow-ups, in today's order. 366 step 14 */
+  /** What its context did: today's follow-ups, in today's order. 366 steps 14-15 */
   #hear(change: QueryChange): void {
-    if (change.kind === 'offer') {
-      this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
-      // What its menus may add moved: the walk tallies it.
-      if (this.#loaded) this.#walkSoon();
-      return;
+    switch (change.kind) {
+      case 'offer':
+        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
+        // What its menus may add moved: the walk tallies it.
+        if (this.#loaded) this.#walkSoon();
+        return;
+      case 'part':
+      case 'sets':
+        this.#age++;
+        // A legend declared after the last load is told what the View leaves it; a
+        // set's order is the order every chip counts in.
+        if (this.#loaded) this.#walkSoon();
+        // Sent up, the View holds its field — and draws only a field it knows.
+        if (change.kind === 'part' && change.field && !this.#catalogue.has(change.field)) this.declareField(change.field);
+        this.#binding.drawScopesSoon();
+        return;
+      case 'write':
+        this.#recompose();
+        // The shared filter did not move, so no load will push it: push it here.
+        this.#binding.pushTo(change.narrows);
+        this.dispatchEvent(new CustomEvent('selection-change', { detail: { field: change.field, scope: change.scope } }));
+        // A panel shows a part too, and is told as a bar is. TRAP T-one-query-one-owner
+        if (this.#narrowing.has(change.scope)) {
+          const drawn = structuredClone(this.#draft.scopes[change.scope]?.readings[change.field] ?? { picked: [] });
+          this.#binding.drawPanelReading(change.field, drawn, change.scope);
+        }
+        return;
+      case 'select':
+        this.#recompose();
+        // AFTER the requery, so a listener sees the state the rows were fetched for.
+        this.dispatchEvent(new CustomEvent('selection-change', { detail: { field: change.field } }));
+        this.#draw(change.field);
+        return;
+      case 'hold':
+        if (change.moved.length) this.#recompose();
+        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
+        for (const field of change.moved) this.#draw(field);
+        if (change.scope === VIEW) this.#syncSuperseded(true);
+        this.#binding.drawScopesSoon();
+        return;
+      case 'move':
+        if (change.moved) this.#recompose();
+        // ONE event, naming every scope that changed — a listener never sees the
+        // field in neither place, or in both.
+        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: change.scopes } }));
+        return;
+      case 'recompose':
+        this.#recompose();
+        return;
+      case 'commit':
+        this.#recompose();
+        // The headings show what is APPLIED.
+        this.#syncColumns();
+        return;
+      case 'drawn':
+        for (const field of change.fields) {
+          this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+          this.#draw(field);
+        }
+        if (change.bars) this.#binding.drawBars(change.bars);
+        if (change.pending) this.#syncPending();
+        return;
+      case 'bars':
+        this.#binding.drawBars(change.scope);
+        return;
     }
-    this.#age++;
-    // A legend declared after the last load is told what the View leaves it; a
-    // set's order is the order every chip counts in.
-    if (this.#loaded) this.#walkSoon();
-    // Sent up, the View holds its field — and draws only a field it knows.
-    if (change.kind === 'part' && change.field && !this.#catalogue.has(change.field)) this.declareField(change.field);
-    this.#binding.drawScopesSoon();
   }
 
   /** A definition as a whole Query: definitionOf, over this source. */
@@ -1219,31 +1021,7 @@ export class DataSource extends EventTarget {
     }, copy);
   }
 
-  /** SEND the draft — Apply, on a remote source. One field, one scope, or all. It loads. */
-  commit(at: { scope?: string; field?: string } = {}): void {
-    if (!this.#remote) return;
-    if (at.field) copyField(this.#draft, this.#applied, at.field);
-    else if (at.scope) copyScope(this.#draft, this.#applied, at.scope);
-    else this.#applied = structuredClone(this.#draft);
-    this.#recompose();
-    // The headings show what is APPLIED.
-    this.#syncColumns();
-  }
 
-  /** Put the applied answers back over the draft — Discard, on a remote source.
-   *  One field, one scope, or all. Every control over them is drawn the applied answer. */
-  discard(at: { scope?: string; field?: string } = {}): void {
-    if (!this.#remote) return;
-    const before = new Set(this.selectedFields);
-    if (at.field) copyField(this.#applied, this.#draft, at.field);
-    else if (at.scope) copyScope(this.#applied, this.#draft, at.scope);
-    else this.#draft = structuredClone(this.#applied);
-    for (const field of new Set([...before, ...this.selectedFields])) {
-      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
-      this.#draw(field);
-    }
-    this.#syncPending();
-  }
 
 
 
@@ -1971,12 +1749,12 @@ export class DataSource extends EventTarget {
   }): void {
     const off = this.#draft.scopes[scope]?.suspended;
     if (answer.reset && off) this.#draft.scopes[scope]!.suspended = { fields: [] };
-    if (answer.holds) this.hold(scope, [...answer.holds]);
+    if (answer.holds) this.#context.hold(scope, [...answer.holds]);
     this.answer(scope, answer.readings);
     // The answer first, then the Switch: OFF lists what that answer has in force.
-    if (answer.suspended !== undefined) this.suspendScope(scope, answer.suspended);
+    if (answer.suspended !== undefined) this.#context.suspendScope(scope, answer.suspended);
     // A bar's report IS its Apply: its menus waited for it, remote.
-    this.commit();
+    this.#context.commit();
   }
 
   /** A HEADING's answer is its field's, in its grid's scope — and a field no
@@ -1984,32 +1762,13 @@ export class DataSource extends EventTarget {
    *  TRAP T-a-heading-asks-through-the-source */
   answerColumn(scope: string, field: string, reading: FieldReading | null): void {
     const fresh = !!reading && !this.#context.scopeOf(field) && this.#context.canHold(scope, field);
-    if (fresh) this.hold(scope, [...this.#context.scope(scope), field]);
-    this.select(field, reading?.picked ?? [], reading ?? {});
+    if (fresh) this.#context.hold(scope, [...this.#context.scope(scope), field]);
+    this.#context.select(field, reading?.picked ?? [], reading ?? {});
     // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
-    this.commit();
+    this.#context.commit();
     if (fresh) this.#binding.drawBars(scope);
   }
 
-  /** Move fields into a scope — sent DOWN from the View to the one scope
-   *  named, or UP from a chart with its answer. TRAP T-send-to-view-filters */
-  request(scope: string, ids: readonly string[], from?: string): void {
-    if (from === VIEW && scope !== VIEW) {
-      for (const id of ids) this.#lower(id, scope);
-      return;
-    }
-    if (scope === VIEW && from) for (const id of ids) this.#setCameFrom(id, from);
-    const part = from ? this.#narrowing.get(from) : undefined;
-    const answer = part && from ? this.#context.reading(from, part.field) : undefined;
-    this.#take(scope, [...ids]);
-    // The chart lets go of it: the View narrows every component now.
-    if (part && answer && from && ids.includes(part.field)) {
-      this.write(from, part.field, undefined);
-      this.select(part.field, answer.picked ?? [], answer);
-      this.commit();
-      this.#binding.drawBars(scope);
-    }
-  }
 
   /** The grid's own page count, when every matching row is already in hand:
    *  the pager's numbers publish again, and nothing loads. */

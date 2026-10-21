@@ -87,7 +87,7 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
     }
     // A child is never offered on its own: its picks are its parent's. TODO 369
     if (facts.offers) source.query.offer(scope, facts.offers === 'all' ? fields.filter((f) => !children.has(f)) : facts.offers);
-    if (facts.holds) source.hold(scope, facts.holds);
+    if (facts.holds) source.query.hold(scope, facts.holds);
     for (const set of facts.sets ?? []) {
       for (const field of set.fields) {
         if (facts.holds?.includes(field)) continue;

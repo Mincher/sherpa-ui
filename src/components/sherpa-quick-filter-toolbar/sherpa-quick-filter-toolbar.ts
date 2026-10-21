@@ -989,7 +989,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#sourced && !this.#switchable) {
       report({
         code: 'filter-switch-hidden',
-        message: 'filtersSuspended was set on a bar its source draws, and it shows no Switch. Add data-switchable, or call source.suspendScope().',
+        message: 'filtersSuspended was set on a bar its source draws, and it shows no Switch. Add data-switchable, or call source.query.suspendScope().',
       });
       return;
     }

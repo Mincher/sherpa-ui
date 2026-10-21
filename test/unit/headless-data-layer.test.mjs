@@ -69,7 +69,7 @@ test('a Store and a DataSource run headless — query and mutate', async () => {
   assert.equal(source.rows.length, 25, 'paged');
   assert.equal(source.total, 500);
 
-  source.select('plan', ['Pro']);
+  source.query.select('plan', ['Pro']);
   await settle();
   assert.equal(source.total, 333, 'filtered');
 
@@ -157,12 +157,12 @@ test('F1: a load asking the SAME question twice is skipped', async () => {
   // Twenty writes of the SAME filter. A chip re-emitting its state, a view
   // re-applying what it already applied, an attribute syncing back — all
   // arrive here, and all are free to ignore.
-  for (let i = 0; i < 20; i += 1) source.select('plan', ['Pro']);
+  for (let i = 0; i < 20; i += 1) source.query.select('plan', ['Pro']);
   await settle();
   assert.equal(storeLoads, 2, 'only the FIRST of the twenty reached the store');
 
   // A genuine change still reads.
-  source.select('plan', ['Free']);
+  source.query.select('plan', ['Free']);
   await settle();
   assert.equal(storeLoads, 3);
 });
@@ -202,11 +202,11 @@ test('F2: a component is not re-populated with rows it already holds', async () 
 
   // Same filter, twenty times. Even if F1 let a load through, the rows array
   // would be the same reference and the push is skipped.
-  for (let i = 0; i < 20; i += 1) source.select('plan', ['Pro']);
+  for (let i = 0; i < 20; i += 1) source.query.select('plan', ['Pro']);
   await settle();
   const afterIdentical = populates;
 
-  source.select('plan', ['Free']);
+  source.query.select('plan', ['Free']);
   await settle();
   assert.ok(populates > afterIdentical, 'a REAL change still populates');
 });
@@ -243,7 +243,7 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
 
   // ONE TICK — a view setting three things in one handler. It used to ask the
   // store three times and throw two answers away.
-  source.select('plan', ['Pro']);
+  source.query.select('plan', ['Pro']);
   source.setSort('spend', 'desc');
   source.setPageSize(10);
   await settle();
@@ -259,7 +259,7 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
   // which is a policy about how fast people type and belongs to the caller.
   const beforeTyping = storeLoads;
   for (const term of ['n1', 'n12', 'n123']) {
-    source.select('name', [], { op: 'contains', text: term });
+    source.query.select('name', [], { op: 'contains', text: term });
     await settle();
   }
   assert.equal(storeLoads - beforeTyping, 3, 'one load per tick, as asked');
@@ -375,7 +375,7 @@ test('S11: a whole Query restores in ONE load', async () => {
   // A person narrows things down…
   const before = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
   await before.load();
-  before.select('plan', ['Pro']);
+  before.query.select('plan', ['Pro']);
   before.setSort('spend', 'desc');
   await settle();
 
@@ -844,8 +844,8 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
 
   source.query.declareScope('view', { label: 'App header' });
   source.query.offer('grid', ['plan', 'seats', 'email', 'undeclared']);
-  source.hold('grid', ['plan']);
-  source.hold('view', ['seats']);
+  source.query.hold('grid', ['plan']);
+  source.query.hold('view', ['seats']);
   // Held here is not offered, nor below the View what the View holds; undeclared never.
   assert.deepEqual(source.addable('grid').map((d) => [d.id, d.note]), [['email', undefined]]);
   // UP IS OPEN: the View is offered a component's field, and told where it lives.
@@ -920,7 +920,7 @@ test('a grid heading answers through the source, and is told what the View holds
   assert.deepEqual(source.query.applied.scopes.data.readings.plan.picked, ['Pro']);
   assert.deepEqual(barDrawn.at(-1), ['plan']);
 
-  source.hold('view', ['region']);
+  source.query.hold('view', ['region']);
   source.answer('view', { region: { picked: ['EMEA'] } });
   assert.deepEqual(columns.at(-1), [{ region: { picked: ['EMEA'] } }, 'View filters']);
 });
@@ -940,7 +940,7 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   bindSource(source, tile, { rows: 'all', readonly: true });
   bindSource(source, other, { rows: 'all', readonly: true });
   await source.load();
-  source.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
+  source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), [1, 3]);
   assert.deepEqual(seen.get('other'), [1, 2, 3]);
@@ -948,7 +948,7 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   await source.setQuery({ v: 1, scopes: { view: { holds: [], readings: {} } } }, { holds: 'keep' });
   assert.deepEqual(source.query.applied.scopes['own:tile'].readings.sev.picked, ['critical']);
   // Forgotten, it narrows nothing.
-  source.declareDefault('own:tile', undefined);
+  source.query.declareDefault('own:tile', undefined);
   assert.equal(source.query.applied.scopes['own:tile'], undefined);
 });
 
@@ -964,9 +964,9 @@ test('declareDefault on a field the View holds still narrows its component', asy
   });
   const tile = stub('tile');
   bindSource(source, tile, { rows: 'all', readonly: true });
-  source.hold('view', ['sev']);
+  source.query.hold('view', ['sev']);
   await source.load();
-  source.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
+  source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), [1, 3]);
   // The View's own answer narrows it too, under the tile's.
@@ -989,9 +989,9 @@ test('export and import: a round trip through JSON gives the same rows', async (
     return s;
   };
   const a = make();
-  a.hold('view', ['plan']);
+  a.query.hold('view', ['plan']);
   a.answer('view', { plan: { picked: ['Pro', 'Enterprise'] } });
-  a.hold('grid', ['seats']);
+  a.query.hold('grid', ['seats']);
   a.answer('grid', { seats: { op: 'gt', text: '10' } });
   a.setSort('seats', 'desc');
   await a.load();

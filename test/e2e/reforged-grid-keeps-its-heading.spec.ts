@@ -56,11 +56,11 @@ test('a bound filter pick draws the body at most twice, and makes no heading cel
     source.declareValues('status', ['active', 'trial']);
     source.declareValues('region', ['EMEA', 'APAC']);
     bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
-    source.select('region', ['EMEA']);
+    source.query.select('region', ['EMEA']);
     await source.load();
     await settle();
     const seen = count();
-    source.select('status', ['active']);
+    source.query.select('status', ['active']);
     await settle();
     return { ...seen, total: source.total };
   })()`);
@@ -126,7 +126,7 @@ test('a pick, a sort and a page make no new heading component', async ({ page })
     };
     const head = () => all(grid.shadowRoot.querySelector('.head-row'));
     const before = new Set(head());
-    source.select('status', ['active']);
+    source.query.select('status', ['active']);
     await settle();
     source.setSort('name', 'desc');
     await settle();
@@ -157,7 +157,7 @@ test('an open heading menu survives a push, with its search and its draft', asyn
     if (search) search.value = 'act';
     menu.values = ['active'];
     // Another control changes ANOTHER field: the rows move, the heading is pushed.
-    source.select('region', ['EMEA']);
+    source.query.select('region', ['EMEA']);
     await settle();
     const now = grid.shadowRoot.querySelector('.head-cell[data-field="status"] sherpa-menu');
     return { same: now === menu, open: !!menu.open, search: search ? search.value : 'none', draft: menu.values, total: source.total };
@@ -174,7 +174,7 @@ for (const how of ['clear', 'remove'] as const) {
       const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
       source.declareValues('status', ['active', 'trial']);
       bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
-      source.select('status', ['active']);
+      source.query.select('status', ['active']);
       await source.load();
       await settle();
       window.__source = source;
