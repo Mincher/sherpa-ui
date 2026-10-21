@@ -69,6 +69,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
 | ✅ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
+| ❓ | 0zr | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1558,6 +1559,25 @@ in the Gallery; nothing in sherpa-ui changes.
 **✅ Done 2026-10-20** (Gallery `6ca9655`): the gauge story writes `min` and `max`,
 and five variant stories step the enums. Gallery node 3/3, Playwright 207.
 
+### `[ ]` ❓ 388 — ASK: what a page with no provider keeps across a reload
+
+Found 2026-10-21, building 366 steps 10 and 11; the plan's "Still open" and its
+last check both name it. Step 10: `persistView` keeps each component's state
+only, so a page bound by hand with `bindSource`, and no `<sherpa-provider>`,
+loses its filters and sort on a reload. Step 11: `setState` goes, and with it
+the page-last restore (`T-set-state-merges-page-last`), so no page gets its
+page NUMBER back — with or without a provider.
+
+Every app built on Sherpa today (Demos, the Gallery) has a provider, and none
+restores a page number, so nothing visible breaks. The question is whether a
+door is wanted:
+
+- A: no door. A page that wants these uses a provider; a page number is not kept.
+- B: the provider keeps the page number with the Query.
+- C: `persistView` takes `{ query: true }` again, for a page with no provider.
+
+My pick: A, until a page asks — it is the plan's ruling, said as a loss.
+
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 
 Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
@@ -1868,7 +1888,10 @@ sort, group and a suspended sort are in the Query, in the ONE scope that
 arranges — so a reload keeps the sort, and Reset to default clears it. Step 9:
 the search is in the Query too, with the sort, and Demos' Find box draws it.
 Step 10: a ViewSnapshot is `{ v: 2, query, elements }`, put back by
-`setQuery`; `persistView` keeps each component's state only.
+`setQuery`; `persistView` keeps each component's state only. Step 11:
+`setFilter`, `setState` and the starting `filter` option go — the Query is the
+one way in; `state.filter` stays, read only. 388 asks what a page with no
+provider keeps.
 
 ---
 

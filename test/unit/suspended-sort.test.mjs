@@ -96,19 +96,19 @@ test('a new sort replaces a suspended one rather than shadowing it', async () =>
       'the reader had moved on from');
 });
 
-test('setState carries the memory, so a saved view restores mid-suspend', async () => {
+test('the Query carries the memory, so a saved view restores mid-suspend', async () => {
   const s = make();
-  s.setState({ sort: [], sortSuspended: { field: 'n', direction: 'desc' } });
+  await s.setQuery({ v: 1, scopes: { view: { sort: [], sortSuspended: { field: 'n', direction: 'desc' } } } });
   await settle();
   assert.deepEqual(s.state.sortSuspended, { field: 'n', direction: 'desc' });
   s.resumeSort();
   await settle();
   assert.deepEqual(s.rows.map((r) => r.n), ['c', 'b', 'a']);
 
-  // And an explicit undefined CLEARS it.
+  // And a Query that names none CLEARS it.
   s.setSort(null);
   await settle();
-  s.setState({ sortSuspended: undefined });
+  await s.setQuery({ v: 1, scopes: { view: { sort: [] } } });
   await settle();
   assert.equal(s.state.sortSuspended, undefined);
 });

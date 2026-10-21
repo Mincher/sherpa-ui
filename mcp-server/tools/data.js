@@ -248,13 +248,17 @@ export function register(server) {
     {
       title: "Run a Query Against Sample Rows",
       description:
-        "Build a real ArrayStore + DataSource over sample rows, apply a query, and show exactly what a bound component would receive — rows, `total` before paging, and the groups if grouped. This is the real data layer running in Node, not a simulation, so `[field, op, value]` filters, dotted paths, sorting, search and paging behave here precisely as they will in the browser. Use it to check a filter grammar before wiring it, or to see why a grid is empty.",
+        "Build a real ArrayStore + DataSource over sample rows, apply a query, and show exactly what a bound component would receive — rows, `total` before paging, and the groups if grouped. This is the real data layer running in Node, not a simulation, so conditions, dotted paths, sorting, search and paging behave here precisely as they will in the browser. Give `where` for a page's own conditions (the Query's grammar), or `filter` for what a store is sent (`[field, op, value]`). Use it to check a filter before wiring it, or to see why a grid is empty.",
       inputSchema: {
         rows: z.string().describe("The records, as a JSON array of plain objects."),
         filter: z
           .string()
           .optional()
-          .describe('A filter as JSON: `["status","eq","active"]`, or `["and",["health","lt",60],["tickets","gt",2]]`. Operators: eq ne lt lte gt gte contains notcontains startswith endswith in notin between notbetween.'),
+          .describe('The STORE\'s grammar — what a backend is sent — as JSON: `["status","eq","active"]`, or `["and",["health","lt",60],["tickets","gt",2]]`. Runs as `store.load()`. Operators: eq ne lt lte gt gte contains notcontains startswith endswith in notin between notbetween.'),
+        where: z
+          .string()
+          .optional()
+          .describe('A page\'s own conditions, as a View writes them, as JSON: `{"status":{"eq":"active"},"health":{"lt":60}}`. Runs through a DataSource\'s Query, as a page does. Give this or `filter`, not both.'),
         sort: z
           .string()
           .optional()
@@ -307,7 +311,7 @@ export function register(server) {
       };
 
       const parsed = {};
-      for (const f of ["filter", "sort", "searchFields"]) {
+      for (const f of ["filter", "where", "sort", "searchFields"]) {
         if (args[f] === undefined || args[f] === "") continue;
         try { parsed[f] = JSON.parse(args[f]); }
         catch (e) { return err(`${f} is not valid JSON: ${e.message}`); }
@@ -322,44 +326,58 @@ export function register(server) {
         }
       }
 
+      if (parsed.filter && parsed.where) {
+        return err("give `filter` or `where`, not both: `filter` is the store's grammar, `where` the Query's, which a DataSource compiles to a filter.");
+      }
+
       const keyField = args.key ?? "id";
       const pageSize = args.pageSize ?? 25;
       const page = Math.max(1, args.page ?? 1);
-      let sortNote = null;
       let actualPage = page;
-
-      let source, result, totalPages;
+      const sortList = parsed.sort ? (Array.isArray(parsed.sort) ? parsed.sort : [parsed.sort]) : undefined;
+      // What the store is asked besides the filter and the page: the same on both paths.
+      const asked = {
+        ...(sortList ? { sort: sortList } : {}),
+        ...(args.search ? { search: args.search } : {}),
+        ...(parsed.searchFields ? { searchFields: parsed.searchFields } : {}),
+      };
+      // Grouped, every matching row comes back, as a grouped source asks: the grid cuts the page.
+      const paged = args.group ? {} : { skip: (page - 1) * pageSize, take: pageSize };
+      const view = {
+        ...(parsed.where ? { where: parsed.where } : {}), ...(sortList ? { sort: sortList } : {}),
+        ...(args.group ? { group: args.group } : {}), ...(args.search ? { search: args.search } : {}),
+      };
+      let result, totalPages, groups, filter = parsed.filter;
       try {
         const store = new dl.ArrayStore(rowList, { key: keyField });
-        // `searchFields` is a CONSTRUCTOR option, not a setter.
-        source = new dl.DataSource({ store, pageSize, searchFields: parsed.searchFields });
-        // Set the query the way a host does, then load ONCE — the real path.
-        if (parsed.filter) source.setFilter(parsed.filter);
-        if (parsed.sort) {
-          // setSort takes (field, direction), NOT a SortSpec array.
-          const first = Array.isArray(parsed.sort) ? parsed.sort[0] : parsed.sort;
-          if (first) source.setSort(first.field ?? null, first.direction ?? 'asc');
-          if (Array.isArray(parsed.sort) && parsed.sort.length > 1) {
-            sortNote = `only the FIRST sort was applied — \`setSort\` takes one field`;
+        if (parsed.filter) {
+          // THE STORE'S GRAMMAR, asked of the store itself.
+          result = await store.load({ filter: parsed.filter, ...asked, ...(args.group ? { group: args.group } : {}), ...paged });
+          totalPages = Math.max(1, Math.ceil((result.total ?? 0) / pageSize));
+          if (args.group) groups = dl.groupSummaries(result.rows ?? [], args.group);
+        } else {
+          // THE QUERY'S GRAMMAR, through a DataSource, as a page does: one setQuery, then load once.
+          // `searchFields` is a CONSTRUCTOR option, not a setter.
+          const source = new dl.DataSource({ store, pageSize, searchFields: parsed.searchFields });
+          await source.setQuery({ v: 1, scopes: { view } });
+          await source.load();
+          /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
+             silently discarded — the page is a position in a result that does not
+             exist yet. `setPage` runs its own load, so await the settle. */
+          if (page > 1) {
+            source.setPage(page);
+            await new Promise((r) => setTimeout(r, 0));
           }
+          result = source.result;
+          totalPages = source.totalPages;
+          if (args.group) groups = source.groups(args.group);
+          filter = source.state.filter;
+          // READ THE PAGE BACK. Page 9 of 2 does not fail — the source resets to
+          // page 1, so the REQUESTED page would print over the wrong rows.
+          actualPage = source.state.page;
         }
-        if (args.search) source.setSearch(args.search);
-        if (args.group) source.setGroup(args.group);
-        await source.load();
-        /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
-           silently discarded — the page is a position in a result that does not
-           exist yet. `setPage` runs its own load, so await the settle. */
-        if (page > 1) {
-          source.setPage(page);
-          await new Promise((r) => setTimeout(r, 0));
-        }
-        result = source.result;
-        totalPages = source.totalPages;
-        // READ THE PAGE BACK. Page 9 of 2 does not fail — the source resets to
-        // page 1, so the REQUESTED page would print over the wrong rows.
-        actualPage = source.state?.page ?? page;
       } catch (e) {
-        return err(`the query failed: ${e.message}\n\nThe grammar is \`[field, op, value]\` — a filter is DATA, not a predicate, so it can be sent to a backend. See \`sherpa://data-rules\`.`);
+        return err(`the query failed: ${e.message}\n\nA \`filter\` is \`[field, op, value]\` and a \`where\` is \`{ field: { op: value } }\` — DATA, not a predicate, so either can be sent to a backend. See \`sherpa://data-rules\`.`);
       }
 
       const rows = result.rows ?? [];
@@ -372,7 +390,6 @@ export function register(server) {
       lines.push(`- **page** ${actualPage} of ${pages || 1}, ${pageSize} per page`);
       if (actualPage !== page) lines.push(`- ⚠️ page ${page} was asked for; there ${pages === 1 ? "is only 1 page" : `are only ${pages}`}, so the source reset to page ${actualPage}`);
       if (total !== rowList.length) lines.push(`- narrowed from ${rowList.length} input row(s) by the query`);
-      if (sortNote) lines.push(`- ⚠️ ${sortNote}`);
       if (result.dropped) lines.push(`- ⚠️ **${result.dropped} row(s) DROPPED** by a schema — see \`issues\``);
       lines.push("");
 
@@ -400,11 +417,7 @@ export function register(server) {
         }
         let data;
         try {
-          const all = await new dl.ArrayStore(rowList, { key: keyField }).load({
-            ...(parsed.filter ? { filter: parsed.filter } : {}),
-            ...(args.search ? { search: args.search } : {}),
-            ...(parsed.searchFields ? { searchFields: parsed.searchFields } : {}),
-          });
+          const all = await new dl.ArrayStore(rowList, { key: keyField }).load({ ...(filter ? { filter } : {}), ...asked });
           data = dl.aggregateBy(all.rows ?? [], args.aggregateBy, kind, args.aggregateField);
         } catch (e) {
           return err(`the aggregation failed: ${e.message}`);
@@ -425,34 +438,29 @@ export function register(server) {
         lines.push("");
       }
 
-      if (args.group && result.groups) {
-        const g = result.groups;
+      if (groups) {
         lines.push(`### Grouped by \`${args.group}\`\n`);
-        const entries = Array.isArray(g) ? g : Object.entries(g).map(([k, v]) => ({ key: k, items: v }));
-        for (const e of entries.slice(0, 12)) {
-          const k = e.key ?? e[0];
-          const n = (e.items ?? e.rows ?? e[1] ?? []).length;
-          lines.push(`- \`${String(k)}\` — ${n} row(s)`);
-        }
-        if (entries.length > 12) lines.push(`- …${entries.length - 12} more groups`);
+        for (const g of groups.slice(0, 12)) lines.push(`- \`${g.key}\` — ${g.count} row(s)`);
+        if (groups.length > 12) lines.push(`- …${groups.length - 12} more groups`);
         lines.push("");
       }
 
       lines.push("### The query that ran\n");
       lines.push("```js");
       lines.push(`const store  = new ArrayStore(rows, { key: '${keyField}' });`);
-      lines.push(`const source = new DataSource({ store, pageSize: ${pageSize}${parsed.searchFields ? `, searchFields: ${JSON.stringify(parsed.searchFields)}` : ""} });`);
-      if (parsed.filter) lines.push(`source.setFilter(${JSON.stringify(parsed.filter)});`);
-      if (parsed.sort) {
-        // Echo the call that ACTUALLY ran, not the argument as it arrived.
-        const f = Array.isArray(parsed.sort) ? parsed.sort[0] : parsed.sort;
-        lines.push(`source.setSort(${JSON.stringify(f?.field ?? null)}, ${JSON.stringify(f?.direction ?? 'asc')});`);
+      // Echo the calls that ACTUALLY ran, not the arguments as they arrived.
+      if (parsed.filter) {
+        lines.push(`const result = await store.load(${JSON.stringify({ filter: parsed.filter, ...asked, ...(args.group ? { group: args.group } : {}), ...paged })});`);
+        if (args.group) lines.push(`const groups = groupSummaries(result.rows, ${JSON.stringify(args.group)});`);
+        lines.push("```\n");
+        lines.push("A `filter` is the STORE's grammar, asked of the store: no DataSource ran, so its page count is worked out here. A page's own conditions are a `where` in its Query, which a DataSource compiles to this.\n");
+      } else {
+        lines.push(`const source = new DataSource({ store, pageSize: ${pageSize}${parsed.searchFields ? `, searchFields: ${JSON.stringify(parsed.searchFields)}` : ""} });`);
+        lines.push(`await source.setQuery(${JSON.stringify({ v: 1, scopes: { view } })});`);
+        lines.push(`await source.load();   // source.rows, source.total`);
+        if (actualPage > 1) lines.push(`source.setPage(${actualPage});`);
+        lines.push("```\n");
       }
-      if (args.search) lines.push(`source.setSearch(${JSON.stringify(args.search)});`);
-      if (args.group) lines.push(`source.setGroup(${JSON.stringify(args.group)});`);
-      if (actualPage > 1) lines.push(`source.setPage(${actualPage});`);
-      lines.push(`await source.load();   // source.rows, source.total`);
-      lines.push("```\n");
       lines.push("This is the REAL data layer running in Node — the same code the browser runs, so what you see here is what a bound component gets.");
       lines.push("\nSee `sherpa://data-rules` for the filter grammar and the Store contract.");
 

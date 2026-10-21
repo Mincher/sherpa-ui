@@ -71,18 +71,14 @@ test('valueSet still compares the way the QUERY does', () => {
 /* ── The query ──────────────────────────────────────────────────────── */
 
 test('filtering `eq` an OBJECT matches only that object', async () => {
-  const s = sourceWith();
-  s.setFilter(['owner', 'eq', { id: 'r', name: 'Ravi' }]);
-  await s.load();
-  assert.deepEqual(s.rows.map((r) => r.id), [1, 3],
+  const { rows } = await new ArrayStore(ROWS, { key: 'id' }).load({ filter: ['owner', 'eq', { id: 'r', name: 'Ravi' }] });
+  assert.deepEqual(rows.map((r) => r.id), [1, 3],
     'it used to match all three — every object equalled every other');
 });
 
 test('a NESTED path still works, and is the other way to ask', async () => {
-  const s = sourceWith();
-  s.setFilter(['owner.name', 'eq', 'Ravi']);
-  await s.load();
-  assert.deepEqual(s.rows.map((r) => r.id), [1, 3]);
+  const { rows } = await new ArrayStore(ROWS, { key: 'id' }).load({ filter: ['owner.name', 'eq', 'Ravi'] });
+  assert.deepEqual(rows.map((r) => r.id), [1, 3]);
 });
 
 test('a NUMBER sorts as a number, not as text', () => {

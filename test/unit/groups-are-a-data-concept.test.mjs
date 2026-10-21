@@ -65,8 +65,7 @@ test('a field can be asked about WITHOUT grouping by it', async () => {
 
 test('a FILTER narrows the groups, because they count matching rows', async () => {
   const src = await source();
-  src.setGroup('team');
-  src.setFilter(['spend', 'gte', 30]);
+  await src.setQuery({ v: 1, scopes: { view: { where: { spend: { gte: 30 } }, group: 'team' } } });
   await settle();
   assert.deepEqual(src.groups(), [
     { key: 'Blue', value: 'Blue', count: 2 },

@@ -1843,8 +1843,7 @@ the walk, a plain walk, and step by step — to one answer.
 **Under change** (the review of C5 and C6): a walk the Query moved past while it
 ran sets nothing aside — the walk for what stands now decides. A store change
 walks again only when it moved a field the walk reads, or the rows
-(`T-a-change-redoes-only-what-reads-it`). A filter set by
-hand (`setFilter`, a restored ViewState) is never compiled away by a set-aside.
+(`T-a-change-redoes-only-what-reads-it`).
 A walk that FAILS sets nothing aside, keeps the last one drawn, and is kept for
 its key: it is asked again when something moves — a filter, ANY store change, a
 Refresh, a reach recheck — never on a page turn, so a failing server is not
@@ -2864,30 +2863,6 @@ back to the last answer, and that a true no-op still skips.
 - Site: `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs`
 - Site: `src/core/data/timing.ts`
 
-### T-set-state-merges-page-last
-
-`setState()` is MERGED, not replaced: a caller restoring a filter and a sort must
-not silently reset the page size to null. Every field is optional and what is
-not named keeps the value it had. It coalesces within a tick like the six
-setters, so one call is ONE load whatever was set (see `#schedule`).
-
-Two rules inside it:
-
-1. **A restored `filter` REPLACES, and clears every reading with it** — the
-   same claim `setFilter` makes. A saved view says what the whole query is;
-   leaving a stale reading behind would AND something the definition never
-   mentioned into it.
-2. **PAGE LAST, and not clamped here.** The total it would be clamped against
-   belongs to the PREVIOUS filter. The load below re-clamps against the new one,
-   which is the only honest moment to do it.
-
-It does NOT persist. Where state is kept, and whether it survives a reload, is
-the host's call (sessionStorage, a URL, a server table) — a source that wrote to
-storage would choose for every app that binds one. That is why
-`persist-view.ts` is a separate helper.
-
-- Site: `src/core/data/data-source.ts`
-
 ### T-coalesce-microtask-not-debounce
 
 Every setter calls `#schedule()` rather than `load()` directly, coalescing the
@@ -2983,15 +2958,15 @@ exists for (`T-ignore-is-the-scalpel`).
 
 ### T-persist-defaults-per-tab
 
-`persistView` keeps a DataSource's view state across a page reload. An accidental
-refresh throws away every filter, sort and page a person set, and they start
-again.
+`persistView` keeps each component's state across a page reload — the rows a
+person ticked in a grid, say; the provider keeps the Query (366 step 10). An
+accidental refresh would throw it away, and they start again.
 
-It is a HELPER, not a feature of `DataSource`. Where a view state is kept — and
+It is a HELPER, not a feature of `DataSource`. Where state is kept — and
 whether it should survive a reload at all — is the host's decision: a dashboard
 may want it, a wizard may not, and a saved-views table on a server is a third
 answer. A source that wrote to storage itself would make that choice for every
-app that ever binds one (see `T-set-state-merges-page-last`).
+app that ever binds one.
 
 **`sessionStorage` BY DEFAULT**, and that is the important part: two tabs on the
 same screen filtered differently is a feature, not a bug, and `localStorage`
@@ -8712,8 +8687,8 @@ the grid never writes it. The source clamps the current page against the new
 count and re-publishes; it does NOT load, because the rows in hand are already
 every matching row.
 
-`#viewPages` is cleared by `setGroup` and by `setState`'s group branch — a count
-measured against the old grouping describes groups that no longer exist.
+`#viewPages` is cleared by `setGroup` and by a `setQuery` that moves the group —
+a count measured against the old grouping describes groups that no longer exist.
 
 The cost is honest and bounded: a grouped view holds the whole result set in the
 browser. That is the price of letting the reader fold, and it is the same price
@@ -11912,7 +11887,7 @@ condition where it is not. The `allowFields()` whitelist still decides on top.
 ### T-one-query-builder-in-the-data-layer
 
 A reading becomes a query in exactly ONE place: `stateClause()`, reached through
-`apply()` or `select()`. Anything else is a second builder, and a second builder
+`select()` or `write()`. Anything else is a second builder, and a second builder
 does not know what the first learned.
 
 `DataSource.#steer` had one. `quick-filter-change` ran a private
@@ -11920,9 +11895,9 @@ does not know what the first learned.
 field type, so a number column compared as text; no range, so two picks on a
 slider meant a LIST; no conditions at all. Every fix to `stateClause` missed it.
 
-Worse, both it and the grid's `filter-change` called **`setFilter()`**, which
-replaces the WHOLE query — so typing in one column heading wiped every chip's
-selection and every component contribution.
+Worse, both it and the grid's `filter-change` replaced the WHOLE query — so
+typing in one column heading wiped every chip's selection and every component
+contribution. (That door, `setFilter`, went in 366 step 11.)
 
 The proof it was dead weight: `../Sherpa Demos/app/contexts/records.js` had to switch it
 off, twice, with `ignore: ['quick-filter-change']` and `ignore: ['filter-change']`.

@@ -16,7 +16,6 @@
  * - .atDefault — Would a Reset to default change nothing? Applies nothing.
  * - .answered — Is there anything a Reset would clear, in one scope or any?
  * - .setQuery — Restore a whole Query — a reload, a trip away and back.
- * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .loaded — Has any load completed?
  * - .result — The whole of the last load's answer.
  * - .rows — The last load's rows, LIVE — state, query and result are copies
@@ -26,7 +25,6 @@
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
  * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
- * - .setFilter — Replace the WHOLE filter, clearing every field's reading.
  * - .write — Write ONE scope's reading of ONE field — a component's own answer.
  * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
  * - .partFacts — What `declarePart` was told for this scope, or undefined.
@@ -110,7 +108,7 @@ import {
   sameReading, VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
-  answerIn, answersOf, cameFrom, clearReadings, copyField, copyScope, definitionOf, holderOf, holdsField, homeOf, homes,
+  answerIn, answersOf, cameFrom, copyField, copyScope, definitionOf, holderOf, holdsField, homeOf, homes,
   keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
@@ -191,13 +189,11 @@ export class DataSource extends EventTarget {
    * is a copy, and `commit()` sends it. TRAP T-apply-and-discard-wait-for-a-change
    */
   #draft: Query = this.#applied;
-  /** The last compile, so a load does not redo it. Written by `#recompose` — and
-   *  by `setFilter`/`setState`, whose whole filter has no readings until step 7. */
+  /** The last compile, so a load does not redo it. Written by `#compileNow`. */
   #filter: Filter | undefined;
   /** What a component OUTSIDE every component scope is under — the View alone.
-   *  Unsplit (`null`), a whole filter set by hand: it is the View's.
    *  TRAP T-only-the-view-trickles-down */
-  #viewFilter: Filter | undefined | null = null;
+  #viewFilter: Filter | undefined;
   /** Each component scope's own answer — for a summary bound INTO that scope. */
   #scoped: Record<string, Filter> = {};
   /** What each field IS: its kind, label and values. TRAP T-the-field-type-decides-the-clause */
@@ -243,7 +239,6 @@ export class DataSource extends EventTarget {
       page: 1,
       pageSize: options.pageSize ?? null,
     };
-    this.#filter = options.filter;
     this.#cache = this.#remote && this.#holdRows > 0 ? cacheOf(this.store) : null;
     this.#since = this.#cache?.gen ?? 0;
     this.#heard = this.store.history?.seq ?? 0;
@@ -390,36 +385,6 @@ export class DataSource extends EventTarget {
     this.#binding.drawScopesSoon();
   }
 
-  /** Restore a whole view state — a saved view, a deep link, a reload.
-   *  TRAP T-set-state-merges-page-last */
-  setState(next: Partial<ViewState>): void {
-    if ('filter' in next) {
-      // A whole filter REPLACES every field selection too, or a restored view
-      // keeps ticks the query no longer carries.
-      clearReadings(this.#draft, (f) => this.#catalogue.carriesOver(f));
-      // A whole view is a clean slate, applied — not a draft. TRAP T-apply-and-discard-wait-for-a-change
-      if (this.#remote) this.#applied = structuredClone(this.#draft);
-      this.#filter = next.filter;
-      this.#viewFilter = null;
-    }
-    const arrange: ArrangeEdit = {};
-    if (next.sort) arrange.sort = next.sort;
-    // A view captured mid-suspend restores as it was left.
-    if ('sortSuspended' in next) arrange.sortSuspended = next.sortSuspended;
-    // A new grouping invalidates the view's page count — see setGroup.
-    if ('group' in next) {
-      arrange.group = next.group ?? null;
-      this.#viewPages = null;
-    }
-    if (Object.keys(arrange).length) this.#arrange(arrange);
-    if (next.search != null) arrange.search = next.search;
-    if ('pageSize' in next) this.#state.pageSize = next.pageSize ?? null;
-    // PAGE LAST, and not clamped here: the total belongs to the PREVIOUS filter.
-    // The load below re-clamps against the new one.
-    if (next.page != null) this.#state.page = Math.max(1, Math.trunc(next.page) || 1);
-    this.#schedule();
-  }
-
   /** Has any load completed? Before one, there is nothing to count or group. */
   get loaded(): boolean {
     return this.#loaded;
@@ -489,15 +454,6 @@ export class DataSource extends EventTarget {
     // The old count was measured against the OLD grouping. Drop it and wait for
     // the next draw. TRAP T-grouped-paging-belongs-to-the-view
     this.#viewPages = null;
-    this.#requery();
-  }
-
-  /** Replace the WHOLE filter, clearing every field's reading. */
-  setFilter(filter: Filter | undefined): void {
-    clearReadings(this.#draft, (f) => this.#catalogue.carriesOver(f));
-    if (this.#remote) this.#applied = structuredClone(this.#draft);
-    this.#filter = filter;
-    this.#viewFilter = null;
     this.#requery();
   }
 
@@ -1769,7 +1725,7 @@ export class DataSource extends EventTarget {
       /* …under the VIEW alone: a component scope narrows its own components,
          never a summary beside them. TRAP T-only-the-view-trickles-down */
       const windowed = this.#state.pageSize != null && !this.#arrangement().group;
-      const viewed = this.#viewFilter === null ? this.#filter : this.#viewFilter;
+      const viewed = this.#viewFilter;
       const split = JSON.stringify(viewed) !== JSON.stringify(this.#filter);
       if (!this.#binding.wantsAllRows() || (!windowed && !split)) {
         this.#allRows = this.#binding.wantsAllRows() ? result.rows : [];
@@ -1860,7 +1816,7 @@ export class DataSource extends EventTarget {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
     return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, withoutArrangement(this.#applied),
-      this.#viewFilter === null ? this.#filter ?? null : null, components, [...this.#defaults.keys()].sort(), parts,
+      components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }
 
@@ -1887,7 +1843,6 @@ export class DataSource extends EventTarget {
       fields: (scope) => this.fields(scope),
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
-      ...(this.#viewFilter === null && this.#filter ? { hand: this.#filter } : {}),
       narrowing,
       limit: this.#limitOptions,
       now: new Date(),
@@ -1967,8 +1922,6 @@ export class DataSource extends EventTarget {
 
   /** Take the walk's set-aside picks. Says whether they moved. */
   #takeAside(walk: Walk): boolean {
-    // A whole filter set by hand has no readings to set aside, and a compile would drop it.
-    if (this.#viewFilter === null) return false;
     // A walk that failed sets nothing aside: what an older Query set aside goes too.
     const next = this.#unwalked.has(walk) ? new Map<string, Record<string, string[]>>()
       : new Map(Object.entries(walk.aside).filter(([, fields]) => Object.keys(fields).length));

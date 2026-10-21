@@ -369,9 +369,10 @@ legend that narrows one chart writes that chart's own scope (`write(scope,
 field, reading, { only })`). A bar bound with no scope is reported
 (`bar-without-scope`), never applied.
 
-`setFilter()` replaces the WHOLE filter and clears every reading, so it is what
-a saved view uses and not what a control uses. A control that calls it wipes
-whatever the others had said.
+`setQuery()` puts back a WHOLE Query — a saved view, a reload — so it is what a
+saved view uses and not what a control uses: a control writes its own field
+(`select`, `write`). The store's `filter` (`[field, op, value]`) is what the
+source compiles the Query to; nothing sets it by hand.
 
 ### Two scopes: a component EXTENDS a view, never alters it
 

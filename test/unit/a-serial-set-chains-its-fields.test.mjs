@@ -20,8 +20,10 @@ const REGION_ORGS = {
   APAC: ['Contoso', 'Adventure Works', 'Litware'],
   LATAM: ['Contoso', 'Tailspin'],
 };
+/** A field outside the set, to filter before it. */
+const ZONE = { EMEA: 'north', AMER: 'north', APAC: 'south', LATAM: 'south' };
 const ROWS = Object.entries(REGION_ORGS).flatMap(([region, orgs]) => orgs.map((customer) => ({ region, customer })))
-  .map((r, id) => ({ id, ...r }));
+  .map((r, id) => ({ id, ...r, zone: ZONE[r.region] }));
 const sorted = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, [...v].sort()]));
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
@@ -82,8 +84,9 @@ test('a field is never ruled out by one BELOW it — even with Limit on, and Reg
 
 test('a filter before the set limits the chain, though the top is unanswered', async () => {
   const { source } = await setup({});
-  // A whole filter set by hand is the View's base: it stands before the set.
-  source.setFilter(['region', 'in', ['EMEA', 'AMER']]);
+  // Zone is held before the set, so its answer stands before the chain.
+  source.hold(VIEW, ['zone', 'customer', 'region']);
+  source.select('zone', ['north']);
   await source.load();
   assert.deepEqual(sorted(await source.offered(VIEW)), { region: ['AMER', 'EMEA'] });
 });
@@ -95,13 +98,12 @@ test('a component scope\'s chain starts inside the View', async () => {
   source.declareSets('data', [{ id: 'acct', mode: 'serial', fields: ['customer', 'region'] }]);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
   await source.setQuery({ v: 1, scopes: {
-    view: { holds: [], readings: {} },
+    view: { holds: ['zone'], readings: { zone: { picked: ['north'] } } },
     data: { holds: ['customer', 'region'], readings: {} },
   } });
-  // What the View leaves — here a filter set by hand — narrows the chain, though its top is unanswered.
-  source.setFilter(['customer', 'eq', 'Tailspin']);
+  // What the View leaves narrows the chain, though its top is unanswered.
   await source.load();
-  assert.deepEqual(sorted(await source.offered('data')), { region: ['AMER', 'LATAM'] });
+  assert.deepEqual(sorted(await source.offered('data')), { region: ['AMER', 'EMEA'] });
 });
 
 test('a PARALLEL set only groups: it offers no less, and sets nothing aside', async () => {

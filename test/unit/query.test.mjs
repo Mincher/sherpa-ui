@@ -388,7 +388,7 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   src.hold(VIEW, ['status', 'region']);
   const base = src.query.applied;
-  const view = { v: 1, scopes: { [VIEW]: { readings: { status: { picked: ['active'] } }, sort: [{ field: 'name', dir: 'asc' }] } } };
+  const view = { v: 1, scopes: { [VIEW]: { readings: { status: { picked: ['active'] } }, sort: [{ field: 'name', direction: 'asc' }] } } };
   // As a Reset to default leaves it.
   await src.setQuery(structuredClone(base));
   await src.setQuery(view, { holds: 'keep' });
@@ -400,9 +400,9 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   src.select('region', []);
   assert.equal(src.atDefault(base, view), true);
   // …or in the arrangement the View names.
-  src.setState({ sort: [{ field: 'name', dir: 'desc' }] });
+  src.setSort('name', 'desc');
   assert.equal(src.atDefault(base, view), false);
-  src.setState({ sort: [{ field: 'name', dir: 'asc' }] });
+  src.setSort('name', 'asc');
   assert.equal(src.atDefault(base, view), true);
   // And asking changed nothing.
   const before = JSON.stringify(src.query.applied);
@@ -431,7 +431,7 @@ test('answered: a reading that filters, a saved filter on, or the rows arranged'
   assert.equal(src.answered(), true);
   src.select('status', []);
   assert.equal(src.answered(), false);
-  src.setState({ sort: [{ field: 'region', dir: 'asc' }] });
+  src.setSort('region');
   assert.equal(src.answered(VIEW), true, 'a Reset clears the arrangement too');
 });
 

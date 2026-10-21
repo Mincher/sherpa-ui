@@ -86,17 +86,6 @@ test('a walk the Query has moved past sets nothing aside, and asks for no load',
   assert.deepEqual(source.debugState().aside, {});
 });
 
-test('a filter set by hand is never compiled away by a set-aside', async () => {
-  const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), limitOptions: true });
-  await viewBar(source, { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } });
-  assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
-  source.setFilter(['customer', 'eq', 'Tailspin']);
-  await source.load();
-  await ticks();
-  assert.equal(source.total, 2);
-  assert.deepEqual(source.debugState().filter, ['customer', 'eq', 'Tailspin']);
-});
-
 test('a failed walk sets nothing aside, and is not asked again until something moves', async () => {
   const { store, seen } = slowRemote();
   const source = new DataSource({ store, limitOptions: true, holdRows: 0, pageSize: 2 });

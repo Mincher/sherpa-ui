@@ -12,7 +12,6 @@
  * - homeOf — Where a field's reading lives: its holder, else the View.
  * - readingOf — One field's reading, or undefined.
  * - setReading — Write one field's reading at its home, or remove it.
- * - clearReadings — Forget every reading but a carry-over field's; the holds stay.
  * - rehome — Move each reading to its home after a hold moved fields.
  * - homes — Which scope each answered field's reading sits in.
  * - moveHold — Move a field's hold between scopes; returns every scope touched, `to` first.
@@ -116,16 +115,6 @@ export function readingOf(query: Query, field: string): FieldReading | undefined
 export function setReading(query: Query, field: string, reading: FieldReading | undefined): void {
   for (const [, scope] of eachScope(query)) Reflect.deleteProperty(scope.readings, field);
   if (reading) scopeEntry(query, homeOf(query, field)).readings[field] = reading;
-  prune(query);
-}
-
-/** Forget every reading but a carry-over field's; the holds stay. */
-export function clearReadings(query: Query, carriesOver: (field: string) => boolean): void {
-  for (const [, scope] of eachScope(query)) {
-    // A carry-over field keeps its answer. TRAP T-a-field-can-carry-over-views
-    scope.readings = Object.fromEntries(Object.entries(scope.readings)
-      .filter(([field]) => carriesOver(field)));
-  }
   prune(query);
 }
 

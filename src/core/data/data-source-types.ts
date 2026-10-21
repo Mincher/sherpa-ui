@@ -137,6 +137,7 @@ export interface ScopeDescription {
 }
 
 export interface ViewState {
+  /** The filter the Query compiles to. Read only. */
   filter?: Filter;
   sort: SortSpec[];
   group: string | null;
@@ -155,8 +156,6 @@ export interface DataSourceOptions {
   store: Store;
   /** Rows per page. Omit for no paging. */
   pageSize?: number;
-  /** Starting filter. */
-  filter?: Filter;
   /** Fields a free-text search looks at. Omit to search every field. */
   searchFields?: string[];
   /** Load as soon as the first component binds. Default true. */

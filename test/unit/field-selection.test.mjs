@@ -125,18 +125,6 @@ test('selecting ANNOUNCES the field, so other controls re-read', async () => {
   assert.deepEqual(heard, ['plan', 'plan'], 'clearing is a change too');
 });
 
-/* ── A whole view state REPLACES the selections ─────────────────────── */
-
-test('setState({filter}) clears the field readings', async () => {
-  const source = await ready();
-  source.select('plan', ['Pro']);
-  source.setState({ filter: ['region', 'eq', 'APAC'] });
-  await source.load();
-  assert.equal(source.selection('plan').fieldState, 'off',
-    'a restored view must not keep ticks its query does not carry');
-  assert.deepEqual(source.rows.map((r) => r.id), [4]);
-});
-
 test('valuesFor gives a control the rows to draw', async () => {
   const source = await ready();
   assert.deepEqual(source.valuesFor('plan'), PLANS);

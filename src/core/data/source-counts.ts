@@ -96,8 +96,6 @@ export interface WalkFacts {
   components: ReadonlySet<string>;
   /** A component's own scopes (`data-where`). */
   fixed: ReadonlySet<string>;
-  /** A whole filter set by hand, while no reading is compiled. */
-  hand?: Filter;
   /** Each chart part's scope: its legend field, and the component scope it is bound into. */
   narrowing: ReadonlyMap<string, { field: string; host?: string }>;
   /** Limit to matching filters. */
@@ -125,7 +123,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
     others.push(id);
   }
   for (const id of facts.components) if (!others.includes(id) && !facts.narrowing.has(id)) others.push(id);
-  const base = andFilter(page) ?? facts.hand;
+  const base = andFilter(page);
   const ruleOf = (scope: string): 'here' | 'start' | undefined => (facts.limit ? 'here' : scope !== VIEW ? 'start' : undefined);
   const tierOf = (ff: Omit<FieldFacts, 'field'>): { tier?: WalkTier } =>
     (ff.child && ff.parentOf ? { tier: { child: ff.child, parentOf: ff.parentOf } } : {});

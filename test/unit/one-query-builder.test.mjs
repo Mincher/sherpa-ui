@@ -2,7 +2,7 @@
  * STEERING GOES THROUGH THE ONE QUERY BUILDER.
  *
  * `DataSource.#steer` used to build its own clause from a `quick-filter-change`
- * detail, and call `setFilter()` — which replaces the WHOLE query. So the old
+ * detail, and replace the WHOLE query with it. So the old
  * path knew no field type, no range and no condition, and one column heading
  * could wipe every chip.
  *
@@ -88,7 +88,7 @@ test('a column filter narrows, and does NOT wipe what else is applied', async ()
   await settle();
   assert.deepEqual(ids(src), [1, 2]);
 
-  // Typing in one column heading used to call setFilter() and replace BOTH.
+  // Typing in one column heading used to replace BOTH.
   el.dispatchEvent(new CustomEvent('filter-change', {
     detail: { field: 'owner', value: 'Rav' },
   }));

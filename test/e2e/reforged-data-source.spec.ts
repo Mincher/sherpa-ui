@@ -232,7 +232,7 @@ test('source: one filter fans out to every bound component', async ({ page }) =>
     await source.load();
     const afterLoad = counts.map((c) => c.at(-1));
 
-    source.setFilter(['region', 'eq', 'EMEA']);
+    source.select('region', ['EMEA']);
     await new Promise((r) => setTimeout(r, 30));
     const afterFilter = counts.map((c) => c.at(-1));
 
@@ -269,7 +269,7 @@ test('source: a readonly bind receives data but never steers', async ({ page }) 
 
     // …but it still receives data when the source changes.
     const before = populated;
-    source.setFilter(['region', 'eq', 'EMEA']);
+    source.select('region', ['EMEA']);
     await new Promise((r) => setTimeout(r, 30));
     return { sortAfterEvent, received: populated > before };
   }, ROWS);
@@ -290,7 +290,7 @@ test('source: a narrowing change returns to page 1 rather than stranding the use
     const onPage3 = { page: source.state.page, ids: source.rows.map((r) => r['id']), pages: source.totalPages };
 
     // Filtering to 4 rows leaves only 2 pages — page 3 no longer exists.
-    source.setFilter(['region', 'eq', 'EMEA']);
+    source.select('region', ['EMEA']);
     await new Promise((r) => setTimeout(r, 30));
     const afterFilter = { page: source.state.page, count: source.rows.length, pages: source.totalPages };
 
@@ -370,7 +370,7 @@ test('source: unbind stops both halves', async ({ page }) => {
     off();
 
     const before = populated;
-    source.setFilter(['region', 'eq', 'EMEA']);
+    source.select('region', ['EMEA']);
     await new Promise((r) => setTimeout(r, 30));
     // …and its events no longer steer.
     el.dispatchEvent(
@@ -435,15 +435,15 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
     const { DataSource } = await import('/dist/index.js');
     const all = [{ id: 1, tag: 'a' }, { id: 2, tag: 'b' }];
 
-    // A store whose FIRST load is slow and second is fast.
+    // A store whose load for `a`, asked FIRST, is slow, and for `b` fast. A
+    // read with no filter — the chips' counts — is not counted.
     let call = 0;
     const store = Object.assign(new EventTarget(), {
       key: 'id',
       async load(options: { filter?: unknown }) {
-        call++;
-        const delay = call === 1 ? 120 : 10;
-        await new Promise((r) => setTimeout(r, delay));
         const tag = (options.filter as unknown[] | undefined)?.[2];
+        if (tag) call++;
+        await new Promise((r) => setTimeout(r, tag === 'a' ? 120 : 10));
         const rows = tag ? all.filter((r) => r.tag === tag) : all;
         return { rows, total: rows.length };
       },
@@ -460,9 +460,9 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
     // single load (see the coalescing test below), which would mean only one
     // request ever reached the store — and then there would be no race to test.
     // A person clicking two chips produces two ticks, which is this.
-    source.setFilter(['tag', 'eq', 'a']);   // slow
+    source.select('tag', ['a']);   // slow
     await new Promise((r) => setTimeout(r, 0));
-    source.setFilter(['tag', 'eq', 'b']);   // fast — must win
+    source.select('tag', ['b']);   // fast — must win
     await new Promise((r) => setTimeout(r, 250));
     return { rows: source.rows.map((r) => r['tag']), calls: call };
   });
@@ -494,7 +494,7 @@ test('source: writes in ONE tick coalesce into a single load', async ({ page }) 
     const afterFirst = calls;
 
     // THREE setters, one tick.
-    source.setFilter(['plan', 'eq', 'Pro']);
+    source.select('plan', ['Pro']);
     source.setSort('id', 'desc');
     source.setPageSize(10);
     await new Promise((r) => setTimeout(r, 60));
