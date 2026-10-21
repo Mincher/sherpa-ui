@@ -12,7 +12,7 @@
  * - OrganiseColumn — One column a Group or Sort chip offers: the field it reports, and its name.
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
  * - ViewState — The view state a source owns.
- * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
+ * - DataSourceOptions — the store, and the view it opens on: page size, search fields
  * - AttachFacts — What the binder tells the source about one component.
  * - BoundView — What a bound component is told of the view; `undefined` is none.
  * - BindSink — Where the source sends one bound component's view, rows and pending fields.
@@ -155,12 +155,8 @@ export interface DataSourceOptions {
   store: Store;
   /** Rows per page. Omit for no paging. */
   pageSize?: number;
-  /** Starting sort. */
-  sort?: SortSpec[];
   /** Starting filter. */
   filter?: Filter;
-  /** Starting group field. */
-  group?: string | null;
   /** Fields a free-text search looks at. Omit to search every field. */
   searchFields?: string[];
   /** Load as soon as the first component binds. Default true. */

@@ -108,13 +108,13 @@
     "scans": 4
   },
   "records/reset": {
-    "loads": 1,
+    "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 25,
+    "rows": 3545,
     "compiles": 1,
     "clones": 7,
-    "scans": 3
+    "scans": 4
   },
   "records/add": {
     "loads": 2,
@@ -312,7 +312,7 @@
     "rows": 0,
     "compiles": 1,
     "clones": 8,
-    "scans": 3
+    "scans": 4
   },
   "remote/add": {
     "loads": 0,
@@ -510,7 +510,7 @@
     "rows": 0,
     "compiles": 1,
     "clones": 8,
-    "scans": 3
+    "scans": 4
   },
   "rest/add": {
     "loads": 0,

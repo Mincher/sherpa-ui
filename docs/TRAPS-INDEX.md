@@ -69,7 +69,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, source-binding
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — data-source
-- [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types
+- [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types, query
 - [T-a-threshold-is-a-fact-of-the-field](TRAPS.md#t-a-threshold-is-a-fact-of-the-field) — aggregate, data-source-types, filter-state, threshold, where
 - [T-a-tooltip-is-not-an-axis](TRAPS.md#t-a-tooltip-is-not-an-axis) — format-tick
 - [T-a-value-can-be-an-object](TRAPS.md#t-a-value-can-be-an-object) — aggregate, data, data-source, field-catalogue, filter-state, store, validate
@@ -103,7 +103,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-filter-fields-flattens-the-tree](TRAPS.md#t-filter-fields-flattens-the-tree) — store
 - [T-filter-is-data-not-a-predicate](TRAPS.md#t-filter-is-data-not-a-predicate) — store
 - [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — data-source, filter-state
-- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — data-source
+- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — data-source, query, query-edits
 - [T-grouped-page-change-publishes-without-loading](TRAPS.md#t-grouped-page-change-publishes-without-loading) — data-source
 - [T-grouped-paging-belongs-to-the-view](TRAPS.md#t-grouped-paging-belongs-to-the-view) — data-source
 - [T-idb-is-the-only-real-local-store](TRAPS.md#t-idb-is-the-only-real-local-store) — data

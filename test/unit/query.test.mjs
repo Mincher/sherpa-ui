@@ -377,9 +377,9 @@ test('a View\'s JSON goes onto a clean slate: chips kept, answers shown, rows ar
   assert.deepEqual(applied.scopes.grid.holds, ['status', 'region', 'owner']);
   assert.deepEqual(Object.keys(applied.scopes.grid.readings), ['owner']);
   assert.deepEqual(ids(src.state.filter), [1, 3]);
-  // The arrangement is the source's, and not kept in the Query.
+  // The arrangement is in the Query, in the scope that names it. 366 step 8
   assert.deepEqual(src.state.sort, [{ field: 'health', direction: 'desc' }]);
-  assert.equal(applied.scopes.grid.sort, undefined);
+  assert.deepEqual(applied.scopes.grid.sort, [{ field: 'health', direction: 'desc' }]);
 });
 
 /** Would a Reset to default change nothing? Applies nothing itself. TODO 231
@@ -394,7 +394,6 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   await src.setQuery(view, { holds: 'keep' });
   assert.equal(src.atDefault(base, view), true);
   assert.equal(src.atDefault(base), false, 'the page as defined has no filter');
-  const before = JSON.stringify(src.query.applied);
   // A reader's change, in any answer…
   src.select('region', ['EMEA']);
   assert.equal(src.atDefault(base, view), false);
@@ -406,6 +405,7 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   src.setState({ sort: [{ field: 'name', dir: 'asc' }] });
   assert.equal(src.atDefault(base, view), true);
   // And asking changed nothing.
+  const before = JSON.stringify(src.query.applied);
   src.atDefault(base, view);
   assert.equal(JSON.stringify(src.query.applied), before);
   // A filter REMOVED from the default is a change too, and so is one MOVED to

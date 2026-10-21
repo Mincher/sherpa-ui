@@ -60,7 +60,7 @@ export function deleteSavedFilter(page: string, id: string, options: SavedFilter
 export function filtersOf(view: QueryDefaults): QueryDefaults {
   const scopes: Record<string, Partial<ViewScope>> = {};
   for (const [id, scope] of Object.entries(view.scopes)) {
-    const { sort: _sort, group: _group, search: _search, ...filters } = scope as ViewScope;
+    const { sort: _sort, group: _group, sortSuspended: _off, search: _search, ...filters } = scope as ViewScope;
     scopes[id] = filters;
   }
   return { v: 1, scopes: scopes as QueryDefaults['scopes'] };

@@ -1957,8 +1957,9 @@ moves to them.
 **Neither Reset is offered where it would change nothing** (Will, 2026-10-12,
 TODO 231). After every load and every scope change, the provider asks its
 source — `atDefault(initial, view.query)`: what filters now, WHICH filters
-each scope holds (one taken off, or moved, is a change — Will), and the
-arrangement the View names, against
+each scope holds (one taken off, or moved, is a change — Will), and how the
+rows are arranged — a sort the reader set since is a change, and Reset to
+default clears it, as it is in the Query (366 step 8) — against
 the page as defined with the View's own Query over it, compiled so the same
 filter always reads the same; and `answered(scope)`: a reading that filters, a
 saved filter on, the rows arranged. It sets `data-at-default` and
@@ -7886,12 +7887,17 @@ the View and a chart's scope do not. A scope that starts to arrange when its
 grid joins redraws its bars and panel, and a bar's `drawScope` draws its Group
 and Sort.
 
-**One arrangement, and its OWNER.** A source still has one sort, group and
-page, loaded once. It remembers which scope set them (`sort-change` and
-`group-change` say, or their binding does), so only that scope's Organise
-chips show it, `export()` writes it into that scope, and a View read back
-gives it to that scope again. Two arranged grids on one source would need a
-load each — not built until a page has two.
+**One arrangement, in the Query.** A source still has one sort, group and
+page, loaded once. The sort, the group and a suspended sort are in the Query,
+in the ONE scope that arranges — the scope `sort-change` or `group-change`
+names, or their binding does; written in another scope, they move there. So
+only that scope's Organise chips show it, and a save, a saved View and a
+reload carry it (366 step 8). A View that names no arrangement keeps the one
+on screen; one that names it — `sort: []` too — sets it. `export()` names it,
+none too, so a View saved from it puts the rows back as they were. A change to
+the arrangement compiles nothing and counts nothing: the walk reads the Query
+without it (`withoutArrangement`). Two arranged grids on one source would need
+a load each — not built until a page has two.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
@@ -7899,6 +7905,9 @@ load each — not built until a page has two.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-scope-arranges-its-own-rows.test.mjs`
 - Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/query-edits.ts`
+- Site: `test/unit/the-arrangement-is-in-the-query.test.mjs`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -13521,7 +13530,8 @@ A sort has TWO halves, and they belong to different things:
 | `state.sort` | the QUERY — empty while suspended, because the store must not order anything |
 | `state.sortSuspended` | the UI half — the column a control still shows, so one more click resumes it |
 
-**Both live on the DataSource**, and that is the whole point. The source owns
+**Both live in the source's Query**, in the scope that arranges (366 step 8),
+and that is the whole point: a reload brings both back. The source owns
 every bound element's `data-*` (`T-attributes-are-the-state-channel`), so a
 component that kept its own suspended column in `data-sort-field` had it wiped
 by the very next push, one microtask later. Measured: the grid set the
@@ -13552,6 +13562,7 @@ away" must say so — and a NEW sort drops the memory rather than shadowing it,
 or resuming would jump to a column the reader had moved on from.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/cycle.ts`
 - Site: `test/unit/suspended-sort.test.mjs`
@@ -16253,8 +16264,9 @@ scope names only what it sets — and `ui` the element state that is not data.
 `setQuery(view.query, { holds: 'keep' })` puts it on: a scope the view gives
 no `holds` keeps its chips, a field the view ANSWERS is held (so its chip
 shows it — the At risk view's Open tickets arrives as a chip), every other
-answer is cleared, and its sort, group and search set the source's own and
-leave the Query. A restore (no `keep`) is exact.
+answer is cleared, its sort and group stay in the Query in the scope that
+names them — none named, the rows stay as they are (366 step 8) — and its
+search sets the source's own. A restore (no `keep`) is exact.
 
 Two things this found. A NUMBER chip never reported — the bar's `readings`
 skipped every body menu, so a Seats range showed on its chip and filtered
@@ -17517,12 +17529,13 @@ session. Measured 2026-09-26 before the fix: `persistView` kept the source's
 COMBINED filter — Region = EMEA + Status = active came back as 4 rows with
 every chip empty. A filter no one could see or clear.
 
-The session keeps `source.query.applied`. `source.setQuery()` puts it back and
+The session keeps `source.query.applied` — the answers, and the sort, group
+and suspended sort with them (366 step 8). `source.setQuery()` puts it back and
 DRAWS each bound bar its scope (`drawScope`, silent) — nothing replays a
 control (step 3 of docs/QUERY-DESIGN.md). `persistView(…, { filter: false })`
 keeps sort, group, page and the grid's own state, never the filter.
 
-Four orderings make it work:
+Three orderings make it work:
 
 - **The URL's View is applied by the Context at init** (`init(root, { view })`).
   A host that picked it after init would reset the header chips just restored
@@ -17532,9 +17545,6 @@ Four orderings make it work:
   default filters belong in its definition (TODO 70).
 - **The grid's column filters are read back FIRST**, so their chips are on the
   bar before it is drawn.
-- **Every saved filter's readings are declared first** (`declarePreset`). The
-  Query says only that a preset is ON; without its readings it restores lit
-  and filters nothing.
 
 The session path must be `persist()`ed in the app (`/filters/records`), or it
 lives in memory and dies with the page — and persisted with `shared: false`,

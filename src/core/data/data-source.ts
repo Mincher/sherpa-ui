@@ -106,8 +106,8 @@ import { SourceBinding } from './source-binding.js';
 import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, compile, copyReading, eachScope, emptyScope, filterKey, freezeReading, readingAnswered, sameReading, VIEW,
-  type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
+  answerOf, arrangementOf, compile, copyReading, eachScope, emptyScope, filterKey, freezeReading, readingAnswered,
+  sameReading, VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
   answerIn, answersOf, cameFrom, clearReadings, copyField, copyScope, definitionOf, holderOf, holdsField, homeOf, homes,
@@ -121,7 +121,7 @@ import { planRead, type Plan } from './read-plan.js';
 import { failureOf, unreached, type Failure } from './failure.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, Store,
+  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store,
 } from './store.js';
 import type {
   AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
@@ -132,10 +132,13 @@ export type {
   FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows, SourceState, ViewState,
 } from './data-source-types.js';
 
+/** A change to the arrangement: what it names, and nothing else. */
+type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined };
+
 export class DataSource extends EventTarget {
   readonly store: Store;
   /** The view this source owns: sort, group, search, page. The filter is compiled. */
-  #state: Omit<ViewState, 'filter'>;
+  #state: Pick<ViewState, 'search' | 'page' | 'pageSize'>;
   /** The fields a search matches, or every field. */
   #searchFields: string[] | undefined;
   /** Every bound component, how it is bound, and what it is pushed and drawn. */
@@ -237,8 +240,6 @@ export class DataSource extends EventTarget {
     this.#holdRows = options.holdRows ?? 50_000;
     this.#searchFields = options.searchFields;
     this.#state = {
-      sort: options.sort ?? [],
-      group: options.group ?? null,
       search: '',
       page: 1,
       pageSize: options.pageSize ?? null,
@@ -274,7 +275,15 @@ export class DataSource extends EventTarget {
 
   /** The current view state. A copy — mutating it must not steer the source. */
   get state(): ViewState {
-    return structuredClone(this.#filter ? { ...this.#state, filter: this.#filter } : this.#state);
+    const { sort, group, sortSuspended } = this.#arrangement();
+    const state: ViewState = { sort, group, ...this.#state, ...(sortSuspended ? { sortSuspended } : {}) };
+    return structuredClone(this.#filter ? { ...state, filter: this.#filter } : state);
+  }
+
+  /** How the rows are arranged: the Query's, in the ONE scope that arranges.
+   *  TRAP T-group-and-sort-are-component-scope */
+  #arrangement(): Arrangement {
+    return arrangementOf(this.#applied);
   }
 
   /** The Query the rows are under. A copy. On a local source the two are one
@@ -287,11 +296,9 @@ export class DataSource extends EventTarget {
    *  rows are arranged. TRAP T-a-page-goes-out-as-json */
   export(): SourceState {
     const query = structuredClone(this.#applied);
-    const { sort, group, search } = this.#state;
-    // The arrangement goes in the scope that arranged it. TRAP T-group-and-sort-are-component-scope
-    const by = this.#arrangedIn() ?? VIEW;
-    query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), search };
-    query.scopes[by] = { ...(query.scopes[by] ?? emptyScope()), sort: structuredClone(sort), group };
+    // It names its arrangement, none too: a View saved from it puts back the rows as they were.
+    const none = !arrangementOf(query).scope;
+    query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), search: this.#state.search, ...(none ? { sort: [] } : {}) };
     return { v: 1, query };
   }
 
@@ -327,18 +334,21 @@ export class DataSource extends EventTarget {
       .filter(([, scope]) => scope.holds.length)
       .map(([id, scope]) => [id, [...scope.holds].sort()]).sort());
     if (holds(at) !== holds(this.#applied)) return false;
+    // How the rows are arranged, wherever: a sort switched off is no sort.
+    const arranged = (q: Query): string => {
+      const { sort, group } = arrangementOf(q);
+      return JSON.stringify([sort, group]);
+    };
+    if (arranged(at) !== arranged(this.#applied)) return false;
     const want = { ...first.arrange, ...second?.arrange };
-    const { sort, group, search, sortSuspended } = this.#state;
-    if (want.sort && JSON.stringify(sortSuspended ? [] : sort) !== JSON.stringify(want.sort)) return false;
-    if (want.group !== undefined && (group ?? null) !== want.group) return false;
-    return want.search === undefined || (search ?? '') === want.search;
+    return want.search === undefined || (this.#state.search ?? '') === want.search;
   }
 
   /** Is there anything a Reset would clear — in one scope, or any: a reading
    *  that filters, or the rows arranged? TODO 231 */
   answered(scope?: string): boolean {
-    const { sort, group, sortSuspended } = this.#state;
-    if ((sort.length && !sortSuspended) || group) return true;
+    const { sort, group } = this.#arrangement();
+    if (sort.length || group) return true;
     const facts = this.#compileFacts();
     return (scope ? [scope] : Object.keys(this.#applied.scopes)).some((id) => {
       const at = this.#applied.scopes[id];
@@ -362,12 +372,17 @@ export class DataSource extends EventTarget {
       return;
     }
     const { query: next, arrange } = this.#definition(query, options.holds === 'keep');
-    if (arrange) this.#arrange(arrange);
+    if (arrange?.search !== undefined) this.#state.search = arrange.search;
+    const was = this.#arrangement();
     const before = new Set(this.selectedFields);
     this.#applied = next;
     this.#draft = this.#remote ? structuredClone(next) : this.#applied;
     rehome(this.#draft);
+    const now = this.#arrangement();
+    if (now.group !== was.group) this.#viewPages = null;
     this.#recompose();
+    // Re-arranged, or searched: page one, and a load, whatever the filter did.
+    if (arrange || JSON.stringify([now.sort, now.group]) !== JSON.stringify([was.sort, was.group])) this.#requery();
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
     for (const field of new Set([...before, ...this.selectedFields])) {
       this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
@@ -391,17 +406,16 @@ export class DataSource extends EventTarget {
       this.#filter = next.filter;
       this.#viewFilter = null;
     }
-    if (next.sort) this.#state.sort = next.sort;
+    const arrange: ArrangeEdit = {};
+    if (next.sort) arrange.sort = next.sort;
     // A view captured mid-suspend restores as it was left.
-    if ('sortSuspended' in next) {
-      if (next.sortSuspended) this.#state.sortSuspended = next.sortSuspended;
-      else delete this.#state.sortSuspended;
-    }
+    if ('sortSuspended' in next) arrange.sortSuspended = next.sortSuspended;
     // A new grouping invalidates the view's page count — see setGroup.
     if ('group' in next) {
-      this.#state.group = next.group ?? null;
+      arrange.group = next.group ?? null;
       this.#viewPages = null;
     }
+    if (Object.keys(arrange).length) this.#arrange(arrange);
     if (next.search != null) this.#state.search = next.search;
     if ('pageSize' in next) this.#state.pageSize = next.pageSize ?? null;
     // PAGE LAST, and not clamped here: the total belongs to the PREVIOUS filter.
@@ -438,7 +452,7 @@ export class DataSource extends EventTarget {
   get totalPages(): number {
     const size = this.#state.pageSize;
     if (!size) return 1;
-    if (this.#state.group && this.#viewPages != null) return Math.max(1, this.#viewPages);
+    if (this.#arrangement().group && this.#viewPages != null) return Math.max(1, this.#viewPages);
     return Math.max(1, Math.ceil(this.#result.total / size));
   }
 
@@ -452,36 +466,30 @@ export class DataSource extends EventTarget {
    * TRAP T-a-suspended-sort-is-one-owners-job
    */
   setSort(field: string | null, direction: SortDirection = 'asc', scope?: string): void {
-    if (scope) this.#arrangedBy = scope;
-    if (field) {
-      this.#state.sort = [{ field, direction }];
-      delete this.#state.sortSuspended;
-    } else {
+    if (field) this.#arrange({ sort: [{ field, direction }], sortSuspended: undefined }, scope);
+    else {
       // A second suspend in a row must not overwrite the memory with nothing.
-      const live = this.#state.sort[0];
-      if (live) this.#state.sortSuspended = live;
-      this.#state.sort = [];
+      const live = this.#arrangement().sort[0];
+      this.#arrange({ sort: [], ...(live ? { sortSuspended: live } : {}) }, scope);
     }
     this.#requery();
   }
 
   /** Resume the suspended sort. No-op when there is none. */
   resumeSort(): void {
-    const held = this.#state.sortSuspended;
+    const held = this.#arrangement().sortSuspended;
     if (!held) return;
     this.setSort(held.field, held.direction ?? 'asc');
   }
 
   /** Forget the sort entirely — the gesture that is NOT a suspend. */
   clearSort(): void {
-    this.#state.sort = [];
-    delete this.#state.sortSuspended;
+    this.#arrange({ sort: [], sortSuspended: undefined });
     this.#requery();
   }
 
   setGroup(field: string | null, scope?: string): void {
-    if (scope) this.#arrangedBy = scope;
-    this.#state.group = field;
+    this.#arrange({ group: field }, scope);
     // The old count was measured against the OLD grouping. Drop it and wait for
     // the next draw. TRAP T-grouped-paging-belongs-to-the-view
     this.#viewPages = null;
@@ -680,9 +688,10 @@ export class DataSource extends EventTarget {
         .map((f) => ({ field: f, label: this.#catalogue.get(f)?.label ?? f }));
       out.group = cols;
       out.sort = cols;
+      const arranged = this.#arrangement();
       const mine = (this.#arrangedIn() ?? scope) === scope;
-      if (mine && this.#state.group) out.groupField = this.#state.group;
-      const [first] = mine ? this.#state.sort : [];
+      if (mine && arranged.group) out.groupField = arranged.group;
+      const [first] = mine ? arranged.sort : [];
       if (first) {
         out.sortField = first.field;
         out.sortDirection = first.direction ?? 'asc';
@@ -884,10 +893,33 @@ export class DataSource extends EventTarget {
   /** The scope whose Group or Sort set the rows' arrangement — while it still
    *  arranges; else none, and every arranging scope shows it. */
   #arrangedIn(): string | undefined {
-    return this.#arrangedBy && this.arranges(this.#arrangedBy) ? this.#arrangedBy : undefined;
+    const { scope } = this.#arrangement();
+    return scope && this.arranges(scope) ? scope : undefined;
   }
-  /** The scope that last arranged the rows. */
-  #arrangedBy: string | undefined;
+
+  /** Write the arrangement into the Query, in BOTH copies: the scope given,
+   *  else the one that arranges now, else the View; every other scope loses
+   *  it. It compiles nothing. 366 step 8 · TRAP T-group-and-sort-are-component-scope */
+  #arrange(next: ArrangeEdit, scope?: string): void {
+    const now = this.#arrangement();
+    const at = scope ?? now.scope ?? VIEW;
+    const sort = next.sort ?? now.sort;
+    const group = 'group' in next ? next.group ?? null : now.group;
+    const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
+    for (const query of new Set([this.#applied, this.#draft])) {
+      for (const s of Object.values(query.scopes)) {
+        delete s.sort;
+        delete s.group;
+        delete s.sortSuspended;
+      }
+      if (!sort.length && group == null && !sortSuspended) continue;
+      const s = scopeEntry(query, at);
+      s.sort = sort.map((by) => ({ ...by }));
+      if (group != null) s.group = group;
+      if (sortSuspended) s.sortSuspended = { ...sortSuspended };
+    }
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
+  }
 
   /** A scope's filter sets, in order. A field is in one set at most; a second
    *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
@@ -1019,7 +1051,7 @@ export class DataSource extends EventTarget {
    * says how many rows it holds.
    * TRAP T-a-group-is-a-data-layer-concept · TRAP T-grouped-paging-belongs-to-the-view
    */
-  groups(field: string = this.#state.group ?? ''): GroupSummary[] {
+  groups(field: string = this.#arrangement().group ?? ''): GroupSummary[] {
     if (!field) return [];
     if (!this.#loaded) {
       /* NOT LOADED YET. An empty answer here reads as "no groups", which is
@@ -1035,7 +1067,7 @@ export class DataSource extends EventTarget {
     /* The rows a component SHOWS: an unwindowed load is those, under every
        scope. `#allRows` is the VIEW's alone, so it stands in only for a page.
        TRAP T-a-group-is-a-data-layer-concept */
-    const whole = this.#state.group != null || this.#state.pageSize == null;
+    const whole = this.#arrangement().group != null || this.#state.pageSize == null;
     const rows = !whole && this.#allRows.length ? this.#allRows : this.#result.rows;
     return groupSummaries(rows, field);
   }
@@ -1253,8 +1285,8 @@ export class DataSource extends EventTarget {
       page: this.#state.page,
       pageSize: this.#state.pageSize,
       totalPages: this.totalPages,
-      sort: this.#state.sort,
-      group: this.#state.group,
+      sort: this.#arrangement().sort,
+      group: this.#arrangement().group,
       search: this.#state.search,
       filter: this.#filter,
       // The readings and holds the filter is compiled from. TRAP T-one-query-one-owner
@@ -1359,7 +1391,7 @@ export class DataSource extends EventTarget {
     return !!this.store.remote;
   }
 
-  /** A definition as a whole Query, and how it arranges the rows: definitionOf, over this source. */
+  /** A definition as a whole Query, and its search: definitionOf, over this source. */
   #definition(
     given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft, copy = true,
   ): { query: Query; arrange: Arrange | null } {
@@ -1368,21 +1400,6 @@ export class DataSource extends EventTarget {
       readingsOf: (where) => this.readingsOf(where),
       carriesOver: (f) => this.#catalogue.carriesOver(f),
     }, copy);
-  }
-
-  /** A definition's arrangement onto the source's own. */
-  #arrange(by: Arrange): void {
-    if (by.scope) this.#arrangedBy = by.scope;
-    if (by.sort) {
-      this.#state.sort = [...by.sort];
-      delete this.#state.sortSuspended;
-    }
-    if (by.group !== undefined) {
-      this.#state.group = by.group;
-      this.#viewPages = null;
-    }
-    if (by.search !== undefined) this.#state.search = by.search;
-    this.#state.page = 1;
   }
 
   /** SEND the draft — Apply, on a remote source. One field, one scope, or all. It loads. */
@@ -1455,7 +1472,7 @@ export class DataSource extends EventTarget {
     /* GROUPED: publish, never load. Grouped loads send no skip/take, so every
        page shares one state key and the no-op guard would eat the publish.
        TRAP T-grouped-page-change-publishes-without-loading */
-    if (this.#state.group) {
+    if (this.#arrangement().group) {
       this.#binding.publish();
       return;
     }
@@ -1504,7 +1521,8 @@ export class DataSource extends EventTarget {
 
   /** Build the load options the store is asked with. */
   #loadOptions(): LoadOptions {
-    const { sort, group, search, page, pageSize } = this.#state;
+    const { search, page, pageSize } = this.#state;
+    const { sort, group } = this.#arrangement();
     const filter = this.#filter;
     const options: LoadOptions = {};
     if (filter) options.filter = filter;
@@ -1753,7 +1771,7 @@ export class DataSource extends EventTarget {
          TRAP T-a-summary-binds-to-all-the-rows */
       /* …under the VIEW alone: a component scope narrows its own components,
          never a summary beside them. TRAP T-only-the-view-trickles-down */
-      const windowed = this.#state.pageSize != null && !this.#state.group;
+      const windowed = this.#state.pageSize != null && !this.#arrangement().group;
       const viewed = this.#viewFilter === null ? this.#filter : this.#viewFilter;
       const split = JSON.stringify(viewed) !== JSON.stringify(this.#filter);
       if (!this.#binding.wantsAllRows() || (!windowed && !split)) {
@@ -1777,7 +1795,7 @@ export class DataSource extends EventTarget {
       // TRAP T-error-is-a-state-not-a-throw
       // TRAP T-grouped-paging-belongs-to-the-view
       const pages = this.totalPages;
-      if (!this.#state.group && this.#state.pageSize && this.#state.page > pages) {
+      if (!this.#arrangement().group && this.#state.pageSize && this.#state.page > pages) {
         this.#state.page = pages;
         return this.#reask();
       }
@@ -1844,7 +1862,7 @@ export class DataSource extends EventTarget {
   #walkKey(): string {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, this.#applied,
+    return JSON.stringify([this.#age, this.#walkAge, this.#limitOptions, withoutArrangement(this.#applied),
       this.#viewFilter === null ? this.#filter ?? null : null, components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }
@@ -2207,7 +2225,8 @@ export class DataSource extends EventTarget {
 
   /** The view state every bound component is pushed. */
   #boundView(): BoundView {
-    const { sort, group, page, pageSize, sortSuspended } = this.#state;
+    const { page, pageSize } = this.#state;
+    const { sort, group, sortSuspended } = this.#arrangement();
     const filter = this.#filter;
     const first = sort[0];
 

@@ -281,7 +281,8 @@ test('source: a readonly bind receives data but never steers', async ({ page }) 
 test('source: a narrowing change returns to page 1 rather than stranding the user', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
     const { ArrayStore, DataSource } = await import('/dist/index.js');
-    const source = new DataSource({ store: new ArrayStore(data), pageSize: 3, sort: [{ field: 'id' }] });
+    const source = new DataSource({ store: new ArrayStore(data), pageSize: 3 });
+    source.setSort('id');
     await source.load();
 
     source.setPage(3);
