@@ -7888,15 +7888,16 @@ grid joins redraws its bars and panel, and a bar's `drawScope` draws its Group
 and Sort.
 
 **One arrangement, in the Query.** A source still has one sort, group and
-page, loaded once. The sort, the group and a suspended sort are in the Query,
-in the ONE scope that arranges — the scope `sort-change` or `group-change`
-names, or their binding does; written in another scope, they move there. So
-only that scope's Organise chips show it, and a save, a saved View and a
-reload carry it (366 step 8). A View that names no arrangement keeps the one
+page, loaded once. The sort, the group, a suspended sort and the search are
+in the Query, in the ONE scope that arranges — the scope `sort-change`,
+`group-change` or `search-change` names, or their binding does; written in
+another scope, they move there. So only that scope's Organise chips show it,
+and a save, a saved View and a reload carry it (366 steps 8, 9). A View that names no arrangement keeps the one
 on screen; one that names it — `sort: []` too — sets it. `export()` names it,
 none too, so a View saved from it puts the rows back as they were. A change to
 the arrangement compiles nothing and counts nothing: the walk reads the Query
-without it (`withoutArrangement`). Two arranged grids on one source would need
+without it (`withoutArrangement`) — a search narrows the rows, never a chip's
+count. Two arranged grids on one source would need
 a load each — not built until a page has two.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -7908,6 +7909,7 @@ a load each — not built until a page has two.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `test/unit/the-arrangement-is-in-the-query.test.mjs`
+- Site: `test/unit/the-search-is-in-the-query.test.mjs`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -16264,9 +16266,9 @@ scope names only what it sets — and `ui` the element state that is not data.
 `setQuery(view.query, { holds: 'keep' })` puts it on: a scope the view gives
 no `holds` keeps its chips, a field the view ANSWERS is held (so its chip
 shows it — the At risk view's Open tickets arrives as a chip), every other
-answer is cleared, its sort and group stay in the Query in the scope that
-names them — none named, the rows stay as they are (366 step 8) — and its
-search sets the source's own. A restore (no `keep`) is exact.
+answer is cleared, and its sort, group and search stay in the Query in the
+scope that names them — none named, the rows stay as they are (366 steps 8,
+9). A restore (no `keep`) is exact.
 
 Two things this found. A NUMBER chip never reported — the bar's `readings`
 skipped every body menu, so a Seats range showed on its chip and filtered

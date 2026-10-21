@@ -1865,7 +1865,8 @@ is frozen in the Query — copied in, handed out frozen (TRAP
 answer recompiles at once, new field facts recompile an answer held, and a bind
 over the unpaged rows loads again when only the View's filter moved. Step 8:
 sort, group and a suspended sort are in the Query, in the ONE scope that
-arranges — so a reload keeps the sort, and Reset to default clears it.
+arranges — so a reload keeps the sort, and Reset to default clears it. Step 9:
+the search is in the Query too, with the sort, and Demos' Find box draws it.
 
 ---
 

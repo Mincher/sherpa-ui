@@ -305,7 +305,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     }
     case 'search-change': {
       const term = detail['value'];
-      source.setSearch(typeof term === 'string' ? term : '');
+      source.setSearch(typeof term === 'string' ? term : '', arranger(detail, bind));
       return;
     }
     case 'select-all-request': {

@@ -52,7 +52,7 @@ test('a sort shows in the scope that set it, and a View keeps it there', async (
   assert.equal(source.describe('view').sortField, undefined);
   const out = source.export().query.scopes;
   assert.deepEqual(out.data.sort, [{ field: 'name', direction: 'desc' }]);
-  assert.equal(out.view.sort, undefined);
+  assert.equal(out.view?.sort, undefined);
   // Read back, it is that scope's again.
   const again = page().source;
   again.declareScope('view', { arranges: true });

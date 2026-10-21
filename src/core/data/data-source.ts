@@ -111,7 +111,7 @@ import {
 } from './query.js';
 import {
   answerIn, answersOf, cameFrom, clearReadings, copyField, copyScope, definitionOf, holderOf, holdsField, homeOf, homes,
-  keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings, type Arrange,
+  keepOff, moveHold, prune, readingOf, rehome, scopeEntry, setCameFrom, setReading, viewHeldReadings,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
@@ -133,12 +133,12 @@ export type {
 } from './data-source-types.js';
 
 /** A change to the arrangement: what it names, and nothing else. */
-type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined };
+type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
 
 export class DataSource extends EventTarget {
   readonly store: Store;
   /** The view this source owns: sort, group, search, page. The filter is compiled. */
-  #state: Pick<ViewState, 'search' | 'page' | 'pageSize'>;
+  #state: Pick<ViewState, 'page' | 'pageSize'>;
   /** The fields a search matches, or every field. */
   #searchFields: string[] | undefined;
   /** Every bound component, how it is bound, and what it is pushed and drawn. */
@@ -240,7 +240,6 @@ export class DataSource extends EventTarget {
     this.#holdRows = options.holdRows ?? 50_000;
     this.#searchFields = options.searchFields;
     this.#state = {
-      search: '',
       page: 1,
       pageSize: options.pageSize ?? null,
     };
@@ -275,8 +274,8 @@ export class DataSource extends EventTarget {
 
   /** The current view state. A copy — mutating it must not steer the source. */
   get state(): ViewState {
-    const { sort, group, sortSuspended } = this.#arrangement();
-    const state: ViewState = { sort, group, ...this.#state, ...(sortSuspended ? { sortSuspended } : {}) };
+    const { sort, group, search, sortSuspended } = this.#arrangement();
+    const state: ViewState = { sort, group, search, ...this.#state, ...(sortSuspended ? { sortSuspended } : {}) };
     return structuredClone(this.#filter ? { ...state, filter: this.#filter } : state);
   }
 
@@ -297,8 +296,7 @@ export class DataSource extends EventTarget {
   export(): SourceState {
     const query = structuredClone(this.#applied);
     // It names its arrangement, none too: a View saved from it puts back the rows as they were.
-    const none = !arrangementOf(query).scope;
-    query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), search: this.#state.search, ...(none ? { sort: [] } : {}) };
+    if (!arrangementOf(query).scope) query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), sort: [] };
     return { v: 1, query };
   }
 
@@ -320,13 +318,13 @@ export class DataSource extends EventTarget {
   atDefault(base: Query, view?: QueryDefaults): boolean {
     // Read only, so neither is copied.
     const first = this.#definition(base, false, this.#draft, false);
-    const second = view ? this.#definition(view, true, first.query, false) : null;
+    const second = view ? this.#definition(view, true, first, false) : null;
     const facts = this.#compileFacts();
     const filters = (q: Query): string => {
       const { filter, only } = compile(q, facts);
       return JSON.stringify([filterKey(filter), Object.entries(only).map(([el, f]) => [el, filterKey(f)]).sort()]);
     };
-    const at = second?.query ?? first.query;
+    const at = second ?? first;
     if (filters(at) !== filters(this.#applied)) return false;
     /* WHICH filters each scope holds: one taken off, or moved, is a change too
        (Will, 2026-10-12). A component's own part is its, not the reader's. */
@@ -336,12 +334,10 @@ export class DataSource extends EventTarget {
     if (holds(at) !== holds(this.#applied)) return false;
     // How the rows are arranged, wherever: a sort switched off is no sort.
     const arranged = (q: Query): string => {
-      const { sort, group } = arrangementOf(q);
-      return JSON.stringify([sort, group]);
+      const { sort, group, search } = arrangementOf(q);
+      return JSON.stringify([sort, group, search]);
     };
-    if (arranged(at) !== arranged(this.#applied)) return false;
-    const want = { ...first.arrange, ...second?.arrange };
-    return want.search === undefined || (this.#state.search ?? '') === want.search;
+    return arranged(at) === arranged(this.#applied);
   }
 
   /** Is there anything a Reset would clear — in one scope, or any: a reading
@@ -371,8 +367,7 @@ export class DataSource extends EventTarget {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
       return;
     }
-    const { query: next, arrange } = this.#definition(query, options.holds === 'keep');
-    if (arrange?.search !== undefined) this.#state.search = arrange.search;
+    const next = this.#definition(query, options.holds === 'keep');
     const was = this.#arrangement();
     const before = new Set(this.selectedFields);
     this.#applied = next;
@@ -382,7 +377,8 @@ export class DataSource extends EventTarget {
     if (now.group !== was.group) this.#viewPages = null;
     this.#recompose();
     // Re-arranged, or searched: page one, and a load, whatever the filter did.
-    if (arrange || JSON.stringify([now.sort, now.group]) !== JSON.stringify([was.sort, was.group])) this.#requery();
+    const order = (a: Arrangement): string => JSON.stringify([a.sort, a.group, a.search]);
+    if (order(now) !== order(was)) this.#requery();
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
     for (const field of new Set([...before, ...this.selectedFields])) {
       this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
@@ -416,7 +412,7 @@ export class DataSource extends EventTarget {
       this.#viewPages = null;
     }
     if (Object.keys(arrange).length) this.#arrange(arrange);
-    if (next.search != null) this.#state.search = next.search;
+    if (next.search != null) arrange.search = next.search;
     if ('pageSize' in next) this.#state.pageSize = next.pageSize ?? null;
     // PAGE LAST, and not clamped here: the total belongs to the PREVIOUS filter.
     // The load below re-clamps against the new one.
@@ -906,17 +902,20 @@ export class DataSource extends EventTarget {
     const sort = next.sort ?? now.sort;
     const group = 'group' in next ? next.group ?? null : now.group;
     const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
+    const search = next.search ?? now.search;
     for (const query of new Set([this.#applied, this.#draft])) {
       for (const s of Object.values(query.scopes)) {
         delete s.sort;
         delete s.group;
         delete s.sortSuspended;
+        delete s.search;
       }
-      if (!sort.length && group == null && !sortSuspended) continue;
+      if (!sort.length && group == null && !sortSuspended && !search) continue;
       const s = scopeEntry(query, at);
       s.sort = sort.map((by) => ({ ...by }));
       if (group != null) s.group = group;
       if (sortSuspended) s.sortSuspended = { ...sortSuspended };
+      if (search) s.search = search;
     }
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
   }
@@ -1287,7 +1286,7 @@ export class DataSource extends EventTarget {
       totalPages: this.totalPages,
       sort: this.#arrangement().sort,
       group: this.#arrangement().group,
-      search: this.#state.search,
+      search: this.#arrangement().search,
       filter: this.#filter,
       // The readings and holds the filter is compiled from. TRAP T-one-query-one-owner
       query: structuredClone(this.#applied),
@@ -1391,10 +1390,8 @@ export class DataSource extends EventTarget {
     return !!this.store.remote;
   }
 
-  /** A definition as a whole Query, and its search: definitionOf, over this source. */
-  #definition(
-    given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft, copy = true,
-  ): { query: Query; arrange: Arrange | null } {
+  /** A definition as a whole Query: definitionOf, over this source. */
+  #definition(given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft, copy = true): Query {
     return definitionOf(given, keep, base, {
       defaults: this.#defaults,
       readingsOf: (where) => this.readingsOf(where),
@@ -1453,15 +1450,15 @@ export class DataSource extends EventTarget {
       : []), (id) => this.dirty(id));
   }
 
-  setSearch(term: string): void {
-    this.#state.search = term;
+  setSearch(term: string, scope?: string): void {
+    this.#arrange({ search: term }, scope);
     this.#requery();
   }
 
   /** The SEARCH as needles, so a view marks what it found: a `contains` on each
    *  field it searches, or on every field (`*`). TRAP T-a-find-asks-its-host-to-step */
   #searchNeedles(): string {
-    const term = this.#state.search.trim().replace(/\n/g, ' ');
+    const term = this.#arrangement().search.trim().replace(/\n/g, ' ');
     if (!term) return '';
     return (this.#searchFields?.length ? this.#searchFields : ['*']).map((f) => `${f}:contains:${term}`).join('\n');
   }
@@ -1521,8 +1518,8 @@ export class DataSource extends EventTarget {
 
   /** Build the load options the store is asked with. */
   #loadOptions(): LoadOptions {
-    const { search, page, pageSize } = this.#state;
-    const { sort, group } = this.#arrangement();
+    const { page, pageSize } = this.#state;
+    const { sort, group, search } = this.#arrangement();
     const filter = this.#filter;
     const options: LoadOptions = {};
     if (filter) options.filter = filter;
@@ -1802,7 +1799,7 @@ export class DataSource extends EventTarget {
 
       this.#binding.publish();
       // Empty, or no matches: the data layer says which. TRAP T-a-container-shows-its-datas-state
-      const emptiness = result.total > 0 ? undefined : this.#filter || this.#state.search ? 'no-matches' : 'empty';
+      const emptiness = result.total > 0 ? undefined : this.#filter || this.#arrangement().search ? 'no-matches' : 'empty';
       // Unconfirmed, as the set stands NOW: a check that landed meanwhile confirmed it.
       const stale = this.#plan === 'held-stale' && this.#planNow().plan === 'held-stale';
       this.#down = null;

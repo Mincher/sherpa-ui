@@ -4,7 +4,6 @@
  * modules share stay in query.ts. DOM-free.
  *
  * Map:
- * - Arrange — What a definition says of the rows beside its scopes: its search.
  * - scopeEntry — One scope's entry, made when first written.
  * - prune — Forget a scope that holds nothing and answers nothing.
  * - keepOff — A scope switched OFF applies nothing: what comes into force there is switched off and listed.
@@ -23,7 +22,7 @@
  * - setCameFrom — Remember, or forget, where a View field came up from, in one copy.
  * - viewHeldReadings — Each field the View holds, with its answer unless suspended.
  * - DefinitionFacts — What turning a definition into a Query needs from its source.
- * - definitionOf — A definition as a whole Query, and its search.
+ * - definitionOf — A definition as a whole Query.
  * - takeSet — A saved filter TAKEN: the screen then matches it exactly; every other scope's filters go.
  * - dropSet — A saved filter TAKEN OFF: the scopes it names lose their filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
@@ -33,9 +32,6 @@ import { answerOf, arrangementOf, arranging, eachScope, emptyScope, readingAnswe
 import type { FieldReading } from './filter-state.js';
 import type { Where } from './where.js';
 import { report } from './report.js';
-
-/** What a definition says of the rows beside its scopes — only what it names. */
-export type Arrange = { search?: string };
 
 /** One scope's entry, made when first written. */
 export function scopeEntry(query: Query, id: string): ScopeQuery {
@@ -230,47 +226,46 @@ export interface DefinitionFacts {
 }
 
 /** The keys a scope keeps, beside its readings. */
-const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended']);
+const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search']);
 
 /**
- * A definition as a whole Query. Its search sets the source's own, and leaves
- * the Query; its sort and group stay in it, in ONE scope. A VIEW
+ * A definition as a whole Query; its sort, group and search stay in it, in
+ * ONE scope. A VIEW
  * (`keep`) keeps the chips a scope it does not name holds, and a field it
  * answers is held, so its chip shows it. `copy: false` for a caller that only reads it.
  * A key a scope does not have — a stored `presets` — is left out, said once (D4).
  */
 export function definitionOf(
   given: Query | QueryDefaults, keep: boolean, base: Query, facts: DefinitionFacts, copy = true,
-): { query: Query; arrange: Arrange | null } {
+): Query {
   const next: Query = { v: 1, scopes: {} };
-  let arrange: Arrange | null = null;
   const strays = new Set<string>();
   for (const [id, scope] of Object.entries(copy ? structuredClone(given.scopes) : given.scopes)) {
     // A View says `where`; a whole Query, `readings`. TRAP T-one-way-to-write-a-condition
-    const { search, where, readings, ...all } = scope as ViewScope
+    const { where, readings, ...all } = scope as ViewScope
       & Partial<Pick<ScopeQuery, 'readings'>>;
     const rest = Object.fromEntries(Object.entries(all).filter(([key]) => SCOPE_KEYS.has(key) || !strays.add(key))) as typeof all;
     if (rest.suspended) rest.suspended = { fields: [...(rest.suspended.fields ?? [])] };
     next.scopes[id] = {
       ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? facts.readingsOf(where) : {}) },
     };
-    if (search !== undefined) (arrange ??= {}).search = search;
   }
   /* A VIEW that names NO arrangement keeps the one on screen; one that names
      it — `sort: []` too — sets it. ONE scope arranges.
      TRAP T-group-and-sort-are-component-scope */
-  const names = Object.values(given.scopes).some((s) => 'sort' in s || 'group' in s || 'sortSuspended' in s);
+  const names = Object.values(given.scopes).some((s) => 'sort' in s || 'group' in s || 'sortSuspended' in s || 'search' in s);
   const kept = keep && !names ? arrangementOf(base) : undefined;
   if (kept?.scope) {
     const to = (next.scopes[kept.scope] ??= emptyScope());
     to.sort = [...kept.sort];
     if (kept.group != null) to.group = kept.group;
     if (kept.sortSuspended) to.sortSuspended = { ...kept.sortSuspended };
+    if (kept.search) to.search = kept.search;
   }
   let first = true;
   for (const s of Object.values(next.scopes)) {
     if (first && arranging(s)) first = false;
-    else { delete s.sort; delete s.group; delete s.sortSuspended; }
+    else { delete s.sort; delete s.group; delete s.sortSuspended; delete s.search; }
   }
   if (strays.size) {
     report({
@@ -284,7 +279,7 @@ export function definitionOf(
      TRAP T-a-component-default-outlives-a-view */
   for (const [id, scope] of facts.defaults) next.scopes[id] ??= structuredClone(scope);
   // A RESTORE is exact; only a View keeps chips and shows its answers on them.
-  if (!keep) return { query: next, arrange };
+  if (!keep) return next;
   /* A carry-over field keeps its answer where the View gives none.
      TRAP T-a-field-can-carry-over-views */
   for (const [id, scope] of eachScope(base)) {
@@ -306,7 +301,7 @@ export function definitionOf(
       if (!scope.holds.includes(field)) scope.holds = [...scope.holds, field];
     }
   }
-  return { query: next, arrange };
+  return next;
 }
 
 /** A saved filter TAKEN: the screen then matches it exactly (Will, 366). Each
@@ -337,12 +332,12 @@ export function dropSet(now: Query, set: QueryDefaults, own: ReadonlySet<string>
   return { v: 1, scopes };
 }
 
-/** A scope's sort, group and suspended sort — those it has. */
-function arrangementIn(scope: ScopeQuery | undefined): Pick<ScopeQuery, 'sort' | 'group' | 'sortSuspended'> {
+/** A scope's sort, group, suspended sort and search — those it has. */
+function arrangementIn(scope: ScopeQuery | undefined): Pick<ScopeQuery, 'sort' | 'group' | 'sortSuspended' | 'search'> {
   if (!scope || !arranging(scope)) return {};
   return {
     ...(scope.sort ? { sort: scope.sort } : {}), ...(scope.group != null ? { group: scope.group } : {}),
-    ...(scope.sortSuspended ? { sortSuspended: scope.sortSuspended } : {}),
+    ...(scope.sortSuspended ? { sortSuspended: scope.sortSuspended } : {}), ...(scope.search ? { search: scope.search } : {}),
   };
 }
 

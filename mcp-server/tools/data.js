@@ -441,14 +441,14 @@ export function register(server) {
       lines.push("### The query that ran\n");
       lines.push("```js");
       lines.push(`const store  = new ArrayStore(rows, { key: '${keyField}' });`);
-      lines.push(`const source = new DataSource({ store, pageSize: ${pageSize} });`);
+      lines.push(`const source = new DataSource({ store, pageSize: ${pageSize}${parsed.searchFields ? `, searchFields: ${JSON.stringify(parsed.searchFields)}` : ""} });`);
       if (parsed.filter) lines.push(`source.setFilter(${JSON.stringify(parsed.filter)});`);
       if (parsed.sort) {
         // Echo the call that ACTUALLY ran, not the argument as it arrived.
         const f = Array.isArray(parsed.sort) ? parsed.sort[0] : parsed.sort;
         lines.push(`source.setSort(${JSON.stringify(f?.field ?? null)}, ${JSON.stringify(f?.direction ?? 'asc')});`);
       }
-      if (args.search) lines.push(`source.setSearch(${JSON.stringify(args.search)}${parsed.searchFields ? `, ${JSON.stringify(parsed.searchFields)}` : ""});`);
+      if (args.search) lines.push(`source.setSearch(${JSON.stringify(args.search)});`);
       if (args.group) lines.push(`source.setGroup(${JSON.stringify(args.group)});`);
       if (actualPage > 1) lines.push(`source.setPage(${actualPage});`);
       lines.push(`await source.load();   // source.rows, source.total`);

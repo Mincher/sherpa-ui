@@ -111,7 +111,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 3545,
+    "rows": 10025,
     "compiles": 1,
     "clones": 7,
     "scans": 4
@@ -120,7 +120,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 3546,
+    "rows": 10026,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -129,7 +129,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 3546,
+    "rows": 10026,
     "compiles": 0,
     "clones": 1,
     "scans": 4
@@ -138,7 +138,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 3546,
+    "rows": 10026,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -147,7 +147,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 3546,
+    "rows": 10026,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -156,7 +156,7 @@
     "loads": 2,
     "counts": 0,
     "distinct": 0,
-    "rows": 3545,
+    "rows": 10025,
     "compiles": 0,
     "clones": 1,
     "scans": 4

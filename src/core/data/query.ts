@@ -15,8 +15,8 @@
  * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
  * - isSavedFilter — Is this a saved filter — a name, and a query definition?
  * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
- * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups or keeps a suspended sort.
- * - arranging — Does a scope arrange — a sort, a group, or a suspended sort?
+ * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
+ * - arranging — Does a scope arrange — a sort, a group, a suspended sort or a search?
  * - arrangementOf — How a Query arranges its rows; none, an empty arrangement.
  * - withoutArrangement — The Query with no arrangement: what filters, and nothing of the order.
  * - CompileFacts — What compiling needs to know that the Query does not say.
@@ -72,27 +72,33 @@ export interface ScopeQuery {
   group?: string | null;
   /** A sort switched off, kept so one press brings it back. TRAP T-a-suspended-sort-is-one-owners-job */
   sortSuspended?: SortSpec;
+  /** The rows' free-text search, with the arrangement. */
   search?: string;
 }
 
-/** How a Query arranges its rows: the ONE scope that sorts, groups or keeps a suspended sort. */
+/** How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches. */
 export interface Arrangement {
   sort: SortSpec[];
   group: string | null;
   sortSuspended?: SortSpec;
+  search: string;
   scope?: string;
 }
 
-/** Does a scope arrange — a sort, a group, or a suspended sort? */
-export const arranging = (s: ScopeQuery): boolean => !!s.sort?.length || s.group != null || !!s.sortSuspended;
+/** Does a scope arrange — a sort, a group, a suspended sort or a search? */
+export const arranging = (s: ScopeQuery): boolean =>
+  !!s.sort?.length || s.group != null || !!s.sortSuspended || !!s.search;
 
 /** How a Query arranges its rows; none, an empty arrangement. 366 step 8 */
 export function arrangementOf(query: Query): Arrangement {
   for (const [scope, s] of Object.entries(query.scopes)) {
     if (!arranging(s)) continue;
-    return { sort: s.sort ?? [], group: s.group ?? null, ...(s.sortSuspended ? { sortSuspended: s.sortSuspended } : {}), scope };
+    return {
+      sort: s.sort ?? [], group: s.group ?? null, ...(s.sortSuspended ? { sortSuspended: s.sortSuspended } : {}),
+      search: s.search ?? '', scope,
+    };
   }
-  return { sort: [], group: null };
+  return { sort: [], group: null, search: '' };
 }
 
 /** The Query with no arrangement: what filters, and nothing of the order. A
@@ -100,7 +106,7 @@ export function arrangementOf(query: Query): Arrangement {
 export function withoutArrangement(query: Query): Query {
   const scopes: Record<string, ScopeQuery> = {};
   for (const [id, s] of Object.entries(query.scopes)) {
-    const { sort: _s, group: _g, sortSuspended: _o, ...rest } = s;
+    const { sort: _s, group: _g, sortSuspended: _o, search: _f, ...rest } = s;
     const bare = Object.keys(rest).length === 2 && !rest.holds.length && !Object.keys(rest.readings).length;
     if (!(bare && arranging(s))) scopes[id] = rest;
   }
@@ -316,7 +322,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
       }
     }
 
-    if (arranging(scope) || scope.search !== undefined) {
+    if (arranging(scope)) {
       if (arranged) {
         report({
           code: 'two-arranging-scopes',
