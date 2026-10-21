@@ -699,29 +699,29 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
   expect(r.cleared.attr).toBe(null);
 });
 
-test('source: a view state survives a page reload, per TAB', async ({ page }) => {
-  // An accidental refresh threw away every filter, sort and page a person set.
-  // persistView is a HELPER rather than a feature of DataSource, because
-  // WHERE a view state is kept is the host's decision.
+test('source: a component\'s state survives a page reload, per TAB', async ({ page }) => {
+  // An accidental refresh threw away the rows a person had ticked. persistView
+  // keeps each component's state; the page keeps the Query (366 step 10).
+  // WHERE it is kept is the host's decision, so it is a helper.
   const before = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, persistView } = await import('/dist/index.js');
-    const rows = Array.from({ length: 200 }, (_, i) => ({
-      id: i, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 500,
-    }));
+    const { ArrayStore, DataSource, bindSource, persistView } = await import('/dist/index.js');
+    const rows = Array.from({ length: 20 }, (_, i) => ({ id: `r${i}`, plan: i % 3 ? 'Pro' : 'Free' }));
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; select(k: readonly string[]): void; selectedKeys: string[];
+    };
+    grid.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(grid);
+    await grid.rendered;
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
-    persistView('spec', { source });
+    bindSource(source, grid, { as: (r: unknown[]) => ({ key: 'id', columns: [{ field: 'plan', header: 'Plan' }], rows: r }) });
+    persistView('spec', { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) });
     await source.load();
-
-    source.setFilter(['plan', 'eq', 'Pro']);
-    source.setSort('spend', 'desc');
-    source.setPage(3);
-    await new Promise((r) => setTimeout(r, 60));
-
+    grid.select(['r1', 'r2']);
+    // It saves after a load.
+    await source.load({ force: true });
     return {
-      ids: source.rows.map((r) => r['id']),
-      total: source.total,
-      page: source.state.page,
-      // sessionStorage, NOT localStorage — two tabs filtered differently is a
+      keys: grid.selectedKeys,
+      // sessionStorage, NOT localStorage — two tabs set differently is a
       // feature, and localStorage would make them fight.
       inSession: !!sessionStorage.getItem('sherpa:view:spec'),
       inLocal: !!localStorage.getItem('sherpa:view:spec'),
@@ -733,34 +733,29 @@ test('source: a view state survives a page reload, per TAB', async ({ page }) =>
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 
   const after = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, persistView, clearViewState } = await import('/dist/index.js');
-    const rows = Array.from({ length: 200 }, (_, i) => ({
-      id: i, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 500,
-    }));
-    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
-    persistView('spec', { source });   // restores on the way in
-    await new Promise((r) => setTimeout(r, 80));
-
-    const restored = {
-      ids: source.rows.map((r) => r['id']),
-      total: source.total,
-      page: source.state.page,
+    const { ArrayStore, DataSource, bindSource, persistView, clearViewState } = await import('/dist/index.js');
+    const rows = Array.from({ length: 20 }, (_, i) => ({ id: `r${i}`, plan: i % 3 ? 'Pro' : 'Free' }));
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; selectedKeys: string[];
     };
-
+    grid.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(grid);
+    await grid.rendered;
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+    bindSource(source, grid, { as: (r: unknown[]) => ({ key: 'id', columns: [{ field: 'plan', header: 'Plan' }], rows: r }) });
+    persistView('spec', { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) });   // restores on the way in
+    await source.load();
+    await window.__settled();
+    const keys = grid.selectedKeys;
     // …and a reset really forgets.
     clearViewState('spec');
-    return { ...restored, cleared: !sessionStorage.getItem('sherpa:view:spec') };
+    return { keys, cleared: !sessionStorage.getItem('sherpa:view:spec') };
   });
 
+  expect(before.keys).toEqual(['r1', 'r2']);
   expect(before.inSession).toBe(true);
   expect(before.inLocal).toBe(false);
-
-  // The whole view came back — including the PAGE, which is the part a user
-  // notices losing.
-  expect(after.ids).toEqual(before.ids);
-  expect(after.total).toBe(before.total);
-  expect(after.page).toBe(3);
-
+  expect(after.keys).toEqual(['r1', 'r2']);
   expect(after.cleared).toBe(true);
 });
 

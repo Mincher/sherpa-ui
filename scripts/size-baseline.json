@@ -75,7 +75,7 @@
   "src/components/sherpa-transfer-list/sherpa-transfer-list.ts": 157,
   "src/core/browser/cache-keep.ts": 167,
   "src/core/browser/idb-store.ts": 398,
-  "src/core/browser/persist-view.ts": 595,
+  "src/core/browser/persist-view.ts": 574,
   "src/core/browser/route.ts": 72,
   "src/core/browser/saved-filters.ts": 82,
   "src/core/browser/session.ts": 266,

@@ -111,7 +111,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
     // A reader configures a view…
     const one = await build();
     await one.source.load();
-    one.source.setFilter(['plan', 'eq', 'Pro']);
+    one.source.select('plan', ['Pro']);
     one.source.setSort('spend', 'desc');
     await settle();
     one.grid.setColumnFilter('name', ['name', 'contains', 'n1']);
@@ -123,7 +123,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
     const snapshot = captureView(
       { source: one.source, elements: { grid: one.grid } },
       { grid: ['selectedKeys'] },
-    ) as { v: 1; source?: unknown; elements?: Record<string, Record<string, unknown>> };
+    ) as { v: 2; query?: unknown; elements?: Record<string, Record<string, unknown>> };
 
     // Two of the grid's values need their SETTER form, because reading them
     // takes an argument.
@@ -271,8 +271,8 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
     // "At risk" — a query AND a column filter, which is the case that proves a
     // definition reaches both halves.
     applyViewSnapshot({
-      v: 1,
-      source: { filter: ['health', 'lt', 40], sort: [{ field: 'health', direction: 'asc' }], group: null, page: 1 },
+      v: 2,
+      query: { v: 1, scopes: { view: { where: { health: { lt: 40 } }, sort: [{ field: 'health', direction: 'asc' }] } } },
       elements: { grid: { setColumnFilter: ['status', ['status', 'ne', 'churned']] } },
     }, { source, elements: { grid } });
     await new Promise((res) => setTimeout(res, 150));
@@ -282,8 +282,8 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
     // "Renewals" — GROUPED, which nothing else here exercises: a view can set
     // how rows are ARRANGED, not only which ones there are.
     applyViewSnapshot({
-      v: 1,
-      source: { filter: undefined, sort: [{ field: 'spend', direction: 'desc' }], group: 'tier', page: 1 },
+      v: 2,
+      query: { v: 1, scopes: { view: { sort: [{ field: 'spend', direction: 'desc' }], group: 'tier' } } },
       elements: { grid: { clearColumnFilter: [undefined] } },
     }, { source, elements: { grid } });
     await new Promise((res) => setTimeout(res, 150));
@@ -321,7 +321,7 @@ test('a view applied to a component that has not drawn yet waits for it', async 
     const { applyViewSnapshot } = await import('/dist/index.js');
     const el = document.createElement('sherpa-prompt-composer') as HTMLElement & { value: string; rendered?: Promise<void> };
     document.getElementById('root')!.replaceChildren(el);
-    const report = applyViewSnapshot({ v: 1, elements: { composer: { value: 'hello' } } }, { elements: { composer: el } });
+    const report = applyViewSnapshot({ v: 2, elements: { composer: { value: 'hello' } } }, { elements: { composer: el } });
     await el.rendered;
     await window.__settled();
     return { value: el.value, report };
@@ -341,7 +341,7 @@ test('a definition DEGRADES: a gone element and a gone method are reported, not 
 
     const report = applyViewSnapshot(
       {
-        v: 1,
+        v: 2,
         elements: {
           grid: { select: [[]], methodThatVanished: 1 },
           panelRemovedLastYear: { anything: true },
@@ -353,7 +353,7 @@ test('a definition DEGRADES: a gone element and a gone method are reported, not 
     // An unrecognised VERSION is ignored whole rather than half-applied — a
     // definition applied in part leaves a screen nobody designed.
     const future = applyViewSnapshot(
-      { v: 99 as 1, elements: { grid: { select: [['x']] } } },
+      { v: 99 as 2, elements: { grid: { select: [['x']] } } },
       { elements: { grid: el } },
     );
 

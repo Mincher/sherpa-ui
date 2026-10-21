@@ -4,10 +4,10 @@
  *
  * Map:
  * - PersistOptions — where a view is kept, and who hears what could not be restored
- * - persistView — Keep a whole view — the query AND every component's state — across a reload.
- * - ViewSnapshot — A whole VIEW DEFINITION — the query AND every component's state.
+ * - persistView — Keep every component's state across a reload; the page keeps the Query.
+ * - ViewSnapshot — A whole VIEW DEFINITION — its Query AND every component's state.
  * - ApplyReport — what applyViewSnapshot could not do — a gone element, a gone method
- * - applyViewSnapshot — Apply a whole view definition: the query, then each element's state.
+ * - applyViewSnapshot — Apply a whole view definition: its Query, then each element's state.
  * - captureView — Read the current state BACK into a definition — the other half of applying one.
  * - clearViewState — Forget a saved view state — what a "reset this view" action does.
  * - SavedView — One saved view in a set: what it is called, and what it does.
@@ -24,7 +24,7 @@
  * - viewQueryOf — What is on screen as a View's JSON: the applied Query, with the rows' arrangement.
  * - deleteSavedView — Forget one saved view.
  */
-import type { DataSource, ViewState } from '../data/data-source.js';
+import type { DataSource } from '../data/data-source.js';
 import type { Query, QueryDefaults } from '../data/query.js';
 import type { FieldReading } from '../data/filter-state.js';
 import { whereOf, type Where } from '../data/where.js';
@@ -39,10 +39,6 @@ import {
 export interface PersistOptions {
   /** Share across TABS via localStorage. Off by default — TRAP T-persist-defaults-per-tab. */
   shared?: boolean;
-  /** Keep the source's state too. `false` when a kept Query owns its filter
-   *  and arrangement: a second keeper restores a combined filter no chip shows,
-   *  or an old sort over a View's. TRAP T-a-reload-replays-the-readers-answers */
-  source?: boolean;
   /** Stop persisting when this aborts. TRAP T-signal-not-a-teardown-list */
   signal?: AbortSignal;
 }
@@ -54,8 +50,9 @@ const PREFIX = 'sherpa:view:';
 const isSnapshot = (v: unknown): v is ViewSnapshot => isPlainObject(v) && 'v' in v;
 
 /**
- * Keep a whole view — the query AND every component's state — across a reload.
- * TRAP T-one-snapshot-not-a-key-per-concern
+ * Keep every component's state across a reload — a grid's selection, say. The
+ * Query is the page's: the provider keeps it, so it is not kept here.
+ * TRAP T-one-snapshot-not-a-key-per-concern · TRAP T-a-reload-replays-the-readers-answers
  * TRAP T-persist-view-returns-a-teardown
  */
 export function persistView(
@@ -70,19 +67,14 @@ export function persistView(
   const kind = storageKind(options.shared ?? false);
   const key = PREFIX + name;
 
-  /* Restore BEFORE wiring, so the source loads once.
-     `readJson` forgets a key it cannot understand, so a stored shape this
-     version no longer reads leaves the reader exactly where they would have
-     been without it. TRAP T-restore-before-first-load */
-  const keepSource = options.source ?? true;
+  /* Restore BEFORE wiring. `readJson` forgets a key it cannot understand, and
+     a shape this version no longer reads is ignored whole, so the reader is
+     where they would have been without it. TRAP T-restore-before-first-load */
   const stored = readJson<ViewSnapshot | null>(kind, key, null, isSnapshot);
-  // With `source: false` the Query owns the source: its stored state is dropped.
-  if (stored && !keepSource) delete stored.source;
-  if (stored) applyViewSnapshot(stored, targets);
+  if (stored) applyViewSnapshot(stored, { elements: targets.elements ?? {} });
 
   const save = (): void => {
-    const snapshot: ViewSnapshot = { v: 1 };
-    if (targets.source && keepSource) snapshot.source = targets.source.state;
+    const snapshot: ViewSnapshot = { v: 2 };
 
     const elements: Record<string, Record<string, unknown>> = {};
     for (const [id, contribute] of Object.entries(contributors)) {
@@ -113,10 +105,10 @@ export function persistView(
  * TRAP T-one-snapshot-not-a-key-per-concern
  */
 export interface ViewSnapshot {
-  /** The version of the SHAPE, not of the data. An unrecognised one is ignored WHOLE. */
-  v: 1;
-  /** The query — a `DataSource`'s ViewState. Restored via `setState()`. */
-  source?: Partial<ViewState>;
+  /** The version of the SHAPE, not of the data. Any other is ignored WHOLE (D4). */
+  v: 2;
+  /** The Query, as a View writes it. Restored via `setQuery()`. 366 step 10 */
+  query?: QueryDefaults;
   /** Per-element state, keyed by an id the CALLER chooses. Applied via the element's public API. */
   elements?: Record<string, Record<string, unknown>>;
 }
@@ -130,29 +122,21 @@ export interface ApplyReport {
 }
 
 /**
- * Apply a whole view definition: the query, then each element's state.
+ * Apply a whole view definition: its Query, then each element's state.
  * TRAP T-apply-degrades-never-throws — reported, not thrown; source first.
  */
 export function applyViewSnapshot(
   snapshot: ViewSnapshot,
   targets: {
-    source?: { setState(next: Partial<ViewState>): void };
+    source?: { setQuery(query: QueryDefaults): Promise<void> };
     elements?: Record<string, HTMLElement>;
   },
 ): ApplyReport {
-  return applySnapshot(snapshot, targets).report;
-}
-
-/** The report, and — when an element had not drawn — when the last one took its state. */
-function applySnapshot(
-  snapshot: ViewSnapshot,
-  targets: Parameters<typeof applyViewSnapshot>[1],
-): { report: ApplyReport; waiting: Promise<void> | null } {
   const report: ApplyReport = { missingElements: [], skipped: {} };
-  if (!snapshot || snapshot.v !== 1) return { report, waiting: null };
-
-  if (snapshot.source && targets.source) targets.source.setState(snapshot.source);
-  return { report, waiting: applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report) };
+  if (snapshot?.v !== 2) return report;
+  if (snapshot.query && targets.source) void targets.source.setQuery(snapshot.query);
+  applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report);
+  return report;
 }
 
 /** Each element's state through its OWN public API, by id — a gone one reported.
@@ -199,14 +183,14 @@ function whenDrawn(el: HTMLElement): Promise<void> | null {
  */
 export function captureView(
   targets: {
-    source?: { state: ViewState };
+    source?: ViewSource;
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},
 ): ViewSnapshot {
-  const snapshot: ViewSnapshot = { v: 1 };
+  const snapshot: ViewSnapshot = { v: 2 };
 
-  if (targets.source) snapshot.source = targets.source.state;
+  if (targets.source) snapshot.query = viewQueryOf(targets.source);
 
   const elements: Record<string, Record<string, unknown>> = {};
   for (const [id, el] of Object.entries(targets.elements ?? {})) {
@@ -331,10 +315,7 @@ export function onViewPicked(
   host: EventTarget | null | undefined,
   views: ViewLibrary | (() => ViewLibrary),
   targets: {
-    source?: {
-      setState(next: Partial<ViewState>): void;
-      setQuery?(query: QueryDefaults, options?: { holds: 'keep' }): Promise<void>;
-    };
+    source?: { setQuery(query: QueryDefaults, options?: { holds: 'keep' }): Promise<void> };
     elements?: Record<string, HTMLElement>;
   },
   options: {
@@ -450,7 +431,7 @@ export function onViewPicked(
 
     /* A JSON VIEW: its Query onto a clean slate — every chip drawn from it,
        its defaults shown — then its UI. TRAP T-a-view-is-json */
-    if (view.query && targets.source?.setQuery) {
+    if (view.query && targets.source) {
       const report: ApplyReport = { missingElements: [], skipped: {} };
       const elements = targets.elements ?? {};
       // The View chip SHOWS it — a pick from a link or a nav row included.
@@ -562,10 +543,8 @@ export function viewQueryOf(source: ViewSource): QueryDefaults {
   return { v: 1, scopes };
 }
 
-/** A source as a View is saved from: its state, its Query, its export and its field types. */
+/** A source as a View is saved from: its export, and its field types. */
 type ViewSource = {
-  state: ViewState;
-  query: { applied: Query };
   export(): { query: Query };
   whereOf?(readings: Record<string, FieldReading>): Where;
 };

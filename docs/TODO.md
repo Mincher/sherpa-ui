@@ -1867,6 +1867,8 @@ over the unpaged rows loads again when only the View's filter moved. Step 8:
 sort, group and a suspended sort are in the Query, in the ONE scope that
 arranges — so a reload keeps the sort, and Reset to default clears it. Step 9:
 the search is in the Query too, with the sort, and Demos' Find box draws it.
+Step 10: a ViewSnapshot is `{ v: 2, query, elements }`, put back by
+`setQuery`; `persistView` keeps each component's state only.
 
 ---
 

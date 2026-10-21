@@ -3049,7 +3049,8 @@ guard rejected did the same; a value the guard accepted was kept.
 ONE SNAPSHOT, not a key per concern. It was heading for four — source state,
 column filters, selection, chips — four shapes and four restore paths for one
 idea. A saved view, a preset, a deep link and an agent's MCP request are the
-SAME object; that is the point of having one shape.
+SAME object; that is the point of having one shape: `{ v: 2, query, elements }`,
+its `query` a View's JSON, put back by `setQuery` (366 step 10).
 
 **WHAT EACH ELEMENT CONTRIBUTES is the caller's function**, because only the
 caller knows which properties are view state and which are incidental — guessing
@@ -3059,25 +3060,22 @@ rule is why `captureView`'s `reads` map is required and why omitting it makes an
 element contribute nothing.
 
 `ViewSnapshot.v` is the version of the SHAPE, not of the data. A saved view
-outlives the code that made it, and an unrecognised version is ignored WHOLE
-rather than half-applied, because a definition applied in part leaves a screen in
-a state nobody designed.
+outlives the code that made it, and an unrecognised version — a stored `v: 1`
+too, whose `source` was a ViewState — is ignored WHOLE rather than half-applied,
+because a definition applied in part leaves a screen in a state nobody designed.
 
 - Site: `src/core/browser/persist-view.ts`
 
 ### T-restore-before-first-load
 
-RESTORE FIRST, before anything is wired, so the source loads ONCE with the
-remembered state rather than loading empty and then loading again.
-
-`setState` coalesces within a tick (`T-coalesce-microtask-not-debounce`), so a
-restore that sets a filter, a sort and a page is still one load — but only if it
-happens before the source has answered its first question.
+RESTORE FIRST, before anything is wired, so each component takes its kept
+state before the first rows arrive, rather than drawing empty and then again.
+`persistView` keeps each component's state only — the page keeps the Query,
+and a whole Query restored with `setQuery` is one load (366 step 10).
 
 The save side is the mirror: it hangs off the source's **`change`**, which fires
 after a load COMPLETES — the one moment the state is both settled and known to be
-loadable. Saving on a setter would record a query that might still fail. A host
-whose view has no source calls the returned `save` itself.
+loadable. A host whose view has no source calls the returned `save` itself.
 
 `DataSource extends EventTarget`, so `addEventListener` honours the
 `AbortSignal` natively — no second way to say "stop" (see
@@ -3098,8 +3096,8 @@ const report = applyViewSnapshot(snapshot, { source, elements: { grid } });
 if (report.missingElements.length) … // tell someone
 ```
 
-**ORDER MATTERS and is fixed here:** the SOURCE first, so the rows a component's
-state refers to are on their way, then each element. An element that has not
+**ORDER MATTERS and is fixed here:** the Query first (`setQuery`), so the rows
+a component's state refers to are on their way, then each element. An element that has not
 drawn yet (`hasRendered` false) gets its state once `rendered` settles — a grid
 cannot filter a column it does not have yet, and a composer wrote its value
 into a textarea that did not exist, so it was lost (TODO 113). A drawn element
@@ -17534,8 +17532,8 @@ every chip empty. A filter no one could see or clear.
 The session keeps `source.query.applied` — the answers, and the sort, group
 and suspended sort with them (366 step 8). `source.setQuery()` puts it back and
 DRAWS each bound bar its scope (`drawScope`, silent) — nothing replays a
-control (step 3 of docs/QUERY-DESIGN.md). `persistView(…, { filter: false })`
-keeps sort, group, page and the grid's own state, never the filter.
+control (step 3 of docs/QUERY-DESIGN.md). `persistView` keeps each
+component's own state — a grid's selection — never the Query (366 step 10).
 
 Three orderings make it work:
 
