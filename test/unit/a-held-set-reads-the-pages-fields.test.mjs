@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
 import { cacheOf } from '../../dist/core/data/store-cache.js';
 import { HeldSet } from '../../dist/core/data/held-set.js';
 
@@ -65,4 +65,39 @@ test('a column read that finds other rows reads the set again', async () => {
     ? { ...r, rows: [...r.rows, { id: 3, seats: 1 }], total: 3 } : r)))(s.load);
   await cache.hold(100, ['plan', 'seats']);
   assert.deepEqual(asked, [['plan'], ['seats'], ['plan', 'seats']]);
+});
+
+/** A component given rows. */
+const shown = (id) => Object.assign(new EventTarget(), {
+  id, setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
+});
+const settle = () => new Promise((r) => setTimeout(r, 0));
+
+test('a source reads what its page needs, and a component bound later its own column', async () => {
+  const { s, asked } = store();
+  const source = new DataSource({ store: spoofRemote(s, { delay: 0 }), pageFields: true });
+  source.declareField('plan');
+  bindSource(source, shown('grid'), { fields: ['name'] });
+  await source.load();
+  assert.deepEqual(asked, [['name', 'plan']], 'what it shows, and every declared field');
+  assert.deepEqual(source.rows[0], { id: 1, name: 'Ada', plan: 'Pro' });
+  bindSource(source, shown('chart'), { readonly: true, fields: ['seats'] });
+  await settle();
+  await source.load();
+  assert.deepEqual(asked, [['name', 'plan'], ['seats']]);
+  assert.deepEqual(source.rows[0], { id: 1, name: 'Ada', plan: 'Pro', seats: 5 });
+  // One that names none reads every field.
+  bindSource(source, shown('list'), {});
+  await settle();
+  await source.load();
+  assert.equal(asked.at(-1), 'all');
+});
+
+test('a source made by hand reads every field, as before', async () => {
+  const { s, asked } = store();
+  const source = new DataSource({ store: spoofRemote(s, { delay: 0 }) });
+  source.declareField('plan');
+  bindSource(source, shown('grid'), { fields: ['name'] });
+  await source.load();
+  assert.deepEqual(asked, ['all']);
 });

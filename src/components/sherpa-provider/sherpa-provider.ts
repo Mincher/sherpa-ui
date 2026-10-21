@@ -715,7 +715,10 @@ export class SherpaProvider extends SherpaElement {
     // One scope, or several — the panel's `data-scope="view data"`.
     const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
     const scope = scopes.length > 1 ? scopes : scopes[0];
+    // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
+    const fields = spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     const unbind = bindSource(source, el as Populatable, {
+      ...(fields ? { fields } : {}),
       rows: spec || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',

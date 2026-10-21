@@ -78,6 +78,8 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
     ...(def.debounce != null ? { debounce: def.debounce } : {}),
     ...(def.holdRows != null ? { holdRows: def.holdRows } : {}),
     ...(def.search ? { searchFields: [...def.search] } : {}),
+    // A held store sends the page's fields alone. TRAP T-a-held-set-reads-the-pages-fields
+    pageFields: true,
   });
   const fields = Object.keys(def.fields ?? {});
   const children = checkTiers(def);

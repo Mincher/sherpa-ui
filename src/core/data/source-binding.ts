@@ -13,6 +13,7 @@
  * - .elements — Every bound component, as a copy.
  * - .entries — Every bind, live, in the order they were made.
  * - .componentScopes — The scopes a bound component answers — every other one is the page's.
+ * - .fieldsRead — The fields the bound components read from a row, or null — every field.
  * - .wantsAllRows — Is any bind asking for the unpaged set?
  * - .showsOf — What the first component bound into a scope says it shows.
  * - .showsRows — Is a grid or a list bound into this scope?
@@ -49,6 +50,8 @@ export interface Bound {
   lastOwn?: string;
   scope?: string | readonly string[];
   shows?: AttachFacts['shows'];
+  /** See AttachFacts.fields. */
+  fields?: readonly string[];
   /** Where its view, rows and pending fields go. */
   sink: BindSink;
 }
@@ -94,6 +97,7 @@ export class SourceBinding {
       sink,
       ...(facts.scope ? { scope: facts.scope } : {}),
       ...(facts.shows ? { shows: facts.shows } : {}),
+      ...(facts.fields ? { fields: [...facts.fields] } : {}),
     });
   }
 
@@ -123,6 +127,18 @@ export class SourceBinding {
     const out = new Set<string>();
     for (const { scope } of this.#bound.values()) {
       for (const s of Array.isArray(scope) ? scope : scope ? [scope] : []) if (s !== VIEW) out.add(s);
+    }
+    return out;
+  }
+
+  /** The fields the bound components read from a row, or null — one given rows
+   *  names none, so it reads every field. TRAP T-a-held-set-reads-the-pages-fields */
+  fieldsRead(): Set<string> | null {
+    const out = new Set<string>();
+    for (const { steerOnly, fields } of this.#bound.values()) {
+      if (steerOnly) continue;
+      if (!fields) return null;
+      for (const f of fields) out.add(f);
     }
     return out;
   }

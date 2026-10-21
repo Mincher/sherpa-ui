@@ -988,5 +988,60 @@
     "compiles": 0,
     "clones": 1,
     "scans": 4
+  },
+  "wide/open": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 10000,
+    "cells": 110000,
+    "compiles": 0,
+    "clones": 6,
+    "scans": 7
+  },
+  "wide/add-field": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 0,
+    "cells": 0,
+    "compiles": 0,
+    "clones": 2,
+    "scans": 0
+  },
+  "wide/add-column": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 10000,
+    "cells": 20000,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 2
+  },
+  "wide/add-column-again": {
+    "loads": 0,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 0,
+    "cells": 0,
+    "compiles": 0,
+    "clones": 0,
+    "scans": 0
+  },
+  "wide/show-all": {
+    "loads": 1,
+    "counts": 0,
+    "distinct": 0,
+    "fields": 0,
+    "rows": 10000,
+    "cells": 150000,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 5
   }
 }

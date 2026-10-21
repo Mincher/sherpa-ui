@@ -95,6 +95,8 @@ export class DataSource extends EventTarget {
   #state: Pick<ViewState, 'page' | 'pageSize'>;
   /** The fields a search matches, or every field. */
   #searchFields: string[] | undefined;
+  /** It reads only the page's fields. TRAP T-a-held-set-reads-the-pages-fields */
+  readonly #pageFields: boolean;
   /** Every bound component, how it is bound, and what it is pushed and drawn. */
   readonly #binding = new SourceBinding({
     describe: (s) => this.describe(s),
@@ -193,6 +195,7 @@ export class DataSource extends EventTarget {
     this.#debounce = options.debounce ?? 300;
     this.#holdRows = options.holdRows ?? 50_000;
     this.#searchFields = options.searchFields;
+    this.#pageFields = options.pageFields ?? false;
     this.#state = {
       page: 1,
       pageSize: options.pageSize ?? null,
@@ -1267,9 +1270,24 @@ export class DataSource extends EventTarget {
     }
   }
 
-  /** The fields this page reads from a row, or null — every field. TRAP T-a-held-set-reads-the-pages-fields */
+  /** The fields this page reads from a row, or null — every field: what its
+   *  components show, every declared field and child, what the Query holds and
+   *  answers, the sort, the group, the search and the time. TRAP T-a-held-set-reads-the-pages-fields */
   #need(): readonly string[] | null {
-    return null;
+    const need = this.#pageFields ? this.#binding.fieldsRead() : null;
+    const { sort, group, search } = this.#arrangement();
+    // A search over every field reads every field.
+    if (!need || (search && !this.#searchFields?.length)) return null;
+    for (const [field, { child }] of this.#catalogue.declared()) {
+      need.add(field);
+      if (child) need.add(child);
+    }
+    for (const id of this.#context.scopes) for (const f of this.#context.scope(id)) need.add(f);
+    for (const [, s] of eachScope(this.#applied)) for (const f of Object.keys(s.readings)) need.add(f);
+    for (const s of Object.values(this.#draft.scopes)) for (const f of Object.keys(s.readings)) need.add(f);
+    for (const { field } of sort) need.add(field);
+    for (const f of [group, this.store.time, ...this.#searchFields ?? []]) if (f) need.add(f);
+    return [...need].sort();
   }
 
   /** A Refresh: the store's set is read again before it is used — never by a closed source. */
@@ -1667,8 +1685,11 @@ export class DataSource extends EventTarget {
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
     const needsAll = facts.rows === 'all' && !this.#allRows.length;
+    // It reads a field the held set lacks: asked again, and the column read. TRAP T-a-held-set-reads-the-pages-fields
+    const set = this.#closed ? null : this.#cache?.set;
+    const lacks = !!set && !!this.#result.rows.length && !set.covers(this.#need());
     // Asked again, not fetched again: the rows did not change, so a held set stays.
-    if (this.#autoLoad && needsAll) void this.#reask();
+    if (this.#autoLoad && (needsAll || lacks)) void this.#reask();
     else if (this.#autoLoad && !this.#result.rows.length) void this.load();
   }
 

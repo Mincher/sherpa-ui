@@ -165,6 +165,11 @@ export class SherpaDataGrid extends SherpaElement {
     filters: (el) => ((el as unknown as { columns?: GridColumn[] }).columns ?? [])
       .filter((c) => FILTERABLE.has(c.type ?? 'text'))
       .map((c) => c.field),
+    // What its cells read, and its row key; no columns yet, every field. TRAP T-a-held-set-reads-the-pages-fields
+    fields: (el) => {
+      const { columns = [], key } = el as unknown as { columns?: GridColumn[]; key?: string | null };
+      return columns.length ? [...columns.map((c) => c.field), ...(key ? [key] : [])] : undefined;
+    },
   };
 
   /* CONFIGURATION a page sets once; rows and groups arrive as data beside it.

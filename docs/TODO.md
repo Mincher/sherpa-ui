@@ -863,7 +863,7 @@ against the code). The full plan, with every file:line, is
   project. Phase 6's ask reads the key alone. Bench unchanged. TRAP
   `T-a-projected-row-is-checked-on-what-it-was-sent`. Untested in browsers: a
   node test only (`test/unit/a-load-projects-its-fields.test.mjs`).
-- 🚧 **Phase 8 — the decision series: a held set reads the page's fields.**
+- ✅ **Phase 8 — the decision series: a held set reads the page's fields.**
   Four steps: 8.1 the cache reads the fields asked and a missing column alone,
   joined by key; 8.2 the source works out its need; 8.3 the provider names a
   grid's columns and a summary's fields; 8.4 the docs say a held row carries
@@ -873,6 +873,19 @@ against the code). The full plan, with every file:line, is
   fields)`; `planRead` plans `fetch` for a set without a column; the bench
   counts `cells` (rows × fields). No source names fields yet: no change. TRAP
   `T-a-held-set-reads-the-pages-fields`.
+  **8.2–8.4 ✅ (2026-10-21):** a source opened from a page definition
+  (`pageFields`) reads its NEED: every declared field and child, what the
+  Query holds and answers, the sort, group, search and time fields, and what
+  its components name (`AttachFacts.fields`; the provider gives a grid's
+  columns and key, a summary's field, segment and over). A component given rows
+  that names none, or a search with no search fields, needs every field; a
+  source made by hand reads every field, as before. A component bound later
+  without a column asks again. Bench `wide/` (the lean page over a remote
+  store, 10 of 15 fields): open 110,000 cells, not 150,000; `add-field` 0;
+  `add-column` 1 load of 20,000; again 0; `show-all` one whole read. The 90 old
+  acts did not move. DATA-SOURCE-RULES says a whole record is `store.byKey()`.
+  Demos needs no change: Records declares and shows all 15 fields. Untested in
+  browsers (10x less testing): node tests only, until the end of 345.
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it

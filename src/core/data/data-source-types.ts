@@ -181,6 +181,10 @@ export interface DataSourceOptions {
    *  question is answered from it on the client. Default 50 000; 0 holds none.
    *  Will, TODO 340. TRAP T-a-remote-source-holds-its-whole-set */
   holdRows?: number;
+  /** A held store sends only the PAGE's fields: what it declares, holds and
+   *  answers, and what its components name. A source opened from a page
+   *  definition does; any other reads every field. TRAP T-a-held-set-reads-the-pages-fields */
+  pageFields?: boolean;
 }
 
 /** What the binder tells the source about one component. `bindSource()` says it. */
@@ -204,6 +208,9 @@ export interface AttachFacts {
    * TRAP T-a-summary-binds-to-all-the-rows
    */
   rows?: 'page' | 'all';
+  /** The fields it reads from a row. A component given rows that names none
+   *  reads every field. TRAP T-a-held-set-reads-the-pages-fields */
+  fields?: readonly string[];
 }
 
 /** What a bound component is told of the view; `undefined` is none. The binder

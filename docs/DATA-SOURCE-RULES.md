@@ -193,6 +193,12 @@ of what changed, by field (`StoreHistory`, and `changedFields(before, after,
 sent)` to work them out). Leave `fields` out when you do not know: the change
 then moves every field.
 
+**Send only the fields asked, if you can.** A load may name `fields`. A store
+that says `projects: true` then sends each row's key and those fields alone —
+`RestStore` asks with `fields=` — and checks a row on the fields it sent. A
+`BaseStore` says so when its schema is a `rules()` one (or there is none); a
+schema from another library checks a whole row, so that store sends whole rows.
+
 **Copy in and copy out.** `ArrayStore` does `{ ...row }` on both edges so a
 caller cannot reach in and mutate a stored record by holding a reference. It
 also keeps `SourceBinding.push`'s skip-if-unchanged guard working, which compares the rows
@@ -348,6 +354,16 @@ object is a new store, with nothing held.
 Matching is the client's from then on, so your server and the client must agree
 on what a whole read returns, not on how to filter it.
 
+**Only the page's fields are held.** Where the store `projects` and has a key, a
+page opened from its definition reads only the fields it uses: every field it
+declares, what its scopes hold and its Query answers, the sort, the group, the
+search fields, the time field, and what its components name — a grid its
+columns, a chart its fields. A component bound later with a field the set lacks
+reads that column alone, joined by key; a second asks nothing. A component that
+names no fields reads every field, as does a search with no `search` fields. So
+a row a page is given may lack a field it does not use: read a WHOLE record
+with `store.byKey(key)`.
+
 ### A failed load is a STATE, not a throw
 
 Every load emits `loading` first, then `change` — or `error`. A backend being
@@ -469,4 +485,5 @@ nothing else. Saved Views, saved filters and the session are the app layer:
 11. None of it needs a browser.
 12. A remote store's whole set is held — up to `holdRows`, when it reports a
     true total — once per store object, for every page over it, and every
-    question is then answered on the client.
+    question is then answered on the client. Where the store projects, only the
+    page's fields are held; a whole record is `store.byKey()`.

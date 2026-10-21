@@ -61,6 +61,9 @@ export interface DataAsk {
    *  the whole value list too, so a heading opens the chip's own menu.
    *  TRAP T-a-heading-opens-the-chips-menu */
   filters?: (el: Element) => readonly string[];
+  /** The fields it reads from a row; none, and it reads every field.
+   *  TRAP T-a-held-set-reads-the-pages-fields */
+  fields?: (el: Element) => readonly string[] | undefined;
   /** It draws its field's BANDS — a gauge's zones — so they come with its value.
    *  TRAP T-a-threshold-is-a-fact-of-the-field */
   thresholds?: boolean;

@@ -42,7 +42,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — data-source, store
 - [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — query-context
 - [T-a-heading-holds-a-whole-reading](TRAPS.md#t-a-heading-holds-a-whole-reading) — data, filter-state
-- [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — data-source, held-set, read-plan, store-cache
+- [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — data-source, data-source-types, held-set, page-definition, read-plan, source-binding, store-cache
 - [T-a-held-set-takes-a-change-in-place](TRAPS.md#t-a-held-set-takes-a-change-in-place) — data-source, held-set, store, store-cache, stores
 - [T-a-kept-set-is-checked-each-session](TRAPS.md#t-a-kept-set-is-checked-each-session) — store-cache
 - [T-a-legend-follows-the-view-when-it-holds-the-field](TRAPS.md#t-a-legend-follows-the-view-when-it-holds-the-field) — bind-selection
@@ -231,7 +231,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (72)
+## The join and the app layer (73)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -248,6 +248,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — provider
 - [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — bind-source
 - [T-a-heading-opens-the-chips-menu](TRAPS.md#t-a-heading-opens-the-chips-menu) — context, provider
+- [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — context, provider
 - [T-a-legend-toggle-is-a-filter](TRAPS.md#t-a-legend-toggle-is-a-filter) — provider
 - [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — provider
 - [T-a-page-is-its-definition](TRAPS.md#t-a-page-is-its-definition) — provider
@@ -594,7 +595,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (92)
+## The data grid (93)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -613,6 +614,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-heading-menu-opens-on-what-it-holds](TRAPS.md#t-a-heading-menu-opens-on-what-it-holds) — data-grid
 - [T-a-heading-opens-the-chips-menu](TRAPS.md#t-a-heading-opens-the-chips-menu) — data-grid
 - [T-a-held-clause-op-is-not-a-reading-op](TRAPS.md#t-a-held-clause-op-is-not-a-reading-op) — data-grid
+- [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — data-grid
 - [T-a-made-up-key-never-leaves-the-data-layer](TRAPS.md#t-a-made-up-key-never-leaves-the-data-layer) — data-grid
 - [T-a-menu-owns-its-own-bodies](TRAPS.md#t-a-menu-owns-its-own-bodies) — data-grid
 - [T-a-native-select-keeps-its-own-shape](TRAPS.md#t-a-native-select-keeps-its-own-shape) — pagination

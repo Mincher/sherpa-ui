@@ -10403,13 +10403,29 @@ has a key. A page that needs a column the set lacks plans `fetch`: the cache
 reads that column alone, `take` its cap, and `join`s it by key — a copy of each
 row, never the store's own. A read that is not the same rows — a change the
 cache never heard — makes the set due, and it is read again with every field.
-Offline, a set without the column is shown as it is, unconfirmed. A source
-that cannot say which fields it reads asks for all of them, as before.
+Offline, a set without the column is shown as it is, unconfirmed.
+
+A page's NEED is every field it declares (and a tiered child), what the Query
+holds and answers, the sort, group, search and time fields, and what its
+components name (`AttachFacts.fields` — the provider gives a grid's columns and
+key, a summary's field, segment and over). A component given rows that names
+none needs every field, and so does a search with no search fields. Only a
+source opened from a page definition reads its need (`pageFields`); one made by
+hand reads every field, as before, because app code may read any field of its
+rows. A component bound later that lacks a column asks again, and its column is
+read. A row a page is given may lack a field the page does not use: a whole
+record is `store.byKey()`.
 
 - Site: `src/core/data/held-set.ts`
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/read-plan.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-binding.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/ui/context.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/a-held-set-reads-the-pages-fields.test.mjs`
 
 ### T-a-projected-row-is-checked-on-what-it-was-sent

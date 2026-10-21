@@ -210,11 +210,13 @@ async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tier
   const rows = tiered ? ROWS.map((r) => ({ ...r, site: `Site ${1 + (r.id % 6)}` })) : ROWS.map((r) => ({ ...r }));
   const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
   const seen = remote ? L.spoofRemote(store, { delay: 0, ...(announcesAll === false ? { announcesAll } : {}) }) : store;
-  return { L, def, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen) };
+  // The fields its grid shows, as the provider names them. 345 phase 8
+  const columns = (whole.ui?.grid?.columns ?? []).map((c) => c.field);
+  return { L, def, columns, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen, columns) };
 }
 
 /** One page over a store: its source, and its controls bound as the provider binds them. */
-async function page(L, def, store) {
+async function page(L, def, store, columns) {
   const source = await L.openSource(def, store);
   source.limitOptions = true;
   // As the provider keeps it.
@@ -226,8 +228,8 @@ async function page(L, def, store) {
   const panel = control('sherpa-filter-panel', 'panel');
   L.bindSource(source, view, { steerOnly: true, scope: 'view' });
   L.bindSource(source, data, { steerOnly: true, scope: 'data' });
-  L.bindSource(source, grid, { scope: 'data', shows: 'grid' });
-  L.bindSource(source, chart, { readonly: true, rows: 'all' });
+  L.bindSource(source, grid, { scope: 'data', shows: 'grid', fields: columns });
+  L.bindSource(source, chart, { readonly: true, rows: 'all', fields: ['status'] });
   L.bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
   return { source, initial, view, data, grid, chart, panel };
 }
@@ -266,7 +268,7 @@ const ACTS = {
   // The page left and opened again over the same store: a held set is the store's, and stays.
   reopen: async (p) => {
     p.source.close();
-    Object.assign(p, await page(p.L, p.def, p.store));
+    Object.assign(p, await page(p.L, p.def, p.store, p.columns));
   },
   // A pick the filters before it leave no row for is SET ASIDE: under Customer 01, paused,
   // free and gold hold 3 rows — Owners 03, 04 and 21 — so Owner 01 goes. TRAP T-one-walk-counts-and-limits-in-order
@@ -285,6 +287,10 @@ const ACTS = {
   'fetch-on': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: false, commit: true } }),
   // A field held for the first time asks its values; held again, nothing. 345 phase 5
   'add-field': (p) => p.source.query.hold('data', [...p.source.query.scope('data'), 'seats']),
+  // A component that reads a field no other does: its column alone; a second, nothing; one that names none, every field. 345 phase 8
+  'add-column': (p) => p.L.bindSource(p.source, control('sherpa-barchart', 'spend-chart'), { readonly: true, fields: ['spend'] }),
+  'add-column-again': (p) => p.L.bindSource(p.source, control('sherpa-barchart', 'spend-chart-2'), { readonly: true, fields: ['spend'] }),
+  'show-all': (p) => p.L.bindSource(p.source, control('sherpa-barchart', 'any-chart'), { readonly: true }),
   'add-field-again': (p) => {
     const held = p.source.query.scope('data').filter((f) => f !== 'seats');
     p.source.query.hold('data', held);
@@ -302,6 +308,8 @@ const PAGES = {
   // A remote store not held: every count and tally is a request.
   notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete', 'add-field', 'add-field-again'] },
   tiered: { remote: false, tiered: true, acts: ['pick-site', 'pick-both', 'move-site'] },
+  // A wide store: the page reads 10 of its 15 fields. 345 phase 8
+  wide: { page: LEAN, remote: true, acts: ['add-field', 'add-column', 'add-column-again', 'show-all'] },
 };
 
 /** An act has ended when no counter moves for three timer turns. */
