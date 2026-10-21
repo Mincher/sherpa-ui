@@ -76,7 +76,7 @@ test('sorting, grouping, filtering and paging change no stored row', async () =>
 
   src.query.setSort('seats', 'desc');
   src.query.setGroup('team');
-  src.query.select('team', ['red']);
+  src.query.setReading('view', 'team', { picked: ['red'] });
   src.query.setSearch('a');
   src.setPageSize(1);
   src.setPage(1);

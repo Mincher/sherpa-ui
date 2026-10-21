@@ -35,7 +35,7 @@ const ids = (src) => src.rows.map((r) => r.id).sort((a, b) => a - b);
 
 test('a customer, and a customer\'s sites, OR\'d: every row of the one, the sites of the other', async () => {
   const src = await source();
-  src.query.select('customer', ['Contoso', valueKey(at('Northwind', 'London'))]);
+  src.query.setReading('view', 'customer', { picked: ['Contoso', valueKey(at('Northwind', 'London'))] });
   await settle();
   // Contoso's rows, its siteless one too; and Northwind's London rows only.
   assert.deepEqual(ids(src), [2, 3, 4, 5]);
@@ -45,7 +45,7 @@ test('a customer, and a customer\'s sites, OR\'d: every row of the one, the site
 test('the clause is plain and/or/eq/in — a server runs the same', async () => {
   const { stateClause, fieldState } = await import('../../dist/data.js');
   const src = await source();
-  src.query.select('customer', ['Contoso', valueKey(at('Northwind', 'London')), valueKey(at('Northwind', 'Leeds'))]);
+  src.query.setReading('view', 'customer', { picked: ['Contoso', valueKey(at('Northwind', 'London')), valueKey(at('Northwind', 'Leeds'))] });
   const c = stateClause(src.selection('customer'));
   assert.deepEqual(c, ['or', ['customer', 'eq', 'Contoso'], ['and', ['customer', 'eq', 'Northwind'], ['site', 'in', ['Leeds', 'London']]]]);
   assert.deepEqual(filterRows(ROWS, c).map((r) => r.id), [1, 2, 3, 4, 5]);
@@ -58,7 +58,7 @@ test('the clause is plain and/or/eq/in — a server runs the same', async () => 
 
 test('a site under a customer that is picked says nothing more', async () => {
   const src = await source();
-  src.query.select('customer', ['Northwind', valueKey(at('Northwind', 'London'))]);
+  src.query.setReading('view', 'customer', { picked: ['Northwind', valueKey(at('Northwind', 'London'))] });
   await settle();
   assert.deepEqual(src.selection('customer').rows, [{ op: 'eq', picked: ['Northwind'] }]);
   // …and shows picked, under its picked customer.
@@ -69,11 +69,11 @@ test('a site under a customer that is picked says nothing more', async () => {
 
 test('every customer ticked is no filter; a site alone still is', async () => {
   const src = await source();
-  src.query.select('customer', ['Contoso', 'Northwind', 'Tailspin']);
+  src.query.setReading('view', 'customer', { picked: ['Contoso', 'Northwind', 'Tailspin'] });
   await settle();
   assert.deepEqual(ids(src), [1, 2, 3, 4, 5, 6]);
   assert.equal(src.selection('customer').fieldState, 'off');
-  src.query.select('customer', [valueKey(at('Tailspin', 'Paris'))]);
+  src.query.setReading('view', 'customer', { picked: [valueKey(at('Tailspin', 'Paris'))] });
   await settle();
   assert.deepEqual(ids(src), [6]);
 });

@@ -71,6 +71,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
 | ❓ | 0zr | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
 | ⬜ | 0zs | 389 | FLAKE — Demos `reforged-layout-resize.spec.ts:109` ("with the nav pinned…") fails ~3 in 10 alone in Chromium, at HEAD before 366 step 13 too: it reads `/layout/dashboard` two frames after a drag, where the test above it polls for the save | tests |
+| ⬜ | 0zt | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1588,6 +1589,15 @@ build too (3 in 10), so it is not 366. It reads `/layout/dashboard` two frames
 after the drag; the test above it (`:80`) polls for the save. First step: poll
 for the `8` key the same way, then see whether the save itself is late.
 
+### `[ ]` ⬜ 390 — FLAKE: Settings sometimes does not open in WebKit
+
+Found 2026-10-21, running Demos for 366 step 18: `reforged-settings-overlay.spec.ts`
+(the back-arrow case of its `:53` group) fails about 1 run in 40 in WebKit, at
+`expect.poll(() => settingsOpen(page)).toBe(true)` — the overlay never opens.
+Measured on step 17's build too, at the same rate (a worktree build swapped
+into `dist/`), so it is not 366. First step: see whether the link's
+navigation is lost or the overlay's open is.
+
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 
 Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
@@ -1915,7 +1925,11 @@ the filter edits — `select`, `write`, `hold`, `move`, `request`, `release`,
 `export` and `import` are the context's too; `SourceState` is `QueryState`,
 and a View is applied to a `query`, not a source. Step 17: one event —
 the context fires `query-change { fields, scopes }` after every source has
-heard; sources fire neither `scope-change` nor `selection-change`.
+heard; sources fire neither `scope-change` nor `selection-change`. Step 18:
+one-field doors — `setReading` (for `select` and `write`), `suspend` (for
+both suspends), `take` (for `request`), `reset` and `batch`; an answer
+already in force is a no-op. A control may send a `QueryRequest`; a bar's
+Apply then commits its own field only.
 
 ---
 

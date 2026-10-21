@@ -367,13 +367,13 @@ tenant in `name`, bump `version` when the rows' shape changes, and call
 Several controls narrow one query at once — a toolbar's chips, a grid's column
 headings, a chart legend, a saved view. Each answers a SCOPE of the Query, and
 the source ANDs them: a bar answers the scope it is bound to (`scope`), and a
-legend that narrows one chart writes that chart's own scope (`write(scope,
+legend that narrows one chart writes that chart's own scope (`setReading(scope,
 field, reading, { only })`). A bar bound with no scope is reported
 (`bar-without-scope`), never applied.
 
 `setQuery()` puts back a WHOLE Query — a saved view, a reload — so it is what a
-saved view uses and not what a control uses: a control writes its own field
-(`select`, `write`). The store's `filter` (`[field, op, value]`) is what the
+saved view uses and not what a control uses: a control asks for its own field
+(`setReading`). The store's `filter` (`[field, op, value]`) is what the
 source compiles the Query to; nothing sets it by hand.
 
 ### Two scopes: a component EXTENDS a view, never alters it

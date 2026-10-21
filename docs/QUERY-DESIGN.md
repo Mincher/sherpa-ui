@@ -319,7 +319,7 @@ selection mirror, `syncHeadings`, `syncColumns` and the panel glue in
 as aggregation moves in.
 
 **Stays**: `FieldReading`, `fieldState`, `readingClause`, `clauseConditions`,
-the clause grammar, `bind()`, `select()` (a write into the view scope),
+the clause grammar, `bind()`, `setReading()` (a field's answer, at its home),
 `groups()`, the scope registry, `debugState()`.
 
 ---

@@ -69,7 +69,7 @@ test('a Store and a DataSource run headless — query and mutate', async () => {
   assert.equal(source.rows.length, 25, 'paged');
   assert.equal(source.total, 500);
 
-  source.query.select('plan', ['Pro']);
+  source.query.setReading('view', 'plan', { picked: ['Pro'] });
   await settle();
   assert.equal(source.total, 333, 'filtered');
 
@@ -157,12 +157,12 @@ test('F1: a load asking the SAME question twice is skipped', async () => {
   // Twenty writes of the SAME filter. A chip re-emitting its state, a view
   // re-applying what it already applied, an attribute syncing back — all
   // arrive here, and all are free to ignore.
-  for (let i = 0; i < 20; i += 1) source.query.select('plan', ['Pro']);
+  for (let i = 0; i < 20; i += 1) source.query.setReading('view', 'plan', { picked: ['Pro'] });
   await settle();
   assert.equal(storeLoads, 2, 'only the FIRST of the twenty reached the store');
 
   // A genuine change still reads.
-  source.query.select('plan', ['Free']);
+  source.query.setReading('view', 'plan', { picked: ['Free'] });
   await settle();
   assert.equal(storeLoads, 3);
 });
@@ -202,11 +202,11 @@ test('F2: a component is not re-populated with rows it already holds', async () 
 
   // Same filter, twenty times. Even if F1 let a load through, the rows array
   // would be the same reference and the push is skipped.
-  for (let i = 0; i < 20; i += 1) source.query.select('plan', ['Pro']);
+  for (let i = 0; i < 20; i += 1) source.query.setReading('view', 'plan', { picked: ['Pro'] });
   await settle();
   const afterIdentical = populates;
 
-  source.query.select('plan', ['Free']);
+  source.query.setReading('view', 'plan', { picked: ['Free'] });
   await settle();
   assert.ok(populates > afterIdentical, 'a REAL change still populates');
 });
@@ -243,7 +243,7 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
 
   // ONE TICK — a view setting three things in one handler. It used to ask the
   // store three times and throw two answers away.
-  source.query.select('plan', ['Pro']);
+  source.query.setReading('view', 'plan', { picked: ['Pro'] });
   source.query.setSort('spend', 'desc');
   source.setPageSize(10);
   await settle();
@@ -259,7 +259,7 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
   // which is a policy about how fast people type and belongs to the caller.
   const beforeTyping = storeLoads;
   for (const term of ['n1', 'n12', 'n123']) {
-    source.query.select('name', [], { op: 'contains', text: term });
+    source.query.setReading('view', 'name', { op: 'contains', text: term, picked: [] });
     await settle();
   }
   assert.equal(storeLoads - beforeTyping, 3, 'one load per tick, as asked');
@@ -375,7 +375,7 @@ test('S11: a whole Query restores in ONE load', async () => {
   // A person narrows things down…
   const before = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
   await before.load();
-  before.query.select('plan', ['Pro']);
+  before.query.setReading('view', 'plan', { picked: ['Pro'] });
   before.query.setSort('spend', 'desc');
   await settle();
 

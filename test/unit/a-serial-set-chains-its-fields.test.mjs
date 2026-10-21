@@ -86,7 +86,7 @@ test('a filter before the set limits the chain, though the top is unanswered', a
   const { source } = await setup({});
   // Zone is held before the set, so its answer stands before the chain.
   source.query.hold(VIEW, ['zone', 'customer', 'region']);
-  source.query.select('zone', ['north']);
+  source.query.setReading('view', 'zone', { picked: ['north'] });
   await source.load();
   assert.deepEqual(sorted(await source.offered(VIEW)), { region: ['AMER', 'EMEA'] });
 });

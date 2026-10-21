@@ -32,10 +32,9 @@ export interface Selector {
   /** Its QueryContext. Does a scope hold a field? A control that narrows one
    *  component asks of the View. TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
   query: EventTarget & {
-    select: (field: string, picked: readonly unknown[], reading?: FieldReading) => void;
-    /** A control that narrows ONE component writes its own scope.
+    /** One field's answer; with `only`, a control that narrows ONE component answers its own scope.
      *  `reach`, not `scope`: TRAP T-three-things-called-scope */
-    write: (scope: string, field: string, reading: FieldReading | undefined, at?: { only?: BoundControl }) => void;
+    setReading: (scope: string, field: string, reading: FieldReading | null, at?: { only?: BoundControl }) => void;
     reading: (scope: string, field: string) => FieldReading | undefined;
     holds: (scope: string, field: string) => boolean;
   };
@@ -143,18 +142,18 @@ export function bindSelection<T extends EventTarget>(
     if (raised()) {
       // Its picks are Simple's: rows the View kept stay kept, and out of force.
       const held = source.query.reading(VIEW, field);
-      source.query.select(field, answer, held?.conditions?.length ? { ...held, mode: 'simple' } : {});
+      source.query.setReading(VIEW, field, { ...(held?.conditions?.length ? { ...held, mode: 'simple' as const } : {}), picked: answer });
       return;
     }
     if (reach === 'component') {
       // ANDed under the view's, so it can only narrow further.
-      source.query.write(key, field, answer.length ? { picked: answer } : undefined, only ? { only } : {});
-      /* Draw its OWN answer back. `selection-change` never fires for a scope's
-         own answer, so a control driven by `set()` would keep its last draw. */
+      source.query.setReading(key, field, answer.length ? { picked: answer } : null, only ? { only } : {});
+      /* Draw its OWN answer back: the same answer again tells no one, so a
+         control driven by `set()` would keep its last draw. */
       redraw();
       return;
     }
-    source.query.select(field, answer);
+    source.query.setReading(VIEW, field, { picked: answer });
   };
 
   const onControlChange = (): void => { write(read(control)); };
@@ -164,7 +163,7 @@ export function bindSelection<T extends EventTarget>(
   const onQueryChange = (e: Event): void => {
     const { fields, scopes } = (e as CustomEvent<QueryChangeDetail>).detail;
     if (reach === 'component' && scopes.length) {
-      if (raised() && source.query.reading(key, field)) source.query.write(key, field, undefined, only ? { only } : {});
+      if (raised() && source.query.reading(key, field)) source.query.setReading(key, field, null, only ? { only } : {});
       redraw();
     }
     if (fields.includes(field)) redraw();
@@ -178,7 +177,7 @@ export function bindSelection<T extends EventTarget>(
     control.removeEventListener(event, onControlChange);
     source.query.removeEventListener('query-change', onQueryChange);
     // Its scope outlives its control otherwise, and nothing else can name it.
-    if (reach === 'component') source.query.write(key, field, undefined);
+    if (reach === 'component' && source.query.reading(key, field)) source.query.setReading(key, field, null, only ? { only } : {});
   };
   signal?.addEventListener('abort', destroy, { once: true });
 

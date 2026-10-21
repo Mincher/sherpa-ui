@@ -45,7 +45,7 @@ test('the customer list holds no site, and a path key reads back as its object',
   const src = await source();
   assert.deepEqual(src.valuesFor('customer'), ['Contoso', 'Northwind', 'Tailspin']);
   assert.equal(src.valuesFor('customer').some((v) => typeof v === 'object'), false);
-  src.query.select('customer', [path('Northwind', 'Leeds')]);
+  src.query.setReading('view', 'customer', { picked: [path('Northwind', 'Leeds')] });
   // The reading holds the PATH, as the data holds values: an object.
   assert.deepEqual(src.query.reading('data', 'customer')?.picked, [{ customer: 'Northwind', site: 'Leeds' }]);
 });

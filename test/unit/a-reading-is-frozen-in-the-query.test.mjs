@@ -20,7 +20,7 @@ const make = (remote = false) => {
 test('select copies the caller\'s rows: a change to them leaves the Query as it was', async () => {
   const source = make();
   const rows = [{ op: 'contains', text: 'Da' }];
-  source.query.select('owner', [], { mode: 'advanced', conditions: rows });
+  source.query.setReading('view', 'owner', { mode: 'advanced', conditions: rows, picked: [] });
   rows[0].text = 'Ra';
   rows.push({ op: 'eq', picked: ['x'], join: 'or' });
   assert.deepEqual(source.query.applied.scopes.view.readings.owner.conditions, [{ op: 'contains', text: 'Da' }]);
@@ -53,7 +53,7 @@ test('after a remote commit, what a grid is handed cannot change the Query', asy
   const source = make(true);
   const got = grid(source);
   source.query.hold('view', ['region']);
-  source.query.select('region', ['EMEA']);
+  source.query.setReading('view', 'region', { picked: ['EMEA'] });
   source.query.commit();
   throwsOnWrite(got);
 });
@@ -61,8 +61,8 @@ test('after a remote commit, what a grid is handed cannot change the Query', asy
 test('after the Switch goes off, the reading it turned off is frozen too', async () => {
   const source = make();
   source.query.hold('view', ['region']);
-  source.query.select('region', ['EMEA']);
-  source.query.suspendScope('view');
+  source.query.setReading('view', 'region', { picked: ['EMEA'] });
+  source.query.suspend('view', null, true);
   const off = source.query.reading('view', 'region');
   assert.equal(off.suspended, true);
   assert.throws(() => { off.picked.push('APAC'); }, TypeError);
@@ -70,6 +70,6 @@ test('after the Switch goes off, the reading it turned off is frozen too', async
 
 test('reading() hands out the same object twice', () => {
   const source = make();
-  source.query.select('owner', ['Dana']);
+  source.query.setReading('view', 'owner', { picked: ['Dana'] });
   assert.equal(source.query.reading('view', 'owner'), source.query.reading('view', 'owner'));
 });

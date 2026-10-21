@@ -50,7 +50,7 @@ test('a filter narrows BOTH, and the summary still ignores the page', async () =
   bindSource(s, all, { readonly: true, rows: 'all', as: (r) => r.length });
   await s.load({ force: true });
   assert.equal(all.got.at(-1), 100);
-  s.query.select('band', ['a']);
+  s.query.setReading('view', 'band', { picked: ['a'] });
   await s.load({ force: true });
   assert.equal(all.got.at(-1), 60, '60 match, not the 25 on screen');
 });

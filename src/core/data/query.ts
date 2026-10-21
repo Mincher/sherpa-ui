@@ -12,6 +12,7 @@
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
+ * - QueryRequest — One reader act, as a control asks it of the Query; a list is one change.
  * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
  * - isSavedFilter — Is this a saved filter — a name, and a query definition?
  * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
@@ -124,6 +125,17 @@ export interface QueryDefaults {
   v: 1;
   scopes: Record<string, ViewScope>;
 }
+
+/** One reader act, as a control asks it of the Query: one field's answer, one
+ *  field or a whole scope switched off or on, a reset — or a list of them,
+ *  which is one change. `scope` is the bind's when left out; `commit` is a
+ *  bar's or a heading's Apply. 366 step 18 · TRAP T-one-query-one-owner */
+export type QueryRequest =
+  | { scope?: string; field: string; reading: FieldReading | null; commit?: true }
+  | { scope?: string; field: string; suspended: boolean; commit?: true }
+  | { scope?: string; suspended: boolean; commit?: true }
+  | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
+  | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —
  *  a query definition, a page's own or a reader's. Will, 366. TRAP T-saved-filters-are-every-scope */

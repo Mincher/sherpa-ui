@@ -14,6 +14,8 @@
 import { report } from '../data/report.js';
 import type { AttachFacts, BoundView, DataSource } from '../data/data-source.js';
 import type { FieldReading } from '../data/filter-state.js';
+import { VIEW, type QueryRequest } from '../data/query.js';
+import type { QueryContext } from '../data/query-context.js';
 import type { Row } from '../data/store.js';
 import type { Populatable } from './apply-state.js';
 
@@ -186,6 +188,35 @@ function arranger(detail: Record<string, unknown>, bind: SteerBind | undefined):
   return typeof bind?.scope === 'string' ? bind.scope : undefined;
 }
 
+/** Every bar answers a scope: one bound with none has nowhere to put it. */
+function reportUnscoped(el: Populatable): void {
+  report({
+    code: 'bar-without-scope',
+    message: 'bindSource: a bar reported its filters, but it was bound with no scope, so they are not applied.',
+    at: { tag: (el as { localName?: string }).localName ?? '', id: (el as { id?: string }).id ?? '' },
+  });
+}
+
+/** Does every part of a request name its own scope? */
+function hasScope(request: QueryRequest): boolean {
+  return Array.isArray(request) ? request.every(hasScope) : typeof (request as { scope?: unknown }).scope === 'string';
+}
+
+/** A control's request, to its context's doors; a list is one change. With
+ *  `commit`, its Apply: the one field it named, else its scope. 366 step 18 */
+function ask(query: QueryContext, request: QueryRequest, scope: string): void {
+  if (Array.isArray(request)) {
+    query.batch(() => { for (const one of request as readonly QueryRequest[]) ask(query, one, scope); });
+    return;
+  }
+  const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
+  const at = one.scope ?? scope;
+  if ('reset' in one) query.reset([at], one.reset);
+  else if ('reading' in one) query.setReading(at, one.field, one.reading);
+  else query.suspend(at, 'field' in one ? one.field : null, one.suspended);
+  if (one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });
+}
+
 /** Turn one component's event into its source's call. TRAP T-steering-events-are-a-closed-list */
 export function steer(source: DataSource, el: Populatable, bind: SteerBind | undefined, type: SteeringEvent, event: CustomEvent): void {
   const detail = (event.detail ?? {}) as Record<string, unknown>;
@@ -203,6 +234,15 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       return;
     }
     case 'quick-filter-change': {
+      /* ONE READER ACT, AS A REQUEST: it goes to the Query's doors, in the
+         request's scope or the bind's. 366 step 18 */
+      const request = detail['request'] as QueryRequest | undefined;
+      if (request) {
+        const at = typeof bind?.scope === 'string' ? bind.scope : undefined;
+        if (at || hasScope(request)) ask(source.query, request, at ?? VIEW);
+        else reportUnscoped(el);
+        return;
+      }
       /* THE EVENT IS THE ANSWER. `readings` is the control's own — which field,
          which values, which condition — and `apply()` is the ONE place a
          reading becomes a query; the control is never read.
@@ -223,12 +263,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
         source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, ...suspended, ...reset });
         return;
       }
-      // Every bar answers a scope: one bound with none has nowhere to put it.
-      report({
-        code: 'bar-without-scope',
-        message: 'bindSource: a bar reported its filters, but it was bound with no scope, so they are not applied.',
-        at: { tag: (el as { localName?: string }).localName ?? '', id: (el as { id?: string }).id ?? '' },
-      });
+      reportUnscoped(el);
       return;
     }
     case 'filter-add':
@@ -240,7 +275,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
         const ids = detail['ids'];
         const from = detail['from'];
         if (typeof detail['scope'] === 'string' && Array.isArray(ids)) {
-          source.query.request(detail['scope'], ids.map(String), typeof from === 'string' ? from : undefined);
+          source.query.take(detail['scope'], ids.map(String), typeof from === 'string' ? from : undefined);
         }
         return;
       }
@@ -283,7 +318,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
          every chip and every component part.
          TRAP T-one-query-builder-in-the-data-layer */
       const text = value == null ? '' : String(value);
-      source.query.select(field, [], { op: 'contains', text });
+      source.query.setReading(VIEW, field, { op: 'contains', text });
       return;
     }
     case 'page-change': {

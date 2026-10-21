@@ -232,7 +232,7 @@ test('source: one filter fans out to every bound component', async ({ page }) =>
     await source.load();
     const afterLoad = counts.map((c) => c.at(-1));
 
-    source.query.select('region', ['EMEA']);
+    source.query.setReading('view', 'region', { picked: ['EMEA'] });
     await new Promise((r) => setTimeout(r, 30));
     const afterFilter = counts.map((c) => c.at(-1));
 
@@ -269,7 +269,7 @@ test('source: a readonly bind receives data but never steers', async ({ page }) 
 
     // …but it still receives data when the source changes.
     const before = populated;
-    source.query.select('region', ['EMEA']);
+    source.query.setReading('view', 'region', { picked: ['EMEA'] });
     await new Promise((r) => setTimeout(r, 30));
     return { sortAfterEvent, received: populated > before };
   }, ROWS);
@@ -290,7 +290,7 @@ test('source: a narrowing change returns to page 1 rather than stranding the use
     const onPage3 = { page: source.state.page, ids: source.rows.map((r) => r['id']), pages: source.totalPages };
 
     // Filtering to 4 rows leaves only 2 pages — page 3 no longer exists.
-    source.query.select('region', ['EMEA']);
+    source.query.setReading('view', 'region', { picked: ['EMEA'] });
     await new Promise((r) => setTimeout(r, 30));
     const afterFilter = { page: source.state.page, count: source.rows.length, pages: source.totalPages };
 
@@ -370,7 +370,7 @@ test('source: unbind stops both halves', async ({ page }) => {
     off();
 
     const before = populated;
-    source.query.select('region', ['EMEA']);
+    source.query.setReading('view', 'region', { picked: ['EMEA'] });
     await new Promise((r) => setTimeout(r, 30));
     // …and its events no longer steer.
     el.dispatchEvent(
@@ -460,9 +460,9 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
     // single load (see the coalescing test below), which would mean only one
     // request ever reached the store — and then there would be no race to test.
     // A person clicking two chips produces two ticks, which is this.
-    source.query.select('tag', ['a']);   // slow
+    source.query.setReading('view', 'tag', { picked: ['a'] });   // slow
     await new Promise((r) => setTimeout(r, 0));
-    source.query.select('tag', ['b']);   // fast — must win
+    source.query.setReading('view', 'tag', { picked: ['b'] });   // fast — must win
     await new Promise((r) => setTimeout(r, 250));
     return { rows: source.rows.map((r) => r['tag']), calls: call };
   });
@@ -494,7 +494,7 @@ test('source: writes in ONE tick coalesce into a single load', async ({ page }) 
     const afterFirst = calls;
 
     // THREE setters, one tick.
-    source.query.select('plan', ['Pro']);
+    source.query.setReading('view', 'plan', { picked: ['Pro'] });
     source.query.setSort('id', 'desc');
     source.setPageSize(10);
     await new Promise((r) => setTimeout(r, 60));

@@ -129,11 +129,11 @@ test('it ANDs with another field\'s selection, and survives its changes', async 
   bind(el, source, 'status', STATES);
 
   el.toggle('churned');
-  source.query.select('plan', ['Pro']);
+  source.query.setReading('view', 'plan', { picked: ['Pro'] });
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [2, 3], 'both applied');
 
-  source.query.select('plan', []);
+  source.query.setReading('view', 'plan', { picked: [] });
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [1, 2, 3], 'the selection held');
 });
@@ -177,7 +177,7 @@ test('destroy() stops the control steering, and the source re-drawing it', () =>
   el.toggle('churned');
   assert.deepEqual(picked(source, 'status'), [], 'the change reached nothing');
 
-  source.query.select('status', ['active']);
+  source.query.setReading('view', 'status', { picked: ['active'] });
   assert.deepEqual(el.off, ['churned'], 'and the control was not re-drawn');
 });
 

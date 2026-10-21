@@ -1638,7 +1638,7 @@ scope; 346 took it out.)
 source marks `sendTo` with `origin`, and the panel words it "Return X to Y".
 The source keeps it IN the Query — the View scope's `from` — so the kept Query
 and a View's draft carry it through a reload (TODO 235); sent back down, it is
-forgotten. `request()` and the `filter-add` request still take ANY scope, so a
+forgotten. `take()` and the `filter-add` request still take ANY scope, so a
 caller with no pointer can send a field anywhere, and the 168 rule holds.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
@@ -4311,7 +4311,7 @@ so.
 counterpart. Each is a place a host can write state that nothing downstream
 will ever hear about.
 
-**`query.select()` is the answer for a FIELD**, and the reason the legend
+**`query.setReading()` is the answer for a FIELD**, and the reason the legend
 no longer mirrors a chip at all. It writes the field's selection, re-queries,
 and then `query-change` names the field — one write, one announcement, and every
 control over that field re-reads `selection(field)` instead of being pushed to.
@@ -5659,7 +5659,7 @@ The fix is that the SOURCE owns the field, not any control:
 | | |
 |---|---|
 | `declareValues(field, values)` | every value, so each control offers the same rows — and the same STRINGS |
-| `select(field, picked)` | the one write; re-queries, then `query-change` names the field |
+| `setReading(scope, field, reading)` | the one write; re-queries, then `query-change` names the field |
 | `selection(field)` | a `FilterState`, the one answer each control draws from |
 
 The filter is composed from the FIELDS' readings, scope by scope, so a field
@@ -10192,10 +10192,10 @@ Two scopes, and before this they shared one slot.
 
 | scope | reaches | writes |
 |---|---|---|
-| **view** | every component in the View — it cascades DOWN | the FIELD's one selection, `select()` |
-| **component** | that component only (`only`) | its OWN scope, `write(scope, field, reading, { only })` |
+| **view** | every component in the View — it cascades DOWN | the FIELD's one answer, `setReading()` at its home |
+| **component** | that component only (`only`) | its OWN scope, `setReading(scope, field, reading, { only })` |
 
-`select(field, …)` is keyed by field alone, so a second writer does not narrow,
+A field's answer at its home is keyed by field alone, so a second writer does not narrow,
 it **replaces**. Measured: a View chip picked `mac + win`, a legend switched
 `mac` off, and the chip's own state came back as `win` — the reader's choice
 overwritten, and the chip re-drew showing the legend's answer as if they had
@@ -11892,7 +11892,7 @@ condition where it is not. The `allowFields()` whitelist still decides on top.
 ### T-one-query-builder-in-the-data-layer
 
 A reading becomes a query in exactly ONE place: `stateClause()`, reached through
-`select()` or `write()`. Anything else is a second builder, and a second builder
+`setReading()`. Anything else is a second builder, and a second builder
 does not know what the first learned.
 
 `DataSource.#steer` had one. `quick-filter-change` ran a private
@@ -15053,6 +15053,7 @@ the one part of a slotted row the menu's sheet can reach, and read out through
 - Site: `test/e2e/reforged-menu-row-note.spec.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 - Site: `src/core/data/query-context.ts`
+- Site: `test/unit/both-answers-are-kept.test.mjs`
 
 ### T-a-record-has-a-time-of-its-own
 
@@ -16230,6 +16231,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `test/unit/a-bar-apply-commits-its-own-field.test.mjs`
 
 ### T-a-view-is-json
 
@@ -16601,6 +16603,7 @@ Only a SCOPED grid: an unscoped one is a page's to wire, as before.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-panel-asks-for-its-scopes
 
@@ -17675,7 +17678,7 @@ component's rows, and the push guard re-pushes when it changes. A bind's id is
 `bind({ id })`, else the element's own id. The component must be bound
 `rows: 'all'` — filtering one PAGE would lie about its total — so a write for a
 paged bind is refused and reported. A narrowing scope is its component's
-alone: `scopeOf()` skips it, so a field-keyed `select()` never lands there. A legend passes its chart, the element
+alone: `scopeOf()` skips it, so a field's answer at its home never lands there. A legend passes its chart, the element
 whose `legend` slot it sits in. Measured on Records: the bar chart 4 → 3 bars,
 the grid stays at 100, the donut at 4 slices.
 
@@ -17703,7 +17706,7 @@ Three things follow from the declaring, and each was a hole without it:
 - **It is drawn before it is answered.** An unanswered scope is pruned from the
   Query, so `describe()` reads the declaration, never `holds`.
 - **A write from anywhere narrows the one chart.** The panel has no pointer to
-  the chart; `write()` finds `only` in the declaration. Without it the scope
+  the chart; `setReading()` finds `only` in the declaration. Without it the scope
   came back WIDE and narrowed every component.
 - **Both views are told.** The legend hears `query-change`; a panel is
   drawn `drawReading(field, reading, scope)` — and takes it BY SCOPE, because
@@ -17821,6 +17824,8 @@ dropped reads "contains an" as nothing.
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `test/unit/query-context.test.mjs`
+- Site: `test/unit/an-echo-is-a-no-op.test.mjs`
+- Site: `test/unit/one-field-requests.test.mjs`
 
 ### T-the-data-says-what-a-field-may-hold
 

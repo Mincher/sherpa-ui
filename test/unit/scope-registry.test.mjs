@@ -87,7 +87,7 @@ test('debugState says everything the source thinks is true', async () => {
   src.declareValues('owner', ['Dana', 'Ravi']);
   src.query.hold('data', ['owner']);
   src.query.setSort('owner', 'desc');
-  src.query.select('owner', ['Dana']);
+  src.query.setReading('view', 'owner', { picked: ['Dana'] });
   await new Promise((r) => setTimeout(r, 40));
 
   const d = src.debugState();

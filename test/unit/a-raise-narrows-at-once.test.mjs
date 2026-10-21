@@ -28,7 +28,7 @@ test('a field raised to the View narrows a chart over every row at once', async 
   bindSource(source, grid, { scope: 'data' });
   bindSource(source, chart, { readonly: true, rows: 'all' });
   source.query.hold('data', ['plan']);
-  source.query.select('plan', ['Pro']);
+  source.query.setReading('view', 'plan', { picked: ['Pro'] });
   await source.load();
   await settle();
   // The grid's own answer: the chart over the View sees every row.

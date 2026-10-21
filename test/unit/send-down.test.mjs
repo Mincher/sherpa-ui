@@ -84,7 +84,7 @@ test('SENT DOWN, the View lets go and the answer goes with the field', async () 
 test('a field goes back down to where it CAME UP from — a chart\'s own scope — though another scope has it too', async () => {
   const { source, seen, chart, send, sendTo } = await setup();
   source.query.declarePart('picks:bar', { field: 'plan', only: chart, label: 'By plan' });
-  source.query.write('picks:bar', 'plan', { picked: ['Pro'] });
+  source.query.setReading('picks:bar', 'plan', { picked: ['Pro'] });
   send('view', 'plan', 'picks:bar');
   await tick();
   assert.deepEqual(seen.get('grid'), [1, 3]);
@@ -131,7 +131,7 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
 test('where a View field came up from is in the Query, so a reload still returns it there', async () => {
   const first = await setup();
   first.source.query.declarePart('picks:bar', { field: 'plan', only: first.chart, label: 'By plan' });
-  first.source.query.write('picks:bar', 'plan', { picked: ['Pro'] });
+  first.source.query.setReading('picks:bar', 'plan', { picked: ['Pro'] });
   first.send('view', 'plan', 'picks:bar');
   await tick();
   const kept = JSON.parse(JSON.stringify(first.source.query.applied));

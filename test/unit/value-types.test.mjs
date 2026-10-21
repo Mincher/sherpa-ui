@@ -137,7 +137,7 @@ test('select() takes the KEY a control hands back', async () => {
   const s = sourceWith();
   s.declareValues('owner', [RAVI, DANA]);
   // This is what a menu row gives you: `input.value`, a string.
-  s.query.select('owner', [valueKey(RAVI)]);
+  s.query.setReading('view', 'owner', { picked: [valueKey(RAVI)] });
   await s.load();
   assert.deepEqual(s.rows.map((r) => r.id), [1, 3]);
 });
@@ -145,7 +145,7 @@ test('select() takes the KEY a control hands back', async () => {
 test('select() takes the RAW value too', async () => {
   const s = sourceWith();
   s.declareValues('owner', [RAVI, DANA]);
-  s.query.select('owner', [RAVI]);
+  s.query.setReading('view', 'owner', { picked: [RAVI] });
   await s.load();
   assert.deepEqual(s.rows.map((r) => r.id), [1, 3]);
 });
@@ -153,7 +153,7 @@ test('select() takes the RAW value too', async () => {
 test('a NUMBER field selects by key and filters as a number', async () => {
   const s = sourceWith();
   s.declareValues('seats', [9, 10, 100]);
-  s.query.select('seats', ['10']);
+  s.query.setReading('view', 'seats', { picked: ['10'] });
   await s.load();
   assert.deepEqual(s.rows.map((r) => r.id), [3]);
   assert.deepEqual(s.selection('seats').values.map((v) => v.raw), [9, 10, 100]);

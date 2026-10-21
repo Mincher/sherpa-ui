@@ -124,22 +124,22 @@ test('suspending a field keeps its values; clearing does not', async ({ page }) 
       };
     };
 
-    src.query.select('s', ['a', 'b']);
+    src.query.setReading('view', 's', { picked: ['a', 'b'] });
     await settle();
     const on = snap();
 
     // OFF: keep the picks, stop applying them.
-    src.query.select('s', ['a', 'b'], { suspended: true });
+    src.query.setReading('view', 's', { suspended: true, picked: ['a', 'b'] });
     await settle();
     const off = snap();
 
     // ON again, from the values it still holds.
-    src.query.select('s', ['a', 'b']);
+    src.query.setReading('view', 's', { picked: ['a', 'b'] });
     await settle();
     const back = snap();
 
     // And a real CLEAR, which is a different instruction.
-    src.query.select('s', []);
+    src.query.setReading('view', 's', { picked: [] });
     await settle();
     const cleared = snap();
 

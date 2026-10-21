@@ -32,7 +32,7 @@ test('Select all rows ticks every matching row, on every page, and only those', 
 
     // Under a filter, only the rows it leaves.
     scenario('none');
-    source.query.select('tier', ['Gold']);
+    source.query.setReading('view', 'tier', { picked: ['Gold'] });
     await source.load();
     scenario('all');
     await new Promise((done) => setTimeout(done, 50));

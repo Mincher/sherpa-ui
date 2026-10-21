@@ -335,8 +335,8 @@ export class DataSource extends EventTarget {
    */
   answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
     const was = Object.keys(this.#draft.scopes[scope]?.readings ?? {});
-    for (const field of was) if (!(field in readings)) this.#context.select(field, []);
-    for (const [field, reading] of Object.entries(readings)) this.#context.select(field, reading.picked ?? [], reading);
+    for (const field of was) if (!(field in readings)) this.#member.select(field, []);
+    for (const [field, reading] of Object.entries(readings)) this.#member.select(field, reading.picked ?? [], reading);
   }
 
   /**
@@ -415,10 +415,10 @@ export class DataSource extends EventTarget {
       for (const [id, reading] of Object.entries(fields)) {
         // A chart's own field narrows that chart alone. TRAP T-a-chart-scope-is-its-legend-field
         if (this.#narrowing.has(scope)) {
-          this.#context.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
+          this.#member.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
           continue;
         }
-        this.#context.select(id, reading.picked ?? [], reading);
+        this.#member.select(id, reading.picked ?? [], reading);
       }
     }
   }
@@ -1597,7 +1597,7 @@ export class DataSource extends EventTarget {
     if (answer.holds) this.#context.hold(scope, [...answer.holds]);
     this.answer(scope, answer.readings);
     // The answer first, then the Switch: OFF lists what that answer has in force.
-    if (answer.suspended !== undefined) this.#context.suspendScope(scope, answer.suspended);
+    if (answer.suspended !== undefined) this.#context.suspend(scope, null, answer.suspended);
     // A bar's report IS its Apply: its menus waited for it, remote.
     this.#context.commit();
   }
@@ -1608,7 +1608,7 @@ export class DataSource extends EventTarget {
   answerColumn(scope: string, field: string, reading: FieldReading | null): void {
     const fresh = !!reading && !this.#context.scopeOf(field) && this.#context.canHold(scope, field);
     if (fresh) this.#context.hold(scope, [...this.#context.scope(scope), field]);
-    this.#context.select(field, reading?.picked ?? [], reading ?? {});
+    this.#member.select(field, reading?.picked ?? [], reading ?? {});
     // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
     this.#context.commit();
     if (fresh) this.#binding.drawBars(scope);
