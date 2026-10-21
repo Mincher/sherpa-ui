@@ -18,12 +18,9 @@ import {
   arranges, advancedOf, hasOwnBody, kindOf, oneChipList, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
-import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
+import type { FilterDef } from '../../core/ui/filter-def.js';
 import {
-  hangSavedMenu, type SavedMenuHost,
-} from '../../core/ui/saved-filter-menu.js';
-import {
-  MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters,
+  MenuDrill, SavedSets, drawFiltersButton,
   type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
@@ -68,7 +65,7 @@ export interface PanelScope {
   /**
    * How this component ARRANGES its rows — not which rows it shows.
    *
-   * They lead the scope, above the presets, and only a component scope has
+   * They lead the scope, and only a component scope has
    * them: "sorted by name" is a property of a table, not of a population.
    * TRAP T-organise-chips-lead-the-bar
    * TRAP T-group-and-sort-are-component-scope
@@ -97,7 +94,7 @@ interface Held {
   menu?: SherpaMenu;
 }
 
-/** One filter a scope draws, in its order: a field, Group or Sort, or a preset. */
+/** One filter a scope draws, in its order: a field, or Group or Sort. */
 interface ScopeFilter {
   id: string;
   label: string;
@@ -158,10 +155,6 @@ export class SherpaFilterPanel extends SherpaElement {
   #drill = new MenuDrill();
   /** The menu the panel built for a drill, and the field it answers. */
   #built: { menu: SherpaMenu; held: Held } | null = null;
-  /** A × asked its host to remove a filter: the rebuilt Filters menu opens again. */
-  #reopen = false;
-  /** What each PRESET row was told, by row value: on or off. TODO 54 */
-  #oneRows = new OneRows();
 
   override onRender(): void {
     syncResets(this, this.root, '.reset-all');
@@ -200,7 +193,6 @@ export class SherpaFilterPanel extends SherpaElement {
     const filters = this.$('.filters-btn');
     filters?.addEventListener('menu-change', this.#onAddCommit);
     filters?.addEventListener('menu-drill', this.#onMenuDrill);
-    filters?.addEventListener('menu-row-remove', this.#onRowRemove);
     filters?.addEventListener('menu-back', this.#onDrillBack);
     filters?.addEventListener('menu-close', this.#onDrillBack);
     // Save filters, and its menu. Will, TODO 105.
@@ -248,12 +240,12 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** A field with NO VALUES and NO BODY has nothing to draw, so it SAYS SO, open
-   *  or shut — rather than leaving a gap in the scope. A preset never has values.
+   *  or shut — rather than leaving a gap in the scope.
    *  TRAP T-the-panel-is-the-toolbar-in-a-column · TRAP T-a-broken-assumption-reports */
   #reportUndrawable(): void {
     for (const scope of this.#scopes) {
       for (const def of scope.filters ?? []) {
-        if (def.preset || def.appliedAt || def.options?.length || hasOwnBody(kindOf(def))) continue;
+        if (def.appliedAt || def.options?.length || hasOwnBody(kindOf(def))) continue;
         report({
           code: 'undrawable-filter',
           message: 'This filter has no values and no body of its own, so it was skipped.',
@@ -321,24 +313,16 @@ export class SherpaFilterPanel extends SherpaElement {
     const out: Record<string, Record<string, FieldReading>> = {};
     const taken = new Set<string>();
     for (const scope of this.#scopes) {
-      const on: string[] = [];
-      let presets = false;
       for (const def of scope.filters ?? []) {
         if (def.appliedAt) continue;
         if (!scope.part) {
           if (taken.has(def.id)) continue;
           taken.add(def.id);
         }
-        if (def.preset) {
-          presets = true;
-          if (def.active) on.push(def.id);
-          continue;
-        }
         const kind = kindOf(def);
         if (arranges(kind) || (!def.options?.length && !hasOwnBody(kind))) continue;
         (out[scope.scope] ??= {})[def.id] = def.state ?? { picked: [] };
       }
-      if (presets) (out[scope.scope] ??= {})['presets'] = { picked: on };
     }
     for (const { id, reading, scope } of this.#early.values()) (out[scope ?? ''] ??= {})[id] = reading;
     return out;
@@ -448,11 +432,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if (held.scope !== scope) continue;
       const one = this.#oneChip(held);
       if (one) one.results = results[held.def.field ?? held.def.id] ?? null;
-      else if (held.def.id === 'presets') {
-        for (const chip of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
-          chip.results = results[chip.dataset['value'] ?? ''] ?? null;
-        }
-      } else this.#headResults(held, results[held.def.field ?? held.def.id] ?? null);
+      else this.#headResults(held, results[held.def.field ?? held.def.id] ?? null);
     }
   }
 
@@ -470,8 +450,8 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#valueCounted.set(scope, results);
     if (this.#stale) return;
     for (const held of this.#held.values()) {
-      // A run only: one chip, the presets and a body are drawn by drawResults.
-      if (held.scope !== scope || held.def.id === 'presets' || this.#oneChip(held)) continue;
+      // A run only: one chip and a body are drawn by drawResults.
+      if (held.scope !== scope || this.#oneChip(held)) continue;
       const own = results[held.def.field ?? held.def.id] ?? {};
       for (const chip of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
         if (this.#heldOfChip(chip) === held) chip.results = own[chip.dataset['value'] ?? ''] ?? null;
@@ -499,7 +479,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Each scope's offered fields spent now, as one string. */
   #spentKey(): string {
     return this.#scopes.flatMap((scope) => (this.#lists.get(scope.scope)?.offers ?? [])
-      .filter((f) => !f.readings && this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0)
+      .filter((f) => this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0)
       .map((f) => `${scope.scope}:${f.id}`)).join();
   }
   /** What the Filters list was last drawn spent for. */
@@ -519,7 +499,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** One field's chips and menu, told what the filters before it leave, and what its chain offers. */
   #markPresent(held: Held): void {
-    if (held.def.id === 'presets' || held.def.appliedAt) return;
+    if (held.def.appliedAt) return;
     const field = held.def.field ?? held.def.id;
     const left = this.#presentBy.get(held.scope)?.[field] ?? null;
     const offered = this.#offeredBy.get(held.scope)?.[field] ?? null;
@@ -630,9 +610,7 @@ export class SherpaFilterPanel extends SherpaElement {
         return true;
       });
 
-      // PRESETS lead: one tap each, and the fields below them are the work.
-      const presets = mine.filter((f) => f.preset);
-      const fields = mine.filter((f) => !f.preset);
+      const fields = mine;
 
       /* ORGANISE leads everything: Group and Sort in ONE section, because
          they answer the same question — how the rows are arranged — and two
@@ -669,19 +647,8 @@ export class SherpaFilterPanel extends SherpaElement {
         box.append(section.box);
       }
 
-      if (presets.length) {
-        box.append(this.#drawField({
-          id: 'presets', label: this.word('presets'), options: presets.map((p) => ({
-            value: p.id, label: p.label, selected: !!p.active,
-            // A preset that carries its answer wears fx. TRAP T-a-saved-filter-is-its-readings
-            ...(kindOf(p) === 'advanced' ? { kind: 'advanced' as const } : {}),
-            ...(p.readings ? { saved: { readings: p.readings as Record<string, FieldReading>, says: p.says } } : {}),
-          })),
-          select: 'multiple',
-        }, scope.scope, true)!);
-      }
       for (const def of fields) {
-        const drawn = def.appliedAt ? this.#drawApplied(def) : this.#drawField(def, scope.scope, false);
+        const drawn = def.appliedAt ? this.#drawApplied(def) : this.#drawField(def, scope.scope);
         if (drawn) box.append(drawn);
       }
       this.#groupSets(box, scope.sets ?? []);
@@ -692,18 +659,12 @@ export class SherpaFilterPanel extends SherpaElement {
          and a tick that cannot be cleared is a lie.
          TRAP T-the-add-menu-is-the-whole-list */
       const offers = scope.available ?? [];
-      /* PRESETS TOO, each as its own row. A preset is a filter a reader turns
-         on; that it answers yes/no rather than with values changes nothing
-         about whether the scope holds it. */
-      const removable = [...presets, ...fields].filter((f) => f.removable);
-      /* WHAT THE MENU WAS TOLD, kept. `#held` knows a preset only as the
-         `presets` SECTION it was drawn in, so it cannot say which ones are
-         held. TRAP T-the-add-menu-is-the-whole-list */
-      this.#lists.set(scope.scope, { held: removable, offers });
+      // WHAT THE MENU WAS TOLD, kept. TRAP T-the-add-menu-is-the-whole-list
+      this.#lists.set(scope.scope, { held: fields.filter((f) => f.removable), offers });
 
       /* An empty scope SAYS SO. Absent, it reads as a bug rather than as an
          answer — and a scope can legitimately be empty. */
-      if (!presets.length && !fields.length) {
+      if (!fields.length) {
         const empty = this.clone('template.empty-tpl');
         if (empty) box.append(empty);
       }
@@ -759,9 +720,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /**
    * The source draws each scope WHOLE — what it holds and answers, what it may
-   * add, how its rows are arranged. A saved filter is one question answered
-   * yes or no; a date is one chip, its menu a calendar.
-   * TRAP T-a-panel-asks-for-its-scopes · TRAP T-a-chip-with-no-field-is-a-preset
+   * add, how its rows are arranged. A date is one chip, its menu a calendar.
+   * TRAP T-a-panel-asks-for-its-scopes
    */
   drawScopes(scopes: readonly ScopeDescription[]): Promise<void> {
     const asFilter = (given: FieldFilter | HeldFilter): FilterDef => {
@@ -773,7 +733,6 @@ export class SherpaFilterPanel extends SherpaElement {
       const picked = new Set((shown ? state.picked ?? [] : []).map(String));
       return {
         ...f,
-        ...(f.readings ? { preset: true } : {}),
         ...(f.kind === 'date' ? { asChip: true } : {}),
         ...(f.options ? { options: f.options.map((o) => ({ ...o, selected: picked.has(o.value) })) } : {}),
       };
@@ -785,7 +744,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /**
    * An empty SECTION — a header and a run — for things that are not one field.
-   * `Organise` holds Group and Sort; `Presets` holds the toggles.
+   * `Organise` holds Group and Sort.
    */
   #drawSection(id: string, label: string): { box: HTMLElement; values: HTMLElement } {
     const box = this.clone('template.field-tpl')!;
@@ -850,7 +809,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** One field: its header, its actions, and its run of value chips. */
-  #drawField(def: FilterDef, scope: string, isPresets: boolean): HTMLElement | null {
+  #drawField(def: FilterDef, scope: string): HTMLElement | null {
     const options = def.options ?? [];
     // Nothing to draw: `#reportUndrawable` said so.
     if (!options.length && !hasOwnBody(kindOf(def))) return null;
@@ -864,33 +823,32 @@ export class SherpaFilterPanel extends SherpaElement {
        WHAT IT IS, asked once. TRAP T-a-chip-knows-what-kind-it-is */
     const kind = kindOf(def);
     // More than 16 values is ONE chip, its values in its menu. Will, TODO 89
-    if (!def.asChip && !isPresets && oneChipList(def)) def = { ...def, asChip: true };
+    if (!def.asChip && oneChipList(def)) def = { ...def, asChip: true };
 
     const box = this.clone('template.field-tpl');
     if (!box) return null;
     const key = `${scope}:${def.id}`;
     box.setAttribute('data-field', def.id);
     box.setAttribute('data-scope', scope);
-    // A PRESETS section has no field to clear or remove.
     const organise = arranges(kind);
     // Set BEFORE the chip path returns, or it never lands.
     box.toggleAttribute('data-chip', organise || !!def.asChip);
-    box.toggleAttribute('data-clearable', !isPresets && !organise);
+    box.toggleAttribute('data-clearable', !organise);
     // Below the View, a field can be sent up to it. TRAP T-send-to-view-filters
-    box.toggleAttribute('data-raisable', !isPresets && !organise && scope !== VIEW);
+    box.toggleAttribute('data-raisable', !organise && scope !== VIEW);
     /* A switch only where there is somewhere to switch TO: a conditions-only
        field has no list behind it, as its menu says too. Will, 2026-09-26.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
     // ONE chip's switch is its menu's own. TRAP T-only-group-and-sort-stay-one-chip
     // Every field that offers Advanced: its f(x) is in its header, a one-chip list's too. Will, TODO 385
-    box.toggleAttribute('data-advanced-ok', !isPresets && !organise && advancedOf(def) === true);
+    box.toggleAttribute('data-advanced-ok', !organise && advancedOf(def) === true);
 
     // What this field does not offer is not drawn.
     if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
     if (!box.hasAttribute('data-raisable')) box.querySelector('.field-raise')?.remove();
     // A View field, SENT DOWN to a scope that has it. TRAP T-send-to-view-filters
-    const target = isPresets || organise ? undefined : def.sendTo;
+    const target = organise ? undefined : def.sendTo;
     if (!target) box.querySelector('.field-lower')?.remove();
 
     const head = box.querySelector('.field-head');
@@ -915,9 +873,7 @@ export class SherpaFilterPanel extends SherpaElement {
     // A tiered field's children are its parents' menus, not chips of their own. TODO 369
     for (const option of values ? options.filter((o) => !o.parent) : []) {
       const one = this.#valueChip(option.value, option.label ?? option.value,
-        { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}),
-          ...(option.swatch ? { swatch: option.swatch } : {}) });
-      if (one && option.saved) this.#addSavedMenu(one, option, scope);
+        { current: !!option.selected, ...(option.swatch ? { swatch: option.swatch } : {}) });
       if (one) values!.append(one);
     }
 
@@ -1029,8 +985,6 @@ export class SherpaFilterPanel extends SherpaElement {
     const btn = this.$<HTMLElement>('.filters-btn');
     if (!btn) return;
     if (this.#drill.menu && btn.contains(this.#drill.menu)) this.#drillOut();
-    const reopen = this.#reopen;
-    this.#reopen = false;
     this.#rows.clear();
     const row = (scope: string, id: string): string => {
       const value = `${scope}:${id}`;
@@ -1049,22 +1003,15 @@ export class SherpaFilterPanel extends SherpaElement {
       hides += hidden.length;
       const removable = new Set(list.held.map((f) => f.id));
       const listed = new Set(hidden.map((f) => f.id));
-      // A PRESET is one value: its tick is its chip's on/off. TODO 54
-      const on = (id: string): { on?: boolean } => {
-        const chip = this.#presetChip(scope.scope, id);
-        return chip ? { on: chip.hasAttribute('data-current') } : {};
-      };
       for (const f of hidden) {
         added.push({
           id: row(scope.scope, f.id), label: f.label, note: scope.label,
-          removable: removable.has(f.id), hidden: true, count: this.#countOf(scope.scope, f.id), ...on(f.id),
+          removable: removable.has(f.id), hidden: true, count: this.#countOf(scope.scope, f.id),
         });
       }
       for (const f of list.held) {
         if (listed.has(f.id)) continue;
-        added.push({
-          id: row(scope.scope, f.id), label: f.label, note: scope.label, removable: true, hidden: false, ...on(f.id),
-        });
+        added.push({ id: row(scope.scope, f.id), label: f.label, note: scope.label, removable: true, hidden: false });
       }
     }
 
@@ -1073,8 +1020,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const taken = new Set<string>();
     for (const held of this.#held.values()) {
       if (parts.has(held.scope)) continue;
-      if (held.def.id === 'presets') for (const o of held.def.options ?? []) taken.add(o.value);
-      else taken.add(held.def.id);
+      taken.add(held.def.id);
     }
     const offer: ListedFilter[] = [];
     const order = [...this.#scopes.filter((s) => s.scope !== VIEW), ...this.#scopes.filter((s) => s.scope === VIEW)];
@@ -1083,15 +1029,11 @@ export class SherpaFilterPanel extends SherpaElement {
         if (taken.has(f.id)) continue;
         taken.add(f.id);
         // A field the filters before it leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
-        const spent = !f.readings && this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0;
-        offer.push({
-          id: row(scope.scope, f.id), label: f.label, note: scope.label,
-          ...(f.readings ? { readings: f.readings } : {}), ...(spent ? { spent: true } : {}),
-        });
+        const spent = this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0;
+        offer.push({ id: row(scope.scope, f.id), label: f.label, note: scope.label, ...(spent ? { spent: true } : {}) });
       }
     }
 
-    this.#oneRows.tell(added);
     this.#spentFor = this.#spentKey();
     const def = drawFiltersButton(btn, hides, added, offer, this.#saved.listed);
     if (!def) return;
@@ -1102,8 +1044,6 @@ export class SherpaFilterPanel extends SherpaElement {
     btn.append(menu);
     menu.items?.(items);
     this.#syncFilters();
-    // Rebuilt for a ×, under the reader's pointer: open again. TODO 54
-    if (reopen) void reopenFilters(btn);
   }
 
   /** The Filters menu's rows: each value, and the scope and filter it stands
@@ -1121,26 +1061,17 @@ export class SherpaFilterPanel extends SherpaElement {
     return !!box && !box.hasAttribute('open');
   }
 
-  /** What a SHUT scope hides, in the order it draws them. Each preset is its own. */
+  /** What a SHUT scope hides, in the order it draws them. */
   #hiddenOf(scope: string): ScopeFilter[] {
     const out: ScopeFilter[] = [];
     for (const [, held] of this.#held) {
       if (held.scope !== scope) continue;
-      if (held.def.id === 'presets') {
-        for (const o of held.def.options ?? []) {
-          out.push({
-            id: o.value, label: o.label ?? o.value,
-            on: !!this.#chipIn(held, o.value)?.hasAttribute('data-current'),
-          });
-        }
-        continue;
-      }
       out.push({ id: held.def.id, label: held.def.label, on: this.#isOn(held) });
     }
     return out;
   }
 
-  /** How many picks a hidden filter holds, for its row's badge. A preset holds none. */
+  /** How many picks a hidden filter holds, for its row's badge. */
   #countOf(scope: string, id: string): number {
     const held = this.#held.get(`${scope}:${id}`);
     if (!held) return 0;
@@ -1172,12 +1103,6 @@ export class SherpaFilterPanel extends SherpaElement {
     return held.values.querySelector<SherpaQuickFilter>(`.value[data-value="${CSS.escape(value)}"]`);
   }
 
-  /** A scope's PRESET chip by id, or null for a field. */
-  #presetChip(scope: string, id: string): HTMLElement | null {
-    const presets = this.#held.has(`${scope}:${id}`) ? undefined : this.#held.get(`${scope}:presets`);
-    return presets ? this.#chipIn(presets, id) : null;
-  }
-
   /**
    * The Filters button is ON only while a filter a SHUT scope hides is, and
    * each door counts its field's picks. An open scope speaks for itself.
@@ -1197,11 +1122,6 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     if (on) btn.dataset['status'] = 'active';
     else btn.removeAttribute('data-status');
-    // A preset pressed in its scope: its row is ticked as it is, while the menu is shut.
-    this.#oneRows.follow(menu, (value) => {
-      const at = this.#rows.get(value);
-      return !!at && !!this.#presetChip(at.scope, at.id)?.hasAttribute('data-current');
-    });
   }
 
   /** A scope opened or shut: the Filters menu is rebuilt for what is now hidden. */
@@ -1311,7 +1231,6 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Back, or the Filters menu shut: put the drilled rows home. */
   #onDrillBack = (event: Event): void => {
-    if (event.type === 'menu-close') this.#reopen = false;
     if (event.target === this.#drill.menu) this.#drillOut();
   };
 
@@ -1559,29 +1478,6 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [, held] of this.#held) this.#syncAnswered(held);
   }
 
-  /** A saved preset's menu: each field's own menu, read-only, a heading per
-   *  field. Will, TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
-  #addSavedMenu(chip: HTMLElement, option: FilterOption, scope: string): void {
-    const menu = this.clone('template.saved-menu-tpl');
-    if (menu) hangSavedMenu(chip, menu, option.label ?? option.value, option.saved ?? { readings: {} }, this.#savedHost(scope));
-  }
-
-  /** What a saved preset's card borrows from this panel. */
-  #savedHost(scope: string): SavedMenuHost {
-    return {
-      root: this.root,
-      unit: () => this.clone<HTMLElement>('template.saved-field-tpl'),
-      defOf: (field) => this.#fieldDefIn(scope, field) as FilterMenuDef | undefined,
-    };
-  }
-
-  /** A field's def: its own scope's first, then any scope's — the View may hold it. Never a preset. */
-  #fieldDefIn(scope: string, field: string): FilterDef | undefined {
-    return [this.#scopes.find((s) => s.scope === scope), ...this.#scopes]
-      .flatMap((s) => [...(s?.filters ?? []), ...(s?.available ?? [])])
-      .find((f) => !f.preset && (f.field ?? f.id) === field);
-  }
-
   /** Ask the source to send a View field DOWN to one scope. */
   #sendDown(held: Held, scope: string): void {
     this.emit('filter-add', { scope, ids: [held.def.field ?? held.def.id], from: held.scope });
@@ -1654,39 +1550,16 @@ export class SherpaFilterPanel extends SherpaElement {
     /* TICKED IS HELD. The menu lists every scope, so what changed is the
        difference between what it now says and what the panel is drawing — a
        row unticked is a REMOVE. Each row says its scope, so each ask goes to
-       the scope it names. A PRESET's tick is its on/off, as a press on it is;
-       its × removes it. TRAP T-the-add-menu-is-the-whole-list */
+       the scope it names. TRAP T-the-add-menu-is-the-whole-list */
     const adds = new Map<string, string[]>();
     const gone: { scope: string; id: string }[] = [];
     for (const [value, { scope, id }] of this.#rows) {
-      const preset = this.#presetChip(scope, id);
-      if (preset) {
-        // Only a row the reader CHANGED: a stale tick never undoes a preset. TODO 54
-        if (!this.#oneRows.flip(value, want.has(value))) continue;
-        const on = want.has(value);
-        preset.toggleAttribute('data-current', on);
-        const presets = this.#heldOfChip(preset);
-        if (!presets) continue;
-        this.#syncAnswered(presets);
-        this.#markPresent(presets);
-        this.#report(presets);
-        continue;
-      }
       const held = (this.#lists.get(scope)?.held ?? []).some((f) => f.id === id);
       if (held && !want.has(value)) gone.push({ scope, id });
       if (!held && want.has(value)) adds.set(scope, [...(adds.get(scope) ?? []), id]);
     }
     for (const [scope, ids] of adds) this.emit('filter-add', { scope, ids });
     for (const detail of gone) this.emit('filter-remove', detail);
-  };
-
-  /** A PRESET row's × was pressed: ask its scope to take it off. TODO 54 */
-  #onRowRemove = (event: Event): void => {
-    const at = this.#rows.get(String((event as CustomEvent).detail?.value ?? ''));
-    if (!at) return;
-    event.stopPropagation();
-    this.#reopen = true;
-    this.emit('filter-remove', { scope: at.scope, id: at.id });
   };
 
   /**

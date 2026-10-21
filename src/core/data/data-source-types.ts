@@ -22,7 +22,6 @@
  */
 import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 import type { FieldReading, FieldType } from './filter-state.js';
-import type { SaidField } from './filter-face.js';
 import type { Query } from './query.js';
 import type { Threshold } from './threshold.js';
 
@@ -82,10 +81,6 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   range?: boolean;
   /** Where it lives now, when an Add list offers it from another scope. */
   note?: string;
-  /** A saved filter's chip, as a bar drew it — no source describes one now; S4 deletes it. 366 */
-  readings?: Readonly<Record<string, FieldReading>>;
-  /** …and that answer in WORDS. TRAP T-a-saved-chip-lists-its-conditions */
-  says?: SaidField[];
 }
 
 /** A source's whole question, as JSON — to send out and take back in: the
@@ -99,8 +94,6 @@ export interface SourceState {
 export interface HeldFilter extends FieldFilter {
   /** Its answer in the Query, where it has one. */
   state?: FieldReading;
-  /** A saved filter chip's on or off — no source describes one now; S4 deletes it. 366 */
-  active?: boolean;
   removable?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here,
    *  and its `state` is this scope's own answer: kept, not in force.

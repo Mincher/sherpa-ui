@@ -6,7 +6,7 @@ import { test, expect, type Bar } from './harness';
  * labelled "Filters" with a plus on the left.
  *
  * Its menu lists the chips the bar HIDES for want of room first — each still a
- * door into its own menu — then every filter, then the saved ones. Its badge
+ * door into its own menu — then every filter, then the saved sets. Its badge
  * counts the hidden chips, and it reads ON when a hidden chip is on, as More did.
  * TRAP T-one-filters-button
  */
@@ -26,7 +26,6 @@ async function mount(page: import('@playwright/test').Page, width: number) {
     el.populate([...SIX, { id: 'at-risk', label: 'At risk' }]);
     el.available([
       { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }] },
-      { id: 'custom:mine', label: 'Mine', readings: { tier: { picked: ['gold'] } } },
     ]);
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
@@ -73,7 +72,7 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(wide.selectAll).toBe(false);
   // Nothing hidden: no badge, no section of hidden chips.
   expect(wide.badge).toBeNull();
-  expect(wide.rows).toEqual(['§Available filters', 'tier', '§Saved filters', 'custom:mine']);
+  expect(wide.rows).toEqual(['§Available filters', 'tier']);
 
   /* HIDDEN chips are ADDED filters — ONE section, not a second one — and each
      row has a caret into its child menu. None here can be taken off, so none
@@ -88,8 +87,7 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(Number(narrow.badge)).toBe(hidden.length);
   expect(hidden.at(-1)).toBe('at-risk');
   expect(hidden.slice(0, -1).every((r) => r.startsWith('›'))).toBe(true);
-  expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(
-    ['§Available filters', 'tier', '§Saved filters', 'custom:mine']);
+  expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(['§Available filters', 'tier']);
 });
 
 test('the button is ON while a hidden chip is, and a drill inside it adds nothing', async ({ page }) => {
@@ -200,39 +198,6 @@ test('its badge is a sherpa-badge, drawn exactly as a chip draws its count', asy
   expect(r.badge.border).toBe('solid');
   expect(r.badge).toEqual(r.chip);
   expect(r.badge.fill).not.toBe(r.tint);
-});
-
-/** A SAVED filter folded away: its row SHOWS its card at the Filters button,
- *  never drills it — its rows are field menus. TRAP T-a-conditions-only-menu-cannot-be-drilled */
-test('a folded saved filter opens its own card at the button', async ({ page }) => {
-  const r = await page.evaluate(async ({ SIX }) => {
-    const box = document.createElement('div');
-    box.style.inlineSize = '560px';
-    const el = document.createElement('sherpa-quick-filter-toolbar') as unknown as Bar;
-    box.appendChild(el);
-    document.getElementById('root')!.replaceChildren(box);
-    await el.rendered;
-    const tier = { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }] };
-    el.populate([...SIX, tier, { id: 'custom:mine', label: 'Mine', readings: { tier: { picked: ['gold'] } } }]);
-    await window.__settled();
-    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
-    const sr = el.shadowRoot!;
-    const btn = sr.querySelector<HTMLElement>('.add-btn')!;
-    const filters = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void };
-    const chip = sr.querySelector<HTMLElement>('.chip[data-id="custom:mine"]')!;
-    const card = chip.querySelector<HTMLElement & { open: boolean }>(':scope > sherpa-menu')!;
-    filters.show(btn);
-    await window.__settled();
-    filters.querySelector<HTMLElement>('.menu-row[data-value="custom:mine"] .menu-row-drill')!.click();
-    await window.__settled();
-    return {
-      folded: chip.hasAttribute('data-folded-away'),
-      open: card.open, drilled: filters.hasAttribute('data-drill'),
-      kept: !!card.querySelector(':scope > .saved-field'),
-    };
-  }, { SIX });
-
-  expect(r).toEqual({ folded: true, open: true, drilled: false, kept: true });
 });
 
 /* An ADDED on/off filter is one value: its tick is its on/off, and its × takes

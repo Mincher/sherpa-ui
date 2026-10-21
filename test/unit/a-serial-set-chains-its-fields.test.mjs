@@ -29,7 +29,6 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 class Bar extends EventTarget {
   constructor(readings) { super(); this.held = readings; this.offered = []; }
   get readings() { return this.held; }
-  get presets() { return {}; }
   get heldFields() { return ['customer', 'region']; }
   drawScope() {}
   drawOffered(offered, scope) { this.offered.push({ scope, offered: sorted(offered) }); }
@@ -37,7 +36,7 @@ class Bar extends EventTarget {
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: this.presets, holds: this.heldFields } })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
 }
 
 async function setup(readings, { mode = 'serial', limit = false } = {}) {

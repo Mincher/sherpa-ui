@@ -23,14 +23,13 @@ const ROWS = [
 class Bar extends EventTarget {
   constructor(readings) { super(); this.held = readings; }
   get readings() { return this.held; }
-  get presets() { return {}; }
   get heldFields() { return []; }
   drawScope() {}
   setAttribute() {}
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: this.presets, holds: this.heldFields } })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
 }
 
 async function counts(readings) {

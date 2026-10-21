@@ -38,7 +38,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-icon-start` | text |  | leading icon — an icon name (Figma default is a funnel) |
 | `data-id` | text |  |  |
 | `data-indicator` | boolean |  | show the leading status dot (Figma "Indicator (atom)", opt-in) |
-| `data-kind` | `boolean` `single` `multi` `advanced` `number` `date` `group` `sort` |  | WHAT THIS CHIP IS: group \| sort \| advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. "Organise" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `advanced` with no filter menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as Advanced. TRAP T-a-saved-filter-is-its-readings |
+| `data-kind` | `boolean` `single` `multi` `advanced` `number` `date` `group` `sort` |  | WHAT THIS CHIP IS: group \| sort \| advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. "Organise" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is |
 | `data-label` | text |  | chip text (or use the default slot). Rewritten to "Field: Value" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge. |
 | `data-locked` | boolean |  |  |
 | `data-menu` | boolean | `false` | Figma State=menu — snap on the caret button |

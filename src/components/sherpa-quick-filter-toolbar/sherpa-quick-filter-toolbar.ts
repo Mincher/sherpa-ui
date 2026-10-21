@@ -13,9 +13,6 @@ import { advancedOf, kindOf } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  drawSavedMenu, hangSavedMenu, type SavedMenuHost,
-} from '../../core/ui/saved-filter-menu.js';
-import {
   MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
@@ -232,9 +229,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        ROWS, which live in its own shadow DOM — moving its empty light DOM put
        a blank card on screen, so the filter could never be answered, never
        went active, and never filtered. Show the menu ITSELF, anchored to the
-       Filters button. A saved filter's card too: its rows are field MENUS.
-       TRAP T-a-conditions-only-menu-cannot-be-drilled */
-    if (!from.children.length || this.#isSaved(chip)) {
+       Filters button. TRAP T-a-conditions-only-menu-cannot-be-drilled */
+    if (!from.children.length) {
       this.#closeOverflow();
       from.show?.(add);
       return;
@@ -361,7 +357,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The active TOGGLE chips. TRAP T-toggle-chips-have-no-field — menu chips are in `values`. */
   get active(): string[] {
     return this.#chips()
-      .filter((c) => c.current && (!c.hasAttribute('data-menu') || this.#isSaved(c)))
+      .filter((c) => c.current && !c.hasAttribute('data-menu'))
       .map((c) => c.dataset['id'] ?? '');
   }
 
@@ -395,8 +391,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
-      // A saved filter is a toggle: its menu holds no picks to set.
-      if (!id || !chip.hasAttribute('data-menu') || this.#isSaved(chip)) continue;
+      if (!id || !chip.hasAttribute('data-menu')) continue;
       const wanted = next[id];
       // Never switched off, but it still follows a pick.
       if (chip.hasAttribute('data-persistent')) {
@@ -448,7 +443,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * setChipActive(id, on) — steer one ON/OFF chip: a preset, a saved filter.
+   * setChipActive(id, on) — steer one ON/OFF chip: a toggle, or a chip the Switch turned off.
    * SILENT, like every steer, so `report()` when it should be heard. A chip
    * answered by its menu takes `setChipValues` or `setChipReading` instead.
    * TRAP T-a-silent-write-still-needs-a-way-to-report
@@ -504,8 +499,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * drawResults(results) — each answered chip's results, from its source: the
-   * rows that reach it — the filters before it — and match its answer, by field
-   * or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
+   * rows that reach it — the filters before it — and match its answer, by field.
+   * SILENT. A chip with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
    */
   drawResults(results: Readonly<Record<string, number>>): void {
     this.#results = results;
@@ -617,7 +612,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  none of it. TRAP T-grid-suspend-is-not-clear */
   #drawChip(id: string, reading: FieldReading): void {
     this.setChipReading(id, reading);
-    // A chip with no field menu — a saved filter — is only on or off.
     if (reading.suspended) this.#setChipActive(id, false);
   }
 
@@ -671,8 +665,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** What one chip's menu holds — values ticked, or a date as one or two entries. */
   #chipPicks(chip: HTMLElement): string[] {
-    // A saved filter's card holds field menus, not its picks.
-    if (this.#isSaved(chip)) return [];
     // A chip drilled into the Filters menu reports from there — its own menu is
     // empty while the rows are away.
     if (this.#drill.home && this.#drill.home === chip.querySelector('sherpa-menu')) {
@@ -749,12 +741,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-a-condition-only-field-still-has-a-menu
          TRAP T-a-chip-knows-what-kind-it-is */
       const kind = kindOf(f);
-      /* A SAVED filter's answer is given, so it has no field menu: it is a
-         toggle, told what it is. TRAP T-a-saved-filter-is-its-readings */
-      if (f.readings) {
-        chip.dataset['kind'] = kind;
-        this.#addSavedMenu(chip, f);
-      } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
+      if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
@@ -918,41 +905,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     ));
     await Promise.all(this.#chips().flatMap((chip) =>
       [...chip.querySelectorAll<SherpaMenu>('sherpa-menu')].map((menu) => menu.rendered)));
-  }
-
-  /**
-   * EVERY saved chip's menu: each field's own menu, read-only, a heading per
-   * field — and Remove if it may go. Will, TODO 181. TRAP T-a-saved-chip-lists-its-conditions
-   */
-  #addSavedMenu(chip: HTMLElement, def: FilterDef): void {
-    const menu = this.clone<HTMLElement>('template.qf-saved-menu-tpl');
-    if (!menu) return;
-    // Nothing to say and nothing to do: the chip stays a plain toggle.
-    if (!Object.keys(def.readings ?? {}).length && !(def.removable && !def.persistent)) return;
-    this.#addRemove(chip, menu, def);
-    hangSavedMenu(chip, menu, def.label, { readings: def.readings ?? {}, says: def.says }, this.#savedHost());
-  }
-
-  /** A saved filter's card, drawn in place: an open card stays open. */
-  #drawSaved(def: FilterDef, menu = this.#chips().find((c) => c.dataset['id'] === def.id)
-    ?.querySelector<HTMLElement>(':scope > sherpa-menu')): void {
-    if (!def.readings || !menu) return;
-    drawSavedMenu(menu, { readings: def.readings ?? {}, says: def.says }, this.#savedHost());
-  }
-
-  /** What a saved filter's card borrows from this bar. */
-  #savedHost(): SavedMenuHost {
-    return {
-      root: this.root,
-      unit: () => this.clone<HTMLElement>('template.qf-saved-field-tpl'),
-      defOf: (field) => [...this.#filters, ...this.#available].find((d) => !d.readings && (d.field ?? d.id) === field),
-      bounds: this.dataset['bounds'],
-    };
-  }
-
-  /** A SAVED filter's chip: a toggle, whatever its menu lists. */
-  #isSaved(chip: HTMLElement): boolean {
-    return !!this.#filters.find((f) => f.id === chip.dataset['id'])?.readings;
   }
 
   /** Give a chip's menu its "Remove" action. TRAP T-remove-is-opt-in-and-a-footer-button */
@@ -1125,7 +1077,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // Its WHOLE answer, in the event: a source reads this, never the bar.
       // TRAP T-a-filter-report-is-the-whole-answer
       readings: this.readings,
-      presets: this.presets,
       holds: this.heldFields,
       active: this.active,
       // APPLIED: only ON chips — for a host that wants the ticks, the View chip's.
@@ -1229,23 +1180,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
 
-  /**
-   * Every saved filter this bar holds, ON OR OFF, with its readings — what a
-   * scoped source keeps as presets. TRAP T-a-saved-filter-is-its-readings
-   */
-  get presets(): Record<string, { on: boolean; readings: Record<string, FieldReading> }> {
-    const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
-    const out: Record<string, { on: boolean; readings: Record<string, FieldReading> }> = {};
-    for (const f of this.#filters) if (f.readings) out[f.id] = { on: on.has(f.id), readings: f.readings };
-    return out;
-  }
-
   /** available([...]) — the filters the Add chip offers, over the populate() set. */
   available(defs: FilterDef[]): void {
     this.#available = Array.isArray(defs) ? defs : [];
     this.#renderAvailable();
-    // A saved filter's field this bar can now draw becomes its menu.
-    for (const def of this.#filters) this.#drawSaved(def);
   }
 
   /**
@@ -1302,17 +1240,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return this.#filters.map((f) => f.id);
   }
 
-  /** The FIELDS its chips hold — not a selector, a saved filter, or a chip that
-   *  answers no field here. What its scope holds. TRAP T-a-bar-reports-its-holds */
+  /** The FIELDS its chips hold — not a selector, or a chip that answers no
+   *  field here. What its scope holds. TRAP T-a-bar-reports-its-holds */
   get heldFields(): string[] {
-    return this.#filters.filter((f) => !f.persistent && !f.readings && f.field !== null)
+    return this.#filters.filter((f) => !f.persistent && f.field !== null)
       .map((f) => f.field ?? f.id);
   }
 
   /**
    * drawScope(scope) — draw what a scope holds, SILENTLY, from the description
-   * the panel is drawn each of: its chips, each field's answer and each saved
-   * filter on or off. Nothing is reported — the source already holds all of
+   * the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of
    * it. A PERSISTENT chip (the View) is the host's to set, so it is left alone.
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
    */
@@ -1341,21 +1278,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // TRAP T-group-and-sort-are-component-scope
     const organise = { group: scope.group ?? [], sort: scope.sort ?? [] };
     if (scope.group && JSON.stringify(organise) !== JSON.stringify(this.#organise)) this.organise(organise);
-    const presets = scope.filters.filter((f) => f.readings);
-    const fields = scope.filters.filter((f) => !f.readings);
+    const fields = scope.filters;
     // The scope speaks FIELDS; a chip may be named for its question.
-    const want = new Set([...fields.map((f) => this.#idOf(f.id)), ...presets.map((f) => f.id)]);
+    const want = new Set(fields.map((f) => this.#idOf(f.id)));
     // A chip that answers no field here is no scope's to hold, so none takes it off.
     for (const def of [...this.#filters]) {
       if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
-    // A saved filter another control put in the scope — the panel — is drawn from its description.
-    const missing = presets.filter((f) => !this.#heldIds.includes(f.id) && !this.#available.some((d) => d.id === f.id));
-    if (missing.length) this.#available = [...this.#available, ...missing.map(({ active: _a, ...def }) => def as FilterDef)];
     const add = [...want].filter((id) => !this.#heldIds.includes(id)
       && this.#available.some((f) => f.id === id));
     if (add.length) this.#addFilters(add, { silent: true });
-    this.#orderAs([...presets.map((f) => f.id), ...fields.map((f) => this.#idOf(f.id))]);
+    this.#orderAs(fields.map((f) => this.#idOf(f.id)));
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     await this.#settled();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
@@ -1372,12 +1305,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
     for (const def of this.#filters) {
       const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
-      if (!chip || answered.has(def.id) || persistent.has(def.id) || def.readings || newer(def.id)) continue;
+      if (!chip || answered.has(def.id) || persistent.has(def.id) || newer(def.id)) continue;
       if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
-    const on = new Set(presets.filter((f) => f.active).map((f) => f.id));
-    for (const def of this.#filters) if (def.readings && !newer(def.id)) this.#setChipActive(def.id, on.has(def.id));
     if (resume) this.#emitChange({ suspended: false });
     else if (handover?.length && scope.suspended) {
       // On again in the report, so the source's keepOff lists them as its own.
@@ -1411,7 +1342,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!add) return;
     // A field the filters before it leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
     const offer = allow(this.#available, this.#allowedFields)
-      .map((f) => (!f.readings && this.#spent(f) ? { ...f, spent: true } : f));
+      .map((f) => (this.#spent(f) ? { ...f, spent: true } : f));
     this.#spentFor = this.#spentKey();
     /* THE WHOLE LIST, not what is LEFT. Ticked is held: a tick adds a chip and
        an untick removes it, so a reader never hunts for where a filter goes.
@@ -1456,7 +1387,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The offered fields spent now, as one string. */
   #spentKey(): string {
-    return this.#available.filter((f) => !f.readings && this.#spent(f)).map((f) => f.id).join();
+    return this.#available.filter((f) => this.#spent(f)).map((f) => f.id).join();
   }
   /** What the Add list was last drawn spent for. */
   #spentFor = '';
@@ -1495,17 +1426,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* OFF, and REMOVABLE. A chip added ON holds no values yet, and "on but
          filtering by nothing" is the amber warning — shown to a reader who has
          done nothing wrong. They add the chip, then answer it.
-         TRAP T-a-new-chip-opens-in-default-not-warning
-         A SAVED filter is answered already, so it comes ON.
-         TRAP T-saved-filters-are-the-last-section */
-      added.push({ ...def!, active: !!def!.readings, removable: true });
+         TRAP T-a-new-chip-opens-in-default-not-warning */
+      added.push({ ...def!, active: false, removable: true });
     }
     if (!added.length) return;
-    // A saved filter lands after the other saved filters (D2 A); a field at the end.
-    const saved = added.filter((f) => f.readings);
-    const lastSaved = this.#filters.findLastIndex((f) => !!f.readings);
-    const at = lastSaved >= 0 ? lastSaved + 1 : this.#filters.findLastIndex((f) => f.persistent || f.field === null) + 1;
-    this.#filters = [...this.#filters.slice(0, at), ...saved, ...this.#filters.slice(at), ...added.filter((f) => !f.readings)];
+    // A field lands at the end.
+    this.#filters = [...this.#filters, ...added];
     this.#render();
     this.#renderAvailable();
     if (silent) return;

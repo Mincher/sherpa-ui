@@ -95,7 +95,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 | `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | EVERY close reports, and says why. The width path called this directly while only the header button emitted, so a narrow window left the panel gone and the host still in panel mode — no toolbars, no panel. |
 | `close(reason: 'reader' \| 'width' \| 'page' = 'reader')` | `hide()`, in the spelling every surface keeps. |
 | `toggle()` |  |
-| `drawScopes(scopes: readonly ScopeDescription[])` | The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A saved filter is one question answered yes or no; a date is one chip, its menu a calendar. |
+| `drawScopes(scopes: readonly ScopeDescription[])` | The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A date is one chip, its menu a calendar. |
 
 ## Events
 

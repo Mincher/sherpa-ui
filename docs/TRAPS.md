@@ -76,7 +76,6 @@ the type is what it WILL be, not proof that it is upgraded yet.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
-- Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-tokens-css-never-reaches-shadow
@@ -1436,7 +1435,6 @@ family's markup is not a component's anatomy.
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/core/ui/filter-menu.ts`
-- Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `test/e2e/reforged-date-conditions.spec.ts`
 - Site: `test/e2e/reforged-advanced-rows.spec.ts`
 - Site: `scripts/check-size.mjs`
@@ -5753,7 +5751,6 @@ binding went from 194 lines to 152.
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -10764,7 +10761,6 @@ Dates are not done: their questions wait on TODO 21d.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-number-advanced.spec.ts`
-- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-conditions-are-opt-in-per-field
 
@@ -11040,24 +11036,6 @@ chip a label and keep your own copy.
 
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
-### T-a-chip-with-no-field-is-a-preset
-
-A filter chip with NO MENU is a PRESET, not a field.
-
-`At risk`, `Open tickets`, `Unassigned` — one question the data answers yes or
-no, with no field behind it and no values to pick. In a filter panel they lead
-their scope in ONE `Presets` section, not one section each: they are separate
-questions that happen to share a shape, and a header per chip says they are
-four fields when they are none.
-
-A preset gets no Clear and no Remove — there is no field to act on — and its
-own label is what a search matches, exactly as a value's is.
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `src/core/ui/filter-def.ts`
 
 ### T-a-scope-is-named-for-its-content
 
@@ -11822,7 +11800,6 @@ menu their events were the Filters menu's.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `test/e2e/reforged-one-filters-button.spec.ts`
 
 ### T-a-filter-answers-by-values-conditions-or-both
 
@@ -12322,7 +12299,6 @@ element serves a chip and a panel.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-a-percentage-floor-needs-a-definite-parent
 
@@ -14893,94 +14869,6 @@ words.
 - Site: `test/e2e/reforged-num-coercion.spec.ts`
 - Site: `test/e2e/reforged-metric.spec.ts`
 
-### T-a-saved-chip-lists-its-conditions
-
-**Every saved filter's chip has a menu, and the menu LISTS its conditions** —
-TODO 49, Will: *"Any preset or saved filter chip should have a menu button to
-show a menu with the conditions applied."* Read-only lines, a heading per
-field (`HEALTH` · Less than 60; `OWNER` · Equals Unassigned), on a bar and in
-the panel. Only a reader's OWN filter had a menu before, and it held two
-actions and no words.
-
-- **The words are made once**, in `filter-face.ts`: `conditionLines(state)`
-  is a line per row in force, and `sayReadings(readings, factsOf)` is a saved
-  filter field by field. Several picks are ONE line (`Is one of Pro, Free`);
-  a field that answers nothing — every value ticked — has no line.
-- **The SOURCE says them** (`source.say(readings)`, and `says` on each preset
-  it describes), because it knows a field's name, type and values. A bar
-  knows only the fields it holds: left to it, `openTickets` has no name.
-  Unbound, a control words the readings itself from its own defs.
-- **Each field shows its OWN menu**, read-only. TODO 181, Will: *"The
-  preset/saved filter menus should show the condition input rows, in read
-  only mode, rather than just text labels."* `saved-filter-menu.ts` builds it
-  with `menuFor`: inline, `data-readonly`, on its Advanced rows. A Simple
-  answer is drawn as its picks, as OR'd rows; a date shows its calendar.
-- **The field name is a direct `p.menu-section`**, so the menu's own
-  `::slotted` look styles it. A field the control has no def for, or an
-  on/off or selector one, stays a `p.menu-line` of words: no box, nothing to
-  press.
-- **A `.saved-field` group stops every event its menu sends** — none is the
-  card's or the chip's — and carries the words as its `aria-description`,
-  because inert rows say nothing.
-- **A card drawn before its defs arrive** draws them in place when they do
-  (`available()`): a field that was words becomes its menu.
-- **The chip is still a TOGGLE.** A menu used to mean "a value chip": the
-  bar's `active` list left such a chip out, and its `values` setter switched
-  it off. Both ask the def now (`#isSaved`).
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/filter-face.ts`
-- Site: `src/data.ts`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
-- Site: `test/unit/filter-face.test.mjs`
-- Site: `src/core/ui/saved-filter-menu.ts`
-- Site: `src/core/ui/filter-def.ts`
-- Site: `src/core/data/data-source-types.ts`
-
-### T-a-saved-filter-is-its-readings
-
-**A saved filter is a name and its READINGS, field by field — never a
-clause.** Will, 2026-09-25: presets *"are actually compound conditional filters
-that (potentially) use more than 1 field and those fields values"*, and a
-reader must be able to save and edit their own.
-
-Readings, because readings are what the fields HELD. Its chip's card shows
-them again, each in its field's own menu (`T-a-saved-chip-lists-its-conditions`);
-a clause cannot be re-opened in any UI. So
-`{ health: { op: 'lt', text: '60' } }`, not `['health', 'lt', 60]` — and the
-data layer compiles it, with the field's type, as it compiles every reading.
-
-**Stored, it is the plain form** (TODO 197): `{ health: { lt: 60 } }` under
-`where` — still field by field, so it opens again the same way. The source
-reads it back into readings. One stored before 197 is not read (Will, D4).
-`T-one-way-to-write-a-condition`
-
-**It applies as ONE named part.** A def with `readings` is a toggle of kind
-`advanced`. The bar's report names each in `presets`, on or off, by chip id,
-and a bound source applies each ON one with `apply(readings, { reach: 'component', key:
-'saved:<id>' })` — so two saved filters AND, one over two fields is one part,
-and one switched off takes its part with it (the source's bind keeps the keys: `answerUnscoped`).
-
-**The chip draws it.** An `advanced` chip with no FILTER menu holds a given answer
-(`#given()`), so it reads as `data-condition="advanced"` and wears `fx` from
-the start, and the info-blue when on. It has no field menu to derive either from.
-
-Before this the page held a `TOGGLES` map of id → clause and contributed the
-ON ones itself, so a preset was a chip in one file and a query in another.
-
-- Site: `src/core/ui/filter-kind.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/core/data/filter-state.ts`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
-- Site: `src/core/ui/filter-def.ts`
-
 ### T-saved-filters-are-every-scope
 
 **Save filters keeps EVERY scope's filters under one name** — Will, TODO
@@ -15041,29 +14929,23 @@ reader's set under a page id is the reader's.
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
+- Site: `src/core/data/filter-state.ts`
 
 ### T-saved-filters-are-the-last-section
 
 **Saved filters are offered LAST in the Filters menu, under "Saved filters".**
 Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
 at the bottom"*; renamed "Saved filters" on 2026-09-29 (TODO 105), and this
-trap, `T-saved-filters-are-the-custom-section` until then, on 2026-10-14. Only the ones not added: a held saved filter is under Added
-filters, with every other filter the bar holds (`T-one-filters-button`).
-
-A def with `readings` IS a saved filter, so the bar needs no second list: the
-host hands them over through `available()` beside the fields. A saved chip
-taken off the bar goes back there by itself (`#removeFilter`).
+trap, `T-saved-filters-are-the-custom-section` until then, on 2026-10-14. A
+saved filter is no chip since 366: each row is a SET, a page's own or a
+reader's (`T-saved-filters-are-every-scope`).
 
 **The heading is the MENU's**, not the bar's: `MenuItem.section` names the
 section an item is in, and the menu draws a heading row where it changes. Its
 search hides a heading when nothing under it matches — a heading is never
 matched on its own name, so "Saved filters" over no rows cannot happen.
 
-**One added from there comes ON.** A new field chip comes off, because on with
-no answer is the amber warning (`T-a-new-chip-opens-in-default-not-warning`);
-a saved filter IS its answer.
-
-**A reader's saved SETS are listed there too** (TODO 105): a row per set, its
+**Each set is a row** (TODO 105): its
 tick TAKES it, the ONE taken is ticked, and unticked, the scopes it names lose
 their filters. A set is no chip: picking one asks the host
 (`T-saved-filters-are-every-scope`).
@@ -15073,7 +14955,6 @@ heads.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/ui/filters-button.ts`
 
 ### T-row-one-is-data-op

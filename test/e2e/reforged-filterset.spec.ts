@@ -58,43 +58,21 @@ test('the panel orders a set\'s fields where its first stands, with no box round
   expect(r.boxes).toBe(0);
 });
 
-/* ONE order, the source's (Will, D2 A, TODOs 347–349): saved filters first, then
-   fields. TRAP T-one-walk-counts-and-limits-in-order */
-type Scoped = Bar & { addFilters(ids: string[]): void; available(d: unknown[]): void; drawScope(s: unknown): Promise<void> };
-const SAVED = (id: string) => ({ id, label: id.toUpperCase(), readings: { status: { picked: ['active'] } } });
+/* ONE order, the source's (Will, D2 A, TODOs 347–349): the fields, each set
+   together. TRAP T-one-walk-counts-and-limits-in-order */
+type Scoped = Bar & { drawScope(s: unknown): Promise<void> };
 const FIELDS = ['region', 'status', 'customer'].map((id) => ({ id, label: id, removable: true,
   options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }] }));
 
-test('a saved filter added to the bar lands after the other saved filters, not at the end', async ({ page }) => {
-  const r = await page.evaluate(async ({ saved, fields }) => {
-    const run = (b: HTMLElement) => [...b.shadowRoot!.querySelectorAll<HTMLElement>('.chips > .chip')].map((c) => c.dataset['id']);
-    const bar = await window.__mount<Scoped>('sherpa-quick-filter-toolbar', [saved[0], ...fields], { style: 'inline-size: 1600px' });
-    bar.available([saved[1], saved[2]]);
-    bar.addFilters(['s2']);
-    await window.__settled();
-    const one = run(bar);
-    const none = await window.__mount<Scoped>('sherpa-quick-filter-toolbar', fields, { style: 'inline-size: 1600px' });
-    none.available([saved[2]]);
-    none.addFilters(['s3']);
-    await window.__settled();
-    return { one, none: run(none) };
-  }, { saved: [SAVED('s1'), SAVED('s2'), SAVED('s3')], fields: FIELDS });
-  expect(r.one).toEqual(['s1', 's2', 'region', 'status', 'customer']);
-  expect(r.none).toEqual(['s3', 'region', 'status', 'customer']);
-});
-
-test('drawScope puts the chips in the scope\'s order, and draws a saved filter the panel added', async ({ page }) => {
+test('drawScope puts the chips in the scope\'s order', async ({ page }) => {
   const r = await page.evaluate(async ({ fields }) => {
     const run = (b: HTMLElement) => [...b.shadowRoot!.querySelectorAll<HTMLElement>('.chips > .chip')].map((c) => c.dataset['id']);
     const bar = await window.__mount<Scoped>('sherpa-quick-filter-toolbar', fields, { style: 'inline-size: 1600px' });
     await bar.drawScope({ scope: 'data', label: 'Rows', available: [], filters: [
-      { id: 'p', label: 'P', readings: { status: { picked: ['a'] } }, active: true, removable: true },
       { id: 'status', label: 'status' }, { id: 'customer', label: 'customer' }, { id: 'region', label: 'region' },
     ] });
     await window.__settled();
-    const on = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="p"]')?.hasAttribute('data-current') ?? null;
-    return { run: run(bar), on };
+    return { run: run(bar) };
   }, { fields: FIELDS });
-  expect(r.run).toEqual(['p', 'status', 'customer', 'region']);
-  expect(r.on).toBe(true);
+  expect(r.run).toEqual(['status', 'customer', 'region']);
 });

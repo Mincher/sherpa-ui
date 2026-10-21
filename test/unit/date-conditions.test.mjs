@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import {
   ArrayStore, DataSource, absoluteDates, durationSpan, matchesFilter, readingsOf, whereOf,
 } from '../../dist/data.js';
-import { conditionLines } from '../../dist/core/data/filter-face.js';
+import { spellConditions } from '../../dist/core/data/filter-face.js';
 import { fieldState, readingClause } from '../../dist/core/data/filter-state.js';
 
 const TODAY = new Date(Date.UTC(2026, 9, 13, 15, 0));
@@ -80,7 +80,7 @@ test('a date row reads in its own words', () => {
     { join: 'or', op: 'last', text: '7', unit: 'day' },
     { join: 'or', op: 'eq', picked: ['2026-10-01'] },
   ]));
-  assert.deepEqual(conditionLines(state), ['Before 03 Sep 2026', 'or In the last 7 days', 'or On 01 Oct 2026']);
+  assert.equal(spellConditions(state), 'Before: 03 Sep 2026 or In the last: 7 days or On: 01 Oct 2026');
 });
 
 test('a source filters by a date from today', async () => {

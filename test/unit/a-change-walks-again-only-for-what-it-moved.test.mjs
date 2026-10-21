@@ -23,11 +23,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 class Bar extends EventTarget {
   constructor(readings) { super(); this.held = readings; this.counted = 0; this.last = null; }
   get readings() { return this.held; }
-  get presets() { return {}; }
   get heldFields() { return ['region', 'customer']; }
   drawResults(r) { this.counted++; this.last = r; }
   drawScope() {} drawPresent() {} setAttribute() {} removeAttribute() {} toggleAttribute() {} populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: {}, holds: this.heldFields } })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
 }
 
 /** A source over `store`, its View bar answering Region = EMEA, settled. */

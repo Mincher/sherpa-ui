@@ -399,45 +399,6 @@
             }
           }
         ]
-      },
-      {
-        "el": "template",
-        "class": "qf-saved-menu-tpl",
-        "children": [
-          {
-            "el": "sherpa-menu",
-            "attrs": {
-              "slot": "menu",
-              "data-no-select-all": ""
-            }
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "qf-saved-field-tpl",
-        "children": [
-          {
-            "el": "div",
-            "children": [
-              {
-                "el": "p",
-                "class": "menu-section"
-              },
-              {
-                "el": "div",
-                "class": "saved-field",
-                "attrs": {
-                  "role": "group"
-                }
-              },
-              {
-                "el": "p",
-                "class": "menu-line"
-              }
-            ]
-          }
-        ]
       }
     ]
   },
@@ -709,7 +670,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (active, values, savedSets, superseded, filtersSuspended, readings, presets, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (active, values, savedSets, superseded, filtersSuspended, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -727,7 +688,6 @@
       "detail": {
         "active": "string[]",
         "holds": "string[]",
-        "presets": "Record<string, { on: boolean; readings: Record<string, FieldReading>; }>",
         "readings": "Record<string, FieldReading & { label: string; values: string[]; }>",
         "reset": "boolean | undefined",
         "scope": "'bar'",
@@ -927,7 +887,7 @@
           "$type": "method",
           "name": "drawResults",
           "args": "results: Readonly<Record<string, number>>",
-          "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
+          "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60."
         },
         {
           "$type": "method",
@@ -987,7 +947,7 @@
           "$type": "method",
           "name": "drawScope",
           "args": "scope: ScopeDescription",
-          "description": "drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips, each field's answer and each saved filter on or off. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone."
+          "description": "drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone."
         },
         {
           "$type": "method",
@@ -1050,11 +1010,6 @@
         {
           "name": "readings",
           "type": "Record<string, FieldReading & { label: string; values: string[] }>",
-          "access": "read"
-        },
-        {
-          "name": "presets",
-          "type": "Record<string, { on: boolean; readings: Record<string, FieldReading> }>",
           "access": "read"
         },
         {

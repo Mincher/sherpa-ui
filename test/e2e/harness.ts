@@ -102,7 +102,6 @@ export type Bar = SherpaEl & {
   values: Record<string, string[]>;
   /** Each field's answer, ON or off — `picked` survives a chip switched off. */
   readings: Record<string, { picked?: string[] } & Record<string, unknown>>;
-  presets: Record<string, { on: boolean; readings: Record<string, unknown> }>;
   heldFields: string[];
   superseded: string[];
   sortField: string | null;

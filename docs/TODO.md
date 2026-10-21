@@ -1854,7 +1854,10 @@ over or deleted. Page `presets` are gone; Demos and the Starter moved with it.
 S3 (2026-10-21): the Query names no saved filter — the library, `declarePreset`,
 `preset`, `say`, the export's `presets` and the walk's preset steps are gone; a
 stored scope key the Query does not keep is dropped and said once
-(`unknown-scope-key`). A chip's preset fields stay in the types until S4.
+(`unknown-scope-key`). S4 (2026-10-21): no control draws a saved-filter
+chip — the bar's and the panel's saved chips and cards, `saved-filter-menu.ts`,
+the panel's Presets section, a chip's given answer and the saved-filter words
+(`sayReadings`, `conditionLines`) are gone.
 
 ---
 

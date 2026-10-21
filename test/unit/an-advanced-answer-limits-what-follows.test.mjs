@@ -26,12 +26,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 class Bar extends EventTarget {
   constructor(region) { super(); this.held = { region }; this.present = null; this.results = null; }
   get readings() { return this.held; }
-  get presets() { return {}; }
   get heldFields() { return ['region', 'customer']; }
   drawResults(r) { this.results = r; }
   drawPresent(p) { this.present = p; }
   drawScope() {} setAttribute() {} removeAttribute() {} toggleAttribute() {} populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: {}, holds: this.heldFields } })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
 }
 
 async function page(store, region, options = {}) {

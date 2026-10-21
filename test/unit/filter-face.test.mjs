@@ -66,31 +66,3 @@ test('chained rows: the face shows each row\'s VALUES, and the words keep the co
     { op: 'eq', picked: ['a'] }, { op: 'ne', picked: ['b'], join: 'and' }] });
   assert.equal(picked.value, 'Alpha, Beta');
 });
-
-/* Will, TODO 49: "Any preset or saved filter chip should have a menu button to
-   show a menu with the conditions applied." The words are made HERE, once.
-   TRAP T-a-saved-chip-lists-its-conditions */
-test('a saved filter reads a line per condition, under each field\'s own name', async () => {
-  const { conditionLines, sayReadings } = await import('../../dist/data.js');
-  const lines = (facts, reading) => conditionLines(fieldState({ field: 'f', ...facts }, reading));
-
-  assert.deepEqual(lines({ type: 'number' }, { op: 'lt', text: '60' }), ['Less than 60']);
-  assert.deepEqual(lines({}, { op: 'eq', picked: ['Unassigned'] }), ['Equals Unassigned']);
-  // Several picks are ONE line, and say "any of".
-  assert.deepEqual(lines({ values: ['Pro', 'Free', 'Team'] }, { picked: ['Pro', 'Free'] }), ['Is one of Pro, Free']);
-  assert.deepEqual(lines({ type: 'number' }, { conditions: [{ op: 'between', picked: ['37', '120'] }], mode: 'advanced' }), ['Between 37 and 120']);
-  assert.deepEqual(lines({ type: 'number' }, { conditions: [{ op: 'notbetween', picked: ['37', '120'] }], mode: 'advanced' }), ['Not between 37 and 120']);
-  // Rows say how they join.
-  assert.deepEqual(lines({}, { mode: 'advanced', conditions: [
-    { op: 'contains', text: 'ab' }, { join: 'or', op: 'startswith', text: 'U' }, { join: 'and', op: 'ne', picked: ['x'] },
-  ] }), ['Contains ab', 'or Starts with U', 'and Does not equal x']);
-  // Nothing answered says nothing.
-  assert.deepEqual(lines({}, { picked: [] }), []);
-
-  // Field by field; an unanswered field is left out; OFF is the chip's, not the list's.
-  const readings = { health: { op: 'lt', text: '60', suspended: true }, owner: { op: 'eq', picked: ['Unassigned'] }, plan: { picked: [] } };
-  assert.deepEqual(sayReadings(readings, (f) => (f === 'health' ? { label: 'Health', type: 'number' } : {})), [
-    { field: 'health', label: 'Health', lines: ['Less than 60'] },
-    { field: 'owner', label: 'owner', lines: ['Equals Unassigned'] },
-  ]);
-});

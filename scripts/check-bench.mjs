@@ -149,10 +149,10 @@ function control(tag, id, holds = []) {
   const spec = JSON.parse(readFileSync(`src/components/${tag}/${tag}.component.json`, 'utf8'));
   const el = new EventTarget();
   Object.assign(el, {
-    id, holds: [...holds], readings: {}, presets: {}, superseded: [],
+    id, holds: [...holds], readings: {}, superseded: [],
     setAttribute() {}, removeAttribute() {}, toggleAttribute() {},
     send(type, detail) { el.dispatchEvent(new CustomEvent(type, { detail })); },
-    answer(readings, presets = el.presets) { el.readings = readings; el.presets = presets; el.report(); },
+    answer(readings) { el.readings = readings; el.report(); },
     // The bar's filter Switch, as a reader flips it.
     switchOff(off) { el.suspended = off; el.report(); },
   });
@@ -169,14 +169,13 @@ function control(tag, id, holds = []) {
   }
   // A bar supersedes only its own chips.
   if (has('supersede')) el.supersede = (fields) => { counters.draws++; el.superseded = (fields ?? []).filter((f) => el.holds.includes(f)); };
-  // As the toolbar draws a scope: a filter with `readings` is a saved filter, the rest are fields.
+  // As the toolbar draws a scope: its fields, and each one's answer.
   if (has('drawScope')) {
     el.drawScope = (d) => {
       counters.draws++;
       const filters = d?.filters ?? [];
-      el.holds = filters.filter((f) => !f.readings).map((f) => f.id);
-      el.presets = Object.fromEntries(filters.filter((f) => f.readings).map((f) => [f.id, { on: !!f.active, readings: f.readings }]));
-      el.readings = Object.fromEntries(filters.filter((f) => !f.readings && f.state).map((f) => [f.id, f.state]));
+      el.holds = filters.map((f) => f.id);
+      el.readings = Object.fromEntries(filters.filter((f) => f.state).map((f) => [f.id, f.state]));
       if ('suspended' in el) el.suspended = !!d?.suspended;
     };
   }
@@ -187,7 +186,7 @@ function control(tag, id, holds = []) {
         const r = el.readings[f];
         return [f, r ? { ...r, suspended: !!r.suspended } : { picked: [], suspended: true }];
       }));
-      el.send('quick-filter-change', { readings, presets: el.presets, holds: el.holds,
+      el.send('quick-filter-change', { readings, holds: el.holds,
         ...('suspended' in el ? { suspended: el.suspended } : {}) });
     };
   }

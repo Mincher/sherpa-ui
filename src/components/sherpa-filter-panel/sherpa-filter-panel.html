@@ -209,16 +209,6 @@
     <sherpa-quick-filter class="value"></sherpa-quick-filter>
   </template>
 
-  <!-- A saved preset's menu: each field's own menu, read-only.
-       TRAP T-a-saved-chip-lists-its-conditions -->
-  <template class="saved-menu-tpl">
-    <sherpa-menu slot="menu" data-no-select-all></sherpa-menu>
-  </template>
-  <!-- One field of a saved preset: its heading, then its menu or its words. -->
-  <template class="saved-field-tpl">
-    <div><p class="menu-section"></p><div class="saved-field" role="group"></div><p class="menu-line"></p></div>
-  </template>
-
   <!-- A field a higher scope holds: the line under its heading. -->
   <template class="applied-tpl">
     <span slot="description" class="field-applied sherpa-text-small"></span>
@@ -235,7 +225,6 @@
     <span data-word="organise">Organise</span>
     <span data-word="group">Group by</span>
     <span data-word="sort">Sort by</span>
-    <span data-word="presets">Presets</span>
     <span data-word="filters">filters</span>
   </template>
 </template>

@@ -730,7 +730,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     const menu = this.menu;
     const state = this.#state(menu?.values ?? []);
-    const advanced = this.#given() || state.condition === 'advanced';
+    const advanced = state.condition === 'advanced';
     this.#syncCondition(state);
     this.#syncBadge();
 
@@ -763,15 +763,9 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #syncCondition(state: FilterState): void {
     if (!this.#answersForItself()) return;
-    const condition = this.#given() ? 'advanced' : state.condition;
+    const condition = state.condition;
     if (condition) this.set('data-condition', condition);
     else this.set('data-condition', null);
-  }
-
-  /** An ADVANCED chip with no filter menu holds a GIVEN answer — a saved filter.
-   *  TRAP T-a-saved-filter-is-its-readings */
-  #given(): boolean {
-    return this.dataset['kind'] === 'advanced' && this.menu?.getAttribute('data-type') !== 'filter';
   }
 
   /** Drop a warning the menu answers once it has stamped. Never raises one. */

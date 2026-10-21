@@ -7,11 +7,9 @@
  * - FilterOption — One value a filter offers: a row in a chip's menu, or one of the panel's chips.
  * - FilterDef — One filter, as a bar or the panel draws it.
  */
-import type { SaidField } from '../data/filter-face.js';
 import type { FieldReading } from '../data/filter-state.js';
 import type { FilterOp } from '../data/store.js';
 import type { FilterKind, OffersAdvanced } from './filter-kind.js';
-import type { SavedAnswer } from './saved-filter-menu.js';
 
 /** One value a filter offers: a row in a chip's menu, or one of the panel's chips. */
 export interface FilterOption {
@@ -28,11 +26,6 @@ export interface FilterOption {
   swatch?: number;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
-  /** The panel's: what the value's own chip IS — a preset that carries its answer is `advanced`. */
-  kind?: FilterKind;
-  /** The panel's: a saved filter's answer, as its chip's card draws it.
-   *  TRAP T-a-saved-chip-lists-its-conditions */
-  saved?: SavedAnswer;
 }
 
 /** One filter, as a bar or the panel draws it. */
@@ -78,11 +71,6 @@ export interface FilterDef extends OffersAdvanced {
   state?: FieldReading;
   /** What the Add menu shows beside it — where it lives now, if somewhere else. */
   note?: string;
-  /** A SAVED filter: its answer, given field by field. TRAP T-a-saved-filter-is-its-readings */
-  readings?: Readonly<Record<string, FieldReading>>;
-  /** A saved filter's conditions in WORDS, as its source says them.
-   *  TRAP T-a-saved-chip-lists-its-conditions */
-  says?: SaidField[];
   /** Its answer survives a View change. TRAP T-a-field-can-carry-over-views */
   carryOver?: boolean;
   /** The bar's: a chip that cannot be switched OFF. TRAP T-persistent-chip-is-a-selector */
@@ -91,9 +79,6 @@ export interface FilterDef extends OffersAdvanced {
   selectAll?: boolean;
   /** The bar's: defer picks behind Apply. TRAP T-commit-follows-select-mode */
   commit?: boolean;
-  /** The panel's: a chip with no field behind it — one question, answered yes
-   *  or no. TRAP T-a-chip-with-no-field-is-a-preset */
-  preset?: boolean;
   /** The panel's: ONE chip with its menu, not a run — a date's menu IS a
    *  calendar. TRAP T-only-group-and-sort-stay-one-chip */
   asChip?: boolean;

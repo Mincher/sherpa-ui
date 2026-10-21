@@ -411,45 +411,6 @@
       },
       {
         "el": "template",
-        "class": "saved-menu-tpl",
-        "children": [
-          {
-            "el": "sherpa-menu",
-            "attrs": {
-              "slot": "menu",
-              "data-no-select-all": ""
-            }
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "saved-field-tpl",
-        "children": [
-          {
-            "el": "div",
-            "children": [
-              {
-                "el": "p",
-                "class": "menu-section"
-              },
-              {
-                "el": "div",
-                "class": "saved-field",
-                "attrs": {
-                  "role": "group"
-                }
-              },
-              {
-                "el": "p",
-                "class": "menu-line"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "template",
         "class": "applied-tpl",
         "children": [
           {
@@ -496,12 +457,6 @@
             "el": "span",
             "attrs": {
               "data-word": "sort"
-            }
-          },
-          {
-            "el": "span",
-            "attrs": {
-              "data-word": "presets"
             }
           },
           {
@@ -957,7 +912,7 @@
           "$type": "method",
           "name": "drawScopes",
           "args": "scopes: readonly ScopeDescription[]",
-          "description": "The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A saved filter is one question answered yes or no; a date is one chip, its menu a calendar."
+          "description": "The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A date is one chip, its menu a calendar."
         }
       ],
       "jsProps": [

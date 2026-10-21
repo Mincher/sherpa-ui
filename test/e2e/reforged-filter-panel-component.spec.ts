@@ -19,8 +19,6 @@ const SETUP = `
     {
       scope: 'data', label: 'Customer records',
       filters: [
-        { id: 'at-risk', label: 'At risk', preset: true },
-        { id: 'unassigned', label: 'Unassigned', preset: true, active: true },
         { id: 'status', label: 'Status', select: 'multiple', removable: true,
           options: [
             { value: 'active', label: 'active', selected: true },
@@ -48,21 +46,17 @@ const SETUP = `
   const flip = (s) => { const r = sr.querySelector(s).shadowRoot; (r.querySelector('.caret') ?? r.querySelector('button')).click(); };
 `;
 
-test('a scope draws its presets, its fields, and nothing it cannot', async ({ page }) => {
+test('a scope draws its fields, and nothing it cannot', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     return {
       scopes: q('.scope').map((s) => s.getAttribute('data-heading')),
       fields: q('.field').map((f) => f.dataset.field),
-      presets: q('.field[data-field="presets"] .value').map((c) => c.dataset.value),
-      presetOn: q('.field[data-field="presets"] .value[data-current]').map((c) => c.dataset.value),
       // The field actions are OPT-IN, per field; one not offered is not drawn.
       ownerActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
       statusActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="status"] .field-' + a)),
-      presetActions: ['advanced', 'clear', 'remove']
-        .filter((a) => !!sr.querySelector('.field[data-field="presets"] .field-' + a)),
       // Group and Sort ARRANGE; a condition means nothing to them.
       organiseActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="organise"] .field-' + a)),
@@ -75,22 +69,17 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   // A scope is NAMED for its content. TRAP T-a-scope-is-named-for-its-content
   expect(r['scopes']).toEqual(['View filters', 'Customer records']);
 
-  /* PRESETS lead in ONE section; `created` is absent because a date is not a
-     set of chips. TRAP T-a-chip-with-no-field-is-a-preset */
+  // `created` is absent: a date is not a set of chips.
   /* ONE Organise section holds Group and Sort — they answer the same
      question, and two headers for two chips is a header per control.
      TRAP T-organise-chips-lead-the-bar */
-  expect(r['fields']).toEqual(['organise', 'presets', 'status', 'owner']);
-  expect(r['presets']).toEqual(['at-risk', 'unassigned']);
-  expect(r['presetOn']).toEqual(['unassigned']);
+  expect(r['fields']).toEqual(['organise', 'status', 'owner']);
 
   /* Owner asked for conditions. NEITHER has a Remove: the scope's Add menu is
      the whole list and unticking a row removes it.
      TRAP T-the-add-menu-is-the-whole-list */
   expect(r['ownerActions']).toEqual(['advanced', 'clear']);
   expect(r['statusActions']).toEqual(['clear']);
-  // A PRESETS section has no field to clear or remove.
-  expect(r['presetActions']).toEqual([]);
   expect(r['organiseActions']).toEqual([]);
 
   expect(r['canAdd']).toEqual([1, 0, 0]);
@@ -260,7 +249,7 @@ test('a field header\'s label, count and buttons start at the top of its row', a
 });
 
 /**
- * RESET ALL clears BOTH scopes — picks, presets, Group and Sort — and applies
+ * RESET ALL clears BOTH scopes — picks, Group and Sort — and applies
  * at once, as the toolbar's Reset does. Both header buttons wear the DEFAULT
  * look. Will, 2026-09-26.
  */
@@ -304,7 +293,7 @@ test('the search matches values everywhere, and keeps the labels', async ({ page
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const search = sr.querySelector('.search');
-    search.value = 'as';
+    search.value = 'chur';
     search.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     await new Promise((r) => setTimeout(r, 150));
     return {
@@ -315,10 +304,10 @@ test('the search matches values everywhere, and keeps the labels', async ({ page
   })()`) as { shown: string[]; empty: string[]; labels: number };
 
   // A value matches its OWN label, and nothing else in the panel.
-  expect(r.shown).toEqual(['unassigned']);
-  expect(r.empty).toEqual(['organise', 'status', 'owner']);
+  expect(r.shown).toEqual(['churned']);
+  expect(r.empty).toEqual(['organise', 'owner']);
   // Every field still names itself.
-  expect(r.labels).toBe(4);
+  expect(r.labels).toBe(3);
 });
 
 /* Will, TODO 171: "Search in the filter panel should search field labels as
@@ -337,8 +326,8 @@ test('the search matches a field by its NAME too, and then shows every value of 
       };
     };
     const all = await type('');
-    return { all, owner: await type('own'), sort: await type('SORT'), section: await type('preset'),
-      mixed: await type('ri'), none: await type('zzz'), back: await type('') };
+    return { all, owner: await type('own'), sort: await type('SORT'), section: await type('organi'),
+      mixed: await type('CHU'), none: await type('zzz'), back: await type('') };
   })()`) as Record<string, { shown: string[]; fields: string[] }>;
 
   // A field's name: the field, with EVERY value of it.
@@ -346,13 +335,13 @@ test('the search matches a field by its NAME too, and then shows every value of 
   // One of two chips in a shared section is named: the other goes.
   expect(r.sort).toEqual({ shown: ['sort'], fields: ['organise'] });
   // A section's own heading names everything in it.
-  expect(r.section).toEqual({ shown: ['at-risk', 'unassigned'], fields: ['presets'] });
-  // A value still matches on its own: "At RIsk".
-  expect(r.mixed).toEqual({ shown: ['at-risk'], fields: ['presets'] });
+  expect(r.section).toEqual({ shown: ['group', 'sort'], fields: ['organise'] });
+  // A value still matches on its own, in any case: "CHUrned".
+  expect(r.mixed).toEqual({ shown: ['churned'], fields: ['status'] });
   expect(r.none).toEqual({ shown: [], fields: [] });
   // Emptied, everything is back.
   expect(r.back).toEqual(r.all);
-  expect(r.all.fields).toEqual(['organise', 'presets', 'status', 'owner']);
+  expect(r.all.fields).toEqual(['organise', 'status', 'owner']);
 });
 
 test('a field with a body of its own — a number — is found by its name, and comes back', async ({ page }) => {
@@ -426,7 +415,7 @@ test('the Add menu adds AND removes, and changes nothing by itself', async ({ pa
   ]);
   /* The field is STILL THERE. A component that removed it would be deciding
      what the host's list holds. */
-  expect(r.after).toEqual(['organise', 'presets', 'status', 'owner']);
+  expect(r.after).toEqual(['organise', 'status', 'owner']);
 });
 
 /**
@@ -467,8 +456,8 @@ test('group and sort lead the scope, report at once, and skip Apply',
       return { order, shape, sortOn, heard };
     })()`) as Record<string, unknown>;
 
-    // FIRST, above the presets — a reader reaches for them before narrowing.
-    expect(r['order']).toEqual(['organise', 'presets', 'status', 'owner']);
+    // FIRST — a reader reaches for them before narrowing.
+    expect(r['order']).toEqual(['organise', 'status', 'owner']);
     // ONE chip each in ONE section, not fourteen columns each.
     expect(r['shape']).toEqual([['group', 'sort']]);
     // The scope said which column Sort was on, so its chip arrived ON.

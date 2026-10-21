@@ -86,7 +86,6 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `superseded` | `string[]` | read only |  |
 | `filtersSuspended` | `boolean` | read and write |  |
 | `readings` | `Record<string, FieldReading & { label: string; values: string[] }>` | read only |  |
-| `presets` | `Record<string, { on: boolean; readings: Record<string, FieldReading> }>` | read only |  |
 | `heldFields` | `string[]` | read only |  |
 | `groupField` | `string \| null` | read only |  |
 | `sortField` | `string \| null` | read only |  |
@@ -99,7 +98,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 |---|---|
 | `setChipValues(id: string, picks: readonly string[] \| undefined)` | Set ONE chip's picks, leaving every other chip alone. |
 | `setChipReading(id: string, reading: FieldReading)` | setChipReading(id, reading) — steer ONE chip with a whole reading. |
-| `drawResults(results: Readonly<Record<string, number>>)` | drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60. |
+| `drawResults(results: Readonly<Record<string, number>>)` | drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60. |
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |
 | `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
@@ -109,7 +108,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `addFilters(ids: readonly string[])` | addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a panel's Add and the bar's own Add cannot drift. |
 | `removeFilter(id: string)` | removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a filter panel draws its own Remove and cannot reach this shadow root. |
 | `groupSets(sets: readonly FilterSet[])` | groupSets([...]) — the scope's filter SETS: each set's chips are drawn together, in its order — plain chips, never grouped (Will, TODO 241). TODO 99 |
-| `drawScope(scope: ScopeDescription)` | drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips, each field's answer and each saved filter on or off. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone. |
+| `drawScope(scope: ScopeDescription)` | drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone. |
 | `allowFields(list: AllowList)` | allowFields([...]) — the ONLY fields this bar may offer, or `null` for all. |
 | `clearAll(options: { organise?: boolean; carry?: boolean } = {})` | organise chips included; three events afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets itself; `{ carry: true }` keeps a carry-over chip, as a View change does. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn, so an off chip never still names what it held. |
 | `organise(def: OrganiseDef)` | organise({ group, sort }) — how ONE component arranges the rows it draws. |
@@ -120,7 +119,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; reset: boolean \| undefined; scope: 'bar'; suspended: boolean \| undefined; values: Record<string, string[]> }` | Its whole answer; `suspended` while it shows its Switch, `reset` from Reset. |
+| `quick-filter-change` | `{ active: string[]; holds: string[]; readings: Record<string, FieldReading & { label: string; values: string[]; }>; reset: boolean \| undefined; scope: 'bar'; suspended: boolean \| undefined; values: Record<string, string[]> }` | Its whole answer; `suspended` while it shows its Switch, `reset` from Reset. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: 'asc' \| SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |

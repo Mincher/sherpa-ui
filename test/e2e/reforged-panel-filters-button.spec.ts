@@ -9,8 +9,7 @@ import { test, expect } from './harness';
  * its scope, and a filter is added to its default scope.
  *
  * A SHUT scope hides its filters the way a narrow bar folds its chips, so the
- * Filters menu leads with them: a door into each, a tick for each preset. The
- * badge counts them, and the button is ON while one of them is.
+ * Filters menu leads with them: a door into each. The badge counts them, and the button is ON while one of them is.
  * TRAP T-a-shut-scope-folds-like-a-bar
  */
 const SETUP = `
@@ -23,8 +22,6 @@ const SETUP = `
     {
       scope: 'data', label: 'Customer records',
       filters: [
-        { id: 'at-risk', label: 'At risk', preset: true },
-        { id: 'unassigned', label: 'Unassigned', preset: true },
         { id: 'status', label: 'Status', select: 'multiple', removable: true,
           options: [
             { value: 'active', label: 'active', selected: true },
@@ -32,10 +29,7 @@ const SETUP = `
           ] },
         { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100 },
       ],
-      available: [
-        { id: 'plan', label: 'Plan' },
-        { id: 'custom:mine', label: 'Mine', readings: { plan: { picked: ['gold'] } } },
-      ],
+      available: [{ id: 'plan', label: 'Plan' }],
       sort: [{ field: 'name', label: 'Name' }, { field: 'spend', label: 'Spend' }],
     },
   ];
@@ -115,53 +109,18 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
 
   // OPEN: nothing is hidden, so no section of hidden filters and no badge.
   expect(r['open']).toEqual({
-    rows: ['§Added filters', 'data:status+', '§Available filters', 'data:plan', '§Saved filters', 'data:custom:mine'],
+    rows: ['§Added filters', 'data:status+', '§Available filters', 'data:plan'],
     badge: null, on: null,
   });
   /* SHUT: every filter it draws, in its order, IN Added filters — one section,
      each row with a caret into its child menu. Only Status can be taken off,
-     so only Status has a box — and a PRESET, which is one value: its box is
-     its on/off, with no caret. TODO 54. TRAP T-a-row-opens-its-child-menu */
+     so only Status has a box. TRAP T-a-row-opens-its-child-menu */
   expect(r['shut']!.rows).toEqual([
-    '§Added filters', '›data:sort', 'data:at-risk', 'data:unassigned', 'data:status+›', '›data:seats',
-    '§Available filters', 'data:plan', '§Saved filters', 'data:custom:mine',
+    '§Added filters', '›data:sort', 'data:status+›', '›data:seats', '§Available filters', 'data:plan',
   ]);
-  expect(r['shut']!.badge).toBe('5');
+  expect(r['shut']!.badge).toBe('3');
   // ON: Status is answered, and it is hidden.
   expect(r['shut']!.on).toBe('active');
-});
-
-test('a hidden preset\'s tick turns it on; the button is ON only while a hidden filter is', async ({ page }) => {
-  const r = await page.evaluate(`(async () => {
-    ${SETUP}
-    // Nothing on: Status cleared.
-    sr.querySelector('.field[data-field="status"] .field-clear').dispatchEvent(
-      new CustomEvent('button-click', { bubbles: true, composed: true }));
-    await shut();
-    const before = look().on;
-    menu().show(btn());
-    await settle();
-    // ONE value: its tick is its on/off. Not one the reader can take off, so no ×. TODO 54
-    const row = menu().querySelector('.menu-row input[value="data:at-risk"]').closest('.menu-row');
-    const shape = { remove: !!row.querySelector('.menu-row-remove') };
-    const box = row.querySelector('input');
-    box.checked = true;
-    box.dispatchEvent(new Event('change', { bubbles: true }));
-    press(menu().shadowRoot.querySelector('.apply'));
-    await settle();
-    const chip = sr.querySelector('.field[data-field="presets"] .value[data-value="at-risk"]');
-    const after = look().on;
-    scope().open = true;
-    await settle();
-    return { before, shape, after, chip: chip.hasAttribute('data-current'), opened: look() };
-  })()`) as Record<string, unknown>;
-
-  expect(r['before']).toBeNull();
-  expect(r['shape']).toEqual({ remove: false });
-  expect(r['chip']).toBe(true);
-  expect(r['after']).toBe('active');
-  // OPEN again: the scope speaks for itself.
-  expect(r['opened']).toMatchObject({ badge: null, on: null });
 });
 
 test('a door drills into a run of values; its Apply ticks the chips and applies', async ({ page }) => {
@@ -266,7 +225,7 @@ test('a shut scope stays shut when the panel is filled again', async ({ page }) 
     return { open: scope().hasAttribute('open'), carets: rows().filter((x) => x.includes('›')).length, view: sr.querySelector('.scope[data-scope="view"]').hasAttribute('open') };
   })()`) as Record<string, unknown>;
 
-  // Sort, Status and Seats: a preset is one value, with no caret. TODO 54
+  // Sort, Status and Seats.
   expect(r).toEqual({ open: false, carets: 3, view: true });
 });
 
@@ -286,7 +245,7 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
         filters: [{ id: 'status', label: 'Status', options: [{ value: 'active', label: 'active' }] }] },
       { scope: 'data', label: 'Customer records',
         filters: [{ id: 'status', label: 'Status', removable: true, options: [{ value: 'active', label: 'active' }] }],
-        available: [{ id: 'seats', label: 'Seats' }, { id: 'custom:mine', label: 'Mine', readings: { plan: { picked: ['gold'] } } }] },
+        available: [{ id: 'seats', label: 'Seats' }] },
     ], { open: true, style: 'inline-size: 480px' });
     await window.__settled();
     const sr = panel.shadowRoot!;
@@ -320,8 +279,6 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
     'data:seats · Customer records',
     // …and the View only for a field no component offers.
     'view:owner · View filters',
-    '§Saved filters',
-    'data:custom:mine · Customer records',
   ]);
   // Each ask goes to the scope its row names.
   expect(r.heard).toEqual([
@@ -329,58 +286,6 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
     ['filter-add', { scope: 'view', ids: ['owner'] }],
     ['filter-remove', { scope: 'view', id: 'region' }],
   ]);
-});
-
-/* A REMOVABLE preset: its tick is its on/off, its × asks the scope to take it
-   off, and a tick gone stale never undoes it. Will, TODO 54. */
-test('a removable preset: its tick is its on/off, its × removes it, and a stale tick undoes nothing', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [
-      { scope: 'data', label: 'Customer records',
-        filters: [
-          { id: 'at-risk', label: 'At risk', preset: true, removable: true },
-          { id: 'status', label: 'Status', removable: true, options: [{ value: 'active', label: 'active' }] },
-        ] },
-    ], { open: true, style: 'inline-size: 480px' });
-    await window.__settled();
-    const sr = panel.shadowRoot!;
-    const btn = sr.querySelector<HTMLElement>('.filters-btn')!;
-    const menu = () => btn.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void; open: boolean };
-    const row = () => menu().querySelector<HTMLInputElement>('input[value="data:at-risk"]')!.closest<HTMLElement>('.menu-row')!;
-    const chip = () => sr.querySelector<HTMLElement>('.value[data-value="at-risk"]')!;
-    const heard: unknown[] = [];
-    panel.addEventListener('filter-remove', (e) => heard.push((e as CustomEvent).detail));
-    const shape = {
-      checked: row().querySelector('input')!.checked,
-      remove: row().querySelector('.menu-row-remove')?.getAttribute('aria-label') ?? null,
-      drill: row().hasAttribute('data-drill'),
-    };
-    // Pressed in its scope: the shut menu's row follows it.
-    chip().shadowRoot!.querySelector<HTMLElement>('.body')!.click();
-    await window.__settled();
-    const followed = { chip: chip().hasAttribute('data-current'), box: row().querySelector('input')!.checked };
-    // An Apply for another row leaves it on.
-    menu().show(btn);
-    await window.__settled();
-    menu().dispatchEvent(new CustomEvent('menu-change', {
-      bubbles: true, composed: true, detail: { values: ['data:status', 'data:at-risk'] },
-    }));
-    await window.__settled();
-    const kept = chip().hasAttribute('data-current');
-    // Its × asks for a remove, and the Filters menu stays open.
-    menu().show(btn);
-    await window.__settled();
-    row().querySelector<HTMLElement>('.menu-row-remove')!.shadowRoot!.querySelector('button')!.click();
-    await window.__settled();
-    return { shape, followed, kept, heard, open: menu().open, ticked: chip().hasAttribute('data-current') };
-  });
-
-  expect(r.shape).toEqual({ checked: false, remove: 'Remove At risk', drill: false });
-  expect(r.followed).toEqual({ chip: true, box: true });
-  expect(r.kept).toBe(true);
-  expect(r.heard).toEqual([{ scope: 'data', id: 'at-risk' }]);
-  // A press on the × is never a tick.
-  expect(r.ticked).toBe(true);
 });
 
 /* 349: a field the filters before it leave no value for is SPENT — greyed in the

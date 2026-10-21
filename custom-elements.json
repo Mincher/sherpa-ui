@@ -3751,7 +3751,7 @@
                   }
                 }
               ],
-              "description": "The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A saved filter is one question answered yes or no; a date is one chip, its menu a calendar."
+              "description": "The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A date is one chip, its menu a calendar."
             }
           ],
           "events": [
@@ -8226,14 +8226,6 @@
             },
             {
               "kind": "field",
-              "name": "presets",
-              "type": {
-                "text": "Record<string, { on: boolean; readings: Record<string, FieldReading> }>"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
               "name": "heldFields",
               "type": {
                 "text": "string[]"
@@ -8321,7 +8313,7 @@
                   }
                 }
               ],
-              "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
+              "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60."
             },
             {
               "kind": "method",
@@ -8457,7 +8449,7 @@
                   }
                 }
               ],
-              "description": "drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips, each field's answer and each saved filter on or off. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone."
+              "description": "drawScope(scope) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone."
             },
             {
               "kind": "method",
@@ -8505,7 +8497,7 @@
               "name": "quick-filter-change",
               "description": "Its whole answer; `suspended` while it shows its Switch, `reset` from Reset.",
               "type": {
-                "text": "CustomEvent<{ active: string[]; holds: string[]; presets: Record<string, { on: boolean; readings: Record<string, FieldReading>; }>; readings: Record<string, FieldReading & { label: string; values: string[]; }>; reset: boolean | undefined; scope: 'bar'; suspended: boolean | undefined; values: Record<string, string[]> }>"
+                "text": "CustomEvent<{ active: string[]; holds: string[]; readings: Record<string, FieldReading & { label: string; values: string[]; }>; reset: boolean | undefined; scope: 'bar'; suspended: boolean | undefined; values: Record<string, string[]> }>"
               }
             },
             {
@@ -8786,7 +8778,7 @@
             },
             {
               "name": "data-kind",
-              "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `advanced` with no filter menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as Advanced. TRAP T-a-saved-filter-is-its-readings",
+              "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is",
               "type": {
                 "text": "'boolean' | 'single' | 'multi' | 'advanced' | 'number' | 'date' | 'group' | 'sort'"
               }

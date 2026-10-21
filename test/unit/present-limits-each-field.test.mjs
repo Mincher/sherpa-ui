@@ -31,7 +31,6 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 class Bar extends EventTarget {
   constructor(readings, chips) { super(); this.held = readings; this.chips = chips; this.drawn = []; }
   get readings() { return this.held; }
-  get presets() { return {}; }
   get heldFields() { return this.chips; }
   drawScope() {}
   drawPresent(present, scope) { this.drawn.push({ scope, present: sorted(present) }); }
@@ -39,7 +38,7 @@ class Bar extends EventTarget {
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: this.presets, holds: this.heldFields } })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
 }
 
 async function setup({ view = {}, data = null, limit = true } = {}) {

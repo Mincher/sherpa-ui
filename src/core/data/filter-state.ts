@@ -422,7 +422,7 @@ export function readingClause(facts: FieldFacts, reading: FieldReading): Filter 
 /**
  * A field's answer as it can be SAVED, and put back as it was: its rows when it
  * is Advanced, its ticks or ends when it is Simple. Nothing when it has no answer.
- * TRAP T-a-saved-filter-is-its-readings
+ * TRAP T-saved-filters-are-every-scope
  */
 export function savedReading(state: FilterState): FieldReading | undefined {
   if (!state.rows.length) return undefined;
