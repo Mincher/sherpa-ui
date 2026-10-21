@@ -43,7 +43,7 @@ export class FieldCatalogue {
   /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
   #fields = new Map<string, FieldDeclaration>();
   /** A tiered field's CHILD values, by its parent value's key — apart from its
-   *  domain, so a chart or a legend never sees one. TODO 369 */
+   *  domain, so a chart or a legend never sees one. TRAP T-a-value-holds-child-values */
   #children = new Map<string, Map<string, unknown[]>>();
 
   /** Keep a tiered field's child values per parent, from the rows' [parent,

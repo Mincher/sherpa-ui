@@ -193,6 +193,10 @@ export const { store: customerStore, ready: customersReady } = localRecords({
   `T-one-way-to-write-a-condition`
 - `ui` configures a component by id before it is answered.
   `T-configuration-is-not-data`
+- A field's values can hold CHILD values — a Customer's Sites: give the parent
+  `"child": "site"` and declare `site`. Its menu is then a tree in the bar, the
+  panel and the grid heading; a pick is a parent, or a path `{ customer, site }`.
+  `T-a-value-holds-child-values`
 
 ## 6. A template that asks
 

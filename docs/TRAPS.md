@@ -10393,6 +10393,39 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-value-holds-child-values
+
+**A field's values can hold child values: a Customer's Sites.** TODO 369. The
+parent names its child once, in the page definition (`"child": "site"`); the
+child is an ordinary field with no filter of its own. A pick is the parent, or
+a PATH object naming both tiers, `{ customer, site }`, in the parent's one
+reading — keyed by `valueKey`, so Northwind's London and Contoso's London are
+two keys.
+
+The children live APART from the parent's domain, in the catalogue's own map:
+put in the domain, they leaked to every reader of a field's values — a legend,
+a chart's categories, a summary — each of which then drew one category per
+path. Only `filterDef` lists them, each after its parent and naming it.
+
+A path compiles over both fields in the four ops any server runs: parents
+`in`, each parent's child picks as `and(eq parent, in children)`, all OR'd.
+It is split by the path's OWN fields, never by parsing a key string.
+
+- Site: `src/core/data/field-catalogue.ts`
+- Site: `src/core/data/filter-state.ts`
+
+### T-a-path-is-judged-by-its-parent-when-stepwise
+
+**A store asked step by step cannot see pairs, so a path stands or falls with
+its parent.** TODO 369. A store that is not held tallies one field at a time
+(`distinct`), so it can say which customers and which sites are left, never
+which customer HAS which site. So, stepwise, a path is present while its
+parent is, and is never set aside unless its parent is. That only ever keeps
+a pick on, never drops one: a reader's path was once ruled out wholesale,
+which changed their filter.
+
+- Site: `src/core/data/source-counts.ts`
+
 ### T-a-parent-pick-is-the-parent
 
 **A tiered field's parent picked is the PARENT: every row of it, rows with no

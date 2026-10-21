@@ -507,7 +507,7 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
  * server runs: parents `in`, and each parent's child picks as `and(eq parent,
  * in children)`, all OR'd — `Contoso, or Northwind at London or Leeds`. `ne`
  * is its opposite. A path is split by its OWN fields, never by a key string.
- * TODO 369
+ * TRAP T-a-value-holds-child-values
  */
 function tierClause(field: string, child: string, picked: readonly unknown[], op: FilterOp): Filter | undefined {
   const isPath = (v: unknown): v is Record<string, unknown> =>

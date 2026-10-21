@@ -56,6 +56,15 @@ interface LoadOptions {
 ['or',  ['region', 'eq', 'EMEA'], ['region', 'eq', 'APAC']]
 ```
 
+A TIERED field's picks — a parent, or a path to one of its children — reach a
+server in the same four ops: parents `in`, and each parent's child picks as
+`and(eq parent, in children)`, all OR'd (`ne` is its opposite, by De Morgan):
+
+```js
+['or', ['customer', 'eq', 'Contoso'],
+       ['and', ['customer', 'eq', 'Northwind'], ['site', 'in', ['London', 'Leeds']]]]
+```
+
 The whole layer speaks this one shape because **a filter has to survive being
 sent somewhere**. An `ArrayStore` runs it in memory; a `RestStore` turns it into
 a query string; a future SQL store would turn it into a `WHERE`. A predicate

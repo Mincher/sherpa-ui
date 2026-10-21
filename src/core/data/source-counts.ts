@@ -234,8 +234,8 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
     batch.fields.add(field);
     return later(batch.asked.then((found) => found[field] ?? []));
   };
-  /* A store tallies one field at a time, so it has no pairs: a path is there
-     while its parent is, and is never set aside unless its parent is. TODO 369 */
+  /* No pairs from a store tallied field by field: a path stands with its parent.
+     TRAP T-a-path-is-judged-by-its-parent-when-stepwise */
   const withPaths = (keys: Promise<string[]>, tier: WalkTier | undefined): Promise<string[]> => (!tier ? keys : keys.then((k) => {
     const low = new Set(k.map((x) => x.toLowerCase()));
     return [...k, ...[...tier.parentOf].filter(([, p]) => low.has(p.toLowerCase())).map(([path]) => path)];

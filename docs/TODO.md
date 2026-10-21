@@ -1826,6 +1826,13 @@ clause is `customer eq … and site eq …`; a Site cell's chip picks that cell'
 path on Customer, and is inactive while the View holds Customer.
 `reforged-a-tiered-grid` (3 cases, 3 engines). Next: Demos' child link.
 
+**Demos' child link ✅ and the docs ✅, 2026-10-21.** Records' Customer names
+Site as its child (Demos `c08fd80`, with `a-site-picked-shows-everywhere`).
+DATA-SOURCE-RULES gives a tiered pick's server clause; APP-GUIDE the `child`
+line; traps `T-a-value-holds-child-values` and
+`T-a-path-is-judged-by-its-parent-when-stepwise`. **Left: a remote store's read
+of a parent's children when its row opens — waits for 345 phase 5.**
+
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
 Found measuring 350: one saved-filter click made the grid build 25 checkboxes
