@@ -235,29 +235,13 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     }
     case 'quick-filter-change': {
       /* ONE READER ACT, AS A REQUEST: it goes to the Query's doors, in the
-         request's scope or the bind's. 366 step 18 */
+         request's scope or the bind's. An event with none asks nothing.
+         366 steps 18, 21 · TRAP T-one-query-one-owner */
       const request = detail['request'] as QueryRequest | undefined;
-      if (request) {
-        const at = typeof bind?.scope === 'string' ? bind.scope : undefined;
-        if (at || hasScope(request)) ask(source.query, request, at ?? VIEW);
-        else reportUnscoped(el);
-        return;
-      }
-      /* THE EVENT IS THE ANSWER. `readings` is the control's own — which field,
-         which values, which condition — and `apply()` is the ONE place a
-         reading becomes a query; the control is never read.
-         TRAP T-one-query-builder-in-the-data-layer */
-      const holds = Array.isArray(detail['holds']) ? (detail['holds'] as string[]) : undefined;
-      const readings = (detail['readings'] as Record<string, FieldReading> | undefined) ?? pickedReadings(detail['values']);
-      // A SCOPED bar answers in the Query. TRAP T-one-query-one-owner
-      if (typeof bind?.scope === 'string') {
-        // Its filter Switch, from a bar that shows one. TRAP T-the-filter-switch-keeps-what-it-turned-off
-        const suspended = typeof detail['suspended'] === 'boolean' ? { suspended: detail['suspended'] } : {};
-        const reset = detail['reset'] === true ? { reset: true } : {};
-        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, ...suspended, ...reset });
-        return;
-      }
-      reportUnscoped(el);
+      if (!request) return;
+      const at = typeof bind?.scope === 'string' ? bind.scope : undefined;
+      if (at || hasScope(request)) ask(source.query, request, at ?? VIEW);
+      else reportUnscoped(el);
       return;
     }
     case 'filter-add':
@@ -354,19 +338,4 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       return;
     }
   }
-}
-
-/**
- * A bare `{ field: [values] }` detail as READINGS, for a control with no
- * `readings` getter of its own. Parameters — `apply()` still builds the query.
- * TRAP T-one-query-builder-in-the-data-layer
- */
-function pickedReadings(values: unknown): Record<string, FieldReading> {
-  const out: Record<string, FieldReading> = {};
-  if (!values || typeof values !== 'object') return out;
-  for (const [field, picked] of Object.entries(values as Record<string, unknown>)) {
-    // TRAP T-toggle-chips-have-no-field — `active` names no field, so it is not here.
-    if (Array.isArray(picked)) out[field] = { picked };
-  }
-  return out;
 }

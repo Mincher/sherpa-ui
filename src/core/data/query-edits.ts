@@ -17,6 +17,9 @@
  * - moveHold — Move a field's hold between scopes; returns every scope touched, `to` first.
  * - copyField — One field's answer, from one copy onto the other, in the scope that holds it.
  * - copyScope — One scope's slice, from one copy onto the other.
+ * - copyHolds — What each scope holds, from one copy onto the other: an Apply carries it.
+ * - sameField — Does one field read the same in both copies, scope by scope?
+ * - sameScope — Is one scope's slice the same in both copies?
  * - cameFrom — Where a field the View holds came UP from.
  * - setCameFrom — Remember, or forget, where a View field came up from, in one copy.
  * - viewHeldReadings — Each field the View holds, with its answer unless suspended.
@@ -27,7 +30,7 @@
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
  * - answersOf — A scope's answers, as one comparable value.
  */
-import { answerOf, arrangementOf, arranging, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
+import { answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
 import type { Condition, Where } from './where.js';
 import { report } from './report.js';
@@ -169,8 +172,31 @@ export function copyField(from: Query, to: Query, field: string): void {
   for (const [id, scope] of eachScope(from)) {
     const held = scope.readings[field];
     if (!held) continue;
-    (to.scopes[id] ??= emptyScope(scope.holds)).readings[field] = structuredClone(held);
+    (to.scopes[id] ??= emptyScope(scope.holds)).readings[field] = copyReading(held);
   }
+}
+
+/** What each scope holds — and where a View field came up from — from one
+ *  copy onto the other. A hold is never pending, so an Apply of one field
+ *  carries every scope's. 366 step 21 */
+export function copyHolds(from: Query, to: Query): void {
+  for (const [id, scope] of Object.entries(from.scopes)) {
+    const into = (to.scopes[id] ??= emptyScope());
+    into.holds = [...scope.holds];
+    if (scope.from) into.from = { ...scope.from };
+    else delete into.from;
+  }
+}
+
+/** Does one field read the same in both copies, scope by scope? */
+export function sameField(a: Query, b: Query, field: string): boolean {
+  const of = (q: Query): string => JSON.stringify(eachScope(q).flatMap(([id, s]) => (s.readings[field] ? [[id, s.readings[field]]] : [])));
+  return of(a) === of(b);
+}
+
+/** Is one scope's slice the same in both copies? */
+export function sameScope(a: Query, b: Query, scope: string): boolean {
+  return JSON.stringify(a.scopes[scope] ?? null) === JSON.stringify(b.scopes[scope] ?? null);
 }
 
 /** One scope's slice, from one copy onto the other. */

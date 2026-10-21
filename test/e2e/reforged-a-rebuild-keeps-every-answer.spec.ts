@@ -6,8 +6,9 @@ import { test, expect, type Bar } from './harness';
  * The bar rebuilds its whole chip run when a filter is added or taken away,
  * and it carried each chip's on/off and ticks across. Not its op, its typing
  * or its condition ROWS: adding "Plan" wiped "Owner contains Da or is Ravi" on
- * the chip beside it. And the report sent straight after the rebuild — before
- * any menu had drawn — said the rows were gone, so the source dropped them.
+ * the chip beside it. And the bar read straight after the rebuild — before
+ * any menu had drawn — said the rows were gone. An Add sends `filter-add`
+ * alone now (366 step 21); the bar it reads keeps them.
  * TRAP T-a-rebuild-keeps-every-answer
  */
 test('adding a filter keeps another chip\'s Advanced rows, and says so at once', async ({ page }) => {
@@ -22,9 +23,9 @@ test('adding a filter keeps another chip\'s Advanced rows, and says so at once',
     bar.setChipReading('owner', { conditions: rows });
     await window.__settled();
 
-    // What the bar reports in the event the rebuild sends.
+    // What the bar reads when it says the Add.
     const heard: unknown[] = [];
-    bar.addEventListener('quick-filter-change', () => heard.push(bar.readings.owner?.conditions));
+    bar.addEventListener('filter-add', () => heard.push(bar.readings.owner?.conditions));
     bar.addFilters(['plan']);
     const atOnce = bar.readings.owner?.conditions;
     await window.__settled();

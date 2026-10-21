@@ -38,7 +38,12 @@ class Bar extends EventTarget {
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
+  // Its holds, then each held field's answer as one request — its Apply. 366 step 21
+  report() {
+    this.dispatchEvent(new CustomEvent('filter-add', { detail: { holds: this.heldFields } }));
+    const request = this.heldFields.map((field) => ({ field, reading: this.readings[field] ?? null, commit: true }));
+    this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request } }));
+  }
 }
 
 async function setup(readings, { mode = 'serial', limit = false } = {}) {

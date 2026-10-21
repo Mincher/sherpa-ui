@@ -58,7 +58,7 @@
     actions  — host extras, placed BEFORE the built-in cluster
 
   Fires:
-    quick-filter-change  — its whole answer; `suspended` while it shows its Switch, `reset` from Reset. detail: { scope, readings, presets, holds, active, values, suspended?, reset? }
+    quick-filter-change  — one reader act, as a request: a field's answer, an on or off, the Switch, Clear all. detail: { scope, request?, active, values }
     group-change         — detail: { field }
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. detail: { id, filter, holds }

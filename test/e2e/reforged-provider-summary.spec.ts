@@ -146,13 +146,13 @@ test('a grid scope filter narrows the grid, never a tile; a View filter narrows 
     const tile = () => provider.querySelector('#count').dataset.value;
     // The grid's scope HOLDS plan, so the answer is the grid's alone.
     source.query.hold('data', ['plan']);
-    source.answer('data', { plan: { picked: ['Pro'] } });
+    source.query.setReading('data', 'plan', { picked: ['Pro'] });
     await settle();
     const scoped = { grid: drawn(), tile: tile() };
-    source.answer('data', {});
+    source.query.setReading('data', 'plan', null);
     source.query.hold('data', []);
     source.query.hold('view', ['plan']);
-    source.answer('view', { plan: { picked: ['Enterprise', 'Pro'] } });
+    source.query.setReading('view', 'plan', { picked: ['Enterprise', 'Pro'] });
     await settle();
     return { scoped, viewed: { grid: drawn(), tile: tile() }, reports };
   })()`) as Record<string, Record<string, unknown>>;

@@ -921,7 +921,7 @@ test('a grid heading answers through the source, and is told what the View holds
   assert.deepEqual(barDrawn.at(-1), ['plan']);
 
   source.query.hold('view', ['region']);
-  source.answer('view', { region: { picked: ['EMEA'] } });
+  source.query.setReading('view', 'region', { picked: ['EMEA'] });
   assert.deepEqual(columns.at(-1), [{ region: { picked: ['EMEA'] } }, 'View filters']);
 });
 
@@ -970,7 +970,7 @@ test('declareDefault on a field the View holds still narrows its component', asy
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), [1, 3]);
   // The View's own answer narrows it too, under the tile's.
-  source.answer('view', { sev: { picked: ['info'] } });
+  source.query.setReading('view', 'sev', { picked: ['info'] });
   await source.load();
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), []);
@@ -990,9 +990,9 @@ test('export and import: a round trip through JSON gives the same rows', async (
   };
   const a = make();
   a.query.hold('view', ['plan']);
-  a.answer('view', { plan: { picked: ['Pro', 'Enterprise'] } });
+  a.query.setReading('view', 'plan', { picked: ['Pro', 'Enterprise'] });
   a.query.hold('grid', ['seats']);
-  a.answer('grid', { seats: { op: 'gt', text: '10' } });
+  a.query.setReading('grid', 'seats', { op: 'gt', text: '10' });
   a.query.setSort('seats', 'desc');
   await a.load();
   const out = JSON.parse(JSON.stringify(a.query.export()));

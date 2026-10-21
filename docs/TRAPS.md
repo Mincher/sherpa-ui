@@ -2958,7 +2958,6 @@ act on them: `active` reaches the app through the event as it always did. A view
 that knows the column translates them itself, which is exactly what `ignore`
 exists for (`T-ignore-is-the-scalpel`).
 
-- Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-persist-defaults-per-tab
@@ -4084,7 +4083,6 @@ back on.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/data-source-types.ts`
-- Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/core/data/query-context.ts`
@@ -4304,9 +4302,11 @@ kept the clause it had built from the chip's LAST state, `plan in (the other
 three)`, and the row came back reading zero. Every visible control said "no
 plan filter" while the query still held one.
 
-`SherpaQuickFilterToolbar.report()` is the door: it re-announces the whole bar,
-exactly as a reader's own change would. The binding writes the chip, then says
-so.
+`SherpaQuickFilterToolbar.report()` was the door, re-announcing the whole bar.
+Since 366 step 21 a BOUND bar's doors — `setChipValues`, `setChipReading`,
+`values =`, `filtersSuspended =` — paint, then ask for the chip's answer
+themselves; `report()` asks nothing and carries the View pick. The View chip's
+door stays silent.
 
 **This is a shape, not one bug.** `sherpa-app-header.values` and the grid's
 `setColumnFilter` / `clearColumnFilter` / `select` are silent with no
@@ -12301,43 +12301,6 @@ keeps the bare floor. Without it, that chart falls to a 3px plot.
 - Site: `test/e2e/reforged-chart-tooltips.spec.ts`
 - Site: `test/e2e/reforged-chart-legend-slot.spec.ts`
 
-### T-a-filter-report-is-the-whole-answer
-
-`quick-filter-change` is a control saying what it now filters by — ALL of it,
-not a delta. A field it answered last time and does not name now has been
-turned off, and the source clears it.
-
-**The answer is IN the event.** A bar's detail is `{ scope, readings, presets,
-holds, active, values }`, and its `filter-add` / `filter-remove` carry `holds`
-too, so the binder reads the event and never the bar (A7, TODO 86). Read off
-the element, the answer was a duck-typed second door, and a control that
-named its getters differently filtered nothing.
-
-`apply()` alone cannot do this: it walks the readings it was given, so
-`apply({})` changed nothing. Two tests caught it —
-
-    chips({})   →  rows 1 of 8, and `data-filter-fields` still "plan region"
-
-— a reader who cleared every chip and watched the table stay filtered.
-
-The clearing is per SCOPE. `answer(scope, …)` clears only the fields that
-scope held and the report no longer names, so two bars over one source each
-clear only their own fields; a view bar reporting three fields never wipes the
-grid bar's two.
-
-The alternative — clearing every field the source holds — is the bug this
-avoids, and it only shows up with two controls on one page.
-
-A bar bound with a `scope` (or a host calling `source.answer(scope, …)`) is
-that scope's whole answer instead: it clears the readings that LIVE in its
-scope. So a field raised to the View — whose answer moves with it — is no
-longer the grid bar's to clear, and the bar's next report cannot wipe it.
-
-- Site: `src/core/data/data-source.ts`
-- Site: `test/e2e/reforged-data-source.spec.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/unit/an-unscoped-bar-is-reported.test.mjs`
-
 ### T-a-group-is-a-data-layer-concept
 
 A GROUP is a data concept, exactly as a data PAGE is. The grid draws one and
@@ -16696,7 +16659,6 @@ with — because a bar that has not populated yet would report none, and an
 empty hold forgets its scope.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/bind-source.ts`
 
 ### T-only-the-view-trickles-down
@@ -17841,6 +17803,11 @@ answer — removing a chip is a clear. The draw carries the WHOLE answer: an
 operator dropped reads "is not churned" as "churned", and a typed text
 dropped reads "contains an" as nothing.
 
+**366 step 21: a bar sends ONE REQUEST per act, never its whole answer.** The
+whole answer cleared every field it did not name, so a bar that reported while
+a rebuilt menu was still empty wiped answers it showed. An event with no
+`request` asks nothing; a list is one change, and its Applies go at its end.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/data-source.ts`
@@ -17853,6 +17820,9 @@ dropped reads "contains an" as nothing.
 - Site: `test/unit/query-context.test.mjs`
 - Site: `test/unit/an-echo-is-a-no-op.test.mjs`
 - Site: `test/unit/one-field-requests.test.mjs`
+- Site: `test/e2e/reforged-data-source.spec.ts`
+- Site: `test/unit/a-rebuilt-bar-cannot-clear-a-field.test.mjs`
+- Site: `test/unit/an-unscoped-bar-is-reported.test.mjs`
 
 ### T-the-data-says-what-a-field-may-hold
 

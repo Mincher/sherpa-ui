@@ -1942,6 +1942,19 @@ one field's `{ scope, field, reading }`, or Reset all's `reset: { organise }`
 for each scope as one list. A bound panel's `setFieldReading` is a request;
 `drawReading` paints. `answerScopes` and the panel's `#said` go.
 
+Step 21: the bar sends one request per act, each its Apply — a field's
+answer, an on or off, the Switch, Clear all (`reset: { organise, carry }`),
+a list for one-value rows and the handover. An Add or a Remove sends only
+`filter-add` / `filter-remove`. Bound, a door (`setChipValues`,
+`setChipReading`, `values =`, `filtersSuspended =`) paints, then asks for
+the chip's answer; a draw paints privately. `answer()`, `answerScope()`,
+`pickedReadings` and the handle's `select` / `write` go. A batch's Applies go
+at its end; an Apply with nothing waiting is a no-op, and carries every
+scope's holds. The bench's fake no longer writes its draws into the shared
+`REPORT`, which had made the old remote "report" act send answers already off.
+`#keepAnswer` / `#pendingAnswers` move to step 22, with the paint from the
+live slice.
+
 Step 23: a bound grid heading asks, then is drawn — its doors send the one
 `column-filter-change` a reader would, the steer calls `setReading` and
 `commit({ field })`, and `answerColumn` goes.

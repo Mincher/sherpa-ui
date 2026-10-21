@@ -68,7 +68,7 @@ test('a View field names ONE scope to go down to: the first that has it, a compo
 
 test('SENT DOWN, the View lets go and the answer goes with the field', async () => {
   const { source, seen, send, sendTo } = await setup();
-  source.answer('view', { region: { picked: ['EMEA'] } });
+  source.query.setReading('view', 'region', { picked: ['EMEA'] });
   await tick();
   send('data', 'region', 'view');
   await tick();
@@ -109,7 +109,7 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
   source.query.offer('other', ['plan', 'region']);
   // A holds Plan, answered; it goes UP, and A keeps its place for it.
   source.query.hold('data', ['plan']);
-  source.answer('data', { plan: { picked: ['Pro'] } });
+  source.query.setReading('data', 'plan', { picked: ['Pro'] });
   send('view', 'plan', 'data');
   await tick();
   assert.deepEqual(source.query.scope('view'), ['region', 'plan']);

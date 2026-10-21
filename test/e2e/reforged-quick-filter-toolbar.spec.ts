@@ -2566,6 +2566,7 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
  * ADDING A FILTER KEEPS EVERY ANSWER ALREADY ON THE BAR. Adding a field
  * rebuilds the bar, and a rebuilt condition row reads empty for a tick — the
  * report in that gap said Owner had no answer, so adding Email reset Owner.
+ * An Add sends `filter-add` alone now (366 step 21); the bar it reads keeps them.
  * Will, 2026-09-26. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
  */
 test('adding a second Advanced filter keeps the first one\'s rows in every report', async ({ page }) => {
@@ -2582,7 +2583,9 @@ test('adding a second Advanced filter keeps the first one\'s rows in every repor
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     const heard: unknown[] = [];
-    el.addEventListener('quick-filter-change', () => heard.push(bar.readings['owner']?.conditions ?? null));
+    for (const type of ['filter-add', 'quick-filter-change']) {
+      el.addEventListener(type, () => heard.push(bar.readings['owner']?.conditions ?? null));
+    }
     bar.addFilters(['email']);
     for (let i = 0; i < 6; i++) await new Promise((res) => requestAnimationFrame(res));
     await window.__settled();

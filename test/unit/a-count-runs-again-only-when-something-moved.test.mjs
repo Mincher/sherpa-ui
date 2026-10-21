@@ -28,7 +28,7 @@ async function setup() {
     drawScope() {}, drawReading() {}, drawResults: (results, scope) => drawn.push([scope, results]),
   });
   bindSource(source, bar, { steerOnly: true, scope: 'data' });
-  source.answer('data', { status: { picked: ['active'] } });
+  source.query.setReading('data', 'status', { picked: ['active'] });
   await source.load();
   await tick();
   return { store, source, drawn };
@@ -72,7 +72,10 @@ test('a scope\'s sets moving counts again: the order the chips count in is new',
   const { source, drawn } = await setup();
   source.query.offer('data', ['status', 'name']);
   source.query.hold('data', ['status', 'name']);
-  source.answer('data', { status: { picked: ['active'] }, name: { picked: ['a', 'c'] } });
+  source.query.batch(() => {
+    source.query.setReading('data', 'status', { picked: ['active'] });
+    source.query.setReading('data', 'name', { picked: ['a', 'c'] });
+  });
   await tick();
   assert.deepEqual(drawn.at(-1), ['data', { status: 2, name: 1 }]);
   // The Query is the same; the set puts Name first.

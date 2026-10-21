@@ -18,7 +18,6 @@
  * - .rows — The last load's rows, LIVE — state, query and result are copies
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
- * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
@@ -52,7 +51,6 @@
  * - .allRows — Every row a bound component is under, UNPAGED — what "Select all rows" ticks on a grid that holds one page.
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
- * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
@@ -324,18 +322,6 @@ export class DataSource extends EventTarget {
 
   /** What `compile` narrows each bound component by, alone — by bind id. */
   #only: Record<string, Filter> = {};
-
-  /**
-   * ONE SCOPE'S WHOLE ANSWER — a bar's report. Each reading lands at its
-   * field's home; a reading that lives in this scope and is not named here is
-   * cleared. A field raised to another scope is not this one's to clear.
-   * TRAP T-a-filter-report-is-the-whole-answer · TRAP T-one-query-one-owner
-   */
-  answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
-    const was = Object.keys(this.#draft.scopes[scope]?.readings ?? {});
-    for (const field of was) if (!(field in readings)) this.#member.select(field, []);
-    for (const [field, reading] of Object.entries(readings)) this.#member.select(field, reading.picked ?? [], reading);
-  }
 
   /**
    * One scope as a control draws it WHOLE: each field it holds — a field held
@@ -1567,26 +1553,6 @@ export class DataSource extends EventTarget {
   }
 
   /* ── What a control asks, by name — what the steering calls ─────────── */
-
-  /** A scoped bar's whole answer: what it holds, and each field's reading. It
-   *  is its Apply. TRAP T-a-bar-reports-its-holds · TRAP T-one-query-one-owner */
-  answerScope(scope: string, answer: {
-    holds?: readonly string[];
-    readings: Record<string, FieldReading>;
-    /** Its filter Switch is off — only from a bar that shows one. */
-    suspended?: boolean;
-    /** A Reset: what the Switch turned off is forgotten, not brought back. */
-    reset?: boolean;
-  }): void {
-    const off = this.#draft.scopes[scope]?.suspended;
-    if (answer.reset && off) this.#draft.scopes[scope]!.suspended = { fields: [] };
-    if (answer.holds) this.#context.hold(scope, [...answer.holds]);
-    this.answer(scope, answer.readings);
-    // The answer first, then the Switch: OFF lists what that answer has in force.
-    if (answer.suspended !== undefined) this.#context.suspend(scope, null, answer.suspended);
-    // A bar's report IS its Apply: its menus waited for it, remote.
-    this.#context.commit();
-  }
 
 
   /** The grid's own page count, when every matching row is already in hand:

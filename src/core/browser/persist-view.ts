@@ -436,8 +436,10 @@ export function onViewPicked(
       const elements = targets.elements ?? {};
       // The View chip SHOWS it — a pick from a link or a nav row included.
       // The element that REPORTED the pick — a host above it has no chips.
-      const bar = (event.composedPath()[0] ?? event.currentTarget) as { values?: Record<string, readonly string[]> } | null;
-      if (bar?.values && bar.values[VIEW_CHIP]?.[0] !== id) bar.values = { ...bar.values, [VIEW_CHIP]: [id] };
+      const bar = (event.composedPath()[0] ?? event.currentTarget) as {
+        values?: Record<string, readonly string[]>; setChipValues?: (id: string, picks: string[]) => void;
+      } | null;
+      if (bar?.values && bar.values[VIEW_CHIP]?.[0] !== id) bar.setChipValues?.(VIEW_CHIP, [id]);
       const draft = options.draft?.(id, view);
       const put = draft ? targets.query.setQuery(draft) : targets.query.setQuery(view.query, { holds: 'keep' });
       void put.then(() => {

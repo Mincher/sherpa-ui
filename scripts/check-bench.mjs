@@ -152,9 +152,16 @@ function control(tag, id, holds = []) {
     id, holds: [...holds], readings: {}, superseded: [],
     setAttribute() {}, removeAttribute() {}, toggleAttribute() {},
     send(type, detail) { el.dispatchEvent(new CustomEvent(type, { detail })); },
-    answer(readings) { el.readings = readings; el.report(); },
-    // The bar's filter Switch, as a reader flips it.
-    switchOff(off) { el.suspended = off; el.report(); },
+    // A reader's act: one request per field it answers, in its chips' order, as one change — its Apply. 366 step 21
+    answer(readings) {
+      const at = (f) => (el.holds.includes(f) ? el.holds.indexOf(f) : el.holds.length);
+      const request = Object.entries(readings).sort(([a], [b]) => at(a) - at(b))
+        .map(([field, reading]) => ({ field, reading, commit: true }));
+      el.send('quick-filter-change', { scope: 'bar', request: request.length === 1 ? request[0] : request });
+    },
+    // Clear all, and the filter Switch, as a reader presses them.
+    clear() { el.send('quick-filter-change', { scope: 'bar', request: { reset: { organise: true }, commit: true } }); },
+    switchOff(off) { el.send('quick-filter-change', { scope: 'bar', request: { suspended: off, commit: true } }); },
   });
   for (const m of [...(spec.$extensions?.sherpa?.methods ?? []).map((x) => x.name), 'populate']) {
     if (!(m in el)) el[m] = () => { counters.draws++; };
@@ -176,20 +183,10 @@ function control(tag, id, holds = []) {
       const filters = d?.filters ?? [];
       el.holds = filters.map((f) => f.id);
       el.readings = Object.fromEntries(filters.filter((f) => f.state).map((f) => [f.id, f.state]));
-      if ('suspended' in el) el.suspended = !!d?.suspended;
     };
   }
-  // EVERY chip it holds, answered or not, as the toolbar's `readings` does.
-  if (has('report')) {
-    el.report = () => {
-      const readings = Object.fromEntries(el.holds.filter((f) => !el.superseded.includes(f)).map((f) => {
-        const r = el.readings[f];
-        return [f, r ? { ...r, suspended: !!r.suspended } : { picked: [], suspended: true }];
-      }));
-      el.send('quick-filter-change', { readings, holds: el.holds,
-        ...('suspended' in el ? { suspended: el.suspended } : {}) });
-    };
-  }
+  // It asks nothing: its ticks, for a host that follows the View chip.
+  if (has('report')) el.report = () => el.send('quick-filter-change', { scope: 'bar' });
   return el;
 }
 
@@ -240,7 +237,7 @@ const ACTS = {
   heading: (p) => p.grid.send('column-filter-change', { field: 'tier', reading: { picked: ['gold'] } }),
   search: (p) => p.data.send('search-change', { value: 'owner 1' }),
   raise: (p) => p.panel.send('filter-add', { scope: 'view', ids: ['status'], from: 'data' }),
-  clear: (p) => p.view.answer({}),
+  clear: (p) => p.view.clear(),
   reset: (p) => p.source.query.setQuery(structuredClone(p.initial)),
   // A reader's own writes: each names its row, so a held set takes it in place.
   add: (p) => p.store.insert({ ...ROWS[0], id: N + 1, name: 'Person new', email: 'new@example.com' }),

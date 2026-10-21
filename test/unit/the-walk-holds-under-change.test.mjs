@@ -32,7 +32,12 @@ class Bar extends EventTarget {
   get heldFields() { return this.chips; }
   drawResults(r) { this.drawn.push(r); }
   drawScope() {} drawPresent() {} setAttribute() {} removeAttribute() {} toggleAttribute() {} populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, holds: this.heldFields } })); }
+  // Its holds, then each held field's answer as one request — its Apply. 366 step 21
+  report() {
+    this.dispatchEvent(new CustomEvent('filter-add', { detail: { holds: this.heldFields } }));
+    const request = this.heldFields.map((field) => ({ field, reading: this.readings[field] ?? null, commit: true }));
+    this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request } }));
+  }
 }
 
 /** A remote store not held: its counts and tallies are requests, slow while told. */

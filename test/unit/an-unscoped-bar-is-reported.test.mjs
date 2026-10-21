@@ -2,7 +2,7 @@
  * AN UNSCOPED BAR IS REPORTED — 366 step 5. Every bar answers a scope of the
  * Query; a filter report from a bar bound with no scope has nowhere to go, so
  * it is reported (`bar-without-scope`) and never applied.
- * TRAP T-a-filter-report-is-the-whole-answer
+ * TRAP T-one-query-one-owner
  *
  *   node --test test/unit/an-unscoped-bar-is-reported.test.mjs
  */
@@ -18,7 +18,7 @@ test('an unscoped bar\'s filter report is reported, never applied', async () => 
   const seen = [];
   const undo = onReport((r) => seen.push(r.code));
   try {
-    bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: { plan: { picked: ['Pro'] } } } }));
+    bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { scope: 'bar', request: { field: 'plan', reading: { picked: ['Pro'] } } } }));
     await source.load();
   } finally {
     undo();

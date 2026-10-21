@@ -386,7 +386,7 @@ test('source: unbind stops both halves', async ({ page }) => {
   expect(got.bound).toBe(0);
 });
 
-/* An empty report CLEARS. TRAP T-a-filter-report-is-the-whole-answer */
+/* Each chip is one request; Clear all is a reset. 366 step 21 · TRAP T-one-query-one-owner */
 test('source: quick-filter chips become a real filter — OR within a chip, AND across', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
     const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
@@ -401,21 +401,23 @@ test('source: quick-filter chips become a real filter — OR within a chip, AND 
 
     // One chip, two values: OR.
     el.dispatchEvent(new CustomEvent('quick-filter-change', {
-      detail: { active: [], values: { plan: ['Pro', 'Enterprise'] } }, bubbles: true, composed: true,
+      detail: { request: { field: 'plan', reading: { picked: ['Pro', 'Enterprise'] } } }, bubbles: true, composed: true,
     }));
     await new Promise((r) => setTimeout(r, 30));
     const oneChip = source.rows.length;
 
     // Two chips: AND between them.
     el.dispatchEvent(new CustomEvent('quick-filter-change', {
-      detail: { active: [], values: { plan: ['Pro'], region: ['EMEA'] } }, bubbles: true, composed: true,
+      detail: { request: [
+        { field: 'plan', reading: { picked: ['Pro'] } }, { field: 'region', reading: { picked: ['EMEA'] } },
+      ] }, bubbles: true, composed: true,
     }));
     await new Promise((r) => setTimeout(r, 30));
     const twoChips = source.rows.map((r) => r['name']);
 
     // Cleared: back to everything.
     el.dispatchEvent(new CustomEvent('quick-filter-change', {
-      detail: { active: [], values: {} }, bubbles: true, composed: true,
+      detail: { request: { reset: {} } }, bubbles: true, composed: true,
     }));
     await new Promise((r) => setTimeout(r, 30));
     const cleared = source.rows.length;
@@ -646,9 +648,11 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
       Array.from(sr.querySelectorAll<HTMLElement>('.head-cell'))
         .filter((th) => th.dataset['status'] === 'active')
         .map((th) => th.dataset['field']);
+    // Each chip one request; none left is Clear all. 366 step 21
     const chips = async (values: Record<string, string[]>): Promise<void> => {
+      const asks = Object.entries(values).map(([field, picked]) => ({ field, reading: { picked } }));
       grid.dispatchEvent(new CustomEvent('quick-filter-change', {
-        detail: { active: [], values }, bubbles: true, composed: true,
+        detail: { request: asks.length ? asks : { reset: {} } }, bubbles: true, composed: true,
       }));
       await new Promise((res) => setTimeout(res, 30));
       await settle();

@@ -62,7 +62,7 @@ import {
 } from './query.js';
 import {
   answerIn, answersOf, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
-  scopeEntry, setCameFrom, setReading,
+  copyHolds, sameField, sameScope, scopeEntry, setCameFrom, setReading,
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
 import type { SortDirection, SortSpec } from './store.js';
@@ -168,10 +168,6 @@ export interface QueryHandle {
   mintId(): string;
   /** Moves with each declaration a walk reads — a part, a set. */
   walkVersion(): number;
-  /** The whole-answer path's own doors: they act though the answer is the
-   *  same. Theirs until a bar sends requests (366 step 21). */
-  select(field: string, picked: readonly unknown[], reading?: FieldReading): void;
-  write(scope: string, field: string, reading: FieldReading | undefined, at?: { only?: BoundControl }): void;
   /** Does any member show rows in this scope? */
   showsRows(scope: string): boolean;
   /** How any member bound this control. */
@@ -196,6 +192,8 @@ export class QueryContext extends EventTarget {
   #walks = 0;
   /** What a batch has to tell, until it ends. */
   #batched: QueryChangeDetail | null = null;
+  /** The Applies a batch asked for: sent at its end, after every edit in it. */
+  #applies: Array<{ scope?: string; field?: string }> = [];
 
   constructor() {
     super();
@@ -711,6 +709,10 @@ export class QueryContext extends EventTarget {
     } finally {
       const said = this.#batched;
       this.#batched = null;
+      // ONE Apply for the act, after every edit in it. 366 step 21
+      const applies = this.#applies;
+      this.#applies = [];
+      if (applies.map((at) => this.#send(at)).some(Boolean)) this.#tell({ kind: 'commit' });
       if (said.fields.length || said.scopes.length) {
         this.#announce({ fields: [...new Set(said.fields)], scopes: [...new Set(said.scopes)] });
       }
@@ -720,10 +722,20 @@ export class QueryContext extends EventTarget {
   /** SEND the draft — Apply, with a remote member. One field, one scope, or all. It loads. */
   commit(at: { scope?: string; field?: string } = {}): void {
     if (!this.remote) return;
-    if (at.field) copyField(this.#live.draft, this.#live.applied, at.field);
-    else if (at.scope) copyScope(this.#live.draft, this.#live.applied, at.scope);
-    else this.#live.applied = structuredClone(this.#live.draft);
-    this.#tell({ kind: 'commit' });
+    if (this.#batched) this.#applies.push(at);
+    else if (this.#send(at)) this.#tell({ kind: 'commit' });
+  }
+
+  /** Copy what an Apply sends onto `applied`. Nothing waiting: false, and the
+   *  Apply tells no one. 366 step 21 */
+  #send(at: { scope?: string; field?: string }): boolean {
+    const { draft, applied } = this.#live;
+    if (at.field ? sameField(draft, applied, at.field) : at.scope ? sameScope(draft, applied, at.scope) : false) return false;
+    if (at.field) copyField(draft, applied, at.field);
+    else if (at.scope) copyScope(draft, applied, at.scope);
+    else this.#live.applied = structuredClone(draft);
+    if (at.field || at.scope) copyHolds(draft, this.#live.applied);
+    return true;
   }
 
   /** Put the applied answers back over the draft — Discard, with a remote member.
@@ -914,8 +926,6 @@ export class QueryContext extends EventTarget {
       live: () => this.#live,
       mintId: () => `bind-${++this.#binds}`,
       walkVersion: () => this.#walks,
-      select: (field, picked, reading) => this.#select(field, picked, reading),
-      write: (scope, field, reading, at) => this.#write(scope, field, reading, at),
       showsRows: (scope) => [...this.#members].some((m) => m.showsRows(scope)),
       bindOf: (el) => this.#bindOf(el),
       leave: () => { this.#members.delete(member); },

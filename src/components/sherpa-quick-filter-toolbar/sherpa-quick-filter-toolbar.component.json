@@ -682,16 +682,13 @@
     {
       "$type": "event",
       "name": "quick-filter-change",
-      "description": "Its whole answer; `suspended` while it shows its Switch, `reset` from Reset.",
+      "description": "One reader act, as a request: a field's answer, an on or off, the Switch, Clear all.",
       "bubbles": true,
       "composed": true,
       "detail": {
         "active": "string[]",
-        "holds": "string[]",
-        "readings": "Record<string, FieldReading & { label: string; values: string[]; }>",
-        "reset": "boolean | undefined",
+        "request": "QueryRequest | undefined",
         "scope": "'bar'",
-        "suspended": "boolean | undefined",
         "values": "Record<string, string[]>"
       }
     },
@@ -917,7 +914,7 @@
           "$type": "method",
           "name": "report",
           "args": "",
-          "description": "report() — re-announce the WHOLE bar, as a reader's own change would."
+          "description": "report() — announce the bar with no request: its `values` and `active`, for a host that follows the View chip. Bound, each door already asked."
         },
         {
           "$type": "method",

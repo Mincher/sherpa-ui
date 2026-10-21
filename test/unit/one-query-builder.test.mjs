@@ -42,13 +42,13 @@ async function source() {
   return src;
 }
 
-test('a report that carries `readings` is believed, so its field TYPE is honoured', async () => {
+test('a request\'s reading is believed, so its field TYPE is honoured', async () => {
   const src = await source();
   const el = bar();
   bindSource(src, el, { steerOnly: true, scope: 'view' });
 
   // A number's range is an Advanced Between row (TODO 375).
-  el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: { seats: {
+  el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'seats', reading: {
     conditions: [{ op: 'between', picked: ['5', '50'] }], mode: 'advanced' } } } }));
   await settle();
 
@@ -59,13 +59,13 @@ test('a report that carries `readings` is believed, so its field TYPE is honoure
      holding numbers, so it matched nothing at all. */
 });
 
-test('a report WITHOUT `readings` has its values read as parameters, not a clause', async () => {
+test('a request\'s picks are parameters, not a clause; the ticks riding along ask nothing', async () => {
   const src = await source();
   const el = bar();
   bindSource(src, el, { steerOnly: true, scope: 'view' });
 
   el.dispatchEvent(new CustomEvent('quick-filter-change', {
-    detail: { values: { owner: ['Dana', 'Pia'] }, active: ['whatever'] },
+    detail: { request: { field: 'owner', reading: { picked: ['Dana', 'Pia'] } }, values: { owner: ['Ravi'] }, active: ['whatever'] },
   }));
   await settle();
 
