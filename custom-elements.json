@@ -5563,6 +5563,13 @@
               }
             },
             {
+              "name": "data-loading",
+              "description": "its rows are on their way: a Loading row shows",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-max",
               "type": {
                 "text": "string"
@@ -6006,6 +6013,9 @@
             },
             {
               "name": "heading"
+            },
+            {
+              "name": "loading"
             },
             {
               "name": "menu"

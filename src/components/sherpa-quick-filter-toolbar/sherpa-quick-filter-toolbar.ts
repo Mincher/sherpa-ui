@@ -1353,6 +1353,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const organise = { group: scope.group ?? [], sort: scope.sort ?? [] };
     if (scope.group && JSON.stringify(organise) !== JSON.stringify(this.#organise)) this.organise(organise);
     const fields = scope.filters;
+    // A field whose values have just come draws its chip again, with them. TRAP T-a-field-reads-its-values-when-needed
+    const ready = new Map(fields.filter((f) => !f.loading).map((f) => [this.#idOf(f.id), f] as const));
+    if (this.#filters.some((d) => d.loading && ready.has(d.id))) {
+      this.#filters = this.#filters.map((d) => {
+        const f = d.loading ? ready.get(d.id) : undefined;
+        if (!f) return d;
+        const { state: _state, loading: _loading, ...fresh } = f;
+        return { ...d, ...fresh, id: d.id, loading: false };
+      });
+      this.#render();
+    }
     // The scope speaks FIELDS; a chip may be named for its question.
     const want = new Set(fields.map((f) => this.#idOf(f.id)));
     // A chip that answers no field here is no scope's to hold, so none takes it off.

@@ -48,6 +48,8 @@ export interface FilterMenuDef extends KindSource {
   commit?: boolean;
   /** `false`: no Select all — a list of filters, where "every one" is never the answer. */
   selectAll?: boolean;
+  /** Its values are still being read: the menu says Loading. TODO 345 */
+  loading?: boolean;
   op?: FilterOp;
   text?: string;
 }
@@ -106,6 +108,7 @@ export function menuFor(
   if (opts.bounds) menu.setAttribute('data-bounds', opts.bounds);
   if (opts.inline) menu.setAttribute('data-inline', '');
   if (def.selectAll === false) menu.setAttribute('data-no-select-all', '');
+  if (def.loading) menu.setAttribute('data-loading', '');
 
   /* THE MENU OWNS ITS BODY. This says WHICH and hands over the numbers; the
      switch, the field, the slider and their rules are the menu's.

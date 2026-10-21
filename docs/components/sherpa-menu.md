@@ -44,6 +44,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-heading` | text |  | optional heading (rendered upper-case at 10/16) |
 | `data-hide-unavailable` | boolean |  |  |
 | `data-inline` | boolean |  | draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu |
+| `data-loading` | boolean |  | its rows are on their way: a Loading row shows |
 | `data-max` | text |  |  |
 | `data-min` | text |  |  |
 | `data-mode` | `simple` `advanced` |  | FILTER type only: simple \| advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes |
@@ -126,7 +127,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-number`, `body-range`, `cancel`, `clear`, `condition-rows`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
+`add-condition`, `apply`, `body-number`, `body-range`, `cancel`, `clear`, `condition-rows`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 

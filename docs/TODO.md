@@ -840,8 +840,11 @@ against the code). The full plan, with every file:line, is
   `fields`: notheld/open 7 value fields, not 12; `add-field` 1; again 0. Held and
   local stores read every field at once, as before. TRAP
   `T-a-field-reads-its-values-when-needed`. Untested in browsers (Will, 10x less
-  testing): the full run is at the end of phase 5. Next: 5.2 the menu's loading
-  row and the bar's refresh, 5.3 369's remote children.
+  testing): the full run is at the end of phase 5. **5.2 ✅:** a menu with
+  `data-loading` shows a Loading row; `menuFor` sets it for a loading filter,
+  and a loading filter is a list, not a yes/no; the bar draws a chip again when
+  its values come; the panel and a grid heading are drawn fresh anyway.
+  Next: 5.3 369's remote children.
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it

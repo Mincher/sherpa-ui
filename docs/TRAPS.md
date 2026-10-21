@@ -10412,6 +10412,8 @@ and the same field held again for none.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/page-definition.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-a-loading-menu.spec.ts`
 
 ### T-a-value-holds-child-values
 

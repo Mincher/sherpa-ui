@@ -29,6 +29,7 @@
     data-no-select-all  a multi-select list with no Select all row — the Filters
                     menu, where adding every filter at once is never the answer.
                     Read when the items stamp.
+    data-loading    its rows are on their way: a Loading row shows
     data-drill      the list has been replaced by a SUB-LIST — shows a back arrow
                     and a breadcrumb in the header. Drilling IN PLACE rather than
                     opening a second card means one box to position, nothing to
@@ -138,6 +139,7 @@
 
     <!-- Without this the card collapses to an empty box and reads as broken. -->
     <p class="no-matches" part="no-matches" role="status">No matches</p>
+    <p class="loading" part="loading" role="status">Loading…</p>
 
     <!-- THE BODIES A MENU CAN HAVE; `data-body` picks one. They live HERE
          because a body handed over as a slotted child is styled by whoever
@@ -306,6 +308,7 @@
 
     <!-- Without this the card collapses to an empty box and reads as broken. -->
     <p class="no-matches" part="no-matches" role="status">No matches</p>
+    <p class="loading" part="loading" role="status">Loading…</p>
 
     <!-- A NUMBER is a FILTER menu too: in Simple its one value, in Advanced the
          rows above, Between among them. A DATE's Range switch is here as well.

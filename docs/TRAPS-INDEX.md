@@ -302,7 +302,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (169)
+## Filters (170)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -330,6 +330,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
 - [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, sherpa-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
+- [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu, filter-panel
 - [T-a-filter-menu-has-two-modes](TRAPS.md#t-a-filter-menu-has-two-modes) — quick-filter
 - [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — filter-panel, quick-filter-toolbar

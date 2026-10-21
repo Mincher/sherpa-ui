@@ -2116,6 +2116,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-loading",
+          "description": "its rows are on their way: a Loading row shows",
+          "valueSet": "v"
+        },
+        {
           "name": "data-max"
         },
         {

@@ -97,6 +97,8 @@ export class SherpaMenu extends SherpaElement {
     'data-drill': { type: 'boolean', kind: 'style' },
     // A list of filters: no Select all. Read when the items stamp.
     'data-no-select-all': { type: 'boolean', kind: 'style' },
+    // Its rows are still being read. TODO 345
+    'data-loading': { type: 'boolean', kind: 'visibility' },
     /* FILTER type only — which ops its condition dropdown offers, and which
        body answers it. TRAP T-an-operator-decides-pick-or-type */
     'data-conditions': { type: 'string', kind: 'style' },

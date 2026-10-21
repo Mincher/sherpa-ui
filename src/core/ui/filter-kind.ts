@@ -45,6 +45,8 @@ export interface KindSource extends OffersAdvanced {
   kind?: string;
   select?: 'single' | 'multiple';
   options?: readonly unknown[];
+  /** Its values are on their way: a list, not a yes/no. TODO 345 */
+  loading?: boolean;
 }
 
 const KNOWN = new Set<string>(FILTER_KINDS);
@@ -65,8 +67,8 @@ export function kindOf(def: KindSource): FilterKind {
   if (def.id === 'group' || def.id === 'sort') return def.id;
   // No list to tick and no list behind the rows: the condition IS the answer.
   if (advancedOf(def) === 'only') return 'advanced';
-  // Nothing to pick from is a question with a yes/no answer.
-  if (!def.options?.length) return 'boolean';
+  // Nothing to pick from is a question with a yes/no answer — unless its list is on its way.
+  if (!def.options?.length && !def.loading) return 'boolean';
   return def.select === 'single' ? 'single' : 'multi';
 }
 

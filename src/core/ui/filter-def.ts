@@ -77,6 +77,8 @@ export interface FilterDef extends OffersAdvanced {
   persistent?: boolean;
   /** The bar's: `false` — its menu has no Select all row. */
   selectAll?: boolean;
+  /** Its values are still being read: its menu says Loading. TODO 345 */
+  loading?: boolean;
   /** The bar's: defer picks behind Apply. TRAP T-commit-follows-select-mode */
   commit?: boolean;
   /** The panel's: ONE chip with its menu, not a run — a date's menu IS a

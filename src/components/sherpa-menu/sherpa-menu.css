@@ -473,7 +473,9 @@
 
 /* Only when a search is active AND nothing matched — an empty menu with no
    search still reads as empty rather than as a failed search. */
-.no-matches { display: none; }
+.no-matches, .loading { display: none; }
+/* Its rows are still being read: say so where they will be. TODO 345 */
+:host([data-loading]) .loading,
 :host(:state(no-matches)) .no-matches {
   display: block;
   margin: 0;

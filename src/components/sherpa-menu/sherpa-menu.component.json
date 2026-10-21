@@ -92,6 +92,14 @@
               }
             },
             {
+              "el": "p",
+              "class": "loading",
+              "part": "loading",
+              "attrs": {
+                "role": "status"
+              }
+            },
+            {
               "el": "div",
               "class": "body-range",
               "part": "body-range",
@@ -498,6 +506,14 @@
               "el": "p",
               "class": "no-matches",
               "part": "no-matches",
+              "attrs": {
+                "role": "status"
+              }
+            },
+            {
+              "el": "p",
+              "class": "loading",
+              "part": "loading",
               "attrs": {
                 "role": "status"
               }
@@ -1098,6 +1114,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-loading",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility",
+      "description": "its rows are on their way: a Loading row shows"
+    },
+    {
+      "$type": "prop",
       "name": "data-max",
       "type": "string",
       "observed": true,
@@ -1358,6 +1383,11 @@
       "$type": "state",
       "name": "date",
       "selector": ":host([data-body=\"date\"])"
+    },
+    {
+      "$type": "state",
+      "name": "loading",
+      "selector": ":host([data-loading])"
     },
     {
       "$type": "state",
