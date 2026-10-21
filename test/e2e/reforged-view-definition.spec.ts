@@ -112,7 +112,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
     const one = await build();
     await one.source.load();
     one.source.query.select('plan', ['Pro']);
-    one.source.setSort('spend', 'desc');
+    one.source.query.setSort('spend', 'desc');
     await settle();
     one.grid.setColumnFilter('name', ['name', 'contains', 'n1']);
     one.grid.select(one.source.rows.slice(0, 2).map((x) => x['email'] as string));
@@ -144,7 +144,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
     const two = await build();
     const report = applyViewSnapshot(
       JSON.parse(JSON.stringify(snapshot)),
-      { source: two.source, elements: { grid: two.grid } },
+      { query: two.source.query, elements: { grid: two.grid } },
     );
     await new Promise((res) => setTimeout(res, 150));
     await settle();
@@ -274,7 +274,7 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
       v: 2,
       query: { v: 1, scopes: { view: { where: { health: { lt: 40 } }, sort: [{ field: 'health', direction: 'asc' }] } } },
       elements: { grid: { setColumnFilter: ['status', ['status', 'ne', 'churned']] } },
-    }, { source, elements: { grid } });
+    }, { query: source.query, elements: { grid } });
     await new Promise((res) => setTimeout(res, 150));
     await settle();
     const risk = read();
@@ -285,7 +285,7 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
       v: 2,
       query: { v: 1, scopes: { view: { sort: [{ field: 'spend', direction: 'desc' }], group: 'tier' } } },
       elements: { grid: { clearColumnFilter: [undefined] } },
-    }, { source, elements: { grid } });
+    }, { query: source.query, elements: { grid } });
     await new Promise((res) => setTimeout(res, 150));
     await settle();
     const renewals = read();

@@ -27,12 +27,12 @@ const settle = () => new Promise((r) => setTimeout(r, 10));
 
 test('setSort(null) SUSPENDS: the query loses its sort, the column survives', async () => {
   const s = make();
-  s.setSort('n', 'desc');
+  s.query.setSort('n', 'desc');
   await settle();
   assert.deepEqual(s.state.sort, [{ field: 'n', direction: 'desc' }]);
   assert.equal(s.state.sortSuspended, undefined, 'nothing remembered while live');
 
-  s.setSort(null);
+  s.query.setSort(null);
   await settle();
   assert.deepEqual(s.state.sort, [], 'the QUERY has no sort — the store orders nothing');
   assert.deepEqual(s.state.sortSuspended, { field: 'n', direction: 'desc' },
@@ -42,11 +42,11 @@ test('setSort(null) SUSPENDS: the query loses its sort, the column survives', as
 
 test('a SECOND suspend does not overwrite the memory with nothing', async () => {
   const s = make();
-  s.setSort('n', 'asc');
+  s.query.setSort('n', 'asc');
   await settle();
-  s.setSort(null);
+  s.query.setSort(null);
   await settle();
-  s.setSort(null);
+  s.query.setSort(null);
   await settle();
   assert.deepEqual(s.state.sortSuspended, { field: 'n', direction: 'asc' },
     'the remembered column survives a repeated suspend');
@@ -55,15 +55,15 @@ test('a SECOND suspend does not overwrite the memory with nothing', async () => 
 test('resumeSort brings it back, and is a no-op with nothing to resume', async () => {
   const s = make();
   // Nothing to resume yet — a caller may offer it without checking first.
-  s.resumeSort();
+  s.query.resumeSort();
   await settle();
   assert.deepEqual(s.state.sort, []);
 
-  s.setSort('n', 'desc');
+  s.query.setSort('n', 'desc');
   await settle();
-  s.setSort(null);
+  s.query.setSort(null);
   await settle();
-  s.resumeSort();
+  s.query.resumeSort();
   await settle();
   assert.deepEqual(s.state.sort, [{ field: 'n', direction: 'desc' }],
     'resumed in the direction it was left in');
@@ -73,9 +73,9 @@ test('resumeSort brings it back, and is a no-op with nothing to resume', async (
 
 test('clearSort FORGETS — the gesture that is not a suspend', async () => {
   const s = make();
-  s.setSort('n', 'asc');
+  s.query.setSort('n', 'asc');
   await settle();
-  s.clearSort();
+  s.query.clearSort();
   await settle();
   assert.deepEqual(s.state.sort, []);
   assert.equal(s.state.sortSuspended, undefined,
@@ -84,11 +84,11 @@ test('clearSort FORGETS — the gesture that is not a suspend', async () => {
 
 test('a new sort replaces a suspended one rather than shadowing it', async () => {
   const s = make();
-  s.setSort('n', 'desc');
+  s.query.setSort('n', 'desc');
   await settle();
-  s.setSort(null);
+  s.query.setSort(null);
   await settle();
-  s.setSort('id', 'asc');
+  s.query.setSort('id', 'asc');
   await settle();
   assert.deepEqual(s.state.sort, [{ field: 'id', direction: 'asc' }]);
   assert.equal(s.state.sortSuspended, undefined,
@@ -98,17 +98,17 @@ test('a new sort replaces a suspended one rather than shadowing it', async () =>
 
 test('the Query carries the memory, so a saved view restores mid-suspend', async () => {
   const s = make();
-  await s.setQuery({ v: 1, scopes: { view: { sort: [], sortSuspended: { field: 'n', direction: 'desc' } } } });
+  await s.query.setQuery({ v: 1, scopes: { view: { sort: [], sortSuspended: { field: 'n', direction: 'desc' } } } });
   await settle();
   assert.deepEqual(s.state.sortSuspended, { field: 'n', direction: 'desc' });
-  s.resumeSort();
+  s.query.resumeSort();
   await settle();
   assert.deepEqual(s.rows.map((r) => r.n), ['c', 'b', 'a']);
 
   // And a Query that names none CLEARS it.
-  s.setSort(null);
+  s.query.setSort(null);
   await settle();
-  await s.setQuery({ v: 1, scopes: { view: { sort: [] } } });
+  await s.query.setQuery({ v: 1, scopes: { view: { sort: [] } } });
   await settle();
   assert.equal(s.state.sortSuspended, undefined);
 });

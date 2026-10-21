@@ -73,7 +73,7 @@ test('a Store and a DataSource run headless — query and mutate', async () => {
   await settle();
   assert.equal(source.total, 333, 'filtered');
 
-  source.setSort('spend', 'desc');
+  source.query.setSort('spend', 'desc');
   await settle();
   assert.equal(source.rows[0].spend, 9953, 'sorted, within the filter');
 
@@ -244,7 +244,7 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
   // ONE TICK — a view setting three things in one handler. It used to ask the
   // store three times and throw two answers away.
   source.query.select('plan', ['Pro']);
-  source.setSort('spend', 'desc');
+  source.query.setSort('spend', 'desc');
   source.setPageSize(10);
   await settle();
   assert.equal(storeLoads - afterFirst, 1, 'three setters, one load');
@@ -313,7 +313,7 @@ test('V7: a schema maps rows on the way IN — rename, coerce, default', async (
   // The coercion is the point: a real number sorts numerically, where "100"
   // would sort below "9" as text.
   assert.equal(typeof source.rows[0].spend, 'number');
-  source.setSort('spend', 'desc');
+  source.query.setSort('spend', 'desc');
   await settle();
   assert.deepEqual(source.rows.map((r) => r.spend), [900.5, 40, 0]);
 });
@@ -376,10 +376,10 @@ test('S11: a whole Query restores in ONE load', async () => {
   const before = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
   await before.load();
   before.query.select('plan', ['Pro']);
-  before.setSort('spend', 'desc');
+  before.query.setSort('spend', 'desc');
   await settle();
 
-  const saved = JSON.stringify(before.export());   // what a host would persist
+  const saved = JSON.stringify(before.query.export());   // what a host would persist
 
   // …then an accidental reload. A brand new source, nothing shared.
   const store = new ArrayStore(rows, { key: 'id' });
@@ -388,7 +388,7 @@ test('S11: a whole Query restores in ONE load', async () => {
   store.load = (o) => { loads += 1; return real(o); };
 
   const after = new DataSource({ store, pageSize: 10, autoLoad: false });
-  await after.import(JSON.parse(saved));
+  await after.query.import(JSON.parse(saved));
   await settle();
 
   // The page number is not kept (TODO 388).
@@ -475,7 +475,7 @@ test('the `sherpa-ui/data` entry point is importable and usable in Node', async 
     { key: 'id' },
   );
   const source = new data.DataSource({ store });
-  await source.setQuery({ v: 1, scopes: { view: { where: { n: { ne: 'c' } }, sort: [{ field: 'n', direction: 'asc' }] } } });
+  await source.query.setQuery({ v: 1, scopes: { view: { where: { n: { ne: 'c' } }, sort: [{ field: 'n', direction: 'asc' }] } } });
   await source.load();
   assert.deepEqual(source.result.rows.map((r) => r.n), ['a', 'b']);
 
@@ -525,7 +525,7 @@ test('the data layer exports NO view renderer and no second wiring mechanism', a
     removeEventListener() {},
   };
   bindSource(source, el);
-  source.setSort('n', 'desc');
+  source.query.setSort('n', 'desc');
   await source.load();
 
   assert.deepEqual(el.rows.map((r) => r.n), ['b', 'a'], 'rows arrived through populate()');
@@ -945,7 +945,7 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   assert.deepEqual(seen.get('tile'), [1, 3]);
   assert.deepEqual(seen.get('other'), [1, 2, 3]);
   // A View that names nothing of the tile's: the default is put back.
-  await source.setQuery({ v: 1, scopes: { view: { holds: [], readings: {} } } }, { holds: 'keep' });
+  await source.query.setQuery({ v: 1, scopes: { view: { holds: [], readings: {} } } }, { holds: 'keep' });
   assert.deepEqual(source.query.applied.scopes['own:tile'].readings.sev.picked, ['critical']);
   // Forgotten, it narrows nothing.
   source.query.declareDefault('own:tile', undefined);
@@ -993,13 +993,13 @@ test('export and import: a round trip through JSON gives the same rows', async (
   a.answer('view', { plan: { picked: ['Pro', 'Enterprise'] } });
   a.query.hold('grid', ['seats']);
   a.answer('grid', { seats: { op: 'gt', text: '10' } });
-  a.setSort('seats', 'desc');
+  a.query.setSort('seats', 'desc');
   await a.load();
-  const out = JSON.parse(JSON.stringify(a.export()));
+  const out = JSON.parse(JSON.stringify(a.query.export()));
   assert.deepEqual(Object.keys(out), ['v', 'query']);
 
   const b = make();
-  await b.import(out);
+  await b.query.import(out);
   await b.load();
   const ids = async (s) => (await s.load({ force: true })).rows.map((r) => r.id);
   assert.deepEqual(await ids(b), await ids(a));

@@ -86,7 +86,7 @@ test('a closed page\'s Refresh leaves the shared set as it is', async () => {
   seen.loads = 0;
   seen.whole = 0;
   // A NEW question on the open page: a due set would be read again for it.
-  kept.setSort('tier');
+  kept.query.setSort('tier');
   await kept.load();
   assert.equal(kept.total, 6);
   assert.deepEqual([seen.loads, seen.whole], [0, 0]);
@@ -101,7 +101,7 @@ test('a page with a smaller cap asks the store, and the set stays for the others
   assert.equal(seen.whole, 1);
   assert.deepEqual([small.total, big.total], [6, 6]);
   seen.loads = 0;
-  big.setSort('tier');
+  big.query.setSort('tier');
   await big.load();
   assert.equal(seen.loads, 0);
 });
@@ -154,7 +154,7 @@ test('a Refresh tries a set refused for its size again', async () => {
   await source.load({ force: true });
   assert.equal(seen.whole, 1);
   seen.loads = 0;
-  source.setSort('tier');
+  source.query.setSort('tier');
   await source.load();
   assert.equal(seen.loads, 0);
 });

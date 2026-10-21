@@ -194,12 +194,12 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'sort-change': {
       const field = detail['field'];
       const direction = detail['direction'] === 'desc' ? 'desc' : 'asc';
-      source.setSort(typeof field === 'string' ? field : null, direction, arranger(detail, bind));
+      source.query.setSort(typeof field === 'string' ? field : null, direction, arranger(detail, bind));
       return;
     }
     case 'group-change': {
       const field = detail['field'];
-      source.setGroup(typeof field === 'string' && field ? field : null, arranger(detail, bind));
+      source.query.setGroup(typeof field === 'string' && field ? field : null, arranger(detail, bind));
       return;
     }
     case 'quick-filter-change': {
@@ -305,7 +305,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     }
     case 'search-change': {
       const term = detail['value'];
-      source.setSearch(typeof term === 'string' ? term : '', arranger(detail, bind));
+      source.query.setSearch(typeof term === 'string' ? term : '', arranger(detail, bind));
       return;
     }
     case 'select-all-request': {

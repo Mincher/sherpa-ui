@@ -359,7 +359,7 @@ export function register(server) {
           // THE QUERY'S GRAMMAR, through a DataSource, as a page does: one setQuery, then load once.
           // `searchFields` is a CONSTRUCTOR option, not a setter.
           const source = new dl.DataSource({ store, pageSize, searchFields: parsed.searchFields });
-          await source.setQuery({ v: 1, scopes: { view } });
+          await source.query.setQuery({ v: 1, scopes: { view } });
           await source.load();
           /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
              silently discarded — the page is a position in a result that does not
@@ -456,7 +456,7 @@ export function register(server) {
         lines.push("A `filter` is the STORE's grammar, asked of the store: no DataSource ran, so its page count is worked out here. A page's own conditions are a `where` in its Query, which a DataSource compiles to this.\n");
       } else {
         lines.push(`const source = new DataSource({ store, pageSize: ${pageSize}${parsed.searchFields ? `, searchFields: ${JSON.stringify(parsed.searchFields)}` : ""} });`);
-        lines.push(`await source.setQuery(${JSON.stringify({ v: 1, scopes: { view } })});`);
+        lines.push(`await source.query.setQuery(${JSON.stringify({ v: 1, scopes: { view } })});`);
         lines.push(`await source.load();   // source.rows, source.total`);
         if (actualPage > 1) lines.push(`source.setPage(${actualPage});`);
         lines.push("```\n");

@@ -77,7 +77,7 @@ export {
   type FieldDeclaration,
   type FieldFilter,
   type FilterSet,
-  type SourceState,
+  type QueryState,
 } from './core/data/data-source.js';
 // The Query of one app Context: every source over the page joins it. 366
 export { QueryContext } from './core/data/query-context.js';

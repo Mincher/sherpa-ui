@@ -104,7 +104,7 @@ test('a source reads a View\'s `where` by its field types, and says its Query ba
   ]);
   const source = new DataSource({ store });
   source.declareField('openTickets', { type: 'number' });
-  await source.setQuery({ v: 1, scopes: { view: { where: { openTickets: { gt: 2 }, status: { ne: 'churned' } } } } },
+  await source.query.setQuery({ v: 1, scopes: { view: { where: { openTickets: { gt: 2 }, status: { ne: 'churned' } } } } },
     { holds: 'keep' });
   const view = source.query.applied.scopes.view;
   assert.deepEqual(view.readings, { openTickets: { op: 'gt', text: '2' }, status: { op: 'ne', picked: ['churned'] } });

@@ -128,13 +128,13 @@ export interface ApplyReport {
 export function applyViewSnapshot(
   snapshot: ViewSnapshot,
   targets: {
-    source?: { setQuery(query: QueryDefaults): Promise<void> };
+    query?: { setQuery(query: QueryDefaults): Promise<void> };
     elements?: Record<string, HTMLElement>;
   },
 ): ApplyReport {
   const report: ApplyReport = { missingElements: [], skipped: {} };
   if (snapshot?.v !== 2) return report;
-  if (snapshot.query && targets.source) void targets.source.setQuery(snapshot.query);
+  if (snapshot.query && targets.query) void targets.query.setQuery(snapshot.query);
   applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report);
   return report;
 }
@@ -315,7 +315,7 @@ export function onViewPicked(
   host: EventTarget | null | undefined,
   views: ViewLibrary | (() => ViewLibrary),
   targets: {
-    source?: { setQuery(query: QueryDefaults, options?: { holds: 'keep' }): Promise<void> };
+    query?: { setQuery(query: QueryDefaults, options?: { holds: 'keep' }): Promise<void> };
     elements?: Record<string, HTMLElement>;
   },
   options: {
@@ -431,7 +431,7 @@ export function onViewPicked(
 
     /* A JSON VIEW: its Query onto a clean slate — every chip drawn from it,
        its defaults shown — then its UI. TRAP T-a-view-is-json */
-    if (view.query && targets.source) {
+    if (view.query && targets.query) {
       const report: ApplyReport = { missingElements: [], skipped: {} };
       const elements = targets.elements ?? {};
       // The View chip SHOWS it — a pick from a link or a nav row included.
@@ -439,7 +439,7 @@ export function onViewPicked(
       const bar = (event.composedPath()[0] ?? event.currentTarget) as { values?: Record<string, readonly string[]> } | null;
       if (bar?.values && bar.values[VIEW_CHIP]?.[0] !== id) bar.values = { ...bar.values, [VIEW_CHIP]: [id] };
       const draft = options.draft?.(id, view);
-      const put = draft ? targets.source.setQuery(draft) : targets.source.setQuery(view.query, { holds: 'keep' });
+      const put = draft ? targets.query.setQuery(draft) : targets.query.setQuery(view.query, { holds: 'keep' });
       void put.then(() => {
         const waiting = applyElements(view.ui ?? {}, elements, report);
         if (waiting) void waiting.then(() => done(report));
@@ -536,16 +536,16 @@ export function viewQueryOf(source: ViewSource): QueryDefaults {
   // In the plain form, by the source's field types. TRAP T-one-way-to-write-a-condition
   const plain = (readings: Record<string, FieldReading>): Where => source.whereOf?.(readings) ?? whereOf(readings);
   const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, { readings, ...rest }] of Object.entries(source.export().query.scopes)) {
+  for (const [id, { readings, ...rest }] of Object.entries(source.query.export().query.scopes)) {
     const where = plain(readings);
     scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}) };
   }
   return { v: 1, scopes };
 }
 
-/** A source as a View is saved from: its export, and its field types. */
+/** A source as a View is saved from: its Query's export, and its field types. */
 type ViewSource = {
-  export(): { query: Query };
+  query: { export(): { query: Query } };
   whereOf?(readings: Record<string, FieldReading>): Where;
 };
 

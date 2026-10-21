@@ -5,7 +5,7 @@
  * Map:
  * - FieldDeclaration — What a field IS, said once — its kind, its name, and how a control answers it.
  * - FieldFilter — A field's filter as any bar or panel draws it — its declaration and values.
- * - SourceState — A source's whole question as JSON: its applied Query, arrangement and saved filters.
+ * - QueryState — A Query's whole question as JSON: the Query as applied, with its arrangement.
  * - HeldFilter — One filter a scope holds, as a control draws it.
  * - ScopeShows — What a scope's filters narrow: the View, or the content one component shows.
  * - FilterSet — Fields a scope draws as ONE group.
@@ -73,9 +73,9 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   note?: string;
 }
 
-/** A source's whole question, as JSON — to send out and take back in: the
- *  Query as applied, and its arrangement. TRAP T-a-page-goes-out-as-json */
-export interface SourceState {
+/** A Query's whole question, as JSON — to send out and take back in: the
+ *  Query as applied, with its arrangement. TRAP T-a-page-goes-out-as-json */
+export interface QueryState {
   v: 1;
   query: Query;
 }

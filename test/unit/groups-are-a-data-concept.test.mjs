@@ -40,7 +40,7 @@ async function source(options = {}) {
 
 test('the SOURCE names the groups, with a count over every matching row', async () => {
   const src = await source();
-  src.setGroup('team');
+  src.query.setGroup('team');
   await settle();
   assert.deepEqual(src.groups(), [
     { key: 'Blue', value: 'Blue', count: 3 },
@@ -65,7 +65,7 @@ test('a field can be asked about WITHOUT grouping by it', async () => {
 
 test('a FILTER narrows the groups, because they count matching rows', async () => {
   const src = await source();
-  await src.setQuery({ v: 1, scopes: { view: { where: { spend: { gte: 30 } }, group: 'team' } } });
+  await src.query.setQuery({ v: 1, scopes: { view: { where: { spend: { gte: 30 } }, group: 'team' } } });
   await settle();
   assert.deepEqual(src.groups(), [
     { key: 'Blue', value: 'Blue', count: 2 },
@@ -85,7 +85,7 @@ test('a filter in a COMPONENT scope narrows the groups, with a summary bound bes
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });
   bindSource(src, chart, { rows: 'all', readonly: true });
-  src.setGroup('team');
+  src.query.setGroup('team');
   src.query.hold('data', ['team']);
   src.query.write('data', 'team', { picked: ['Blue', 'Red'] });
   await settle();
@@ -97,7 +97,7 @@ test('a filter in a COMPONENT scope narrows the groups, with a summary bound bes
 
 test('the count spans PAGES — a page count is the grid\'s, not the group\'s', async () => {
   const src = await source({ pageSize: 2 });
-  src.setGroup('team');
+  src.query.setGroup('team');
   await settle();
   // Two rows on the page; the groups still say what the whole set holds.
   assert.equal(src.rows.length <= 6, true);

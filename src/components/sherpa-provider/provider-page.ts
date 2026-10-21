@@ -168,7 +168,7 @@ export class ProviderPage {
     // The View chip lists it either way; only a plain save moves to it.
     await this.#quietly(async () => {
       await this.drawBars(options.stay ? this.#view : id);
-      await opened.source.setQuery(kept);
+      await opened.source.query.setQuery(kept);
     });
     // Reported, so the URL and the nav follow the View just saved.
     if (!options.stay) this.#viewBar()?.report?.();
@@ -221,7 +221,7 @@ export class ProviderPage {
     const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
-    await opened.source.setQuery(takeSet(opened.source.query.applied, set.query, this.#own()));
+    await opened.source.query.setQuery(takeSet(opened.source.query.applied, set.query, this.#own()));
     this.#take(id);
     return true;
   }
@@ -233,7 +233,7 @@ export class ProviderPage {
     const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
-    await opened.source.setQuery(dropSet(opened.source.query.applied, set.query, this.#own()));
+    await opened.source.query.setQuery(dropSet(opened.source.query.applied, set.query, this.#own()));
     if (this.#applied === id) this.#take(null);
     return true;
   }
@@ -329,8 +329,8 @@ export class ProviderPage {
     if (!opened) return;
     const view = this.#view ? opened.library?.()[this.#view] : undefined;
     await this.#quietly(async () => {
-      await opened.source.setQuery(structuredClone(opened.initial));
-      if (view?.query) await opened.source.setQuery(view.query, { holds: 'keep' });
+      await opened.source.query.setQuery(structuredClone(opened.initial));
+      if (view?.query) await opened.source.query.setQuery(view.query, { holds: 'keep' });
     });
     // The View's own filters are on: nothing of the reader's is left to keep.
     if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
@@ -436,9 +436,9 @@ export class ProviderPage {
     this.#drafts = options.drafts ? { ...options.drafts, source, library } : null;
     // A link to a View the reader left a draft on opens on the draft.
     const draft = this.#view ? this.#draftOf(this.#view) : undefined;
-    if (kept?.query && kept.view === this.#view) await source.setQuery(kept.query);
-    else if (draft) await source.setQuery(draft);
-    else if (this.#view !== first && start?.query) await source.setQuery(start.query, { holds: 'keep' });
+    if (kept?.query && kept.view === this.#view) await source.query.setQuery(kept.query);
+    else if (draft) await source.query.setQuery(draft);
+    else if (this.#view !== first && start?.query) await source.query.setQuery(start.query, { holds: 'keep' });
     if (signal.aborted) return;
     this.#hear = () => this.#hearPicks(source, library, signal);
     this.#hear();
@@ -531,7 +531,7 @@ export class ProviderPage {
     const byId = (): Record<string, HTMLElement> =>
       Object.fromEntries([...el.querySelectorAll<HTMLElement>('[id]')].map((e) => [e.id, e]));
     onViewPicked(el, library, {
-      source,
+      query: source.query,
       get elements() { return byId(); },
     }, {
       signal: picks.signal,

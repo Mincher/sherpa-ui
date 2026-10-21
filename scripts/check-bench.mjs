@@ -241,7 +241,7 @@ const ACTS = {
   search: (p) => p.data.send('search-change', { value: 'owner 1' }),
   raise: (p) => p.panel.send('filter-add', { scope: 'view', ids: ['status'], from: 'data' }),
   clear: (p) => p.view.answer({}),
-  reset: (p) => p.source.setQuery(structuredClone(p.initial)),
+  reset: (p) => p.source.query.setQuery(structuredClone(p.initial)),
   // A reader's own writes: each names its row, so a held set takes it in place.
   add: (p) => p.store.insert({ ...ROWS[0], id: N + 1, name: 'Person new', email: 'new@example.com' }),
   // Row 17's owner is Owner 02: this MOVES a field the page reads.
@@ -267,7 +267,7 @@ const ACTS = {
   aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
     owner: { picked: ['Owner 03', 'Owner 01'] } }),
   // A page's own saved filter TAKEN, as the provider takes it: a whole write, not a toggle. 366
-  'apply-saved': (p) => p.source.setQuery(p.L.takeSet(p.source.query.applied, p.saved['at-risk'].query, new Set())),
+  'apply-saved': (p) => p.source.query.setQuery(p.L.takeSet(p.source.query.applied, p.saved['at-risk'].query, new Set())),
   // The tiered page: a Site pick is a PATH; one beside a whole customer; a row edit that moves only a site walks again.
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
   'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),

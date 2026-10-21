@@ -225,12 +225,12 @@ test('setQuery restores the WHOLE Query and draws each bound scope — nothing r
     drawScope: async (scope) => { drawn.push([scope.scope, scope.filters.map((f) => [f.id, f.state])]); },
   });
   bindSource(src, bar, { steerOnly: true, scope: 'grid' });
-  await src.setQuery(saved);
+  await src.query.setQuery(saved);
   assert.deepEqual(src.query.applied, saved);
   assert.deepEqual(ids(src.state.filter), [1, 4]);
   assert.deepEqual(drawn, [['grid', [['status', saved.scopes.grid.readings.status]]]]);
   // Not a v1 Query: refused, and nothing changes.
-  await src.setQuery({ scopes: {} });
+  await src.query.setQuery({ scopes: {} });
   assert.deepEqual(src.query.applied, saved);
 });
 
@@ -368,7 +368,7 @@ test('a View\'s JSON goes onto a clean slate: chips kept, answers shown, rows ar
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   src.query.hold('grid', ['status', 'region']);
   src.query.select('region', ['APAC']);
-  await src.setQuery({ v: 1, scopes: { grid: {
+  await src.query.setQuery({ v: 1, scopes: { grid: {
     readings: { owner: { picked: ['Dana Whitlock'] } },
     sort: [{ field: 'health', direction: 'desc' }],
   } } }, { holds: 'keep' });
@@ -390,8 +390,8 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   const base = src.query.applied;
   const view = { v: 1, scopes: { [VIEW]: { readings: { status: { picked: ['active'] } }, sort: [{ field: 'name', direction: 'asc' }] } } };
   // As a Reset to default leaves it.
-  await src.setQuery(structuredClone(base));
-  await src.setQuery(view, { holds: 'keep' });
+  await src.query.setQuery(structuredClone(base));
+  await src.query.setQuery(view, { holds: 'keep' });
   assert.equal(src.atDefault(base, view), true);
   assert.equal(src.atDefault(base), false, 'the page as defined has no filter');
   // A reader's change, in any answer…
@@ -400,9 +400,9 @@ test('atDefault: the answers and arrangement against the page as defined with a 
   src.query.select('region', []);
   assert.equal(src.atDefault(base, view), true);
   // …or in the arrangement the View names.
-  src.setSort('name', 'desc');
+  src.query.setSort('name', 'desc');
   assert.equal(src.atDefault(base, view), false);
-  src.setSort('name', 'asc');
+  src.query.setSort('name', 'asc');
   assert.equal(src.atDefault(base, view), true);
   // And asking changed nothing.
   const before = JSON.stringify(src.query.applied);
@@ -431,7 +431,7 @@ test('answered: a reading that filters, a saved filter on, or the rows arranged'
   assert.equal(src.answered(), true);
   src.query.select('status', []);
   assert.equal(src.answered(), false);
-  src.setSort('region');
+  src.query.setSort('region');
   assert.equal(src.answered(VIEW), true, 'a Reset clears the arrangement too');
 });
 

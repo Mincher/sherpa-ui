@@ -175,7 +175,7 @@ test('data-where narrows its own tile, never a sibling, and outlives a View', as
     await settle();
     const $ = (s) => provider.querySelector(s).dataset.value;
     const before = { all: $('#all'), pro: $('#pro') };
-    await source.setQuery({ v: 1, scopes: { view: { holds: ['day'], where: { day: { eq: 'Mon' } } } } }, { holds: 'keep' });
+    await source.query.setQuery({ v: 1, scopes: { view: { holds: ['day'], where: { day: { eq: 'Mon' } } } } }, { holds: 'keep' });
     await settle();
     return { before, after: { all: $('#all'), pro: $('#pro') }, reports };
   })()`) as Record<string, Record<string, unknown>>;

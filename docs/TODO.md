@@ -1910,7 +1910,10 @@ the Query's reads — `reading`, `scope`, `scopes`, `holds`, `scopeOf`,
 and each member hears them at once (`declareDefault` moves with `write`). Step 15:
 the filter edits — `select`, `write`, `hold`, `move`, `request`, `release`,
 `suspendScope`, `suspendSelection`, `commit`, `discard` and `declareDefault`
-— are the context's; it edits the Query and each source runs its follow-ups.
+— are the context's; it edits the Query and each source runs its follow-ups. Step 16:
+`setSort`, `setGroup`, `resumeSort`, `clearSort`, `setSearch`, `setQuery`,
+`export` and `import` are the context's too; `SourceState` is `QueryState`,
+and a View is applied to a `query`, not a source.
 
 ---
 

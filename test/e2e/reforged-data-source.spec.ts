@@ -282,7 +282,7 @@ test('source: a narrowing change returns to page 1 rather than stranding the use
   const got = await page.evaluate(async (data) => {
     const { ArrayStore, DataSource } = await import('/dist/index.js');
     const source = new DataSource({ store: new ArrayStore(data), pageSize: 3 });
-    source.setSort('id');
+    source.query.setSort('id');
     await source.load();
 
     source.setPage(3);
@@ -495,7 +495,7 @@ test('source: writes in ONE tick coalesce into a single load', async ({ page }) 
 
     // THREE setters, one tick.
     source.query.select('plan', ['Pro']);
-    source.setSort('id', 'desc');
+    source.query.setSort('id', 'desc');
     source.setPageSize(10);
     await new Promise((r) => setTimeout(r, 60));
 
@@ -942,7 +942,7 @@ test('a page change while GROUPED reaches the components, without a load', async
     const afterUngrouped = { page: source.state.page, seen: [...seen], loads };
 
     // GROUPED: the same change must still REACH the component.
-    source.setGroup('team');
+    source.query.setGroup('team');
     await new Promise((res) => setTimeout(res, 80));
     const loadsBeforeGrouped = loads;
     seen.length = 0;

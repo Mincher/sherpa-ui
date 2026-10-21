@@ -70,7 +70,7 @@ test('run_query: a where runs through a DataSource\'s Query', async () => {
   const r = await run({ where: JSON.stringify({ health: { lt: 60 } }), group: 'id' });
   assert.equal(r.bad, false, r.text);
   assert.match(r.text, /2 row\(s\) of 2/);
-  assert.match(r.text, /source\.setQuery\(\{"v":1,"scopes":\{"view":\{"where":\{"health":\{"lt":60\}\}/);
+  assert.match(r.text, /source\.query\.setQuery\(\{"v":1,"scopes":\{"view":\{"where":\{"health":\{"lt":60\}\}/);
   assert.match(r.text, /### Grouped by `id`/);
 });
 

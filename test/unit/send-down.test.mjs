@@ -139,7 +139,7 @@ test('where a View field came up from is in the Query, so a reload still returns
 
   const again = await setup();
   again.source.query.declarePart('picks:bar', { field: 'plan', only: again.chart, label: 'By plan' });
-  await again.source.setQuery(kept);
+  await again.source.query.setQuery(kept);
   assert.deepEqual(again.sendTo('plan'), { scope: 'picks:bar', label: 'By plan', origin: true });
 
   // Sent back down, it is forgotten.

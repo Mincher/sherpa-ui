@@ -86,7 +86,7 @@ test('debugState says everything the source thinks is true', async () => {
   src.declareField('plan', { type: 'text', label: 'Plan' });
   src.declareValues('owner', ['Dana', 'Ravi']);
   src.query.hold('data', ['owner']);
-  src.setSort('owner', 'desc');
+  src.query.setSort('owner', 'desc');
   src.query.select('owner', ['Dana']);
   await new Promise((r) => setTimeout(r, 40));
 

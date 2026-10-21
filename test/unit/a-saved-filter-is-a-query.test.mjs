@@ -17,7 +17,7 @@ test('a Query that names presets keeps no presets key, and reports it once', asy
   const seen = [];
   const undo = onReport((r) => seen.push(r.code));
   try {
-    await source.setQuery({ v: 1, scopes: { data: { holds: ['plan'], readings: {}, presets: { x: true } } } });
+    await source.query.setQuery({ v: 1, scopes: { data: { holds: ['plan'], readings: {}, presets: { x: true } } } });
   } finally {
     undo();
   }

@@ -50,13 +50,13 @@ test('a sort shows in the scope that set it, and a View keeps it there', async (
   await source.load();
   assert.equal(source.describe('data').sortField, 'name');
   assert.equal(source.describe('view').sortField, undefined);
-  const out = source.export().query.scopes;
+  const out = source.query.export().query.scopes;
   assert.deepEqual(out.data.sort, [{ field: 'name', direction: 'desc' }]);
   assert.equal(out.view?.sort, undefined);
   // Read back, it is that scope's again.
   const again = page().source;
   again.query.declareScope('view', { arranges: true });
-  await again.import(source.export());
+  await again.query.import(source.query.export());
   assert.equal(again.describe('data').sortField, 'name');
   assert.equal(again.describe('view').sortField, undefined);
 });
@@ -69,5 +69,5 @@ test('a SAVED View puts the sort where export() does: in the scope that set it',
   const saved = saveViewAs('arranged', 'By name', { source }, {})['by-name'].query.scopes;
   assert.deepEqual(saved.data.sort, [{ field: 'name', direction: 'desc' }]);
   assert.equal(saved.view?.sort, undefined);
-  assert.deepEqual(saved.data.sort, source.export().query.scopes.data.sort);
+  assert.deepEqual(saved.data.sort, source.query.export().query.scopes.data.sort);
 });

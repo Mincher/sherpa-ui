@@ -33,7 +33,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-delta-is-derived-not-declared](TRAPS.md#t-a-delta-is-derived-not-declared) — aggregate
 - [T-a-failed-read-keeps-the-last-set](TRAPS.md#t-a-failed-read-keeps-the-last-set) — data-source, store-cache
 - [T-a-failure-has-a-kind](TRAPS.md#t-a-failure-has-a-kind) — data-source, failure, spoof-remote
-- [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — data-source-types, query-edits
+- [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — data-source-types, query-context, query-edits
 - [T-a-field-is-declared-once](TRAPS.md#t-a-field-is-declared-once) — data-source, data-source-types
 - [T-a-filter-applies-down-its-scope](TRAPS.md#t-a-filter-applies-down-its-scope) — bind-selection, query-context
 - [T-a-filter-report-is-the-whole-answer](TRAPS.md#t-a-filter-report-is-the-whole-answer) — data-source
@@ -49,7 +49,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-made-up-key-never-leaves-the-data-layer](TRAPS.md#t-a-made-up-key-never-leaves-the-data-layer) — base-store, data, held-set, row-key
 - [T-a-mode-switch-carries-the-answer-over](TRAPS.md#t-a-mode-switch-carries-the-answer-over) — filter-state
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — data-source, data-source-types, store
-- [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — data-source, data-source-types
+- [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — data-source-types, query-context
 - [T-a-page-is-its-definition](TRAPS.md#t-a-page-is-its-definition) — data, page-definition
 - [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — data-source, data-source-types
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — data-source-types
@@ -58,7 +58,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-record-has-a-time-of-its-own](TRAPS.md#t-a-record-has-a-time-of-its-own) — base-store, data-source, store
 - [T-a-refused-row-never-shortens-a-page](TRAPS.md#t-a-refused-row-never-shortens-a-page) — base-store
 - [T-a-relative-date-stays-relative](TRAPS.md#t-a-relative-date-stays-relative) — filter-state, store, stores, where
-- [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — data-source
+- [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — data-source, query-context
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-set, page-definition, store, store-cache
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, source-counts, store, stores, walk
 - [T-a-scope-is-a-place-not-a-reach](TRAPS.md#t-a-scope-is-a-place-not-a-reach) — data-source
@@ -69,12 +69,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, source-binding
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — data-source
-- [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types, query
+- [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types, query, query-context
 - [T-a-threshold-is-a-fact-of-the-field](TRAPS.md#t-a-threshold-is-a-fact-of-the-field) — aggregate, data-source-types, filter-state, threshold, where
 - [T-a-tooltip-is-not-an-axis](TRAPS.md#t-a-tooltip-is-not-an-axis) — format-tick
 - [T-a-value-can-be-an-object](TRAPS.md#t-a-value-can-be-an-object) — aggregate, data, field-catalogue, filter-state, query-context, store, validate
 - [T-a-view-held-heading-shows-and-refuses](TRAPS.md#t-a-view-held-heading-shows-and-refuses) — query, source-binding
-- [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — data-source, query
+- [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — query, query-context
 - [T-adapter-lives-at-the-binding](TRAPS.md#t-adapter-lives-at-the-binding) — source-binding
 - [T-aggregation-is-data](TRAPS.md#t-aggregation-is-data) — aggregate
 - [T-an-aggregate-returns-the-number](TRAPS.md#t-an-aggregate-returns-the-number) — aggregate

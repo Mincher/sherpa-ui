@@ -74,10 +74,10 @@ test('sorting, grouping, filtering and paging change no stored row', async () =>
   src.declareValues('team', ['red', 'blue']);
   const before = snap(rows);
 
-  src.setSort('seats', 'desc');
-  src.setGroup('team');
+  src.query.setSort('seats', 'desc');
+  src.query.setGroup('team');
   src.query.select('team', ['red']);
-  src.setSearch('a');
+  src.query.setSearch('a');
   src.setPageSize(1);
   src.setPage(1);
   await settle();
@@ -93,7 +93,7 @@ test('a WRITE is the one thing that does change it', async () => {
   const store = new ArrayStore(rows, { key: 'id' });
   const src = new DataSource({ store });
   await src.ready;
-  src.setSort('seats', 'desc');
+  src.query.setSort('seats', 'desc');
   await settle();
 
   await store.update(1, { owner: 'Dana M' });

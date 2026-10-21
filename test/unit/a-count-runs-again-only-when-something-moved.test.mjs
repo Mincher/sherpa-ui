@@ -38,11 +38,11 @@ test('a sort, a page and a search count nothing again', async () => {
   const { source, drawn } = await setup();
   const before = drawn.length;
   assert.ok(before > 0);
-  source.setSort('name');
+  source.query.setSort('name');
   await tick();
   source.setPage(2);
   await tick();
-  source.setSearch?.('a');
+  source.query.setSearch('a');
   await tick();
   assert.equal(drawn.length, before);
 });

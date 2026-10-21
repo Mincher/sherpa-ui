@@ -25,7 +25,7 @@ import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.j
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import type { Failure } from '../../core/data/failure.js';
-import type { DataChangeDetail, DataSource, SourceState } from '../../core/data/data-source.js';
+import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
@@ -68,7 +68,7 @@ export interface OpenOptions {
 export interface ProviderState {
   v: 1;
   view?: string;
-  sources: Record<string, SourceState>;
+  sources: Record<string, QueryState>;
 }
 
 /** The attribute a summary needs before it asks; without it a page populates it.
@@ -640,8 +640,8 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-a-page-goes-out-as-json
    */
   export(): ProviderState {
-    const sources: Record<string, SourceState> = {};
-    for (const [name, source] of Object.entries(this.#sources)) sources[name] = source.export();
+    const sources: Record<string, QueryState> = {};
+    for (const [name, source] of Object.entries(this.#sources)) sources[name] = source.query.export();
     const view = this.#pages.view;
     return { v: 1, ...(view ? { view } : {}), sources };
   }
@@ -658,7 +658,7 @@ export class SherpaProvider extends SherpaElement {
     }
     for (const [name, given] of Object.entries(state.sources ?? {})) {
       const source = this.#sources[name];
-      if (source) await source.import(given);
+      if (source) await source.query.import(given);
       else report({ code: 'provider-unknown-source', message: `sherpa-provider: no source "${name}" to take in.`, at: { source: name } });
     }
     if (state.view) this.#pages.takeView(state.view);

@@ -98,7 +98,7 @@ test('a kept copy that lands after a refusal is never shown', async () => {
   page.addEventListener('error', (e) => errors.push(e.detail.failure?.kind));
   await page.load();
   await tick(1300);
-  page.setSort('tier');
+  page.query.setSort('tier');
   await page.load();
   assert.ok(!changes.some((ids) => ids.includes(99)), `shown: ${JSON.stringify(changes)}`);
   assert.equal(errors.at(-1), 'refused');

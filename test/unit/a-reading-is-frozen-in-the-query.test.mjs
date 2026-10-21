@@ -45,7 +45,7 @@ const throwsOnWrite = (got) => {
 test('after setQuery, what a grid is handed cannot change the Query', async () => {
   const source = make();
   const got = grid(source);
-  await source.setQuery({ v: 1, scopes: { view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } } } });
+  await source.query.setQuery({ v: 1, scopes: { view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } } } });
   throwsOnWrite(got);
 });
 

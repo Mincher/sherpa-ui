@@ -336,7 +336,7 @@ setter never throws:
 
 ```js
 source.addEventListener('error', (e) => showBanner(e.detail.error));
-source.setSearch('ada');   // never throws, whatever the store does
+source.query.setSearch('ada');   // never throws, whatever the store does
 ```
 
 A failed load leaves the LAST GOOD ROWS on screen rather than blanking the

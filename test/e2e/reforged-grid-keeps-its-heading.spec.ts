@@ -128,7 +128,7 @@ test('a pick, a sort and a page make no new heading component', async ({ page })
     const before = new Set(head());
     source.query.select('status', ['active']);
     await settle();
-    source.setSort('name', 'desc');
+    source.query.setSort('name', 'desc');
     await settle();
     source.setPage(2);
     await settle();

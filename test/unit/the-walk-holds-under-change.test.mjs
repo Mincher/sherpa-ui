@@ -142,7 +142,7 @@ test('a page scope no component answers is counted, and its lists are not ruled 
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), limitOptions: true });
   source.declareValues('status', ['active', 'trial']);
   await viewBar(source);
-  await source.setQuery({ v: 1, scopes: { view: { holds: ['customer', 'region'], readings: {} }, page: { holds: ['status'], readings: { status: { picked: ['trial'] } } } } });
+  await source.query.setQuery({ v: 1, scopes: { view: { holds: ['customer', 'region'], readings: {} }, page: { holds: ['status'], readings: { status: { picked: ['trial'] } } } } });
   await ticks();
   assert.deepEqual(await source.results('page'), { status: 1 });
   assert.deepEqual(await source.present('page'), {});

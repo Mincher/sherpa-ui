@@ -41,7 +41,7 @@ const query = (view, data) => ({ v: 1, scopes: {
 
 test('each chip counts within the filters before it; the last in force is the total', async () => {
   const source = await page();
-  await source.setQuery(query({ region: { picked: ['EMEA', 'AMER'] } }, { status: { picked: ['open'] }, plan: { picked: ['pro'] } }));
+  await source.query.setQuery(query({ region: { picked: ['EMEA', 'AMER'] } }, { status: { picked: ['open'] }, plan: { picked: ['pro'] } }));
   assert.deepEqual(await source.results('view'), { region: 4 });
   // Status within the View's four; Plan within those three open.
   assert.deepEqual(await source.results('data'), { status: 3, plan: 2 });
@@ -50,13 +50,13 @@ test('each chip counts within the filters before it; the last in force is the to
 
 test('the order decides: Plan before Status counts over the View alone', async () => {
   const source = await page({ data: ['plan', 'status'] });
-  await source.setQuery(query({ region: { picked: ['EMEA', 'AMER'] } }, { plan: { picked: ['pro'] }, status: { picked: ['open'] } }));
+  await source.query.setQuery(query({ region: { picked: ['EMEA', 'AMER'] } }, { plan: { picked: ['pro'] }, status: { picked: ['open'] } }));
   assert.deepEqual(await source.results('data'), { plan: 3, status: 2 });
 });
 
 test('OFF counts within the filters before it, and narrows nothing after it', async () => {
   const source = await page({ data: ['plan', 'status', 'seats'] });
-  await source.setQuery(query({}, {
+  await source.query.setQuery(query({}, {
     plan: { picked: ['pro'] }, status: { picked: ['shut'], suspended: true }, seats: { picked: ['5'], range: false },
   }));
   // Status off: 1 of Plan's 3 would match; Seats counts over all 3.
@@ -66,7 +66,7 @@ test('OFF counts within the filters before it, and narrows nothing after it', as
 test('a set\'s fields count together, where its first stands', async () => {
   const sets = [{ id: 's', fields: ['plan', 'seats'] }];
   const source = await page({ data: ['plan', 'status', 'seats'], sets });
-  await source.setQuery(query({}, {
+  await source.query.setQuery(query({}, {
     plan: { picked: ['pro'] }, status: { picked: ['open'] }, seats: { picked: ['5'], range: false },
   }));
   // Plan, then Seats (its set), then Status.
@@ -77,7 +77,7 @@ test('a page scope no component answers narrows every chip (347)', async () => {
   const source = await page();
   const q = query({ region: { picked: ['EMEA', 'APAC'] } }, { status: { picked: ['open'] } });
   q.scopes.page = { holds: ['plan'], readings: { plan: { picked: ['pro'] } } };
-  await source.setQuery(q);
+  await source.query.setQuery(q);
   await source.load();
   assert.deepEqual(await source.results('view'), { region: 2 });
   assert.deepEqual(await source.results('data'), { status: 1 });
@@ -85,7 +85,7 @@ test('a page scope no component answers narrows every chip (347)', async () => {
 
 test('each picked value counts within the filters before its field', async () => {
   const source = await page();
-  await source.setQuery(query({ region: { picked: ['EMEA'] } }, { status: { picked: ['open'] }, plan: { picked: ['pro', 'free'] } }));
+  await source.query.setQuery(query({ region: { picked: ['EMEA'] } }, { status: { picked: ['open'] }, plan: { picked: ['pro', 'free'] } }));
   const values = await source.valueResults('data');
   assert.deepEqual(values.status, { open: 1 });
   // Within EMEA's one open row.

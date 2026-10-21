@@ -128,3 +128,16 @@ test('an edit on the context recompiles, reloads and redraws its source (366 ste
   query.select('plan', ['Free']);
   assert.deepEqual(query.reading(VIEW, 'plan').picked, ['Free']);
 });
+
+test('the arrangement and the whole writes are the context\'s (366 step 16)', async () => {
+  const query = new QueryContext();
+  const source = new DataSource({ store: store(), query });
+  query.setSort('plan', 'asc');
+  await source.load();
+  assert.deepEqual(source.rows.map((r) => r.plan), ['Free', 'Pro'], 'the source loads in the new order');
+  const saved = JSON.parse(JSON.stringify(query.export()));
+  query.clearSort();
+  assert.deepEqual(source.state.sort, []);
+  await query.import(saved);
+  assert.deepEqual(source.state.sort, [{ field: 'plan', direction: 'asc' }], 'a restore puts it back');
+});

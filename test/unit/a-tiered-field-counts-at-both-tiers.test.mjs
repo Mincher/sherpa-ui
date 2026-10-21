@@ -106,7 +106,7 @@ test('the walk reads the child it tallies, so an edit to a site alone walks agai
     scopes: { view: { label: 'View', holds: ['region', 'customer'] } },
   }, store);
   src.limitOptions = true;
-  await src.setQuery(view({ region: { picked: ['EMEA'] } }));
+  await src.query.setQuery(view({ region: { picked: ['EMEA'] } }));
   assert.ok((await src.present(VIEW)).customer.includes(key('Northwind', 'Leeds')));
   await store.update(1, { ...ROWS[0], site: 'York' });
   const now = (await src.present(VIEW)).customer;

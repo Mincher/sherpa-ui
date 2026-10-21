@@ -11,20 +11,13 @@
  * - .timeField — The field holding each record's TIME, or undefined when the store has none.
  * - .state — The current view state.
  * - .query — The Query the rows are under. A copy.
- * - .export — This source's whole question as JSON, to send out.
- * - .import — Take a question back in, exactly: its saved filters, then its Query.
  * - .atDefault — Would a Reset to default change nothing? Applies nothing.
  * - .answered — Is there anything a Reset would clear, in one scope or any?
- * - .setQuery — Restore a whole Query — a reload, a trip away and back.
  * - .loaded — Has any load completed?
  * - .result — The whole of the last load's answer.
  * - .rows — The last load's rows, LIVE — state, query and result are copies
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
- * - .setSort — Order by one field, or stop.
- * - .resumeSort — Resume the suspended sort.
- * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
- * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .answerScopes — The panel's answer: each field it changed.
@@ -44,7 +37,6 @@
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
  * - .applyOn — Once per act, or LIVE while a value moves — never live when remote. Fixed by the options.
- * - .setSearch — the search text, across searchFields
  * - .setPage — which page to show
  * - .setPageSize — rows per page, or null for all
  * - .load — Re-read and push to every bound component.
@@ -78,7 +70,7 @@ import {
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
-  cameFrom, definitionOf, homeOf, keepOff, readingOf, rehome, scopeEntry, viewHeldReadings,
+  cameFrom, definitionOf, homeOf, keepOff, readingOf, viewHeldReadings,
 } from './query-edits.js';
 import { coalesce, Latest } from './timing.js';
 import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
@@ -89,19 +81,16 @@ import { planRead, type Plan } from './read-plan.js';
 import { failureOf, unreached, type Failure } from './failure.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store,
+  Filter, GroupSummary, LoadOptions, LoadResult, Row, Store,
 } from './store.js';
 import type {
   AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
-  FilterSet, HeldFilter, ScopeDescription, SourceState, ViewState,
+  FilterSet, HeldFilter, ScopeDescription, ViewState,
 } from './data-source-types.js';
 export type {
   AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
-  FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows, SourceState, ViewState,
+  FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows, QueryState, ViewState,
 } from './data-source-types.js';
-
-/** A change to the arrangement: what it names, and nothing else. */
-type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
 
 export class DataSource extends EventTarget {
   readonly store: Store;
@@ -153,9 +142,7 @@ export class DataSource extends EventTarget {
   /* Read and written through these, so each method reads as it did. QueryLive says what each is.
      The filter is compiled from the Query, never kept beside it. TRAP T-one-query-one-owner */
   get #applied(): Query { return this.#member.live().applied; }
-  set #applied(query: Query) { this.#member.live().applied = query; }
   get #draft(): Query { return this.#member.live().draft; }
-  set #draft(query: Query) { this.#member.live().draft = query; }
   get #defaults(): Map<string, ScopeQuery> { return this.#member.live().defaults; }
   get #sets(): Map<string, FilterSet[]> { return this.#member.live().sets; }
   get #offers(): Map<string, string[]> { return this.#member.live().offers; }
@@ -196,6 +183,8 @@ export class DataSource extends EventTarget {
       remote: this.#remote, showsRows: (scope) => this.#binding.showsRows(scope), bindOf: (el) => this.#binding.get(el),
       heard: (change) => this.#hear(change),
       has: (field) => this.#catalogue.has(field),
+      carriesOver: (field) => this.#catalogue.carriesOver(field),
+      readingsOf: (where) => this.readingsOf(where),
       raws: (field, picked) => {
         const declared = this.#catalogue.byKey(field);
         return picked.map((v) => declared.get(valueKey(v)) ?? v);
@@ -258,24 +247,6 @@ export class DataSource extends EventTarget {
     return this.#context;
   }
 
-  /** This source's whole question as JSON — the Query as applied, and how its
-   *  rows are arranged. TRAP T-a-page-goes-out-as-json */
-  export(): SourceState {
-    const query = structuredClone(this.#applied);
-    // It names its arrangement, none too: a View saved from it puts back the rows as they were.
-    if (!arrangementOf(query).scope) query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), sort: [] };
-    return { v: 1, query };
-  }
-
-  /** Take a question back in, exactly. */
-  async import(state: SourceState): Promise<void> {
-    if (state?.v !== 1) {
-      report({ code: 'unknown-state', message: 'import: not a v1 source state, so nothing was taken in.' });
-      return;
-    }
-    await this.setQuery(state.query);
-  }
-
   /**
    * Would a Reset to default change nothing? What filters NOW, which filters
    * each scope holds, and how the rows are arranged, against `base` as defined
@@ -319,44 +290,6 @@ export class DataSource extends EventTarget {
     });
   }
 
-  /**
-   * Restore a whole Query — a reload, a trip away and back, a View's own
-   * defaults. Each bound control over a scope is DRAWN its slice; nothing
-   * replays a control. The named parts are left alone. Resolves once every
-   * control has drawn.
-   *
-   * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
-   * the chips it has, and every answer is a clean slate.
-   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
-   */
-  async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep' } = {}): Promise<void> {
-    if (query?.v !== 1 || typeof query.scopes !== 'object') {
-      report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
-      return;
-    }
-    const next = this.#definition(query, options.holds === 'keep');
-    const was = this.#arrangement();
-    const before = new Set(this.selectedFields);
-    this.#applied = next;
-    this.#draft = this.#remote ? structuredClone(next) : this.#applied;
-    rehome(this.#draft);
-    const now = this.#arrangement();
-    if (now.group !== was.group) this.#viewPages = null;
-    this.#recompose();
-    // Re-arranged, or searched: page one, and a load, whatever the filter did.
-    const order = (a: Arrangement): string => JSON.stringify([a.sort, a.group, a.search]);
-    if (order(now) !== order(was)) this.#requery();
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
-    for (const field of new Set([...before, ...this.selectedFields])) {
-      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
-      this.#draw(field);
-    }
-    await this.#binding.drawEveryBar();
-    // Drawn, never reported: the Query is already the answer.
-    this.#syncSuperseded(false);
-    this.#binding.drawScopesSoon();
-  }
-
   /** Has any load completed? Before one, there is nothing to count or group. */
   get loaded(): boolean {
     return this.#loaded;
@@ -390,50 +323,6 @@ export class DataSource extends EventTarget {
   }
 
   /* ── Steering ──────────────────────────────────────────────────────── */
-
-  /**
-   * Order by one field, or stop. Every re-ordering returns to page 1.
-   *
-   * `field: null` SUSPENDS — the column moves to `sortSuspended`, so one more
-   * click resumes it. `clearSort()` is how a caller forgets.
-   * TRAP T-a-suspended-sort-is-one-owners-job
-   */
-  setSort(field: string | null, direction: SortDirection = 'asc', scope?: string): void {
-    if (field) this.#arrange({ sort: [{ field, direction }], sortSuspended: undefined }, scope);
-    else {
-      // A second suspend in a row must not overwrite the memory with nothing.
-      const live = this.#arrangement().sort[0];
-      this.#arrange({ sort: [], ...(live ? { sortSuspended: live } : {}) }, scope);
-    }
-    this.#requery();
-  }
-
-  /** Resume the suspended sort. No-op when there is none. */
-  resumeSort(): void {
-    const held = this.#arrangement().sortSuspended;
-    if (!held) return;
-    this.setSort(held.field, held.direction ?? 'asc');
-  }
-
-  /** Forget the sort entirely — the gesture that is NOT a suspend. */
-  clearSort(): void {
-    this.#arrange({ sort: [], sortSuspended: undefined });
-    this.#requery();
-  }
-
-  setGroup(field: string | null, scope?: string): void {
-    this.#arrange({ group: field }, scope);
-    // The old count was measured against the OLD grouping. Drop it and wait for
-    // the next draw. TRAP T-grouped-paging-belongs-to-the-view
-    this.#viewPages = null;
-    this.#requery();
-  }
-
-
-
-
-
-
 
   /** What `compile` narrows each bound component by, alone — by bind id. */
   #only: Record<string, Filter> = {};
@@ -534,8 +423,6 @@ export class DataSource extends EventTarget {
     }
   }
 
-
-
   /** The ONE scope a View field is sent down to: the one it came UP from,
    *  while that still has it, else the first that has it — a component's, in
    *  the page's order, then a chart's own. Will, TODO 346. TRAP T-send-to-view-filters */
@@ -546,8 +433,6 @@ export class DataSource extends EventTarget {
     if (from && has(from)) return from;
     return [...this.#offers.keys(), ...this.#narrowing.keys()].find(has);
   }
-
-
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
 
@@ -642,46 +527,12 @@ export class DataSource extends EventTarget {
     return this.#catalogue.filterDef(field);
   }
 
-
-
-
   /** The scope whose Group or Sort set the rows' arrangement — while it still
    *  arranges; else none, and every arranging scope shows it. */
   #arrangedIn(): string | undefined {
     const { scope } = this.#arrangement();
     return scope && this.#context.arranges(scope) ? scope : undefined;
   }
-
-  /** Write the arrangement into the Query, in BOTH copies: the scope given,
-   *  else the one that arranges now, else the View; every other scope loses
-   *  it. It compiles nothing. 366 step 8 · TRAP T-group-and-sort-are-component-scope */
-  #arrange(next: ArrangeEdit, scope?: string): void {
-    const now = this.#arrangement();
-    const at = scope ?? now.scope ?? VIEW;
-    const sort = next.sort ?? now.sort;
-    const group = 'group' in next ? next.group ?? null : now.group;
-    const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
-    const search = next.search ?? now.search;
-    for (const query of new Set([this.#applied, this.#draft])) {
-      for (const s of Object.values(query.scopes)) {
-        delete s.sort;
-        delete s.group;
-        delete s.sortSuspended;
-        delete s.search;
-      }
-      if (!sort.length && group == null && !sortSuspended && !search) continue;
-      const s = scopeEntry(query, at);
-      s.sort = sort.map((by) => ({ ...by }));
-      if (group != null) s.group = group;
-      if (sortSuspended) s.sortSuspended = { ...sortSuspended };
-      if (search) s.search = search;
-    }
-    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
-  }
-
-
-
-
 
   /**
    * What a scope may still ADD: the declared fields it has, less those it
@@ -705,7 +556,6 @@ export class DataSource extends EventTarget {
   valuesFor(field: string): unknown[] {
     return this.#catalogue.valuesFor(field);
   }
-
 
   /**
    * TELL EACH BAR over this field's scope what it now holds — a chip, a heading
@@ -766,8 +616,6 @@ export class DataSource extends EventTarget {
     return groupSummaries(rows, field);
   }
 
-
-
   /**
    * One field's whole state — picked, unpicked, the condition — ready for a
    * chip, a column menu, a legend row or anything else that draws it.
@@ -792,9 +640,6 @@ export class DataSource extends EventTarget {
    * coupled to a toolbar. Held in the Query. TRAP T-a-scope-is-a-place-not-a-reach
    */
 
-
-
-
   /** Each grid below the View is told the fields the View holds, as APPLIED. */
   #syncColumns(): void {
     this.#binding.supersedeColumns(viewHeldReadings(this.#applied));
@@ -806,8 +651,6 @@ export class DataSource extends EventTarget {
     this.#binding.supersede(this.#context.scope(VIEW), report);
   }
 
-
-
   /* ── What a scope MAY hold ─────────────────────────────────────────────
    * Will, 2026-09-25: "Any component field can be applied to the view scope
    * as a filter. Only component fields can be added to that component's scoped
@@ -815,11 +658,6 @@ export class DataSource extends EventTarget {
    * so adding to one removes it from the other. However, the same filter can
    * exist across multiple component scopes."
    * TRAP T-up-is-open-down-is-closed */
-
-
-
-
-
 
   /**
    * EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
@@ -943,7 +781,7 @@ export class DataSource extends EventTarget {
   }
 
   /** What its context did: today's follow-ups, in today's order. 366 steps 14-15 */
-  #hear(change: QueryChange): void {
+  #hear(change: QueryChange): void | Promise<void> {
     switch (change.kind) {
       case 'offer':
         this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: change.scope } }));
@@ -1009,7 +847,38 @@ export class DataSource extends EventTarget {
       case 'bars':
         this.#binding.drawBars(change.scope);
         return;
+      case 'arranged':
+        this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
+        // The old count was measured against the OLD grouping. Drop it and wait for
+        // the next draw. TRAP T-grouped-paging-belongs-to-the-view
+        if (change.group) this.#viewPages = null;
+        // Every re-ordering returns to page 1.
+        this.#requery();
+        return;
+      case 'query':
+        return this.#heardQuery(change.was, change.before);
     }
+  }
+
+  /** A whole Query came in: each bound control over a scope is DRAWN its slice;
+   *  nothing replays a control. Settles once every control has drawn.
+   *  TRAP T-a-reload-replays-the-readers-answers */
+  async #heardQuery(was: Arrangement, before: readonly string[]): Promise<void> {
+    const now = this.#arrangement();
+    if (now.group !== was.group) this.#viewPages = null;
+    this.#recompose();
+    // Re-arranged, or searched: page one, and a load, whatever the filter did.
+    const order = (a: Arrangement): string => JSON.stringify([a.sort, a.group, a.search]);
+    if (order(now) !== order(was)) this.#requery();
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.#context.scopes } }));
+    for (const field of new Set([...before, ...this.selectedFields])) {
+      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+      this.#draw(field);
+    }
+    await this.#binding.drawEveryBar();
+    // Drawn, never reported: the Query is already the answer.
+    this.#syncSuperseded(false);
+    this.#binding.drawScopesSoon();
   }
 
   /** A definition as a whole Query: definitionOf, over this source. */
@@ -1021,10 +890,6 @@ export class DataSource extends EventTarget {
     }, copy);
   }
 
-
-
-
-
   /** Tell each bound control over a scope its PENDING fields and whether its scope is DIRTY. */
   #syncPending(): void {
     this.#binding.syncPending((scopes) => (this.#remote
@@ -1032,11 +897,6 @@ export class DataSource extends EventTarget {
         ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
       })))].filter((f) => this.#context.pending(f))
       : []), (id) => this.#context.dirty(id));
-  }
-
-  setSearch(term: string, scope?: string): void {
-    this.#arrange({ search: term }, scope);
-    this.#requery();
   }
 
   /** The SEARCH as needles, so a view marks what it found: a `contains` on each
@@ -1768,7 +1628,6 @@ export class DataSource extends EventTarget {
     this.#context.commit();
     if (fresh) this.#binding.drawBars(scope);
   }
-
 
   /** The grid's own page count, when every matching row is already in hand:
    *  the pager's numbers publish again, and nothing loads. */

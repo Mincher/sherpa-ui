@@ -236,7 +236,7 @@ source.query.draft     // what the reader is editing
 | Save a View (15) | `query.applied` | the view library |
 | a shared link | `query.applied` | the URL, or a key into the library |
 
-All three restore the same way: `source.setQuery(q)`. Every bound control
+All three restore the same way: `source.query.setQuery(q)`. Every bound control
 re-reads its slice. Nothing replays a control, so the rebuild-timing traps of
 21e (`restoreAnswers`, the URL view picked after init) go away.
 

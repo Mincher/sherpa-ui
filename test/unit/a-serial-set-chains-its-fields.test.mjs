@@ -97,7 +97,7 @@ test('a component scope\'s chain starts inside the View', async () => {
   source.query.offer('data', ['customer', 'region']);
   source.query.declareSets('data', [{ id: 'acct', mode: 'serial', fields: ['customer', 'region'] }]);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
-  await source.setQuery({ v: 1, scopes: {
+  await source.query.setQuery({ v: 1, scopes: {
     view: { holds: ['zone'], readings: { zone: { picked: ['north'] } } },
     data: { holds: ['customer', 'region'], readings: {} },
   } });

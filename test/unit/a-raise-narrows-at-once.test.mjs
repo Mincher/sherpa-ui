@@ -42,7 +42,7 @@ test('a field raised to the View narrows a chart over every row at once', async 
 
 test('a Query restored before a field\'s values are known compiles again once they are', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  await source.setQuery({ v: 1, scopes: { view: { holds: ['plan'], readings: { plan: { picked: ['Free', 'Pro'] } } } } });
+  await source.query.setQuery({ v: 1, scopes: { view: { holds: ['plan'], readings: { plan: { picked: ['Free', 'Pro'] } } } } });
   // Its values unknown, two picks are a filter.
   assert.deepEqual(source.state.filter, ['plan', 'in', ['Free', 'Pro']]);
   await source.declareFromRows(['plan']);

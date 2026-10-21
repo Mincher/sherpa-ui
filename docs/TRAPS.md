@@ -1603,6 +1603,7 @@ Nothing on Records carries over yet — the default is Will's.
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-send-to-view-filters
 
@@ -13549,6 +13550,7 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-bind-locks-what-it-owns
 
@@ -16265,12 +16267,12 @@ content view's `after` now gets `rendered` — the Capacity view's charts had
 never been bound.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/browser/view-files.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-navigating-sets-up-the-page
 
@@ -16494,7 +16496,7 @@ its View filters alone.
 ### T-a-page-goes-out-as-json
 
 **A page's whole state goes out as JSON and comes back: `provider.export()` /
-`provider.import(state)`, over `source.export()` / `source.import(state)`.**
+`provider.import(state)`, over `source.query.export()` / `source.query.import(state)`.**
 Provider P5, 2026-09-27. A source's state is its Query as APPLIED, its sort,
 group and search in the View scope (the shape a View's JSON already uses),
 and every saved filter it names — readings and label — so a service that
@@ -16509,10 +16511,10 @@ so an MCP or WebMCP tool can read and write a page's question without a
 browser (TODO 76).
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-provider-keeps-the-views
 
@@ -17511,7 +17513,7 @@ COMBINED filter — Region = EMEA + Status = active came back as 4 rows with
 every chip empty. A filter no one could see or clear.
 
 The session keeps `source.query.applied` — the answers, and the sort, group
-and suspended sort with them (366 step 8). `source.setQuery()` puts it back and
+and suspended sort with them (366 step 8). `source.query.setQuery()` puts it back and
 DRAWS each bound bar its scope (`drawScope`, silent) — nothing replays a
 control (step 3 of docs/QUERY-DESIGN.md). `persistView` keeps each
 component's own state — a grid's selection — never the Query (366 step 10).
@@ -17537,6 +17539,7 @@ a filter the reader SAVES crosses those (Will, 2026-10-20, TODO 370;
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-heading-menu-opens-on-what-it-holds
 

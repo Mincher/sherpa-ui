@@ -44,17 +44,27 @@
  * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
  * - .commit — SEND the draft — Apply, with a remote member.
  * - .discard — Put the applied answers back over the draft — Discard, with a remote member.
+ * - .setSort — Order by one field, or stop; `null` suspends.
+ * - .resumeSort — Resume the suspended sort.
+ * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
+ * - .setGroup — Group by a field, or stop.
+ * - .setSearch — The rows' free-text search, with the arrangement.
+ * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
+ * - .export — The whole question as JSON — the Query as applied.
+ * - .import — Take a question back in, exactly.
  * - .join — A source joins: it gets its handle.
  */
-import type { BoundControl, FilterSet } from './data-source-types.js';
+import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
-  answerOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, VIEW,
-  type Query, type ScopeQuery,
+  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, VIEW,
+  type Arrangement, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
-  answerIn, answersOf, copyField, copyScope, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome, scopeEntry,
-  setCameFrom, setReading,
+  answerIn, answersOf, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
+  scopeEntry, setCameFrom, setReading,
 } from './query-edits.js';
+import { readingsOf, type Where } from './where.js';
+import type { SortDirection, SortSpec } from './store.js';
 import type { FieldReading } from './filter-state.js';
 import { report } from './report.js';
 
@@ -72,7 +82,11 @@ export type QueryChange =
   | { kind: 'commit' }
   /** Each field is drawn its answer; then a scope's bars, or each control's pending. */
   | { kind: 'drawn'; fields: string[]; bars?: string; pending?: true }
-  | { kind: 'bars'; scope: string };
+  | { kind: 'bars'; scope: string }
+  /** The rows were re-arranged: page one, and a load. */
+  | { kind: 'arranged'; group: boolean }
+  /** A whole Query came in, over `was`; `before` are the fields answered before. Settles once drawn. */
+  | { kind: 'query'; was: Arrangement; before: string[] };
 
 /** What a source tells the context it joins. */
 export interface QueryMember {
@@ -83,12 +97,19 @@ export interface QueryMember {
   /** How it bound this control, if it did. */
   bindOf(el: BoundControl): MemberBind | undefined;
   /** What the context did: its follow-ups. Called at once, in join order. */
-  heard(change: QueryChange): void;
+  heard(change: QueryChange): void | Promise<void>;
   /** Does it know this field? */
   has(field: string): boolean;
+  /** Does this field keep its answer across Views? TRAP T-a-field-can-carry-over-views */
+  carriesOver(field: string): boolean;
+  /** A View's plain conditions as readings, by its field types. */
+  readingsOf(where: Where): Record<string, FieldReading>;
   /** The values its rows hold for these picks: a KEY maps to its value. TRAP T-a-value-can-be-an-object */
   raws(field: string, picked: readonly unknown[]): unknown[];
 }
+
+/** A change to the arrangement: what it names, and nothing else. */
+type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
 
 /** How a member bound a control. */
 export interface MemberBind {
@@ -126,8 +147,8 @@ export interface QueryLive {
 
 /** What a member holds of its context. */
 export interface QueryHandle {
-  /** The live Query and declarations. */
-  live(): QueryLive;
+  /** The live Query and declarations. Read only: every edit is the context's. */
+  live(): Readonly<QueryLive>;
   /** A bind id no other member has made. */
   mintId(): string;
   /** Does any member show rows in this scope? */
@@ -575,6 +596,126 @@ export class QueryContext {
     else if (at.scope) copyScope(this.#live.applied, this.#live.draft, at.scope);
     else this.#live.draft = structuredClone(this.#live.applied);
     this.#tell({ kind: 'drawn', fields: [...new Set([...before, ...this.#answered()])], pending: true });
+  }
+
+  /**
+   * Order by one field, or stop. Every re-ordering returns to page 1.
+   * `field: null` SUSPENDS — the column moves to `sortSuspended`, so one more
+   * click resumes it. `clearSort()` is how a caller forgets.
+   * TRAP T-a-suspended-sort-is-one-owners-job
+   */
+  setSort(field: string | null, direction: SortDirection = 'asc', scope?: string): void {
+    if (field) this.#arrange({ sort: [{ field, direction }], sortSuspended: undefined }, scope);
+    else {
+      // A second suspend in a row must not overwrite the memory with nothing.
+      const live = arrangementOf(this.#live.applied).sort[0];
+      this.#arrange({ sort: [], ...(live ? { sortSuspended: live } : {}) }, scope);
+    }
+    this.#tell({ kind: 'arranged', group: false });
+  }
+
+  /** Resume the suspended sort. No-op when there is none. */
+  resumeSort(): void {
+    const held = arrangementOf(this.#live.applied).sortSuspended;
+    if (!held) return;
+    this.setSort(held.field, held.direction ?? 'asc');
+  }
+
+  /** Forget the sort entirely — the gesture that is NOT a suspend. */
+  clearSort(): void {
+    this.#arrange({ sort: [], sortSuspended: undefined });
+    this.#tell({ kind: 'arranged', group: false });
+  }
+
+  /** Group by a field, or stop. A grid draws it; the Query holds it. */
+  setGroup(field: string | null, scope?: string): void {
+    this.#arrange({ group: field }, scope);
+    this.#tell({ kind: 'arranged', group: true });
+  }
+
+  /** The rows' free-text search, with the arrangement. */
+  setSearch(term: string, scope?: string): void {
+    this.#arrange({ search: term }, scope);
+    this.#tell({ kind: 'arranged', group: false });
+  }
+
+  /**
+   * Restore a whole Query — a reload, a trip away and back, a View's own
+   * defaults. Resolves once every member has drawn it.
+   *
+   * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
+   * the chips it has, and every answer is a clean slate.
+   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
+   */
+  async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep' } = {}): Promise<void> {
+    if (query?.v !== 1 || typeof query.scopes !== 'object') {
+      report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
+      return;
+    }
+    const next = definitionOf(query, options.holds === 'keep', this.#live.draft, {
+      defaults: this.#live.defaults,
+      readingsOf: (where) => this.#readingsOf(where),
+      carriesOver: (f) => this.#knows(f)?.carriesOver(f) ?? false,
+    });
+    const was = arrangementOf(this.#live.applied);
+    const before = this.#answered();
+    this.#live.applied = next;
+    this.#live.draft = this.remote ? structuredClone(next) : next;
+    rehome(this.#live.draft);
+    await Promise.all([...this.#members].map((m) => m.heard({ kind: 'query', was, before })));
+  }
+
+  /** The whole question as JSON — the Query as applied, with its arrangement.
+   *  TRAP T-a-page-goes-out-as-json */
+  export(): QueryState {
+    const query = structuredClone(this.#live.applied);
+    // It names its arrangement, none too: a View saved from it puts back the rows as they were.
+    if (!arrangementOf(query).scope) query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), sort: [] };
+    return { v: 1, query };
+  }
+
+  /** Take a question back in, exactly. */
+  async import(state: QueryState): Promise<void> {
+    if (state?.v !== 1) {
+      report({ code: 'unknown-state', message: 'import: not a v1 query state, so nothing was taken in.' });
+      return;
+    }
+    await this.setQuery(state.query);
+  }
+
+  /** Write the arrangement into the Query, in BOTH copies: the scope given,
+   *  else the one that arranges now, else the View; every other scope loses
+   *  it. It compiles nothing. 366 step 8 · TRAP T-group-and-sort-are-component-scope */
+  #arrange(next: ArrangeEdit, scope?: string): void {
+    const now = arrangementOf(this.#live.applied);
+    const at = scope ?? now.scope ?? VIEW;
+    const sort = next.sort ?? now.sort;
+    const group = 'group' in next ? next.group ?? null : now.group;
+    const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
+    const search = next.search ?? now.search;
+    for (const query of new Set([this.#live.applied, this.#live.draft])) {
+      for (const s of Object.values(query.scopes)) {
+        delete s.sort;
+        delete s.group;
+        delete s.sortSuspended;
+        delete s.search;
+      }
+      if (!sort.length && group == null && !sortSuspended && !search) continue;
+      const s = scopeEntry(query, at);
+      s.sort = sort.map((by) => ({ ...by }));
+      if (group != null) s.group = group;
+      if (sortSuspended) s.sortSuspended = { ...sortSuspended };
+      if (search) s.search = search;
+    }
+  }
+
+  /** A View's plain conditions as readings: each field by the member that knows it. */
+  #readingsOf(where: Where): Record<string, FieldReading> {
+    const out: Record<string, FieldReading> = {};
+    for (const [field, condition] of Object.entries(where)) {
+      Object.assign(out, this.#knows(field)?.readingsOf({ [field]: condition }) ?? readingsOf({ [field]: condition }));
+    }
+    return out;
   }
 
   /** Every field the draft answers. */
