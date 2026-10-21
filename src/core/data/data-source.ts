@@ -368,7 +368,9 @@ export class DataSource extends EventTarget {
        TRAP T-one-walk-counts-and-limits-in-order */
     const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], scope).flatMap((e) => (e.held ? [e.id] : []));
     const fields: HeldFilter[] = held.map((f) => {
-      const reading = q.readings[f];
+      // Held above, its state is its own kept answer. D2 A
+      const kept = q.superseded?.[f];
+      const reading = q.readings[f] ?? (kept && Object.keys(kept).length ? kept : undefined);
       const down = scope === VIEW ? this.#sendTo(f) : undefined;
       const from = cameFrom(this.#draft, f);
       return {
@@ -645,10 +647,10 @@ export class DataSource extends EventTarget {
     this.#binding.supersedeColumns(viewHeldReadings(this.#applied));
   }
 
-  /** Tell each grid and each bar below the View what the View holds now; a bar whose set changed may report again. */
-  #syncSuperseded(report: boolean): void {
+  /** Tell each grid and each bar below the View what the View holds now. */
+  #syncSuperseded(): void {
     this.#syncColumns();
-    this.#binding.supersede(this.#context.scope(VIEW), report);
+    this.#binding.supersede(this.#context.scope(VIEW));
   }
 
   /* ── What a scope MAY hold ─────────────────────────────────────────────
@@ -815,7 +817,7 @@ export class DataSource extends EventTarget {
       case 'hold':
         if (change.moved.length) this.#recompose();
         for (const field of change.moved) this.#draw(field);
-        if (change.scope === VIEW) this.#syncSuperseded(true);
+        if (change.scope === VIEW) this.#syncSuperseded();
         this.#binding.drawScopesSoon();
         return;
       case 'move':
@@ -862,7 +864,7 @@ export class DataSource extends EventTarget {
     for (const field of new Set([...before, ...this.selectedFields])) this.#draw(field);
     await this.#binding.drawEveryBar();
     // Drawn, never reported: the Query is already the answer.
-    this.#syncSuperseded(false);
+    this.#syncSuperseded();
     this.#binding.drawScopesSoon();
   }
 

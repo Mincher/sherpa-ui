@@ -67,7 +67,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-store-has-one-cache](TRAPS.md#t-a-store-has-one-cache) — data-source, store, store-cache
 - [T-a-store-keeps-its-history](TRAPS.md#t-a-store-keeps-its-history) — base-store, data, live-stores, spoof-remote, store, store-history
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
-- [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, source-binding
+- [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, query, query-context, query-edits, source-binding
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — data-source
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types, query, query-context
 - [T-a-threshold-is-a-fact-of-the-field](TRAPS.md#t-a-threshold-is-a-fact-of-the-field) — aggregate, data-source-types, filter-state, threshold, where

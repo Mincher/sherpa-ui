@@ -119,6 +119,13 @@ export interface QueryChangeDetail {
   scopes: string[];
 }
 
+/** A scope keeps no answer for this field now. */
+function forget(scope: ScopeQuery, field: string): void {
+  if (!scope.superseded?.[field]) return;
+  Reflect.deleteProperty(scope.superseded, field);
+  if (!Object.keys(scope.superseded).length) delete scope.superseded;
+}
+
 /** How a member bound a control. */
 export interface MemberBind {
   id: string;
@@ -511,15 +518,45 @@ export class QueryContext extends EventTarget {
     for (const field of before) {
       if (!next.includes(field) && !elsewhere(field) && readingOf(this.#live.draft, field)) this.#select(field, []);
     }
-    const was = homes(this.#live.draft);
-    scopeEntry(this.#live.draft, name).holds = next;
-    rehome(this.#live.draft);
+    const draft = this.#live.draft;
+    const entry = scopeEntry(draft, name);
+    const added = next.filter((f) => !before.includes(f));
+    const dropped = before.filter((f) => !next.includes(f));
+    /* THE VIEW TAKES a field a component scope holds: that scope keeps its own
+       answer, not in force — `{}` for none. One that lets a field go keeps none.
+       Will, D2 A. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+    if (name === VIEW) {
+      for (const [id, s] of eachScope(draft)) {
+        if (id === VIEW) continue;
+        for (const f of added) if (s.holds.includes(f)) (s.superseded ??= {})[f] = copyReading(s.readings[f] ?? {});
+      }
+    } else for (const f of dropped) forget(entry, f);
+    const was = homes(draft);
+    entry.holds = next;
+    rehome(draft);
+    // …and LETS GO: its home below gets back the answer it kept, or clears.
+    if (name === VIEW) for (const f of dropped) this.#giveBack(f);
     /* RAISING CARRIES THE ANSWER, and lowering brings it back: an answer that
        moved scope narrows from where it lives now, at once, and is drawn there.
        TRAP T-up-is-open-down-is-closed */
-    const now = homes(this.#live.draft);
+    const now = homes(draft);
     const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
     this.#tell({ kind: 'hold', scope: name, moved });
+  }
+
+  /** The View let go of a field: its home below gets back the answer it kept
+   *  — or clears, for `{}` — and no scope keeps one for it now. */
+  #giveBack(field: string): void {
+    const draft = this.#live.draft;
+    const home = holderOf(draft, field);
+    for (const [id, s] of eachScope(draft)) {
+      const kept = s.superseded?.[field];
+      if (!kept) continue;
+      forget(s, field);
+      if (id !== home) continue;
+      if (Object.keys(kept).length) s.readings[field] = kept;
+      else Reflect.deleteProperty(s.readings, field);
+    }
   }
 
   /**
@@ -602,11 +639,12 @@ export class QueryContext extends EventTarget {
     }
     // Held BELOW first, so the answer moves there and is not cleared.
     if (!part && !this.holds(to, field)) this.hold(to, [...this.scope(to), field]);
+    /* THE VIEW'S ANSWER WINS, whole — its mode and its rows: what a scope kept
+       from before the field went up is dropped. TRAP T-send-to-view-filters */
+    for (const [, s] of eachScope(this.#live.draft)) forget(s, field);
     this.hold(VIEW, this.scope(VIEW).filter((f) => f !== field));
     // A chart's own scope takes the picks; the View's answer went with its hold.
     if (part) this.#write(to, field, answer?.picked?.length ? { picked: [...answer.picked] } : undefined);
-    /* THE VIEW'S ANSWER WINS, whole — its mode and its rows. TRAP T-send-to-view-filters */
-    else if (answer) this.#select(field, answer.picked ?? [], answer);
     this.#setCameFrom(field, undefined);
     this.commit();
     this.#tell({ kind: 'bars', scope: VIEW });

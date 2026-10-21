@@ -240,12 +240,10 @@ export class SourceBinding {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
-  supersede(above: readonly string[], report: boolean): void {
+  supersede(above: readonly string[]): void {
     for (const [el, { scope }] of this.#bound) {
       if (typeof scope !== 'string' || scope === VIEW || !el.supersede) continue;
-      const was = (el.superseded ?? []).join();
       el.supersede(above, this.#host.scopeLabel(VIEW));
-      if (report && (el.superseded ?? []).join() !== was) el.report?.();
     }
   }
 

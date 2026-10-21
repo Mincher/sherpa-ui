@@ -29,7 +29,7 @@
  */
 import { answerOf, arrangementOf, arranging, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
-import type { Where } from './where.js';
+import type { Condition, Where } from './where.js';
 import { report } from './report.js';
 
 /** One scope's entry, made when first written. */
@@ -42,8 +42,9 @@ export function prune(query: Query): void {
   for (const [id, scope] of Object.entries(query.scopes)) {
     // A scope switched off is kept: its Switch is still OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off
     // …and one that arranges the rows keeps its sort. 366 step 8
+    // …and one that keeps an answer the View holds over it. D2 A
     if (!scope.holds.length && !Object.keys(scope.readings).length && !scope.suspended
-      && !arranging(scope)) {
+      && !arranging(scope) && !scope.superseded) {
       Reflect.deleteProperty(query.scopes, id);
     }
   }
@@ -215,7 +216,7 @@ export interface DefinitionFacts {
 }
 
 /** The keys a scope keeps, beside its readings. */
-const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search']);
+const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search', 'superseded']);
 
 /**
  * A definition as a whole Query; its sort, group and search stay in it, in
@@ -231,12 +232,15 @@ export function definitionOf(
   const strays = new Set<string>();
   for (const [id, scope] of Object.entries(copy ? structuredClone(given.scopes) : given.scopes)) {
     // A View says `where`; a whole Query, `readings`. TRAP T-one-way-to-write-a-condition
-    const { where, readings, ...all } = scope as ViewScope
-      & Partial<Pick<ScopeQuery, 'readings'>>;
+    const { where, readings, superseded, ...all } = scope as ViewScope & Partial<Pick<ScopeQuery, 'readings'>>;
     const rest = Object.fromEntries(Object.entries(all).filter(([key]) => SCOPE_KEYS.has(key) || !strays.add(key))) as typeof all;
     if (rest.suspended) rest.suspended = { fields: [...(rest.suspended.fields ?? [])] };
+    // Kept answers: a whole Query's as they are; a View's in the plain form. `{}` is none.
+    const kept = superseded && Object.fromEntries(Object.entries(superseded).map(([f, said]) => [f,
+      readings || !Object.keys(said).length ? { ...said as FieldReading } : facts.readingsOf({ [f]: said as Condition })[f] ?? {}]));
     next.scopes[id] = {
       ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? facts.readingsOf(where) : {}) },
+      ...(kept && Object.keys(kept).length ? { superseded: kept } : {}),
     };
   }
   /* A VIEW that names NO arrangement keeps the one on screen; one that names
@@ -290,6 +294,22 @@ export function definitionOf(
       if (!scope.holds.includes(field)) scope.holds = [...scope.holds, field];
     }
   }
+  /* A View that holds a field a kept scope holds TAKES it: that scope keeps its
+     own answer, as a raise does; one that lets it go gives the kept one back.
+     Will, D2 A. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+  const viewHolds = next.scopes[VIEW]?.holds ?? [];
+  for (const [id, scope] of eachScope(next)) {
+    if (id === VIEW || given.scopes[id]?.superseded) continue;
+    const was = base.scopes[id];
+    for (const field of scope.holds) {
+      const kept = was?.superseded?.[field];
+      if (viewHolds.includes(field)) {
+        (scope.superseded ??= {})[field] = { ...(kept ?? was?.readings[field] ?? {}) };
+      } else if (kept && Object.keys(kept).length && !scope.readings[field]) {
+        scope.readings[field] = { ...kept };
+      }
+    }
+  }
   return next;
 }
 
@@ -332,7 +352,7 @@ function arrangementIn(scope: ScopeQuery | undefined): Pick<ScopeQuery, 'sort' |
 
 /** One scope with no filters on: its chips and arrangement stay. */
 function unfiltered(scope: ScopeQuery): ScopeQuery {
-  const { suspended: _off, ...rest } = scope;
+  const { suspended: _off, superseded: _kept, ...rest } = scope;
   return { ...rest, readings: {} };
 }
 

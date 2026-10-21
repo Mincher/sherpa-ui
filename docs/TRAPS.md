@@ -1622,9 +1622,11 @@ GO: the field is held below first, so its answer moves there and is not
 cleared. EVERY OTHER scope below lets go of it before that (168): a scope the
 field came up from kept its place, so the field showed there again as it
 landed elsewhere, and the answer could re-home to either. A filter is in ONE
-scope at a time. Then the answer is written AGAIN, whole: the bar below is freed as
-the View lets go, and reports the answer it kept from before the field went
-up — an old one, which put a filter sent down in Advanced back to Simple.
+scope at a time. What a scope KEPT from before the field went up is dropped
+first, so the View's answer moves down whole — its mode and its rows. (The bar
+below used to report its old one as it was freed, which put a filter sent
+down in Advanced back to Simple; the kept answer is the Query's now, 366
+step 19.)
 
 **ONE Send to** (Will, TODO 346: *"We only need 1 'Send to ComponentName'
 option … No need to cater for all possible routing"*). The SOURCE names it
@@ -7918,7 +7920,16 @@ Removing it throws away what the reader picked. This is the same rule as
 suspend-vs-clear everywhere else in the system: "off" keeps the value, "gone"
 deletes it. Collapsing the two has already cost a user their typed filter once.
 
-Three parts make it work:
+**Its answer is kept in the Query** (Will, D2 A; 366 step 19). When the View
+takes a field a component scope holds, the answer still goes UP with it, and
+the scope keeps its own in `ScopeQuery.superseded` — not in force, `{}` for
+none — and `describe()` draws the chip that state. When the View lets go, the
+scope gets it back, or the field clears for `{}`; a send down drops it, so the
+View's answer wins. No bar re-reports to bring it back, and a page with no bar
+bound gets it back the same. A saved filter keeps none; a View's JSON writes it
+in the plain form.
+
+Three parts make the chip work:
 
 - `values` SKIPS a superseded chip, so it stops narrowing on top of the view
 - `pickedValues` still reports it, so the pick survives the whole round trip
@@ -7936,6 +7947,10 @@ went on filtering. Will, TODO 167.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/source-binding.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query.ts`
+- Site: `test/unit/a-release-gives-back-the-kept-answer.test.mjs`
 
 ### T-a-ruled-out-value-is-greyed
 

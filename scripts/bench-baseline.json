@@ -94,8 +94,8 @@
     "counts": 0,
     "distinct": 0,
     "rows": 429,
-    "compiles": 4,
-    "clones": 11,
+    "compiles": 1,
+    "clones": 12,
     "scans": 4
   },
   "records/clear": {
@@ -292,7 +292,7 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 5,
+    "compiles": 1,
     "clones": 11,
     "scans": 2
   },
@@ -490,7 +490,7 @@
     "counts": 0,
     "distinct": 0,
     "rows": 0,
-    "compiles": 5,
+    "compiles": 1,
     "clones": 11,
     "scans": 2
   },

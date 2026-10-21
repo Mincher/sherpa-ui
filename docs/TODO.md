@@ -1929,7 +1929,15 @@ heard; sources fire neither `scope-change` nor `selection-change`. Step 18:
 one-field doors — `setReading` (for `select` and `write`), `suspend` (for
 both suspends), `take` (for `request`), `reset` and `batch`; an answer
 already in force is a no-op. A control may send a `QueryRequest`; a bar's
-Apply then commits its own field only.
+Apply then commits its own field only. Step 19: a superseded chip's own
+answer is the Query's (`ScopeQuery.superseded`, D2 A): kept when the View
+takes the field, given back when it lets go; no bar re-reports it.
+
+**❓ Before step 20 — TODO 320's overlap.** Steps 20–22 (the panel and the bar
+send one request per act; a bound bar paints from its live slice) do 320's
+work, and 320 waits for Will's test run and for 302 and 311. A: 366 does it now,
+and 320 closes with 366 (the plan's pick). B: 20–22 wait for that run; 23–26
+go first. Meanwhile 23–25 go ahead: they need none of 20–22.
 
 ---
 

@@ -536,9 +536,12 @@ export function viewQueryOf(source: ViewSource): QueryDefaults {
   // In the plain form, by the source's field types. TRAP T-one-way-to-write-a-condition
   const plain = (readings: Record<string, FieldReading>): Where => source.whereOf?.(readings) ?? whereOf(readings);
   const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, { readings, ...rest }] of Object.entries(source.query.export().query.scopes)) {
+  for (const [id, { readings, superseded, ...rest }] of Object.entries(source.query.export().query.scopes)) {
     const where = plain(readings);
-    scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}) };
+    // A kept answer too, field by field: `{}` stays none. D2 A
+    const kept = superseded && Object.fromEntries(Object.entries(superseded)
+      .map(([f, r]) => [f, Object.keys(r).length ? plain({ [f]: r })[f] ?? {} : {}]));
+    scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}), ...(kept ? { superseded: kept } : {}) };
   }
   return { v: 1, scopes };
 }

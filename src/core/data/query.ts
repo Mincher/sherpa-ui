@@ -76,6 +76,10 @@ export interface ScopeQuery {
   sortSuspended?: SortSpec;
   /** The rows' free-text search, with the arrangement. */
   search?: string;
+  /** A component scope's OWN answer to each field the View holds over it:
+   *  kept, not in force, and given back when the View lets go — `{}` for none.
+   *  Will, D2 A. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+  superseded?: Record<string, FieldReading>;
 }
 
 /** How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches. */
@@ -153,9 +157,11 @@ export function isSavedFilter(v: unknown): v is SavedFilter {
 
 /** One scope as a View writes it: each field's condition in the plain form.
  *  TRAP T-one-way-to-write-a-condition */
-export interface ViewScope extends Partial<Omit<ScopeQuery, 'readings'>> {
+export interface ViewScope extends Partial<Omit<ScopeQuery, 'readings' | 'superseded'>> {
   /** `{ openTickets: { gt: 0 } }` — numbers as numbers. */
   where?: Where;
+  /** Its kept answers: a View's in the plain form, a whole Query's as readings; `{}` is none. */
+  superseded?: Where | Record<string, FieldReading>;
 }
 
 /** What compiling needs to know that the Query does not say. */
