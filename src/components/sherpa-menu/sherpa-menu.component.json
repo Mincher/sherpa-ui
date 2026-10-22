@@ -234,6 +234,29 @@
             },
             {
               "el": "template",
+              "class": "menu-none-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row qf-none",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "radio",
+                        "value": ""
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
               "class": "menu-section-tpl",
               "children": [
                 {
@@ -337,11 +360,6 @@
                   "el": "sherpa-button",
                   "class": "today",
                   "part": "today"
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "clear",
-                  "part": "clear"
                 },
                 {
                   "el": "sherpa-button",
@@ -787,6 +805,29 @@
             },
             {
               "el": "template",
+              "class": "menu-none-tpl",
+              "children": [
+                {
+                  "el": "label",
+                  "class": "menu-row qf-none",
+                  "children": [
+                    {
+                      "el": "input",
+                      "attrs": {
+                        "type": "radio",
+                        "value": ""
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
               "class": "menu-section-tpl",
               "children": [
                 {
@@ -884,11 +925,6 @@
                   "el": "sherpa-button",
                   "class": "today",
                   "part": "today"
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "clear",
-                  "part": "clear"
                 },
                 {
                   "el": "sherpa-button",
@@ -1032,7 +1068,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today there instead — see the footer)"
+      "description": "a NUMBER shows Reset in the footer; no other menu has a Clear (TODO 394) (a CALENDAR menu shows Today there instead — see the footer)"
     },
     {
       "$type": "prop",
@@ -1166,6 +1202,15 @@
       "declared": true,
       "kind": "style",
       "description": "a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp."
+    },
+    {
+      "$type": "prop",
+      "name": "data-none",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a SINGLE list leads with a None row: its nothing (Will, TODO 394)"
     },
     {
       "$type": "prop",
@@ -1363,11 +1408,6 @@
       "$type": "state",
       "name": "drill",
       "selector": ":host([data-drill])"
-    },
-    {
-      "$type": "state",
-      "name": "clearable",
-      "selector": ":host([data-clearable])"
     },
     {
       "$type": "state",

@@ -231,14 +231,11 @@ test('a calendar heads its own two-row header; the footer buttons are default si
               w: Math.round(stepper.getBoundingClientRect().width) }
           : null,
         ariaLabel: (m.shadowRoot.querySelector('.menu') as HTMLElement).getAttribute('aria-label'),
-        // The footer's LEFT position. Today is the calendar's; Clear leads the
-        // row on any menu that has it.
+        // The footer's LEFT position is the calendar's Today.
         today: btn('today'),
         discard: btn('discard'), apply: btn('apply'),
-        clear: btn('clear'),
-        // Clear leads, Apply trails — the spacer splits them.
-        clearX: Math.round((m.shadowRoot.querySelector('.clear') as HTMLElement).getBoundingClientRect().left),
-        applyX: Math.round((m.shadowRoot.querySelector('.apply') as HTMLElement).getBoundingClientRect().left),
+        // No footer has a Clear. TODO 394
+        clearGone: !m.shadowRoot.querySelector('.clear'),
       };
       m.hide();
       return out;
@@ -289,16 +286,9 @@ test('a calendar heads its own two-row header; the footer buttons are default si
   expect(r.calendar.today.size).toBeNull();
   expect(r.calendar.today.look).toBeNull();
 
-  // CLEAR IS A FOOTER BUTTON — a labelled control in the action bar, so it is
-  // the DEFAULT look and size, not the transparent icon it was in the header.
-  // It LEADS the row; the commit pair trails behind the spacer.
-  for (const shape of [r.list, r.calendar]) {
-    expect(shape.clear.shown).toBe(true);
-    expect(shape.clear.h).toBe(32);
-    expect(shape.clear.size).toBeNull();
-    expect(shape.clear.look).toBeNull();
-    expect(shape.clearX).toBeLessThan(shape.applyX);
-  }
+  // NO CLEAR in any footer: a list says "nothing" with Select all or None, a
+  // date with its chip off. Will, TODO 394
+  for (const shape of [r.list, r.calendar]) expect(shape.clearGone).toBe(true);
 });
 
 test('a cell fills its grid track in every view — nothing clips it', async ({ page }) => {
@@ -453,8 +443,9 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
     const cal = await open('<sherpa-menu id="m" data-type="calendar" data-commit data-clearable>' +
       '<sherpa-calendar data-embedded></sherpa-calendar></sherpa-menu>');
     const calendar = {
-      today: box(cal.m, 'today'), clear: box(cal.m, 'clear'),
+      today: box(cal.m, 'today'),
       discard: box(cal.m, 'discard'), apply: box(cal.m, 'apply'),
+      clearGone: !cal.m.shadowRoot.querySelector('.clear'),
     };
 
     // Drive it from somewhere far away — a year view with no date picked.
@@ -470,7 +461,7 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
 
     const list = await open('<sherpa-menu id="m" data-heading="Plan" data-commit data-clearable>' +
       '<label><input type="checkbox" value="p"/>Pro</label></sherpa-menu>');
-    const listFooter = { today: box(list.m, 'today'), clear: box(list.m, 'clear') };
+    const listFooter = { today: box(list.m, 'today'), clearGone: !list.m.shadowRoot.querySelector('.clear') };
 
     const iso = (() => {
       const d = new Date();
@@ -481,13 +472,9 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   });
 
   // Figma's two footers differ in exactly one position: the Calendar's `left`
-  // slot holds "Today", the List's is empty. Clear leads the same row, after
-  // Today, so a calendar shows both.
+  // slot holds "Today", the List's is empty. No footer has a Clear. TODO 394
   expect(r.calendar.today.shown).toBe(true);
-  expect(r.calendar.clear.shown).toBe(true);
-  // …on ONE row now, Today first.
-  expect(r.calendar.clear.y).toBe(r.calendar.today.y);
-  expect(r.calendar.today.x).toBeLessThan(r.calendar.clear.x);
+  expect(r.calendar.clearGone).toBe(true);
 
   // Today is on the LEFT, away from the pair a thumb reaches for.
   expect(r.calendar.today.x).toBeLessThan(r.calendar.discard.x);
@@ -507,13 +494,12 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   // It stays OPEN — Today picks a date, it does not commit one. Apply does that.
   expect(r.stillOpen).toBe(true);
 
-  // A LIST menu leaves the footer's Today slot empty, as Figma has it, and a
-  // clearable one leads the same row with Clear.
+  // A LIST menu leaves the footer's Today slot empty, as Figma has it.
   expect(r.listFooter.today.shown).toBe(false);
-  expect(r.listFooter.clear.shown).toBe(true);
+  expect(r.listFooter.clearGone).toBe(true);
 });
 
-test('the footer holds all five: Today, Clear, Remove, then the committing pair', async ({ page }) => {
+test('the footer holds all four: Today, Remove, then the committing pair', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
@@ -565,7 +551,7 @@ test('the footer holds all five: Today, Clear, Remove, then the committing pair'
       };
     };
     const before = {
-      clear: box('clear'), remove: box('remove'),
+      clearGone: !menu.shadowRoot.querySelector('.clear'), remove: box('remove'),
       today: box('today'), discard: box('discard'), apply: box('apply'),
       card: rect(card), footer: rect(footerRow), grid: rect(grid),
       chips: [...el.shadowRoot.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']),
@@ -583,35 +569,30 @@ test('the footer holds all five: Today, Clear, Remove, then the committing pair'
     };
   });
 
-  // All five are present on a COMMITTING, removable date chip's menu.
-  for (const b of [r.before.clear, r.before.remove, r.before.today, r.before.discard, r.before.apply]) {
+  // All four are present on a COMMITTING, removable date chip's menu; no Clear.
+  for (const b of [r.before.remove, r.before.today, r.before.discard, r.before.apply]) {
     expect(b.shown).toBe(true);
   }
+  expect(r.before.clearGone).toBe(true);
 
-  // ALL FIVE ARE THE FOOTER'S — the header holds the heading and the stepper
+  // ALL FOUR ARE THE FOOTER'S — the header holds the heading and the stepper
   // and nothing else.
-  for (const b of [r.before.clear, r.before.remove, r.before.today,
-                   r.before.discard, r.before.apply]) {
+  for (const b of [r.before.remove, r.before.today, r.before.discard, r.before.apply]) {
     expect(b.inHeader).toBe(false);
   }
 
-  // ONE row, in order: Today, Clear, Remove — the reversible action before the
-  // destructive one — then the committing pair behind the spacer.
-  for (const b of [r.before.clear, r.before.remove, r.before.discard, r.before.apply]) {
+  // ONE row, in order: Today, Remove, then the committing pair behind the spacer.
+  for (const b of [r.before.remove, r.before.discard, r.before.apply]) {
     expect(b.y).toBe(r.before.today.y);
   }
-  expect(r.before.today.x).toBeLessThan(r.before.clear.x);
-  expect(r.before.clear.x).toBeLessThan(r.before.remove.x);
+  expect(r.before.today.x).toBeLessThan(r.before.remove.x);
   expect(r.before.remove.x).toBeLessThan(r.before.discard.x);
   expect(r.before.discard.x).toBeLessThan(r.before.apply.x);
 
   // Labelled, default size and DEFAULT look — an action-bar control, not the
   // transparent icon each was while it lived in the header.
-  for (const b of [r.before.clear, r.before.remove]) {
-    expect(b.size).toBeNull();
-    expect(b.look).toBeNull();
-  }
-  expect(r.before.clear.label).toBe('Clear');
+  expect(r.before.remove.size).toBeNull();
+  expect(r.before.remove.look).toBeNull();
   expect(r.before.remove.label).toBe('Remove');
 
   // THE CARD STILL HOLDS ITS FOOTER. A calendar card hugs its content, and
@@ -679,7 +660,7 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Discard/
         commits: plain.hasAttribute('data-commit'),
         clearable: plain.hasAttribute('data-clearable'),
         footer: shown(plain, '.footer'),
-        clear: shown(plain, '.clear'),
+        clearGone: !plain.shadowRoot!.querySelector('.clear'),
         today: shown(plain, '.today'),
         remove: shown(plain, '.remove'),
         discard: shown(plain, '.discard'),
@@ -702,11 +683,11 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Discard/
   expect(r.date.discard).toBe(false);
   expect(r.date.apply).toBe(false);
 
-  // A non-persistent chip is CLEARABLE, and Clear lives in the row now, so the
-  // row is up holding Clear alone — nothing else in it.
+  // A non-persistent chip is CLEARABLE, but no footer has a Clear (TODO 394):
+  // a list chip clears through its None or All row, so its footer is empty.
   expect(r.plain.clearable).toBe(true);
-  expect(r.plain.footer).toBe(true);
-  expect(r.plain.clear).toBe(true);
+  expect(r.plain.footer).toBe(false);
+  expect(r.plain.clearGone).toBe(true);
   for (const s of [r.plain.today, r.plain.remove, r.plain.discard, r.plain.apply]) {
     expect(s).toBe(false);
   }

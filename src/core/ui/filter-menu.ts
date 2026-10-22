@@ -108,6 +108,8 @@ export function menuFor(
   if (opts.bounds) menu.setAttribute('data-bounds', opts.bounds);
   if (opts.inline) menu.setAttribute('data-inline', '');
   if (def.selectAll === false) menu.setAttribute('data-no-select-all', '');
+  // A single LIST leads with None, its "nothing" — no Clear in any footer. Will, TODO 394
+  if (one && !hasOwnBody(kind) && !def.persistent) menu.setAttribute('data-none', '');
   if (def.loading) menu.setAttribute('data-loading', '');
 
   /* THE MENU OWNS ITS BODY. This says WHICH and hands over the numbers; the

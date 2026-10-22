@@ -77,12 +77,12 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zw | 393 | BUG — a `fetch: "server"` field does not light its grid heading: the source names the KEY its answer matched (`email in […]`), not the field. Found when Demos' Customer and Region became server fields | filters |
 | ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
 | ✅ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
-| ⬜ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
+| 🚧 | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
-| ⬜ | 0zze | 401 | LOOK — the scroll shadow moves from under the app header to an INNER shadow at the top of the layout grid while its content scrolls; an attribute on the layout grid turns it off (Will, 2026-10-22) | look |
+| ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1778,7 +1778,7 @@ not the key that stands in for it.
 `filterFields(filter, standsFor)` names the field it stands for. On :4200 the
 grid now hears `customer`, not `email`.
 
-### `[ ]` ⬜ 394 — FILTERS: no Clear button in a menu footer
+### `[ ]` 🚧 394 — FILTERS: no Clear button in a menu footer
 
 Will, 2026-10-22: *"No more clear buttons in footers!"* Each menu kind has
 another way to say "nothing":
@@ -1787,6 +1787,13 @@ another way to say "nothing":
   (unless the definition says otherwise). Off is the empty state.
 - **Single-select:** a "None" row at the top of the values.
 
+**🚧 First half done 2026-10-22.** No footer has a Clear (the class, its rules and
+its listener are gone; a typed number keeps its Reset). A single LIST chip that
+is not persistent gets `data-none`: its menu leads with a None row in the same
+radio group, ticked while nothing else is; picking it answers nothing. A
+persistent chip (the View selector) has no None. Tests: `reforged-menu` (None),
+`reforged-menu-calendar` (four footer buttons, no Clear). Still to do: the date
+half, below.
 
 **Will, 2026-10-22, on the date half:** *"As a default date is selected then the
 filter chips value label should be populated with that date. Even if the date
@@ -1834,13 +1841,43 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 401 — LOOK: the scroll shadow is an inner shadow at the top of the layout grid
+### `[ ]` ⬜ 401 — LOOK: a scroll shadow for any scroll box (investigate)
 
 Will, 2026-10-22: *"We show a drop shadow under the app header when it's scrolled
 under but instead this should be an inner shadow at the top of the content area
 (layout-grid) when it's content scrolls. This should be configurable, with an
 attribute, on the layout grid component so that we can override it when we don't
 need it."*
+
+Will, 2026-10-22, later: *"I think this could be a utility class, that uses CSS
+scroll-state() conditions, that applies an inner-shadow on any side where the
+content has overflowed. If we add it as an attribute on sherpa-element (off by
+default) then any scrollable area can get the scroll under shadow effect. This
+means we get it for free on form scroll areas, data grids, navigation lists, menu
+lists and so on! Plan this in for investigation!"*
+
+**To find out first:**
+
+1. **Engines.** `@container scroll-state(scrollable: top)` (and `bottom`, `left`,
+   `right`) is the condition. Measured 10-01: scroll-state queries work in
+   Chromium only, not Firefox 155 or WebKit 26.6. Measure again. If still so: no
+   shadow there (the page is fine without it), or a second way for those two —
+   a scroll-driven animation (`animation-timeline: scroll(self)`), if they have it.
+2. **What draws it.** A query styles what is INSIDE the scroll box, and an inset
+   `box-shadow` on the box itself is painted under its content, so a card hides
+   it. Try a sticky `::before` / `::after` of the box (a pseudo-element can ask
+   its own element), one per side, above the content.
+3. **Which box.** The attribute is on the HOST, but the box that scrolls is often
+   inside the shadow root (the grid body, a menu's list, the nav list). So a
+   component marks its scroll box in its template (one shared class), and the
+   host attribute turns the shadow on. One shared sheet holds the rules.
+4. **Clashes.** Sticky grid headings, the grid's own row dividers, a menu's
+   rounded corners, a scroll box that is also a size container.
+5. **The name.** One attribute on every component, e.g. `data-scroll-shadow`;
+   the layout grid's replaces the app header's drop shadow.
+
+Then: a plan with the class, the attribute, the sheet and the first users
+(layout grid, data grid, menu list, nav, a form's scroll area).
 
 ### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
 

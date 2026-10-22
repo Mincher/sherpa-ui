@@ -165,8 +165,8 @@ test('an open heading menu survives a push, with its search and its draft', asyn
   expect(r).toEqual({ same: true, open: true, search: 'act', draft: ['active'], total: 20 });
 });
 
-/* A KEPT menu must not tick a cleared answer back: Clear, then Escape; and Remove. */
-for (const how of ['clear', 'remove'] as const) {
+/* A KEPT menu must not tick a cleared answer back: Remove. (No footer has a Clear: TODO 394.) */
+for (const how of ['remove'] as const) {
   test(`a heading's ${how} stays cleared when its kept menu closes`, async ({ page }) => {
     await page.evaluate(`(async () => {
       ${SETUP}
@@ -183,7 +183,6 @@ for (const how of ['clear', 'remove'] as const) {
     })()`);
     const menu = page.locator('sherpa-data-grid .head-cell[data-field="status"] sherpa-menu');
     await menu.locator(`sherpa-button.${how}`).click();
-    if (how === 'clear') await page.keyboard.press('Escape');
     const r = await page.evaluate(`(async () => {
       await window.__settled();
       await new Promise((done) => setTimeout(done, 50));

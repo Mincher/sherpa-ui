@@ -285,5 +285,6 @@ test('a number menu has Reset: its value goes, and the chip goes off', async ({ 
   expect(r.heard.length).toBeGreaterThan(0);
   expect(r.heard.at(-1) ?? []).toEqual([]);
   // A list still has Clear.
-  expect(r.list).toEqual({ reset: false, clear: true });
+  // No footer has a Clear: a list says nothing with Select all or None. TODO 394
+  expect(r.list).toEqual({ reset: false, clear: false });
 });

@@ -436,18 +436,14 @@
    unmatched, one the filters before it rule out. TRAP T-a-filter-set-groups-or-chains */
 .rows ::slotted([data-removed]) { display: none; }
 
-/* Clear, Reset, Remove, Today — each opt-in, so a plain menu is unchanged. */
-.clear,
+/* Reset, Remove, Today — each opt-in, so a plain menu is unchanged. No Clear: each
+   kind says "nothing" another way — Select all, None, a date's chip off. TODO 394 */
 .reset,
 .today,
 .remove,
 .footer-spacer { display: none; }
 
-/* Separate attributes: only a removable chip has anything to remove, only a
-   menu holding a value has anything to clear. */
-:host([data-clearable]) .clear { display: inline-flex; }
-/* A NUMBER is reset, not cleared: the same button's place, other words. */
-:host([data-clearable][data-body="number"]) .clear { display: none; }
+/* Separate attributes: only a removable chip has anything to remove; a NUMBER resets. */
 :host([data-clearable][data-body="number"]) .reset { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
 
@@ -466,7 +462,7 @@
 
 /* The spacer splits the row: filter actions lead, the commit pair trails. It
    earns its place whenever BOTH sides are occupied. */
-:host(:is([data-type="calendar"], [data-body="date"], [data-clearable], [data-removable])) .footer-spacer {
+:host(:is([data-type="calendar"], [data-body="date"], [data-clearable][data-body="number"], [data-removable])) .footer-spacer {
   display: block;
   flex: 1 1 auto;
 }
@@ -559,14 +555,14 @@
  *
  * Six things can raise the row and any ONE of them earns it — a filled
  * `footer` slot, data-commit
- * (Cancel·Apply), data-removable, data-clearable, Type=calendar
+ * (Discard·Apply), data-removable, a number's Reset, Type=calendar
  * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], :state(has-footer))) .footer {
+:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable][data-body="number"], [data-removable], :state(has-footer))) .footer {
   display: block;
 }
 
-/* Cancel and Apply are the COMMIT pair, gated separately now that Today and
+/* Discard and Apply are the COMMIT pair, gated separately now that Today and
    Remove can raise the row on their own. */
 .discard, .apply { display: none; }
 :host([data-commit]) :is(.discard, .apply) { display: inline-flex; }

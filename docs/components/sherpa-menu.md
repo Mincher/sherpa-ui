@@ -34,7 +34,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-available` | text |  |  |
 | `data-body` | `number` `date` |  |  |
 | `data-bounds` | text |  |  |
-| `data-clearable` | boolean |  | show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today there instead — see the footer) |
+| `data-clearable` | boolean |  | a NUMBER shows Reset in the footer; no other menu has a Clear (TODO 394) (a CALENDAR menu shows Today there instead — see the footer) |
 | `data-commit` | boolean |  | show the Apply / Discard footer and DEFER changes until Apply |
 | `data-commit-fixed` | boolean |  |  |
 | `data-conditions` | text |  | FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set. |
@@ -50,6 +50,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-mode` | `simple` `advanced` |  | FILTER type only: simple \| advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes |
 | `data-mode-outside` | boolean |  |  |
 | `data-no-select-all` | boolean |  | a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp. |
+| `data-none` | boolean |  | a SINGLE list leads with a None row: its nothing (Will, TODO 394) |
 | `data-op` | text |  | FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many. |
 | `data-range` | boolean |  |  |
 | `data-readonly` | boolean |  | SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no Advanced button |
@@ -127,7 +128,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-number`, `body-range`, `clear`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
+`add-condition`, `apply`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 

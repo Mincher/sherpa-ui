@@ -97,6 +97,7 @@ export class SherpaMenu extends SherpaElement {
     'data-drill': { type: 'boolean', kind: 'style' },
     // A list of filters: no Select all. Read when the items stamp.
     'data-no-select-all': { type: 'boolean', kind: 'style' },
+    'data-none': { type: 'boolean', kind: 'behaviour' },
     // Its rows are still being read. TODO 345
     'data-loading': { type: 'boolean', kind: 'visibility' },
     /* FILTER type only — which ops its condition dropdown offers, and which
@@ -238,7 +239,6 @@ export class SherpaMenu extends SherpaElement {
       this.addEventListener(type, this.#onDraft);
       this.shadowRoot?.addEventListener(type, this.#onDraft);
     }
-    this.$('.clear')?.addEventListener('click', this.#onClear);
     // A number's Reset is its Clear, by another name.
     this.$('.reset')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
@@ -1311,6 +1311,7 @@ export class SherpaMenu extends SherpaElement {
       // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
       const wanted = valueSet(next);
       for (const input of inputs) input.checked = wanted.has(input.value);
+      this.#syncNone();
     }
     // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
     this.#syncDirty();
@@ -1461,6 +1462,10 @@ export class SherpaMenu extends SherpaElement {
        list of FILTERS asks for none. TRAP T-select-all-is-not-a-value */
     const all = !single && this.#items.length && !this.hasAttribute('data-no-select-all')
       ? this.clone('template.menu-all-tpl') : null;
+    // NONE is a single list's "nothing", in its radio group. Will, TODO 394
+    const none = single && this.#items.length && this.hasAttribute('data-none') ? this.clone('template.menu-none-tpl') : null;
+    const noneBox = none?.querySelector('input');
+    if (noneBox) noneBox.name = this.#group;
 
     /* ONE list, in the order the caller gave: a ruled-out value is still
        listed, never re-sorted. TRAP T-unavailable-value-sorts-below-a-divider */
@@ -1485,7 +1490,7 @@ export class SherpaMenu extends SherpaElement {
     }
     // SELECT ALL belongs to the section it heads, so it follows a leading heading.
     const head = rows[0]?.classList.contains('menu-section') ? [rows.shift()!] : [];
-    const out: Element[] = all ? [...head, all, ...rows] : [...head, ...rows];
+    const out: Element[] = [...head, ...(all ? [all] : []), ...(none ? [none] : []), ...rows];
     /* KEEP what the menu does not own. A caller's own rows — a Select-all, a
        Remove action — live here too, and a blanket replace ate them the moment
        this stamped late. Only the menu's own items are replaced. */
@@ -1974,6 +1979,7 @@ export class SherpaMenu extends SherpaElement {
   #syncSelectAll(): void {
     // A ticked value unticked may now be ruled out. TRAP T-a-ruled-out-value-is-greyed
     this.#markPresent();
+    this.#syncNone();
     const all = this.#allRow();
     if (!all) return;
     if (this.#tree) {
@@ -1986,6 +1992,12 @@ export class SherpaMenu extends SherpaElement {
     const on = boxes.filter((b) => b.checked).length;
     all.checked = boxes.length > 0 && on === boxes.length;
     all.indeterminate = on > 0 && on < boxes.length;
+  }
+
+  /** None is ticked while nothing else is. */
+  #syncNone(): void {
+    const none = this.#own<HTMLInputElement>('.qf-none input')[0];
+    if (none) none.checked = !this.#inputs().some((i) => i.checked);
   }
 
   /** Rows changed — re-read select-all, re-place next frame. */
@@ -2119,6 +2131,14 @@ export class SherpaMenu extends SherpaElement {
     // The SELECT-ALL row drives the others, so it reports for itself.
     if (input.closest('.qf-all')) {
       this.#onSelectAll(input);
+      return;
+    }
+    // NONE: its radio group has unticked the rest; the answer is nothing.
+    if (input.closest('.qf-none')) {
+      this.#tree?.set([]);
+      this.#drawTicks();
+      this.#markPresent();
+      this.#report();
       return;
     }
     if (this.#tree) {

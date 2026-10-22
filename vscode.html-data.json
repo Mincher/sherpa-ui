@@ -2081,7 +2081,7 @@
         },
         {
           "name": "data-clearable",
-          "description": "show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today there instead — see the footer)",
+          "description": "a NUMBER shows Reset in the footer; no other menu has a Clear (TODO 394) (a CALENDAR menu shows Today there instead — see the footer)",
           "valueSet": "v"
         },
         {
@@ -2153,6 +2153,11 @@
         {
           "name": "data-no-select-all",
           "description": "a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-none",
+          "description": "a SINGLE list leads with a None row: its nothing (Will, TODO 394)",
           "valueSet": "v"
         },
         {

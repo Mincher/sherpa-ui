@@ -29,6 +29,7 @@
     data-no-select-all  a multi-select list with no Select all row — the Filters
                     menu, where adding every filter at once is never the answer.
                     Read when the items stamp.
+    data-none       a SINGLE list leads with a None row: its nothing (Will, TODO 394)
     data-loading    its rows are on their way: a Loading row shows
     data-drill      the list has been replaced by a SUB-LIST — shows a back arrow
                     and a breadcrumb in the header. Drilling IN PLACE rather than
@@ -36,7 +37,7 @@
                     close on a pointer crossing a gap, and no way for two cards to
                     disagree about what is ticked.
     data-drill-from  names the list that was replaced — the breadcrumb's text
-    data-clearable  show a Clear button in the footer that empties the selection
+    data-clearable  a NUMBER shows Reset in the footer; no other menu has a Clear (TODO 394)
                     (a CALENDAR menu shows Today there instead — see the footer)
     data-type     list (default) | calendar | filter — the Menu set's `Type` axis.
                   `filter` is the FILTER MENU: a condition dropdown above the
@@ -197,6 +198,10 @@
            by, and renaming it would be a change nobody asked for. -->
       <label class="menu-row qf-all"><input type="checkbox" /><span class="menu-row-label">Select all</span></label>
     </template>
+    <!-- NONE leads a SINGLE menu: its "nothing", as Select all is a multiple's. Will, TODO 394 -->
+    <template class="menu-none-tpl">
+      <label class="menu-row qf-none"><input type="radio" value="" /><span class="menu-row-label">None</span></label>
+    </template>
     <!-- A SECTION heading, drawn where an item's `section` changes. -->
     <template class="menu-section-tpl">
       <p class="menu-row menu-section"></p>
@@ -240,13 +245,12 @@
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
-        Clear, Save and Remove act on the filter, not on the draft, so they lead the
+        Reset and Remove act on the filter, not on the draft, so they lead the
         row, separated from Discard·Apply by the spacer. Default look — NOT
         transparent — as Figma pins them. Remove's critical ink is re-stated in
         CSS: a bare [data-status] rule in tokens.css reaches the document only,
         never a shadow root.
       -->
-      <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <!-- A NUMBER has nothing to clear: its field and handles go back to where
            they started. Will, TODO 134. -->
       <sherpa-button class="reset" part="reset"
@@ -391,6 +395,10 @@
            by, and renaming it would be a change nobody asked for. -->
       <label class="menu-row qf-all"><input type="checkbox" /><span class="menu-row-label">Select all</span></label>
     </template>
+    <!-- NONE leads a SINGLE menu: its "nothing", as Select all is a multiple's. Will, TODO 394 -->
+    <template class="menu-none-tpl">
+      <label class="menu-row qf-none"><input type="radio" value="" /><span class="menu-row-label">None</span></label>
+    </template>
     <!-- A SECTION heading, drawn where an item's `section` changes. -->
     <template class="menu-section-tpl">
       <p class="menu-row menu-section"></p>
@@ -432,13 +440,12 @@
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
-        Clear, Save and Remove act on the filter, not on the draft, so they lead the
+        Reset and Remove act on the filter, not on the draft, so they lead the
         row, separated from Discard·Apply by the spacer. Default look — NOT
         transparent — as Figma pins them. Remove's critical ink is re-stated in
         CSS: a bare [data-status] rule in tokens.css reaches the document only,
         never a shadow root.
       -->
-      <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <!-- A NUMBER is reset, not cleared, in Advanced too: every number is a filter
            menu now. Will, TODO 134, 375. -->
       <sherpa-button class="reset" part="reset"

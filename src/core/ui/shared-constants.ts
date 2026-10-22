@@ -62,7 +62,7 @@ export const ORGANISE_ICONS = {
  *
  * TRAP T-non-value-rows-is-one-selector
  */
-export const NON_VALUE_ROWS = '.qf-all';
+export const NON_VALUE_ROWS = '.qf-all, .qf-none';
 
 
 /**

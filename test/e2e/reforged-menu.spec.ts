@@ -832,6 +832,41 @@ test('two single-select menus of the same heading keep their own radio groups', 
   expect(r).toEqual({ one: true, two: true, apart: true });
 });
 
+test('a single list with data-none leads with None, ticked while nothing else is (TODO 394)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type M = HTMLElement & { rendered: Promise<void>; items(i: unknown[]): void; values: string[] };
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const m = document.createElement('sherpa-menu') as M;
+    m.setAttribute('data-select', 'single');
+    m.setAttribute('data-none', '');
+    m.setAttribute('data-inline', '');
+    root.append(m);
+    await m.rendered;
+    m.items([{ value: 'me', label: 'Me' }, { value: 'anyone', label: 'Anyone' }]);
+    await new Promise((res) => setTimeout(res, 50));
+    const none = () => m.querySelector<HTMLInputElement>('.qf-none input')!;
+    const first = (m.querySelector('.menu-row') as HTMLElement).classList.contains('qf-none');
+    const atStart = none().checked;
+    m.querySelector<HTMLInputElement>('input[value="me"]')!.click();
+    const picked = { none: none().checked, values: [...m.values] };
+    let reported: unknown = null;
+    m.addEventListener('menu-change', (e) => { reported = (e as CustomEvent).detail; });
+    none().click();
+    return {
+      first, atStart, picked, sameGroup: none().name === m.querySelector<HTMLInputElement>('input[value="me"]')!.name,
+      after: { none: none().checked, me: m.querySelector<HTMLInputElement>('input[value="me"]')!.checked, values: [...m.values] },
+      reported: reported !== null,
+    };
+  });
+  expect(r.first).toBe(true);
+  expect(r.atStart).toBe(true);
+  expect(r.picked).toEqual({ none: false, values: ['me'] });
+  expect(r.sameGroup).toBe(true);
+  expect(r.after).toEqual({ none: true, me: false, values: [] });
+  expect(r.reported).toBe(true);
+});
+
 /** TRAP T-an-action-row-can-keep-its-menu-open */
 test('an action row with data-stay-open reports and keeps the card open; a plain one closes it', async ({ page }) => {
   const r = await page.evaluate(async () => {

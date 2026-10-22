@@ -87,7 +87,8 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       // The 1x16 divider rectangle after the zone.
       divider: getComputedStyle(zone, '::after').inlineSize,
       // Sort lists each column ONCE — not twice for the two directions.
-      sortRows: sortChip.querySelectorAll('input').length,
+      // Its fields' rows; None leads a single list. TODO 394
+      sortRows: sortChip.querySelectorAll('.menu-row:not(.qf-none) input').length,
       sortRadios: sortChip.querySelector('input')!.getAttribute('type'),
     };
 
@@ -1052,7 +1053,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       // The Calendar footer's LEFT slot holds Today (Figma 1156:29251), not
       // Clear — so that is the button a date menu shows there.
       todayShown: getComputedStyle(menu.shadowRoot.querySelector('.today')!).display,
-      clearShown: getComputedStyle(menu.shadowRoot.querySelector('.clear')!).display,
+      clearGone: !menu.shadowRoot.querySelector('.clear'),
       // …and the way OFF the bar is a FOOTER BUTTON after Today. A calendar
       // menu has no list, so the action ROW a value menu carries has nowhere to
       // sit — the date branch skipped it entirely, which left a date filter as
@@ -1135,13 +1136,10 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   expect(r.before.todayShown).not.toBe('none');
   expect(r.afterToday).toBe(r.todayIso);
 
-  // CLEAR is offered TOO, now that it no longer competes for that slot: it is
-  // an icon button in the menu's HEADER. A date chip was the one kind with no
-  // way back to "no date" short of removing the chip, because Clear was a
-  // footer button and Today had already taken the only footer position.
-  expect(r.before.clearShown).not.toBe('none');
+  // No Clear: a date's "nothing" is its chip OFF. Will, TODO 394
+  expect(r.before.clearGone).toBe(true);
 
-  // The way OFF the bar is the second header icon button, beside Clear. A date
+  // The way OFF the bar is a header icon button. A date
   // chip had neither before: no remove row (the branch returned past it) and no
   // footer position left to put one in.
   expect(r.before.removable).toBe(true);
@@ -1200,7 +1198,7 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
       const chip = bar.shadowRoot!.querySelector('sherpa-quick-filter.chip')!;
       return {
         caret: chip.shadowRoot!.querySelector('.caret-label')!.textContent,
-        checked: [...chip.querySelectorAll('input')].filter((i) => (i as HTMLInputElement).checked)
+        checked: [...chip.querySelectorAll('.menu-row:not(.qf-none) input')].filter((i) => (i as HTMLInputElement).checked)
           .map((i) => (i as HTMLInputElement).value),
         reported: bar.values,
       };
