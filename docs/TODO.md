@@ -1903,6 +1903,9 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
 - ✅ **Step 3 — greying (2026-10-22).** `limitField` (`filter-host.ts`) tells a
   field's value chips and menus what the filters before it leave and what its
   chain offers; the bar and the panel both call it.
+- ✅ **Step 4 — counts (2026-10-22).** `drawCount` (`filter-host.ts`) writes a
+  count on a badge that is not a chip's — a panel field's and a shut scope's —
+  in the chip's words (`countSaid`).
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

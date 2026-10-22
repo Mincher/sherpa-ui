@@ -26,7 +26,7 @@ import {
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
-import { arrangeFrom, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { arrangeFrom, drawCount, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { modeOf, readingRows, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
@@ -501,10 +501,7 @@ export class SherpaFilterPanel extends SherpaElement {
       tip.removeAttribute('data-text');
       return;
     }
-    const { said, label } = countSaid(count(last)!, ['match', 'matches']);
-    badge.dataset['count'] = said;
-    badge.textContent = said;
-    badge.setAttribute('aria-label', label);
+    badge.dataset['count'] = drawCount(badge, count(last), ['match', 'matches'])!;
     tip.dataset['text'] = answered.map((held) => `${held.def.label} - ${countSaid(count(held)!, ['match', 'matches']).label}`).join('\n');
   }
 
@@ -604,15 +601,9 @@ export class SherpaFilterPanel extends SherpaElement {
   #headResults(held: Held, n: number | null): void {
     const badge = held.box.querySelector('.field-results');
     if (!badge) return;
-    if (n == null) {
-      delete held.box.dataset['results'];
-      badge.removeAttribute('aria-label');
-      return;
-    }
-    const { said, label } = countSaid(n);
-    held.box.dataset['results'] = said;
-    badge.textContent = said;
-    badge.setAttribute('aria-label', label);
+    const said = drawCount(badge, n);
+    if (said == null) delete held.box.dataset['results'];
+    else held.box.dataset['results'] = said;
   }
 
   /** Is it showing? The `open` attribute, as on every surface that opens. */

@@ -8,9 +8,11 @@
  * - pendingFields — The fields the host's source says wait for their Apply, or could not be fetched.
  * - markField — One field's chips and menus, told whether it waits for Apply and whether its read failed.
  * - limitField — One field's value chips and menus, told what the filters before it leave and what its chain offers.
+ * - drawCount — A count on a badge that is not a chip's: its number, and its words for a reader.
  */
 import type { OrganiseColumn } from '../data/data-source.js';
 import { ruleOut } from '../data/filter-state.js';
+import { countSaid } from '../data/filter-face.js';
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 import type { FilterOption } from './filter-def.js';
 import type { SherpaQuickFilter } from '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
@@ -69,4 +71,22 @@ export function limitField(
     menu.toggleAttribute('data-hide-unavailable', limits.hide);
     Object.assign(menu, { present: limits.present, offered: limits.offered });
   }
+}
+
+/** A count on a badge that is not a chip's — a panel field's or scope's: its
+ *  number, as a chip says it, and its words for a reader. `null` leaves it
+ *  unsaid. Gives what it wrote. TODO 424 */
+export function drawCount(
+  badge: Element | null | undefined, n: number | null | undefined, noun?: readonly [one: string, many: string],
+): string | null {
+  if (n == null) {
+    badge?.removeAttribute('aria-label');
+    return null;
+  }
+  const { said, label } = countSaid(n, noun);
+  if (badge) {
+    badge.textContent = said;
+    badge.setAttribute('aria-label', label);
+  }
+  return said;
 }
