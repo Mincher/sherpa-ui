@@ -8042,6 +8042,7 @@ row (`data-hide-unavailable` → `data-removed`) and the panel hides a
 ruled-out value chip. A value still PICKED is never hidden, so it can be let
 go.
 
+- Site: `src/core/ui/filter-host.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/ui/shared-constants.ts`

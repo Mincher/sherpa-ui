@@ -26,9 +26,9 @@ import {
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
-import { arrangeFrom, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { arrangeFrom, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
-import { modeOf, readingRows, ruleOut, type FieldReading } from '../../core/data/filter-state.js';
+import { modeOf, readingRows, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW, type QueryRequest } from '../../core/data/query.js';
@@ -593,26 +593,11 @@ export class SherpaFilterPanel extends SherpaElement {
   #markPresent(held: Held): void {
     if (held.def.appliedAt) return;
     const field = held.def.field ?? held.def.id;
-    const left = this.#presentBy.get(held.scope)?.[field] ?? null;
-    const offered = this.#offeredBy.get(held.scope)?.[field] ?? null;
-    const out = ruleOut(left, offered);
-    // Hiding unmatched, a menu's ruled-out rows go too. Will, TODO 205.
-    held.menu?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
-    const one = this.#answerChip(held);
-    if (one) {
-      // ONE chip is never greyed for it: every pick ruled out, it stays in force (Will, 2026-10-20).
-      if (held.menu) Object.assign(held.menu, { present: left, offered });
-      return;
-    }
-    // A VALUE the context rules out reads inactive, and is refused, on or off (Will, 2026-10-20).
-    for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
-      if (this.#heldOfChip(chip) !== held) continue;
-      const why = out(chip.dataset['value'] ?? '');
-      chip.toggleAttribute('data-removed', why === 'unoffered' && !chip.hasAttribute('data-current'));
-      chip.toggleAttribute('data-unavailable', why !== null);
-    }
-    if (held.menu) Object.assign(held.menu, { present: left, offered });
-    for (const kids of held.values.querySelectorAll<SherpaMenu>('sherpa-menu[data-kids]')) Object.assign(kids, { present: left, offered });
+    const limits = { present: this.#presentBy.get(held.scope)?.[field] ?? null, offered: this.#offeredBy.get(held.scope)?.[field] ?? null, hide: hidesUnmatched(this) };
+    // ONE chip is never greyed for it: every pick ruled out, it stays in force (Will, 2026-10-20).
+    if (this.#answerChip(held)) return limitField([], [held.menu], limits);
+    const values = [...held.values.querySelectorAll<HTMLElement>('.value')].filter((c) => this.#heldOfChip(c) === held);
+    limitField(values, [held.menu, ...held.values.querySelectorAll<SherpaMenu>('sherpa-menu[data-kids]')], limits);
   }
 
   /** A field's results, on its header's badge — or none. Will, TODO 133. */

@@ -1900,6 +1900,9 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   holds a change not yet sent — and both hosts read it into `markField`; the
   panel now hears a menu's draft, Apply and Cancel as the bar does, so a panel
   field whose menu holds a draft reads as a warning too.
+- ✅ **Step 3 — greying (2026-10-22).** `limitField` (`filter-host.ts`) tells a
+  field's value chips and menus what the filters before it leave and what its
+  chain offers; the bar and the panel both call it.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

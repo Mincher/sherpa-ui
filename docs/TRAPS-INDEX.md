@@ -367,7 +367,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — quick-filter-toolbar
 - [T-a-row-opens-its-child-menu](TRAPS.md#t-a-row-opens-its-child-menu) — filter-panel, quick-filter-toolbar
 - [T-a-row-remembers-what-it-was-given](TRAPS.md#t-a-row-remembers-what-it-was-given) — quick-filter
-- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — quick-filter-toolbar
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — filter-panel
 - [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — filter-panel
