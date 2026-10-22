@@ -1033,27 +1033,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A chip was toggled: report the whole bar. */
   #onChipClick = (event: Event): void => {
-    // Composed → find the originating chip on the path.
-    const path = event.composedPath();
-
-    /* GROUP and SORT handle their OWN body click and report it themselves —
-       the chip knows what kind it is. This bar only stops the click reading as
-       a filter change. TRAP T-a-chip-knows-what-kind-it-is */
-    if (path.some((n) => n instanceof HTMLElement && n.classList.contains('organise-chip'))) {
-      event.stopImmediatePropagation();
-      return;
-    }
-
-    const chip = path.find(
+    // Composed → find the originating chip on the path. Group and Sort report their own (TODO 424).
+    const chip = event.composedPath().find(
       (n): n is SherpaQuickFilter => n instanceof HTMLElement && n.classList.contains('chip'),
     );
     if (!chip) return;
 
-    // A persistent chip has ALREADY flipped itself off by now, so put it back.
-    if (chip.hasAttribute('data-persistent')) {
-      chip.toggleAttribute('data-current', true);
-      return;
-    }
+    // A selector is locked, and no filter: its body asks for nothing.
+    if (chip.hasAttribute('data-persistent')) return;
     /* On or off keeps the answer; a toggle answers no field. A locked chip did
        not flip, so it asks for the other state. TRAP T-grid-suspend-is-not-clear */
     // A date that took its default day asks for that day, not a flip. Will, TODO 394
@@ -1780,8 +1767,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange({ reset: { ...(organise ? { organise } : {}), ...(options.carry ? { carry: true } : {}) } });
     // Bound, the reset says it; with no source, the host arranges its own rows.
     if (!organise || this.hasAttribute('data-locked')) return;
-    this.emit('group-change', { field: null });
-    this.emit('sort-change', { field: null, direction: 'asc' });
+    // Typed as its Group and Sort chips' own, which this bar carries too. TODO 424
+    this.emit('group-change', { field: null as string | null });
+    this.emit('sort-change', { field: null as string | null, direction: 'asc' as SortDirection });
   }
 
   /** Group and Sort off, and the Sort's way forgotten. */
@@ -1923,54 +1911,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return checked?.value;
   }
 
-  /** A Group or Sort pick is an arrangement: stop it reading as a filter change. */
+  /** A filter chip committed: its event reports one chip; it is swapped for the
+   *  bar's own. Group and Sort report their own, and never send it (TODO 424). */
   #onOrganiseChange = (event: Event): void => {
     /* This hears the chips' quick-filter-change AND the toolbar's own, emit()
-       being composed. Registered in CAPTURE so it can stop a group/sort pick
-       before a host reads it as a filter change.
-       TRAP T-capture-beats-registration-order */
-    const path = event.composedPath();
-    const chip = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('organise-chip'),
+       being composed. Registered in CAPTURE so it stops a chip's before a host
+       reads it. TRAP T-capture-beats-registration-order */
+    const chip = event.composedPath().find(
+      (n): n is SherpaQuickFilter => n instanceof HTMLElement && n.classList.contains('chip'),
     );
-    if (!chip) {
-      // A FILTER chip committed. Its event reports one chip; swap it for the
-      // toolbar-level one, which reports the WHOLE state.
-      const filterChip = path.find(
-        (n): n is SherpaQuickFilter => n instanceof HTMLElement && n.classList.contains('chip'),
-      );
-      if (filterChip) {
-        event.stopImmediatePropagation();
-        /* The chip's OWN answer: `values` reports only chips already ON, so an
-           off chip could never commit itself on — every date chip's first pick.
-           A TYPED condition is an answer too, so this cannot read ticked rows
-           alone: "Contains Ravi" filtered 100 rows down to 22 while its chip
-           read OFF. Locked, it is drawn. TRAP T-an-operator-decides-pick-or-type */
-        if (!filterChip.hasAttribute('data-locked') || filterChip.hasAttribute('data-persistent')) {
-          filterChip.toggleAttribute(
-            'data-current',
-            filterChip.hasAttribute('data-persistent')
-              || this.#chipPicks(filterChip).length > 0
-              || filterChip.answered,
-          );
-          filterChip.refresh();
-        }
-        this.#emitChange(this.#answerRequest(filterChip));
-      }
-      return;
-    }
+    if (!chip) return;
     event.stopImmediatePropagation();
-
-    // ON while it holds a choice — that is what makes a grouping visible. Locked, it is drawn.
-    const id = chip.dataset['id'];
-    const column = this.#menuValue(id ?? '') ?? null;
-    if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', !!column);
-
-    if (id === 'group') this.emit('group-change', { field: column });
-    else if (id === 'sort') {
-      // Resumes in the remembered direction — the tri-state cycle is body-only.
-      this.emit('sort-change', { field: column, direction: this.sortDirection });
+    /* The chip's OWN answer: `values` reports only chips already ON, so an off
+       chip could never commit itself on — every date chip's first pick. A TYPED
+       condition is an answer too: "Contains Ravi" filtered 100 rows down to 22
+       while its chip read OFF. Locked, it is drawn. TRAP T-an-operator-decides-pick-or-type */
+    if (!chip.hasAttribute('data-locked') || chip.hasAttribute('data-persistent')) {
+      chip.toggleAttribute('data-current', chip.hasAttribute('data-persistent') || this.#chipPicks(chip).length > 0 || chip.answered);
+      chip.refresh();
     }
+    this.#emitChange(this.#answerRequest(chip));
   };
 }
 

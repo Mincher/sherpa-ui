@@ -8615,7 +8615,7 @@
             {
               "name": "sort-change",
               "type": {
-                "text": "CustomEvent<{ direction: 'asc' | SortDirection; field: null | string }>"
+                "text": "CustomEvent<{ direction: SortDirection; field: null | string }>"
               }
             },
             {

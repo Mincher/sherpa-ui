@@ -1940,6 +1940,13 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   its answer once it has drawn and redraws its chip — the bar's rebuild and the
   panel's fill. Three engines: the specs that hold the timing pass (sherpa-ui
   264, Demos 18).
+- ⏸️ **Step 10 — the panel asks which scopes wait.** Today only the View waits
+  (406), so the panel's "the View waits" is right; nothing to change until a
+  second scope can wait.
+- ✅ **Step 11 — dead code (2026-10-22).** The bar's Group and Sort branches in
+  its click and change handlers are gone: those chips report their own, and
+  never send `quick-filter-click` or `quick-filter-change`. A selector chip's
+  click no longer "puts back" a flip it never made (it is locked).
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

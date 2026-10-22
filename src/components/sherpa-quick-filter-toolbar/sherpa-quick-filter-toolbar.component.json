@@ -739,7 +739,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "'asc' | SortDirection",
+        "direction": "SortDirection",
         "field": "null | string"
       }
     },
