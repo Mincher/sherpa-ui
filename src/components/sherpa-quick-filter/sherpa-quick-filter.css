@@ -93,9 +93,9 @@
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
 }
 
-/* PENDING: changed, not yet applied — the warning look; its pin colours it.
-   TRAP T-a-pending-chip-reads-as-a-warning */
-:host([data-pending]) :is(.body, .caret) {
+/* PENDING: changed, not yet applied — the warning look; FAILED to fetch, the
+   critical one (TODO 411). Their pins colour them. TRAP T-a-pending-chip-reads-as-a-warning */
+:host(:is([data-pending], [data-failed])) :is(.body, .caret) {
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
 }
 

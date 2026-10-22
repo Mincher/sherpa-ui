@@ -5,7 +5,7 @@
  * Map:
  * - organiseOptions — A Group or Sort chip's rows: each column, the one in force ticked.
  * - arrangeFrom — Follow the host's arrangement onto its Group or Sort chip; the chip knows how.
- * - pendingFields — The fields the host's source says wait for their Apply.
+ * - pendingFields — The fields the host's source says wait for their Apply, or could not be fetched.
  */
 import type { OrganiseColumn } from '../data/data-source.js';
 import type { FilterOption } from './filter-def.js';
@@ -23,7 +23,8 @@ export function arrangeFrom(host: HTMLElement, chip: SherpaQuickFilter | null | 
   chip?.arrangeBy?.(host.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '', host.dataset['sortDirection']);
 }
 
-/** The fields the host's source says wait for their Apply: `data-pending`, space-separated. */
-export function pendingFields(host: HTMLElement): Set<string> {
-  return new Set((host.dataset['pending'] ?? '').split(' ').filter(Boolean));
+/** The fields the host's source says wait for their Apply — `data-pending`,
+ *  space-separated — or, with `failed`, could not be fetched (TODO 411). */
+export function pendingFields(host: HTMLElement, list: 'pending' | 'failed' = 'pending'): Set<string> {
+  return new Set((host.dataset[list] ?? '').split(' ').filter(Boolean));
 }

@@ -272,14 +272,17 @@ export class SourceBinding {
   /**
    * Tell each bound control over a scope which of its fields are PENDING
    * (`data-pending`, a field list), whether its scope is DIRTY (`data-dirty`),
-   * and whether it WAITS for Apply (`data-waits`). Attributes, as the rest of its state arrives.
+   * whether it WAITS for Apply (`data-waits`), and which FAILED (`data-failed`). Attributes, as the rest of its state arrives.
    * TRAP T-push-writes-state-as-attributes
    */
-  syncPending(fieldsOf: (scopes: string[]) => string[], dirty: (scope: string) => boolean, waits: (scope: string) => boolean): void {
+  syncPending(
+    fieldsOf: (scopes: string[]) => string[], dirty: (scope: string) => boolean, waits: (scope: string) => boolean,
+    failed: (scopes: string[]) => string[],
+  ): void {
     for (const [, { scope, sink }] of this.#bound) {
       if (!scope) continue;
       const scopes = typeof scope === 'string' ? [scope] : [...scope];
-      sink.pending(fieldsOf(scopes), scopes.some((id) => dirty(id)), scopes.some((id) => waits(id)));
+      sink.pending(fieldsOf(scopes), scopes.some((id) => dirty(id)), scopes.some((id) => waits(id)), failed(scopes));
     }
   }
 

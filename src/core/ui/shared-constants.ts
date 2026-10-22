@@ -11,6 +11,7 @@
  * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
  * - UNAPPLIED — What leads a pending chip's tip
+ * - UNFETCHED — What leads the tip of a chip whose data could not be fetched
  * - VIEW_CHIP — The View chip's id: the chip a View is picked through.
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
@@ -44,6 +45,10 @@ export const NOT_AVAILABLE = 'Not available here.';
 /** What leads a pending chip's tip: changed, not applied. Will, TODO 406.
  *  TRAP T-a-pending-chip-reads-as-a-warning */
 export const UNAPPLIED = 'Unapplied changes';
+
+/** What leads the tip of a chip whose data could not be fetched: a system
+ *  error, not 0 matches. Will, TODO 411. */
+export const UNFETCHED = 'Unable to fetch data';
 
 /** The View chip's id: the chip a View is picked through. The same word as VIEW, the scope id, but not the same idea. */
 export const VIEW_CHIP = 'view';

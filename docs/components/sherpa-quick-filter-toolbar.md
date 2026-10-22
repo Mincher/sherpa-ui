@@ -59,6 +59,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-bounds` | text |  |  |
 | `data-custom-view` | boolean |  |  |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
+| `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-favourite` | boolean |  | the ★ is lit (view type) — the value, IN |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |

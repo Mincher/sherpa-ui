@@ -502,6 +502,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-failed",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-fetch-fields",
       "type": "string",
       "observed": true,
@@ -624,6 +632,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-waits",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "open",
       "type": "string",
       "observed": true,
@@ -667,6 +683,11 @@
       "$type": "state",
       "name": "remote",
       "selector": ":host([data-remote])"
+    },
+    {
+      "$type": "state",
+      "name": "waits",
+      "selector": ":host([data-waits])"
     }
   ],
   "capabilities": [

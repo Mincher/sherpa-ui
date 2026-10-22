@@ -59,6 +59,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE, so a value reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-dirty` | boolean |  |  |
+| `data-failed` | text |  |  |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the group in force. Written by the source; the Group chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut |
 | `data-heading` | text | `Filters` | the panel's own title |
@@ -71,6 +72,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 | `data-saveable` | boolean |  | the host SAVES filters: the header's Save filters saves every scope under one name; while a set is taken it reads "Save &lt;name>", active, and saves over it. Its ▾ holds Save filters as and Delete filters, and its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
 | `data-sort-direction` | `asc` `desc` `""` |  | the sort in force. Written by the source; the Sort chip shows it. |
 | `data-sort-field` | text |  | the sort in force. Written by the source; the Sort chip shows it. |
+| `data-waits` | boolean |  |  |
 | `open` | text, native |  | the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only |
 
 ## Properties

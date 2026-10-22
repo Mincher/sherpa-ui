@@ -136,6 +136,9 @@ export class SherpaFilterPanel extends SherpaElement {
     'data-remote': { type: 'boolean', kind: 'style' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-pending': { type: 'string', kind: 'style' },
+    // A scope it shows waits for Apply, local too; and the fields that failed to fetch. TODO 406, 411
+    'data-waits': { type: 'boolean', kind: 'style' },
+    'data-failed': { type: 'string', kind: 'behaviour' },
     // A change waits somewhere in its scopes: the footer's Apply all. TODO 98
     'data-dirty': { type: 'boolean', kind: 'style' },
     // The host saves filters: the header's Save filters. TRAP T-saved-filters-are-every-scope
@@ -219,7 +222,7 @@ export class SherpaFilterPanel extends SherpaElement {
     else if (name === 'data-at-default' || name === 'data-nothing-to-reset') syncResets(this, this.root, '.reset-all');
     else if (name === 'data-saveable') this.#drawSave();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
-    else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
+    else if (name === 'data-pending' || name === 'data-remote' || name === 'data-waits' || name === 'data-failed') this.#syncPending();
     else if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
       for (const held of this.#held.values()) this.#markPresent(held);
       syncHide(this, this.root);
@@ -1371,13 +1374,19 @@ export class SherpaFilterPanel extends SherpaElement {
    * says which, by FIELD. TRAP T-apply-and-discard-wait-for-a-change
    */
   #syncPending(): void {
-    const remote = this.hasAttribute('data-remote');
+    const waits = this.hasAttribute('data-remote') || this.hasAttribute('data-waits');
     const pending = pendingFields(this);
+    const failed = pendingFields(this, 'failed');
     for (const held of this.#held.values()) {
-      const on = remote && pending.has(held.def.field ?? held.def.id);
+      const field = held.def.field ?? held.def.id;
+      const on = waits && pending.has(field);
       held.box.toggleAttribute('data-pending', on);
       // A field drawn as ONE chip shows it too, so its badge waits. TODO 304
       this.#answerChip(held)?.toggleAttribute('data-pending', on);
+      // Its own read failed: each of its chips says so. TODO 411
+      for (const chip of [this.#answerChip(held), ...held.values.querySelectorAll<HTMLElement>('.value')]) {
+        if (chip && (chip === this.#answerChip(held) || this.#heldOfChip(chip) === held)) chip.toggleAttribute('data-failed', failed.has(field));
+      }
     }
   }
 

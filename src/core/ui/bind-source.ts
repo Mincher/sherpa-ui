@@ -89,11 +89,13 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
       give(into ? mergeInto(el, into, payload) : payload);
     },
-    pending: (fields, dirty, waits) => {
+    pending: (fields, dirty, waits, failed) => {
       setAttr(el, 'data-pending', fields.length ? fields.join(' ') : undefined);
       setAttr(el, 'data-dirty', dirty ? '' : undefined);
       // Its scope waits for ONE Apply, local too. TODO 406
       setAttr(el, 'data-waits', waits ? '' : undefined);
+      // The fields whose own read failed: a system error, not 0 matches. TODO 411
+      setAttr(el, 'data-failed', failed.length ? failed.join(' ') : undefined);
     },
     off: () => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
@@ -102,6 +104,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       el.removeAttribute('data-remote');
       el.removeAttribute('data-apply-on');
       el.removeAttribute('data-waits');
+      el.removeAttribute('data-failed');
     },
   });
   return () => source.unbind(el);

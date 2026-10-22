@@ -174,21 +174,21 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 .field[data-advanced]:not([data-chip]) .field-row,
-:host([data-remote]) .field[data-pending] .field-row { display: flex; }
+:host(:is([data-remote], [data-waits])) .field[data-pending] .field-row { display: flex; }
 .field-row-spacer { flex: 1 1 auto; }
 .field-add-condition { display: none; }
 .field[data-advanced]:not([data-chip]) .field-add-condition { display: inline-flex; }
 .field:not([data-answered]) .field-clear { display: none; }
 .field-apply, .field-discard { display: none; }
-:host([data-remote]) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
+:host(:is([data-remote], [data-waits])) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
 /* The row's Add condition IS the inline menu's own, so the menu's goes. */
 .field-body sherpa-menu::part(add-condition) { display: none; }
 
-/* APPLY ALL and DISCARD ALL: REMOTE, while a change waits. `!important`: a
+/* APPLY ALL and DISCARD ALL: remote or a scope that waits (TODO 406), while a change does. `!important`: a
    composed component's own `:host` display wins otherwise.
    TRAP T-a-composed-child-hides-with-important */
 .panel-footer { display: none !important; }
-:host([data-remote][data-dirty]) .panel-footer { display: block !important; }
+:host(:is([data-remote], [data-waits])[data-dirty]) .panel-footer { display: block !important; }
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }

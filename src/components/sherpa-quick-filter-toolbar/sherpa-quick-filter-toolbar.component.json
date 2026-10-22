@@ -469,6 +469,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-failed",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411"
+    },
+    {
+      "$type": "prop",
       "name": "data-favourite",
       "type": "boolean",
       "observed": true,

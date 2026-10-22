@@ -318,7 +318,14 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      filter" can only be judged against a list someone named — a column menu
      that set `plan in [Pro, Free]` is filtering, whatever else exists.
      TRAP T-the-field-type-decides-the-clause */
-  const declared = facts.values ?? (reading.picked ?? []);
+  /* A RANGE's ends are its values, and a DATE's day is one whatever the rows
+     hold: a day with no rows is a real answer — 0 matches, still on. Will,
+     2026-10-22. TRAP T-no-rows-is-still-an-answer */
+  const picks = reading.picked ?? [];
+  const declared = range ? picks
+    : type === 'date' && facts.values
+      ? [...facts.values, ...picks.filter((p) => !facts.values!.some((v) => valueKey(v) === valueKey(p)))]
+      : facts.values ?? picks;
   /* The string form is what a control puts in an attribute; `raw` is what the
      row holds. TRAP T-a-value-can-be-an-object */
   const raws = [...declared];
@@ -361,7 +368,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const paths = parentOf ? values.filter((v) => v.parent && own(v)).length : 0;
   const answered = takesText
     ? text !== ''
-    : range || !facts.values
+    : range || !facts.values || type === 'date'
       ? chosen + paths > 0
       : (chosen > 0 && chosen < tops.length) || paths > 0;
 

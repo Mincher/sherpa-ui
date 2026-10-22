@@ -987,6 +987,11 @@ export class QueryContext extends EventTarget {
         case 'offer': case 'hold': return { fields: [], scopes: [change.scope] };
         case 'move': return { fields: [], scopes: change.scopes };
         case 'arranged': return { fields: [], scopes: this.scopes };
+        // An Apply is a change to the page too: what keeps the Query hears it. TODO 406
+        case 'commit': return {
+          fields: [...new Set([...this.#answered(), ...Object.values(this.#live.applied.scopes).flatMap((sc) => Object.keys(sc.readings))])],
+          scopes: [],
+        };
         default: return null;
       }
     })();

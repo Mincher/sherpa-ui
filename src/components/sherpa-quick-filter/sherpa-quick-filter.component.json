@@ -224,6 +224,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-failed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning"
+    },
+    {
+      "$type": "prop",
       "name": "data-full-value",
       "type": "boolean",
       "observed": true,
@@ -351,7 +360,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning"
+      "description": "changed, not yet applied: the warning look."
     },
     {
       "$type": "prop",
@@ -480,6 +489,11 @@
       "$type": "state",
       "name": "pending",
       "selector": ":host([data-pending])"
+    },
+    {
+      "$type": "state",
+      "name": "failed",
+      "selector": ":host([data-failed])"
     },
     {
       "$type": "state",

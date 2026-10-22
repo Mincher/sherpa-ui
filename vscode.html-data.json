@@ -1230,6 +1230,9 @@
           "valueSet": "v"
         },
         {
+          "name": "data-failed"
+        },
+        {
           "name": "data-fetch-fields",
           "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
         },
@@ -1307,6 +1310,10 @@
         {
           "name": "data-sort-field",
           "description": "the sort in force. Written by the source; the Sort chip shows it."
+        },
+        {
+          "name": "data-waits",
+          "valueSet": "v"
         },
         {
           "name": "open",
@@ -2716,6 +2723,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-failed",
+          "description": "the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411"
+        },
+        {
           "name": "data-favourite",
           "description": "the ★ is lit (view type) — the value, IN",
           "valueSet": "v"
@@ -2886,6 +2897,11 @@
           ]
         },
         {
+          "name": "data-failed",
+          "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
+          "valueSet": "v"
+        },
+        {
           "name": "data-full-value",
           "valueSet": "v"
         },
@@ -2968,7 +2984,7 @@
         },
         {
           "name": "data-pending",
-          "description": "changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
+          "description": "changed, not yet applied: the warning look.",
           "valueSet": "v"
         },
         {

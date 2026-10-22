@@ -104,6 +104,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Its scope waits for ONE Apply, this bar's; something in it is not applied yet. TODO 406
     'data-waits': { type: 'boolean', kind: 'style' },
     'data-dirty': { type: 'boolean', kind: 'behaviour' },
+    // The FIELDS whose own read failed: a system error, not 0 matches. TODO 411
+    'data-failed': { type: 'string', kind: 'behaviour' },
     // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
@@ -542,6 +544,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #syncPending(): void {
     const waiting = pendingFields(this);
+    const failed = pendingFields(this, 'failed');
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
@@ -549,6 +552,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.toggleAttribute('data-pending', !!menu?.dirty || waiting.has(field));
       // A waiting scope's menu: Discard is on while its field is. TODO 406
       menu?.toggleAttribute('data-pending', waiting.has(field));
+      // Its own read failed. TODO 411
+      chip.toggleAttribute('data-failed', failed.has(field));
     }
   }
 
@@ -1157,7 +1162,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits') && this.#filters.length) this.#render();
-    if (name === 'data-pending') this.#syncPending();
+    if (name === 'data-pending' || name === 'data-failed') this.#syncPending();
     // Apply is on while something in the scope waits for it. TODO 406
     if (name === 'data-dirty' || name === 'data-waits') this.$('.apply-all')?.toggleAttribute('disabled', !this.hasAttribute('data-dirty'));
     if (name === 'data-locked') for (const chip of [...this.#chips(), ...this.$$<HTMLElement>('.organise-chip')]) this.#lock(chip);

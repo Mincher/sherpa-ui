@@ -64,7 +64,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later) | filters |
 | ⬜ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
-| ⬜ | 0zm | 383 | UX — ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
+| ⬜ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
@@ -87,11 +87,13 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
-| 🚧 | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
+| ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
 | ✅ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
 | ✅ | 0zzl | 408 | WORDS — the Reset menu's "Reset all to default" reads "Reset all on view" (Will, 2026-10-22) | words |
 | ⬜ | 0zzm | 409 | WORDS — an Advanced filter's answer reads `equals(John) AND contains(Smith)` in its chip, tip and everywhere it is said: each condition before its value in brackets, the join between, `!` before a negative one (Will, 2026-10-22) | words |
 | ⬜ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
+| ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
+| ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1858,6 +1860,42 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[x]` ✅ 412 — BUG: a chip with 0 matches stays on
+
+Will, 2026-10-22: *"A chip with 0 matches, that returned successfully, should
+still be active and green until the user toggles it. The Date chip in the view
+scope fails to do this."*
+
+**✅ Done 2026-10-22.** `fieldState` counted a pick only when the field's values
+(the days its rows hold) named it, so Today — no rows — was dropped: no clause,
+100 rows, the chip drawn off. Now a range's ends are its values, a date's day is
+added to its list, and "every value ticked is no filter" never applies to a
+date. TRAP `T-no-rows-is-still-an-answer`. Test: `no-rows-is-still-an-answer`.
+Checked on Demos Records: Today, Apply, 0 rows, the chip on.
+
+### `[x]` ✅ 411 — FILTERS: a chip that cannot fetch says so, in critical
+
+Will, 2026-10-22: *"Use critical status on any filter chip that fails to fetch
+data. This isn't the same as there being 0 matches. It's for system, or
+service, errors. Pre-pend these chip's tooltips with 'Unable to fetch data - '."*
+
+**Found (reading, 2026-10-22).** Three reads can fail for one field: its VALUES
+(`declareFromRows`, from `readValues` — today nothing catches it), the KEYS a
+`fetch: "server"` answer asks for (`#fetchKeys` — today a `report()` only), and
+its COUNTS (the walk — today the last walk stays, silently). The page's ROWS
+failing is the source's `error` event; a card already says so.
+
+**Plan:** the source keeps a per-field `failed` map, set where a field's own
+read throws and cleared when it next succeeds, and pushes it to every bound
+control as `data-failed` (a field list), as it does `data-pending`. A bar and
+the panel mark each chip `data-failed`; state-pins.yaml pins it `critical`
+(after pending, so it wins); its tip starts "Unable to fetch data". A failed
+page load: the card alone says it (Will: my pick); a chip says only its own read.
+
+**✅ Done 2026-10-22**, as planned. Tests: `a-field-that-cannot-fetch-says-so`
+(node: marked, then cleared; 0 rows is not a failure), `reforged-a-chip-that-cannot-fetch`
+(critical edge, the tip's lead, the bar and the panel alike).
+
 ### `[ ]` ⬜ 410 — FILTERS: every scope's picks survive a reload
 
 Will, 2026-10-22: *"Selected filter values, in all scopes, should survive a page
@@ -1902,7 +1940,7 @@ forgets it and goes off, and a Sort's None asks to CLEAR (`sort-change` with
 `clear`), not to suspend: nothing is kept to resume. Tests: the toolbar spec
 (both chips off, no column), `none-clears-a-sort` (the binding forgets it).
 
-### `[ ]` 🚧 406 — FILTERS: the View scope waits for one Apply
+### `[x]` ✅ 406 — FILTERS: the View scope waits for one Apply
 
 Will, 2026-10-22: *"Overarching the explicit rules for Customer, Region, and Date
 filters requiring and explicit 'Apply' action we should just enforce explicit
@@ -1952,10 +1990,18 @@ the view scope as well as date filters."*
 - Tests: `reforged-the-view-waits-for-one-apply`, `reforged-pending-chip`,
   `a-waiting-scope-holds-its-picks`.
 
-**Still to do:** 22 Demos tests pick a View filter and expect the rows at once —
-each needs the bar's Apply. The rows, Limit, the counts and the results follow
-the APPLIED answer until Apply (no fetch before it); a saved filter saves the
-applied answer. 410 settles whether a pick not yet applied survives a reload.
+**✅ Done 2026-10-22.** Demos: 13 test files apply where they pick a View filter
+(a helper agent; 45 of 46 pass, the 46th is the old load flake). It found one
+real bug: an Apply sent no `query-change`, so the page's kept Query and the
+View's draft were written before Apply and never after — a View swap or a
+reload lost the applied pick. `commit` now announces. The panel shows its own
+Apply and Discard for a waiting scope, local too (`data-waits`), as it did for
+a remote one. The rows, Limit, the counts and the results follow the APPLIED
+answer until Apply (no fetch before it); a saved filter saves the applied
+answer. 410 settles whether a pick not yet applied survives a reload.
+**Design question the helper raised, for Will:** a chart legend's press over a
+field the View holds now waits for Apply too (its own ticks move at once, its
+bars and the grid at Apply).
 
 ### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
 
@@ -2151,6 +2197,19 @@ without a set taken; which half saves and which opens the menu; where the
 Filters (Add) list goes; the ⋮ menu's other rows (Limit, Hide unmatched, the
 host's own); the bar and the panel alike; and 376's Hide button and 382's
 active rule inside it. After 366's toolbar commits (20–22).
+
+**Will, 2026-10-22:** *"Also include the consolidated 'Filter Actions' button in
+the toolbar and panel. We seem to have forgotten about that."* So it is built
+now, on my picks (Will to look at by eye):
+- ONE split button where "Filters" and the Reset group are today. Its face reads
+  "Filters"; while a saved set is taken, "Save <name>", and that half saves
+  over it. The ▾ half opens its menu.
+- Its menu: the filters to add or remove (today's Filters list, with its Saved
+  section and the folded chips), then Reset, Reset all on view, Save filters,
+  Save filters as, and Delete filters while a set is taken.
+- The ⋮ keeps what is not a filter action: Limit, Hide invalid filters, the
+  host's own rows, the View's Save group, Refresh.
+- The panel the same, in its header.
 
 ### `[x]` ✅ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
 

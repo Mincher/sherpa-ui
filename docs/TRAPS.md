@@ -17184,6 +17184,21 @@ day left the footer's pair off (TODO 83).
 - Site: `test/e2e/reforged-menu.spec.ts`
 - Site: `test/e2e/reforged-a-calendar-pick-wakes-the-footer.spec.ts`
 
+### T-no-rows-is-still-an-answer
+
+**A day with no rows, or a range whose ends no row holds, is an answer: 0
+matches, and the chip stays on.** Will, 2026-10-22: *"A chip with 0 matches,
+that returned successfully, should still be active and green until the user
+toggles it."* A field's `values` are the days its rows hold, and `fieldState`
+counted a pick only when that list named it, so the View's Date picked Today,
+matched nothing, and was dropped: no clause, 100 rows, the chip drawn off. Now a
+RANGE's ends are its values (as its own comment always said), a DATE's day is
+added to its list, and "every value ticked is no filter" never applies to a
+date. A failed FETCH is not this: that is 411's critical chip.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `test/unit/no-rows-is-still-an-answer.test.mjs`
+
 ### T-a-pending-chip-reads-as-a-warning
 
 **A chip whose change is not applied yet is PENDING: it wears the WARNING

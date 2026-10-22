@@ -12,7 +12,7 @@ import {
   fieldState, readingRows, rowAnswered, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, movedTo } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
@@ -67,6 +67,8 @@ export class SherpaQuickFilter extends SherpaElement {
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
        the one writer. TRAP T-a-pending-chip-reads-as-a-warning */
     'data-pending': { type: 'boolean', kind: 'style' },
+    // Its data could not be fetched: a system error, not 0 matches. Written by its host. TODO 411
+    'data-failed': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
     'data-panelled': { type: 'boolean', kind: 'style' },
@@ -195,7 +197,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (this.#arranges()) this.#drawArrangement();
     if (name === 'aria-label' || name === 'data-current') this.#writeTip();
     if (name === 'data-swatch') return this.#paintSwatch();
-    if (name === 'data-current' || name === 'data-pending') this.#syncBadge();
+    if (name === 'data-current' || name === 'data-pending' || name === 'data-failed') this.#syncBadge();
     if (name === 'data-current') this.#syncEmpty();
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
        that decide that — neither touches the values, so nothing else re-syncs
@@ -844,9 +846,9 @@ export class SherpaQuickFilter extends SherpaElement {
     // ON OR OFF it says the same — its answer and its matches, as its badge keeps its number. Will, 363.
     const n = this.#shownResults();
     const matches = n == null ? '' : countSaid(n, ['match', 'matches']).label;
-    // Changed, not applied, says so first. Will, TODO 406
-    const pending = this.hasAttribute('data-pending') ? UNAPPLIED : '';
-    const said = [pending, this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
+    // A failed fetch says so first, then changed-not-applied. Will, TODO 406 and 411
+    const lead = [this.hasAttribute('data-failed') ? UNFETCHED : '', this.hasAttribute('data-pending') ? UNAPPLIED : ''];
+    const said = [...lead, this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
     /* A chip with NO WORDS on it — a grid heading's sort button — says its
        name in the tip, as an icon button does: "Sorted by Name, descending". */
     const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';

@@ -479,29 +479,56 @@ export class DataSource extends EventTarget {
    * field needs it. TRAP T-the-data-says-what-a-field-may-hold
    */
   async declareFromRows(fields: readonly string[], options: { lazy?: boolean } = {}): Promise<void> {
+    // A field whose values cannot be read says so, until they can. TODO 411
     await this.#catalogue.fromRows(fields, async (open) => {
-      await this.#hold();
-      const reads = this.#reads;
-      /* A remote store it does NOT hold is asked a field's values when the field
-         is needed — at open, what the page holds and answers; the rest later.
-         345 phase 5 · TRAP T-a-field-reads-its-values-when-needed */
-      if (reads.distinct && options.lazy && this.#remote && reads === this.store) {
-        const asked = open.filter((f) => this.#needs(f));
-        for (const f of open) if (!asked.includes(f)) this.#unread.add(f);
-        return asked.length ? reads.distinct(asked, {}) : {};
+      try {
+        const found = await this.#readOpen(open, options);
+        this.#setFailed(open, false);
+        return found;
+      } catch (error) {
+        this.#setFailed(open, true);
+        throw error;
       }
-      if (reads.distinct) return reads.distinct(open, {});
-      const age = this.#rowsAge;
-      const { rows } = await reads.load({});
-      // The walk reads these rows too, until they change. TRAP T-one-walk-counts-and-limits-in-order
-      if (reads === this.store && !this.#remote && age === this.#rowsAge && rows.length <= this.#holdRows) {
-        this.#rowsCache = { age, rows };
-      }
-      return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
     });
     // Each field's facts moved: what was counted is out of date.
     this.#age++;
     this.#recomposeFor(fields);
+  }
+
+  /** The values of the fields the catalogue has not got, from the store or the held set. */
+  async #readOpen(open: readonly string[], options: { lazy?: boolean }): Promise<Record<string, unknown[]>> {
+    await this.#hold();
+    const reads = this.#reads;
+    /* A remote store it does NOT hold is asked a field's values when the field
+       is needed — at open, what the page holds and answers; the rest later.
+       345 phase 5 · TRAP T-a-field-reads-its-values-when-needed */
+    if (reads.distinct && options.lazy && this.#remote && reads === this.store) {
+      const asked = open.filter((f) => this.#needs(f));
+      for (const f of open) if (!asked.includes(f)) this.#unread.add(f);
+      return asked.length ? reads.distinct(asked, {}) : {};
+    }
+    if (reads.distinct) return reads.distinct(open, {});
+    const age = this.#rowsAge;
+    const { rows } = await reads.load({});
+    // The walk reads these rows too, until they change. TRAP T-one-walk-counts-and-limits-in-order
+    if (reads === this.store && !this.#remote && age === this.#rowsAge && rows.length <= this.#holdRows) {
+      this.#rowsCache = { age, rows };
+    }
+    return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
+  }
+
+  /** Fields whose OWN read failed — their values, or the keys a server field
+   *  asks — until one succeeds. Pushed as `data-failed`. TODO 411 */
+  #failed = new Set<string>();
+
+  /** Mark fields failed, or read again; the controls are told when it moved. */
+  #setFailed(fields: readonly string[], failed: boolean): void {
+    const moved = fields.filter((f) => failed !== this.#failed.has(f));
+    for (const f of moved) {
+      if (failed) this.#failed.add(f);
+      else this.#failed.delete(f);
+    }
+    if (moved.length) this.#syncPending();
   }
 
   /** A tiered field's child values, from the rows the walk reads — one read for
@@ -844,7 +871,9 @@ export class DataSource extends EventTarget {
       const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected });
       if (this.#fetching.get(field) !== answer || this.#closed) return;
       this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
+      this.#setFailed([field], false);
     } catch (error) {
+      this.#setFailed([field], true);
       report({
         code: 'fetch-field-failed',
         message: 'A field the store answers could not be asked; it filters by the rows held until it can.',
@@ -987,13 +1016,15 @@ export class DataSource extends EventTarget {
     }, copy);
   }
 
-  /** Tell each bound control over a scope its PENDING fields and whether its scope is DIRTY. */
+  /** Tell each bound control over a scope its PENDING fields, whether its scope
+   *  is DIRTY or waits, and the fields that FAILED to fetch. */
   #syncPending(): void {
     this.#binding.syncPending((scopes) => (this.#context.waiting()
       ? [...new Set(scopes.flatMap((id) => Object.keys({
         ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
       })))].filter((f) => this.#context.pending(f))
-      : []), (id) => this.#context.dirty(id), (id) => this.#context.named(id));
+      : []), (id) => this.#context.dirty(id), (id) => this.#context.named(id),
+    (scopes) => [...this.#failed].filter((f) => scopes.some((id) => this.#context.scope(id).includes(f))));
   }
 
   /** The SEARCH as needles, so a view marks what it found: a `contains` on each
