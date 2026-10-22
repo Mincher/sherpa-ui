@@ -1053,13 +1053,13 @@ of value chips, which has no one chip — its field reads the inline menu's own
 `reading`, the same door one level down. The panel's date is one chip, and
 uses the chip's.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/e2e/reforged-chip-tips.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-panel-follows-the-query-open-or-shut
 
@@ -1111,6 +1111,7 @@ chips — shows no answer, in `setFieldReading` and in `drawScopes` alike. The
 Query keeps the value, for the chip. A DATE in the panel is one chip, which
 does have an off, so it keeps its days.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/query.test.mjs`
@@ -1126,8 +1127,8 @@ rows, and left a number field as it was. One door each now — the toolbar's
 `#emptyChip`, the panel's `#empty` — and both write `{ picked: [] }` to the
 menu, which empties every body it owns.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-panel-date-answers-with-its-days
@@ -1140,7 +1141,7 @@ row matched a day called `created`, and the header's Date chip came back
 empty. A date answers with its menu's own reading, as a number does, and the
 source's answer is drawn into that chip: its days, and whether it is on.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filter-field.ts`
 
 ### T-the-router-owns-the-url
 
@@ -2392,6 +2393,7 @@ number chip reads its body's reading whatever its menu's type, or "> 2"
 filtered and its face stayed blank (TODO 82). And on a rebuild the READER'S kept answer wins over the def's opening
 one, or a def's typed condition came back on every rebuild.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`
@@ -10660,9 +10662,9 @@ A parent's caret asks for its children's menu (`quick-filter-open`): built
 then, shown once it has drawn, and removed when it shuts, so a shut chip holds
 no menu and a body press is never mistaken for an empty chip's open.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/source-counts.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-a-tiered-panel-chip.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-a-tiered-grid.spec.ts`
@@ -10725,6 +10727,7 @@ Measured after the Apply fixes (`T-a-chip-press-applies-its-menus-draft`):
 the swap itself keeps every answer both ways — the bar is steered on Apply,
 and the panel is refilled when it comes back. The panel open was the hole.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/source-binding.ts`
 
@@ -11610,6 +11613,7 @@ the field header's: read as a run, the chip's own id was sent as the pick.
 ---
 
  Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filter-field.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-def.ts`
@@ -12150,7 +12154,7 @@ The sweep now clears only chips that resolve to the SAME `Held` — the same
 field. Two controls in one run have different `data-value`, so neither touches
 the other.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filter-field.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-an-external-chip-caret-must-open-its-condition
@@ -14767,6 +14771,27 @@ that follows is what makes it read as unset.
 - Site: `src/core/data/source-counts.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 
+### T-a-field-is-one-object
+
+Will, TODO 424: *"All filter chips should be variants of the filter chip
+component and all logic centralised."* Every chip on a bar and in the panel is
+`sherpa-quick-filter`; what was written twice was the logic of a FIELD around
+them — drawing a told answer, reading it back, none, a tiered parent's flip,
+Reset. One class holds it now: `FilterField` (`src/core/ui/filter-field.ts`),
+one per drawn field — a run of value chips, a tiered run of parents, or one
+chip — and a host keeps a Map of them. What is the same on every surface is
+the class's; a host keeps only its layout (a bar's fold, a panel's sections).
+Its pending and failed marks are `markField`, its greying `limitField`
+(`filter-host.ts`). The plan, in eleven commits:
+`docs/history/plan-424-one-chip-logic.md`.
+
+Each chip a field draws says its field in `data-id` — the chip's own "which
+field this chip filters" — so the field finds its chips by it, and a section
+holding two fields (Organise: Group and Sort) never mixes them up.
+
+- Site: `src/core/ui/filter-field.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
 ### T-none-is-an-answer
 
 Will, TODO 403: *"the Select All in the off state should select none and return
@@ -14787,11 +14812,11 @@ is not the amber "filtering nothing". Its body then toggles it: OFF asks for
 every row, as any chip does (Will's pick). A pick outranks none; a date, a
 range and a typed answer have none.
 
+- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/where.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/none-is-an-answer.test.mjs`
 
 ### T-a-fetching-list-opens-on-its-first-value

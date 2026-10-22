@@ -15,7 +15,7 @@ import type {
   FieldFilter, FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows,
 } from '../../core/data/data-source.js';
 import {
-  arranges, advancedOf, hasOwnBody, kindOf, oneChipList, picksOne, type FilterKind,
+  arranges, advancedOf, hasOwnBody, kindOf, oneChipList, type FilterKind,
 } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FilterDef } from '../../core/ui/filter-def.js';
@@ -27,6 +27,7 @@ import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, drawCount, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
 import { modeOf, readingRows, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
@@ -84,21 +85,8 @@ const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
   view: 'monitor', chart: 'reports', grid: 'table-columns', form: 'file-lines', list: 'list',
 };
 
-/** What one drawn field holds. */
-interface Held {
-  def: FilterDef;
-  scope: string;
-  box: HTMLElement;
-  values: HTMLElement;
-  /** The menu the panel BUILT for this field, where it needs one. */
-  menu?: SherpaMenu;
-  /** A TIERED field's picks, parents and children, and those kept off — as
-   *  drawn, by value key — and each parent's children. Its chips are its
-   *  parents. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
-  tiers?: { picks: Set<string>; off: Set<string>; kids: Map<string, string[]> };
-  /** Its last value let go by the reader, where picks fetch: no rows. TRAP T-none-is-an-answer */
-  none?: boolean;
-}
+/** One drawn field: its chips, its menu, its answer. TODO 424 · TRAP T-a-field-is-one-object */
+type Held = FilterField;
 
 /** One filter a scope draws, in its order: a field, or Group or Sort. */
 interface ScopeFilter {
@@ -242,7 +230,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #syncArrangement(): void {
     for (const held of this.#held.values()) {
       const kind = held.def.id;
-      if (kind === 'group' || kind === 'sort') arrangeFrom(this, this.#oneChip(held), kind);
+      if (kind === 'group' || kind === 'sort') arrangeFrom(this, held.oneChip(), kind);
     }
   }
 
@@ -297,7 +285,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [, held] of this.#held) {
       // GROUP and SORT arrange rows; they are not part of WHICH rows.
       if (held.def.id === 'group' || held.def.id === 'sort') continue;
-      (out[held.scope] ??= {})[held.def.id] = this.#picked(held);
+      (out[held.scope] ??= {})[held.def.id] = held.picked();
     }
     return out;
   }
@@ -320,7 +308,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [, held] of this.#held) {
       // GROUP and SORT arrange rows; they are not part of WHICH rows.
       if (arranges(kindOf(held.def))) continue;
-      (out[held.scope] ??= {})[held.def.id] = this.#readingOf(held);
+      (out[held.scope] ??= {})[held.def.id] = held.reading();
     }
     return out;
   }
@@ -347,32 +335,12 @@ export class SherpaFilterPanel extends SherpaElement {
     return out;
   }
 
-  /** One field's whole answer: the chips are Simple's, the menu's rows are
-   *  Advanced's, and the menu says which is in force. TRAP T-both-answers-are-kept */
-  #readingOf(held: Held): FieldReading {
-    const tiers = held.tiers;
-    if (tiers) return { picked: [...tiers.picks], ...(tiers.off.size ? { off: [...tiers.off] } : {}), ...(held.none && !tiers.picks.size ? { none: true } : {}) };
-    const menu = held.menu;
-    // A NUMBER body answers for itself, as it does on a bar chip.
-    if (menu?.dataset['body'] === 'number') return menu.reading;
-    /* A DATE too: its answer is its calendar's days. Its ONE chip is ticked or
-       not, and the ticked chip's own id was sent as the day — so a date set in
-       the panel filtered nothing. OFF keeps the days. TRAP T-a-panel-date-answers-with-its-days */
-    if (menu?.dataset['body'] === 'date') return this.#answerChip(held)?.reading ?? menu.reading;
-    // A LONG LIST too: its one chip's id is no value. TRAP T-only-group-and-sort-stay-one-chip
-    const one = this.#answerChip(held);
-    if (one) return one.reading ?? menu?.reading ?? {};
-    const picked = this.#picked(held);
-    const none = held.none && !picked.length ? { none: true } : {};
-    return menu ? { ...menu.reading, picked, ...none } : { picked, ...none };
-  }
-
   /** Rows that still MIRROR the chips follow them. TRAP T-both-answers-are-kept */
   #followPicks(held: Held): void {
     const menu = held.menu;
-    if (!menu || menu.dataset['body'] || this.#oneChip(held)) return;
+    if (!menu || menu.dataset['body'] || held.oneChip()) return;
     const now = menu.reading;
-    if (now.mirror) menu.reading = { ...now, picked: this.#picked(held) };
+    if (now.mirror) menu.reading = { ...now, picked: held.picked() };
   }
 
   /**
@@ -396,10 +364,6 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Draw ONE field's whole reading, in its scope or the first. TRAP T-an-open-panel-follows-the-data-layer */
   #paint(id: string, given: FieldReading, scope?: string): void {
-    /* OFF filters nothing, and a panel has no "off": it shows no answer. The
-       Query keeps it, for the chip that switched it off.
-       TRAP T-a-suspended-answer-is-drawn-as-off */
-    const reading: FieldReading = given.suspended ? { picked: [] } : given;
     // Not built: before the first populate, or shut since. HELD, and drawn with its field.
     // TRAP T-a-value-before-the-first-render-is-held
     if (this.#stale || !this.#scopes.length) {
@@ -411,39 +375,8 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const held of this.#held.values()) {
       // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
       if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
-      if (held.tiers) {
-        held.tiers.picks = new Set((reading.picked ?? []).map(valueKey));
-        held.tiers.off = new Set((given.off ?? []).map(valueKey));
-        held.none = !!reading.none && !held.tiers.picks.size;
-        this.#paintTiers(held);
-        this.#syncAnswered(held);
-        return;
-      }
-      const menu = held.menu;
-      const chip = this.#answerChip(held);
-      if (this.#oneChip(held)) {
-        // Group and Sort ARRANGE: no reading draws them.
-        if (!chip) continue;
-        /* A DATE or a long list is one chip, and a chip has an OFF: it keeps
-           its answer. The chip draws it. TRAP T-a-panel-date-answers-with-its-days */
-        chip.reading = given;
-      } else if (menu?.dataset['body'] === 'number') {
-        menu.reading = reading;
-      } else {
-        // BOTH answers: the chips, then the rows — and the mode only where the
-        // reading names one or only rows answer. TRAP T-both-answers-are-kept
-        const want = new Set((reading.picked ?? []).map(valueKey));
-        held.none = !!reading.none && !want.size;
-        for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-          if (this.#heldOfChip(one) === held) {
-            one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
-          }
-        }
-        const mode = modeOf(reading);
-        if (mode) this.#setCustom(held, mode === 'advanced');
-        const given = held.menu;
-        if (given) given.reading = { ...reading, picked: [...want] };
-      }
+      // The field draws it; a named mode may build its menu first. TODO 424
+      if (!held.draw(given, (on) => this.#setCustom(held, on))) continue;
       this.#syncAnswered(held);
       return;
     }
@@ -473,7 +406,7 @@ export class SherpaFilterPanel extends SherpaElement {
     if (this.#stale) return;
     for (const held of this.#held.values()) {
       if (held.scope !== scope) continue;
-      const one = this.#oneChip(held);
+      const one = held.oneChip();
       if (one) one.results = results[held.def.field ?? held.def.id] ?? null;
       else this.#headResults(held, results[held.def.field ?? held.def.id] ?? null);
     }
@@ -540,11 +473,9 @@ export class SherpaFilterPanel extends SherpaElement {
     if (this.#stale) return;
     for (const held of this.#held.values()) {
       // A run only: one chip and a body are drawn by drawResults.
-      if (held.scope !== scope || this.#oneChip(held)) continue;
+      if (held.scope !== scope || held.oneChip()) continue;
       const own = results[held.def.field ?? held.def.id] ?? {};
-      for (const chip of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
-        if (this.#heldOfChip(chip) === held) chip.results = own[chip.dataset['value'] ?? ''] ?? null;
-      }
+      for (const chip of held.chips()) chip.results = own[chip.dataset['value'] ?? ''] ?? null;
     }
   }
 
@@ -592,9 +523,8 @@ export class SherpaFilterPanel extends SherpaElement {
     const field = held.def.field ?? held.def.id;
     const limits = { present: this.#presentBy.get(held.scope)?.[field] ?? null, offered: this.#offeredBy.get(held.scope)?.[field] ?? null, hide: hidesUnmatched(this) };
     // ONE chip is never greyed for it: every pick ruled out, it stays in force (Will, 2026-10-20).
-    if (this.#answerChip(held)) return limitField([], [held.menu], limits);
-    const values = [...held.values.querySelectorAll<HTMLElement>('.value')].filter((c) => this.#heldOfChip(c) === held);
-    limitField(values, [held.menu, ...held.values.querySelectorAll<SherpaMenu>('sherpa-menu[data-kids]')], limits);
+    if (held.answerChip()) return limitField([], [held.menu], limits);
+    limitField(held.chips(), held.menus(), limits);
   }
 
   /** A field's results, on its header's badge — or none. Will, TODO 133. */
@@ -833,12 +763,14 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** ONE value chip. The only place this panel makes a `<sherpa-quick-filter>`. */
-  #valueChip(value: string, label: string, opts: {
+  #valueChip(field: string, value: string, label: string, opts: {
     icon?: string; current?: boolean; kind?: FilterKind; column?: string; swatch?: number;
   } = {}): HTMLElement | null {
     const proto = this.$<HTMLTemplateElement>('template.value-tpl');
     const one = proto?.content.firstElementChild?.cloneNode(true) as HTMLElement | null;
     if (!one) return null;
+    // WHICH FIELD it filters: its FilterField finds it by this. TODO 424
+    one.dataset['id'] = field;
     one.dataset['value'] = value;
     one.setAttribute('data-label', label);
     /* The SEARCH reads this, not `data-label`: a chip rewrites its own label
@@ -866,7 +798,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const on = (def.options ?? []).find((o) => o.selected)?.value;
     // A DATE has no options: it is on when it holds days, and is not switched off.
     const dated = kind === 'date' && (def.state?.picked ?? []).length > 0 && !def.state?.suspended;
-    const one = this.#valueChip(def.id, def.label, {
+    const one = this.#valueChip(def.id, def.id, def.label, {
       ...(def.icon ? { icon: def.icon } : {}),
       current: !!on || dated,
       ...(arranges(kind) ? { kind } : {}),
@@ -875,7 +807,7 @@ export class SherpaFilterPanel extends SherpaElement {
       ...(arranges(kind) && on ? { column: String(on) } : {}),
     });
     if (!one) return null;
-    const held: Held = { def, scope, box, values };
+    const held = new FilterField(def, scope, box, values);
     this.#giveMenu(held, one);
     this.#held.set(`${scope}:${def.id}`, held);
     return one;
@@ -946,7 +878,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const kids = new Map<string, string[]>();
     for (const o of options) if (o.parent) kids.set(o.parent, [...kids.get(o.parent) ?? [], o.value]);
     for (const option of values ? options.filter((o) => !o.parent) : []) {
-      const one = this.#valueChip(option.value, option.label ?? option.value,
+      const one = this.#valueChip(def.id, option.value, option.label ?? option.value,
         { current: !!option.selected, ...(option.swatch ? { swatch: option.swatch } : {}) });
       /* LOCKED: the panel draws a parent from its picks. One with children
          opens them from its caret. TRAP T-locked-chip-relays-and-nothing-else */
@@ -955,12 +887,12 @@ export class SherpaFilterPanel extends SherpaElement {
       if (one) values!.append(one);
     }
 
-    const held: Held = { def, scope, box, values: values ?? box };
+    const held = new FilterField(def, scope, box, values ?? box);
     if (kids.size) {
       held.tiers = {
         picks: new Set((def.state?.picked ?? []).map(valueKey)), off: new Set((def.state?.off ?? []).map(valueKey)), kids,
       };
-      this.#paintTiers(held);
+      held.paintTiers();
     }
 
     /* A field ANSWERED BY ITS MENU — a number, a range, a condition-only field
@@ -1157,32 +1089,14 @@ export class SherpaFilterPanel extends SherpaElement {
   #countOf(scope: string, id: string): number {
     const held = this.#held.get(`${scope}:${id}`);
     if (!held) return 0;
-    return this.#oneChip(held) ? (held.menu?.values?.length ?? 0)
-      : this.#picked(held).length;
+    return held.oneChip() ? (held.menu?.values?.length ?? 0)
+      : held.picked().length;
   }
 
   /** A field is ON when it answers — for one drawn as a single chip, when that chip does. */
   #isOn(held: Held): boolean {
-    const chip = this.#oneChip(held);
+    const chip = held.oneChip();
     return chip ? chip.hasAttribute('data-current') : held.box.hasAttribute('data-answered');
-  }
-
-  /** The ONE chip a whole field is drawn as — Group, Sort, a date — or null for a run. */
-  #oneChip(held: Held): SherpaQuickFilter | null {
-    if (!arranges(kindOf(held.def)) && !held.def.asChip) return null;
-    return this.#chipIn(held, held.def.id);
-  }
-
-  /** The ONE chip that ANSWERS a field — a date — and so reads, draws and
-   *  empties itself. Group and Sort arrange; a run has no one chip.
-   *  TRAP T-a-chip-says-its-own-answer */
-  #answerChip(held: Held): SherpaQuickFilter | null {
-    return arranges(kindOf(held.def)) ? null : this.#oneChip(held);
-  }
-
-  /** The chip for one value in a field's run. */
-  #chipIn(held: Held, value: string): SherpaQuickFilter | null {
-    return held.values.querySelector<SherpaQuickFilter>(`.value[data-value="${CSS.escape(value)}"]`);
   }
 
   /**
@@ -1239,7 +1153,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#drillOut();
     // A TIERED field's values are its parent chips, each with its own menu: the door opens the scope.
     // TRAP T-a-conditions-only-menu-cannot-be-drilled
-    const chip = !held.tiers && !!this.#oneChip(held);
+    const chip = !held.tiers && !!held.oneChip();
     const run = !chip && !held.tiers && !held.box.hasAttribute('data-advanced') && !held.box.hasAttribute('data-body')
       && (held.def.options?.length ?? 0) > 0;
     const home = chip ? held.menu ?? null : run ? await this.#buildDrillMenu(held) : null;
@@ -1265,7 +1179,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * one built from the same def, ticked as the chips are. TRAP T-one-field-one-filter-menu
    */
   async #buildDrillMenu(held: Held): Promise<SherpaMenu> {
-    const picked = new Set(this.#picked(held));
+    const picked = new Set(held.picked());
     const def: FilterMenuDef = {
       id: held.def.id,
       label: held.def.label,
@@ -1298,10 +1212,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#drill.out();
     if (built && home === built.menu) {
       const want = new Set(values);
-      for (const one of built.held.values.querySelectorAll<HTMLElement>('.value')) {
-        if (this.#heldOfChip(one) !== built.held) continue;
-        one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
-      }
+      for (const one of built.held.chips()) one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
       this.#dropBuilt();
       this.#syncAnswered(built.held);
       // Its Apply is the field's change. TRAP T-a-chip-menu-apply-is-the-panels-apply
@@ -1335,43 +1246,6 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /* ── A tiered field: its parents are chips, its children their menus. TODO 369 ── */
 
-  /** Draw each parent chip: ON while it, or any child of it, is picked. */
-  #paintTiers(held: Held): void {
-    const t = held.tiers;
-    if (!t) return;
-    for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
-      if (this.#heldOfChip(chip) !== held) continue;
-      const p = chip.dataset['value'] ?? '';
-      chip.toggleAttribute('data-current', [p, ...t.kids.get(p) ?? []].some((k) => t.picks.has(k)));
-    }
-  }
-
-  /** A press on a parent: on goes OFF and keeps its picks; off comes back on;
-   *  with none, the parent is picked whole. Will, TODO 369 (Q2) */
-  #flipParent(t: NonNullable<Held['tiers']>, p: string): void {
-    const mine = [p, ...t.kids.get(p) ?? []];
-    if (mine.some((k) => t.picks.has(k))) {
-      for (const k of mine) if (t.picks.delete(k)) t.off.add(k);
-    } else if (mine.some((k) => t.off.has(k))) {
-      for (const k of mine) if (t.off.delete(k)) t.picks.add(k);
-    } else {
-      t.picks.add(p);
-    }
-  }
-
-  /** A parent's children menu applied: these children are its picks — the
-   *  parent itself only while it stays whole. TRAP T-a-parent-pick-is-the-parent */
-  #takeKids(t: NonNullable<Held['tiers']>, p: string, values: readonly string[]): void {
-    const kids = t.kids.get(p) ?? [];
-    const want = new Set(values);
-    const whole = t.picks.has(p) && kids.every((k) => want.has(k));
-    for (const k of [p, ...kids]) {
-      t.off.delete(k);
-      if (!whole) t.picks.delete(k);
-    }
-    if (!whole) for (const k of kids) if (want.has(k)) t.picks.add(k);
-  }
-
   /** A parent's caret asked: its children's menu, built now, ticked from the picks. */
   #onKidsOpen = (event: Event): void => {
     const chip = this.pathFind(event, '.value');
@@ -1402,15 +1276,6 @@ export class SherpaFilterPanel extends SherpaElement {
     if (menu?.hasAttribute('data-kids')) menu.remove();
   };
 
-  /** The values ticked in one field's run — or a long list's one chip's menu. */
-  #picked(held: Held): string[] {
-    if (held.tiers) return [...held.tiers.picks];
-    if (this.#answerChip(held) && held.menu?.dataset['body'] !== 'date') return [...held.menu?.values ?? []];
-    return [...held.values.querySelectorAll<HTMLElement>('.value[data-current]')]
-      .map((c) => c.dataset['value'] ?? '')
-      .filter(Boolean);
-  }
-
   /** Re-read the pending flags once the event that moved a draft has landed. */
   #queuePending = (): void => {
     queueMicrotask(() => this.#syncPending());
@@ -1429,9 +1294,9 @@ export class SherpaFilterPanel extends SherpaElement {
       const on = waits && pending.has(field);
       held.box.toggleAttribute('data-pending', on);
       // EVERY chip of the field, as the bar's one, and its menus — a draft in one too. TODO 424
-      const chips = [this.#answerChip(held), ...[...held.values.querySelectorAll<SherpaQuickFilter>('.value')].filter((c) => this.#heldOfChip(c) === held)];
-      const drafting = chips.some((c) => !!c?.drafting) || !!held.menu?.dirty;
-      markField(chips, [held.menu, ...held.values.querySelectorAll('sherpa-menu[data-kids]')], { pending: on, failed: failed.has(field), drafting });
+      const chips = held.chips();
+      const drafting = chips.some((c) => c.drafting) || !!held.menu?.dirty;
+      markField(chips, held.menus(), { pending: on, failed: failed.has(field), drafting });
     }
   }
 
@@ -1473,30 +1338,13 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!one || one.hasAttribute('data-unavailable')) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
-    // A PARENT is on or off, and keeps its children's picks. Will, TODO 369
+    // The FIELD takes it: a parent flips, a single pick sweeps, the last let go is none. TODO 424
+    held.press(one as SherpaQuickFilter, this.#fetches(held));
     if (held.tiers) {
-      this.#flipParent(held.tiers, one.dataset['value'] ?? '');
-      held.none = this.#fetches(held) && !held.tiers.picks.size;
-      this.#paintTiers(held);
       this.#syncAnswered(held);
       this.#report(held);
       return;
     }
-    /* ONE OF THIS FIELD'S VALUES, not one of the run. A section can hold two
-       SEPARATE controls — `Organise` is a heading over Group and Sort, and it
-       is not their field — so they share a `.values` container while answering
-       different questions. Sweeping the container unticked Group whenever Sort
-       was clicked, and left the grid grouped by a chip that read OFF.
-       TRAP T-a-section-heading-is-not-a-field */
-    if (picksOne(kindOf(held.def))) {
-      for (const other of held.values.querySelectorAll<HTMLElement>('.value')) {
-        if (other !== one && this.#heldOfChip(other) === held) {
-          other.removeAttribute('data-current');
-        }
-      }
-    }
-    // The last value let go, where picks fetch: none — no rows. TRAP T-none-is-an-answer
-    held.none = this.#fetches(held) && !this.#picked(held).length;
     /* GROUP and SORT handle their own click and report it themselves — a
        filter waits for Apply, an arrangement does not, and which it is depends
        on WHAT THE CHIP IS, not on which container drew it.
@@ -1575,11 +1423,8 @@ export class SherpaFilterPanel extends SherpaElement {
    *  The chip carries its own id, so ask it first.
    *  TRAP T-two-chips-in-one-section-need-their-own-id */
   #heldOfChip(chip: HTMLElement): Held | undefined {
-    const id = chip.dataset['value'];
-    const byId = id
-      ? [...this.#held.values()].find((h) => h.def.id === id && h.values.contains(chip))
-      : undefined;
-    return byId ?? [...this.#held.values()].find((h) => h.values.contains(chip));
+    const id = chip.dataset['id'];
+    return [...this.#held.values()].find((h) => h.def.id === id && h.values.contains(chip));
   }
 
   /** The field a node sits in. */
@@ -1599,7 +1444,7 @@ export class SherpaFilterPanel extends SherpaElement {
        they are ticked NOW. TRAP T-a-late-built-menu-takes-the-answer-as-it-stands */
     const kept = held.def.state;
     if (on && built && menu && kept && readingRows(kept).length) {
-      menu.reading = { ...kept, picked: this.#picked(held), mode: 'advanced' };
+      menu.reading = { ...kept, picked: held.picked(), mode: 'advanced' };
     }
     /* CARRY THE CHIPS OVER on the first switch, and while the rows still mirror
        them: X and Y become Equals X OR Equals Y. TRAP T-both-answers-are-kept
@@ -1607,7 +1452,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const now = menu?.reading;
     // A one-chip list carried its own over, through the menu's door. TODO 385
     if (on && menu && now && !menu.dataset['body'] && !held.def.asChip && (now.mirror || !(now.conditions ?? []).length)) {
-      menu.reading = { ...now, picked: this.#picked(held), mode: 'advanced', mirror: true };
+      menu.reading = { ...now, picked: held.picked(), mode: 'advanced', mirror: true };
     }
     this.#syncAnswered(held);
     /* ONCE ITS ROWS ARE DRAWN. Read at once, a menu just built has none: the
@@ -1650,11 +1495,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Has this field been ANSWERED — any ticked chip, or a condition row?
    *  Clear only appears once there is something to clear. */
   #syncAnswered(held: Held): void {
-    const ticked = held.values.querySelector('.value[data-current]') != null;
-    const menu = held.menu;
-    const advanced = held.box.hasAttribute('data-advanced')
-      && (menu?.conditions?.length ?? 0) > 0;
-    held.box.toggleAttribute('data-answered', ticked || advanced || !!held.none);
+    held.box.toggleAttribute('data-answered', held.answered);
     this.#syncFilters();
   }
 
@@ -1679,29 +1520,9 @@ export class SherpaFilterPanel extends SherpaElement {
   #clearField(btn: HTMLElement): void {
     const held = this.#fieldOf(btn);
     if (!held) return;
-    this.#empty(held);
+    held.empty();
     this.#syncAnswered(held);
     this.#report(held);
-  }
-
-  /** EMPTY one field, whatever answers it: its value chips, and its menu's
-   *  rows, number or days. TRAP T-empty-is-every-kind-of-answer */
-  #empty(held: Held): void {
-    if (held.tiers) {
-      held.tiers.picks.clear();
-      held.tiers.off.clear();
-      this.#paintTiers(held);
-      return;
-    }
-    // ONE chip that answers a field empties itself. TRAP T-a-chip-says-its-own-answer
-    const chip = this.#answerChip(held);
-    if (chip) return chip.clear();
-    // Each chip clears itself — a Group or Sort chip its column and way. TODO 424
-    for (const one of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
-      if (this.#heldOfChip(one) === held) one.clear();
-    }
-    const menu = held.menu;
-    if (menu && !arranges(kindOf(held.def))) menu.reading = { picked: [] };
   }
 
   /** The Add menu committed. The HOST owns the list; this is a request. */
@@ -1715,8 +1536,7 @@ export class SherpaFilterPanel extends SherpaElement {
     if (chip) {
       const held = this.#heldOfChip(chip);
       if (held?.tiers) {
-        this.#takeKids(held.tiers, chip.dataset['value'] ?? '', ((event as CustomEvent).detail?.values ?? []) as string[]);
-        this.#paintTiers(held);
+        held.takeKids(chip.dataset['value'] ?? '', ((event as CustomEvent).detail?.values ?? []) as string[]);
         this.#syncAnswered(held);
         this.#report(held);
         return;
@@ -1771,8 +1591,7 @@ export class SherpaFilterPanel extends SherpaElement {
       const names = [held.def.label, held.box.querySelector('.field-title')?.textContent ?? ''];
       const named = !q || names.some((name) => name.toLowerCase().includes(q));
       if (named) shown.add(held.box);
-      for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-        if (this.#heldOfChip(one) !== held) continue;
+      for (const one of held.chips()) {
         const hit = named || (one.dataset['search'] ?? '').includes(q);
         one.toggleAttribute('data-filtered-out', !hit);
         if (hit) shown.add(held.box);
@@ -1791,7 +1610,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #report(held: Held): void {
     this.#followPicks(held);
     if (arranges(kindOf(held.def))) return;
-    this.#ask({ scope: held.scope, field: held.def.id, reading: this.#readingOf(held) });
+    this.#ask({ scope: held.scope, field: held.def.id, reading: held.reading() });
   }
 
   /** ONE reader act, as a request to the source. `values` rides along for a
@@ -1870,7 +1689,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** RESET ALL: every field in every scope, Group and Sort too — ONE request,
    *  as the toolbar's Reset is. Will, 2026-09-26 · 366 step 20 */
   #onResetAll = (): void => {
-    for (const held of this.#held.values()) this.#empty(held);
+    for (const held of this.#held.values()) held.empty();
     this.#syncAllAnswered();
     this.#ask(this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } })));
   };

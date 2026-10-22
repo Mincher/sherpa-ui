@@ -1913,6 +1913,14 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   one rule — a pick, typing or a row, or none — and the chip, the bar (a filter's
   Apply, a calendar's pick) and the panel (a value chip's Apply) all use it; the
   panel's dropped a typed answer and none.
+- ✅ **Step 7 — one object per field, in the panel (2026-10-22).** `FilterField`
+  (`src/core/ui/filter-field.ts`) holds a drawn field's chips, menu, tiers and
+  none, and its answer in and out: `reading`, `draw`, `press`, `takeKids`,
+  `empty`, `answered`. The panel keeps a Map of them; its own helpers for the
+  same (`#readingOf`, `#oneChip`, `#answerChip`, `#chipIn`, `#picked`,
+  `#paintTiers`, `#flipParent`, `#takeKids`, `#empty`) are gone. Each chip says
+  its field in `data-id`. TRAP `T-a-field-is-one-object`. Chromium: sherpa-ui
+  1148, Demos 169.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 
