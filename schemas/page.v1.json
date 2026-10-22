@@ -91,6 +91,10 @@
         "fetch": {
           "description": "server: its filter is asked of the store, never worked out from the rows held — once per answer, for the keys it matches. Its menus have Apply.",
           "enum": ["server"]
+        },
+        "start": {
+          "description": "What a fetching list — one in the View, or any on a remote source — opens on: first, its first value (the default), or all, no filter.",
+          "enum": ["first", "all"]
         }
       }
     },

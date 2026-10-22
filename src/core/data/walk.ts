@@ -7,7 +7,7 @@
  * Map:
  * - WalkTier — A tiered field's child, and each path's parent key.
  * - WalkStep — One filter in a scope's order: its answer, and what it counts and limits.
- * - WalkTap — A list field no filter holds: its values, for a menu to grey.
+ * - WalkTap — A list field no filter holds, tallied where it would stand.
  * - WalkScope — One scope's walk: where it starts, its steps and its taps.
  * - WalkPlan — Every scope's walk, the View first, and the moment its dates are read at.
  * - Walk — What a walk gives, by scope.
@@ -17,7 +17,6 @@
  * - walkReads — The fields each scope's walk reads — a change to no other leaves the walk as it is.
  * - Scan — One scope's scan: its tests, and what it gathers at each step.
  * - passOver — One scan of rows through a scope's steps, from one step on.
- * - presentBothWays — Each field Limit greys, under every OTHER filter in force in its scope.
  * - walkInOrder — Walk the rows, scope by scope.
  */
 import { absoluteDates, filterFields, matchesFilter, readField, valueKey, type Filter, type Row } from './store.js';
@@ -54,8 +53,9 @@ export interface WalkStep {
   tier?: WalkTier;
 }
 
-/** A list field no filter holds: its values, for a menu to grey. */
+/** A list field no filter holds, tallied where it would stand: before step `at`. */
 export interface WalkTap {
+  at: number;
   field: string;
   ruler: 'here' | 'start';
   tier?: WalkTier;
@@ -147,6 +147,8 @@ export interface Scan {
   eachTests: Array<Filter[] | null>;
   /** Does step i tally its field? */
   tallied: boolean[];
+  /** Fields tallied at each place, for a tap ruled where it stands. */
+  tapsAt: Map<number, string[]>;
   /** Fields tallied over every row the scope starts with. */
   startFields: string[];
   /** A tiered field's child, by field. */
@@ -154,6 +156,7 @@ export interface Scan {
   tally: Array<Set<string>>;
   count: number[];
   each: number[][];
+  tapTally: Map<number, Map<string, Set<string>>>;
   start: Map<string, Set<string>>;
 }
 
@@ -179,6 +182,15 @@ function add(into: Map<string, Set<string>>, row: Row, field: string, child: str
   addKeys(keys, row, field, child);
 }
 
+/** The taps at a place: each tallies its field over the rows that reach it. */
+function tapAt(scan: Scan, at: number, row: Row): void {
+  const fields = scan.tapsAt.get(at);
+  if (!fields) return;
+  let tallies = scan.tapTally.get(at);
+  if (!tallies) scan.tapTally.set(at, (tallies = new Map()));
+  for (const f of fields) add(tallies, row, f, scan.childOf.get(f));
+}
+
 /** ONE scan: each row, from step `from`, is tallied and counted at each step it
  *  reaches, and stops at the first step in force it fails. Gives the step each
  *  row stopped at — the step count for a row that passed them all. */
@@ -191,6 +203,7 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
     if (from === 0) for (const f of scan.startFields) add(scan.start, row, f, scan.childOf.get(f));
     let i = from;
     for (; i < n; i++) {
+      tapAt(scan, i, row);
       const step = steps[i]!;
       if (scan.tallied[i]) addKeys(scan.tally[i]!, row, step.field!, step.tier?.child);
       const each = scan.eachTests[i];
@@ -201,45 +214,17 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
       if (hit && step.counts) scan.count[i]!++;
       if (step.on && !hit) break;
     }
+    if (i === n) tapAt(scan, n, row);
     stopped[r] = i;
   }
   return stopped;
 }
 
-/**
- * What Limit leaves each field it greys: the values of the rows that pass every
- * OTHER filter in force in its scope — after it as well as before, so a Region
- * pick greys the Customers it rules out, as a Customer pick greys Regions. A
- * field no filter holds (a tap) is limited by them all. Counts stay in order.
- * Will, TODO 400. TRAP T-one-walk-counts-and-limits-in-order
- */
-export function presentBothWays(rows: readonly Row[], scan: Scan, taps: readonly WalkTap[]): Map<string, Set<string>> {
-  const { steps, tests } = scan;
-  const ruled = steps.flatMap((s, i) => (s.field && s.ruler === 'here' ? [i] : []));
-  const tapped = taps.filter((t) => t.ruler === 'here');
-  const out = new Map<string, Set<string>>([...ruled.map((i) => [steps[i]!.field!, new Set<string>()] as const),
-    ...tapped.map((t) => [t.field, new Set<string>()] as const)]);
-  if (!out.size) return out;
-  const live = steps.flatMap((s, i) => (s.on && tests[i] ? [i] : []));
-  for (const row of rows) {
-    // Which ONE filter in force it fails, if one: more than one, and it reaches no field.
-    let failed = -1;
-    let fails = 0;
-    for (const i of live) {
-      if (matchesFilter(row, tests[i]!)) continue;
-      failed = i;
-      if (++fails > 1) break;
-    }
-    if (fails > 1) continue;
-    for (const i of ruled) if (fails === 0 || failed === i) addKeys(out.get(steps[i]!.field!)!, row, steps[i]!.field!, steps[i]!.tier?.child);
-    if (fails === 0) for (const t of tapped) addKeys(out.get(t.field)!, row, t.field, t.tier?.child);
-  }
-  return out;
-}
-
 /** A scope's scan, before any row. */
 function scanOf(sc: WalkScope, now: Date): Scan {
   const steps = sc.steps;
+  const tapsAt = new Map<number, string[]>();
+  for (const tap of sc.taps) if (tap.ruler === 'here') tapsAt.set(tap.at, [...(tapsAt.get(tap.at) ?? []), tap.field]);
   const startFields = [...new Set([
     ...steps.filter((s) => s.field && s.ruler === 'start').map((s) => s.field!),
     ...sc.taps.filter((t) => t.ruler === 'start').map((t) => t.field),
@@ -250,11 +235,13 @@ function scanOf(sc: WalkScope, now: Date): Scan {
     tests: steps.map((s) => (s.clause && (s.on || s.counts) ? absoluteDates(s.clause, now) : undefined)),
     eachTests: steps.map((s) => (s.each?.length ? s.each.map(([, c]) => absoluteDates(c, now)) : null)),
     tallied: steps.map((s) => !!s.field && (s.ruler === 'here' || !!s.offers)),
+    tapsAt,
     startFields,
     childOf: new Map([...steps, ...sc.taps].flatMap((s) => (s.field && s.tier ? [[s.field, s.tier.child] as const] : []))),
     tally: steps.map(() => new Set<string>()),
     count: steps.map(() => 0),
     each: steps.map((s) => (s.each ?? []).map(() => 0)),
+    tapTally: new Map(),
     start: new Map(),
   };
 }
@@ -266,11 +253,12 @@ function resetFrom(scan: Scan, j: number): void {
     scan.count[i] = 0;
     scan.each[i] = scan.each[i]!.map(() => 0);
   }
+  for (const at of [...scan.tapTally.keys()]) if (at >= j) scan.tapTally.delete(at);
 }
 
 /** Does this scope gather anything, or narrow anything? If not, it ends where it starts. */
 function needsScan(scan: Scan): boolean {
-  return scan.tests.some(Boolean) || scan.tallied.some(Boolean)
+  return scan.tests.some(Boolean) || scan.tallied.some(Boolean) || scan.tapsAt.size > 0
     || scan.startFields.length > 0 || scan.eachTests.some(Boolean);
 }
 
@@ -325,18 +313,16 @@ export function walkInOrder(rows: readonly Row[], plan: WalkPlan): Walk {
     const values: Record<string, Record<string, number>> = {};
     const present: Record<string, string[]> = {};
     const offered: Record<string, string[]> = {};
-    // Limit greys by every OTHER filter in force, both ways. TODO 400
-    const both = presentBothWays(start, scan, sc.taps);
     steps.forEach((step, i) => {
       if (step.counts && scan.tests[i]) results[step.id] = scan.count[i]!;
       if (!step.field) return;
       if (step.each?.length) values[step.field] = Object.fromEntries(step.each.map(([key], k) => [key, scan.each[i]![k]!]));
-      if (step.ruler) present[step.field] = [...(step.ruler === 'here' ? both.get(step.field) ?? [] : scan.start.get(step.field) ?? [])];
+      if (step.ruler) present[step.field] = [...(step.ruler === 'here' ? scan.tally[i]! : scan.start.get(step.field) ?? [])];
       if (step.offers && narrowedAt(i)) offered[step.field] = [...scan.tally[i]!];
     });
     const spent: string[] = [];
     for (const tap of sc.taps) {
-      const keys = [...(tap.ruler === 'here' ? both.get(tap.field) ?? [] : scan.start.get(tap.field) ?? [])];
+      const keys = [...(tap.ruler === 'here' ? scan.tapTally.get(tap.at)?.get(tap.field) ?? [] : scan.start.get(tap.field) ?? [])];
       present[tap.field] = keys;
       if (!keys.length) spent.push(tap.field);
     }

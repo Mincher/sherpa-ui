@@ -22,12 +22,13 @@
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
+ * - .openOnFirst — Each FETCHING list opens on its first value, never on every row.
  * - .declareChildren — A tiered field's child values, from the rows the source holds: one pass.
+ * - .readValues — Read these fields' values now, where they wait; the controls over them are drawn again.
  * - .fieldFacts — What `declareField` was told.
  * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
- * - .readValues — Read these fields' values now, where they wait; the controls over them are drawn again.
  * - .addable — What a scope may still add, each noting where it lives now.
  * - .valuesFor — What `declareValues` was told, as the data holds it.
  * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
@@ -45,8 +46,8 @@
  * - .close — Let the store go: a change no longer reloads it, and its held set is dropped.
  * - .results — Each answered chip's results: the rows that reach it and match its answer.
  * - .valueResults — Each picked value's own results: the rows that reach its field and match that one value.
- * - .limitOptions — Does each list field offer only the values the other filters leave? Settable, unlike applyOn.
- * - .present — Each list field's values its ruler leaves in a scope: the other filters, or the View's subset.
+ * - .limitOptions — Does each list field offer only the values the filters before it leave? Settable, unlike applyOn.
+ * - .present — Each list field's values its ruler leaves in a scope: the filters before it, or the View's subset.
  * - .offered — What each field below the top of a SERIAL set offers: the values the rows hold at its place.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
  * - .allRows — Every row a bound component is under, UNPAGED — what "Select all rows" ticks on a grid that holds one page.
@@ -55,15 +56,15 @@
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
-  DEFAULT_OP, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
+  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
 } from './store.js';
 import { readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
-import { answerOrder, planWalk, walkStepwise } from './source-counts.js';
+import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading,
+  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, readingAnswered,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -529,6 +530,48 @@ export class DataSource extends EventTarget {
       else this.#failed.delete(f);
     }
     if (moved.length) this.#syncPending();
+  }
+
+  /**
+   * Each FETCHING list opens on its first value, never on every row: a list the
+   * View holds, or any on a remote source, with no answer and no `start: 'all'`.
+   * The first a row holds under the starts before it, so a chain never opens
+   * empty. Will, TODO 403 · TRAP T-a-fetching-list-opens-on-its-first-value
+   */
+  async openOnFirst(): Promise<void> {
+    for (const scope of this.query.scopes) {
+      if (scope !== VIEW && !this.#remote) continue;
+      const before: Filter[] = [];
+      for (const field of this.query.scope(scope)) {
+        const facts = this.#catalogue.get(field);
+        if (!facts || facts.type === 'number' || facts.type === 'date' || facts.advanced === 'only') continue;
+        const known = { field, ...this.#catalogue.facts(field) };
+        const had = this.query.applied.scopes[scope]?.readings[field];
+        const answer = had && readingAnswered(had) ? had : undefined;
+        if (!answer && facts.select !== 'single' && facts.start !== 'all') {
+          // The first field's values are read already; one after a start asks what is left.
+          let found: string[] | null = null;
+          if (before.length || !known.values?.length) {
+            // A store that fails here fails the first load too, which says so: no start.
+            try {
+              await this.#hold();
+              found = (await presentUnder(this.#reads, [field], andFilter(before)))[field] ?? [];
+            } catch {
+              return;
+            }
+          }
+          const first = found ? (known.values ?? []).find((v) => found.includes(valueKey(v))) ?? found[0] : known.values![0];
+          if (first == null) continue;
+          const start = { picked: [first] };
+          this.query.startWith(scope, field, start);
+          const clause = readingClause(known, start);
+          if (clause) before.push(clause);
+          continue;
+        }
+        const clause = answer && !answer.suspended ? readingClause(known, answer) : undefined;
+        if (clause) before.push(clause);
+      }
+    }
   }
 
   /** A tiered field's child values, from the rows the walk reads — one read for
@@ -1652,7 +1695,7 @@ export class DataSource extends EventTarget {
   /* ── What the filters BEFORE a field leave — Will, TODOs 174 and 349 ────
    * TRAP T-a-ruled-out-value-is-greyed */
 
-  /** Does each list field offer only the values the other filters leave? Settable at any time, unlike `applyOn`. */
+  /** Does each list field offer only the values the filters before it leave? Settable at any time, unlike `applyOn`. */
   get limitOptions(): boolean {
     return this.#limitOptions;
   }
@@ -1713,7 +1756,10 @@ export class DataSource extends EventTarget {
     if (facts.scope && this.#context.waiting()) this.#syncPending();
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
-    // …and what the other filters leave each field. TRAP T-a-ruled-out-value-is-greyed
+    /* …and the answers the Query holds already — a fetching list's start — LAST:
+       a bar told its scope waits rebuilds its chips. TODO 403 */
+    if (facts.scope && el.drawReading) for (const field of this.selectedFields) this.#draw(field);
+    // …and what the filters before each field leave. TRAP T-a-ruled-out-value-is-greyed
     // …and its chips' counts. TRAP T-a-chip-counts-within-the-filters-before-it
     if (facts.scope && (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && this.#loaded) this.#walkSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the

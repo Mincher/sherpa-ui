@@ -60,6 +60,9 @@ export interface FieldDeclaration {
   /** `server`: its filter is ASKED of the store, never worked out from rows held —
    *  once per answer, for the keys it matches. TRAP T-a-server-field-is-asked-once-per-answer */
   fetch?: 'server';
+  /** What a FETCHING list opens on: `first`, its first value (the default), or
+   *  `all`, no filter. Will, TODO 403 · TRAP T-a-fetching-list-opens-on-its-first-value */
+  start?: 'first' | 'all';
 }
 
 /** A field's filter as any bar or panel draws it — its declaration and values. */
@@ -171,7 +174,7 @@ export interface DataSourceOptions {
   searchFields?: string[];
   /** Load as soon as the first component binds. Default true. */
   autoLoad?: boolean;
-  /** Each list field offers only the values the other filters leave; the rest
+  /** Each list field offers only the values the filters before it leave; the rest
    *  are drawn greyed. Default false. TRAP T-a-ruled-out-value-is-greyed */
   limitOptions?: boolean;
   /** `'input'`: a filter applies LIVE, while its value moves, `debounce` ms after
@@ -255,7 +258,7 @@ export interface BoundControl {
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
-  /** Each field's values the other filters leave, as value keys; a field not named is not limited. */
+  /** Each field's values the filters before it leave, as value keys; a field not named is not limited. */
   drawPresent?: (present: Readonly<Record<string, readonly string[]>>, scope: string) => void;
   /** Each serial-set field's values to OFFER, as value keys; the rest are removed. A field not named offers all. */
   drawOffered?: (offered: Readonly<Record<string, readonly string[]>>, scope: string) => void;

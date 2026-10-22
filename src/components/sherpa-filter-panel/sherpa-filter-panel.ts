@@ -551,9 +551,9 @@ export class SherpaFilterPanel extends SherpaElement {
   #valueCounted = new Map<string, Readonly<Record<string, Readonly<Record<string, number>>>>>();
 
   /**
-   * drawPresent(present, scope) — a bound source says what the other filters
-   * leave each field in a scope. A value chip they rule out is greyed and
-   * refused; a field's menu greys its rows. A field not
+   * drawPresent(present, scope) — a bound source says what the filters before
+   * each field leave in a scope. A value chip they rule out is greyed — refused
+   * if off, set aside if on; a field's menu greys its rows. A field not
    * named is not limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
@@ -572,7 +572,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
   /** What the Filters list was last drawn spent for. */
   #spentFor = '';
-  /** What the other filters leave each field, by scope, as last drawn. */
+  /** What the filters before each field leave, by scope, as last drawn. */
   #presentBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
 
   /** drawOffered(offered, scope) — what each serial-set field OFFERS: a value
@@ -585,7 +585,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** What each serial-set field offers, by scope, as last drawn. */
   #offeredBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
 
-  /** One field's chips and menu, told what the other filters leave, and what its chain offers. */
+  /** One field's chips and menu, told what the filters before it leave, and what its chain offers. */
   #markPresent(held: Held): void {
     if (held.def.appliedAt) return;
     const field = held.def.field ?? held.def.id;
@@ -1129,7 +1129,7 @@ export class SherpaFilterPanel extends SherpaElement {
       for (const f of this.#lists.get(scope.scope)?.offers ?? []) {
         if (taken.has(f.id)) continue;
         taken.add(f.id);
-        // A field the other filters leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
+        // A field the filters before it leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
         const spent = this.#presentBy.get(scope.scope)?.[f.field ?? f.id]?.length === 0;
         offer.push({ id: row(scope.scope, f.id), label: f.label, note: scope.label, ...(spent ? { spent: true } : {}) });
       }
@@ -1645,7 +1645,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
       this.#giveMenu(held, body as HTMLElement, true, true, atDraw);
-      /* Built LATE: it takes what the other filters leave now, or its rows'
+      /* Built LATE: it takes what the filters before it leave now, or its rows'
          values are not greyed until the walk runs again. TODO 386
          TRAP T-a-ruled-out-value-is-greyed */
       this.#markPresent(held);

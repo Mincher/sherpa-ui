@@ -302,6 +302,15 @@ the store, not by the rows held: each Apply asks `load({ filter })` once for
 the keys its answer matches, and the source filters what it holds by them.
 Off and on again ask nothing; a new answer asks again. Its menus have Apply.
 
+### A fetching list never asks for every row
+
+A list the View holds, or any list on a remote source, OPENS on its first
+value — the first a row holds under the starts before it — unless its field
+says `"start": "all"`. A View, a restore or Reset that leaves it unanswered puts
+that start back. Nothing ticked while it is on is the answer `{ picked: [],
+none: true }`, written `{ "in": [] }`: no rows. Switched off, it asks for all, as
+any filter does.
+
 ### A remote store's whole set is HELD
 
 A store with `remote: true` is read ONCE for its whole set — once for every page

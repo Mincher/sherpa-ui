@@ -24,7 +24,7 @@ async function mount(page: Page) {
       bindSource(s: unknown, el: Element, o: object): void;
     };
     const src = await openSource({
-      store: 'rows', fields: { customer: { label: 'Customer', child: 'site' }, site: { label: 'Site' } },
+      store: 'rows', fields: { customer: { label: 'Customer', child: 'site', start: 'all' }, site: { label: 'Site' } },
       scopes: { view: { label: 'View', holds: ['customer'] } },
     }, new ArrayStore(rows, { key: 'id' }));
     // As the provider fills a bar: its scope's filters, then bound.

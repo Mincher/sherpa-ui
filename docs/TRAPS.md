@@ -1830,15 +1830,12 @@ the View does not hold are its chain: the first is its top, the rest below.
 behind a base step of the page's own scopes; then
 each other scope from the View's end; then each chart part from its host's. A
 step counts the rows that REACH it and match its answer — OFF counts and narrows
-nothing (123); each plain pick counts its own (172). A list field is RULED — what greys it and sets its picks aside.
-With Limit on, it is GREYED by every OTHER filter in force in its scope, after
-it as well as before (TODO 400, Will's A: a Region pick greys Customers), and its
-picks are SET ASIDE by the rows at its place only — so a later pick never sets an
-earlier one aside. With Limit off, a component scope's by the View's end (347),
-the View's by nothing (D5 A). A chain's lower field offers only what the rows at
-its place hold, once anything before it narrows (Q2 A). A list field no chip
-holds is TAPPED: greyed by every filter in force; one with no value left is
-SPENT. Step by step, that is one tally per Limit field under all the others.
+nothing (123); each plain pick counts its own (172). A list field is RULED — what greys it and sets its picks aside —
+by the rows at its place with Limit on; with Limit off, a component scope's by
+the View's end (347), the View's by nothing (D5 A). A chain's lower field offers
+only what the rows at its place hold, once anything before it narrows (Q2 A). A
+list field no chip holds is TAPPED where it would stand; one with no value left
+is SPENT.
 
 **One pass** (`walkInOrder`, `walk.ts`): each row runs the steps in order and
 stops at the first in force it fails. A pick its ruler rules out is set aside,
@@ -6359,8 +6356,8 @@ in a shared column. A click on the number does nothing.
 **A key's ON is SHOWN, not picked.** At rest every key chip is on, where a
 panel chip at rest is off. Will chose to leave each so (TODO 149, A): the
 legend says what the chart shows; the panel says what you picked. So a
-ruled-out key chip that is ON is refused, and says "no matches", as every
-greyed value does.
+ruled-out key chip that is ON is refused, and says "no matches" — it has no
+pick to set aside and let go.
 
 The chip is `data-locked`: it reports the press, and the legend decides — one
 row always stays on (`T-a-legend-keeps-one-row-on`). The chip says
@@ -6370,6 +6367,7 @@ own state, so the legend dims it through the chip's `::part(body)` and
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 
 ### T-legend-suspend-remembers-the-set
@@ -7973,16 +7971,14 @@ went on filtering. Will, TODO 167.
 
 ### T-a-ruled-out-value-is-greyed
 
-**A value the OTHER filters rule out stays in its list, greyed out, and
-cannot be picked** — Will, TODO 174 (110's B). Greying is BOTH WAYS (TODO 400,
-Will's A): every other filter in force in its scope greys a field, after it as
-well as before — a Region pick greys the Customers it leaves no row for.
-SETTING ASIDE is one way (TODO 349, D4 A): only the filters BEFORE a pick set it
-aside — kept ticked in the reading (a saved View, a draft and the URL keep it),
-left out of the compiled filter (`CompileFacts.drop`). Every greyed value says
-one thing, "Limited by your other filters: no matches." — picked or not, set
-aside or not, it adds no row. (Until 349 a LATER answer set an earlier pick
-aside — TODO 180, newest first; the one order replaced it.)
+**A value the filters BEFORE it rule out stays in its list, greyed out, and
+cannot be picked** — Will, TODO 174 (110's B), made ONE WAY by TODO 349 (D4 A):
+a field's scopes and the filters before it in the one order limit it, never
+the ones after. A value already picked stays ticked and greyed — SET ASIDE:
+kept in the reading (a saved View, a draft and the URL keep it),
+left out of the compiled filter (`CompileFacts.drop`). Let the earlier filter
+go and it is back. (Until 349 a LATER answer set an earlier pick aside —
+TODO 180, newest first; the one order replaced it.)
 
 **What rules a field** (`T-one-walk-counts-and-limits-in-order`) — a
 grid heading and an Advanced row's values too: with `limitOptions` on (Settings › Application, off by default), the rows at its
@@ -7991,8 +7987,8 @@ the View's by nothing — the View always limits a component scope. A chart part
 is greyed by its host the same way, and its pick is never set aside (Q1 A).
 
 **The SOURCE says what is left** — `source.present(scope)`, from the walk: each
-list field's values as value keys; a field no chip holds is tallied under every
-filter in force. Compared as a filter compares, case aside (`holdsKey`, `ruleOut`):
+list field's values as value keys; a field no chip holds is tallied where it
+would stand. Compared as a filter compares, case aside (`holdsKey`, `ruleOut`):
 a pick that matches rows is never ruled out. Only Simple list picks are set
 aside; a range, a date or Advanced rows stay whole. The set-aside is taken
 BEFORE the load where the walk asks no store (a held set, a store with `scan`,
@@ -14796,6 +14792,33 @@ range and a typed answer have none.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/none-is-an-answer.test.mjs`
+
+### T-a-fetching-list-opens-on-its-first-value
+
+Will, TODO 403: a fetching filter (Customer, Region) *"should also have its first
+value selected by default and default to being active (unless the definition
+specifies otherwise)"* — so a page never asks for every row as it opens. Will's
+picks: Q1 A, every list the View holds plus any list on a remote source; Q2 A,
+the field key `"start": "all"` opts out (`"first"` is the default).
+
+`openSource` ends with `source.openOnFirst()`: each such held list with no
+answer takes the FIRST value a row holds under the starts before it in its
+scope — so Region opens on a region the chosen Customer has, never on none. The
+first field's values are read already; each after it asks `presentUnder`.
+
+The start is the QUERY's (`query.startWith`), taken in place as the page opens,
+and taken again wherever the Query leaves that field unanswered: a View pick
+(a View resets every field that does not carry over), a restore, and Reset —
+so none of them asks for every row. An answer the reader made — off, or none
+(`T-none-is-an-answer`) — is kept, never replaced.
+
+A control bound AFTER the Query holds answers is drawn them at the end of
+`attach`, after the flags that rebuild a bar's chips (`data-waits`): drawn
+before, a rebuilt chip lost its answer.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/query-context.ts`
 
 ### T-a-breakdown-pick-is-a-legend-pick
 

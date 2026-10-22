@@ -112,6 +112,8 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
   for (const [field, facts] of Object.entries(def.fields ?? {})) {
     if (facts.child && children.has(facts.child)) await source.declareChildren(field);
   }
+  // A fetching list opens on its first value, before the first load. TODO 403
+  await source.openOnFirst();
   return source;
 }
 

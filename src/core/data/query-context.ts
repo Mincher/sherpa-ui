@@ -6,8 +6,8 @@
  * Map:
  * - QueryChange — What the context did, as each member hears it.
  * - QueryMember — What a source tells the context it joins.
- * - MemberBind — How a member bound a control.
  * - QueryChangeDetail — What `query-change` says: the fields whose answers moved, and the scopes whose holds or arrangement did.
+ * - MemberBind — How a member bound a control.
  * - QueryLive — The Query and the declarations, live: written in place, never copied.
  * - QueryHandle — What a member holds of its context.
  * - QueryContext — The Query of one app Context, shared by every source in it. Fires `query-change`.
@@ -54,6 +54,7 @@
  * - .setGroup — Group by a field, or stop.
  * - .setSearch — The rows' free-text search, with the arrangement.
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
+ * - .startWith — The answer a field opens on where nothing answers it — a fetching list's first value.
  * - .export — The whole question as JSON — the Query as applied.
  * - .import — Take a question back in, exactly.
  * - .join — A source joins: it gets its handle.
@@ -750,7 +751,10 @@ export class QueryContext extends EventTarget {
         if (s.suspended) s.suspended = { fields: [] };
         for (const field of Object.keys(s.readings)) {
           if (options.carry && this.#knows(field)?.carriesOver(field)) continue;
+          const start = this.#starts.get(id)?.get(field);
           if (s.narrows?.length || this.#live.parts.has(id)) this.#write(id, field, undefined);
+          // A field with a start goes back to it, never to every row. TODO 403
+          else if (start) this.#select(field, [...start.picked ?? []], start);
           else this.#select(field, []);
         }
       }
@@ -874,6 +878,7 @@ export class QueryContext extends EventTarget {
       readingsOf: (where) => this.#readingsOf(where),
       carriesOver: (f) => this.#knows(f)?.carriesOver(f) ?? false,
     });
+    this.#fillStarts(next);
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();
     this.#live.applied = next;
@@ -883,6 +888,35 @@ export class QueryContext extends EventTarget {
     this.#announce({
       fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes, ...(options.by ? { by: options.by } : {}),
     });
+  }
+
+  /**
+   * The answer a field OPENS on where nothing answers it — a fetching list's
+   * first value. A restore, a View or a Reset that leaves it unanswered puts it
+   * back. Will, TODO 403 · TRAP T-a-fetching-list-opens-on-its-first-value
+   */
+  startWith(scope: string, field: string, reading: FieldReading): void {
+    let fields = this.#starts.get(scope);
+    if (!fields) this.#starts.set(scope, (fields = new Map()));
+    fields.set(field, copyReading(reading));
+    // Taken now, in place: it is how the page opens, not a change to it.
+    this.#fillStarts(this.#live.applied);
+    if (this.#live.draft !== this.#live.applied) this.#fillStarts(this.#live.draft);
+  }
+  /** Each scope's start answers, by field. */
+  readonly #starts = new Map<string, Map<string, FieldReading>>();
+
+  /** Each held field with a start and no answer — not one turned off — takes it. */
+  #fillStarts(query: Query): void {
+    for (const [id, fields] of this.#starts) {
+      const scope = query.scopes[id];
+      if (!scope) continue;
+      for (const [field, start] of fields) {
+        const had = scope.readings[field];
+        if (!scope.holds.includes(field) || (had && (readingAnswered(had) || had.suspended))) continue;
+        scope.readings[field] = copyReading(start);
+      }
+    }
   }
 
   /** The whole question as JSON — the Query as applied, with its arrangement.

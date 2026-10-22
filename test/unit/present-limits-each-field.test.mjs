@@ -1,9 +1,9 @@
 /**
  * WHAT THE FILTERS BEFORE IT LEAVE — TODO 174, then 349 (Will, D4 A). With
  * `limitOptions` on, each list field's values are the ones the rows still hold
- * under its scopes and every OTHER filter in force in its scope — both ways
- * (TODO 400); a component scope's are within the View's too. A field's own
- * answer never limits it. Off, only the View limits a component scope (347).
+ * under its scopes and the filters BEFORE it — one way only; a component
+ * scope's are within the View's too. A field's own answer never limits it. Off,
+ * only the View limits a component scope (347).
  *
  *   node --test test/unit/present-limits-each-field.test.mjs
  *
@@ -91,10 +91,10 @@ test('a Customer pick limits Region; its own answer never limits Customer', asyn
   assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
 });
 
-test('both ways: Customer limits the Region after it, and Region the Customer before it (TODO 400)', async () => {
+test('one way: Customer limits the Region after it; Region never limits the Customer before it', async () => {
   const { source } = await setup({ view: { customer: { picked: ['Contoso'] }, region: { picked: ['LATAM'] } } });
   const p = sorted(await source.present(VIEW));
-  assert.deepEqual(p.customer, ['Contoso', 'Tailspin']);
+  assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA', 'LATAM']);
   const q = sorted((await setup({ view: { customer: { picked: ['Tailspin'] } } }).then(({ source: s }) => s.present(VIEW))));
   assert.deepEqual(q.region, ['AMER', 'LATAM']);
@@ -105,9 +105,8 @@ test('two answers that share no rows: the earlier stands, and the later stays in
   // Customer is before Region: Adventure Works stands; LATAM — none of its rows — stays, and the page is empty.
   assert.equal(source.debugState().total, 0);
   assert.deepEqual(await source.results(VIEW), { customer: 3, region: 0 });
-  // Each greys the other: LATAM leaves Contoso and Tailspin; Adventure Works leaves three regions.
   const p = sorted(await source.present(VIEW));
-  assert.deepEqual(p.customer, ['Contoso', 'Tailspin']);
+  assert.deepEqual(p.customer, ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
   assert.deepEqual(p.region, ['AMER', 'APAC', 'EMEA']);
 });
 
@@ -198,8 +197,8 @@ test('a later answer never sets an earlier pick aside: the earlier limits it', a
   assert.equal(source.debugState().total, 1);
   assert.deepEqual(source.debugState().aside, {});
   assert.deepEqual(source.query.applied.scopes.view.readings.customer.picked, ['Adventure Works', 'Contoso']);
-  // Region still greys the Customer before it: Adventure Works is greyed, and stays picked (TODO 400).
-  assert.ok(!(await source.present(VIEW)).customer.includes('Adventure Works'));
+  // Region is after Customer: it limits nothing before it.
+  assert.ok((await source.present(VIEW)).customer.includes('Adventure Works'));
 
   // Region let go: Adventure Works is back in force.
   bar.held = { customer: { picked: ['Adventure Works', 'Contoso'] } };

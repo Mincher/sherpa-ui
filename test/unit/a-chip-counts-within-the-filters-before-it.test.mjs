@@ -24,7 +24,8 @@ const control = () => ({ populate() {}, setAttribute() {}, removeAttribute() {},
 async function page({ data = ['status', 'plan'], sets } = {}) {
   const source = await openSource({
     store: 'rows',
-    fields: { region: { label: 'Region' }, status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } },
+    // Region opens on no filter: these count from every row. TODO 403
+    fields: { region: { label: 'Region', start: 'all' }, status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } },
     scopes: {
       view: { label: 'View filters', holds: ['region'] },
       data: { label: 'Rows', holds: data, ...(sets ? { sets } : {}) },

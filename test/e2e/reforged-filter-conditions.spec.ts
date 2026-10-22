@@ -951,5 +951,5 @@ test('an Advanced row greys a value the filters before its field rule out, never
   });
   // Row one picked gold: its own pick is never greyed.
   expect(r.first).toEqual(['gold', 'silver']);
-  expect(r.second).toEqual(['gold [off: Limited by your other filters: no matches.]', 'silver']);
+  expect(r.second).toEqual(['gold [off: Limited by the filters before it: no matches.]', 'silver']);
 });

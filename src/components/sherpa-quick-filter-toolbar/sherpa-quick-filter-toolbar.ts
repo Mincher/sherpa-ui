@@ -576,8 +576,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * drawPresent(present) — a bound source says what the other filters leave
-   * each field; a chip's menu greys the rest. SILENT. A field not named is
+   * drawPresent(present) — a bound source says what the filters before each
+   * field leave; a chip's menu greys the rest. SILENT. A field not named is
    * not limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
@@ -595,7 +595,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   /** What each chained field offers, as last drawn. */
   #offered: Readonly<Record<string, readonly string[]>> = {};
-  /** What the other filters leave each field, as the source last said. */
+  /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
   /** Each chip's results, as the source last said — a rebuilt chip is given them. */
   #results: Readonly<Record<string, number>> = {};
@@ -635,7 +635,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return Object.fromEntries([...out].filter(([, picks]) => picks.length));
   }
 
-  /** One chip's menu, told what the other filters leave its field. The chip
+  /** One chip's menu, told what the filters before its field leave. The chip
    *  itself is never greyed for it: a filter whose every pick is ruled out stays
    *  in force and wears 0 (Will, 2026-10-20). TRAP T-a-ruled-out-value-is-greyed */
   #markPresent(chip: HTMLElement): void {
@@ -1454,7 +1454,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #renderAvailable(): void {
     const add = this.$<HTMLElement>('.add-btn');
     if (!add) return;
-    // A field the other filters leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
+    // A field the filters before it leave no value for is greyed (349). TRAP T-the-add-menu-is-the-whole-list
     const offer = allow(this.#available, this.#allowedFields)
       .map((f) => (this.#spent(f) ? { ...f, spent: true } : f));
     this.#spentFor = this.#spentKey();

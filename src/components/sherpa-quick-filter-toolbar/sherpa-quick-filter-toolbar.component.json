@@ -939,7 +939,7 @@
           "$type": "method",
           "name": "drawPresent",
           "args": "present: Readonly<Record<string, readonly string[]>>",
-          "description": "drawPresent(present) — a bound source says what the other filters leave each field; a chip's menu greys the rest. SILENT. A field not named is not limited."
+          "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
         },
         {
           "$type": "method",

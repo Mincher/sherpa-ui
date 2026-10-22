@@ -256,13 +256,14 @@ test('a carry-over field keeps its answer through a View change; any other reset
   await source.query.setQuery({ v: 1, scopes: { data: { readings: { status: { picked: ['open'] } } } } }, { holds: 'keep' });
   const view = source.query.applied.scopes.view;
   assert.deepEqual(view.readings.customer, { picked: ['Contoso'] }, 'Customer carries over');
-  assert.equal(view.readings.region, undefined, 'Region resets, as by default');
+  // A View list fetches, so it resets to its start, never to every row. TODO 403
+  assert.deepEqual(view.readings.region, { picked: ['EMEA'] }, 'Region resets to its start');
   // A View that answers the field itself wins.
   await source.query.setQuery({ v: 1, scopes: { view: { readings: { customer: { picked: ['Fabrikam'] } } } } }, { holds: 'keep' });
   assert.deepEqual(source.query.applied.scopes.view.readings.customer, { picked: ['Fabrikam'] });
-  // A RESTORE is exact: nothing is carried into it.
+  // A RESTORE is exact: nothing is carried into it — but a View list it leaves empty takes its start. TODO 403
   await source.query.setQuery({ v: 1, scopes: { view: { holds: ['customer', 'region'], readings: {} } } });
-  assert.equal(source.query.applied.scopes.view.readings.customer, undefined);
+  assert.deepEqual(source.query.applied.scopes.view.readings.customer, { picked: ['Contoso'] });
 });
 
 test('a date is a RANGE only when its field says so, in the View too (TODO 397)', async () => {

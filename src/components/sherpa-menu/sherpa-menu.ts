@@ -22,7 +22,7 @@ import {
 import {
   modeOf, readingRows, rowAnswered, rowOffer, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
-import { NON_VALUE_ROWS, RULED_OUT } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
 import { TreePicks } from '../../core/ui/tree-picks.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -50,7 +50,7 @@ export interface MenuItem {
   /** What a reader sees. Defaults to `value`. */
   label?: string;
   selected?: boolean;
-  /** `false`: the other filters rule it out — greyed and refused unless picked.
+  /** `false`: the filters before it rule it out — greyed and refused unless picked.
    *  TRAP T-a-ruled-out-value-is-greyed */
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
@@ -123,7 +123,7 @@ export class SherpaMenu extends SherpaElement {
     'data-body': { type: 'enum', kind: 'style', values: ['number', 'date'] },
     /* A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
     'data-time': { type: 'boolean', kind: 'style' },
-    /* A row the other filters rule out GOES, unless ticked — Hide unmatching
+    /* A row the filters before it rule out GOES, unless ticked — Hide unmatching
        filters. Will, TODO 205. TRAP T-a-ruled-out-value-is-greyed */
     'data-hide-unavailable': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
@@ -1375,7 +1375,7 @@ export class SherpaMenu extends SherpaElement {
   #stamped = false;
 
   /**
-   * The values the other filters LEAVE, as value keys — its host's, from the
+   * The values the filters before it LEAVE, as value keys — its host's, from the
    * source. A row they rule out is greyed and refused, a TICKED one too: it stays
    * ticked, and Clear lets it go. `null` limits nothing. Silent: no event.
    * TRAP T-a-ruled-out-value-is-greyed
@@ -1390,7 +1390,7 @@ export class SherpaMenu extends SherpaElement {
   get present(): readonly string[] | null {
     return this.#present ? [...this.#present] : null;
   }
-  /** What the other filters leave; `null` is everything. */
+  /** What the filters before it leave; `null` is everything. */
   #present: Set<string> | null = null;
 
   /** What a serial set's chain OFFERS; a row it does not is removed, unless
@@ -1407,13 +1407,18 @@ export class SherpaMenu extends SherpaElement {
   /** What the chain offers; `null` is everything. */
   #offered: Set<string> | null = null;
 
-  /** Grey each row the other filters rule out; refuse it unless it is ticked.
+  /** Grey each row the filters before it rule out; refuse it unless it is ticked.
    *  A row the chain does not offer goes, unless it is ticked — and, hiding
    *  unmatched, so does one they rule out. */
   #markPresent(): void {
     const given = new Map(this.#items.map((i) => [i.value, i]));
     const hides = this.hasAttribute('data-hide-unavailable');
     const limit = ruleOut(this.#present, this.#offered);
+    const outOf = (box: HTMLInputElement): boolean => given.get(box.value)?.available === false || limit(box.value) !== null;
+    /* Every ticked row ruled out: the filter stays in force (Will, 2026-10-20), so
+       they say "no matches"; only beside a pick that stands are they "not applied". */
+    const ticked = this.#inputs().filter((box) => box.checked);
+    const inForce = ticked.length > 0 && ticked.every(outOf);
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
       const why = limit(box.value);
@@ -1428,9 +1433,10 @@ export class SherpaMenu extends SherpaElement {
       const said = box.getAttribute('aria-description');
       // Said on hover too: why it is greyed. Will, TODO 176.
       if (out) {
-        box.setAttribute('aria-description', RULED_OUT);
-        row?.setAttribute('title', RULED_OUT);
-      } else if (said === RULED_OUT) {
+        const why = box.checked && !inForce ? SET_ASIDE : RULED_OUT;
+        box.setAttribute('aria-description', why);
+        row?.setAttribute('title', why);
+      } else if (said === RULED_OUT || said === SET_ASIDE) {
         box.removeAttribute('aria-description');
         row?.removeAttribute('title');
       }

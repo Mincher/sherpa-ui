@@ -81,10 +81,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
-| ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
-| 🚧 | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
+| ✅ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
 | ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
@@ -2238,7 +2238,7 @@ TRAP `T-pages-are-one-based-and-default-to-100` (was `…-to-25`). Tests:
 `reforged-pagination` (the default), Demos `items-per-page` and
 `records-grid-pages` (it sets 25 to get four pages), Gallery's data story.
 
-### `[ ]` 🚧 403 — FILTERS: a fetching filter never asks for every row
+### `[x]` ✅ 403 — FILTERS: a fetching filter never asks for every row
 
 Will, 2026-10-22: *"For the customer and region filters the Select All in the off
 state should select none and return no results. This is divergent from the
@@ -2286,7 +2286,26 @@ at 0, not amber; its body then toggles it, and off asks for every row. The
 panel sends none only for a field whose last value the reader let go (a tiered
 Customer too). Not yet: a grid heading's menu. TRAP `T-none-is-an-answer`.
 Tests: `none-is-an-answer` (unit), Demos `reforged-none-is-an-answer`.
-**Part 2 next:** the first value ON at open and at Reset; `"start": "all"`.
+
+**✅ Part 2 done 2026-10-22 — a fetching list opens on its first value.**
+`openSource` ends with `source.openOnFirst()`: each such held list with no
+answer takes the first value a row holds under the starts before it (Records:
+Customer Northwind, then Region EMEA — 1 row). The start is the Query's
+(`query.startWith`) and comes back wherever the Query leaves the field
+unanswered: a View pick, a restore, Reset. `"start": "all"` opts out (field key,
+page schema). A control bound after the Query holds answers is drawn them at
+the end of `attach` — before, a bar told `data-waits` rebuilt its chips and lost
+them (the Dashboard opened with its chips off). Bench: an open asks each
+fetching list's values once more (`records/open` distinct 1 → 2; a remote page
+starts every list). TRAP `T-a-fetching-list-opens-on-its-first-value`. Docs:
+PAGE-DEFINITION, DATA-SOURCE-RULES. Tests: the node suite; three sherpa-ui
+specs whose pages are not about it say `start: "all"`.
+
+**❓ For Will — the Demos.** On, Records opens on Northwind and EMEA: ONE row;
+the Dashboard on Northwind and EMEA too. 58 Demos tests assume the whole set.
+So for now Demos' Customer and Region say `"start": "all"`. **A (my pick):** keep
+the Demos on the whole set, and show the start on one page made for it. **B:**
+turn it on in the Demos (Customer and Region), and I move the 58 tests.
 
 ### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
 
@@ -2411,7 +2430,7 @@ attribute. First users: the layout grid (in place of the app header's drop
 shadow), the data grid's body, a menu's list, the nav list, a form's scroll
 area — each checked for a `::before`/`::after` it already uses.
 
-### `[x]` ✅ 400 — BUG: a View scope pick does not limit the other View filters
+### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
 
 Will, 2026-10-22: *"Changing values in View Scope filters doesn't seem to
 invalidate values in other View Scope filters. Only Component Scopes are being
@@ -2428,7 +2447,22 @@ limits a field's values, both ways (as before 349); the chip COUNTS stay ordered
 
 **Will, 2026-10-22: "Still not working" — A.**
 
-**✅ Done 2026-10-22.** Limit greys each field by every OTHER filter in force in
+**↩️ Reverted 2026-10-22.** Will, after: *"The filter limiting in the view scope
+is not right. Applying changes to region is limiting customer selection which
+goes against the serial nature of each scope's filters."* So B was right: the
+order rule stands — only the filters before a field limit it — and the two-way
+change below is undone (`presentBothWays` gone, "Limited by the filters before
+it" back, the set-aside words back).
+
+**❓ What "still not working" is — my reading.** The View WAITS for one Apply
+(406), and the walk reads the APPLIED Query: a Customer ticked but not applied
+greys no Region until Apply, while a component scope applies at once, so its
+limits move at once — *"Only Component Scopes are being affected."* **A (my
+pick):** in a scope that waits, Limit and a chain's offer follow the DRAFT —
+what is ticked, before Apply; counts stay on what is applied. **B:** they wait
+for Apply, as now.
+
+~~**✅ Done 2026-10-22.**~~ Limit greys each field by every OTHER filter in force in
 its scope, both ways (`presentBothWays` in `walk.ts`; step by step, one tally per
 Limit field under all the others). Counts and set-aside stay in order: a later
 pick still never sets an earlier one aside. A remote store not held asks 6 value

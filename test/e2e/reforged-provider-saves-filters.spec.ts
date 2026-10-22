@@ -12,7 +12,7 @@ import { test, expect } from './fixture';
 const PAGE = `{
   v: 1, id: 'plans',
   source: {
-    store: 'plans', fields: { plan: { label: 'Plan' }, tier: { label: 'Tier' } },
+    store: 'plans', fields: { plan: { label: 'Plan' }, tier: { label: 'Tier', start: 'all' } },
     scopes: { view: { label: 'View', holds: ['tier'] }, data: { label: 'Rows', holds: ['plan'] } },
   },
 }`;
@@ -282,7 +282,7 @@ test('a page\'s own saved filter is listed on an unsaveable bar, fills the chips
     const source = await provider.open({
       v: 1, id: 'plans',
       source: {
-        store: 'plans', fields: { plan: { label: 'Plan' }, tier: { label: 'Tier' } },
+        store: 'plans', fields: { plan: { label: 'Plan' }, tier: { label: 'Tier', start: 'all' } },
         scopes: { view: { label: 'View', holds: ['tier'] }, data: { label: 'Rows', holds: ['plan'] } },
       },
       savedFilters: { 'pro-only': { label: 'Pro only', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } },

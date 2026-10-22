@@ -92,6 +92,11 @@ One JSON document per page. The same rule as a View: **a definition is data**
   worked out from the rows held: each Apply asks once for the keys it matches,
   and its toggle stays a client update. A filtering component's
   `data-fetch-fields`, or a grid column's `fetch`, can turn it on too (345).
+- **A FETCHING list opens on its first value** — a list the View holds, or any
+  on a remote source — so a page never asks for every row as it opens; a View,
+  a restore or Reset that leaves it empty puts it back. `"start": "all"` opens
+  it on no filter instead. Nothing ticked while it is on is NO rows, not all
+  (`T-a-fetching-list-opens-on-its-first-value`, `T-none-is-an-answer`).
 - **A number field's `thresholds`** are its bands, declared once:
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved

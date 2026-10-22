@@ -880,7 +880,7 @@
           "$type": "method",
           "name": "drawPresent",
           "args": "present: Readonly<Record<string, readonly string[]>>, scope: string",
-          "description": "drawPresent(present, scope) — a bound source says what the other filters leave each field in a scope. A value chip they rule out is greyed and refused; a field's menu greys its rows. A field not named is not limited."
+          "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave in a scope. A value chip they rule out is greyed — refused if off, set aside if on; a field's menu greys its rows. A field not named is not limited."
         },
         {
           "$type": "method",
