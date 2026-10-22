@@ -22,10 +22,9 @@ import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
 import { liftTips } from './top-layer-tips.js';
 import {
   adoptPageSheet, cachedTemplates, checkOwnTemplate, familyBody, filesFor, loadFamily, loadSheets, loadTemplates, onReload,
-  reloadFiles, templateBody,
+  reloadFiles, stampable, templateBody,
 } from './templater.js';
 import { report } from '../data/report.js';
-import { ownHtml } from './trusted-html.js';
 import { FormValue } from './form-value.js';
 import { applySwaps, readSwaps, type Swap } from './swap.js';
 
@@ -932,13 +931,26 @@ export abstract class SherpaElement extends Base {
   /** The markup it was stamped from. */
   #stampedFrom: string | undefined;
 
-  /** Adopted sheets: shared first, then this component's CSS, then a consumer's. */
+  /** Adopted sheets: shared first, then this component's CSS, then a consumer's —
+   *  kept once every one loaded, so the next element asks nothing; one that
+   *  failed is asked again. TRAP T-shared-sheets-settle-independently */
   async #adoptStyles(css: readonly string[]): Promise<void> {
-    // TRAP T-shared-sheets-settle-independently
     await Promise.resolve();
     const Ctor = this.constructor as typeof SherpaElement;
-    this.root.adoptedStyleSheets = await loadSheets([...Ctor.sharedStyles.map((u) => u.href), ...css]);
+    const urls = [...Ctor.sharedStyles.map((u) => u.href), ...css];
+    const key = urls.join(' ');
+    const kept = SherpaElement.#sheets.get(key);
+    if (kept) {
+      this.root.adoptedStyleSheets = kept;
+      return;
+    }
+    const sheets = await loadSheets(urls);
+    if (sheets.length === urls.length) SherpaElement.#sheets.set(key, sheets);
+    this.root.adoptedStyleSheets = sheets;
   }
+
+  /** Each list of sheets, loaded, by its URLs. */
+  static #sheets = new Map<string, CSSStyleSheet[]>();
 
   /** A RELOAD: the sheets again, and the tree stamped again from its markup —
    *  as a variant re-stamp is. TRAP T-restamp-does-not-abort */
@@ -959,18 +971,19 @@ export abstract class SherpaElement extends Base {
    * TRAP T-restamp-does-not-abort
    */
   #stamp(body: string, id: string | null): void {
-    // A family's markup after its own. TRAP T-a-family-shares-markup
-    this.root.innerHTML = ownHtml(body + familyBody(this.#files().family));
+    // A family's markup after its own, parsed once and cloned. TRAP T-a-family-shares-markup
+    const { fragment, swaps, icons } = stampable(body + familyBody(this.#files().family));
+    this.root.replaceChildren(fragment);
     this.#stampedTemplate = id;
     this.#hasRendered = true;
     this.#readOwn();
-    this.#swaps = readSwaps(this.root);
+    this.#swaps = swaps ? readSwaps(this.root) : [];
     // Props and icons BEFORE onRender, so a component's setup reads a
     // populated tree. A template `data-icon` draws nothing until upgraded.
     this.#syncAllProps();
     applySwaps(this, this.#swaps);
     this.#syncLabel();
-    upgradeIcons(this.root);
+    if (icons) upgradeIcons(this.root);
     this.onRender();
     this.#wireSlots();
   }

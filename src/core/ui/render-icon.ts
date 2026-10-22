@@ -36,7 +36,7 @@ export function hasIcon(value: string): boolean {
   return name !== null && ICON_NAMES.has(name);
 }
 
-/** Each icon drawn so far, and each still loading. */
+/** Each icon drawn so far, and each still loading — only while it loads. */
 const loaded = new Map<string, IconArt>();
 const loading = new Map<string, Promise<IconArt | undefined>>();
 /** The icon each element last asked for: only that one draws. */
@@ -49,7 +49,7 @@ function load(name: string): Promise<IconArt | undefined> {
     pending = import(`./icons/${name}.js`).then((m: { default: IconArt }) => {
       loaded.set(name, m.default);
       return m.default;
-    }, () => undefined);
+    }, () => undefined).finally(() => loading.delete(name));
     loading.set(name, pending);
   }
   return pending;

@@ -14,6 +14,7 @@
  * - loadTemplates — a markup file, fetched once and split by `<template id>`.
  * - cachedTemplates — the split markup already fetched, for a re-stamp that costs no fetch.
  * - templateBody — one template's markup: the one wanted, else the first, else the whole file.
+ * - stampable — a body parsed once, cloned per element, and whether it holds a swap or an icon.
  * - loadSheets — adoptable sheets, each fetched once; one that fails is left out.
  * - adoptPageSheet — adopt a sheet into the DOCUMENT, for light DOM a component puts in the page.
  * - reloadFiles — fetch files again; a sheet changes in place, and each listener hears what else changed.
@@ -37,7 +38,11 @@ export interface OwnFiles {
 const htmlCache = new Map<string, Promise<string>>();
 const templateCache = new Map<string, { html: string; map: TemplateMap }>();
 const sheetCache = new Map<string, Promise<CSSStyleSheet>>();
+/** Each body to stamp, parsed once, with whether it holds a swap or an icon. */
+const stampCache = new Map<string, { tpl: HTMLTemplateElement; swaps: boolean; icons: boolean }>();
 const own = new Map<string, { html?: string; css: string[] }>();
+/** Each tag's files, worked out once: the same for every element of it. */
+const filesCache = new Map<string, { html?: string; family: string[]; css: string[]; ownHtml?: string }>();
 const listeners = new Set<(changed: ReadonlySet<string>) => void>();
 /** Files whose text the build put in the JS, by URL. */
 const inline = new Map<string, string>();
@@ -60,6 +65,7 @@ const href = (u: URL | string): string => new URL(String(u), document.baseURI).h
 export function useTemplate(tag: string, files: OwnFiles): void {
   const css = files.css == null ? [] : [files.css].flat().map(href);
   own.set(tag, { ...(files.html ? { html: href(files.html) } : {}), css });
+  filesCache.delete(tag);
 }
 
 /** The markup and sheets `tag` is drawn from now: a family's, its own, then a
@@ -70,16 +76,20 @@ export function filesFor(
   html: URL | readonly URL[] | undefined,
   css: URL | readonly URL[] | undefined,
 ): { html?: string; family: string[]; css: string[]; ownHtml?: string } {
+  const kept = filesCache.get(tag);
+  if (kept) return kept;
   const given = own.get(tag);
   const list = [html ?? []].flat();
   const mine = list.at(-1);
   const markup = given?.html ?? mine?.href;
-  return {
+  const files = {
     ...(markup ? { html: markup } : {}),
     ...(given?.html && mine ? { ownHtml: mine.href } : {}),
     family: list.slice(0, -1).map((u) => u.href),
     css: [...[css ?? []].flat().map((u) => u.href), ...(given?.css ?? [])],
   };
+  filesCache.set(tag, files);
+  return files;
 }
 
 /** A family's markup files, each on its own: one that fails is said and left out.
@@ -169,6 +179,22 @@ export function templateBody(map: TemplateMap, html: string, wanted: string | nu
   return [body, id];
 }
 
+/** A body to stamp: parsed ONCE into a template, then a deep clone per element —
+ *  a clone costs far less than parsing the markup again. And whether it holds a
+ *  `data-swap-on` or a `data-icon`, so a tree without one is not searched.
+ *  TRAP T-a-template-is-parsed-once */
+export function stampable(body: string): { fragment: DocumentFragment; swaps: boolean; icons: boolean } {
+  let hit = stampCache.get(body);
+  if (!hit) {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = ownHtml(body);
+    hit = { tpl, swaps: body.includes('data-swap-on'), icons: body.includes('data-icon') };
+    stampCache.set(body, hit);
+  }
+  // IMPORTED, not cloned: the page's document upgrades each custom element at once, as innerHTML did.
+  return { fragment: document.importNode(hit.tpl.content, true), swaps: hit.swaps, icons: hit.icons };
+}
+
 /** Fetch a sheet once; every element adopting it shares one object. */
 function loadSheet(url: string): Promise<CSSStyleSheet> {
   let pending = sheetCache.get(url);
@@ -217,6 +243,7 @@ export async function adoptPageSheet(url: string): Promise<void> {
 export async function reloadFiles(files: { html?: readonly string[]; css?: readonly string[] }): Promise<void> {
   const changed = new Set<string>();
   const live = (urls: readonly string[] = []): string[] => urls.filter((url) => !inline.has(url));
+  stampCache.clear();
   await Promise.all([
     ...live(files.css).map(async (url) => {
       const was = sheetCache.get(url);
