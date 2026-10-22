@@ -3804,7 +3804,7 @@
             },
             {
               "name": "filter-discard",
-              "description": "A changed field's Discard, remote only; with no field, Discard all.",
+              "description": "A changed field's Discard, remote or in a scope that waits; with no field, Discard all.",
               "type": {
                 "text": "CustomEvent<{ field: string; id: string; scope: string }>"
               }

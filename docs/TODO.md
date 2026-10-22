@@ -2125,6 +2125,14 @@ Apply and Discard for a waiting scope, local too (`data-waits`), as it did for
 a remote one. The rows, Limit, the counts and the results follow the APPLIED
 answer until Apply (no fetch before it); a saved filter saves the applied
 answer. 410 settles whether a pick not yet applied survives a reload.
+**Will, 2026-10-22:** *"The apply button is back in the footer of filter
+menus."* The panel built its View menus without the wait — a Date drawn as
+one chip, a drilled field, a customer's sites — and a panel rule gave each its
+own Apply (TRAP `T-a-chip-menu-in-the-panel-commits`). Fixed: in a scope that
+waits, the panel's menus keep Discard alone (its field's applied answer), and
+the panel reports a calendar pick itself, as the bar does. Only the Filters
+menus keep Apply, on purpose: it confirms the filters added or taken off.
+
 **Design question the helper raised, for Will:** a chart legend's press over a
 field the View holds now waits for Apply too (its own ticks move at once, its
 bars and the grid at Apply).

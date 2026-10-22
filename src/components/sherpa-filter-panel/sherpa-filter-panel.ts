@@ -181,8 +181,10 @@ export class SherpaFilterPanel extends SherpaElement {
     // A parent's children, as a menu built when its caret asks, gone when it shuts. TODO 369
     this.$('.scopes')?.addEventListener('quick-filter-open', this.#onKidsOpen);
     this.$('.scopes')?.addEventListener('menu-close', this.#onKidsClose);
-    // Rows and bodies change their answer without a chip click.
-    for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
+    this.$('.scopes')?.addEventListener('menu-discard', this.#onMenuDiscard);
+    // Rows and bodies change their answer without a chip click — a calendar's pick
+    // too, where no Apply follows it (a View's, TODO 406).
+    for (const type of ['condition-change', 'input', 'change', 'menu-change', 'range-select', 'datetime-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
     }
     // The Filters menu leads with what a SHUT scope hides. TRAP T-a-shut-scope-folds-like-a-bar
@@ -492,6 +494,19 @@ export class SherpaFilterPanel extends SherpaElement {
     badge.setAttribute('aria-label', label);
     tip.dataset['text'] = answered.map((held) => `${held.def.label} - ${countSaid(count(held)!, ['match', 'matches']).label}`).join('\n');
   }
+
+  /** Does this field's scope wait for ONE Apply, its header's? Its menus then
+   *  keep Discard alone. Will, TODO 406 */
+  #waits(held: Held): boolean {
+    return held.scope === VIEW && this.hasAttribute('data-waits');
+  }
+
+  /** A waiting menu's Discard: its field's applied answer comes back. TODO 406 */
+  #onMenuDiscard = (event: Event): void => {
+    const chip = this.pathFind(event, '.value');
+    const held = chip ? this.#heldOfChip(chip) : [...this.#held.values()].find((h) => h.menu === event.target);
+    if (held && this.#waits(held)) this.emit('filter-discard', { field: held.def.field ?? held.def.id });
+  };
 
   /** The View's ONE Apply and Discard are on while a change waits. TODO 406 */
   #syncScopeActs(): void {
@@ -993,7 +1008,8 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     // TRAP T-an-inline-menu-is-the-same-menu — the same card, drawn in the flow.
-    const { menu, items } = menuFor(this.root, def, { inline, live: this.dataset['applyOn'] === 'input' });
+    const waits = this.#waits(held);
+    const { menu, items } = menuFor(this.root, def, { inline, live: this.dataset['applyOn'] === 'input', waits });
     if (inline) {
       menu.removeAttribute('slot');
     } else {
@@ -1001,7 +1017,7 @@ export class SherpaFilterPanel extends SherpaElement {
          for the panel's own Apply. An ARRANGEMENT does not: group and sort
          apply as they are picked, on a bar and in a panel alike.
          TRAP T-a-chip-menu-in-the-panel-commits */
-      if (!arranges(kind)) menu.setAttribute('data-commit', '');
+      if (!arranges(kind) && !waits) menu.setAttribute('data-commit', '');
       // Its f(x) is the field header's, never hidden in the menu. Will, TODO 385
       menu.setAttribute('data-mode-outside', '');
       host.setAttribute('data-menu', '');
@@ -1266,9 +1282,9 @@ export class SherpaFilterPanel extends SherpaElement {
         value: o.value, label: o.label ?? o.value, selected: picked.has(o.value),
       })),
     };
-    const { menu, items } = menuFor(this.root, def);
-    // A filter's menu in the panel COMMITS. TRAP T-a-chip-menu-in-the-panel-commits
-    menu.setAttribute('data-commit', '');
+    const { menu, items } = menuFor(this.root, def, { waits: this.#waits(held) });
+    // A filter's menu in the panel COMMITS — but a View's waits for its header's Apply. TRAP T-a-chip-menu-in-the-panel-commits
+    if (!this.#waits(held)) menu.setAttribute('data-commit', '');
     held.box.append(menu);
     this.#built = { menu, held };
     await menu.rendered;
@@ -1377,9 +1393,9 @@ export class SherpaFilterPanel extends SherpaElement {
       options: (t.kids.get(p) ?? []).map((k) => ({
         value: k, label: label(k), selected: t.picks.has(p) || t.picks.has(k) || (!on && t.off.has(k)),
       })),
-    });
-    // It COMMITS, as every filter menu in the panel does. TRAP T-a-chip-menu-in-the-panel-commits
-    menu.setAttribute('data-commit', '');
+    }, { waits: this.#waits(held) });
+    // It COMMITS, as every filter menu in the panel does — a View's waits. TRAP T-a-chip-menu-in-the-panel-commits
+    if (!this.#waits(held)) menu.setAttribute('data-commit', '');
     menu.setAttribute('data-kids', '');
     chip.append(menu);
     this.#fill(menu, items, undefined);
@@ -1426,6 +1442,9 @@ export class SherpaFilterPanel extends SherpaElement {
   #onEdited = (event: Event): void => {
     // A dragged handle reports once, when it is let go — as a bar chip does.
     if (event.type === 'input' && (event.target as Element).matches?.('sherpa-menu[data-body]')) return;
+    // A calendar pick in a menu with its own Apply waits for it.
+    const picked = event.type === 'range-select' || event.type === 'datetime-change';
+    if (picked && (event.target as Element).closest?.('sherpa-menu')?.hasAttribute('data-commit')) return;
     this.#reportSoon(event.target instanceof HTMLElement ? this.#fieldOf(event.target) : undefined);
   };
 

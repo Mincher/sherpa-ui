@@ -108,7 +108,7 @@ Each one bubbles.
 |---|---|---|
 | `quick-filter-change` | `{ request: QueryRequest; scope: 'panel'; values: Record<string, Record<string, string[]>> }` | One reader act, as a request: one field, or Reset all. |
 | `filter-apply` | `{ field: string; id: string; scope: string }` | A changed field's Apply, remote only; with no field, Apply all. |
-| `filter-discard` | `{ field: string; id: string; scope: string }` | A changed field's Discard, remote only; with no field, Discard all. |
+| `filter-discard` | `{ field: string; id: string; scope: string }` | A changed field's Discard, remote or in a scope that waits; with no field, Discard all. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It closed. |
 | `filter-add` | `{ from: string; ids: string[]; scope: 'view' \| string }` | A REQUEST: the Filters menu committed, or a field sent up or down. |
 | `filter-remove` | `{ id: string; scope: string }` | A field's Remove. |

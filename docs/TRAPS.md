@@ -11447,6 +11447,11 @@ It is the panel's to set, not the chip's: the same menu on a toolbar commits or
 not by its own `select` mode. `T-commit-follows-select-mode`.
 
 ---
+**But not in a scope that WAITS** (TODO 406): the View's menus — a field's
+chip menu, a drill, a customer's sites — take no Apply of their own there, only
+Discard (its field's applied answer, `filter-discard`); the scope header's ONE
+Apply sends them.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-hidden-sibling-still-counts-as-first-child
