@@ -147,6 +147,9 @@ export class SherpaMenu extends SherpaElement {
     /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
     'data-commit': { type: 'boolean', kind: 'style' },
+    // Discard without Apply: the scope waits for its bar's ONE Apply. TODO 406
+    'data-discard': { type: 'boolean', kind: 'style' },
+    'data-pending': { type: 'boolean', kind: 'behaviour' },
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
     'data-readonly': { type: 'boolean', kind: 'style' },
     'data-align': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
@@ -1132,6 +1135,7 @@ export class SherpaMenu extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-body') this.#stampDateBody();
+    if (name === 'data-pending') this.#syncDirty();
     this.#sync();
     if (name === 'data-hide-unavailable') this.#markPresent();
   }
@@ -2184,6 +2188,8 @@ export class SherpaMenu extends SherpaElement {
     const footer = this.$<HTMLElement>('.footer');
     if (!footer) return;
     if (this.#commits) footer.dataset['dirty'] = String(this.dirty);
+    // Its bar's scope waits: Discard is on while the answer is not applied. TODO 406
+    else if (this.hasAttribute('data-discard')) footer.dataset['dirty'] = String(this.hasAttribute('data-pending'));
     else delete footer.dataset['dirty'];
   }
 

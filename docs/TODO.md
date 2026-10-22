@@ -90,6 +90,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
 | ✅ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
 | ✅ | 0zzl | 408 | WORDS — the Reset menu's "Reset all to default" reads "Reset all on view" (Will, 2026-10-22) | words |
+| ⬜ | 0zzm | 409 | WORDS — an Advanced filter's answer reads `equals(John) AND contains(Smith)` in its chip, tip and everywhere it is said: each condition before its value in brackets, the join between, `!` before a negative one (Will, 2026-10-22) | words |
+| ⬜ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1856,6 +1858,31 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 410 — FILTERS: every scope's picks survive a reload
+
+Will, 2026-10-22: *"Selected filter values, in all scopes, should survive a page
+reload. The base definition is only used if there isn't a session definition or
+when the user resets filters."*
+
+**To find out first:** what is kept today (the kept Query, `records-persist`'s
+"filters survive a reload") and which scopes it misses; and, with 406, whether a
+View pick not yet applied is kept too.
+
+### `[ ]` ⬜ 409 — WORDS: an Advanced answer reads as its conditions
+
+Will, 2026-10-22: *"Prefix advanced filter value labels, in the chip, tooltip,
+etc., with the condition. Include the condition label between values. Wrap the
+value in parentheses after them like so: `equals(John) AND contains(Smith)`.
+Prefix with an exclamation mark for the negative conditions like so:
+`!equals(John) OR !contains(Smith)`."*
+
+**To do:** `filterFace` (`src/core/data/filter-face.ts`) says an Advanced answer
+one way for the chip's face, its tip and the panel. Each row: its condition's
+name, then its value in brackets; the join (AND / OR) between rows; a negative
+condition (not equals, not contains, not between…) is `!` and its positive
+name. Settle the names: the ops' own words (`equals`, `contains`) or their
+labels as the menu shows them.
+
 ### `[x]` ✅ 408 — WORDS: "Reset all on view"
 
 Will, 2026-10-22: *"Change the 'Reset all to default' menu item label to read
@@ -1909,9 +1936,26 @@ the view scope as well as date filters."*
 4. **Outside the View scope**, nothing changes: a fetching filter (remote, or
    `fetch: "server"`) and a date keep their own Apply (395, 405).
 
-**🚧 Step 1 done 2026-10-22**: `query.wait(scope)`, `waiting()`, the local
-draft (`#settle`, `#carry`), `data-waits` on a bound control, and no load on a
-draft-only edit. Nothing calls `wait()` yet. Test: `a-waiting-scope-holds-its-picks`.
+**🚧 Steps 1–4 done 2026-10-22.**
+- Data layer: `query.wait(scope)`, `waiting()`, `named()`, the local draft
+  (`#settle`, `#carry`), no load on a draft-only edit, and a control bound late
+  is told too. A bound control over a scope `wait()` named wears `data-waits`; a
+  remote scope it did not name keeps each menu's own Apply (Will).
+- Bar: ONE Apply (`data-act="apply"`), a divider, then the provider's panel
+  toggle; off until `data-dirty`; it sends `filter-apply`. A menu's Discard
+  sends `filter-discard` for its field. Requests carry no `commit` there.
+- Menus there: `data-discard` (Discard, no Apply), on while `data-pending`.
+- Provider: `source.query.wait(VIEW)` on every page.
+- Will, later: a pending chip wears the WARNING look (it was no fill: the trap
+  is now `T-a-pending-chip-reads-as-a-warning`), and its tip starts
+  "Unapplied changes - ".
+- Tests: `reforged-the-view-waits-for-one-apply`, `reforged-pending-chip`,
+  `a-waiting-scope-holds-its-picks`.
+
+**Still to do:** 22 Demos tests pick a View filter and expect the rows at once —
+each needs the bar's Apply. The rows, Limit, the counts and the results follow
+the APPLIED answer until Apply (no fetch before it); a saved filter saves the
+applied answer. 410 settles whether a pick not yet applied survives a reload.
 
 ### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
 
@@ -3294,7 +3338,7 @@ Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.t
 fails in Firefox every time — after a tick in a remote chip's open menu, the
 chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
 the toolbar as committed before P3b fails the same way. Start at the menu's
-`dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-has-no-fill`).
+`dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-reads-as-a-warning`).
 
 **✅ Done 2026-09-29:** the menu took its baseline in `toggle`, which Firefox
 fires AFTER the tick — so the tick became the baseline, and was no draft. The
@@ -10523,7 +10567,7 @@ REMOTE one; a field that applies at once goes straight to active.
 A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
 colour rule in the chip. Check what the pin's surface resolves to first.
 
-**✅ Done 2026-09-27:** a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-has-no-fill`
+**✅ Done 2026-09-27:** a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-reads-as-a-warning`
 
 ### `[x]` ✅ 66 — The footer owns "nothing to save": Save and Cancel wait for a change
 
@@ -10973,7 +11017,7 @@ it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its reco
 - Choice A: a heading filter wears its field's NORMAL chip; the `col:` and external chips are gone — 731d2bc3, c5d6e513
 - Removing a chip clears its filter (it had moved to the View and kept filtering) — 731d2bc3
 - 62: Apply only for a REMOTE fetch — locally every pick applies at once; `?remote` spoofs a remote store; the panel's footer is gone, a remote field has its own Apply and Discard — 7c7cdf5c, 9294cfd6, c92adec0, `T-apply-and-discard-wait-for-a-change`, `T-commit-follows-select-mode`
-- 46: a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-has-no-fill`
+- 46: a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-reads-as-a-warning`
 - 66: the footer owns "nothing to save" — a committing menu's Apply and Cancel wait for a change — 23094c86, `T-the-footer-owns-nothing-to-save`
 - Step 7: saved Views are JSON, their defaults on the chips — Records c6166719, Dashboard 6001eb63, `T-a-view-is-json`
 - A number chip filters (a Seats range showed and narrowed nothing); the Dashboard's header chips filter; the Capacity view's charts draw — c6166719, 6001eb63

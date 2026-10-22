@@ -74,6 +74,12 @@
 }
 .act-divider { flex: 0 0 auto; }
 
+/* ONE Apply, where the scope waits for it; the panel has its own. TODO 406 */
+.apply-all,
+.apply-divider { display: none; }
+:host([data-waits]:not([data-panel-mode])) .apply-all { display: inline-flex; }
+:host([data-waits]:not([data-panel-mode])) .apply-divider { display: block; }
+
 /* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
    as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */
 :host(:not(:state(has-organise)):not([data-switchable]:not([data-type="view"])))
@@ -170,9 +176,9 @@
 @container qf-bar (max-width: 620px) {
   .act-divider,
   .reset-group,
-  .act:not([data-act="add"], [data-act="overflow"]) { display: none; }
+  .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"]) { display: none; }
 }
-:host(:state(collapse-3)) :is(.act-divider, .reset-group, .act:not([data-act="add"], [data-act="overflow"])) {
+:host(:state(collapse-3)) :is(.act-divider, .reset-group, .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"])) {
   display: none;
 }
 

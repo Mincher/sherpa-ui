@@ -58,12 +58,14 @@ test('Save filters keeps every scope under a name; the button then says it, acti
     const before = save();
     source.query.setReading('view', 'plan', { picked: ['Pro'] });
     source.query.setReading('view', 'tier', { picked: ['gold'] });
+    source.query.commit(); // the View waits for its Apply. TODO 406
     await source.load();
     const id = provider.saveFilters('Gold Pro');
     await settle();
     const stored = JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}');
     const saved = { save: save(), told: told(), read: provider.savedFilterSets };
     source.query.setReading('view', 'plan', { picked: ['Free'] });
+    source.query.commit(); // the View waits for its Apply. TODO 406
     await source.load();
     await settle();
     const edited = { save: save(), told: told() };
@@ -99,6 +101,7 @@ test('a set taken: every scope matches it, one it does not name is cleared, anot
       query: { v: 1, scopes: { view: { holds: ['tier'], where: { tier: { eq: 'silver' } } } } } } }));
     const source = await open();
     source.query.setReading('view', 'plan', { picked: ['Free'] });
+    source.query.commit(); // the View waits for its Apply. TODO 406
     await source.load();
     await settle();
     const listed = told();

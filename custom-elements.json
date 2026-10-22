@@ -5536,6 +5536,13 @@
               }
             },
             {
+              "name": "data-discard",
+              "description": "show Discard without Apply: its bar holds ONE Apply for the scope",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-drill",
               "description": "the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked.",
               "type": {
@@ -5627,6 +5634,13 @@
               "description": "FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many.",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-pending",
+              "description": "its answer is changed and not applied: Discard is on",
+              "type": {
+                "text": "boolean"
               }
             },
             {
@@ -8086,6 +8100,13 @@
               }
             },
             {
+              "name": "data-dirty",
+              "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-favourite",
               "description": "the ★ is lit (view type) — the value, IN",
               "type": {
@@ -8211,6 +8232,13 @@
                 "text": "'view' | 'data'"
               },
               "default": "\"data\""
+            },
+            {
+              "name": "data-waits",
+              "description": "its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406",
+              "type": {
+                "text": "boolean"
+              }
             }
           ],
           "members": [
@@ -8576,6 +8604,20 @@
               }
             },
             {
+              "name": "filter-apply",
+              "description": "Apply, where the scope waits: send every change held in it.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "filter-discard",
+              "description": "A menu's Discard, where the scope waits: put back that field's applied answer.",
+              "type": {
+                "text": "CustomEvent<{ field: string }>"
+              }
+            },
+            {
               "name": "filters-apply",
               "description": "A saved set's row was ticked: take it, so the filters match it.",
               "type": {
@@ -8867,7 +8909,7 @@
             },
             {
               "name": "data-pending",
-              "description": "changed, not yet applied: the active edge, no fill. Written by the bar. TRAP T-a-pending-chip-has-no-fill",
+              "description": "changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
               "type": {
                 "text": "boolean"
               }

@@ -993,7 +993,7 @@ export class DataSource extends EventTarget {
       ? [...new Set(scopes.flatMap((id) => Object.keys({
         ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
       })))].filter((f) => this.#context.pending(f))
-      : []), (id) => this.#context.dirty(id), (id) => this.#context.waiting(id));
+      : []), (id) => this.#context.dirty(id), (id) => this.#context.named(id));
   }
 
   /** The SEARCH as needles, so a view marks what it found: a `contains` on each
@@ -1678,6 +1678,8 @@ export class DataSource extends EventTarget {
 
     // Whatever is already loaded, so a component bound late is not blank.
     this.#binding.push(el);
+    // …and whether its scope waits, and what in it does. TODO 406
+    if (facts.scope && this.#context.waiting()) this.#syncPending();
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     // …and what the filters before each field leave. TRAP T-a-ruled-out-value-is-greyed

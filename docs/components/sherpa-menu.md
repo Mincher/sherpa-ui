@@ -38,6 +38,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-commit` | boolean |  | show the Apply / Discard footer and DEFER changes until Apply |
 | `data-commit-fixed` | boolean |  |  |
 | `data-conditions` | text |  | FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set. |
+| `data-discard` | boolean |  | show Discard without Apply: its bar holds ONE Apply for the scope |
 | `data-drill` | boolean |  | the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked. |
 | `data-drill-from` | text |  | names the list that was replaced — the breadcrumb's text |
 | `data-has-value` | text |  | written BY the menu: the typed value is not empty, so the input's Clear button shows. |
@@ -52,6 +53,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-no-select-all` | boolean |  | a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp. |
 | `data-none` | boolean |  | a SINGLE list leads with a None row: its nothing (Will, TODO 394) |
 | `data-op` | text |  | FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many. |
+| `data-pending` | boolean |  | its answer is changed and not applied: Discard is on |
 | `data-range` | boolean |  |  |
 | `data-readonly` | boolean |  | SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no Advanced button |
 | `data-removable` | boolean |  | show a "Remove" button in the footer (after Today); it emits menu-select with value="remove" |

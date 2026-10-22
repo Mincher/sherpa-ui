@@ -566,7 +566,7 @@
  * (Discard·Apply), data-removable, a number's Reset, Type=calendar
  * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable][data-body="number"], [data-removable], :state(has-footer))) .footer {
+:host(:is([data-commit], [data-discard], [data-type="calendar"], [data-body="date"], [data-clearable][data-body="number"], [data-removable], :state(has-footer))) .footer {
   display: block;
 }
 
@@ -574,6 +574,8 @@
    Remove can raise the row on their own. */
 .discard, .apply { display: none; }
 :host([data-commit]) :is(.discard, .apply) { display: inline-flex; }
+/* The bar holds ONE Apply for a scope that waits; its menus keep Discard. TODO 406 */
+:host([data-discard]) .discard { display: inline-flex; }
 
 /* A separator row between groups. */
 ::slotted(hr) {

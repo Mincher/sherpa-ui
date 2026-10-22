@@ -1098,6 +1098,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-discard",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show Discard without Apply: its bar holds ONE Apply for the scope"
+    },
+    {
+      "$type": "prop",
       "name": "data-drill",
       "type": "boolean",
       "observed": true,
@@ -1220,6 +1229,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many."
+    },
+    {
+      "$type": "prop",
+      "name": "data-pending",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "its answer is changed and not applied: Discard is on"
     },
     {
       "$type": "prop",
@@ -1433,6 +1451,11 @@
       "$type": "state",
       "name": "commit",
       "selector": ":host([data-commit])"
+    },
+    {
+      "$type": "state",
+      "name": "discard",
+      "selector": ":host([data-discard])"
     },
     {
       "$type": "state",

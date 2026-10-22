@@ -58,6 +58,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-bounds` | text |  |  |
 | `data-custom-view` | boolean |  |  |
+| `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-favourite` | boolean |  | the ★ is lit (view type) — the value, IN |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
@@ -76,6 +77,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
 | `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |
 | `data-type` | `view` `data` | `data` | data \| view (view adds the ★/Save/▾ group) |
+| `data-waits` | boolean |  | its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406 |
 
 ## Properties
 
@@ -126,6 +128,8 @@ Each one bubbles.
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |
 | `filter-add` | `{ filters: FilterDef[]; holds: string[]; ids: string[] }` | Chips were added. |
 | `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
+| `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
+| `filter-discard` | `{ field: string }` | A menu's Discard, where the scope waits: put back that field's applied answer. |
 | `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
 | `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |

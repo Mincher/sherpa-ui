@@ -12,7 +12,7 @@ import {
   fieldState, readingRows, rowAnswered, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, movedTo } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, movedTo } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
@@ -65,7 +65,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-conditioned-chip-reads-as-active */
     'data-condition': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
-       the one writer. TRAP T-a-pending-chip-has-no-fill */
+       the one writer. TRAP T-a-pending-chip-reads-as-a-warning */
     'data-pending': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
@@ -844,7 +844,9 @@ export class SherpaQuickFilter extends SherpaElement {
     // ON OR OFF it says the same — its answer and its matches, as its badge keeps its number. Will, 363.
     const n = this.#shownResults();
     const matches = n == null ? '' : countSaid(n, ['match', 'matches']).label;
-    const said = [this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
+    // Changed, not applied, says so first. Will, TODO 406
+    const pending = this.hasAttribute('data-pending') ? UNAPPLIED : '';
+    const said = [pending, this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
     /* A chip with NO WORDS on it — a grid heading's sort button — says its
        name in the tip, as an icon button does: "Sorted by Name, descending". */
     const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';

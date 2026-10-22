@@ -1,11 +1,11 @@
 import { test, expect, type Bar } from './harness';
 
 /**
- * A PENDING CHIP: changed, not yet applied — the active edge and NO fill.
- * Will, 2026-09-26 (TODO 46). Only a change that waits can be pending, and
- * only a remote one waits: its own open menu's draft, or a field its source
- * lists in `data-pending`. Locally a tick goes straight to active.
- * TRAP T-a-pending-chip-has-no-fill
+ * A PENDING CHIP: changed, not yet applied — the WARNING look. Will, 2026-10-22
+ * (TODO 406; it was the active edge and no fill, TODO 46). Only a change that
+ * waits can be pending: its own open menu's draft, or a field its source lists
+ * in `data-pending`. Locally a tick goes straight to active.
+ * TRAP T-a-pending-chip-reads-as-a-warning
  */
 test('a remote chip is pending while its menu holds a draft; Apply makes it active', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -26,6 +26,7 @@ test('a remote chip is pending while its menu holds a draft; Apply makes it acti
       const cs = getComputedStyle(body);
       return { pending: chip(id).hasAttribute('data-pending'), bg: cs.backgroundColor, edge: cs.borderTopColor };
     };
+    const tip = (id: string) => chip(id).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
     const off = await look('plan');
     const on = await look('tier');
     const menu = chip('plan').querySelector('sherpa-menu') as HTMLElement & { show(): void; shadowRoot: ShadowRoot };
@@ -34,6 +35,7 @@ test('a remote chip is pending while its menu holds a draft; Apply makes it acti
     chip('plan').querySelector<HTMLInputElement>('input[value="Pro"]')!.click();
     await window.__settled();
     const drafted = await look('plan');
+    const draftTip = tip('plan');
     menu.shadowRoot.querySelector<HTMLElement>('.apply')!.click();
     await window.__settled();
     const applied = { ...(await look('plan')), current: chip('plan').hasAttribute('data-current') };
@@ -41,18 +43,24 @@ test('a remote chip is pending while its menu holds a draft; Apply makes it acti
     el.setAttribute('data-pending', 'tier');
     await window.__settled();
     const told = await look('tier');
-    return { off, on, drafted, applied, told };
+    return { off, on, drafted, applied, told, draftTip, appliedTip: tip('plan'), toldTip: tip('tier') };
   });
 
   expect(r.off.pending).toBe(false);
-  // Drafted: the ACTIVE edge, and the OFF chip's fill — no on-tint.
-  expect(r.drafted).toEqual({ pending: true, bg: r.off.bg, edge: r.drafted.edge });
+  // Drafted: the WARNING look — its edge is neither the off chip's nor the on chip's.
+  expect(r.drafted.pending).toBe(true);
+  expect(r.drafted.bg).not.toBe(r.on.bg);
   expect(r.drafted.edge).not.toBe(r.off.edge);
+  expect(r.drafted.edge).not.toBe(r.on.edge);
   expect(r.applied.pending).toBe(false);
   expect(r.applied.current).toBe(true);
   expect(r.applied.bg).toBe(r.on.bg);
-  // An ON chip told it is pending loses its fill too.
-  expect(r.told).toEqual({ pending: true, bg: r.off.bg, edge: r.drafted.edge });
+  // Its tip says so first; once applied, it does not. TODO 406
+  expect(r.draftTip).toBe('Unapplied changes');
+  expect(r.toldTip).toMatch(/^Unapplied changes - Gold/);
+  expect(r.appliedTip.startsWith('Unapplied')).toBe(false);
+  // An ON chip told it is pending wears the same warning.
+  expect(r.told).toEqual({ pending: true, bg: r.drafted.bg, edge: r.drafted.edge });
 });
 
 test('locally a chip is never pending — a tick is applied at once', async ({ page }) => {

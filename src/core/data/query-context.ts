@@ -30,6 +30,7 @@
  * - .sets — A scope's filter sets, as declared.
  * - .waiting — Does this scope — or, naming none, any — wait for Apply?
  * - .wait — This scope's answers wait for Apply, local or remote.
+ * - .named — Did `wait()` name this scope? Its bar holds ONE Apply for it.
  * - .pending — Has this field been changed and not yet applied?
  * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
  * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
@@ -334,6 +335,12 @@ export class QueryContext extends EventTarget {
     this.#waiting.add(scope);
     if (this.#live.draft === this.#live.applied) this.#live.draft = copyQuery(this.#live.applied);
     this.#tell({ kind: 'drawn', fields: [], pending: true });
+  }
+
+  /** Did `wait()` name this scope? Its bar holds ONE Apply for it; a remote
+   *  scope it did not name keeps each menu's own. TODO 406 */
+  named(scope: string): boolean {
+    return this.#waiting.has(scope);
   }
 
   /** The scopes `wait()` named. */

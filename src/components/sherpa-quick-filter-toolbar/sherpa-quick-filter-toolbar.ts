@@ -99,8 +99,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
-    // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
+    // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-reads-as-a-warning
     'data-pending': { type: 'string', kind: 'behaviour' },
+    // Its scope waits for ONE Apply, this bar's; something in it is not applied yet. TODO 406
+    'data-waits': { type: 'boolean', kind: 'style' },
+    'data-dirty': { type: 'boolean', kind: 'behaviour' },
     // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
@@ -319,7 +322,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // `change` reaches here, being in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
-    // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-has-no-fill
+    // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-reads-as-a-warning
     for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
       this.addEventListener(type, this.#queuePending);
     }
@@ -332,6 +335,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The Add menu hangs off a sherpa-BUTTON, which never relays quick-filter-change.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     this.addEventListener('menu-row-remove', this.#onRowRemove);
+    this.addEventListener('menu-discard', this.#onMenuDiscard);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
@@ -534,7 +538,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * PENDING: a chip whose change is not applied yet — a draft in its own open
    * menu, or a field its source says waits (`data-pending`). THIS BAR is the
    * one writer of the chip's flag. Locally a menu never waits, so nothing is
-   * ever pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill
+   * ever pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-reads-as-a-warning
    */
   #syncPending(): void {
     const waiting = pendingFields(this);
@@ -543,6 +547,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
       const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
       chip.toggleAttribute('data-pending', !!menu?.dirty || waiting.has(field));
+      // A waiting scope's menu: Discard is on while its field is. TODO 406
+      menu?.toggleAttribute('data-pending', waiting.has(field));
     }
   }
 
@@ -887,7 +893,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-one-field-one-filter-menu */
     const { menu, items } = menuFor(this.root, def, {
       bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
-      live: this.dataset['applyOn'] === 'input',
+      live: this.dataset['applyOn'] === 'input', waits: this.hasAttribute('data-waits'),
     });
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
@@ -1150,8 +1156,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#emitChange({ suspended: false });
     }
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
-    if ((name === 'data-remote' || name === 'data-apply-on') && this.#filters.length) this.#render();
+    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits') && this.#filters.length) this.#render();
     if (name === 'data-pending') this.#syncPending();
+    // Apply is on while something in the scope waits for it. TODO 406
+    if (name === 'data-dirty' || name === 'data-waits') this.$('.apply-all')?.toggleAttribute('disabled', !this.hasAttribute('data-dirty'));
     if (name === 'data-locked') for (const chip of [...this.#chips(), ...this.$$<HTMLElement>('.organise-chip')]) this.#lock(chip);
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
       for (const chip of this.#chips()) this.#markPresent(chip);
@@ -1170,7 +1178,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.emit('quick-filter-change', {
       // TRAP T-values-carries-two-shapes — `scope` says WHICH shape this is.
       scope: 'bar',
-      request: request && applied(request),
+      // A scope that waits holds it for this bar's Apply. TODO 406
+      request: request && (this.hasAttribute('data-waits') ? request : applied(request)),
       active: this.active,
       // APPLIED: only ON chips.
       values: this.values,
@@ -1610,11 +1619,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'filters-delete':
         this.emit('filters-delete', { id: this.#saved.applied?.id });
         break;
+      case 'apply':
+        // Every change its scope holds. TODO 406
+        this.emit('filter-apply', {});
+        break;
       case 'add':
         // sherpa-button opens its own slotted menu; nothing to do here.
         break;
     }
   }
+
+  /** A menu's Discard, where the scope waits: its field's applied answer comes back. TODO 406 */
+  #onMenuDiscard = (event: Event): void => {
+    if (!this.hasAttribute('data-waits')) return;
+    const chip = this.pathFind(event, 'sherpa-quick-filter');
+    const field = chip ? this.#fieldFor(chip.dataset['id'] ?? '') : null;
+    if (field != null) this.emit('filter-discard', { field });
+  };
 
   /**
    * THE ⋮ MENU holds what has FOLDED away at this width, in Will's order: the

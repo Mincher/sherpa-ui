@@ -45,7 +45,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-no-value` | boolean |  |  |
 | `data-open` | boolean |  |  |
 | `data-panelled` | boolean |  | a FILTER PANEL is drawing this field instead, so the bar hides the chip — two controls over one field make a reader guess which is in force. Written by the host. TRAP T-the-view-chip-stays-on-the-header |
-| `data-pending` | boolean |  | changed, not yet applied: the active edge, no fill. Written by the bar. TRAP T-a-pending-chip-has-no-fill |
+| `data-pending` | boolean |  | changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning |
 | `data-persistent` | boolean |  | a SELECTOR rather than a toggle: always on, and never "empty". Set by [sherpa-quick-filter-toolbar](sherpa-quick-filter-toolbar.md) from a filter definition's `persistent` flag. The view chip is the case — you are always in SOME view, so the amber "on but filtering by nothing" state is one it cannot be in. |
 | `data-plain` | boolean |  |  |
 | `data-readonly` | boolean |  | a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter |

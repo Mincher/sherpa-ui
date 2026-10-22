@@ -16510,6 +16510,7 @@ until its Apply. A bound control over a waiting scope wears `data-waits`.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/a-waiting-scope-holds-its-picks.test.mjs`
+- Site: `test/e2e/reforged-the-view-waits-for-one-apply.spec.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/spoof-remote.ts`
 - Site: `src/core/data/store.ts`
@@ -16731,7 +16732,6 @@ Unset, the pin is exactly the mode, as before. The chip's pending edge reads the
 same hook. A chip's fill FADES (100 ms), so a test reads it once it settles.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 
 ### T-the-filter-mode-is-set-before-the-page-paints
 
@@ -17184,22 +17184,25 @@ day left the footer's pair off (TODO 83).
 - Site: `test/e2e/reforged-menu.spec.ts`
 - Site: `test/e2e/reforged-a-calendar-pick-wakes-the-footer.spec.ts`
 
-### T-a-pending-chip-has-no-fill
+### T-a-pending-chip-reads-as-a-warning
 
-**A chip whose change is not applied yet is PENDING: the active purple EDGE,
-and NO fill.** Will, 2026-09-26 (TODO 46): a chip that goes straight to active
-before its change applies misleads the reader. An Advanced chip is the same
-— it turns green only once applied.
+**A chip whose change is not applied yet is PENDING: it wears the WARNING
+look.** Will, 2026-10-22 (TODO 406): *"Use the warning style on filter chips
+where the selected values have changed but not yet been applied."* It was the
+active edge and no fill (TODO 46): a chip that goes straight to active before
+its change applies misleads the reader. An Advanced chip is the same — it turns
+on only once applied.
 
-Only a change that WAITS can be pending, and after TODO 62 only a remote one
-waits: locally a pick applies at once and goes straight to active. So a chip
+Only a change that WAITS can be pending: a remote one (TODO 62), or one in a
+scope that waits for its bar's Apply — the View (TODO 406). Elsewhere a pick
+applies at once and goes straight to active. So a chip
 is pending when its own OPEN menu holds a draft (`menu.dirty`, which is only
 ever true for a committing menu), or when its bound source lists its field in
 the bar's `data-pending` — a panel edit waiting for its Apply.
 
-The fill is a PIN (`'&[data-pending]': default` in state-pins.yaml, written
-three times so it outranks the on and the condition pins); the edge borrows
-`--sherpa-style-active-border-base-1`, as the AI chip's does. The BAR is the
+The look is a PIN (`'&[data-pending]': warning` in state-pins.yaml, written
+after the on pin so it outranks it); the chip's CSS only thickens the edge, as
+an on chip's, and its tip starts "Unapplied changes - " (Will, TODO 406). The BAR is the
 one writer of the chip's flag: two writers of one attribute each undo the
 other's answer.
 
@@ -17208,6 +17211,7 @@ other's answer.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/e2e/reforged-pending-chip.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/ui/shared-constants.ts`
 
 ### T-a-condition-tip-counts-its-rows
 

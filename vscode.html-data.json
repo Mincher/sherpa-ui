@@ -2098,6 +2098,11 @@
           "description": "FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set."
         },
         {
+          "name": "data-discard",
+          "description": "show Discard without Apply: its bar holds ONE Apply for the scope",
+          "valueSet": "v"
+        },
+        {
           "name": "data-drill",
           "description": "the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked.",
           "valueSet": "v"
@@ -2163,6 +2168,11 @@
         {
           "name": "data-op",
           "description": "FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many."
+        },
+        {
+          "name": "data-pending",
+          "description": "its answer is changed and not applied: Discard is on",
+          "valueSet": "v"
         },
         {
           "name": "data-range",
@@ -2701,6 +2711,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-dirty",
+          "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
+          "valueSet": "v"
+        },
+        {
           "name": "data-favourite",
           "description": "the ★ is lit (view type) — the value, IN",
           "valueSet": "v"
@@ -2814,6 +2829,11 @@
               "name": "data"
             }
           ]
+        },
+        {
+          "name": "data-waits",
+          "description": "its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406",
+          "valueSet": "v"
         }
       ]
     },
@@ -2948,7 +2968,7 @@
         },
         {
           "name": "data-pending",
-          "description": "changed, not yet applied: the active edge, no fill. Written by the bar. TRAP T-a-pending-chip-has-no-fill",
+          "description": "changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
           "valueSet": "v"
         },
         {

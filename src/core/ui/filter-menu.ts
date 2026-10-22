@@ -66,6 +66,9 @@ export interface FilterMenuOptions {
   /** Its source applies LIVE: a number does not wait for Apply, and its body
    *  reports while it moves. Will, TODO 107 */
   live?: boolean | undefined;
+  /** Its scope WAITS for one Apply, its bar's: a pick goes to the draft at once,
+   *  and the footer keeps Discard alone. Will, TODO 406 */
+  waits?: boolean | undefined;
 }
 
 /**
@@ -99,11 +102,12 @@ export function menuFor(
   const typed = kind === 'number' && !opts.live;
   // A CALENDAR waits for Apply too, local or not: a new day is likely a new fetch. Will, TODO 405
   const dated = kind === 'date' && !opts.live;
-  const defers = def.commit ?? (typed || dated || (!local && !one && !hasOwnBody(kind)));
+  const defers = !opts.waits && (def.commit ?? (typed || dated || (!local && !one && !hasOwnBody(kind))));
   if (defers) menu.setAttribute('data-commit', '');
+  if (opts.waits) menu.setAttribute('data-discard', '');
   if (opts.live) menu.setAttribute('data-apply-on', 'input');
   // A def that NAMED `commit` outranks the Range switch's own rule; so does a number.
-  if (def.commit != null || local || typed || dated) menu.setAttribute('data-commit-fixed', '');
+  if (def.commit != null || local || typed || dated || opts.waits) menu.setAttribute('data-commit-fixed', '');
   // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
   if (def.persistent) menu.removeAttribute('data-clearable');
   if (opts.bounds) menu.setAttribute('data-bounds', opts.bounds);

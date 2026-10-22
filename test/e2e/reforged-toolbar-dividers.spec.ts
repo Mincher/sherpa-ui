@@ -16,7 +16,8 @@ test('the View divider needs a chip after it; the action divider, an action befo
     const sr = el.shadowRoot!;
     const shown = (sel: string, pseudo?: string) =>
       getComputedStyle(sr.querySelector(sel)!, pseudo).display !== 'none';
-    const snap = () => ({ view: shown('.view-zone', '::after'), actions: shown('.act-divider') });
+    // The action divider — not Apply's, which shows only where a scope waits. TODO 406
+    const snap = () => ({ view: shown('.view-zone', '::after'), actions: shown('.act-divider:not(.apply-divider)') });
     const view = document.createElement('span');
     view.slot = 'view';
     view.textContent = 'View';

@@ -25,6 +25,7 @@ import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.j
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import { QueryContext } from '../../core/data/query-context.js';
+import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
@@ -295,6 +296,8 @@ export class SherpaProvider extends SherpaElement {
       // The Context's ONE Query: its source joins it. TRAP T-a-context-holds-the-only-query
       const source = (made = def && store ? await openSource(def, store, { query: new QueryContext() }) : undefined);
       if (source) this.#made.add(source);
+      // A VIEW pick waits for its bar's ONE Apply: nothing fetches until asked. Will, TODO 406
+      source?.query.wait(VIEW);
       opening?.stop();
       if (page.signal.aborted) return undefined;
       if (!source || !def) {

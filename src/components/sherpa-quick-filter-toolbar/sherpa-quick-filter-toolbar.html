@@ -54,6 +54,10 @@
     data-pending     the FIELDS changed and not yet applied, space-separated.
                   Set by a bound source; each chip wears the pending look,
                   as one with a draft in its open menu does.
+    data-waits       its scope waits for ONE Apply, this bar's: its menus keep
+                  Discard alone. Set by a bound source. TODO 406
+    data-dirty       something in its scope is changed and not applied: Apply
+                  is on. Set by a bound source.
 
   Slots:
     view     — leading view chip (view type)
@@ -66,6 +70,8 @@
     filter-remove        — a chip was removed. detail: { id, filter, holds }
     filter-add           — chips were added. detail: { ids, filters, holds }
     view-reset           — Reset all on view: put back the View's own filters, in every scope. Cancelable
+    filter-apply         — Apply, where the scope waits: send every change held in it. detail: { }
+    filter-discard       — a menu's Discard, where the scope waits: put back that field's applied answer. detail: { field }
     filters-apply        — a saved set's row was ticked: take it, so the filters match it. detail: { id }
     filters-dismiss      — a saved set's row was unticked: the scopes it names lose their filters. detail: { id }
     filters-save         — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
@@ -110,6 +116,12 @@
       aria-label because an icon button has no text to name it.
     -->
     <div class="actions-zone" part="actions">
+      <!-- APPLY — ONE for a scope that waits: every pick in it is held until
+           this. Left of the panel toggle a provider puts in the slot, a divider
+           between. Will, TODO 406 -->
+      <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
+                     data-look="saturated" disabled>Apply</sherpa-button>
+      <span class="act-divider apply-divider" aria-hidden="true"></span>
       <!-- Host extras first, before the standard cluster. -->
       <slot name="actions" data-accepts="control"></slot>
 

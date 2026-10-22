@@ -310,7 +310,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (171)
+## Filters (170)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -356,8 +356,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-flush-between-surfaces-draws-two-edges](TRAPS.md#t-a-panel-flush-between-surfaces-draws-two-edges) — filter-panel
 - [T-a-panel-follows-the-query-open-or-shut](TRAPS.md#t-a-panel-follows-the-query-open-or-shut) — filter-panel
 - [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — filter-panel
-- [T-a-pending-chip-has-no-fill](TRAPS.md#t-a-pending-chip-has-no-fill) — quick-filter, quick-filter-toolbar
-- [T-a-pin-a-page-can-re-point](TRAPS.md#t-a-pin-a-page-can-re-point) — quick-filter
+- [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — quick-filter, quick-filter-toolbar
 - [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
 - [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-panel, quick-filter, quick-filter-toolbar
@@ -757,7 +756,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (104)
+## SherpaElement and the shared sheets (105)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -782,6 +781,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — mark-text
 - [T-a-page-loads-the-bundle](TRAPS.md#t-a-page-loads-the-bundle) — render-icon
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
+- [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — shared-constants
 - [T-a-property-set-before-upgrade-shadows-its-accessor](TRAPS.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — shared-constants
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
