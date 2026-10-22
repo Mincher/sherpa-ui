@@ -94,7 +94,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
 | ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
-| ⬜ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
 | ⬜ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
@@ -1984,7 +1984,7 @@ its key. Re-sent by the bar, the same answer read as a change, and waited. It
 compares picks as a set of keys now. Test: `the-same-picks-in-any-order-are-the-same-answer`
 (fails before the fix). Will to confirm on his page.
 
-### `[ ]` ⬜ 413 — BUG: no count badge on the View's chips in the panel
+### `[ ]` ❓ 413 — BUG: no count badge on the View's chips in the panel
 
 Will, 2026-10-22: *"Count badges on view scope filters don't show in the filter
 panel."*
@@ -1994,6 +1994,14 @@ show on the panel's chips and field headers, as on the bar. A pick NOT yet
 applied shows no count by design (a pending chip's badge waits, TODO 304), and
 in panel mode the bar's Apply is hidden. ❓ Will: the steps, after a reload.
 **Will, 2026-10-22: still missing after a reload.**
+
+**Not reproduced again, 2026-10-22 (after 400).** Will's steps on a fresh build:
+panel mode by its button, picks pressed in the panel (Customer, Region, Date
+Today), the scope's Apply, a reload. Records and Dashboard, in Chromium, Firefox
+and WebKit: every View badge is drawn and visible after the reload (Customer 14,
+Region 2, Date 0 on Records; 130, 65 + 65 on the Dashboard). A toolbar Apply
+then the switch to the panel shows them too. **❓ Will:** a screenshot of the
+panel without its badges, and the page and View it is on.
 
 ### `[x]` ✅ 412 — BUG: a chip with 0 matches stays on
 
