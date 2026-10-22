@@ -10662,6 +10662,7 @@ A parent's caret asks for its children's menu (`quick-filter-open`): built
 then, shown once it has drawn, and removed when it shuts, so a shut chip holds
 no menu and a body press is never mistaken for an empty chip's open.
 
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/source-counts.ts`

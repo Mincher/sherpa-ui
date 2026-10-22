@@ -123,6 +123,8 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
     // A value chip's press, in a section: it picks its row. TODO 425
     this.addEventListener('quick-filter-click', this.#onValuePress);
+    // …and a parent's Sites menu, CAUGHT before its value chip relays it. TODO 425
+    this.addEventListener('menu-change', this.#onKidsChange, { capture: true });
     /* The menu's rows can arrive AFTER this chip connects — a toolbar hands
        them over once the chip is in the page — and pre-ticked rows fire no
        native change. TRAP T-chip-empty-check-waits-for-onconnect */
@@ -191,8 +193,6 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-layout') return this.#syncValues();
-    // A section marks only the values its draft changed. TODO 425
-    if (name === 'data-pending' && this.dataset['layout'] === 'section') this.#syncValues();
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
@@ -687,8 +687,10 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
-    // ON at none is answered: it toggles too. TRAP T-none-is-an-answer
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#fetches())) {
+    // ON at none is answered: it toggles too (TRAP T-none-is-an-answer); a section's value
+    // chip's body is its toggle, its caret its Sites (TODO 425).
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#fetches())
+      && this.slot !== 'values') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -756,6 +758,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Mirror the menu's open state onto the caret for assistive tech. */
   #onMenuToggle = (event: Event): void => {
+    // A value chip's own menu — a section's Sites — is the value chip's. TODO 425
+    if ((event.target as HTMLElement).closest?.('sherpa-quick-filter') !== this) return;
     const open = event.type === 'menu-open';
     this.$('.caret')?.setAttribute('aria-expanded', String(open));
     // Focus is inside the menu, so `:focus-visible` is false — CSS rings on this.
@@ -959,8 +963,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const tops = items.filter((i) => i.parent === undefined);
     const mine = new Map([...this.querySelectorAll<HTMLElement>(':scope > .value')].map((c) => [c.dataset['value'] ?? '', c]));
     const picked = new Set(menu?.values ?? []);
-    // What is APPLIED, while the field waits: only a value its draft changed reads as pending. TODO 425
-    const waiting = this.hasAttribute('data-pending');
+    // What is APPLIED, told while the field waits: only a value its draft changed reads as pending. TODO 425
+    const waiting = this.#applied != null;
     const was = new Set((this.#applied && !this.#applied.suspended ? this.#applied.picked ?? [] : []).map(valueKey));
     for (const item of tops) {
       const one = mine.get(item.value) ?? this.clone('template.value-chip-tpl');
@@ -973,13 +977,15 @@ export class SherpaQuickFilter extends SherpaElement {
       one.toggleAttribute('data-current', kids.some((k) => picked.has(k)));
       one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));
       (one as SherpaQuickFilter).results = this.#valueResults?.[item.value] ?? null;
+      this.#syncKids(one, item.value, items, picked);
       // In the menu's order: appending one already here moves it.
       this.append(one);
     }
     for (const gone of mine.values()) gone.remove();
   }
 
-  /** A SECTION's applied answer, while its field waits: its host says it. TODO 425 */
+  /** A SECTION's applied answer while its field waits, null while it does not:
+   *  its host says it. TODO 425 */
   get applied(): FieldReading | null {
     return this.#applied;
   }
@@ -1000,6 +1006,51 @@ export class SherpaQuickFilter extends SherpaElement {
   }
   /** Each value's count, as its host last said. */
   #valueResults: Readonly<Record<string, number>> | null = null;
+
+  /** A TIERED value's chip is a field chip of its own: its menu is the parent's
+   *  children, ticked from the field's picks — all of them while the parent is
+   *  picked whole. TODO 425 · TRAP T-a-parent-pick-is-the-parent */
+  #syncKids(one: HTMLElement, parent: string, items: ReadonlyArray<{ value: string; label: string; parent?: string }>, picked: ReadonlySet<string>): void {
+    const kids = items.filter((k) => k.parent === parent);
+    let menu = one.querySelector<SherpaMenu>(':scope > sherpa-menu.kids');
+    if (!kids.length) {
+      menu?.remove();
+      one.removeAttribute('data-menu');
+      return;
+    }
+    if (!menu) {
+      menu = this.clone<SherpaMenu>('template.kids-menu-tpl');
+      if (!menu) return;
+      menu.setAttribute('data-heading', items.find((i) => i.value === parent)?.label ?? parent);
+      one.append(menu);
+      one.setAttribute('data-menu', '');
+    }
+    const whole = picked.has(parent);
+    const given = kids.map((k) => ({ value: k.value, label: k.label, selected: whole || picked.has(k.value) }));
+    // The same list does nothing: a new one would close what the reader has open.
+    const key = JSON.stringify(given);
+    if (menu.dataset['given'] === key) return;
+    menu.dataset['given'] = key;
+    menu.items(given);
+  }
+
+  /** A parent's Sites menu changed: those sites are its picks — the parent
+   *  itself while every one is ticked — picked through the field's menu. TODO 425 */
+  #onKidsChange = (event: Event): void => {
+    const kidsMenu = event.target as HTMLElement;
+    const one = kidsMenu.parentElement;
+    if (!kidsMenu.classList?.contains('kids') || one?.parentElement !== this) return;
+    event.stopPropagation();
+    const menu = this.#fieldMenu();
+    if (!menu) return;
+    const parent = one.dataset['value'] ?? '';
+    const kids = (menu.itemData ?? []).filter((i) => i.parent === parent).map((i) => i.value);
+    const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
+    const mine = new Set([parent, ...kids]);
+    const rest = menu.values.filter((v) => !mine.has(v));
+    menu.values = kids.length && kids.every((k) => want.has(k)) ? [...rest, parent] : [...rest, ...kids.filter((k) => want.has(k))];
+    menu.apply();
+  };
 
   /** A value chip was pressed: pick its row — a parent with its children — as a
    *  reader would, through the menu, Apply too. TODO 425 */

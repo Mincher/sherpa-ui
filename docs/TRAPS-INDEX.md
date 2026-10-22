@@ -314,7 +314,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (169)
+## Filters (170)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -359,6 +359,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-builds-its-own-menus](TRAPS.md#t-a-panel-builds-its-own-menus) — filter-def, filter-menu, filter-panel
 - [T-a-panel-flush-between-surfaces-draws-two-edges](TRAPS.md#t-a-panel-flush-between-surfaces-draws-two-edges) — filter-panel
 - [T-a-panel-follows-the-query-open-or-shut](TRAPS.md#t-a-panel-follows-the-query-open-or-shut) — filter-panel
+- [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — quick-filter
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — filter-host, quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar

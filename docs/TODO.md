@@ -1911,6 +1911,16 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   them (the bar's `drawApplied` → the chip's `applied`), and are greyed and
   removed as the panel's are (`limitField` with the section's value chips). With
   Northwind applied and Limit on, Latin America goes in both, alike.
+- ✅ **Phase 3 — tiers (2026-10-22).** In a section, a customer's value chip is a
+  field chip of its own: its menu is its Sites, ticked from the field's picks
+  (all of them while the customer is picked whole). The field chip catches that
+  menu's change (capture) and picks those sites through its own menu, so it
+  stays the one owner. A value chip's body always toggles; its caret opens its
+  Sites. A section is marked pending by its values only — its heading never
+  (its menu button pins `default`, state-pins.yaml), and the source names every
+  waiting field's applied answer, an empty one where nothing is. **Not the
+  panel's yet:** a customer switched OFF in the panel keeps its sites for when it
+  comes back on; here it lets them go.
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 

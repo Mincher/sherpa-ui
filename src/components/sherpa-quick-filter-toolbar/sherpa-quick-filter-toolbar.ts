@@ -577,7 +577,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const chip of this.#chips()) {
       const one = this.#field(chip);
       const field = one.def.field ?? one.def.id;
-      markField(one.chips(), one.menus(), { pending: waiting.has(field), failed: failed.has(field), drafting: chip.drafting });
+      // A SECTION is marked by its values, never its heading: they know what changed. TODO 425
+      const section = chip.dataset['layout'] === 'section' ? { changed: new Set<Element>() } : {};
+      markField(one.chips(), one.menus(), { pending: waiting.has(field), failed: failed.has(field), drafting: chip.drafting, ...section });
     }
   }
 

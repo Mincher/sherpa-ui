@@ -44,6 +44,9 @@ sherpa-quick-filter:
   '&[data-unavailable]': inactive
   # The count is a Badge, which pins Style=default in Figma — never the on tint.
   '& .count': default
+  # A SECTION's heading is the field's name: its values say its state, so its menu
+  # button keeps the default look. TODO 425
+  '&[data-layout="section"] .caret': default
 
 sherpa-menu:
   # Every Menu variant pins Style=default, so a menu slotted into an ON chip

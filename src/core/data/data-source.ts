@@ -1068,10 +1068,10 @@ export class DataSource extends EventTarget {
       })))].filter((f) => this.#context.pending(f))
       : []), (id) => this.#context.dirty(id), (id) => this.#context.named(id),
     (scopes) => [...this.#failed].filter((f) => scopes.some((id) => this.#context.scope(id).includes(f))),
-    // Each pending field's answer as APPLIED, so a control marks only what its draft changed. TODO 424
-    (scopes, fields) => Object.fromEntries(fields.flatMap((f) => {
+    // Each pending field's answer as APPLIED — none yet, an empty one — so a control marks only what its draft changed. TODO 424
+    (scopes, fields) => Object.fromEntries(fields.map((f) => {
       const at = scopes.find((id) => this.#applied.scopes[id]?.readings[f]);
-      return at ? [[f, this.#applied.scopes[at]!.readings[f]!] as const] : [];
+      return [f, at ? this.#applied.scopes[at]!.readings[f]! : { picked: [] }] as const;
     })));
   }
 

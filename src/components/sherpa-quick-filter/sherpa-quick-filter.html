@@ -138,6 +138,8 @@
 
     <!-- One value chip: a toggle its field chip draws, locked to its row. -->
     <template class="value-chip-tpl"><sherpa-quick-filter class="value" slot="values" data-locked></sherpa-quick-filter></template>
+    <!-- A TIERED value's children — a customer's Sites — in a value chip's menu. -->
+    <template class="kids-menu-tpl"><sherpa-menu slot="menu" class="kids" data-type="filter" data-select="multiple" data-search data-clearable></sherpa-menu></template>
 
     <!-- A jump row, cloned into the slotted menu. No `slot`: rows go in the
          menu's DEFAULT slot, and a row carrying one is never projected. -->

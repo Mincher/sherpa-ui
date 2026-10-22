@@ -166,6 +166,23 @@
         },
         {
           "el": "template",
+          "class": "kids-menu-tpl",
+          "children": [
+            {
+              "el": "sherpa-menu",
+              "class": "kids",
+              "attrs": {
+                "slot": "menu",
+                "data-type": "filter",
+                "data-select": "multiple",
+                "data-search": "",
+                "data-clearable": ""
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
           "class": "jump-item-tpl",
           "children": [
             {

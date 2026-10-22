@@ -258,8 +258,9 @@ export interface BoundControl {
   drawScope?: (scope: ScopeDescription, live?: () => ScopeDescription) => void | Promise<void>;
   /** Each answered chip's results — the rows its own answer matches. */
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
-  /** What each field that waits for Apply holds APPLIED — a control that draws a chip per
-   *  value marks only those its draft changed. TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning */
+  /** What each field that waits for Apply holds APPLIED — every one named, an empty answer where
+   *  nothing is — so a control that draws a chip per value marks only those its draft changed.
+   *  TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning */
   drawApplied?: (applied: Readonly<Record<string, FieldReading>>) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
