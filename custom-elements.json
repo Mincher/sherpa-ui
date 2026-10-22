@@ -3986,6 +3986,143 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-filter-stack/sherpa-filter-stack.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaFilterStack",
+          "tagName": "sherpa-filter-stack",
+          "customElement": true,
+          "description": "the panel area's filters: ONE filter toolbar per scope, each turned to PORTRAIT. The toolbars are the filters; this only stacks them, and opens and shuts as the panel area's occupant. TODO 425",
+          "attributes": [
+            {
+              "name": "data-saveable",
+              "description": "its component scopes' toolbars save filters",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-scope",
+              "description": "the scopes it asks for, space-separated, as a panel does",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "open",
+              "description": "showing . Every close reports, and says why.",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "drawScopes",
+              "parameters": [
+                {
+                  "name": "scopes",
+                  "type": {
+                    "text": "readonly ScopeDescription[]"
+                  }
+                }
+              ],
+              "description": "drawScopes(scopes) — one portrait toolbar per scope, in order; each asks for its own scope, as any toolbar does. A scope gone takes its toolbar; one already here is not moved, so it keeps what the reader did. The FIRST takes the page's mode button."
+            },
+            {
+              "kind": "method",
+              "name": "show",
+              "parameters": []
+            },
+            {
+              "kind": "method",
+              "name": "hide",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "EVERY close reports, and says why."
+            },
+            {
+              "kind": "method",
+              "name": "close",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "parameters": []
+            }
+          ],
+          "events": [
+            {
+              "name": "filter-panel-close",
+              "description": "It shut, and why: the reader, the width or the page.",
+              "type": {
+                "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
+              }
+            }
+          ],
+          "slots": [
+            {
+              "name": "actions",
+              "description": "the page's mode button: shown in the FIRST toolbar's actions (accepts: control)"
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "bars"
+            },
+            {
+              "name": "box"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaFilterStack",
+          "declaration": {
+            "name": "SherpaFilterStack",
+            "module": "dist/components/sherpa-filter-stack/sherpa-filter-stack.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-filter-stack",
+          "declaration": {
+            "name": "SherpaFilterStack",
+            "module": "dist/components/sherpa-filter-stack/sherpa-filter-stack.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-gauge-chart/sherpa-gauge-chart.js",
       "declarations": [
         {
@@ -5820,7 +5957,7 @@
               "kind": "field",
               "name": "itemData",
               "type": {
-                "text": "Array<{ value: string; label: string; parent?: string }>"
+                "text": "Array<{ value: string; label: string; parent?: string; swatch?: number }>"
               },
               "readonly": true
             },

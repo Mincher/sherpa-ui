@@ -980,6 +980,8 @@ export class SherpaQuickFilter extends SherpaElement {
       one.dataset['value'] = item.value;
       one.dataset['id'] = this.dataset['id'] ?? '';
       one.setAttribute('data-label', item.label);
+      // A chart's value leads with its series' swatch, as its legend does.
+      if (item.swatch) one.dataset['swatch'] = String(item.swatch);
       const kids = [item.value, ...items.filter((k) => k.parent === item.value).map((k) => k.value)];
       one.toggleAttribute('data-current', kids.some((k) => picked.has(k)));
       one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));

@@ -22,6 +22,7 @@
  * - .customView — Is the View on screen the reader's own?
  * - .resetView — Put the filters back as the View on screen defines them.
  * - .drawBars — Draw every bar from its scope, as the source describes it.
+ * - .joined — A bar that asks once the page's bars are drawn — a filter stack's — is drawn as they were.
  * - .view — The View on screen.
  * - .views — Open the Views over one source: restore, then hear and keep.
  * - .stopViews — Stop the Views' listeners.
@@ -103,6 +104,8 @@ export class ProviderPage {
   /** Take a page `open()` set up. */
   begin(page: OpenedPage): void {
     this.#opened = page;
+    this.#barsDrawn = false;
+    this.#drawn = new WeakSet();
     this.#sentSets = '';
     // The set last taken before a reload, while it is still saved.
     const id = loadApplied(page.id);
@@ -359,18 +362,20 @@ export class ProviderPage {
     for (const panel of this.#host.panels()) panel.toggleAttribute('data-nothing-to-reset', !answered());
   }
 
-  /** Draw every bar from its scope, as the source describes it — the View
-   *  chip first, its Group and Sort — then what it may add. */
-  async drawBars(view?: string): Promise<void> {
+  /** Draw every bar — or these — from its scope, as the source describes it:
+   *  the View chip first, its Group and Sort — then what it may add. */
+  async drawBars(view?: string, only?: readonly Bar[]): Promise<void> {
     const opened = this.#opened;
     if (!opened) return;
     const { source, library } = opened;
-    await Promise.all(this.#host.bars().map(async (bar) => {
+    await Promise.all((only ?? this.#host.bars()).map(async (bar) => {
       const scope = this.#host.scopeOf(bar);
       if (!scope) return;
+      this.#drawn.add(bar);
       const described = source.describe(scope);
       const custom = new Set(Object.keys(loadSavedViews(opened.id)));
-      const picker = scope === VIEW && library ? [{
+      // A portrait bar is the panel's column: the View chip stays the header's. TODO 425
+      const picker = scope === VIEW && library && (bar as HTMLElement).dataset['orientation'] !== 'portrait' ? [{
         id: VIEW_CHIP, label: await this.#host.word('view'), persistent: true, active: true, select: 'single',
         options: viewOptions(library(), view, custom),
       }] : [];
@@ -383,7 +388,20 @@ export class ProviderPage {
       await bar.populate([...picker, ...described.filters]);
       if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
     }));
+    if (!only) this.#barsDrawn = true;
+    // A late bar is told the saved sets the others already have.
+    else this.#sentSets = '';
     this.#offer();
+  }
+  /** The page's bars have been drawn. */
+  #barsDrawn = false;
+  /** The bars drawn for this page: a bar binds AFTER, and is not drawn twice. */
+  #drawn = new WeakSet<Bar>();
+
+  /** A bar that asks once the page's bars are drawn — a filter stack's, made
+   *  for each scope it is told — is drawn as they were. TODO 425 */
+  joined(bar: Bar): void {
+    if (this.#barsDrawn && !this.#drawn.has(bar)) void this.drawBars(this.#view, [bar]);
   }
 
   /** Each bar's Add list: what its scope may still add — by the chips it HAS,

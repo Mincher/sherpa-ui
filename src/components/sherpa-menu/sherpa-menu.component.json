@@ -1777,7 +1777,7 @@
         },
         {
           "name": "itemData",
-          "type": "Array<{ value: string; label: string; parent?: string }>",
+          "type": "Array<{ value: string; label: string; parent?: string; swatch?: number }>",
           "access": "read"
         },
         {

@@ -1,0 +1,29 @@
+/**
+ * sherpa-filter-stack — the panel area's filters: one portrait toolbar per
+ * scope, in a card whose body scrolls. TODO 425
+ */
+
+:host {
+  display: none;
+  block-size: 100%;
+  min-block-size: 0;
+}
+:host([open]) { display: block; }
+
+.box { block-size: 100%; }
+.box::part(body) {
+  overflow: auto;
+  min-block-size: 0;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-base, 16px);
+  padding: var(--sherpa-display-mode-space-base, 16px);
+}
+/* Each scope its own section, a rule between. */
+.bars > * + * {
+  padding-block-start: var(--sherpa-display-mode-space-base, 16px);
+  border-block-start: var(--sherpa-border-top, 0.5px) solid var(--sherpa-style-border-base-1, #b3b3c3);
+}

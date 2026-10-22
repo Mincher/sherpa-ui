@@ -155,9 +155,10 @@ export class ProviderMode {
     return button;
   }
 
-  /** A bar steps back while a panel answers for it. TRAP T-panel-mode-hides-what-the-panel-answers */
+  /** A bar steps back while a panel answers for it — not one turned to portrait,
+   *  which IS the panel's column. TRAP T-panel-mode-hides-what-the-panel-answers */
   #stepBack(bar: Element): void {
-    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel');
+    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
   }
 
   /** A mode button: the reader switches the mode. */

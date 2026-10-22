@@ -2,7 +2,7 @@
 
 # Components
 
-66 components. Each page is written from the component's spec and its example. 66 of 66 say when to use them.
+67 components. Each page is written from the component's spec and its example. 67 of 67 say when to use them.
 
 ## Chart
 
@@ -110,6 +110,7 @@
 | [sherpa-badge](sherpa-badge.md) | A small count: Figma "Indicator (atom)/Type=count". |
 | [sherpa-data-viz-header](sherpa-data-viz-header.md) | The header strip of a metric or a chart's card. |
 | [sherpa-filter-panel](sherpa-filter-panel.md) | The filter toolbars, as a column. |
+| [sherpa-filter-stack](sherpa-filter-stack.md) | The panel area's filters: ONE filter toolbar per scope, each turned to PORTRAIT. |
 | [sherpa-layout-canvas](sherpa-layout-canvas.md) | An infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. |
 | [sherpa-outlet](sherpa-outlet.md) | Where the route's Context is drawn. |
 | [sherpa-provider](sherpa-provider.md) | The data layer, over a SUBTREE of the page. |

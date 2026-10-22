@@ -1327,6 +1327,26 @@
       ]
     },
     {
+      "name": "sherpa-filter-stack",
+      "description": "the panel area's filters: ONE filter toolbar per scope, each turned to PORTRAIT. The toolbars are the filters; this only stacks them, and opens and shuts as the panel area's occupant. TODO 425",
+      "attributes": [
+        {
+          "name": "data-saveable",
+          "description": "its component scopes' toolbars save filters",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-scope",
+          "description": "the scopes it asks for, space-separated, as a panel does"
+        },
+        {
+          "name": "open",
+          "description": "showing . Every close reports, and says why.",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
       "name": "sherpa-gauge-chart",
       "description": "a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is not hittable.",
       "attributes": [

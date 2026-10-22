@@ -1,0 +1,29 @@
+<!--
+  sherpa-filter-stack — the panel area's filters: ONE filter toolbar per scope,
+  each turned to PORTRAIT. The toolbars are the filters; this only stacks them,
+  and opens and shuts as the panel area's occupant. TODO 425
+
+      <sherpa-filter-stack data-scope="view data" data-saveable open></sherpa-filter-stack>
+
+  Public API:
+    data-scope     the scopes it asks for, space-separated, as a panel does
+    open           showing (boolean). Every close reports, and says why.
+    data-saveable  its component scopes' toolbars save filters
+
+  Slots:
+    actions        the page's mode button: shown in the FIRST toolbar's actions
+
+  Fires:
+    filter-panel-close — it shut, and why: the reader, the width or the page. detail: { reason }
+-->
+<template id="default">
+  <!-- A standalone card beside the content, as the panel's: its BODY scrolls. -->
+  <sherpa-container class="box" part="box" data-padding="none">
+    <div class="bars" part="bars"></div>
+  </sherpa-container>
+
+  <!-- One scope's toolbar, in portrait. -->
+  <template class="bar-tpl"><sherpa-quick-filter-toolbar data-orientation="portrait"></sherpa-quick-filter-toolbar></template>
+  <!-- The page's mode button, handed on to the first toolbar's actions. -->
+  <template class="actions-tpl"><slot name="actions" slot="actions" data-accepts="control"></slot></template>
+</template>

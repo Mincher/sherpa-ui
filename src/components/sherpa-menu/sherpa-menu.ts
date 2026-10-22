@@ -55,6 +55,8 @@ export interface MenuItem {
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
   note?: string;
+  /** The data-viz series a chart draws it in, from 1: a value chip's swatch. TODO 425 */
+  swatch?: number;
   /** The section it is in. A heading is drawn where the section changes.
    *  TRAP T-saved-filters-are-the-last-section */
   section?: string;
@@ -1355,8 +1357,10 @@ export class SherpaMenu extends SherpaElement {
 
   /** Each item's value, label and parent, from the items — a row not drawn yet
    *  too, as a shut parent's children are. TRAP T-a-tree-menu-keeps-its-ticks-as-data */
-  get itemData(): Array<{ value: string; label: string; parent?: string }> {
-    return this.#items.map(({ value, label, parent }) => ({ value, label: label ?? value, ...(parent !== undefined ? { parent } : {}) }));
+  get itemData(): Array<{ value: string; label: string; parent?: string; swatch?: number }> {
+    return this.#items.map(({ value, label, parent, swatch }) => ({
+      value, label: label ?? value, ...(parent !== undefined ? { parent } : {}), ...(swatch ? { swatch } : {}),
+    }));
   }
 
   /** The items last given. Kept, so a late render can still stamp them. */

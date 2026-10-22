@@ -1918,9 +1918,8 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   stays the one owner. A value chip's body always toggles; its caret opens its
   Sites. A section is marked pending by its values only — its heading never
   (its menu button pins `default`, state-pins.yaml), and the source names every
-  waiting field's applied answer, an empty one where nothing is. **Not the
-  panel's yet:** a customer switched OFF in the panel keeps its sites for when it
-  comes back on; here it lets them go.
+  waiting field's applied answer, an empty one where nothing is. A customer
+  switched OFF keeps its sites — see "The panel's tiers, matched".
 - ✅ **Phase 4 — a section shuts, and finds (2026-10-22).** A portrait bar's
   heading is a button: it shuts the section to its heading and its actions (on
   the heading's row, as a panel scope's header), and shut, a badge says the rows
@@ -1931,6 +1930,16 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
 - ✅ **The panel's tiers, matched (2026-10-22).** A customer value chip pressed
   OFF keeps its sites in the answer's `off`, and pressed again brings them back,
   as the panel's does; the field chip carries `off` in its reading.
+- ✅ **Phase 5 — panel mode, in the app (2026-10-22).** `sherpa-filter-stack`:
+  the provider tells it its scopes (`drawScopes`), and it draws one portrait
+  bar per scope in the panel area — the View first, Switch and Save only on a
+  component scope, no actions on a part scope; it opens, shows and hides as
+  the panel does (`filter-panel-close`). A bar made after the page's bars were
+  drawn is drawn then (`joined`), once. Portrait bars do not step back in panel
+  mode, and carry no View chip (the header's). Demos: Settings › Application ›
+  **Filter panel as toolbars** swaps the panel for the stack; the classic panel
+  stays the default. Test: Demos `reforged-filter-stack`. TRAP
+  T-the-panel-is-the-bar-in-portrait. Chromium: sherpa-ui 1149, Demos 182.
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 

@@ -220,32 +220,52 @@
 .scope-head,
 .find { display: none; }
 :host([data-orientation="portrait"]) .bar {
-  flex-wrap: wrap;
-  row-gap: var(--sherpa-display-mode-space-sm, 12px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "head head actions"
+    "find find find"
+    "switch organise organise"
+    "chips chips chips";
+  align-items: center;
+  /* MARGINS, not gaps: a row or column with nothing in it — no search, no
+     Switch — then adds no space. */
+  gap: 0;
 }
-:host([data-orientation="portrait"]) :is(.find, .chips) { flex: 1 1 100%; }
+:host([data-orientation="portrait"]) :is(.find, .switch-zone, .organise-zone) {
+  margin-block-start: var(--sherpa-display-mode-space-sm, 12px);
+}
 /* The heading and its actions share a row, as a panel scope's header does. */
 :host([data-orientation="portrait"]) .scope-head {
-  order: -3;
+  grid-area: head;
   display: flex;
-  flex: 1 1 auto;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 :host([data-orientation="portrait"]:state(lead)) .find {
-  order: -1;
+  grid-area: find;
   display: block;
 }
 :host([data-orientation="portrait"]) .view-zone { display: none; }
 /* The chips are BELOW Group and Sort: no divider after them. */
 :host([data-orientation="portrait"]) .organise-zone::after { display: none; }
+:host([data-orientation="portrait"]) .switch-zone {
+  grid-area: switch;
+  margin-inline-end: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-orientation="portrait"]) .organise-zone { grid-area: organise; }
 :host([data-orientation="portrait"]) .actions-zone {
-  order: -2;
-  flex: 0 1 auto;
+  grid-area: actions;
   justify-content: flex-end;
   flex-wrap: wrap;
+  margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
 }
+/* The page's own buttons — the mode switch — never fold away in a column. */
+:host([data-orientation="portrait"]) slot[name="actions"]::slotted(slot) { display: contents; }
+:host([data-orientation="portrait"]) slot[name="actions"]::slotted(:not(slot)) { display: inline-flex; }
 :host([data-orientation="portrait"]) .chips {
+  grid-area: chips;
+  margin-block-start: var(--sherpa-display-mode-space-base, 16px);
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sherpa-display-mode-space-base, 16px);

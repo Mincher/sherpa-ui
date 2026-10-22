@@ -14824,6 +14824,36 @@ range and a typed answer have none.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/unit/none-is-an-answer.test.mjs`
 
+### T-the-panel-is-the-bar-in-portrait
+
+Will, TODO 425: *"The elements are the same across both so they should really
+just be 2 presentations of the same component … a flip between landscape and
+portrait mode (still consolidating all toolbars and moving the content to the
+panel area for panel mode)."*
+
+So the filter toolbar has an ORIENTATION. `data-orientation="portrait"` turns
+it to the panel's column — its scope's heading (it shuts the section; shut, a
+badge says its matches), its actions on that row, the first bar's search, the
+Switch, Group and Sort, then each field — mostly in CSS. A LIST field's chip is
+a SECTION (`data-layout="section"`): its toggle part the heading, its menu part
+still the menu, and a VALUE chip per menu row whose press picks that row
+through the menu (`values`, `apply()`) — so the field chip stays the one owner,
+and none, waits, pending (only what changed) and Limit hold in portrait as in
+landscape. A tiered value chip carries its own Sites menu; the field chip
+catches its change in CAPTURE, before the value chip would relay it, and picks
+the sites through its own menu.
+
+Panel mode is a `sherpa-filter-stack` in the panel area: it asks for its scopes
+as a panel does, makes one portrait toolbar per scope (each asks for its own),
+opens and shuts as a panel does, and hands the page's mode button to the first
+toolbar's actions (a forwarded slot). It draws no filter of its own. A bar that
+asks once the page's bars are drawn is drawn as they were (`joined`), and a
+portrait bar never steps back for panel mode — it IS the panel's column. The
+classic `sherpa-filter-panel` stays, for the comparison (Demos: Customers ›
+Filter layouts; Settings › Application › "Filter panel as toolbars").
+
+- Site: `src/components/sherpa-filter-stack/sherpa-filter-stack.ts`
+
 ### T-a-fetching-list-opens-on-its-first-value
 
 Will, TODO 403: a fetching filter (Customer, Region) *"should also have its first
@@ -16561,6 +16591,7 @@ The general shape: a component with two paths into the same state must emit from
 the state change, never from one path's handler. The second path is always the
 one nobody tests.
 
+- Site: `src/components/sherpa-filter-stack/sherpa-filter-stack.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 
@@ -16695,6 +16726,7 @@ which forwards into its header. Both come from the provider's template and
 answer to the provider alone; `filter-configure` is gone. A host's buttons in
 the bar's slot fold away at narrow widths, as the old switch did.
 
+- Site: `src/components/sherpa-filter-stack/sherpa-filter-stack.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider.spec.ts`
@@ -17022,6 +17054,7 @@ Panel mode is CSS now: a bar in panel mode shows only its persistent chip
 (the View), so a field the panel adds is hidden on the header without a page
 reaching into the bar's shadow root.
 
+- Site: `src/components/sherpa-filter-stack/sherpa-filter-stack.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
@@ -18146,6 +18179,7 @@ SENT UP, the answer goes to the View with its field and the chart lets go of
 it; its section then says where the filter went. The View draws only a field
 it knows, so declaring a part declares its field.
 
+- Site: `src/components/sherpa-filter-stack/sherpa-filter-stack.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`

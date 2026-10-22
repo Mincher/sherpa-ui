@@ -879,11 +879,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (105)
+## Other components (110)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
 - [T-a-canvas-owns-its-view](TRAPS.md#t-a-canvas-owns-its-view) — layout-canvas
+- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — filter-stack
 - [T-a-click-does-not-clear-indeterminate](TRAPS.md#t-a-click-does-not-clear-indeterminate) — select-checkbox
 - [T-a-click-in-a-slotted-menu-is-not-a-press](TRAPS.md#t-a-click-in-a-slotted-menu-is-not-a-press) — button
 - [T-a-composed-chrome-row-takes-its-inline-padding-from-its-container](TRAPS.md#t-a-composed-chrome-row-takes-its-inline-padding-from-its-container) — container-footer
@@ -909,6 +910,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-name-where-a-native-element-does-the-job](TRAPS.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — button
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
+- [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — filter-stack
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-second-container-type-drops-the-first](TRAPS.md#t-a-second-container-type-drops-the-first) — app-header
@@ -945,6 +947,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-describedby-must-not-be-a-live-region](TRAPS.md#t-describedby-must-not-be-a-live-region) — input-text
 - [T-embedded-footer-needs-a-public-verb](TRAPS.md#t-embedded-footer-needs-a-public-verb) — calendar
 - [T-every-button-says-its-action](TRAPS.md#t-every-button-says-its-action) — button
+- [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-stack
 - [T-fit-is-a-desktop-mode](TRAPS.md#t-fit-is-a-desktop-mode) — layout-grid
 - [T-grouping-is-an-attribute-and-a-class](TRAPS.md#t-grouping-is-an-attribute-and-a-class) — calendar, group, input-text
 - [T-header-actions-are-composed-buttons](TRAPS.md#t-header-actions-are-composed-buttons) — app-header
@@ -979,8 +982,10 @@ files. An entry that only tests cite is under Tests only.
 - [T-style-border-base-is-default-1](TRAPS.md#t-style-border-base-is-default-1) — container-footer, select-checkbox, select-radio
 - [T-temporal-is-the-date-model](TRAPS.md#t-temporal-is-the-date-model) — calendar
 - [T-the-footer-owns-nothing-to-save](TRAPS.md#t-the-footer-owns-nothing-to-save) — container-footer
+- [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — filter-stack
 - [T-the-nav-is-a-menu-on-a-phone](TRAPS.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — app-shell
+- [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — filter-stack
 - [T-the-shell-owns-the-panel-areas](TRAPS.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-tick-needs-the-fixed-ramp](TRAPS.md#t-the-tick-needs-the-fixed-ramp) — select-checkbox
 - [T-two-months-share-one-grid](TRAPS.md#t-two-months-share-one-grid) — calendar

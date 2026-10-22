@@ -1,0 +1,4 @@
+{
+  "html": "<sherpa-filter-stack data-scope=\"view data\" open></sherpa-filter-stack>",
+  "use": "In the app shell's panel area, for the page's filters as a column: one filter toolbar per scope, each in portrait. It asks a provider for its scopes; the toolbars are the filters. For one scope's filters in a strip, use `sherpa-quick-filter-toolbar`."
+}

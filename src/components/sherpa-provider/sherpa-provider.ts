@@ -762,6 +762,8 @@ export class SherpaProvider extends SherpaElement {
     if (asks.shape === 'state' || asks.shape === 'scope') callback(undefined, leave);
     // …and again when answered: the next page with data opens the panel again.
     if (asks.shape === 'scope') this.#modes.join(el);
+    // A bar made after the page's were drawn — a filter stack's — is drawn as they were. TODO 425
+    if ('drawScope' in el && !('drawScopes' in el)) this.#pages.joined(el as unknown as Bar);
     if ('drawScope' in el || 'drawPresent' in el) this.#offerLimit(el);
   }
 
