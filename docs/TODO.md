@@ -1237,6 +1237,18 @@ second copy in `dist/`, a few seconds of build. Measured: Fast 4G 3.45 s →
 plus compression. Less change, but still 221 requests (6 at a time on
 HTTP/1.1), and not measured yet.
 
+**What A means for an app** (Will asked, 2026-10-22). The build adds one step:
+esbuild joins each entry (`index`, `data`, `app`, `components`) into
+`dist/bundle/`, split so the entries share their common code and each icon
+stays a small lazy file; about 1.8 MB more in `dist/`. New exports
+`sherpa-ui/bundle`, `/bundle/data`, `/bundle/app`, with today's types. An app
+WITH a bundler changes nothing. An app WITHOUT one (Demos, Gallery, every
+Starter app — all use an import map to `dist/index.js` today) changes one
+import-map line; its code does not change, and the Starter template starts on
+the bundle. A page uses the bundle OR the files, never both (two copies of
+every class); `check-usage` would warn. One component alone, and live reload,
+stay on the files. Compression is the app server's: Demos turns it on.
+
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 
 Found by 345's exploration (2026-10-19), checked in the code. A `DataSource`
