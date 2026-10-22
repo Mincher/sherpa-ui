@@ -488,6 +488,8 @@ export class QueryContext extends EventTarget {
     // The Switch is its scope's Apply, remote too.
     this.commit({ scope });
     this.#tell({ kind: 'drawn', fields, bars: scope });
+    // Its sort and group go off and on with it: the rows are arranged again. Will, TODO 398
+    if (entry.sort?.length || entry.group) this.#tell({ kind: 'arranged', group: !!entry.group });
   }
 
   /**

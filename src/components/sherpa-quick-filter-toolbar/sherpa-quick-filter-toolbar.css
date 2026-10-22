@@ -78,9 +78,10 @@
    as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */
 :host(:not(:state(has-organise)):not([data-switchable]:not([data-type="view"])))
   .bar:not(:has(.chips > .chip:not([data-folded-away]))) .view-zone::after,
-:host(:not([data-switchable]:not([data-type="view"])))
-  .bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after,
-.bar:not(:has(.chips > .chip:not([data-folded-away]))) .switch-zone::after {
+/* The Switch leads Group and Sort (TODO 398): its divider needs one of them or a chip after it. */
+:host(:not(:state(has-organise)))
+  .bar:not(:has(.chips > .chip:not([data-folded-away]))) .switch-zone::after,
+.bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after {
   display: none;
 }
 /* …and in panel mode only a persistent chip is still shown. */

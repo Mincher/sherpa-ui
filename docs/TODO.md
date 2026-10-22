@@ -79,7 +79,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
 | ⬜ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
-| ⬜ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
+| ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
@@ -1871,11 +1871,17 @@ and Favorites" (Demos calls a Context a page). Tests: Demos
 stored shape. **Will:** the word on the switch is "views" and "page" — say if
 you want "Spaces".
 
-### `[ ]` ⬜ 398 — UX: the toolbar Switch leads the Group chip, and toggles grouping and sorting too
+### `[x]` ✅ 398 — UX: the toolbar Switch leads the Group chip, and toggles grouping and sorting too
 
 Will, 2026-10-22 (given to the other session, `sherpa-ui-48`): *"The filter
 toolbar toggle switch should be to the left of the group filter chip and
 toggling it should also toggle the application of grouping and sorting."*
+
+**✅ Done 2026-10-22.** The Switch's zone comes before Group and Sort, with its
+divider. While a scope is switched off, its sort and group are kept but not in
+force (`arrangementOf`), and the flip arranges the rows again; its search stays.
+Tests: `the-switch-suspends-the-arrangement` (node); the bar, panel and grid
+specs pass. **Will:** look at Demos Records' data bar: Switch, then Group.
 
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 

@@ -90,15 +90,16 @@
       <slot name="view" data-accepts="control"></slot>
     </div>
 
+    <!-- The leading filter Switch: every filter, the grouping and the sort off or
+         on, each keeping its value. Left of Group. Will, TODO 398 -->
+    <div class="switch-zone" part="switch">
+      <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
+    </div>
+
     <!-- ORGANISE ZONE — Group and Sort chips. They change how the grid is
          ARRANGED, not which rows survive, so they keep their own zone and
          divider rather than mixing into the filter run. -->
     <div class="organise-zone" part="organise"></div>
-
-    <!-- Figma's leading filter Switch: every filter off or on, each keeping its value. -->
-    <div class="switch-zone" part="switch">
-      <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
-    </div>
 
     <div class="chips" part="chips"></div>
 

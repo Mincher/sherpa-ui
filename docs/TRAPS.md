@@ -4069,6 +4069,11 @@ heading pick, a View that names a field — so no reader needs a second check. T
 bar greys its chips and makes them inert while off: only the Switch turns them
 back on.
 
+**Its sort and group go off and on with it** (Will, TODO 398): while a scope is
+off, `arrangementOf()` gives its sort and group as not in force — kept on the
+scope, so ON puts them back — and the flip tells the source the rows are
+arranged again. Its search stays. The Switch sits left of the Group chip.
+
 - A bar sends `suspended` only while it shows the Switch, so a hidden Switch
   never turns a scope off. A bar told to draw an off scope it cannot show, or
   one in panel mode (the panel has no Switch), turns it back on and reports.
@@ -4083,6 +4088,7 @@ back on.
   source, which lists them. With no source, the bar keeps the list itself, and
   its own copy of keepOff turns off a chip that comes on while it is off.
 
+- Site: `test/unit/the-switch-suspends-the-arrangement.test.mjs`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/data-source-types.ts`
