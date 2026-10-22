@@ -151,6 +151,8 @@ export interface FieldFacts {
   labels?: Readonly<Record<string, string>>;
   /** A DATE that holds a time of day. TODO 21d */
   time?: boolean;
+  /** A DATE whose picks are two ENDS unless a reading says not. TRAP T-a-date-picks-days-unless-it-says-range */
+  range?: boolean;
   /** A number's bands, for a condition that names one. TRAP T-a-threshold-is-a-fact-of-the-field */
   thresholds?: readonly Threshold[];
   /** A TIERED field's child field, and each child pick's (path's) parent, by key. TODO 369 */
@@ -310,7 +312,8 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      unchanged. TRAP T-the-field-type-decides-the-clause */
   /* ENDS or a LIST. Said plainly when a control knows; otherwise a ranged
      field with nothing to tick can only be answering with ends. */
-  const range = isRanged(type) && (reading.range ?? !facts.values?.length);
+  // A date's picks are DAYS unless the reading or its field says range. TRAP T-a-date-picks-days-unless-it-says-range
+  const range = isRanged(type) && (reading.range ?? (type === 'date' ? !!facts.range : !facts.values?.length));
   /* NO DECLARED LIST means the picks ARE the values. "Everything ticked is no
      filter" can only be judged against a list someone named — a column menu
      that set `plan in [Pro, Free]` is filtering, whatever else exists.

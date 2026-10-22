@@ -148,6 +148,7 @@ export class FieldCatalogue {
       } : {}),
       ...(facts.type ? { type: facts.type } : {}),
       ...(facts.time ? { time: true } : {}),
+      ...(facts.range ? { range: true } : {}),
       ...(facts.thresholds ? { thresholds: facts.thresholds } : {}),
       ...(named ? { label: named } : {}),
     };

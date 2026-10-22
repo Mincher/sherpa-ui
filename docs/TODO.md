@@ -78,6 +78,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
 | ⬜ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
 | ⬜ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
+| ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
+| ⬜ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1797,6 +1799,27 @@ stays inactive. The new row is a change; Apply must be active.
 **✅ Done 2026-10-22.** Add and Remove are clicks, so no `input` or `change`
 told the footer the draft moved. Both now re-check it. `reforged-menu` has the
 case; it fails without the fix.
+
+### `[x]` ✅ 397 — UX: a calendar menu picks days unless its field says range
+
+Will, 2026-10-22: *"I think that calendar menus shouldn't default to 'range'
+unless specified in the definition."*
+
+**✅ Done 2026-10-22.** A field definition takes `"range": true` (FieldDeclaration,
+`page.v1.json`); `filterDef()` already carries it to every menu. Two defaults
+went: the source made every View date a range (TODO 20b), and a date reading
+with no `range` read its picks as ends when the field had no value list. Now a
+date's picks are days unless the reading or its field says range. Demos' View
+date, `created`, says `"range": true`, so it stays a range there. Tests:
+`reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
+`T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
+held by Will).
+
+### `[ ]` ⬜ 398 — UX: the toolbar Switch leads the Group chip, and toggles grouping and sorting too
+
+Will, 2026-10-22 (given to the other session, `sherpa-ui-48`): *"The filter
+toolbar toggle switch should be to the left of the group filter chip and
+toggling it should also toggle the application of grouping and sorting."*
 
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 

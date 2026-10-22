@@ -37,6 +37,9 @@ export interface FieldDeclaration {
   op?: FilterOp;
   /** A DATE that holds a time of day: its Advanced rows offer a time too. TODO 21d */
   time?: boolean;
+  /** A DATE whose menus pick two ENDS, from and to. Left out, they pick days.
+   *  TRAP T-a-date-picks-days-unless-it-says-range */
+  range?: boolean;
   /** A number filter's ends, and its step. */
   min?: number;
   max?: number;

@@ -59,14 +59,17 @@ test('one pick on a NUMBER is a comparison, as a number', async () => {
   assert.deepEqual(ids(src), [2]);
 });
 
-test('two picks on a DATE are a range, sorted lexically', async () => {
+test('two picks on a DATE are two DAYS, unless the field or the reading says range', async () => {
   const src = await source();
+  src.query.setReading('view', 'made', { picked: ['2026-06-05', '2026-01-05'] });
+  await settle();
+  // Days: the two picked, not what lies between them. Will, 2026-10-22
+  assert.deepEqual(ids(src), [1, 3]);
+  src.declareField('made', { range: true });
   src.query.setReading('view', 'made', { picked: ['2026-06-05', '2026-03-05'] });
   await settle();
-  assert.deepEqual(
-    stateClause(src.selection('made')),
-    ['made', 'between', ['2026-03-05', '2026-06-05']],
-  );
+  // Ends, sorted lexically.
+  assert.deepEqual(stateClause(src.selection('made')), ['made', 'between', ['2026-03-05', '2026-06-05']]);
   assert.deepEqual(ids(src), [2, 3]);
 });
 

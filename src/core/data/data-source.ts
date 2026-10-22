@@ -393,8 +393,6 @@ export class DataSource extends EventTarget {
       const from = cameFrom(this.#draft, f);
       return {
         ...this.filterDef(f), removable: true,
-        // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
-        ...(scope === VIEW && this.#catalogue.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.#context.scopeLabel(VIEW) } : {}),
         ...(down ? { sendTo: {

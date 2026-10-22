@@ -10393,6 +10393,21 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-date-picks-days-unless-it-says-range
+
+**A date's picks are DAYS; they are two ENDS only when the reading or the
+field's definition says `range: true`.** TODO 397, Will (2026-10-22). Two
+defaults made every date a range: the source set `range` on every View date's
+filter, and `fieldState` read an unflagged date reading's picks as ends when the
+field had no value list — so a one-day pick meant "from that day on". A field
+says it in its definition (`"range": true`), which `filterDef()` carries to every
+menu (a range calendar) and the catalogue's facts carry to the clause. A
+reading a range menu sends says `range: true` itself, as a saved `between` does.
+
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `test/e2e/reforged-a-date-picks-days.spec.ts`
+
 ### T-a-template-is-parsed-once
 
 **Each template body is parsed ONCE, into a `<template>`; each element stamps a

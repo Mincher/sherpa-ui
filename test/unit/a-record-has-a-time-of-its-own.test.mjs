@@ -49,8 +49,8 @@ test('the source declares the time a DATE, so nothing downstream has to', async 
 test('a Date filter over timeField works on a dataset that never says `created`', async () => {
   const src = new DataSource({ store: new ArrayStore(ORDERS, { key: 'id', time: 'placedOn' }) });
   await src.ready;
-  // Two picks on a DATE are a range — the field type decides the clause.
-  src.query.setReading('view', src.timeField, { picked: ['2026-02-01', '2026-04-01'] });
+  // Two ENDS, as a range menu sends them.
+  src.query.setReading('view', src.timeField, { picked: ['2026-02-01', '2026-04-01'], range: true });
   await settle();
   assert.deepEqual(src.rows.map((r) => r.id), [2]);
 });

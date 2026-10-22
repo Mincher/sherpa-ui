@@ -57,6 +57,7 @@
         "select": { "enum": ["single", "multiple"] },
         "advanced": { "description": "Advanced conditions beside its values (true), or instead of them (\"only\").", "enum": [true, false, "only"] },
         "op": { "description": "The condition its filter opens on.", "type": "string" },
+        "range": { "description": "A date whose menus pick two ends, from and to. Left out, they pick days.", "type": "boolean" },
         "min": { "type": "number" },
         "max": { "type": "number" },
         "step": { "type": "number", "exclusiveMinimum": 0 },

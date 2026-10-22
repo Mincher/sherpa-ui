@@ -86,6 +86,8 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `"site": { "label": "Site" }`. A child has no filter of its own: its picks are
   in its parent's reading, so no scope holds, offers or sets it, and
   `offers: "all"` leaves it out. Not under a number or a date (TODO 369).
+- **A date field's `range: true`** makes its menus pick two ends, from and to.
+  Left out, a date's menus pick days — in the View scope too (TODO 397).
 - **A field's `fetch: "server"`** says its filter is ASKED of the store, never
   worked out from the rows held: each Apply asks once for the keys it matches,
   and its toggle stays a client update. A filtering component's
