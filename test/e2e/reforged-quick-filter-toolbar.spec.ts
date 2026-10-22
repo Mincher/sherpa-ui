@@ -1288,7 +1288,7 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
  * always waits for Apply (Will, TODO 94).
  * TRAP T-commit-follows-select-mode · TRAP T-a-number-waits-for-apply
  */
-test('a date\'s Range switch brings Apply/Cancel on a remote source and leads its label; a number has none, and waits', async ({ page }) => {
+test('a date waits for Apply in either shape, its Range switch leading its label; a number has none, and waits', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const read = async (def: unknown, id: string, remote = true): Promise<Record<string, unknown>> => {
       const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined,
@@ -1332,13 +1332,9 @@ test('a date\'s Range switch brings Apply/Cancel on a remote source and leads it
     };
   });
 
-  // A DATE: one day is the whole answer, a span defers.
-  expect(r.date).toEqual({
-    switch: true, leads: true,
-    single: { commits: false, apply: false, discard: false },
-    ranged: { commits: true, apply: true, discard: true },
-    back: { commits: false, apply: false, discard: false },
-  });
+  // A DATE waits for Apply, one day or a span: a new day is likely a new fetch. TODO 405
+  const waits = { commits: true, apply: true, discard: true };
+  expect(r.date).toEqual({ switch: true, leads: true, single: waits, ranged: waits, back: waits });
   // A NUMBER has no switch, and waits for Apply, remote or local.
   expect(r.number).toEqual({ switch: false, single: { commits: true, apply: true, discard: true } });
   expect(r.local).toEqual({ switch: false, single: { commits: true, apply: true, discard: true } });
@@ -1560,7 +1556,8 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
 test('a DATE chip names its whole range, day first, without truncating', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
-    el.populate([{ id: 'when', label: 'When', kind: 'date', range: true, active: true }]);
+    // Applied on the pick (`commit: false`): the label is the point here, not Apply.
+    el.populate([{ id: 'when', label: 'When', kind: 'date', range: true, commit: false, active: true }]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const chip = el.shadowRoot!.querySelector('.chip[data-id="when"]') as HTMLElement & {

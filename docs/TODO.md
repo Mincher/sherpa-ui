@@ -86,6 +86,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
 | ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
+| ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1851,6 +1852,30 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
+
+Will, 2026-10-22: *"Calendar menus should use an explicit apply action by
+default, too, as they're likely to result in fetches of new data."* Then: *"Fix
+the calendar menu header while you're in there."*
+
+**✅ Done 2026-10-22.**
+- A date menu waits for Apply, local or remote, one day or a range. A
+  definition's `commit: false`, or a LIVE source, turns it off. The Range switch
+  no longer moves it.
+- Found on the way: a committing calendar asked for its day on the PICK, then
+  again on Apply. The bar now ignores a pick in a menu that waits; Apply asks.
+- The header with f(x) (Demos' Date): f(x) sat mid-row and the month stepper
+  was pushed into a new column, as the filter header has no `control` area. The
+  stepper now fills the row under the heading. In Advanced the stepper and Today
+  are gone (no calendar), and a day field has a 9.5rem floor in a floating card
+  (it was clipped to "dd/mm").
+- The empty-date press (394) still turns the chip on at once: a press is not a
+  menu pick.
+TRAP `T-commit-follows-select-mode`. Tests: `reforged-a-calendar-pick-wakes-the-footer`
+(Apply asks, the pick does not), `reforged-menu-calendar` (the header; a date
+waits unless `commit: false`), `reforged-quick-filter-toolbar` (either shape
+waits). Demos `records-persist` counts rows, not pages (404 moved the pages).
 
 ### `[x]` ✅ 404 — LOOK: 100 rows a page by default
 

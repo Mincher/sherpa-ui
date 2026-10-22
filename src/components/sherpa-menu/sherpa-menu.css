@@ -254,6 +254,8 @@
 .condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > .condition { flex: 2 1 6.5rem; min-inline-size: 0; }
 .condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > :is(.condition-date, .condition-date-to, .condition-count) { flex: 3 1 0; min-inline-size: 0; }
 .condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > :is(.condition-time, .condition-time-to, .condition-unit) { flex: 2 1 0; min-inline-size: 0; }
+/* A FLOATING card hugs its rows, so a day needs a floor there: it was clipped to "dd/mm". */
+:host(:not([data-inline])) .condition-row:is([data-takes="date"], [data-takes="dates"]) > :is(.condition-date, .condition-date-to) { min-inline-size: 9.5rem; }
 /* …and the row's real right end, where nothing follows it. TRAP T-a-hidden-sibling-still-counts-as-first-child */
 :host(:not([data-time])) .condition-row[data-only][data-takes="date"] > .condition-date,
 :host([data-time]) .condition-row[data-only][data-takes="date"] > .condition-time,
@@ -318,6 +320,10 @@
 /* A slotted stepper is a sherpa-group: its corners and lap are its own.
    Block-level here, so the month fills the card. */
 .header ::slotted(.cal-header) { display: flex; }
+/* A date FILTER menu has no `control` area, and naming one it lacks makes a new
+   column: the stepper takes the filter row. Advanced, the rows have it. */
+:host([data-type="filter"]) .header ::slotted(*) { grid-area: filter; }
+:host([data-mode="advanced"]) .header ::slotted(*) { display: none; }
 
 /* Heading node 1144:28554: size small 12 / line-height 16, regular, TITLE case,
    and NO inline padding on its parent frame. */
@@ -459,6 +465,8 @@
 
 /* A calendar keeps Today in the footer's left slot, as the node has it. */
 :host(:is([data-type="calendar"], [data-body="date"])) .today { display: inline-flex; }
+/* Today picks in the calendar, and Advanced hides it. */
+:host([data-body="date"][data-mode="advanced"]) .today { display: none; }
 
 /* The spacer splits the row: filter actions lead, the commit pair trails. It
    earns its place whenever BOTH sides are occupied. */

@@ -617,20 +617,19 @@ test('the footer holds all four: Today, Remove, then the committing pair', async
  *
  * Each control hides on its OWN flag; the row shows when any of them is in it.
  */
-test('an auto-applying date chip keeps Today and Remove, and drops only Discard/Apply', async ({ page }) => {
+test('a date chip waits for Apply unless it says `commit: false`; auto, it keeps Today and Remove and drops only Discard/Apply', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    // NO `commit`, so each chip falls to the default for its own select mode.
-    // A DATE chip picks one day, so it applies on the tick; the plain chip is
-    // SINGLE-select for the same reason, and rides along so the case with
-    // nothing to put in the row is covered too. (A MULTI chip defers behind
-    // Apply/Cancel â€” that is a different test.)
+    // A DATE waits for Apply by default (TODO 405); this one says `commit: false`.
+    // The plain chip is SINGLE-select, so it applies on the tick, and rides along
+    // so the case with nothing to put in the row is covered too.
     el.populate([
-      { id: 'created', label: 'Created', kind: 'date', removable: true },
+      { id: 'created', label: 'Created', kind: 'date', removable: true, commit: false },
+      { id: 'waits', label: 'Due', kind: 'date' },
       { id: 'plain', label: 'Plain', select: 'single', options: [{ value: 'a', label: 'A' }] },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -641,6 +640,8 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Discard/
       };
     const date = menuOf('created');
     const plain = menuOf('plain');
+    const waits = menuOf('waits');
+    await waits.rendered;
     await date.rendered;
     await plain.rendered;
 
@@ -656,6 +657,7 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Discard/
         discard: shown(date, '.discard'),
         apply: shown(date, '.apply'),
       },
+      waits: { commits: waits.hasAttribute('data-commit'), fixed: waits.hasAttribute('data-commit-fixed') },
       plain: {
         commits: plain.hasAttribute('data-commit'),
         clearable: plain.hasAttribute('data-clearable'),
@@ -669,7 +671,9 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Discard/
     };
   });
 
-  // Auto-apply: no data-commit anywhere.
+  // A date with no `commit` waits for Apply, and the Range switch cannot move it.
+  expect(r.waits).toEqual({ commits: true, fixed: true });
+  // Auto-apply: no data-commit on the other two.
   expect(r.date.commits).toBe(false);
   expect(r.plain.commits).toBe(false);
 
@@ -893,4 +897,53 @@ test('an empty date chip reads Today, OFF, and one press turns it on at Today â€
     expect.objectContaining({ field: 'day', reading: expect.objectContaining({ picked: [r.iso] }) }),
     expect.objectContaining({ field: 'span', reading: expect.objectContaining({ picked: [r.iso, r.iso], range: true }) }),
   ]);
+});
+
+test('a date menu with f(x): the button ends the heading row, the stepper fills the next; Advanced hides both stepper and Today (TODO 405)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type M = HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot; show(t: HTMLElement): void; mode: string };
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
+    };
+    el.style.inlineSize = '1200px';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate([{ id: 'created', label: 'Date', kind: 'date', range: true, advanced: true }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const chip = el.shadowRoot.querySelector('.chip') as HTMLElement;
+    const m = chip.querySelector('sherpa-menu') as M;
+    await m.rendered;
+    m.show(chip);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const box = (n: Element | null) => {
+      const b = n!.getBoundingClientRect();
+      return { l: Math.round(b.left), r: Math.round(b.right), t: Math.round(b.top), shown: b.width > 0 };
+    };
+    const header = m.shadowRoot.querySelector('.header')!;
+    const stepper = m.querySelector(':scope > .cal-header-projected');
+    const simple = {
+      header: box(header), heading: box(m.shadowRoot.querySelector('.heading')),
+      fx: box(m.shadowRoot.querySelector('.use-condition')), stepper: box(stepper),
+    };
+    m.mode = 'advanced';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const day = m.shadowRoot.querySelector('.condition-row .condition-date')!;
+    return {
+      simple,
+      advanced: {
+        stepper: box(stepper).shown,
+        today: getComputedStyle(m.shadowRoot.querySelector('.today')!).display,
+        day: Math.round(day.getBoundingClientRect().width),
+      },
+    };
+  });
+  // f(x) ends the heading's row; the stepper is the next row, the header's whole width.
+  expect(r.simple.fx.t).toBeLessThan(r.simple.stepper.t);
+  expect(Math.abs(r.simple.fx.r - r.simple.header.r)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.simple.stepper.l - r.simple.header.l)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.simple.stepper.r - r.simple.header.r)).toBeLessThanOrEqual(1);
+  // Advanced: no calendar, so no stepper and no Today; a day is never clipped.
+  expect(r.advanced.stepper).toBe(false);
+  expect(r.advanced.today).toBe('none');
+  expect(r.advanced.day).toBeGreaterThanOrEqual(152);
 });

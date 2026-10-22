@@ -57,3 +57,34 @@ test('a disabled button reaches no listener and no ancestor', async ({ page }) =
   expect(r.off).toEqual([]);
   expect(r.on).toContain('host');
 });
+
+test('a committing calendar asks for its day on Apply, not on the pick', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const bar = await window.__mount<HTMLElement & { shadowRoot: ShadowRoot }>('sherpa-quick-filter-toolbar', [
+      { id: 'created', label: 'Created', kind: 'date', commit: true },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const asks: unknown[] = [];
+    bar.addEventListener('quick-filter-change', (e) => asks.push((e as CustomEvent).detail.request));
+    const chip = bar.shadowRoot.querySelector('.chip[data-id="created"]') as HTMLElement;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>; shadowRoot: ShadowRoot; show(t: HTMLElement): void;
+    };
+    const cal = menu.querySelector('sherpa-calendar') as Cal;
+    await menu.rendered;
+    await cal.rendered;
+    menu.show(chip);
+    await window.__settled();
+    const cell = [...cal.shadowRoot.querySelectorAll<HTMLElement & { shadowRoot: ShadowRoot }>('sherpa-calendar-cell')]
+      .find((c) => c.dataset['iso'] && !c.hasAttribute('disabled'))!;
+    cell.shadowRoot.querySelector('button')!.click();
+    await window.__settled();
+    const picked = asks.length;
+    (menu.shadowRoot.querySelector('.apply') as HTMLElement).click();
+    await window.__settled();
+    return { picked, applied: asks.length, day: cell.dataset['iso'], last: asks.at(-1) };
+  });
+  expect(r.picked).toBe(0);
+  expect(r.applied).toBe(1);
+  expect(r.last).toMatchObject({ field: 'created', reading: { picked: [r.day] } });
+});

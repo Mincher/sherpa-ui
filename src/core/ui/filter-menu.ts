@@ -88,8 +88,6 @@ export function menuFor(
   if (def.label) menu.setAttribute('data-heading', def.label);
   menu.setAttribute('data-select', one ? 'single' : 'multiple');
 
-  // A DATE that says so opens as a range (the View's). A number's range is an Advanced row. TODO 375
-  const asRange = kind === 'date' && !!def.range;
   /* APPLY IS FOR A REMOTE FETCH (Will, 2026-09-27). A LOCAL pick applies at
      once — multi-select and ranges too — and the menu is FIXED, so the Range
      switch cannot turn Apply on. Remote, the select mode decides.
@@ -99,11 +97,13 @@ export function menuFor(
      back what was applied — Will, TODO 94 — unless its source is LIVE (107).
      TRAP T-a-number-waits-for-apply */
   const typed = kind === 'number' && !opts.live;
-  const defers = def.commit ?? (typed || (!local && !one && !(hasOwnBody(kind) && !asRange)));
+  // A CALENDAR waits for Apply too, local or not: a new day is likely a new fetch. Will, TODO 405
+  const dated = kind === 'date' && !opts.live;
+  const defers = def.commit ?? (typed || dated || (!local && !one && !hasOwnBody(kind)));
   if (defers) menu.setAttribute('data-commit', '');
   if (opts.live) menu.setAttribute('data-apply-on', 'input');
   // A def that NAMED `commit` outranks the Range switch's own rule; so does a number.
-  if (def.commit != null || local || typed) menu.setAttribute('data-commit-fixed', '');
+  if (def.commit != null || local || typed || dated) menu.setAttribute('data-commit-fixed', '');
   // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
   if (def.persistent) menu.removeAttribute('data-clearable');
   if (opts.bounds) menu.setAttribute('data-bounds', opts.bounds);

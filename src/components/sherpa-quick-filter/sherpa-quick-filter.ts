@@ -906,7 +906,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** A day or a range was picked in the chip's calendar: redraw the face. */
   #onDated = (): void => {
-    if (this.menu?.dataset['body'] === 'date') this.#drawFace();
+    // A committing menu's pick is a draft until Apply. TODO 405
+    if (this.menu?.dataset['body'] === 'date' && !this.menu.hasAttribute('data-commit')) this.#drawFace();
   };
 
   /** A condition row changed: re-derive the face from it. */

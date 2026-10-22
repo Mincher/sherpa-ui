@@ -246,7 +246,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #onDatePicked = (event: Event): void => {
     // TRAP T-path-not-target-finds-chip-host — match the TAG, not `.chip`.
     const chip = this.pathFind(event, 'sherpa-quick-filter');
-    if (!chip) return;
+    // A committing menu's pick is a draft: its Apply asks. TRAP T-commit-follows-select-mode
+    if (!chip || chip.querySelector('sherpa-menu')?.hasAttribute('data-commit')) return;
     // A date chip turns itself ON by picking — it has no body toggle. Locked, it is drawn.
     if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
     this.#emitChange(this.#answerRequest(chip));

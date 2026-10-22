@@ -718,6 +718,11 @@ over a remote store sets `data-remote` on the bar, and `menuFor(def,
 { remote })` then applies the select-mode rule above. A bar with no source
 counts as local.
 
+**A DATE always waits for Apply** (Will, 2026-10-22, TODO 405): a new day is
+likely a new fetch, local or not. Fixed, so the Range switch leaves it; a
+definition's `commit: false` or a LIVE source turns it off. Its picks are a
+draft until Apply: the bar asks for nothing on a pick in a committing menu.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
