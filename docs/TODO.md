@@ -81,7 +81,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ⬜ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
-| ⬜ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1833,11 +1833,20 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 400 — BUG: a View scope pick does not limit the other View filters
+### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
 
 Will, 2026-10-22: *"Changing values in View Scope filters doesn't seem to
 invalidate values in other View Scope filters. Only Component Scopes are being
 affected."*
+
+**Found 2026-10-22 (Demos Records, Limit on):** it is the ORDER rule of 348/349.
+Picking Customer (first in the View) greys 1 of 4 Regions; picking Region
+(second) greys no Customer: a filter is limited only by the filters BEFORE it —
+Will's 349 ("scopes and preceding filters"). Before 349, Limit worked both ways.
+
+**❓ For Will.** **A (my pick):** within a scope, every OTHER answered filter
+limits a field's values, both ways (as before 349); the chip COUNTS stay ordered
+(348). **B:** keep the order rule: only the filters before a field limit it.
 
 ### `[x]` ✅ 399 — BUG: Recents lists Settings pages and Context names; a switch for Views or Contexts
 
