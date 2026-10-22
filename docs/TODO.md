@@ -1941,6 +1941,25 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   stays the default. Test: Demos `reforged-filter-stack`. TRAP
   T-the-panel-is-the-bar-in-portrait. Chromium: sherpa-ui 1149, Demos 182.
 
+**Will, 2026-10-22 — the gaps, round 2.** Picks: Favorite, Save and Refresh go
+to the App Header (A); the stack is the DEFAULT panel (B).
+
+| | Gap |
+|---|---|
+| ⬜ | G1 — a portrait section's heading uses the chip's menu button; it wants a ⋮ of the field's actions, as the panel's field has |
+| ⬜ | G2 — a scope in portrait is not an accordion (the panel's scopes are `sherpa-accordion`) |
+| ⬜ | G3 — each portrait bar has its own Filters button: ONE Filters menu, the stack's |
+| ⬜ | G4 — "Move to View filters", and back, as a chip menu option; in portrait, in the section's ⋮ |
+| ✅ | G5 — a blue border on the View scope's unapplied chips in portrait. Found: a value chip with its Sites menu open wore the open-menu ring on both halves; a section's value chip no longer does |
+| ⬜ | G6 — the panel/toolbar toggle on the new version does odd things: make it its own thing, not the panel's code (or a broadcast bug) |
+| ✅ | G7 — hide the filter Switch in every mode, for now. The stack sets no `data-switchable`; Demos' bars drop it. The attribute stays |
+| ⬜ | G8 — the search goes ABOVE the View filters heading: it is not part of that scope |
+| ⬜ | G9 — Favorite, Save and Refresh move to the App Header (Will: A) |
+| ⬜ | G10 — the stack is the default panel; the classic one is the setting (Will: B) |
+| ⬜ | G11 — Suggest filters and Refresh view are not in the portrait ⋮: they are App Header actions |
+| ⬜ | G12 — section spacing, text size and icon size: closer to the classic panel's |
+| ⬜ | G13 — a horizontal divider between the View and the component scopes' sections, with enough white space |
+
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 
 Will, 2026-10-22: *"unapplied chips in the filter panel don't use the warning
@@ -2173,6 +2192,7 @@ show on the panel's chips and field headers, as on the bar. A pick NOT yet
 applied shows no count by design (a pending chip's badge waits, TODO 304), and
 in panel mode the bar's Apply is hidden. ❓ Will: the steps, after a reload.
 **Will, 2026-10-22: still missing after a reload.**
+**Will, 2026-10-22: deferred for now.**
 
 **Not reproduced again, 2026-10-22 (after 400).** Will's steps on a fresh build:
 panel mode by its button, picks pressed in the panel (Customer, Region, Date
@@ -2464,6 +2484,7 @@ count the whole set. 3-engine round after: sherpa-ui 3313, Demos 498, Gallery
 and Starter green. **A (my pick):** keep
 the Demos on the whole set, and show the start on one page made for it. **B:**
 turn it on in the Demos (Customer and Region), and I move the 58 tests.
+**Will, 2026-10-22: deferred for now.**
 
 ### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
 

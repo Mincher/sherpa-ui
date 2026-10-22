@@ -39,9 +39,8 @@ export class SherpaFilterStack extends SherpaElement {
       if (!bar) return;
       had.delete(scope.scope);
       bar.dataset['scope'] = scope.scope;
-      // A component scope's toolbar has its Switch, and saves where the page saves.
+      // A component scope's toolbar saves where the page saves. No Switch, for now: Will, TODO 425 G7
       const component = scope.scope !== VIEW && !scope.part;
-      bar.toggleAttribute('data-switchable', component);
       bar.toggleAttribute('data-saveable', component && this.hasAttribute('data-saveable'));
       // A chart's PART adds nothing and saves nothing: no actions. TRAP T-a-chart-scope-is-its-legend-field
       bar.toggleAttribute('data-no-actions', !!scope.part);

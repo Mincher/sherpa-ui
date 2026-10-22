@@ -72,6 +72,8 @@
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);
 }
+/* A section's value chip: its Sites menu says it is open. Will, TODO 425 G5 */
+:host([data-open][slot="values"]) :is(.body, .caret):not(:focus-visible) { outline: none; }
 
 /* ── A SECTION — a field's whole answer in the flow, as a portrait bar draws
    it: the toggle part is its heading, the menu part opens its menu, and its
