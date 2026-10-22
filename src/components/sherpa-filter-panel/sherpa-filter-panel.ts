@@ -1191,8 +1191,10 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   async #openDoor(held: Held, box: SherpaAccordion, menu: SherpaMenu, label: string): Promise<void> {
     this.#drillOut();
-    const chip = !!this.#oneChip(held);
-    const run = !chip && !held.box.hasAttribute('data-advanced') && !held.box.hasAttribute('data-body')
+    // A TIERED field's values are its parent chips, each with its own menu: the door opens the scope.
+    // TRAP T-a-conditions-only-menu-cannot-be-drilled
+    const chip = !held.tiers && !!this.#oneChip(held);
+    const run = !chip && !held.tiers && !held.box.hasAttribute('data-advanced') && !held.box.hasAttribute('data-body')
       && (held.def.options?.length ?? 0) > 0;
     const home = chip ? held.menu ?? null : run ? await this.#buildDrillMenu(held) : null;
     // A second door, opened while these rows were built, has the drill now.
@@ -1223,7 +1225,7 @@ export class SherpaFilterPanel extends SherpaElement {
       label: held.def.label,
       ...(held.def.select ? { select: held.def.select } : {}),
       options: (held.def.options ?? []).map((o) => ({
-        value: o.value, label: o.label ?? o.value, selected: picked.has(o.value), ...(o.parent ? { parent: o.parent } : {}),
+        value: o.value, label: o.label ?? o.value, selected: picked.has(o.value),
       })),
     };
     const { menu, items } = menuFor(this.root, def);
@@ -1247,19 +1249,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const menu = this.#drill.menu;
     const built = this.#built;
     this.#drill.out();
-    if (built?.held.tiers && home === built.menu) {
-      /* The tree's picks are the field's — and a child it did not show, under a
-         parent not ticked whole, keeps its pick. TODO 369 */
-      const t = built.held.tiers;
-      const picks = new Set(values);
-      for (const [p, kids] of t.kids) if (!picks.has(p)) for (const k of kids) if (t.picks.has(k)) picks.add(k);
-      t.picks = picks;
-      t.off.clear();
-      this.#dropBuilt();
-      this.#paintTiers(built.held);
-      this.#syncAnswered(built.held);
-      this.#report(built.held);
-    } else if (built && home === built.menu) {
+    if (built && home === built.menu) {
       const want = new Set(values);
       for (const one of built.held.values.querySelectorAll<HTMLElement>('.value')) {
         if (this.#heldOfChip(one) !== built.held) continue;

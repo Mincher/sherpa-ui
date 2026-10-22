@@ -231,8 +231,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        ROWS, which live in its own shadow DOM — moving its empty light DOM put
        a blank card on screen, so the filter could never be answered, never
        went active, and never filtered. Show the menu ITSELF, anchored to the
-       Filters button. TRAP T-a-conditions-only-menu-cannot-be-drilled */
-    if (!from.children.length) {
+       Filters button. TRAP T-a-conditions-only-menu-cannot-be-drilled
+       A TREE too: a parent opens its children from its own list. TODO 391 */
+    if (!from.children.length || from.matches(':state(tree)')) {
       this.#closeOverflow();
       from.show?.(add);
       return;

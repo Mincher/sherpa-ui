@@ -72,7 +72,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 0zr | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
 | ⬜ | 0zs | 389 | FLAKE — Demos `reforged-layout-resize.spec.ts:109` ("with the nav pinned…") fails ~3 in 10 alone in Chromium, at HEAD before 366 step 13 too: it reads `/layout/dashboard` two frames after a drag, where the test above it polls for the save | tests |
 | ⬜ | 0zt | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
-| ⬜ | 0zu | 391 | BUG — a DRILLED tree (the Filters menu's door into a tiered field, bar or panel) cannot open a parent: its children stamp into the home menu, which the drill emptied. Its picks keep a child it did not show (369) | filters |
+| ✅ | 0zu | 391 | BUG — a DRILLED tree (the Filters menu's door into a tiered field, bar or panel) cannot open a parent: its children stamp into the home menu, which the drill emptied. Its picks keep a child it did not show (369) | filters |
 | ⬜ | 0zv | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -1925,7 +1925,9 @@ press turns it OFF and keeps its picks (Will's Q2): they move to the reading's
 new `off` — kept, not in force, an answer all the same. Its caret asks
 (`quick-filter-open`) for a sites menu, built then, shown once drawn, gone when
 shut. A drilled pick keeps a site it did not show. Greys reach an open sites
-menu (not yet tested). A drilled tree cannot open a parent: TODO 391. A bar's
+menu (not yet tested). A drilled tree cannot open a parent: TODO 391 — ✅
+2026-10-22: a tree is not drilled; the bar shows the field's own menu at the
+Filters button, and the panel's door opens the scope. A bar's
 pick on the field replaces the whole answer, `off` too.
 TRAP `T-a-parent-pick-is-the-parent`.
 

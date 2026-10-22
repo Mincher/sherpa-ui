@@ -11949,7 +11949,15 @@ rows are not the answer, so moving them is the wrong gesture. A saved filter's
 card is shown there too: its rows are field MENUS, and moved into the Filters
 menu their events were the Filters menu's.
 
+A TREE is shown too (TODO 391): its ticks, its open parents and its unshown
+children are its own menu's DATA, so a parent moved into the Filters menu could
+not open — its children stamped into the emptied home. In the panel, a tiered
+field's door opens its scope instead: each customer is a chip there, with its
+own sites menu.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-a-drilled-tree.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-a-filter-answers-by-values-conditions-or-both

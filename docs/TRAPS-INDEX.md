@@ -331,7 +331,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-conditioned-chip-answers-with-its-clause](TRAPS.md#t-a-conditioned-chip-answers-with-its-clause) — quick-filter-toolbar
 - [T-a-conditioned-chip-reads-as-active](TRAPS.md#t-a-conditioned-chip-reads-as-active) — quick-filter
 - [T-a-conditioned-field-opens-on-its-rows](TRAPS.md#t-a-conditioned-field-opens-on-its-rows) — filter-menu, filter-panel
-- [T-a-conditions-only-menu-cannot-be-drilled](TRAPS.md#t-a-conditions-only-menu-cannot-be-drilled) — quick-filter-toolbar
+- [T-a-conditions-only-menu-cannot-be-drilled](TRAPS.md#t-a-conditions-only-menu-cannot-be-drilled) — filter-panel, quick-filter-toolbar
 - [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — filter-panel, quick-filter-toolbar
 - [T-a-divider-needs-a-neighbour-on-both-sides](TRAPS.md#t-a-divider-needs-a-neighbour-on-both-sides) — quick-filter-toolbar
 - [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
