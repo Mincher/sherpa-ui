@@ -710,6 +710,29 @@ test('a committing menu\'s Apply and Cancel wait for a change', async ({ page })
   expect(r.back).toEqual({ apply: true, cancel: true });
 });
 
+// A row added or removed is a change, though no input or change fires. TODO 396
+test('a committing Advanced menu turns Apply on when a condition is added, off when it goes', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; show(): void };
+    for (const [k, v] of [['data-commit', ''], ['data-type', 'filter'], ['data-advanced', ''], ['data-mode', 'advanced']]) menu.setAttribute(k, v);
+    menu.innerHTML = '<label><input type="checkbox" value="a" />A</label>';
+    document.getElementById('root')!.replaceChildren(menu);
+    await menu.rendered;
+    menu.show();
+    await window.__settled();
+    const sr = menu.shadowRoot!;
+    const off = () => sr.querySelector('.apply')!.hasAttribute('disabled');
+    const opened = off();
+    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    await window.__settled();
+    const added = off();
+    [...sr.querySelectorAll<HTMLElement>('.drop-condition')].at(-1)!.click();
+    await window.__settled();
+    return { opened, added, dropped: off() };
+  });
+  expect(r).toEqual({ opened: true, added: false, dropped: true });
+});
+
 // TRAP T-a-menu-takes-no-grouping
 test('a menu takes NO grouping from the grouped button that opens it', async ({ page }) => {
   const r = await page.evaluate(async () => {

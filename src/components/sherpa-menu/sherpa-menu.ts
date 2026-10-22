@@ -531,6 +531,8 @@ export class SherpaMenu extends SherpaElement {
     this.#mirror = false;
     const row = this.#addRow();
     this.#emitConditions();
+    // A click is no input or change: say the draft moved. TODO 396
+    this.#syncDirty();
     const field = row?.querySelector<SherpaInputText>('.condition');
     void Promise.resolve(field?.rendered).then(() => field?.focus());
   };
@@ -547,6 +549,7 @@ export class SherpaMenu extends SherpaElement {
     // came back at the next sync. TRAP T-row-one-is-data-op
     this.#setRows(this.conditions);
     this.#emitConditions();
+    this.#syncDirty();
   };
 
   /* ── The condition rows ─────────────────────────────────────────── */

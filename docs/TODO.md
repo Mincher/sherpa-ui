@@ -74,6 +74,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zt | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
 | ✅ | 0zu | 391 | BUG — a DRILLED tree (the Filters menu's door into a tiered field, bar or panel) cannot open a parent: its children stamp into the home menu, which the drill emptied. Its picks keep a child it did not show (369) | filters |
 | ⬜ | 0zv | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
+| ✅ | 0zw | 393 | BUG — a `fetch: "server"` field does not light its grid heading: the source names the KEY its answer matched (`email in […]`), not the field. Found when Demos' Customer and Region became server fields | filters |
+| ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
+| ⬜ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
+| ⬜ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1755,6 +1759,45 @@ stayed false. So a press on the hover-shown `.settings` button sometimes opens
 nothing in WebKit. Next: trace that case alone in WebKit, 50 runs, and see
 whether the click lands while the rail is still opening or closing.
 
+### `[x]` ✅ 393 — BUG: a `fetch: "server"` field does not light its grid heading
+
+Found 2026-10-22, when Demos' Customer and Region became `fetch: "server"`
+(Will: they simulate a re-fetch). The source compiles a server field's answer
+to the KEYS it matched, `email in [...]`, and tells the grid the fields of
+that clause. So the grid hears "email filters", lights no Customer heading,
+and would light Email's. Demos `reforged-a-site-picked-shows-everywhere`
+fails at the heading. Fix: the source names the field the reader filtered,
+not the key that stands in for it.
+
+**✅ Done 2026-10-22.** The source keeps each server field's clause, and
+`filterFields(filter, standsFor)` names the field it stands for. On :4200 the
+grid now hears `customer`, not `email`.
+
+### `[ ]` ⬜ 394 — FILTERS: no Clear button in a menu footer
+
+Will, 2026-10-22: *"No more clear buttons in footers!"* Each menu kind has
+another way to say "nothing":
+- **Multi-select:** its Select All checkbox already does it.
+- **Date:** the default value is always Today, and the chip is OFF by default
+  (unless the definition says otherwise). Off is the empty state.
+- **Single-select:** a "None" row at the top of the values.
+
+### `[ ]` ⬜ 395 — FILTERS: Cancel becomes Discard, and Discard keeps the menu open
+
+Will, 2026-10-22: in a re-fetch menu (one with Apply — a remote source or a
+`fetch: "server"` field) and in an Advanced filter, the footer's Cancel button
+becomes **Discard**. Discard puts back what the menu held when it opened (it
+discards every change since then). Discard does NOT close the menu.
+
+### `[x]` ✅ 396 — BUG: a new condition in an Advanced filter does not re-enable Apply
+
+Will, 2026-10-22: add a new condition row to an Advanced filter, and Apply
+stays inactive. The new row is a change; Apply must be active.
+
+**✅ Done 2026-10-22.** Add and Remove are clicks, so no `input` or `change`
+told the footer the draft moved. Both now re-check it. `reforged-menu` has the
+case; it fails without the fix.
+
 ### `[ ]` ⬜ 383 — UX: one "Filter actions" button
 
 Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
@@ -2001,6 +2044,11 @@ DATA-SOURCE-RULES gives a tiered pick's server clause; APP-GUIDE the `child`
 line; traps `T-a-value-holds-child-values` and
 `T-a-path-is-judged-by-its-parent-when-stepwise`. **Left: a remote store's read
 of a parent's children when its row opens — waits for 345 phase 5.**
+
+**Bug ✅ 2026-10-22 (Will):** the panel's Customer chip showed no badge when only
+its sites were picked — the walk counted each pick by its own key. A parent not
+picked itself now counts its picked children together (`bf3f294e`). Demos'
+Customer and Region are `fetch: "server"` now, to simulate a re-fetch (Will).
 
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 
