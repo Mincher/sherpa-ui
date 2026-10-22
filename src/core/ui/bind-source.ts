@@ -261,8 +261,8 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'filter-remove': {
       const scope = bind?.scope;
       /* The panel ASKS a scope to take fields — from the Filters menu, or sent up
-         or down. TRAP T-send-to-view-filters */
-      if (type === 'filter-add' && Array.isArray(scope)) {
+         or down; a bar asks for one of its own to MOVE. TRAP T-send-to-view-filters */
+      if (type === 'filter-add' && (Array.isArray(scope) || typeof detail['from'] === 'string')) {
         const ids = detail['ids'];
         const from = detail['from'];
         if (typeof detail['scope'] === 'string' && Array.isArray(ids)) {

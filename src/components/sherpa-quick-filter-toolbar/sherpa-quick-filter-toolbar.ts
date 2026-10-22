@@ -25,7 +25,7 @@ import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import type { SortDirection } from '../../core/data/store.js';
-import { readingAnswered, type QueryRequest } from '../../core/data/query.js';
+import { VIEW, readingAnswered, type QueryRequest } from '../../core/data/query.js';
 import {
   modeOf, readingRows,
   type FieldReading,
@@ -374,8 +374,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const menu = chip.querySelector<SherpaMenu>(':scope > sherpa-menu');
       const list = !!def && menu?.getAttribute('data-type') === 'filter' && !menu.dataset['body']
         && !chip.hasAttribute('data-persistent') && !arranges(kindOf(def)) && !oneChipList(def);
-      if (portrait && list) chip.setAttribute('data-layout', 'section');
-      else chip.removeAttribute('data-layout');
+      if (portrait && list) {
+        chip.setAttribute('data-layout', 'section');
+        this.#addFieldMore(chip);
+      } else {
+        chip.removeAttribute('data-layout');
+        chip.querySelector(':scope > .field-more')?.remove();
+      }
     }
   }
 
@@ -422,6 +427,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // `change` reaches here, being in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
+    this.addEventListener('button-click', this.#onMove);
     // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-reads-as-a-warning
     for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
       this.addEventListener(type, this.#queuePending);
@@ -729,12 +735,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** nameScope(scope) — its source names its scope: a portrait bar's heading,
    *  and an icon for what it narrows. TODO 425 */
-  nameScope(scope: { label: string; shows?: ScopeShows | undefined }): void {
+  nameScope(scope: { scope?: string; label: string; shows?: ScopeShows | undefined }): void {
+    if (scope.scope) this.#scope = scope.scope;
     if (scope.label) this.set('data-heading', scope.label);
     this.#shows = scope.shows;
     this.#drawIcon();
   }
 
+  /** The scope its source drew. */
+  #scope = '';
   /** What its scope narrows. */
   #shows: ScopeShows | undefined;
   /** …as the portrait accordion's icon. */
@@ -1116,6 +1125,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
 
     this.#addRemove(chip, menu, def);
+    this.#addMove(chip, menu, def);
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
@@ -1200,9 +1210,77 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.setAttribute('data-removable', '');
   }
 
+  /** A chip's menu MOVES its field — up to the View, or a View field back down
+   *  to the one scope its source names: a button in its footer, beside Remove.
+   *  Will, TODO 425 G4 · TRAP T-send-to-view-filters */
+  #addMove(chip: HTMLElement, menu: HTMLElement, def: FilterDef): void {
+    const label = this.#moveLabel(def);
+    const move = label && chip.classList.contains('chip') ? this.clone('template.move-tpl') : null;
+    if (!move) return;
+    move.textContent = label;
+    menu.append(move);
+  }
+
+  /** What Move says for a field, or nothing where it cannot move: Group and
+   *  Sort, a selector, a chart's own. */
+  #moveLabel(def: FilterDef): string {
+    if (!this.#scope || def.persistent || arranges(kindOf(def)) || this.hasAttribute('data-no-actions')) return '';
+    if (this.#scope !== VIEW) return this.word('raise');
+    const to = def.sendTo;
+    return to ? `${this.word(to.origin ? 'return' : 'lower')} ${to.label}` : '';
+  }
+
+  /** Ask for a field to move: up to the View, or down where its source sends it. */
+  #move(chip: HTMLElement): void {
+    const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+    const to = this.#scope === VIEW ? def?.sendTo?.scope : VIEW;
+    if (!def || !to) return;
+    chip.querySelector<SherpaMenu>(':scope > sherpa-menu')?.hide?.();
+    this.emit('filter-add', { scope: to, ids: [def.field ?? def.id], from: this.#scope });
+  }
+
+  /** A chip menu's Move was pressed. */
+  #onMove = (event: Event): void => {
+    const chip = this.pathFind(event, '.move') ? this.pathFind(event, 'sherpa-quick-filter') : null;
+    if (!chip) return;
+    event.stopPropagation();
+    this.#move(chip);
+  };
+
+  /** A SECTION's ⋮ — the field's own actions, each only where it applies — in
+   *  its chip's `more` slot, in the caret's place. Will, TODO 425 G1 */
+  #addFieldMore(chip: SherpaQuickFilter): void {
+    const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+    if (!def || chip.querySelector(':scope > .field-more')) return;
+    const more = this.clone('template.field-more-tpl');
+    if (!more) return;
+    const row = (value: string): HTMLElement | null => more.querySelector(`.more-item[value="${value}"]`);
+    const move = this.#moveLabel(def);
+    const up = this.#scope !== VIEW;
+    row(up ? 'lower' : 'raise')?.remove();
+    const moving = row(up ? 'raise' : 'lower');
+    if (!move) moving?.remove();
+    else if (moving) moving.querySelector('.more-label')!.textContent = move;
+    if (!def.removable) row('remove')?.remove();
+    more.setAttribute('aria-label', `${def.label} options`);
+    chip.append(more);
+  }
+
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
   #onMenuSelect = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
+    // A section's ⋮: Move, or Reset. Will, TODO 425 G1
+    const more = this.pathFind(event, '.field-more');
+    const owner = more?.closest<SherpaQuickFilter>('sherpa-quick-filter');
+    if (owner && (value === 'raise' || value === 'lower' || value === 'clear')) {
+      event.stopImmediatePropagation();
+      more?.querySelector<SherpaMenu>('sherpa-menu')?.hide?.();
+      if (value === 'clear') {
+        this.#emptyChip(owner);
+        this.#emitChange(this.#answerRequest(owner));
+      } else this.#move(owner);
+      return;
+    }
     if ((value === 'save-as' || value === 'delete') && this.pathFind(event, '.view-more')) {
       event.stopImmediatePropagation();
       this.#act(value === 'delete' ? 'delete-view' : value);

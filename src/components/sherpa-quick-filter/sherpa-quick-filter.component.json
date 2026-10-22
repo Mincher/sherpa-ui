@@ -151,6 +151,19 @@
           ]
         },
         {
+          "el": "span",
+          "class": "more-slot",
+          "part": "more",
+          "children": [
+            {
+              "slot": "more",
+              "attrs": {
+                "data-accepts": "control"
+              }
+            }
+          ]
+        },
+        {
           "el": "template",
           "class": "value-chip-tpl",
           "children": [
@@ -521,7 +534,8 @@
       "name": "values",
       "accepts": [
         "item"
-      ]
+      ],
+      "description": "a section's value chips"
     },
     {
       "$type": "slot",
@@ -530,6 +544,14 @@
         "menu"
       ],
       "description": "a <sherpa-menu> of values for this field"
+    },
+    {
+      "$type": "slot",
+      "name": "more",
+      "accepts": [
+        "control"
+      ],
+      "description": "a section's ⋮ of the field's own actions, its host's, in the caret's place"
     }
   ],
   "populate": {

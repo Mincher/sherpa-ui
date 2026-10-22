@@ -1953,10 +1953,10 @@ panel is the DEFAULT (B).
 
 | | Gap |
 |---|---|
-| ⬜ | G1 — a portrait section's heading uses the chip's menu button; it wants a ⋮ of the field's actions, as the panel's field has |
+| ✅ | G1 — a section's heading has a ⋮ in the caret's place (the chip's new `more` slot, the bar's): Move, Reset once answered, Remove where removable |
 | ✅ | G2 — a scope in portrait is not an accordion. Now the toolbar's `portrait` template IS a `sherpa-accordion`: name and icon, a badge while shut, Apply and Discard on its row |
 | ✅ | G3 — ONE Filters menu: the COLUMN's header lists every scope's filters, then what may be added, each row saying its scope; no section has its own |
-| ⬜ | G4 — "Move to View filters", and back, as a chip menu option; in portrait, in the section's ⋮ |
+| ✅ | G4 — "Move to View filters" — or "Move to / Return to <scope>" on a View chip — in a chip menu's footer beside Remove, and in a section's ⋮. The bar sends the panel's request, `filter-add { scope, ids, from }` |
 | ✅ | G5 — a blue border on the View scope's unapplied chips in portrait. Found: a value chip with its Sites menu open wore the open-menu ring on both halves; a section's value chip no longer does |
 | ✅ | G6 — the panel/toolbar toggle did odd things: on the compare page it gave each portrait bar a mode button and shut the classic panel. Now the mode button is the column's header's alone; a section gets none and never steps back; a column inside `[data-filter-mode="none"]` (the compare page) is never opened or shut by the mode |
 | ✅ | G7 — hide the filter Switch in every mode, for now. The stack sets no `data-switchable`; Demos' bars drop it. The attribute stays |
@@ -1964,7 +1964,7 @@ panel is the DEFAULT (B).
 | ⬜ | G9 — Favorite, Save and Refresh move to the App Header (Will: A) |
 | ✅ | G10 — the toolbar column is the default panel; Settings › Application › Classic filter panel puts the classic one back. Demos' classic-panel specs say `test.use({ classicPanel: true })` |
 | ✅ | G11 — the column's ⋮ holds only the page's folded buttons and Limit: no Suggest filters, no Refresh view |
-| 🚧 | G12 — section spacing, text size and icon size: closer to the classic panel's. Done: a field heading is the small step (12/16), caps and light, its icon the same size; the scopes are accordions as the classic's. Next: the ⋮ in place of the ▾ (G1) |
+| ✅ | G12 — section spacing, text size and icon size: closer to the classic panel's. A field heading is the small step (12/16), caps and light, its icon the same size; the scopes are accordions as the classic's; a ⋮ in place of the ▾ |
 | ✅ | G13 — a rule between each scope's section; each accordion header keeps its own padding above and below |
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic

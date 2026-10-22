@@ -321,6 +321,9 @@
   border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base-1, #b3b3c3);
 }
 
+/* A section's ⋮ offers Reset only once there is something to clear. */
+.chips > .chip:not([data-current]) > .field-more .more-item[value="clear"] { display: none; }
+
 /* Found by the column's search: what holds no match goes. */
 .chips > .chip[data-no-matches],
 .chips > .chip > .value[data-filtered-out] { display: none; }

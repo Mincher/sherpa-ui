@@ -398,6 +398,43 @@
               }
             }
           ]
+        },
+        {
+          "el": "template",
+          "class": "move-tpl",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "move",
+              "attrs": {
+                "slot": "footer"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "raise"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "lower"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "return"
+              }
+            }
+          ]
         }
       ],
       "portrait": [
@@ -539,6 +576,128 @@
                 "data-kind": "sort",
                 "data-label": "Sort"
               }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "move-tpl",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "move",
+              "attrs": {
+                "slot": "footer"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "raise"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "lower"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "return"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "field-more-tpl",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "field-more",
+              "attrs": {
+                "slot": "more",
+                "data-type": "icon",
+                "data-size": "sm",
+                "data-icon-start": "ellipses-vertical",
+                "aria-haspopup": "dialog"
+              },
+              "children": [
+                {
+                  "el": "sherpa-menu",
+                  "class": "field-menu",
+                  "attrs": {
+                    "slot": "menu",
+                    "data-align": "end"
+                  },
+                  "children": [
+                    {
+                      "el": "button",
+                      "class": "more-item",
+                      "attrs": {
+                        "type": "button",
+                        "value": "raise"
+                      },
+                      "children": [
+                        {
+                          "el": "span",
+                          "class": "more-label"
+                        }
+                      ]
+                    },
+                    {
+                      "el": "button",
+                      "class": "more-item",
+                      "attrs": {
+                        "type": "button",
+                        "value": "lower"
+                      },
+                      "children": [
+                        {
+                          "el": "span",
+                          "class": "more-label"
+                        }
+                      ]
+                    },
+                    {
+                      "el": "button",
+                      "class": "more-item",
+                      "attrs": {
+                        "type": "button",
+                        "value": "clear"
+                      },
+                      "children": [
+                        {
+                          "el": "span",
+                          "class": "more-label"
+                        }
+                      ]
+                    },
+                    {
+                      "el": "button",
+                      "class": "more-item",
+                      "attrs": {
+                        "type": "button",
+                        "value": "remove"
+                      },
+                      "children": [
+                        {
+                          "el": "span",
+                          "class": "more-label"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1044,13 +1203,15 @@
     {
       "$type": "event",
       "name": "filter-add",
-      "description": "Chips were added.",
+      "description": "Chips were added, ; or a REQUEST to move a field to another scope — Move to View filters, or back.",
       "bubbles": true,
       "composed": true,
       "detail": {
         "filters": "FilterDef[]",
+        "from": "string",
         "holds": "string[]",
-        "ids": "string[]"
+        "ids": "string[]",
+        "scope": "string"
       }
     },
     {
@@ -1273,7 +1434,7 @@
         {
           "$type": "method",
           "name": "nameScope",
-          "args": "scope: { label: string; shows?: ScopeShows | undefined }",
+          "args": "scope: { scope?: string; label: string; shows?: ScopeShows | undefined }",
           "description": "nameScope(scope) — its source names its scope: a portrait bar's heading, and an icon for what it narrows. TODO 425"
         },
         {

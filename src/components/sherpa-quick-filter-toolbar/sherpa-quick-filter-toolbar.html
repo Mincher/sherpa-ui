@@ -83,7 +83,7 @@
     group-change         — detail: { field }
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. detail: { id, filter, holds }
-    filter-add           — chips were added. detail: { ids, filters, holds }
+    filter-add           — chips were added, detail: { ids, filters, holds }; or a REQUEST to move a field to another scope — Move to View filters, or back. detail: { scope, ids, from }
     view-reset           — Reset all on view: put back the View's own filters, in every scope. Cancelable
     filter-apply         — Apply, where the scope waits: send every change held in it. detail: { }
     filter-discard       — Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. detail: { field? }
@@ -223,6 +223,16 @@
     <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
   </template>
 
+  <!-- MOVE, in a chip menu's footer beside Remove: the field up to the View, or
+       a View field back down. Will, TODO 425 G4 · TRAP T-send-to-view-filters -->
+  <template class="move-tpl"><sherpa-button slot="footer" class="move"></sherpa-button></template>
+  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="raise">Move to View filters</span>
+    <span data-word="lower">Move to</span>
+    <span data-word="return">Return to</span>
+  </template>
+
 </template>
 
 <!-- PORTRAIT — the panel's column. The scope is an accordion, as a panel's is:
@@ -255,6 +265,29 @@
   </template>
   <template class="organise-sort-tpl">
     <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
+  </template>
+
+  <!-- MOVE, in a chip menu's footer beside Remove: the field up to the View, or
+       a View field back down. Will, TODO 425 G4 · TRAP T-send-to-view-filters -->
+  <template class="move-tpl"><sherpa-button slot="footer" class="move"></sherpa-button></template>
+  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="raise">Move to View filters</span>
+    <span data-word="lower">Move to</span>
+    <span data-word="return">Return to</span>
+  </template>
+  <!-- A SECTION's ⋮, in its chip's `more` slot: the field's own actions, each
+       only where it applies. Will, TODO 425 G1 -->
+  <template class="field-more-tpl">
+    <sherpa-button slot="more" class="field-more" data-type="icon" data-size="sm"
+                   data-icon-start="ellipses-vertical" aria-haspopup="dialog">
+      <sherpa-menu slot="menu" class="field-menu" data-align="end">
+        <button class="more-item" type="button" value="raise"><span class="more-label"></span></button>
+        <button class="more-item" type="button" value="lower"><span class="more-label"></span></button>
+        <button class="more-item" type="button" value="clear"><span class="more-label">Reset</span></button>
+        <button class="more-item" type="button" value="remove"><span class="more-label">Remove</span></button>
+      </sherpa-menu>
+    </sherpa-button>
   </template>
 </template>
 

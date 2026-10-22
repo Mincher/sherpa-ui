@@ -74,6 +74,8 @@
 }
 /* A section's value chip: its Sites menu says it is open. Will, TODO 425 G5 */
 :host([data-open][slot="values"]) :is(.body, .caret):not(:focus-visible) { outline: none; }
+/* …and a section's heading: its ⋮'s menu says so. */
+:host([data-open][data-layout="section"]) .body:not(:focus-visible) { outline: none; }
 
 /* ── A SECTION — a field's whole answer in the flow, as a portrait bar draws
    it: the toggle part is its heading, the menu part opens its menu, and its
@@ -108,11 +110,14 @@
 :host([data-layout="section"][data-icon-start]) .body .icon {
   --_icon-size: var(--sherpa-theme-content-size-small, 12px);
 }
-:host([data-layout="section"]) .caret {
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
+/* Its ⋮ of actions, in the caret's place: its values are the menu now. Will, G1 */
+.more-slot { display: none; }
+:host([data-layout="section"]) .more-slot {
+  display: inline-flex;
+  grid-row: 1;
+  grid-column: 2;
 }
-/* The values say what is picked: the menu part keeps only its icon. */
-:host([data-layout="section"]) .caret-label { display: none; }
+:host([data-layout="section"][data-menu]) .caret { display: none; }
 :host([data-layout="section"]) .values {
   grid-column: 1 / -1;
   display: flex;

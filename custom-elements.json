@@ -8533,7 +8533,7 @@
                 {
                   "name": "scope",
                   "type": {
-                    "text": "{ label: string; shows?: ScopeShows | undefined }"
+                    "text": "{ scope?: string; label: string; shows?: ScopeShows | undefined }"
                   }
                 }
               ],
@@ -8772,9 +8772,9 @@
             },
             {
               "name": "filter-add",
-              "description": "Chips were added.",
+              "description": "Chips were added, ; or a REQUEST to move a field to another scope — Move to View filters, or back.",
               "type": {
-                "text": "CustomEvent<{ filters: FilterDef[]; holds: string[]; ids: string[] }>"
+                "text": "CustomEvent<{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }>"
               }
             },
             {
@@ -9398,11 +9398,15 @@
             },
             {
               "name": "values",
-              "description": "(accepts: item)"
+              "description": "a section's value chips (accepts: item)"
             },
             {
               "name": "menu",
               "description": "a <sherpa-menu> of values for this field (accepts: menu)"
+            },
+            {
+              "name": "more",
+              "description": "a section's ⋮ of the field's own actions, its host's, in the caret's place (accepts: control)"
             }
           ],
           "cssParts": [
@@ -9432,6 +9436,9 @@
             },
             {
               "name": "label"
+            },
+            {
+              "name": "more"
             },
             {
               "name": "swatch"

@@ -92,6 +92,8 @@
   Slots:
     (default)  the chip label
     menu       a <sherpa-menu> of values for this field
+    values     a section's value chips
+    more       a section's ⋮ of the field's own actions, its host's, in the caret's place
 
   Fires:
     quick-filter-click  — the chip body is toggled. detail: { active }
@@ -135,6 +137,8 @@
     <div class="values" part="values" data-status="default"><slot name="values" data-accepts="item"></slot></div>
 
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
+    <!-- A SECTION's ⋮: the field's own actions, its host's. Will, TODO 425 G1 -->
+    <span class="more-slot" part="more"><slot name="more" data-accepts="control"></slot></span>
 
     <!-- One value chip: a toggle its field chip draws, locked to its row. -->
     <template class="value-chip-tpl"><sherpa-quick-filter class="value" slot="values" data-locked></sherpa-quick-filter></template>

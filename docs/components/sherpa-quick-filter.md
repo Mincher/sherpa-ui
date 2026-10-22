@@ -102,14 +102,15 @@ Each one bubbles.
 | Slot | Accepts | What it holds |
 |---|---|---|
 | (default) | text | the chip label |
-| `values` | item |  |
+| `values` | item | a section's value chips |
 | `menu` | menu | a &lt;[sherpa-menu](sherpa-menu.md)> of values for this field |
+| `more` | control | a section's ⋮ of the field's own actions, its host's, in the caret's place |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`body`, `caret`, `caret-icon`, `caret-label`, `chip`, `count`, `icon`, `indicator`, `label`, `swatch`, `values`
+`body`, `caret`, `caret-icon`, `caret-label`, `chip`, `count`, `icon`, `indicator`, `label`, `more`, `swatch`, `values`
 
 ## CSS custom properties it reads
 

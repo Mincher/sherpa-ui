@@ -385,7 +385,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — quick-filter-toolbar
-- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — filter-panel
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — filter-panel, quick-filter-toolbar
 - [T-actions-were-a-slot](TRAPS.md#t-actions-were-a-slot) — quick-filter-toolbar
 - [T-add-menu-batches](TRAPS.md#t-add-menu-batches) — filters-button, quick-filter-toolbar
 - [T-an-accordion-action-is-not-a-toggle](TRAPS.md#t-an-accordion-action-is-not-a-toggle) — filter-panel
@@ -463,7 +463,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-saved-filters-are-every-scope](TRAPS.md#t-saved-filters-are-every-scope) — filter-panel, filters-button, quick-filter-toolbar
 - [T-saved-filters-are-the-last-section](TRAPS.md#t-saved-filters-are-the-last-section) — filters-button
 - [T-scope-does-not-stop-inheritance](TRAPS.md#t-scope-does-not-stop-inheritance) — quick-filter
-- [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — filter-def, filter-panel
+- [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — filter-def, filter-panel, quick-filter-toolbar
 - [T-sort-is-tri-state](TRAPS.md#t-sort-is-tri-state) — quick-filter
 - [T-the-add-menu-is-the-whole-list](TRAPS.md#t-the-add-menu-is-the-whole-list) — filter-panel, filters-button, quick-filter-toolbar
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — quick-filter-toolbar

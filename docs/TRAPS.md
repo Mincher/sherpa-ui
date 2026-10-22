@@ -1384,6 +1384,7 @@ data is.
 - Site: `src/components/sherpa-nav/sherpa-nav.html`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 
 ### T-a-page-sheet-is-for-what-a-component-puts-in-the-page
 
@@ -1649,6 +1650,12 @@ and a View's draft carry it through a reload (TODO 235); sent back down, it is
 forgotten. `take()` and the `filter-add` request still take ANY scope, so a
 caller with no pointer can send a field anywhere, and the 168 rule holds.
 
+**The toolbar MOVES too** — Will, TODO 425 G1, G4: a chip's menu says "Move to
+View filters" (or "Move to / Return to <scope>" on a View chip) in its footer,
+beside Remove, and a portrait section says it in its ⋮. A bar sends the same
+request, `filter-add { scope, ids, from }`: bindSource reads a `filter-add`
+carrying `from` as a request whatever the bar's own scope.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/core/data/data-source.ts`
@@ -1659,6 +1666,8 @@ caller with no pointer can send a field anywhere, and the 168 rule holds.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 
 ### T-a-condition-marks-every-match
 
