@@ -17,7 +17,7 @@
   Cancel/Apply plus Today.
 
   Public API:
-    data-type      data (default) | view   (view adds the ★/Save/▾ group)
+    data-type      data (default) | view
     data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
                     column. Over ONE scope, the scope is an accordion — its
                     name, its matches while shut, its Apply and Discard —
@@ -49,8 +49,7 @@
                   every filter in the bar and keeps its value. Hidden by
                   default, for legacy reasons. Will, TODO 338.
     data-no-actions  hide the built-in cluster entirely (host owns the trailing end)
-    data-favourite   the ★ is lit (view type) — the value, IN
-    data-locked      the host owns the ★; report the click, never self-set
+    data-locked      the host owns the state; report, never self-set
     data-sort-field      the field the Sort chip points at (the standard name)
     data-sort-direction  asc (default) | desc
     data-group-field     the field the Group chip points at (the standard name)
@@ -93,18 +92,13 @@
     filters-save-as      — Save filters as: a new set, by name. detail: { }
     filters-delete       — Delete filters: forget the set last taken. detail: { id }
     ai-filter-request    — the AI button
-    data-refresh         — the refresh button
-    view-save            — Save (view type)
-    view-favorite        — the ★ toggled. detail: { favourite: boolean }
-    view-save-as         — Save view as, from the Save group's ▾ (view type)
-    view-delete          — Delete view, the reader's own View (view type)
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
     filter-panel-close   — a column shut, and why: the reader, the width or the page. detail: { reason }
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
-  start; `data-type="view"` reveals the view-only group through CSS.
+  start. The View's ★, Save and Refresh are the App Header's (TODO 425 G9).
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
@@ -164,35 +158,6 @@
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="wand-magic-sparkles"
                      aria-label="Suggest filters"></sherpa-button>
-      <span class="act-divider" aria-hidden="true"></span>
-
-      <!-- THE VIEW GROUP — Figma's "Frame 1": three controls snapped into one
-           box. Shown only for data-type="view". -->
-      <span class="view-group sherpa-group">
-        <!-- Two drawings, so the star fills: TRAP T-favourite-star-swaps-its-glyph.
-             "active" is a Style mode: TRAP T-tokens-css-never-reaches-shadow -->
-        <sherpa-button class="act" data-size="sm" data-act="favourite" data-type="icon"
-                       data-group="start" data-icon-start="star"
-                       aria-label="Add to Favorites" aria-pressed="false"
-                       data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
-                       data-swap-aria-label="Remove from Favorites" data-swap-aria-pressed="true"
-                       data-swap-data-status="active"></sherpa-button>
-        <sherpa-button class="act" data-size="sm" data-act="save"
-                       data-group="mid" data-icon-start="upload">Save</sherpa-button>
-        <sherpa-button class="act view-more" data-size="sm" data-act="view-menu" data-type="icon"
-                       data-group="end" data-icon-start="triangle-down"
-                       aria-label="Save view options" aria-haspopup="dialog">
-          <!-- Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own -->
-          <sherpa-menu slot="menu" class="view-menu" data-align="end">
-            <button type="button" value="save-as">Save view as</button>
-            <button type="button" value="delete" class="view-delete" data-status="critical">Delete view</button>
-          </sherpa-menu>
-        </sherpa-button>
-      </span>
-
-      <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"
-                     data-icon-start="cw-circle-arrow"
-                     aria-label="Refresh data"></sherpa-button>
       <sherpa-button class="act" data-size="sm" data-act="overflow" data-type="icon"
                      data-icon-start="ellipses-vertical"
                      aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
@@ -203,12 +168,6 @@
        sherpa-filter-more.html's. TRAP T-the-more-menu-holds-what-folded -->
   <template class="more-rows-tpl">
     <button class="more-item" type="button" value="ai"><span class="more-label">Suggest filters</span></button>
-    <button class="more-item" type="button" value="favourite"><span class="more-label">Favorite</span></button>
-    <button class="more-item" type="button" value="unfavourite"><span class="more-label">Remove from Favorites</span></button>
-    <button class="more-item" type="button" value="save"><span class="more-label">Save view</span></button>
-    <button class="more-item" type="button" value="save-as"><span class="more-label">Save view as</span></button>
-    <button class="more-item" type="button" value="delete-view"><span class="more-label">Delete view</span></button>
-    <button class="more-item" type="button" value="refresh"><span class="more-label">Refresh view</span></button>
   </template>
 
   <template class="qf-tpl">

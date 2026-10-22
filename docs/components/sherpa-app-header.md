@@ -44,17 +44,21 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-ai` | boolean |  | show the "Ask N-zo" AI button |
 | `data-ai-label` | text | `Ask N-zo` | its label |
 | `data-back` | boolean |  | show the back button |
+| `data-custom-view` | boolean |  | the View on screen is the reader's own: Delete view shows. TRAP T-a-saved-view-is-the-readers-own |
+| `data-favourite` | boolean |  | the ★ is lit — the value, IN |
 | `data-heading` | text |  | the Context title (row 2) |
 | `data-help` | boolean |  | show the support button |
 | `data-icon` | text |  | the Context icon — an icon name ("gauge") |
 | `data-labs` | boolean |  | show the labs/beaker button |
 | `data-loading` | boolean |  | run the indeterminate loading bar |
+| `data-locked` | boolean |  | the host owns the ★: report the click, never light it |
 | `data-menu` | boolean |  | show the app-switcher button |
 | `data-no-filters` | boolean |  | no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425 |
 | `data-notifications` | number |  | unread count — shows the bell + its badge |
 | `data-notifications-open` | boolean |  | the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened |
 | `data-theme-mode` | `light` `dark` |  | light \| dark — the mode on screen; the button offers the other |
 | `data-theme-toggle` | boolean |  | show the light/dark (moon) button |
+| `data-view-actions` | boolean |  | show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9 |
 
 ## Properties
 
@@ -83,6 +87,11 @@ Each one bubbles.
 | `account-click` |  |  |
 | `help-click` |  |  |
 | `menu-click` |  |  |
+| `view-favorite` | `{ favourite: boolean }` | The ★ was pressed, a request. |
+| `view-save` |  | Save. |
+| `view-save-as` |  | Save view as. |
+| `view-delete` |  | Delete view, the reader's own View. |
+| `data-refresh` |  | Refresh: load the page's data again. |
 | `nav-menu-request` |  | The mobile nav menu, right of the title. |
 
 ## Slots
@@ -98,7 +107,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`account`, `actions`, `ai`, `back`, `bar`, `content`, `context-icon`, `filters`, `help`, `history`, `labs`, `loading-bar`, `menu`, `nav-menu`, `notif-badge`, `notif-btn`, `notifications`, `row-context`, `row-history`, `theme-toggle`, `title`, `title-row`
+`account`, `actions`, `ai`, `back`, `bar`, `content`, `context-icon`, `filters`, `help`, `history`, `labs`, `loading-bar`, `menu`, `nav-menu`, `notif-badge`, `notif-btn`, `notifications`, `row-context`, `row-history`, `theme-toggle`, `title`, `title-row`, `view-actions`
 
 ## CSS custom properties it reads
 
@@ -124,6 +133,7 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.context-icon` | `color` |
 | `--sherpa-app-header-nav-menu` | `.nav-menu` | `display` |
 | `--sherpa-theme-content-body-1` | `.title` | `color` |
+| `--sherpa-style-content-base` | `.view-delete` | `color` |
 | `--sherpa-display-mode-border-width-lg` | `.loading-bar` | `block-size` |
 | `--sherpa-theme-surface-active-2` | `.loading-fill` | `background` |
 

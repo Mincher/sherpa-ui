@@ -380,8 +380,6 @@ export class ProviderPage {
         id: VIEW_CHIP, label: await this.#host.word('view'), persistent: true, active: true, select: 'single',
         options: viewOptions(library(), view, custom),
       }] : [];
-      // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
-      if (scope === VIEW) bar.toggleAttribute('data-custom-view', !!view && custom.has(view));
       // Its scope's name and icon: a portrait bar's heading. TODO 425
       bar.nameScope?.(described);
       // Its sets first, so one render draws them. TRAP T-a-filter-set-groups-or-chains
@@ -552,7 +550,6 @@ export class ProviderPage {
         if (id !== this.#view && this.#applied) this.#take(null);
         this.#view = id;
         this.#settle?.();
-        this.#viewBar()?.toggleAttribute('data-custom-view', this.customView);
         this.#host.viewChanged(id, rendered?.elements);
       },
     });

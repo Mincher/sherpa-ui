@@ -124,6 +124,7 @@ export class SherpaOutlet extends SherpaElement {
     if (provider) {
       this.on(provider, 'reach-change', this.#onReach);
       this.#drawReach(provider.reach);
+      this.on(provider, 'view-change', this.#onViewChange);
     }
     const header = this.#header;
     if (header) this.on(header, 'quick-filter-change', this.#onViewPick);
@@ -175,6 +176,12 @@ export class SherpaOutlet extends SherpaElement {
 
   /** The reach last drawn: a new one shows again what Dismiss hid. */
   #reachNow = 'ok';
+
+  /** Another View is on screen: the header offers Delete view only on the
+   *  reader's own. TRAP T-a-saved-view-is-the-readers-own */
+  #onViewChange = (): void => {
+    this.#header?.toggleAttribute('data-custom-view', !!this.#provider?.customView);
+  };
 
   /** The provider says the page's reach moved. */
   #onReach = (event: Event): void => {

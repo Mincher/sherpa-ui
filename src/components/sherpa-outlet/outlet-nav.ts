@@ -135,15 +135,14 @@ export class OutletNav {
     this.#nav.dataset['currentId'] = row && view && this.#session.get('/nav/hierarchy') === true ? `${id}:${view}` : id;
   }
 
-  /** The ★ says whether the View on screen is a favourite — or, listing
-   *  Contexts, whether any View of its Context is. */
+  /** The header's ★ says whether the View on screen is a favourite — or,
+   *  listing Contexts, whether any View of its Context is. */
   syncStar(): void {
-    const bar = this.#header?.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
     const context = this.#context();
     const on = this.#byView()
       ? this.#favorites.has({ context, label: '', key: this.#favKey(context, this.#view()) })
       : this.#favorites.all.some((k) => k.context === context);
-    bar?.toggleAttribute('data-favourite', on);
+    this.#header?.toggleAttribute('data-favourite', on);
   }
 
   /** A Context begins to load: its row lights, and a pinned rail stays pinned. */

@@ -191,8 +191,31 @@
   }
 }
 /* A toolbar fills the row; a lone chip (Jump to) keeps its own size. */
-.filters ::slotted(sherpa-quick-filter-toolbar) { inline-size: 100%; }
+.filters ::slotted(sherpa-quick-filter-toolbar) {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
 :host([data-no-filters]) .filters { display: none; }
+
+/* The View's own actions, at the row's end, level with the toolbar's. Will, TODO 425 G9 */
+.view-actions { display: none; }
+:host([data-view-actions]) .view-actions {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-end;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  flex: 0 0 auto;
+  margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
+}
+/* ★ · Save · ▾ sit flush as one control: a margin, as the snapped token may go negative. */
+.view-group {
+  display: inline-flex;
+  align-items: center;
+}
+.view-group > :not(:first-child) { margin-inline-start: var(--sherpa-structure-space-snapped, 0px); }
+/* Delete view: critical, and only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own */
+.view-delete { color: var(--sherpa-style-content-base, #35353d); }
+:host(:not([data-custom-view])) .view-delete { display: none; }
 
 /* ── Loading bar ─────────────────────────────────────────────────────── */
 /* Absolutely placed on the header's bottom edge so it NEVER adds height — in the

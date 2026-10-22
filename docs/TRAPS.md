@@ -95,12 +95,11 @@ A bare `[data-look]` is **left out** of that sheet. It sets the look's DEFAULT
 mode, so inside a status parent it would reset the status passed down. In the
 page, `tokens.css` still does exactly that — a known gap, not a model.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/core/sherpa-style-modes.css`
 - Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-style-modes.spec.ts`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-app-header.spec.ts`
 
 ### T-a-state-colour-binds-the-style-mode
 
@@ -1478,7 +1477,6 @@ TS must never also write a swapped attribute: one owner.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `scripts/check-props.mjs`
 - Site: `scripts/check-usage.mjs`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-swaps.spec.ts`
 
 ### T-no-attribute-is-the-default-variant
@@ -1555,25 +1553,26 @@ no size queries to lose.
 ### T-a-saved-view-is-the-readers-own
 
 **A reader saves, saves over and deletes only their OWN Views; a preset is
-never touched** — TODO 15. The View bar's Save and its ▾ ("Save view as",
-"Delete view") are REQUESTS (`view-save`, `view-save-as`, `view-delete`); the
+never touched** — TODO 15. The App Header's Save and its ▾ ("Save view as",
+"Delete view") are REQUESTS (the View bar's until TODO 425 G9) (`view-save`, `view-save-as`, `view-delete`); the
 SHELL answers them for every page with one name dialog and one confirm, and
 the provider does the work: `saveView(name)` saves a NEW View — a name any
 View has gets ` - Copy-001`, then `-002` (`uniqueViewLabel`); `saveView()`
 with no name saves over the reader's View on screen and answers nothing on a
 preset, so Save on a preset asks for a name instead; `deleteView()` deletes
-the reader's View and goes to the first. The provider marks the View bar
-`data-custom-view` while one of the reader's is on screen — "Delete view"
-shows only then, critical — and the View chip lists the reader's under
+the reader's View and goes to the first. On each `view-change` the outlet
+marks the header `data-custom-view` while one of the reader's is on screen
+(`provider.customView`) — "Delete view" shows only then, critical — and the View chip lists the reader's under
 "Custom views", at the bottom. The Dashboard's own save handler is gone.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/browser/persist-view.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.css`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 
 ### T-a-range-is-bounded-by-the-data
 
@@ -2143,7 +2142,6 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
@@ -8279,9 +8277,10 @@ data-icon-start="star" data-swap-on="data-favourite" data-swap-data-icon-start="
 A test that reads `data-icon-start` cannot catch this. The test reads the
 rendered `<path d>`.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Test: `test/e2e/reforged-nav-favorites-recents.spec.ts`
+
+- Site: `src/components/sherpa-app-header/sherpa-app-header.html`
+- Site: `test/e2e/reforged-app-header.spec.ts`
 
 ### T-the-star-reports-it-does-not-decide
 
@@ -8306,9 +8305,9 @@ So the split is the standard one:
 Unlocked, the bar still flips its own attribute, so a page with no favourites
 list keeps working exactly as before.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - See also: `T-session-list-is-a-view-not-a-copy` — where the list itself lives
 - Site: `src/components/sherpa-outlet/outlet-nav.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 
 ### T-an-expandable-row-is-not-a-destination
 

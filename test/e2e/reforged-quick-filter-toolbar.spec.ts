@@ -247,7 +247,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
  * on a `Type` axis. This used to be an empty `actions` slot; these tests hold
  * the reversal in place. */
 
-test('the action cluster is built in, and data-type=view adds the save group', async ({ page }) => {
+test('the action cluster is built in; the View\'s ★, Save and Refresh are the App Header\'s', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const probe = async (type?: string) => {
       // Filled, though empty: the Filters menu draws then.
@@ -267,18 +267,16 @@ test('the action cluster is built in, and data-type=view adds the save group', a
         saveSet: shown('.save-set'),
         // The panel switch is the PAGE's, never the bar's own. TRAP T-the-mode-switch-is-the-pages-own
         configure: !!sr.querySelector('[data-act="configure"]'),
-        refresh: shown('[data-act="refresh"]'),
         overflow: shown('[data-act="overflow"]'),
-        favourite: shown('[data-act="favourite"]'),
-        save: shown('[data-act="save"]'),
-        viewMenu: shown('[data-act="view-menu"]'),
+        // The View's own are the App Header's. TODO 425 G9
+        viewActions: !!sr.querySelector('[data-act="refresh"], [data-act="favourite"], [data-act="save"], .view-group'),
       };
     };
     return { data: await probe(), view: await probe('view') };
   });
 
-  // Both types carry the shared run: Filters · AI · | · refresh — and Filters'
-  // menu leads with Reset, then Reset all on view.
+  // Both types carry the shared run: Filters · AI — and Filters' menu leads
+  // with Reset, then Reset all on view.
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
     expect(t.ai).toBe(true);
@@ -286,20 +284,12 @@ test('the action cluster is built in, and data-type=view adds the save group', a
     expect(t.actions).toEqual(['reset', 'reset-default']);
     expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
-    expect(t.refresh).toBe(true);
+    expect(t.viewActions).toBe(false);
     // The ⋮ is NOT among them. It is where the cluster folds when the bar runs
     // out of room, and an empty one on a bar wide enough to show everything is a
     // button that opens nothing — so it appears only once something has folded.
     expect(t.overflow).toBe(false);
   }
-  // Only `view` gets the ★ | Save | ▾ group — Figma's Type=data cluster ends at
-  // the divider.
-  expect(r.data.favourite).toBe(false);
-  expect(r.data.save).toBe(false);
-  expect(r.data.viewMenu).toBe(false);
-  expect(r.view.favourite).toBe(true);
-  expect(r.view.save).toBe(true);
-  expect(r.view.viewMenu).toBe(true);
 });
 
 test('every cluster button fires the event Figma names for it', async ({ page }) => {
@@ -307,10 +297,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
 
     const seen: string[] = [];
-    for (const ev of [
-      'ai-filter-request', 'data-refresh',
-      'view-save', 'view-save-as', 'filter-add',
-    ]) el.addEventListener(ev, () => seen.push(ev));
+    for (const ev of ['ai-filter-request', 'filter-add']) el.addEventListener(ev, () => seen.push(ev));
 
     const press = async (act: string) => {
       const btn = el.shadowRoot!.querySelector(`[data-act="${act}"]`) as HTMLElement;
@@ -318,11 +305,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
     // The ⋮ opens its own menu now. TRAP T-the-more-menu-holds-what-folded
-    for (const a of ['ai', 'refresh', 'save']) await press(a);
-    // The Save group's ▾ opens its menu; Save view as asks for a name. TODO 15.
-    await press('view-menu');
-    el.shadowRoot!.querySelector<HTMLElement>('.view-menu button[value="save-as"]')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await press('ai');
 
     // ADD is deliberately absent from this list. It is a single button now, and
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
@@ -332,10 +315,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     return { seen, addIsButton: add.localName, addExpanded: expanded() };
   });
 
-  expect(r.seen).toEqual([
-    'ai-filter-request', 'data-refresh',
-    'view-save', 'view-save-as',
-  ]);
+  expect(r.seen).toEqual(['ai-filter-request']);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');
   // Nothing has opened it, so the trigger has not yet said either way.
@@ -344,8 +324,9 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
 /**
  * THE ⋮ MENU HOLDS WHAT FOLDED — TODO 43. With every action folded, it lists
- * them in Will's order: AI, the page's own buttons, a divider, then the
- * view's. A row does what its button does. Reset is the Filters menu's (TODO 383).
+ * them in Will's order: AI, then the page's own buttons. A row does what its
+ * button does. Reset is the Filters menu's (TODO 383); the View's own, the App
+ * Header's (TODO 425 G9).
  * TRAP T-the-more-menu-holds-what-folded
  */
 test('the ⋮ menu lists every folded action in order, and a row does what its button does', async ({ page }) => {
@@ -373,36 +354,24 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     const menu = sr.querySelector('.more-menu') as HTMLElement;
     const rows = [...menu.children].map((n) => (n.tagName === 'HR' ? '---' : (n.textContent ?? '').trim()));
     const heard: string[] = [];
-    for (const ev of ['data-refresh', 'view-save']) el.addEventListener(ev, () => heard.push(ev));
     extra.addEventListener('button-click', () => heard.push('extra'));
     const pick = async (label: string): Promise<void> => {
       await open();
       [...menu.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent?.trim() === label)!.click();
       await settle();
     };
-    await pick('Refresh view');
-    await pick('Save view');
     await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
     (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
     // Filter actions are the Filters menu's rows. TODO 383
     sr.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
     await settle();
-    el.addEventListener('view-favorite', (e) => heard.push(`favourite:${(e as CustomEvent).detail.favourite}`));
-    await pick('Favorite');
-    await open();
-    const starred = [...menu.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Remove from Favorites');
-    await pick('Remove from Favorites');
-    return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard, starred };
+    return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard };
   });
 
   expect(r.collapse).toBe(3);
-  expect(r.rows).toEqual([
-    'Suggest filters', 'View as filter panel', '---',
-    'Favorite', 'Save view', 'Save view as', 'Refresh view',
-  ]);
-  expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra', 'clear', 'favourite:true', 'favourite:false']);
-  expect(r.starred).toBe(true);
+  expect(r.rows).toEqual(['Suggest filters', 'View as filter panel']);
+  expect(r.heard).toEqual(['extra', 'clear']);
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {
@@ -455,7 +424,7 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
     await window.__settled();
   });
   // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
-  for (const name of ['Suggest filters', 'Add to Favorites', 'Save view options']) {
+  for (const name of ['Suggest filters']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
   // Filter actions are the Filters menu's rows, named once it opens. TODO 383
@@ -463,137 +432,6 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
   for (const name of ['Reset filters', 'Reset all on view']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
-});
-
-test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
-
-    const detail: boolean[] = [];
-    el.addEventListener('view-favorite', (e) => detail.push((e as CustomEvent).detail.favourite));
-    const star = el.shadowRoot!.querySelector('[data-act="favourite"]') as HTMLElement;
-    const press = async () => {
-      (star.shadowRoot!.querySelector('button') as HTMLElement).click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
-      return {
-        on: el.hasAttribute('data-favourite'),
-        icon: star.getAttribute('data-icon-start'),
-        pressed: star.getAttribute('aria-pressed'),
-        // The name says what the NEXT press does. Will, 2026-09-26.
-        name: star.getAttribute('aria-label'),
-        // The DRAWING, not the name — TRAP T-favourite-star-swaps-its-glyph.
-        d: star.shadowRoot?.querySelector('svg path')?.getAttribute('d') ?? null,
-      };
-    };
-    return { first: await press(), second: await press(), detail };
-  });
-
-  // The GLYPH carries the state too (outline → solid), so it survives for anyone
-  // who cannot tell the brand purple from the default ink.
-  expect(r.first).toMatchObject({ on: true, icon: 'star-filled', pressed: 'true', name: 'Remove from Favorites' });
-  expect(r.second).toMatchObject({ on: false, icon: 'star', pressed: 'false', name: 'Add to Favorites' });
-  /* The PATH must differ. Asserting the name alone is what let the two states
-     resolve to one outline drawing for three months: the two weights were one
-     Font Awesome name, and the weight token was dropped on the way in. They are
-     two SEPARATE Figma drawings now — `star` and `star-filled`. */
-  expect(r.first.d).toBeTruthy();
-  expect(r.second.d).toBeTruthy();
-  expect(r.first.d).not.toBe(r.second.d);
-  expect(r.detail).toEqual([true, false]);
-});
-
-test('a favourited star takes the ACTIVE Style mode, face ring and ink', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
-    const star = el.shadowRoot!.querySelector('[data-act="favourite"]') as HTMLElement & {
-      shadowRoot: ShadowRoot;
-    };
-    // WAIT OUT THE FADE, do not guess at it. The button transitions its
-    // background, border and colour over 120ms, so a fixed wait samples the
-    // middle of the animation under parallel load and reads an in-between
-    // colour — rgb(255, 254, 255) instead of white, which looks like the toggle
-    // failing to reverse rather than a test reading too early.
-    const settled = async () => {
-      const trigger = star.shadowRoot.querySelector('.trigger') as HTMLElement;
-      await Promise.all(
-        trigger.getAnimations().map((a) => a.finished.catch(() => undefined)),
-      );
-    };
-    const read = () => {
-      const t = getComputedStyle(star.shadowRoot.querySelector('.trigger')!);
-      return {
-        status: star.dataset['status'] ?? null,
-        bg: t.backgroundColor,
-        border: t.borderTopColor,
-        ink: getComputedStyle(star.shadowRoot.querySelector('i')!).color,
-      };
-    };
-    await settled();
-    const off = read();
-    (star.shadowRoot.querySelector('button') as HTMLElement).click();
-    await settled();
-    const on = read();
-
-    // READ WHILE IT IS ON. These properties only exist in the favourited state,
-    // so reading them after the second click returns empty strings — which is
-    // what the first version of this test did, and it looked like the fix had
-    // not worked at all.
-    //
-    // The star's OWN --_status-* values are the exact chain its trigger paints
-    // from, so the comparison is like-for-like. Not a hand-converted hex (the
-    // browser rounds #F2DFFF to 224, not the arithmetic 223) and not a probe
-    // elsewhere in the tree (a light-DOM one resolves through tokens.css's
-    // [data-status] block, a different chain).
-    const sc = getComputedStyle(star);
-    const expected = {
-      surface: sc.getPropertyValue('--_status-surface').trim(),
-      border: sc.getPropertyValue('--_status-border').trim(),
-      text: sc.getPropertyValue('--_status-text').trim(),
-    };
-
-    (star.shadowRoot.querySelector('button') as HTMLElement).click();
-    await settled();
-
-    return { off, on, backOff: read(), expected };
-  });
-
-  // Each resolved to a real colour, so the assertions below mean something — an
-  // EMPTY value (the properties never reaching the button) is exactly the bug
-  // this test exists for, and would otherwise pass silently.
-  // Minified CSS may shorten a hex to 3 digits (#fff).
-  expect(r.expected.surface).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
-  expect(r.expected.border).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
-  expect(r.expected.text).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
-
-  // ACTIVE is a Style MODE in the design, not an invented colour. The pin
-  // reaches the star inside the toolbar's shadow root through the adopted
-  // style-modes sheet — TRAP T-tokens-css-never-reaches-shadow.
-  expect(r.on.status).toBe('active');
-
-  // The ring and the ink PAINT differently from the default look. The face is
-  // not asserted as changed: since 2026-09-24 the active mode's surface IS the
-  // default surface in Figma. Not fixed triples either — the exact rgb depends
-  // on the browser's rounding of the token hex, which is not what this tests.
-  expect(r.on.border).not.toBe(r.off.border);
-  expect(r.on.ink).not.toBe(r.off.ink);
-
-  // …and they are the ACTIVE tokens, not some other colour: each painted value
-  // carries the same leading channel as the property it came from.
-  const firstChannel = (v: string): number => {
-    const hex = /^#(..)/.exec(v);
-    return hex ? parseInt(hex[1]!, 16) : Number(/(\d+)/.exec(v)?.[1] ?? -1);
-  };
-  expect(firstChannel(r.on.bg)).toBe(firstChannel(r.expected.surface));
-  expect(firstChannel(r.on.border)).toBe(firstChannel(r.expected.border));
-  expect(firstChannel(r.on.ink)).toBe(firstChannel(r.expected.text));
-
-  // Off is the plain default look, and the toggle is REVERSIBLE — clicking again
-  // returns every one of the three to exactly what it was.
-  expect(r.off.status).toBe(null);
-  expect(r.backOff.status).toBe(null);
-  expect(r.backOff.bg).toBe(r.off.bg);
-  expect(r.backOff.border).toBe(r.off.border);
-  expect(r.backOff.ink).toBe(r.off.ink);
 });
 
 test('the undo button clears every chip and the organise state', async ({ page }) => {
@@ -640,45 +478,6 @@ test('the undo button clears every chip and the organise state', async ({ page }
 
   // One event per concern, not one per chip.
   expect(r.seen).toEqual(['quick-filter-change', 'group-change', 'sort-change']);
-});
-
-test('the view group is snapped: outer corners round, inner ones square', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
-    const kids = [...el.shadowRoot!.querySelector('.view-group')!.children] as HTMLElement[];
-    return kids.map((k) => {
-      const cs = getComputedStyle(k);
-      const b = k.getBoundingClientRect();
-      return {
-        act: k.dataset['act'],
-        tl: parseFloat(cs.borderStartStartRadius),
-        tr: parseFloat(cs.borderStartEndRadius),
-        left: b.left,
-        right: b.right,
-      };
-    });
-  });
-
-  // Figma's "Frame 1" joins the three at `structure-space/snapped` (0) so they sit
-  // flush and read as ONE control. The rounding is set in the toolbar's own CSS, not
-  // by [data-snap]: that selector lives in tokens.css, which is loaded into the
-  // DOCUMENT and is deliberately not in sharedStyles, so it never reaches a
-  // button inside this shadow root.
-  expect(r.map((k) => k.act)).toEqual(['favourite', 'save', 'view-menu']);
-  expect(r[0]!.tl).toBeGreaterThan(0); // leading edge stays round
-  expect(r[0]!.tr).toBe(0);
-  expect(r[1]!.tl).toBe(0); // the middle is square all round
-  expect(r[1]!.tr).toBe(0);
-  expect(r[2]!.tl).toBe(0);
-  expect(r[2]!.tr).toBeGreaterThan(0); // trailing edge stays round
-
-  // …and they actually TOUCH, rather than merely looking square. The snap gap is
-  // `--sherpa-structure-space-snapped`, which resolves to space/none = 0, so each
-  // button starts exactly where the one before it ended — no gap, no overlap.
-  // Compare with a tolerance, not `===`: sub-pixel layout makes the shared edge
-  // tie only approximately.
-  expect(r[1]!.left).toBeCloseTo(r[0]!.right, 2);
-  expect(r[2]!.left).toBeCloseTo(r[1]!.right, 2);
 });
 
 test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page }) => {
@@ -1415,9 +1214,10 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
       };
     };
 
-    // 820, not 900: the bar lost its panel switch (the page's now) and its Reset
-    // group (the Filters menu's, TODO 383), so it folds later.
-    return { wide: await at(1400), mid: await at(820), narrow: await at(620) };
+    // 800: the bar lost its panel switch (the page's), its Reset group (the
+    // Filters menu's, TODO 383) and the View's ★, Save and Refresh (the App
+    // Header's, TODO 425 G9), so it folds later.
+    return { wide: await at(1400), mid: await at(800), narrow: await at(620) };
   });
 
   // WIDE: nothing folded, and the ⋮ is absent — an empty overflow button is one

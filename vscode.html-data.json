@@ -52,6 +52,16 @@
           "valueSet": "v"
         },
         {
+          "name": "data-custom-view",
+          "description": "the View on screen is the reader's own: Delete view shows. TRAP T-a-saved-view-is-the-readers-own",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-favourite",
+          "description": "the ★ is lit — the value, IN",
+          "valueSet": "v"
+        },
+        {
           "name": "data-heading",
           "description": "the Context title (row 2)"
         },
@@ -72,6 +82,11 @@
         {
           "name": "data-loading",
           "description": "run the indeterminate loading bar",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-locked",
+          "description": "the host owns the ★: report the click, never light it",
           "valueSet": "v"
         },
         {
@@ -108,6 +123,11 @@
         {
           "name": "data-theme-toggle",
           "description": "show the light/dark (moon) button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-view-actions",
+          "description": "show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9",
           "valueSet": "v"
         }
       ]
@@ -2723,10 +2743,6 @@
           "name": "data-bounds"
         },
         {
-          "name": "data-custom-view",
-          "valueSet": "v"
-        },
-        {
           "name": "data-dirty",
           "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
           "valueSet": "v"
@@ -2734,11 +2750,6 @@
         {
           "name": "data-failed",
           "description": "the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411"
-        },
-        {
-          "name": "data-favourite",
-          "description": "the ★ is lit (view type) — the value, IN",
-          "valueSet": "v"
         },
         {
           "name": "data-fetch-fields",
@@ -2778,7 +2789,7 @@
         },
         {
           "name": "data-locked",
-          "description": "the host owns the ★; report the click, never self-set",
+          "description": "the host owns the state; report, never self-set",
           "valueSet": "v"
         },
         {
@@ -2856,7 +2867,7 @@
         },
         {
           "name": "data-type",
-          "description": "data | view (view adds the ★/Save/▾ group)",
+          "description": "data | view",
           "values": [
             {
               "name": "view"

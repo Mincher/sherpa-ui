@@ -104,14 +104,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     /* Clear the chips when a new field set arrives, rather than keeping them. */
     'data-reset-on-populate': { type: 'boolean', kind: 'style' },
-    /* The View on screen is the READER's own, so it can be deleted. Written by
-       the provider. TRAP T-a-saved-view-is-the-readers-own */
-    'data-custom-view': { type: 'boolean', kind: 'visibility' },
     'data-sort-field': DATA_PROPS['data-sort-field'],
     'data-sort-direction': DATA_PROPS['data-sort-direction'],
     'data-group-field': DATA_PROPS['data-group-field'],
-    // A host that owns the favourites paints the star. TRAP T-the-star-reports-it-does-not-decide
-    'data-favourite': { type: 'boolean', kind: 'behaviour' },
     // The host saves filters: its ⋮ offers Save filters. TRAP T-saved-filters-are-every-scope
     'data-saveable': { type: 'boolean', kind: 'style' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
@@ -1281,11 +1276,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       } else this.#move(owner);
       return;
     }
-    if ((value === 'save-as' || value === 'delete') && this.pathFind(event, '.view-more')) {
-      event.stopImmediatePropagation();
-      this.#act(value === 'delete' ? 'delete-view' : value);
-      return;
-    }
     // The Filters menu's own actions. TODO 383
     if (FILTER_ACTIONS.has(value) && this.pathFind(event, '.add-btn')) {
       event.stopImmediatePropagation();
@@ -1868,22 +1858,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
            TRAP T-reset-to-default-is-the-views-own */
         this.emit('view-reset', {}, { cancelable: true });
         break;
-      case 'refresh':
-        this.emit('data-refresh');
-        break;
-      case 'save':
-        this.emit('view-save');
-        break;
-      case 'save-as':
-        this.emit('view-save-as');
-        break;
-      case 'delete-view':
-        this.emit('view-delete');
-        break;
-      case 'favourite':
-      case 'unfavourite':
-        this.#toggleFavourite();
-        break;
       case 'filters-save':
       case 'filters-save-as':
         this.emit(act);
@@ -1913,23 +1887,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
-   * THE ⋮ MENU holds what has FOLDED away at this width, in Will's order: the
-   * filter actions, the page's own buttons, then the view's. A row does what
-   * its button does. TRAP T-the-more-menu-holds-what-folded
+   * THE ⋮ MENU holds what has FOLDED away at this width, in Will's order:
+   * Suggest filters, then the page's own buttons. A row does what its button
+   * does. TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
     const act = (name: string): HTMLElement | null => this.$(`.act[data-act="${name}"]`);
     const first: MoreRow[] = [];
     if (folded(act('ai'))) first.push(['ai']);
     first.push(...extraRows(this));
-    const view: MoreRow[] = [];
-    if (this.dataset['type'] === 'view' && folded(this.$('.view-group'))) {
-      view.push([this.hasAttribute('data-favourite') ? 'unfavourite' : 'favourite'], ['save'], ['save-as']);
-      if (this.hasAttribute('data-custom-view')) view.push(['delete-view']);
-    }
-    if (folded(act('refresh'))) view.push(['refresh']);
-    // Reset and Save filters are the Filters menu's now. Will, TODO 383
-    openMore(this, this.root, trigger, [first, view]);
+    // Reset and Save filters are the Filters menu's; the View's own, the App Header's. TODO 383, 425
+    openMore(this, this.root, trigger, [first]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
@@ -2002,20 +1970,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #syncOneRows(): void {
     const menu = this.$('.add-btn')?.querySelector<SherpaMenu>('sherpa-menu');
     this.#oneRows.follow(menu, (id) => !!this.#chips().find((c) => c.dataset['id'] === id)?.current);
-  }
-
-  /**
-   * The star REPORTS the intent; `data-favourite` is the answer, IN.
-   *
-   * Locked, the bar never writes its own attribute — a host that owns the
-   * favourites list answers by setting it, and the click is only a request.
-   * TRAP T-the-star-reports-it-does-not-decide
-   */
-  #toggleFavourite(): void {
-    const on = !this.hasAttribute('data-favourite');
-    // Its swaps paint the star. TRAP T-a-swapped-label-is-in-the-markup
-    if (!this.hasAttribute('data-locked')) this.set('data-favourite', on);
-    this.emit('view-favorite', { favourite: on });
   }
 
   /**

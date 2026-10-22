@@ -187,6 +187,20 @@
               }
             },
             {
+              "name": "data-custom-view",
+              "description": "the View on screen is the reader's own: Delete view shows. TRAP T-a-saved-view-is-the-readers-own",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-favourite",
+              "description": "the ★ is lit — the value, IN",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-heading",
               "description": "the Context title (row 2)",
               "type": {
@@ -217,6 +231,13 @@
             {
               "name": "data-loading",
               "description": "run the indeterminate loading bar",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-locked",
+              "description": "the host owns the ★: report the click, never light it",
               "type": {
                 "text": "boolean"
               }
@@ -259,6 +280,13 @@
             {
               "name": "data-theme-toggle",
               "description": "show the light/dark (moon) button",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-view-actions",
+              "description": "show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9",
               "type": {
                 "text": "boolean"
               }
@@ -339,6 +367,41 @@
             },
             {
               "name": "menu-click",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "view-favorite",
+              "description": "The ★ was pressed, a request.",
+              "type": {
+                "text": "CustomEvent<{ favourite: boolean }>"
+              }
+            },
+            {
+              "name": "view-save",
+              "description": "Save.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "view-save-as",
+              "description": "Save view as.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "view-delete",
+              "description": "Delete view, the reader's own View.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "data-refresh",
+              "description": "Refresh: load the page's data again.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -435,6 +498,9 @@
             },
             {
               "name": "title-row"
+            },
+            {
+              "name": "view-actions"
             }
           ]
         }
@@ -8130,12 +8196,6 @@
               }
             },
             {
-              "name": "data-custom-view",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-dirty",
               "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
               "type": {
@@ -8147,13 +8207,6 @@
               "description": "the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411",
               "type": {
                 "text": "string"
-              }
-            },
-            {
-              "name": "data-favourite",
-              "description": "the ★ is lit (view type) — the value, IN",
-              "type": {
-                "text": "boolean"
               }
             },
             {
@@ -8193,7 +8246,7 @@
             },
             {
               "name": "data-locked",
-              "description": "the host owns the ★; report the click, never self-set",
+              "description": "the host owns the state; report, never self-set",
               "type": {
                 "text": "boolean"
               }
@@ -8285,7 +8338,7 @@
             },
             {
               "name": "data-type",
-              "description": "data | view (view adds the ★/Save/▾ group)",
+              "description": "data | view",
               "type": {
                 "text": "'view' | 'data'"
               },
@@ -8836,41 +8889,6 @@
             {
               "name": "ai-filter-request",
               "description": "The AI button",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "data-refresh",
-              "description": "The refresh button",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "view-save",
-              "description": "Save (view type)",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "view-favorite",
-              "description": "The ★ toggled.",
-              "type": {
-                "text": "CustomEvent<{ favourite: boolean }>"
-              }
-            },
-            {
-              "name": "view-save-as",
-              "description": "Save view as, from the Save group's ▾ (view type)",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "view-delete",
-              "description": "Delete view, the reader's own View (view type)",
               "type": {
                 "text": "CustomEvent"
               }

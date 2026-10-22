@@ -265,7 +265,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — provider
 - [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — provider
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — provider
-- [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — provider
+- [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — outlet, provider
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — provider
 - [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — context
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — provider
@@ -314,7 +314,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (171)
+## Filters (166)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -369,7 +369,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-row-opens-its-child-menu](TRAPS.md#t-a-row-opens-its-child-menu) — filter-panel, quick-filter-toolbar
 - [T-a-row-remembers-what-it-was-given](TRAPS.md#t-a-row-remembers-what-it-was-given) — quick-filter
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, filter-panel, quick-filter, quick-filter-toolbar
-- [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — quick-filter-toolbar
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — filter-panel
 - [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — filter-panel, quick-filter-toolbar
 - [T-a-shut-scope-folds-like-a-bar](TRAPS.md#t-a-shut-scope-folds-like-a-bar) — filter-panel
@@ -380,7 +379,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — quick-filter, quick-filter-toolbar
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — filter-panel
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — quick-filter
-- [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — quick-filter-toolbar
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — quick-filter-toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — filter-panel, quick-filter, quick-filter-toolbar
@@ -421,7 +419,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-every-chip-menu-gets-clear-and-search](TRAPS.md#t-every-chip-menu-gets-clear-and-search) — filter-menu
 - [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-panel, quick-filter-toolbar
 - [T-everything-on-is-no-filter](TRAPS.md#t-everything-on-is-no-filter) — quick-filter, quick-filter-toolbar
-- [T-favourite-star-swaps-its-glyph](TRAPS.md#t-favourite-star-swaps-its-glyph) — quick-filter-toolbar
 - [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — quick-filter, quick-filter-toolbar
 - [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — filter-panel, quick-filter-toolbar
 - [T-group-chip-body-toggles-grouping](TRAPS.md#t-group-chip-body-toggles-grouping) — quick-filter
@@ -477,12 +474,10 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — quick-filter-toolbar
 - [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def, filter-panel
 - [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — filter-panel
-- [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — quick-filter-toolbar
 - [T-the-view-chip-stays-on-the-header](TRAPS.md#t-the-view-chip-stays-on-the-header) — quick-filter, quick-filter-toolbar
 - [T-toggle-chip-has-no-count](TRAPS.md#t-toggle-chip-has-no-count) — quick-filter-toolbar
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — quick-filter-toolbar
 - [T-toggling-a-conditioned-chip-suspends-its-condition](TRAPS.md#t-toggling-a-conditioned-chip-suspends-its-condition) — quick-filter
-- [T-tokens-css-never-reaches-shadow](TRAPS.md#t-tokens-css-never-reaches-shadow) — quick-filter-toolbar
 - [T-two-chips-in-one-section-need-their-own-id](TRAPS.md#t-two-chips-in-one-section-need-their-own-id) — filter-panel
 - [T-value-label-is-the-callers-words](TRAPS.md#t-value-label-is-the-callers-words) — quick-filter
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
@@ -880,7 +875,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (105)
+## Other components (108)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -912,6 +907,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
+- [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — app-header
 - [T-a-second-container-type-drops-the-first](TRAPS.md#t-a-second-container-type-drops-the-first) — app-header
 - [T-a-shadow-reach-is-a-missing-door](TRAPS.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group
@@ -946,6 +942,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-describedby-must-not-be-a-live-region](TRAPS.md#t-describedby-must-not-be-a-live-region) — input-text
 - [T-embedded-footer-needs-a-public-verb](TRAPS.md#t-embedded-footer-needs-a-public-verb) — calendar
 - [T-every-button-says-its-action](TRAPS.md#t-every-button-says-its-action) — button
+- [T-favourite-star-swaps-its-glyph](TRAPS.md#t-favourite-star-swaps-its-glyph) — app-header
 - [T-fit-is-a-desktop-mode](TRAPS.md#t-fit-is-a-desktop-mode) — layout-grid
 - [T-grouping-is-an-attribute-and-a-class](TRAPS.md#t-grouping-is-an-attribute-and-a-class) — calendar, group, input-text
 - [T-header-actions-are-composed-buttons](TRAPS.md#t-header-actions-are-composed-buttons) — app-header
@@ -983,6 +980,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-nav-is-a-menu-on-a-phone](TRAPS.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — app-shell
 - [T-the-shell-owns-the-panel-areas](TRAPS.md#t-the-shell-owns-the-panel-areas) — app-shell
+- [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — app-header
 - [T-the-tick-needs-the-fixed-ramp](TRAPS.md#t-the-tick-needs-the-fixed-ramp) — select-checkbox
 - [T-two-months-share-one-grid](TRAPS.md#t-two-months-share-one-grid) — calendar
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text

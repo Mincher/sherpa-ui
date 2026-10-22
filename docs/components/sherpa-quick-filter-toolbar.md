@@ -58,16 +58,14 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-bounds` | text |  |  |
-| `data-custom-view` | boolean |  |  |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
-| `data-favourite` | boolean |  | the ★ is lit (view type) — the value, IN |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178. |
-| `data-locked` | boolean |  | the host owns the ★; report the click, never self-set |
+| `data-locked` | boolean |  | the host owns the state; report, never self-set |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
 | `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope="view data"`) it is the COLUMN: ONE header — Save &lt;name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425 |
@@ -80,7 +78,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
 | `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |
-| `data-type` | `view` `data` | `data` | data \| view (view adds the ★/Save/▾ group) |
+| `data-type` | `view` `data` | `data` | data \| view |
 | `data-waits` | boolean |  | its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406 |
 | `open` | text, native |  | a column is showing. A host writes it; every close reports `filter-panel-close`, and says why. |
 
@@ -151,11 +149,6 @@ Each one bubbles.
 | `filters-save-as` |  | Save filters as: a new set, by name. |
 | `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set last taken. |
 | `ai-filter-request` |  | The AI button |
-| `data-refresh` |  | The refresh button |
-| `view-save` |  | Save (view type) |
-| `view-favorite` | `{ favourite: boolean }` | The ★ toggled. |
-| `view-save-as` |  | Save view as, from the Save group's ▾ (view type) |
-| `view-delete` |  | Delete view, the reader's own View (view type) |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | A column shut, and why: the reader, the width or the page. |
@@ -187,7 +180,6 @@ What each class's base rule reads:
 | `--sherpa-theme-border-default-2` | `.act-divider` | `background` |
 | `--sherpa-display-mode-space-xs` | `.chips` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions-zone` | `gap` |
-| `--sherpa-style-content-base` | `.view-delete` | `color` |
 
 ## populate()
 

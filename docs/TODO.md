@@ -1961,7 +1961,7 @@ panel is the DEFAULT (B).
 | ✅ | G6 — the panel/toolbar toggle did odd things: on the compare page it gave each portrait bar a mode button and shut the classic panel. Now the mode button is the column's header's alone; a section gets none and never steps back; a column inside `[data-filter-mode="none"]` (the compare page) is never opened or shut by the mode |
 | ✅ | G7 — hide the filter Switch in every mode, for now. The stack sets no `data-switchable`; Demos' bars drop it. The attribute stays |
 | ✅ | G8 — the ONE search is in the column's header, above every scope |
-| ⬜ | G9 — Favorite, Save and Refresh move to the App Header (Will: A) |
+| ✅ | G9 — Favorite, Save (with Save view as, Delete view) and Refresh are the App Header's (`data-view-actions`), at its filter row's end; the toolbar has none. The outlet lights the header's ★ and marks `data-custom-view` on each `view-change` |
 | ✅ | G10 — the toolbar column is the default panel; Settings › Application › Classic filter panel puts the classic one back. Demos' classic-panel specs say `test.use({ classicPanel: true })` |
 | ✅ | G11 — the column's ⋮ holds only the page's folded buttons and Limit: no Suggest filters, no Refresh view |
 | ✅ | G12 — section spacing, text size and icon size: closer to the classic panel's. A field heading is the small step (12/16), caps and light, its icon the same size; the scopes are accordions as the classic's; a ⋮ in place of the ▾ |

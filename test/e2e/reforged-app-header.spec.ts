@@ -374,3 +374,205 @@ test('data-theme-mode picks the theme button, and notificationsAnchor is the bel
     light: ['moon', 'Switch to dark mode'], dark: ['sun', 'Switch to light mode'], bell: true,
   });
 });
+
+/* THE VIEW's own actions — ★, Save with its ▾, Refresh — are the HEADER's: they
+   never move, so they are not a toolbar's. Will, TODO 425 G9 */
+test('data-view-actions shows the View\'s own actions, and each fires its event', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement>('sherpa-app-header', undefined, {});
+    const shown = (sel: string) => (el.shadowRoot!.querySelector(sel) as HTMLElement).getBoundingClientRect().width > 0;
+    const before = shown('.view-actions');
+    el.setAttribute('data-view-actions', '');
+    await window.__settled();
+    const heard: string[] = [];
+    for (const ev of ['view-save', 'view-save-as', 'view-delete', 'data-refresh']) el.addEventListener(ev, () => heard.push(ev));
+    const press = async (sel: string) => {
+      (el.shadowRoot!.querySelector(sel)!.shadowRoot!.querySelector('button') as HTMLElement).click();
+      await window.__settled();
+    };
+    await press('.save');
+    await press('.refresh');
+    const menu = el.shadowRoot!.querySelector('.view-menu')!;
+    const deleteShown = () => getComputedStyle(menu.querySelector('.view-delete')!).display !== 'none';
+    const plain = deleteShown();
+    el.setAttribute('data-custom-view', '');
+    const own = deleteShown();
+    menu.querySelector<HTMLElement>('button[value="save-as"]')!.click();
+    menu.querySelector<HTMLElement>('button[value="delete"]')!.click();
+    await window.__settled();
+    return { before, after: shown('.view-actions'), heard, plain, own };
+  });
+  expect(r).toEqual({ before: false, after: true, heard: ['view-save', 'data-refresh', 'view-save-as', 'view-delete'], plain: false, own: true });
+});
+
+test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement>('sherpa-app-header', undefined, { 'data-view-actions': '' });
+
+    const detail: boolean[] = [];
+    el.addEventListener('view-favorite', (e) => detail.push((e as CustomEvent).detail.favourite));
+    const star = el.shadowRoot!.querySelector('.favourite') as HTMLElement;
+    const press = async () => {
+      (star.shadowRoot!.querySelector('button') as HTMLElement).click();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return {
+        on: el.hasAttribute('data-favourite'),
+        icon: star.getAttribute('data-icon-start'),
+        pressed: star.getAttribute('aria-pressed'),
+        // The name says what the NEXT press does. Will, 2026-09-26.
+        name: star.getAttribute('aria-label'),
+        // The DRAWING, not the name — TRAP T-favourite-star-swaps-its-glyph.
+        d: star.shadowRoot?.querySelector('svg path')?.getAttribute('d') ?? null,
+      };
+    };
+    return { first: await press(), second: await press(), detail };
+  });
+
+  // The GLYPH carries the state too (outline → solid), so it survives for anyone
+  // who cannot tell the brand purple from the default ink.
+  expect(r.first).toMatchObject({ on: true, icon: 'star-filled', pressed: 'true', name: 'Remove from Favorites' });
+  expect(r.second).toMatchObject({ on: false, icon: 'star', pressed: 'false', name: 'Add to Favorites' });
+  /* The PATH must differ. Asserting the name alone is what let the two states
+     resolve to one outline drawing for three months: the two weights were one
+     Font Awesome name, and the weight token was dropped on the way in. They are
+     two SEPARATE Figma drawings now — `star` and `star-filled`. */
+  expect(r.first.d).toBeTruthy();
+  expect(r.second.d).toBeTruthy();
+  expect(r.first.d).not.toBe(r.second.d);
+  expect(r.detail).toEqual([true, false]);
+});
+
+
+test('a favourited star takes the ACTIVE Style mode, face ring and ink', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement>('sherpa-app-header', undefined, { 'data-view-actions': '' });
+    const star = el.shadowRoot!.querySelector('.favourite') as HTMLElement & {
+      shadowRoot: ShadowRoot;
+    };
+    // WAIT OUT THE FADE, do not guess at it. The button transitions its
+    // background, border and colour over 120ms, so a fixed wait samples the
+    // middle of the animation under parallel load and reads an in-between
+    // colour — rgb(255, 254, 255) instead of white, which looks like the toggle
+    // failing to reverse rather than a test reading too early.
+    const settled = async () => {
+      const trigger = star.shadowRoot.querySelector('.trigger') as HTMLElement;
+      await Promise.all(
+        trigger.getAnimations().map((a) => a.finished.catch(() => undefined)),
+      );
+    };
+    const read = () => {
+      const t = getComputedStyle(star.shadowRoot.querySelector('.trigger')!);
+      return {
+        status: star.dataset['status'] ?? null,
+        bg: t.backgroundColor,
+        border: t.borderTopColor,
+        ink: getComputedStyle(star.shadowRoot.querySelector('i')!).color,
+      };
+    };
+    await settled();
+    const off = read();
+    (star.shadowRoot.querySelector('button') as HTMLElement).click();
+    await settled();
+    const on = read();
+
+    // READ WHILE IT IS ON. These properties only exist in the favourited state,
+    // so reading them after the second click returns empty strings — which is
+    // what the first version of this test did, and it looked like the fix had
+    // not worked at all.
+    //
+    // The star's OWN --_status-* values are the exact chain its trigger paints
+    // from, so the comparison is like-for-like. Not a hand-converted hex (the
+    // browser rounds #F2DFFF to 224, not the arithmetic 223) and not a probe
+    // elsewhere in the tree (a light-DOM one resolves through tokens.css's
+    // [data-status] block, a different chain).
+    const sc = getComputedStyle(star);
+    const expected = {
+      surface: sc.getPropertyValue('--_status-surface').trim(),
+      border: sc.getPropertyValue('--_status-border').trim(),
+      text: sc.getPropertyValue('--_status-text').trim(),
+    };
+
+    (star.shadowRoot.querySelector('button') as HTMLElement).click();
+    await settled();
+
+    return { off, on, backOff: read(), expected };
+  });
+
+  // Each resolved to a real colour, so the assertions below mean something — an
+  // EMPTY value (the properties never reaching the button) is exactly the bug
+  // this test exists for, and would otherwise pass silently.
+  // Minified CSS may shorten a hex to 3 digits (#fff).
+  expect(r.expected.surface).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  expect(r.expected.border).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  expect(r.expected.text).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+
+  // ACTIVE is a Style MODE in the design, not an invented colour. The pin
+  // reaches the star inside the header's shadow root through the adopted
+  // style-modes sheet — TRAP T-tokens-css-never-reaches-shadow.
+  expect(r.on.status).toBe('active');
+
+  // The ring and the ink PAINT differently from the default look. The face is
+  // not asserted as changed: since 2026-09-24 the active mode's surface IS the
+  // default surface in Figma. Not fixed triples either — the exact rgb depends
+  // on the browser's rounding of the token hex, which is not what this tests.
+  expect(r.on.border).not.toBe(r.off.border);
+  expect(r.on.ink).not.toBe(r.off.ink);
+
+  // …and they are the ACTIVE tokens, not some other colour: each painted value
+  // carries the same leading channel as the property it came from.
+  const firstChannel = (v: string): number => {
+    const hex = /^#(..)/.exec(v);
+    return hex ? parseInt(hex[1]!, 16) : Number(/(\d+)/.exec(v)?.[1] ?? -1);
+  };
+  expect(firstChannel(r.on.bg)).toBe(firstChannel(r.expected.surface));
+  expect(firstChannel(r.on.border)).toBe(firstChannel(r.expected.border));
+  expect(firstChannel(r.on.ink)).toBe(firstChannel(r.expected.text));
+
+  // Off is the plain default look, and the toggle is REVERSIBLE — clicking again
+  // returns every one of the three to exactly what it was.
+  expect(r.off.status).toBe(null);
+  expect(r.backOff.status).toBe(null);
+  expect(r.backOff.bg).toBe(r.off.bg);
+  expect(r.backOff.border).toBe(r.off.border);
+  expect(r.backOff.ink).toBe(r.off.ink);
+});
+
+
+test('the view group is snapped: outer corners round, inner ones square', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement>('sherpa-app-header', undefined, { 'data-view-actions': '' });
+    const kids = [...el.shadowRoot!.querySelector('.view-group')!.children] as HTMLElement[];
+    return kids.map((k) => {
+      const cs = getComputedStyle(k);
+      const b = k.getBoundingClientRect();
+      return {
+        act: k.className,
+        tl: parseFloat(cs.borderStartStartRadius),
+        tr: parseFloat(cs.borderStartEndRadius),
+        left: b.left,
+        right: b.right,
+      };
+    });
+  });
+
+  // Figma's "Frame 1" joins the three at `structure-space/snapped` (0) so they sit
+  // flush and read as ONE control. The rounding is set in the toolbar's own CSS, not
+  // by [data-snap]: that selector lives in tokens.css, which is loaded into the
+  // DOCUMENT and is deliberately not in sharedStyles, so it never reaches a
+  // button inside this shadow root.
+  expect(r.map((k) => k.act)).toEqual(['favourite', 'save', 'view-more']);
+  expect(r[0]!.tl).toBeGreaterThan(0); // leading edge stays round
+  expect(r[0]!.tr).toBe(0);
+  expect(r[1]!.tl).toBe(0); // the middle is square all round
+  expect(r[1]!.tr).toBe(0);
+  expect(r[2]!.tl).toBe(0);
+  expect(r[2]!.tr).toBeGreaterThan(0); // trailing edge stays round
+
+  // …and they actually TOUCH, rather than merely looking square. The snap gap is
+  // `--sherpa-structure-space-snapped`, which resolves to space/none = 0, so each
+  // button starts exactly where the one before it ended — no gap, no overlap.
+  // Compare with a tolerance, not `===`: sub-pixel layout makes the shared edge
+  // tie only approximately.
+  expect(r[1]!.left).toBeCloseTo(r[0]!.right, 2);
+  expect(r[2]!.left).toBeCloseTo(r[1]!.right, 2);
+});

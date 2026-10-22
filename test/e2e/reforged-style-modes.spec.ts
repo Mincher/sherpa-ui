@@ -30,14 +30,15 @@ test('an on chip repaints when its Style mode token changes', async ({ page }) =
   expect(r.before.bg).not.toBe('rgb(1, 2, 3)');
 });
 
-test('a pin reaches inside a shadow root: a toolbar that starts favourited lights its star', async ({ page }) => {
+test('a pin reaches inside a shadow root: a header that starts favourited lights its star', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const bar = document.createElement('sherpa-quick-filter-toolbar') as SherpaEl;
-    bar.setAttribute('data-type', 'view');
+    await import('/dist/components/sherpa-app-header/sherpa-app-header.js');
+    const bar = document.createElement('sherpa-app-header') as SherpaEl;
+    bar.setAttribute('data-view-actions', '');
     bar.setAttribute('data-favourite', '');
     document.getElementById('root')!.appendChild(bar);
     await bar.rendered;
-    const star = bar.shadowRoot!.querySelector<SherpaEl>('[data-act="favourite"]')!;
+    const star = bar.shadowRoot!.querySelector<SherpaEl>('.favourite')!;
     await star.rendered;
     const trigger = star.shadowRoot!.querySelector<HTMLElement>('.trigger')!;
     trigger.style.transition = 'none';
@@ -48,7 +49,7 @@ test('a pin reaches inside a shadow root: a toolbar that starts favourited light
     probe.remove();
     return { status: star.getAttribute('data-status'), bg: getComputedStyle(trigger).backgroundColor, want };
   });
-  // The star sits in the toolbar's shadow root, where tokens.css never reaches.
+  // The star sits in the header's shadow root, where tokens.css never reaches.
   // TRAP T-tokens-css-never-reaches-shadow
   expect(r.status).toBe('active');
   expect(r.bg).toBe(r.want);

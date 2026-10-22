@@ -4,11 +4,12 @@
  * CSS owns layout, badge and animation. This keeps title / icon / count in
  * sync and fires one event per action.
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 // Every action is a composed sherpa-button. TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-badge/sherpa-badge.js';
+import '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilterToolbar } from '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 
 interface Crumb { label: string; href?: string }
@@ -34,6 +35,9 @@ const ACTIONS = [
   ['.menu', 'menu-click'],
   // A phone's nav menu — the SHELL opens it. TRAP T-the-nav-is-a-menu-on-a-phone
   ['.nav-menu', 'nav-menu-request'],
+  // The View's own. Will, TODO 425 G9
+  ['.save', 'view-save'],
+  ['.refresh', 'data-refresh'],
 ] as const;
 
 export class SherpaAppHeader extends SherpaElement {
@@ -62,6 +66,13 @@ export class SherpaAppHeader extends SherpaElement {
     'data-notifications-open': { type: 'boolean', kind: 'style' },
     'data-icon': { type: 'string', kind: 'content', to: '.context-icon', as: 'icon' },
     'data-notifications': { type: 'number', kind: 'content' },
+    // The View's own actions: ★, Save, Refresh. Will, TODO 425 G9
+    'data-view-actions': { type: 'boolean', kind: 'visibility' },
+    // A host that owns the favourites lights the star. TRAP T-the-star-reports-it-does-not-decide
+    'data-favourite': { type: 'boolean', kind: 'behaviour' },
+    'data-locked': DATA_PROPS['data-locked'],
+    // Delete view only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
+    'data-custom-view': { type: 'boolean', kind: 'visibility' },
   } as const;
 
   override onRender(): void {
@@ -70,7 +81,27 @@ export class SherpaAppHeader extends SherpaElement {
       // `button-click`, not the native `click`.
       this.$(sel)?.addEventListener('button-click', () => this.emit(event));
     }
+    this.$('.favourite')?.addEventListener('button-click', this.#onStar);
+    this.$('.view-menu')?.addEventListener('menu-select', this.#onViewMenu);
   }
+
+  /**
+   * The star REPORTS the intent; `data-favourite` is the answer, IN. Locked,
+   * the header never lights it — the host's favourites list answers.
+   * TRAP T-the-star-reports-it-does-not-decide
+   */
+  #onStar = (): void => {
+    const on = !this.hasAttribute('data-favourite');
+    if (!this.hasAttribute('data-locked')) this.set('data-favourite', on);
+    this.emit('view-favorite', { favourite: on });
+  };
+
+  /** Save view as, or Delete view. */
+  #onViewMenu = (event: Event): void => {
+    const value = (event as CustomEvent).detail?.value;
+    if (value === 'save-as') this.emit('view-save-as');
+    else if (value === 'delete') this.emit('view-delete');
+  };
 
   override onChange(): void {
     this.#sync();
