@@ -82,9 +82,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
-| ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
+| ❓ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
-| ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
+| ❓ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
 | ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
@@ -2140,6 +2140,22 @@ otherwise)."*
 rows would be the whole fetch again); and the definition's key for "start
 otherwise".
 
+**Plan, 2026-10-22 (after 406, every View pick waits for one Apply):**
+- A reading says "none, on purpose": `{ picked: [], none: true }`. It is an
+  answer (`readingAnswered`), and its clause is `[field, 'in', []]` — no rows.
+  Unticking the last value, or Select All off, sends it in a fetching field; an
+  ordinary field keeps today's rule (nothing ticked is no filter).
+- At open, a fetching list field with no answer takes its FIRST value, ON — the
+  provider, once its values are read. A Reset puts that back.
+- ❓ **Q1 — which fields.** A (my pick): every LIST field in the View (the
+  scope that waits), plus a remote store's list fields elsewhere. B: only a
+  `fetch: "server"` field and a remote store's.
+- ❓ **Q2 — the opt-out.** A (my pick): a field key, `"start": "all"` (open with
+  no filter, as today); `"first"` is the default. B: one key on the scope, for
+  all its fields.
+- A fetching chip switched OFF asks for all rows, as any other does (my pick):
+  off is the reader's choice, and Apply still gates it.
+
 ### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
 
 Will, 2026-10-22: *"Sticky metric items eventually scroll off screen (out of the
@@ -2215,6 +2231,34 @@ lists and so on! Plan this in for investigation!"*
 
 Then: a plan with the class, the attribute, the sheet and the first users
 (layout grid, data grid, menu list, nav, a form's scroll area).
+
+**Found, 2026-10-22** (measured in Playwright's engines; a prototype over cards
+with their own fill, shot in each):
+- `container-type: scroll-state`: Chromium 153 only. Firefox 155 and WebKit 26.6
+  lack it (as on 10-01).
+- Scroll-driven animations (`animation-timeline: scroll()`): Chromium AND
+  WebKit 26.6. Firefox lacks both: no shadow there, and the page is fine.
+- The shadow must be drawn ABOVE the content — an inset `box-shadow` or a
+  `background-attachment: local` shadow is painted under it, so a card hides it.
+  A sticky `::before` (top) and `::after` (bottom) of the scroll box, 12px of
+  gradient each, with a negative margin so they take no room, `z-index: 1`,
+  `pointer-events: none`. A pseudo-element can read its own box's scroll.
+- Scroll-driven: the top shadow fades in over the first 16px scrolled
+  (`animation-range: 0 16px`), the bottom one out over the last 16px. No
+  overflow, no timeline: neither shows.
+- Two pseudo-elements give the two vertical edges; left and right (a wide grid)
+  would need another element — later, if asked.
+
+❓ **For Will — the mechanism.** A (my pick): scroll-driven animations —
+Chromium and WebKit, so iOS too (mobile is a target). B: `scroll-state()`, as
+asked — Chromium only.
+
+**Then the build:** `data-scroll-shadow` on any Sherpa element (off by default);
+each component marks its scroll box with one shared class
+(`.sherpa-scroll-shadow`), and one shared rule draws it while the host has the
+attribute. First users: the layout grid (in place of the app header's drop
+shadow), the data grid's body, a menu's list, the nav list, a form's scroll
+area — each checked for a `::before`/`::after` it already uses.
 
 ### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
 
