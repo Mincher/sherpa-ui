@@ -10393,6 +10393,19 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-template-is-parsed-once
+
+**Each template body is parsed ONCE, into a `<template>`; each element stamps a
+deep clone of it.** TODO 350 (the lean-code audit, E1). Every element used to
+set its shadow root's `innerHTML` from the body's string, so the HTML parser ran
+again for every button, chip and cell on the page. A clone of parsed nodes costs
+far less. The same pass notes whether the body holds a `data-swap-on` or a
+`data-icon` at all, so a tree with neither is not searched for them on each
+stamp. A clone, not `importNode`: a nested custom element upgrades when it is
+inserted, as it did from `innerHTML`. A live reload clears the parsed bodies.
+
+- Site: `src/core/ui/templater.ts`
+
 ### T-a-page-loads-the-bundle
 
 **A page with no bundler loads `dist/bundle/`: Sherpa joined into a few files.**
