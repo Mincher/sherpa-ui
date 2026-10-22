@@ -57,7 +57,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zc | 373 | UX — hover a grid cell: an icon-only filter chip at its right adds that cell's value to the filter, and a second press takes it off (Will) | filters |
 | ✅ | 0zd | 374 | ASK — a cell chip on a field the VIEW holds (Customer, Region in Demos): Will — show it INACTIVE on hover, as the heading is | filters |
 | ✅ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
-| ⬜ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
+| ✅ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
 | ⬜ | 0zi | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
@@ -1722,7 +1722,7 @@ Filters (Add) list goes; the ⋮ menu's other rows (Limit, Hide unmatched, the
 host's own); the bar and the panel alike; and 376's Hide button and 382's
 active rule inside it. After 366's toolbar commits (20–22).
 
-### `[ ]` ⬜ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
+### `[x]` ✅ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
 
 Will, 2026-10-20: *"Add an icon only 'Hide invalid values' button to the filter
 toolbar, and filter panel, overflow menus. This will toggle the visibility of
@@ -1736,6 +1736,17 @@ values", pressed while on. Settle at build time: where it sits in the ⋮ menu,
 and its icon. **Will, 2026-10-20:** *"'Hide unmatching filters' should be
 inactive, not hidden, when 'Limit matching filters' is not selected."* So it is
 always there, and inactive while Limit is off.
+
+**✅ Done 2026-10-22.** The toggle is the ⋮ menu's own markup
+(`sherpa-filter-more.html`): an icon-only `sherpa-button`, icon `hide`, in the
+menu's HEADER, at its end, so it sits above the rows and the menu stays open on
+a press. Pressed (`aria-pressed`, the `active` Style mode) follows
+`data-hide-unmatched=on` by `data-swap-on`; it is `disabled` while Limit is off
+(`syncHide`), and gone on a page with no Limit (CSS). A press ASKS
+`hide-unmatched-change` (`toggleHide`); the old tick row and its half of
+`askSwitches` went. Bar and panel alike. Tests: the panel's two ⋮ cases and
+Demos `reforged-limit-options` (Chromium). **For Will to look at by eye:** Demos
+Records › ⋮ — the icon at the menu's top right.
 
 ### `[x]` ✅ 375 — FILTERS: a range is an Advanced condition
 

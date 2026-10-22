@@ -28,3 +28,8 @@
   border: none;
   border-block-start: 1px solid var(--sherpa-style-border-base, #b3b3c3);
 }
+
+/* Hide invalid values goes with Limit: a page without Limit has neither. TODO 376 */
+:host(:not([data-limit-options])) .more-hide {
+  display: none;
+}

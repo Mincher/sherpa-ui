@@ -838,7 +838,7 @@
     {
       "$type": "event",
       "name": "hide-unmatched-change",
-      "description": "The ⋮ menu's \"Hide unmatching filters\", while Limit is on.",
+      "description": "The ⋮ menu's \"Hide invalid values\" toggle, while Limit is on.",
       "bubbles": true,
       "composed": true,
       "detail": {

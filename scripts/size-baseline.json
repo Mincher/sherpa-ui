@@ -23,7 +23,7 @@
   "src/components/sherpa-dialog/sherpa-dialog.ts": 166,
   "src/components/sherpa-empty-state/sherpa-empty-state.ts": 24,
   "src/components/sherpa-file-upload/sherpa-file-upload.ts": 213,
-  "src/components/sherpa-filter-panel/sherpa-filter-panel.ts": 1812,
+  "src/components/sherpa-filter-panel/sherpa-filter-panel.ts": 1822,
   "src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts": 348,
   "src/components/sherpa-group/sherpa-group.ts": 43,
   "src/components/sherpa-input-text/sherpa-input-text.ts": 520,
@@ -54,7 +54,7 @@
   "src/components/sherpa-provider/provider-mode.ts": 170,
   "src/components/sherpa-provider/provider-page.ts": 559,
   "src/components/sherpa-provider/sherpa-provider.ts": 929,
-  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 1957,
+  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 1965,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.ts": 1023,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.ts": 227,
   "src/components/sherpa-router/sherpa-router.ts": 110,
@@ -352,7 +352,7 @@
   "src/core/ui/icons/wireless-router.ts": 5,
   "src/core/ui/icons/workstation.ts": 5,
   "src/core/ui/mark-text.ts": 81,
-  "src/core/ui/more-menu.ts": 155,
+  "src/core/ui/more-menu.ts": 158,
   "src/core/ui/radio-group.ts": 21,
   "src/core/ui/render-icon.ts": 129,
   "src/core/ui/roving-focus.ts": 131,
@@ -445,7 +445,7 @@
   "src/core/sherpa-chart-frame.css": 73,
   "src/core/sherpa-chart-segments.css": 45,
   "src/core/sherpa-container-regions.css": 38,
-  "src/core/sherpa-filter-more.css": 31,
+  "src/core/sherpa-filter-more.css": 36,
   "src/components/sherpa-accordion/sherpa-accordion.html": 43,
   "src/components/sherpa-app-header/sherpa-app-header.html": 129,
   "src/components/sherpa-app-shell/sherpa-app-shell.html": 68,
@@ -513,5 +513,5 @@
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 30,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 43,
   "src/core/sherpa-filter-menu.html": 8,
-  "src/core/sherpa-filter-more.html": 21
+  "src/core/sherpa-filter-more.html": 27
 }

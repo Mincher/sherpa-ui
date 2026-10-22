@@ -119,7 +119,7 @@ Each one bubbles.
 | `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set on. |
 | `view-reset` |  | Reset all to default: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
-| `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide unmatching filters", while Limit is on. |
+| `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid values" toggle, while Limit is on. |
 
 ## Slots
 

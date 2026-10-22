@@ -16,7 +16,7 @@ import {
   MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncResets,
+  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide, syncResets, toggleHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
@@ -305,6 +305,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
     this.$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
+    this.$('.more-hide')?.addEventListener('button-click', this.#onHide);
     this.$('.filters-switch')?.addEventListener('change', this.#onSwitch);
     // CAPTURE — see #onOrganiseChange.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
@@ -1153,6 +1154,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
       for (const chip of this.#chips()) this.#markPresent(chip);
       this.$('.add-btn sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
+      syncHide(this, this.root);
     }
     this.#syncArrangement();
     syncResets(this, this.root, '.act[data-act="clear"]');
@@ -1636,6 +1638,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => askSwitches(this, event, (name, on) => this.emit(name, { on }));
+
+  /** Hide invalid values, pressed: the menu stays open. TODO 376 */
+  #onHide = (event: Event): void => {
+    event.stopPropagation();
+    toggleHide(this, (name, on) => this.emit(name, { on }));
+  };
 
   /** A ⋮ row was chosen: do what its folded button does. */
   #onMore = (event: Event): void => this.#act(pickMore(this, this.root, event));

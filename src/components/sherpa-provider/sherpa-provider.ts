@@ -141,7 +141,7 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('limit-options-change', (event) => {
       this.limitOptions = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
     });
-    // …and its Hide unmatching filters. Will, TODO 205.
+    // …and its Hide invalid values. Will, TODOs 205 and 376.
     this.addEventListener('hide-unmatched-change', (event) => {
       this.hideUnmatched = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
     });
