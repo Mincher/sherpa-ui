@@ -3,6 +3,7 @@
  * that switch them, and a narrow window. TRAP T-the-provider-owns-the-panel-mode
  *
  * Map:
+ * - isColumn — Is it drawn over several scopes — the panel area's occupant?
  * - ModeHost — What the mode asks of its provider.
  * - ProviderMode — The panel or the bars, for one provider.
  * - .mode — What the panel and bars show now.
@@ -12,6 +13,13 @@
  * - .closed — Every close reports; a reader's is a choice worth keeping.
  * - .room — The shell lost room for the panel, or has it again.
  */
+
+/** Is it drawn over SEVERAL scopes — the panel area's occupant: a panel, or a
+ *  toolbar turned to portrait over a scope list? TODO 425 */
+export function isColumn(el: Element): boolean {
+  if (!('drawScopes' in el)) return false;
+  return !('drawScope' in el) || (el.getAttribute('data-scope') ?? '').trim().split(/\s+/).length > 1;
+}
 
 /** What the mode asks of its provider. */
 export interface ModeHost {
@@ -76,8 +84,8 @@ export class ProviderMode {
 
   /** A bar or a panel that joins takes the mode — a page loaded later too. */
   join(el: Element): void {
-    if ('drawScopes' in el && this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
-    else if (!('drawScopes' in el)) this.#stepBack(el);
+    if (isColumn(el) && this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
+    else if (!isColumn(el)) this.#stepBack(el);
     this.#giveToggles();
   }
 
@@ -85,7 +93,7 @@ export class ProviderMode {
    *  too narrow is not. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
   readonly closed = (event: Event): void => {
     this.#mode = 'toolbars';
-    for (const bar of this.#host.bars()) this.#stepBack(bar);
+    for (const bar of this.#strips()) this.#stepBack(bar);
     this.#giveToggles();
     // A narrow window, or a page with no filters, is not a choice.
     const reason = (event as CustomEvent<{ reason?: string }>).detail?.reason;
@@ -111,7 +119,7 @@ export class ProviderMode {
     }
     // With no room the panel stays shut, so follow what it actually did.
     this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('open')) ? 'panel' : 'toolbars';
-    for (const bar of this.#host.bars()) this.#stepBack(bar);
+    for (const bar of this.#strips()) this.#stepBack(bar);
     this.#giveToggles();
   }
 
@@ -124,7 +132,7 @@ export class ProviderMode {
    */
   #giveToggles(): void {
     const panels = this.#host.panels();
-    for (const bar of this.#host.bars()) {
+    for (const bar of this.#strips()) {
       let toggle = this.#toggles.get(bar);
       if (!panels.length) {
         toggle?.remove();
@@ -155,8 +163,12 @@ export class ProviderMode {
     return button;
   }
 
-  /** A bar steps back while a panel answers for it — not one turned to portrait,
-   *  which IS the panel's column. TRAP T-panel-mode-hides-what-the-panel-answers */
+  /** The bars the mode switches: not a column's sections, in portrait. TODO 425 */
+  #strips(): Element[] {
+    return this.#host.bars().filter((bar) => (bar as HTMLElement).dataset['orientation'] !== 'portrait');
+  }
+
+  /** A bar steps back while a panel answers for it. TRAP T-panel-mode-hides-what-the-panel-answers */
   #stepBack(bar: Element): void {
     bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
   }

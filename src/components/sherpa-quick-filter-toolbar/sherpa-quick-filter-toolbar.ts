@@ -1,5 +1,6 @@
 /**
- * sherpa-quick-filter-toolbar — the chip row: folds what does not fit, reports what the reader did.
+ * sherpa-quick-filter-toolbar — the filter toolbar: a chip row that folds what does not fit, or,
+ * in portrait, the panel's column. Reports what the reader did. TODO 425
  *
  * TRAP T-actions-were-a-slot
  *
@@ -29,9 +30,10 @@ import {
   modeOf, readingRows,
   type FieldReading,
 } from '../../core/data/filter-state.js';
-import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
+import type { FilterSet, OrganiseColumn, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
+import { ToolbarColumn } from './toolbar-column.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -44,6 +46,11 @@ import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
+
+/** A portrait scope's icon, for what it narrows. TRAP T-a-scope-says-what-it-shows */
+const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
+  view: 'monitor', chart: 'reports', grid: 'table-columns', form: 'file-lines', list: 'list',
+};
 
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
@@ -66,11 +73,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
-    /* LANDSCAPE, a strip; PORTRAIT, the panel's column: actions on top, then
-       each list field as a SECTION of value chips. Nothing folds. TODO 425 */
-    'data-orientation': { type: 'enum', kind: 'behaviour', values: ['landscape', 'portrait'] },
+    /* LANDSCAPE, a strip; PORTRAIT, the panel's column: the scope an accordion,
+       each list field a SECTION of value chips. Nothing folds. TODO 425 */
+    'data-orientation': { type: 'enum', kind: 'template', values: ['landscape', 'portrait'] },
+    // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
+    'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
-    'data-heading': { type: 'string', kind: 'content', to: '.scope-title' },
+    'data-heading': { type: 'string', kind: 'content', to: '.scope', as: 'attr' },
     /* The host offers "Limit to matching filters", on or off. Will, TODO 178.
        TRAP T-the-more-menu-holds-what-folded */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
@@ -118,6 +127,62 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
+
+  static override variantAttrs = ['data-orientation', 'data-scope'];
+
+  static override observed = ['open'];
+
+  /** Portrait over one scope, an accordion; over several, the column. TODO 425 */
+  protected override get templateId(): string {
+    if (this.dataset['orientation'] !== 'portrait') return 'default';
+    return (this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1 ? 'column' : 'portrait';
+  }
+
+  /** The column it is, over several scopes. */
+  readonly #column = new ToolbarColumn({
+    el: this,
+    root: () => this.root,
+    clone: (selector) => this.clone(selector),
+    emit: (name, detail, options) => { this.emit(name, detail, options); },
+    toggleState: (name, on) => this.toggleState(name, on),
+  });
+  /** Stamped as a column. */
+  #columned = false;
+
+  /** drawScopes(scopes) — a column's scopes, from its source: a portrait
+   *  toolbar per scope, under the one header. TODO 425 */
+  drawScopes(scopes: ScopeDescription[]): void {
+    this.#column.draw(scopes);
+  }
+
+  /** A column is showing. */
+  get open(): boolean {
+    return this.hasAttribute('open');
+  }
+  set open(value: boolean) {
+    if (value) this.show();
+    else this.hide();
+  }
+
+  show(): void {
+    this.toggleAttribute('open', true);
+  }
+
+  /** EVERY close reports, and says why. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
+  hide(reason: 'reader' | 'width' | 'page' = 'reader'): void {
+    if (!this.hasAttribute('open')) return;
+    this.removeAttribute('open');
+    this.emit('filter-panel-close', { reason });
+  }
+
+  close(reason: 'reader' | 'width' | 'page' = 'reader'): void {
+    this.hide(reason);
+  }
+
+  toggle(): void {
+    if (this.hasAttribute('open')) this.hide();
+    else this.show();
+  }
 
   /** The filter defs this bar holds, in order. */
   #filters: FilterDef[] = [];
@@ -333,13 +398,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   override onRender(): void {
+    /* A COLUMN hears only its header: its sections are toolbars of their own,
+       whose events stop at this host. TODO 425 */
+    this.#columned = this.templateId === 'column';
+    this.toggleState('column', this.#columned);
+    if (this.#columned) return this.#column.wire();
     // Left and Right move between the bar's controls. TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
     const bar = this.$('.bar');
     if (bar) toolbarKeys(bar);
-    // PORTRAIT: the heading shuts the section; the lead bar's search finds across its peers. TODO 425
-    this.$('.scope-toggle')?.addEventListener('click', this.#onScopeToggle);
-    for (const type of ['input', 'change']) this.$('.find')?.addEventListener(type, this.#onFind);
-    this.#syncLead();
+    // PORTRAIT: the accordion wears what its scope narrows. TODO 425
+    this.#drawIcon();
     this.addEventListener('quick-filter-click', this.#onChipClick);
     // Delegated: every control fires the same button-click; data-act says which.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
@@ -659,32 +727,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     tip.dataset['text'] = answered.map((one) => `${one.label} - ${countSaid(one.n, ['match', 'matches']).label}`).join('\n');
   }
 
-  /** The heading was pressed: the section shuts, or opens. */
-  #onScopeToggle = (): void => {
-    this.#shut = !this.#shut;
-    this.toggleState('shut', this.#shut);
-    this.$('.scope-toggle')?.setAttribute('aria-expanded', String(!this.#shut));
-    this.#syncScopeBadge();
-  };
-  /** A portrait section is shut. */
-  #shut = false;
-
-  /** The FIRST portrait bar among its siblings leads: it carries the one search. TODO 425 */
-  #syncLead(): void {
-    this.toggleState('lead', this.dataset['orientation'] === 'portrait' && this.#peers()[0] === this);
+  /** nameScope(scope) — its source names its scope: a portrait bar's heading,
+   *  and an icon for what it narrows. TODO 425 */
+  nameScope(scope: { label: string; shows?: ScopeShows | undefined }): void {
+    if (scope.label) this.set('data-heading', scope.label);
+    this.#shows = scope.shows;
+    this.#drawIcon();
   }
 
-  /** The portrait bars beside this one, itself among them, in the page's order. */
-  #peers(): SherpaQuickFilterToolbar[] {
-    return [...(this.parentElement?.children ?? [])].filter((el): el is SherpaQuickFilterToolbar =>
-      el.localName === this.localName && (el as HTMLElement).dataset['orientation'] === 'portrait');
+  /** What its scope narrows. */
+  #shows: ScopeShows | undefined;
+  /** …as the portrait accordion's icon. */
+  #drawIcon(): void {
+    const icon = this.#shows ? SHOWS_ICON[this.#shows] : undefined;
+    const box = this.$('.scope');
+    if (icon) box?.setAttribute('data-icon', icon);
+    else box?.removeAttribute('data-icon');
   }
-
-  /** The lead bar's search was typed in: every portrait bar beside it finds. */
-  #onFind = (): void => {
-    const text = this.$<HTMLInputElement>('.find')?.value ?? '';
-    for (const bar of this.#peers()) bar.search(text);
-  };
 
   /**
    * search(text) — a portrait bar shows only the fields whose name, or one of
@@ -711,7 +770,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * field leave; a chip's menu greys the rest. SILENT. A field not named is
    * not limited. TRAP T-a-ruled-out-value-is-greyed
    */
-  drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
+  drawPresent(present: Readonly<Record<string, readonly string[]>>, scope?: string): void {
+    if (this.#columned) return scope ? this.#column.present(present, scope) : undefined;
     this.#present = present;
     for (const chip of this.#chips()) this.#markPresent(chip);
     // The Add list is drawn again only when a field's being spent moved.
@@ -738,6 +798,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-saved-filters-are-every-scope
    */
   set savedSets(sets: readonly SavedSet[]) {
+    this.#column.saved(sets);
     this.#saved.set(sets);
     this.#renderAvailable();
   }
@@ -785,6 +846,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
   drawReading(field: string, reading: FieldReading): void {
+    // A column's sections are told their own. TODO 425
+    if (this.#columned) return;
     const id = this.#idOf(field);
     if (this.superseded.includes(id)) return;
     /* A chip just ADDED — a raised field's — stamps its menu a moment later,
@@ -1261,7 +1324,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-orientation') {
-      this.#syncLead();
       this.#syncLayout();
       this.#drawValueResults();
       this.#reflow();
@@ -1467,8 +1529,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   async drawScope(scope: ScopeDescription, live?: () => ScopeDescription): Promise<void> {
     this.#scoped = true;
-    // The scope's name: a portrait bar's heading. TODO 425
-    this.set('data-heading', scope.label);
+    this.nameScope(scope);
     // A list this bar kept before a source drew it goes to the source, below.
     const handover = this.#switchedOff;
     this.#switchedOff = null;

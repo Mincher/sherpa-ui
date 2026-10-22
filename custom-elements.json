@@ -3986,143 +3986,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "dist/components/sherpa-filter-stack/sherpa-filter-stack.js",
-      "declarations": [
-        {
-          "kind": "class",
-          "name": "SherpaFilterStack",
-          "tagName": "sherpa-filter-stack",
-          "customElement": true,
-          "description": "the panel area's filters: ONE filter toolbar per scope, each turned to PORTRAIT. The toolbars are the filters; this only stacks them, and opens and shuts as the panel area's occupant. TODO 425",
-          "attributes": [
-            {
-              "name": "data-saveable",
-              "description": "its component scopes' toolbars save filters",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-scope",
-              "description": "the scopes it asks for, space-separated, as a panel does",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "name": "open",
-              "description": "showing . Every close reports, and says why.",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            }
-          ],
-          "members": [
-            {
-              "kind": "field",
-              "name": "open",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "method",
-              "name": "drawScopes",
-              "parameters": [
-                {
-                  "name": "scopes",
-                  "type": {
-                    "text": "readonly ScopeDescription[]"
-                  }
-                }
-              ],
-              "description": "drawScopes(scopes) — one portrait toolbar per scope, in order; each asks for its own scope, as any toolbar does. A scope gone takes its toolbar; one already here is not moved, so it keeps what the reader did. The FIRST takes the page's mode button."
-            },
-            {
-              "kind": "method",
-              "name": "show",
-              "parameters": []
-            },
-            {
-              "kind": "method",
-              "name": "hide",
-              "parameters": [
-                {
-                  "name": "reason",
-                  "type": {
-                    "text": "'reader' | 'width' | 'page'"
-                  },
-                  "optional": true
-                }
-              ],
-              "description": "EVERY close reports, and says why."
-            },
-            {
-              "kind": "method",
-              "name": "close",
-              "parameters": [
-                {
-                  "name": "reason",
-                  "type": {
-                    "text": "'reader' | 'width' | 'page'"
-                  },
-                  "optional": true
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "toggle",
-              "parameters": []
-            }
-          ],
-          "events": [
-            {
-              "name": "filter-panel-close",
-              "description": "It shut, and why: the reader, the width or the page.",
-              "type": {
-                "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
-              }
-            }
-          ],
-          "slots": [
-            {
-              "name": "actions",
-              "description": "the page's mode button: shown in the FIRST toolbar's actions (accepts: control)"
-            }
-          ],
-          "cssParts": [
-            {
-              "name": "bars"
-            },
-            {
-              "name": "box"
-            }
-          ]
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "SherpaFilterStack",
-          "declaration": {
-            "name": "SherpaFilterStack",
-            "module": "dist/components/sherpa-filter-stack/sherpa-filter-stack.js"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "sherpa-filter-stack",
-          "declaration": {
-            "name": "SherpaFilterStack",
-            "module": "dist/components/sherpa-filter-stack/sherpa-filter-stack.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "dist/components/sherpa-gauge-chart/sherpa-gauge-chart.js",
       "declarations": [
         {
@@ -8351,7 +8214,7 @@
             },
             {
               "name": "data-orientation",
-              "description": "landscape | portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425",
+              "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — Save <name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425",
               "type": {
                 "text": "'landscape' | 'portrait'"
               },
@@ -8434,9 +8297,23 @@
               "type": {
                 "text": "boolean"
               }
+            },
+            {
+              "name": "open",
+              "description": "a column is showing. A host writes it; every close reports `filter-panel-close`, and says why.",
+              "type": {
+                "text": "string"
+              }
             }
           ],
           "members": [
+            {
+              "kind": "field",
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              }
+            },
             {
               "kind": "field",
               "name": "active",
@@ -8524,6 +8401,56 @@
             },
             {
               "kind": "method",
+              "name": "drawScopes",
+              "parameters": [
+                {
+                  "name": "scopes",
+                  "type": {
+                    "text": "ScopeDescription[]"
+                  }
+                }
+              ],
+              "description": "drawScopes(scopes) — a column's scopes, from its source: a portrait toolbar per scope, under the one header. TODO 425"
+            },
+            {
+              "kind": "method",
+              "name": "show",
+              "parameters": []
+            },
+            {
+              "kind": "method",
+              "name": "hide",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "EVERY close reports, and says why."
+            },
+            {
+              "kind": "method",
+              "name": "close",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "parameters": []
+            },
+            {
+              "kind": "method",
               "name": "setChipValues",
               "parameters": [
                 {
@@ -8601,6 +8528,19 @@
             },
             {
               "kind": "method",
+              "name": "nameScope",
+              "parameters": [
+                {
+                  "name": "scope",
+                  "type": {
+                    "text": "{ label: string; shows?: ScopeShows | undefined }"
+                  }
+                }
+              ],
+              "description": "nameScope(scope) — its source names its scope: a portrait bar's heading, and an icon for what it narrows. TODO 425"
+            },
+            {
+              "kind": "method",
               "name": "search",
               "parameters": [
                 {
@@ -8621,6 +8561,13 @@
                   "type": {
                     "text": "Readonly<Record<string, readonly string[]>>"
                   }
+                },
+                {
+                  "name": "scope",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
                 }
               ],
               "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
@@ -8941,6 +8888,13 @@
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }
+            },
+            {
+              "name": "filter-panel-close",
+              "description": "A column shut, and why: the reader, the width or the page.",
+              "type": {
+                "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
+              }
             }
           ],
           "slots": [
@@ -8950,7 +8904,7 @@
             },
             {
               "name": "actions",
-              "description": "host extras, placed BEFORE the built-in cluster (accepts: control)"
+              "description": "host extras, placed BEFORE the built-in cluster; a column's, in its header (accepts: control)"
             }
           ],
           "cssParts": [
@@ -8964,16 +8918,31 @@
               "name": "chips"
             },
             {
+              "name": "column"
+            },
+            {
+              "name": "filters"
+            },
+            {
               "name": "find"
+            },
+            {
+              "name": "head"
+            },
+            {
+              "name": "more"
             },
             {
               "name": "organise"
             },
             {
-              "name": "scope-head"
+              "name": "save"
             },
             {
-              "name": "scope-toggle"
+              "name": "scope"
+            },
+            {
+              "name": "sections"
             },
             {
               "name": "switch"

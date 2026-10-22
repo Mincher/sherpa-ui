@@ -19,9 +19,16 @@
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)
     data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
-                    column: its heading and actions on top, then the Switch,
-                    Group and Sort, then each list field as a SECTION of value
-                    chips. Nothing folds. TODO 425
+                    column. Over ONE scope, the scope is an accordion — its
+                    name, its matches while shut, its Apply and Discard —
+                    holding Group and Sort, then each list field as a SECTION
+                    of value chips; nothing folds. Over SEVERAL scopes
+                    (`data-scope="view data"`) it is the COLUMN: ONE header —
+                    Save <name>, one Filters menu for every scope, the page's
+                    buttons, ⋮ and the search — over one such accordion per
+                    scope. A column opens and shuts as a panel does. TODO 425
+    open           a column is showing. A host writes it; every close reports
+                    `filter-panel-close`, and says why.
     data-heading   its scope's name, written by its source: a portrait bar's
                     heading.
     data-fetch-fields  the fields the STORE answers, space-separated: each Apply
@@ -69,7 +76,7 @@
 
   Slots:
     view     — leading view chip (view type)
-    actions  — host extras, placed BEFORE the built-in cluster
+    actions  — host extras, placed BEFORE the built-in cluster; a column's, in its header
 
   Fires:
     quick-filter-change  — one reader act, as a request: a field's answer, an on or off, the Switch, Clear all. detail: { scope, request?, active, values }
@@ -93,6 +100,7 @@
     view-delete          — Delete view, the reader's own View (view type)
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
+    filter-panel-close   — a column shut, and why: the reader, the width or the page. detail: { reason }
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
@@ -100,20 +108,6 @@
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
-    <!-- A PORTRAIT bar's heading: its scope's name. It shuts and opens the
-         section, as a panel's scope does; shut, a badge says the rows its
-         filters match, and its tip each filter's. TODO 425 -->
-    <div class="scope-head" part="scope-head">
-      <button class="scope-toggle" part="scope-toggle" type="button" aria-expanded="true">
-        <i class="scope-chevron sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
-        <span class="scope-title"></span>
-      </button>
-      <sherpa-tooltip class="scope-tip"><sherpa-badge class="scope-results" role="img"></sherpa-badge></sherpa-tooltip>
-    </div>
-    <!-- The FIRST portrait bar's search, across every portrait bar beside it. TODO 425 -->
-    <sherpa-input-text class="find" part="find" data-icon-start="magnifying-glass" data-clearable
-                       placeholder="Search filters" autocomplete="off"
-                       aria-label="Search every filter"></sherpa-input-text>
     <div class="view-zone" part="view-zone">
       <slot name="view" data-accepts="control"></slot>
     </div>
@@ -229,13 +223,64 @@
     <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
   </template>
 
-  <!-- A chip's value menu, cloned when its definition carries `options`. -->
-  <!-- A DATE body stays SLOTTED: the calendar projects its stepper into the
-       menu's `header` slot, and slot assignment only reaches a host's LIGHT
-       DOM. The Range switch above it IS the menu's.
-       TRAP T-a-menu-owns-its-own-bodies -->
+</template>
 
+<!-- PORTRAIT — the panel's column. The scope is an accordion, as a panel's is:
+     its name, a badge of what its filters match while shut, and its Apply and
+     Discard on the header row. TODO 425 -->
+<template id="portrait">
+  <sherpa-accordion class="scope" part="scope" open>
+    <sherpa-tooltip slot="badge" class="scope-tip"><sherpa-badge class="scope-results" role="img"></sherpa-badge></sherpa-tooltip>
+    <span slot="actions" class="actions-zone" part="actions">
+      <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
+                     data-look="saturated" disabled>Apply</sherpa-button>
+      <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
+                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+      <slot name="actions" data-accepts="control"></slot>
+    </span>
+    <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
+      <div class="switch-zone" part="switch">
+        <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
+      </div>
+      <div class="organise-zone" part="organise"></div>
+      <div class="chips" part="chips"></div>
+    </div>
+  </sherpa-accordion>
 
+  <template class="qf-tpl">
+    <sherpa-quick-filter class="chip"></sherpa-quick-filter>
+  </template>
+  <template class="organise-group-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="group" data-kind="group" data-label="Group"></sherpa-quick-filter>
+  </template>
+  <template class="organise-sort-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
+  </template>
+</template>
 
+<!-- COLUMN — portrait over SEVERAL scopes: the panel area's. ONE header — Save
+     <name>, the Filters menu for every scope, the page's buttons, ⋮, and the
+     one search above every scope — over a portrait toolbar per scope. TODO 425 -->
+<template id="column">
+  <sherpa-container class="column" part="column" data-padding="none">
+    <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
+      <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
+                     data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
+      <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
+                     data-icon-start="plus" data-icon-end="triangle-down"
+                     aria-haspopup="dialog">Filters</sherpa-button>
+      <slot name="actions" slot="actions" data-accepts="control"></slot>
+      <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
+                     data-icon-start="ellipses-vertical"
+                     aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
+      <sherpa-input-text slot="metadata" class="find" part="find"
+                         data-icon-start="magnifying-glass" data-clearable
+                         placeholder="Search filters" autocomplete="off"
+                         aria-label="Search every filter"></sherpa-input-text>
+    </sherpa-container-header>
+    <div class="sections" part="sections"></div>
+  </sherpa-container>
 
+  <!-- One scope's toolbar, in portrait. -->
+  <template class="section-tpl"><sherpa-quick-filter-toolbar data-orientation="portrait"></sherpa-quick-filter-toolbar></template>
 </template>

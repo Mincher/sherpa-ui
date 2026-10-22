@@ -314,12 +314,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (170)
+## Filters (171)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — filter-panel, quick-filter-toolbar
-- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — filter-panel, quick-filter
+- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — filter-host, quick-filter
 - [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-chip-knows-what-kind-it-is](TRAPS.md#t-a-chip-knows-what-kind-it-is) — filter-def, filter-kind, filter-panel, quick-filter, quick-filter-toolbar
@@ -371,7 +371,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — quick-filter-toolbar
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — filter-panel
-- [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — filter-panel
+- [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — filter-panel, quick-filter-toolbar
 - [T-a-shut-scope-folds-like-a-bar](TRAPS.md#t-a-shut-scope-folds-like-a-bar) — filter-panel
 - [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-host, quick-filter
 - [T-a-silent-write-still-needs-a-way-to-report](TRAPS.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
@@ -419,7 +419,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-empty-flag-needs-rows-to-count](TRAPS.md#t-empty-flag-needs-rows-to-count) — quick-filter
 - [T-empty-is-every-kind-of-answer](TRAPS.md#t-empty-is-every-kind-of-answer) — quick-filter, quick-filter-toolbar
 - [T-every-chip-menu-gets-clear-and-search](TRAPS.md#t-every-chip-menu-gets-clear-and-search) — filter-menu
-- [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-panel
+- [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-panel, quick-filter-toolbar
 - [T-everything-on-is-no-filter](TRAPS.md#t-everything-on-is-no-filter) — quick-filter, quick-filter-toolbar
 - [T-favourite-star-swaps-its-glyph](TRAPS.md#t-favourite-star-swaps-its-glyph) — quick-filter-toolbar
 - [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — quick-filter, quick-filter-toolbar
@@ -474,6 +474,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — filter-panel
 - [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — filter-panel, more-menu, quick-filter-toolbar, sherpa-filter-more
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — filter-panel
+- [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — quick-filter-toolbar
 - [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def, filter-panel
 - [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — filter-panel
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — quick-filter-toolbar
@@ -879,12 +880,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (110)
+## Other components (105)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
 - [T-a-canvas-owns-its-view](TRAPS.md#t-a-canvas-owns-its-view) — layout-canvas
-- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — filter-stack
 - [T-a-click-does-not-clear-indeterminate](TRAPS.md#t-a-click-does-not-clear-indeterminate) — select-checkbox
 - [T-a-click-in-a-slotted-menu-is-not-a-press](TRAPS.md#t-a-click-in-a-slotted-menu-is-not-a-press) — button
 - [T-a-composed-chrome-row-takes-its-inline-padding-from-its-container](TRAPS.md#t-a-composed-chrome-row-takes-its-inline-padding-from-its-container) — container-footer
@@ -910,7 +910,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-name-where-a-native-element-does-the-job](TRAPS.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — button
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
-- [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — filter-stack
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-second-container-type-drops-the-first](TRAPS.md#t-a-second-container-type-drops-the-first) — app-header
@@ -947,7 +946,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-describedby-must-not-be-a-live-region](TRAPS.md#t-describedby-must-not-be-a-live-region) — input-text
 - [T-embedded-footer-needs-a-public-verb](TRAPS.md#t-embedded-footer-needs-a-public-verb) — calendar
 - [T-every-button-says-its-action](TRAPS.md#t-every-button-says-its-action) — button
-- [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-stack
 - [T-fit-is-a-desktop-mode](TRAPS.md#t-fit-is-a-desktop-mode) — layout-grid
 - [T-grouping-is-an-attribute-and-a-class](TRAPS.md#t-grouping-is-an-attribute-and-a-class) — calendar, group, input-text
 - [T-header-actions-are-composed-buttons](TRAPS.md#t-header-actions-are-composed-buttons) — app-header
@@ -982,10 +980,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-style-border-base-is-default-1](TRAPS.md#t-style-border-base-is-default-1) — container-footer, select-checkbox, select-radio
 - [T-temporal-is-the-date-model](TRAPS.md#t-temporal-is-the-date-model) — calendar
 - [T-the-footer-owns-nothing-to-save](TRAPS.md#t-the-footer-owns-nothing-to-save) — container-footer
-- [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — filter-stack
 - [T-the-nav-is-a-menu-on-a-phone](TRAPS.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — app-shell
-- [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — filter-stack
 - [T-the-shell-owns-the-panel-areas](TRAPS.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-tick-needs-the-fixed-ramp](TRAPS.md#t-the-tick-needs-the-fixed-ramp) — select-checkbox
 - [T-two-months-share-one-grid](TRAPS.md#t-two-months-share-one-grid) — calendar

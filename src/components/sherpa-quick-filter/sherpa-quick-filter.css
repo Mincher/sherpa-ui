@@ -98,8 +98,15 @@
   border-color: transparent;
   background: none;
   color: var(--sherpa-style-content-secondary, #35353d);
+  /* The type scale's small step, caps and light, as a panel field's title. Will, G12 */
+  font-size: var(--sherpa-display-mode-fonts-scale-sm, 12px);
+  line-height: var(--sherpa-display-mode-fonts-scale-lg, 16px);
   font-weight: var(--sherpa-font-weight-light, 300);
   text-transform: uppercase;
+}
+/* …and its icon the same size as its text. */
+:host([data-layout="section"][data-icon-start]) .body .icon {
+  --_icon-size: var(--sherpa-theme-content-size-small, 12px);
 }
 :host([data-layout="section"]) .caret {
   block-size: var(--sherpa-display-mode-size-lg, 24px);

@@ -31,7 +31,7 @@ import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/d
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
-import { ProviderMode } from './provider-mode.js';
+import { ProviderMode, isColumn } from './provider-mode.js';
 import { ProviderPage, type Bar } from './provider-page.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
@@ -171,12 +171,14 @@ export class SherpaProvider extends SherpaElement {
     this.#modes.want(mode);
   }
 
-  /** The panel or the bars, and the buttons that switch them. */
+  /** The panel or the bars, and the buttons that switch them. A column in
+   *  `[data-filter-mode="none"]` is the page's content, not the panel area:
+   *  the mode never opens or shuts it. TODO 425 */
   readonly #modes = new ProviderMode({
     bars: () => this.#bars(),
-    panels: () => this.#panels(),
+    panels: () => this.#panels().filter((el) => !el.closest('[data-filter-mode="none"]')),
     found: () => [...this.querySelectorAll(':defined')]
-      .filter((el) => 'drawScopes' in el && el.closest(this.localName) === this) as never,
+      .filter((el) => isColumn(el) && el.closest(this.localName) === this && !el.closest('[data-filter-mode="none"]')) as never,
     button: (kind) => this.clone(`template.mode-${kind}-tpl`) as HTMLElement | null,
     rendered: () => this.rendered,
     changed: (mode) => {
@@ -223,12 +225,12 @@ export class SherpaProvider extends SherpaElement {
 
   /** Every panel that asked — a control drawn over several scopes. */
   #panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }> {
-    return [...this.#asked.keys()].filter((el) => 'drawScopes' in el) as never;
+    return [...this.#asked.keys()].filter(isColumn) as never;
   }
 
   /** Every filter bar that asked — a control drawn one scope at a time. */
   #bars(): Element[] {
-    return [...this.#asked.keys()].filter((el) => 'drawScope' in el && !('drawScopes' in el));
+    return [...this.#asked.keys()].filter((el) => 'drawScope' in el && !isColumn(el));
   }
 
   /**
@@ -763,7 +765,7 @@ export class SherpaProvider extends SherpaElement {
     // …and again when answered: the next page with data opens the panel again.
     if (asks.shape === 'scope') this.#modes.join(el);
     // A bar made after the page's were drawn — a filter stack's — is drawn as they were. TODO 425
-    if ('drawScope' in el && !('drawScopes' in el)) this.#pages.joined(el as unknown as Bar);
+    if ('drawScope' in el && !isColumn(el)) this.#pages.joined(el as unknown as Bar);
     if ('drawScope' in el || 'drawPresent' in el) this.#offerLimit(el);
   }
 

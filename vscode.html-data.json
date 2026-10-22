@@ -1327,26 +1327,6 @@
       ]
     },
     {
-      "name": "sherpa-filter-stack",
-      "description": "the panel area's filters: ONE filter toolbar per scope, each turned to PORTRAIT. The toolbars are the filters; this only stacks them, and opens and shuts as the panel area's occupant. TODO 425",
-      "attributes": [
-        {
-          "name": "data-saveable",
-          "description": "its component scopes' toolbars save filters",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-scope",
-          "description": "the scopes it asks for, space-separated, as a panel does"
-        },
-        {
-          "name": "open",
-          "description": "showing . Every close reports, and says why.",
-          "valueSet": "v"
-        }
-      ]
-    },
-    {
       "name": "sherpa-gauge-chart",
       "description": "a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is not hittable.",
       "attributes": [
@@ -2813,7 +2793,7 @@
         },
         {
           "name": "data-orientation",
-          "description": "landscape | portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425",
+          "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — Save <name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425",
           "values": [
             {
               "name": "landscape"
@@ -2890,6 +2870,10 @@
           "name": "data-waits",
           "description": "its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406",
           "valueSet": "v"
+        },
+        {
+          "name": "open",
+          "description": "a column is showing. A host writes it; every close reports `filter-panel-close`, and says why."
         }
       ]
     },

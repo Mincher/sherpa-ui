@@ -14,444 +14,638 @@
     "provides": []
   },
   "templates": [
-    "default"
+    "default",
+    "portrait",
+    "column"
   ],
   "anatomy": {
-    "roots": [
-      {
-        "el": "div",
-        "class": "bar",
-        "part": "bar",
-        "attrs": {
-          "role": "toolbar",
-          "aria-label": "Quick filters"
-        },
-        "children": [
-          {
-            "el": "div",
-            "class": "scope-head",
-            "part": "scope-head",
-            "children": [
-              {
-                "el": "button",
-                "class": "scope-toggle",
-                "part": "scope-toggle",
-                "attrs": {
-                  "type": "button",
-                  "aria-expanded": "true"
+    "byTemplate": {
+      "default": [
+        {
+          "el": "div",
+          "class": "bar",
+          "part": "bar",
+          "attrs": {
+            "role": "toolbar",
+            "aria-label": "Quick filters"
+          },
+          "children": [
+            {
+              "el": "div",
+              "class": "view-zone",
+              "part": "view-zone",
+              "children": [
+                {
+                  "slot": "view",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "switch-zone",
+              "part": "switch",
+              "children": [
+                {
+                  "el": "sherpa-switch",
+                  "class": "filters-switch",
+                  "attrs": {
+                    "data-type": "simple",
+                    "checked": "",
+                    "aria-label": "Apply filters"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "organise-zone",
+              "part": "organise"
+            },
+            {
+              "el": "div",
+              "class": "chips",
+              "part": "chips"
+            },
+            {
+              "el": "div",
+              "class": "actions-zone",
+              "part": "actions",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "act apply-all",
+                  "attrs": {
+                    "data-act": "apply",
+                    "data-size": "sm",
+                    "data-look": "saturated",
+                    "disabled": ""
+                  }
                 },
-                "children": [
-                  {
-                    "el": "i",
-                    "class": "scope-chevron sherpa-icon-box",
-                    "attrs": {
-                      "data-icon": "chevron-down",
-                      "aria-hidden": "true"
-                    }
-                  },
-                  {
-                    "el": "span",
-                    "class": "scope-title"
+                {
+                  "el": "sherpa-button",
+                  "class": "act discard-all",
+                  "attrs": {
+                    "data-act": "discard",
+                    "data-size": "sm",
+                    "data-type": "icon",
+                    "data-icon-start": "cross",
+                    "aria-label": "Discard changes",
+                    "disabled": ""
                   }
-                ]
-              },
-              {
-                "el": "sherpa-tooltip",
-                "class": "scope-tip",
-                "children": [
-                  {
-                    "el": "sherpa-badge",
-                    "class": "scope-results",
-                    "attrs": {
-                      "role": "img"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "el": "sherpa-input-text",
-            "class": "find",
-            "part": "find",
-            "attrs": {
-              "data-icon-start": "magnifying-glass",
-              "data-clearable": "",
-              "placeholder": "Search filters",
-              "autocomplete": "off",
-              "aria-label": "Search every filter"
-            }
-          },
-          {
-            "el": "div",
-            "class": "view-zone",
-            "part": "view-zone",
-            "children": [
-              {
-                "slot": "view",
-                "attrs": {
-                  "data-accepts": "control"
-                }
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "switch-zone",
-            "part": "switch",
-            "children": [
-              {
-                "el": "sherpa-switch",
-                "class": "filters-switch",
-                "attrs": {
-                  "data-type": "simple",
-                  "checked": "",
-                  "aria-label": "Apply filters"
-                }
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "organise-zone",
-            "part": "organise"
-          },
-          {
-            "el": "div",
-            "class": "chips",
-            "part": "chips"
-          },
-          {
-            "el": "div",
-            "class": "actions-zone",
-            "part": "actions",
-            "children": [
-              {
-                "el": "sherpa-button",
-                "class": "act apply-all",
-                "attrs": {
-                  "data-act": "apply",
-                  "data-size": "sm",
-                  "data-look": "saturated",
-                  "disabled": ""
-                }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "act discard-all",
-                "attrs": {
-                  "data-act": "discard",
-                  "data-size": "sm",
-                  "data-type": "icon",
-                  "data-icon-start": "cross",
-                  "aria-label": "Discard changes",
-                  "disabled": ""
-                }
-              },
-              {
-                "el": "span",
-                "class": "act-divider apply-divider",
-                "attrs": {
-                  "aria-hidden": "true"
-                }
-              },
-              {
-                "slot": "actions",
-                "attrs": {
-                  "data-accepts": "control"
-                }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "act save-set",
-                "attrs": {
-                  "data-act": "filters-save",
-                  "data-size": "sm",
-                  "data-icon-start": "upload"
                 },
-                "children": [
-                  {
-                    "el": "span",
-                    "class": "save-name"
+                {
+                  "el": "span",
+                  "class": "act-divider apply-divider",
+                  "attrs": {
+                    "aria-hidden": "true"
                   }
-                ]
-              },
-              {
-                "el": "sherpa-button",
-                "class": "act add-btn",
-                "attrs": {
-                  "data-act": "add",
-                  "data-size": "sm",
-                  "data-icon-start": "plus",
-                  "data-icon-end": "triangle-down",
-                  "aria-haspopup": "dialog"
-                }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "act",
-                "attrs": {
-                  "data-size": "sm",
-                  "data-act": "ai",
-                  "data-type": "icon",
-                  "data-icon-start": "wand-magic-sparkles",
-                  "aria-label": "Suggest filters"
-                }
-              },
-              {
-                "el": "span",
-                "class": "act-divider",
-                "attrs": {
-                  "aria-hidden": "true"
-                }
-              },
-              {
-                "el": "span",
-                "class": "view-group sherpa-group",
-                "children": [
-                  {
-                    "el": "sherpa-button",
-                    "class": "act",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-act": "favourite",
-                      "data-type": "icon",
-                      "data-group": "start",
-                      "data-icon-start": "star",
-                      "aria-label": "Add to Favorites",
-                      "aria-pressed": "false",
-                      "data-swap-on": "data-favourite",
-                      "data-swap-data-icon-start": "star-filled",
-                      "data-swap-aria-label": "Remove from Favorites",
-                      "data-swap-aria-pressed": "true",
-                      "data-swap-data-status": "active"
-                    }
+                },
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act save-set",
+                  "attrs": {
+                    "data-act": "filters-save",
+                    "data-size": "sm",
+                    "data-icon-start": "upload"
                   },
-                  {
-                    "el": "sherpa-button",
-                    "class": "act",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-act": "save",
-                      "data-group": "mid",
-                      "data-icon-start": "upload"
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "save-name"
                     }
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "act view-more",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-act": "view-menu",
-                      "data-type": "icon",
-                      "data-group": "end",
-                      "data-icon-start": "triangle-down",
-                      "aria-label": "Save view options",
-                      "aria-haspopup": "dialog"
-                    },
-                    "children": [
-                      {
-                        "el": "sherpa-menu",
-                        "class": "view-menu",
-                        "attrs": {
-                          "slot": "menu",
-                          "data-align": "end"
-                        },
-                        "children": [
-                          {
-                            "el": "button",
-                            "attrs": {
-                              "type": "button",
-                              "value": "save-as"
-                            }
-                          },
-                          {
-                            "el": "button",
-                            "class": "view-delete",
-                            "attrs": {
-                              "type": "button",
-                              "value": "delete",
-                              "data-status": "critical"
-                            }
-                          }
-                        ]
+                  ]
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act add-btn",
+                  "attrs": {
+                    "data-act": "add",
+                    "data-size": "sm",
+                    "data-icon-start": "plus",
+                    "data-icon-end": "triangle-down",
+                    "aria-haspopup": "dialog"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act",
+                  "attrs": {
+                    "data-size": "sm",
+                    "data-act": "ai",
+                    "data-type": "icon",
+                    "data-icon-start": "wand-magic-sparkles",
+                    "aria-label": "Suggest filters"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "act-divider",
+                  "attrs": {
+                    "aria-hidden": "true"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "view-group sherpa-group",
+                  "children": [
+                    {
+                      "el": "sherpa-button",
+                      "class": "act",
+                      "attrs": {
+                        "data-size": "sm",
+                        "data-act": "favourite",
+                        "data-type": "icon",
+                        "data-group": "start",
+                        "data-icon-start": "star",
+                        "aria-label": "Add to Favorites",
+                        "aria-pressed": "false",
+                        "data-swap-on": "data-favourite",
+                        "data-swap-data-icon-start": "star-filled",
+                        "data-swap-aria-label": "Remove from Favorites",
+                        "data-swap-aria-pressed": "true",
+                        "data-swap-data-status": "active"
                       }
-                    ]
+                    },
+                    {
+                      "el": "sherpa-button",
+                      "class": "act",
+                      "attrs": {
+                        "data-size": "sm",
+                        "data-act": "save",
+                        "data-group": "mid",
+                        "data-icon-start": "upload"
+                      }
+                    },
+                    {
+                      "el": "sherpa-button",
+                      "class": "act view-more",
+                      "attrs": {
+                        "data-size": "sm",
+                        "data-act": "view-menu",
+                        "data-type": "icon",
+                        "data-group": "end",
+                        "data-icon-start": "triangle-down",
+                        "aria-label": "Save view options",
+                        "aria-haspopup": "dialog"
+                      },
+                      "children": [
+                        {
+                          "el": "sherpa-menu",
+                          "class": "view-menu",
+                          "attrs": {
+                            "slot": "menu",
+                            "data-align": "end"
+                          },
+                          "children": [
+                            {
+                              "el": "button",
+                              "attrs": {
+                                "type": "button",
+                                "value": "save-as"
+                              }
+                            },
+                            {
+                              "el": "button",
+                              "class": "view-delete",
+                              "attrs": {
+                                "type": "button",
+                                "value": "delete",
+                                "data-status": "critical"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act",
+                  "attrs": {
+                    "data-size": "sm",
+                    "data-act": "refresh",
+                    "data-type": "icon",
+                    "data-icon-start": "cw-circle-arrow",
+                    "aria-label": "Refresh data"
                   }
-                ]
-              },
-              {
-                "el": "sherpa-button",
-                "class": "act",
-                "attrs": {
-                  "data-size": "sm",
-                  "data-act": "refresh",
-                  "data-type": "icon",
-                  "data-icon-start": "cw-circle-arrow",
-                  "aria-label": "Refresh data"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act",
+                  "attrs": {
+                    "data-size": "sm",
+                    "data-act": "overflow",
+                    "data-type": "icon",
+                    "data-icon-start": "ellipses-vertical",
+                    "aria-label": "More actions",
+                    "aria-haspopup": "dialog"
+                  }
                 }
+              ]
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "more-rows-tpl",
+          "children": [
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "ai"
               },
-              {
-                "el": "sherpa-button",
-                "class": "act",
-                "attrs": {
-                  "data-size": "sm",
-                  "data-act": "overflow",
-                  "data-type": "icon",
-                  "data-icon-start": "ellipses-vertical",
-                  "aria-label": "More actions",
-                  "aria-haspopup": "dialog"
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
                 }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "more-rows-tpl",
-        "children": [
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "ai"
+              ]
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          },
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "favourite"
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "favourite"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
+                }
+              ]
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          },
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "unfavourite"
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "unfavourite"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
+                }
+              ]
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          },
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "save"
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "save"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
+                }
+              ]
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          },
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "save-as"
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "save-as"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
+                }
+              ]
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          },
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "delete-view"
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "delete-view"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
+                }
+              ]
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          },
-          {
-            "el": "button",
-            "class": "more-item",
-            "attrs": {
-              "type": "button",
-              "value": "refresh"
-            },
-            "children": [
-              {
-                "el": "span",
-                "class": "more-label"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "qf-tpl",
-        "children": [
-          {
-            "el": "sherpa-quick-filter",
-            "class": "chip"
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "organise-group-tpl",
-        "children": [
-          {
-            "el": "sherpa-quick-filter",
-            "class": "organise-chip",
-            "attrs": {
-              "data-id": "group",
-              "data-kind": "group",
-              "data-label": "Group"
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "refresh"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
+                }
+              ]
             }
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "organise-sort-tpl",
-        "children": [
-          {
-            "el": "sherpa-quick-filter",
-            "class": "organise-chip",
-            "attrs": {
-              "data-id": "sort",
-              "data-kind": "sort",
-              "data-label": "Sort"
+          ]
+        },
+        {
+          "el": "template",
+          "class": "qf-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "chip"
             }
-          }
-        ]
-      }
-    ]
+          ]
+        },
+        {
+          "el": "template",
+          "class": "organise-group-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "organise-chip",
+              "attrs": {
+                "data-id": "group",
+                "data-kind": "group",
+                "data-label": "Group"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "organise-sort-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "organise-chip",
+              "attrs": {
+                "data-id": "sort",
+                "data-kind": "sort",
+                "data-label": "Sort"
+              }
+            }
+          ]
+        }
+      ],
+      "portrait": [
+        {
+          "el": "sherpa-accordion",
+          "class": "scope",
+          "part": "scope",
+          "attrs": {
+            "open": ""
+          },
+          "children": [
+            {
+              "el": "sherpa-tooltip",
+              "class": "scope-tip",
+              "attrs": {
+                "slot": "badge"
+              },
+              "children": [
+                {
+                  "el": "sherpa-badge",
+                  "class": "scope-results",
+                  "attrs": {
+                    "role": "img"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "span",
+              "class": "actions-zone",
+              "part": "actions",
+              "attrs": {
+                "slot": "actions"
+              },
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "act apply-all",
+                  "attrs": {
+                    "data-act": "apply",
+                    "data-size": "sm",
+                    "data-look": "saturated",
+                    "disabled": ""
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act discard-all",
+                  "attrs": {
+                    "data-act": "discard",
+                    "data-size": "sm",
+                    "data-type": "icon",
+                    "data-icon-start": "cross",
+                    "aria-label": "Discard changes",
+                    "disabled": ""
+                  }
+                },
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "bar",
+              "part": "bar",
+              "attrs": {
+                "role": "toolbar",
+                "aria-label": "Quick filters"
+              },
+              "children": [
+                {
+                  "el": "div",
+                  "class": "switch-zone",
+                  "part": "switch",
+                  "children": [
+                    {
+                      "el": "sherpa-switch",
+                      "class": "filters-switch",
+                      "attrs": {
+                        "data-type": "simple",
+                        "checked": "",
+                        "aria-label": "Apply filters"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "el": "div",
+                  "class": "organise-zone",
+                  "part": "organise"
+                },
+                {
+                  "el": "div",
+                  "class": "chips",
+                  "part": "chips"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "qf-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "chip"
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "organise-group-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "organise-chip",
+              "attrs": {
+                "data-id": "group",
+                "data-kind": "group",
+                "data-label": "Group"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "organise-sort-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "organise-chip",
+              "attrs": {
+                "data-id": "sort",
+                "data-kind": "sort",
+                "data-label": "Sort"
+              }
+            }
+          ]
+        }
+      ],
+      "column": [
+        {
+          "el": "sherpa-container",
+          "class": "column",
+          "part": "column",
+          "attrs": {
+            "data-padding": "none"
+          },
+          "children": [
+            {
+              "el": "sherpa-container-header",
+              "class": "head",
+              "part": "head",
+              "attrs": {
+                "slot": "header",
+                "data-icon": "filter",
+                "data-heading": "Filters"
+              },
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "column-save",
+                  "part": "save",
+                  "attrs": {
+                    "slot": "actions",
+                    "data-size": "sm",
+                    "data-icon-start": "upload"
+                  },
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "save-name"
+                    }
+                  ]
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "column-filters",
+                  "part": "filters",
+                  "attrs": {
+                    "slot": "actions",
+                    "data-size": "sm",
+                    "data-icon-start": "plus",
+                    "data-icon-end": "triangle-down",
+                    "aria-haspopup": "dialog"
+                  }
+                },
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "slot": "actions",
+                    "data-accepts": "control"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "column-more",
+                  "part": "more",
+                  "attrs": {
+                    "slot": "actions",
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-icon-start": "ellipses-vertical",
+                    "aria-label": "More actions",
+                    "aria-haspopup": "dialog"
+                  }
+                },
+                {
+                  "el": "sherpa-input-text",
+                  "class": "find",
+                  "part": "find",
+                  "attrs": {
+                    "slot": "metadata",
+                    "data-icon-start": "magnifying-glass",
+                    "data-clearable": "",
+                    "placeholder": "Search filters",
+                    "autocomplete": "off",
+                    "aria-label": "Search every filter"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "sections",
+              "part": "sections"
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "section-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter-toolbar",
+              "attrs": {
+                "data-orientation": "portrait"
+              }
+            }
+          ]
+        }
+      ]
+    }
   },
   "props": [
     {
@@ -605,13 +799,13 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "behaviour",
+      "kind": "template",
       "values": [
         "landscape",
         "portrait"
       ],
       "default": "landscape",
-      "description": "landscape | portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425"
+      "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — Save <name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425"
     },
     {
       "$type": "prop",
@@ -661,8 +855,9 @@
       "$type": "prop",
       "name": "data-scope",
       "type": "string",
-      "observed": false,
-      "kind": "style",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
       "description": "ASKED of its provider: the Query scope it draws and answers"
     },
     {
@@ -720,6 +915,14 @@
       "declared": true,
       "kind": "style",
       "description": "its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406"
+    },
+    {
+      "$type": "prop",
+      "name": "open",
+      "type": "string",
+      "observed": true,
+      "native": true,
+      "description": "a column is showing. A host writes it; every close reports `filter-panel-close`, and says why."
     }
   ],
   "slots": [
@@ -737,7 +940,7 @@
       "accepts": [
         "control"
       ],
-      "description": "host extras, placed BEFORE the built-in cluster"
+      "description": "host extras, placed BEFORE the built-in cluster; a column's, in its header"
     }
   ],
   "populate": {
@@ -779,23 +982,18 @@
       "$type": "state",
       "name": "not-custom-view",
       "selector": ":host(:not([data-custom-view]))"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ".scope-toggle:focus-visible"
     }
   ],
   "capabilities": [
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (active, values, savedSets, superseded, filtersSuspended, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open, active, values, savedSets, superseded, filtersSuspended, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawApplied, drawValueResults, drawResults, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (drawScopes, show, hide, close, toggle, setChipValues, setChipReading, drawApplied, drawValueResults, drawResults, nameScope, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -988,6 +1186,16 @@
       "detail": {
         "on": "boolean"
       }
+    },
+    {
+      "$type": "event",
+      "name": "filter-panel-close",
+      "description": "A column shut, and why: the reader, the width or the page.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "reason": "'page' | 'reader' | 'width'"
+      }
     }
   ],
   "tokens": {
@@ -999,15 +1207,39 @@
     "act-divider.background": "{sherpa.theme-border-default-2}",
     "chips.gap": "{sherpa.display-mode-space-xs}",
     "actions-zone.gap": "{sherpa.display-mode-space-xs}",
-    "view-delete.color": "{sherpa.style-content-base}",
-    "scope-toggle.gap": "{sherpa.display-mode-space-xs}",
-    "scope-toggle.color": "{sherpa.style-content-base}",
-    "scope-toggle.font-weight": "{sherpa.font-weight-medium}"
+    "view-delete.color": "{sherpa.style-content-base}"
   },
   "$extensions": {
     "sherpa": {
       "figmaName": "Filter Toolbar",
       "methods": [
+        {
+          "$type": "method",
+          "name": "drawScopes",
+          "args": "scopes: ScopeDescription[]",
+          "description": "drawScopes(scopes) — a column's scopes, from its source: a portrait toolbar per scope, under the one header. TODO 425"
+        },
+        {
+          "$type": "method",
+          "name": "show",
+          "args": ""
+        },
+        {
+          "$type": "method",
+          "name": "hide",
+          "args": "reason: 'reader' | 'width' | 'page' = 'reader'",
+          "description": "EVERY close reports, and says why."
+        },
+        {
+          "$type": "method",
+          "name": "close",
+          "args": "reason: 'reader' | 'width' | 'page' = 'reader'"
+        },
+        {
+          "$type": "method",
+          "name": "toggle",
+          "args": ""
+        },
         {
           "$type": "method",
           "name": "setChipValues",
@@ -1040,6 +1272,12 @@
         },
         {
           "$type": "method",
+          "name": "nameScope",
+          "args": "scope: { label: string; shows?: ScopeShows | undefined }",
+          "description": "nameScope(scope) — its source names its scope: a portrait bar's heading, and an icon for what it narrows. TODO 425"
+        },
+        {
+          "$type": "method",
           "name": "search",
           "args": "text: string",
           "description": "search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425"
@@ -1047,7 +1285,7 @@
         {
           "$type": "method",
           "name": "drawPresent",
-          "args": "present: Readonly<Record<string, readonly string[]>>",
+          "args": "present: Readonly<Record<string, readonly string[]>>, scope?: string",
           "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
         },
         {
@@ -1137,6 +1375,11 @@
         "note": "Checked against Figma \"Filter Toolbar\" (150:3688) on 2026-10-16. Figma has two slots, content (chips, divider-separated) and right-actions; the code builds both itself — chips stamped by populate(), the action cluster in its template — and keeps its view and actions slots for a host's extras. Figma's Type=data leads its content with a Switch; the code builds it but hides it unless data-switchable, for legacy reasons (Will, TODO 338), and places it after Group and Sort, which lead the bar. Figma's description names older events; the code's are the contract."
       },
       "jsProps": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "access": "read-write"
+        },
         {
           "name": "active",
           "type": "string[]",

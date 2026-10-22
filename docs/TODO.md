@@ -1941,24 +1941,31 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   stays the default. Test: Demos `reforged-filter-stack`. TRAP
   T-the-panel-is-the-bar-in-portrait. Chromium: sherpa-ui 1149, Demos 182.
 
-**Will, 2026-10-22 — the gaps, round 2.** Picks: Favorite, Save and Refresh go
-to the App Header (A); the stack is the DEFAULT panel (B).
+**Will, 2026-10-22 — the gaps, round 2.** *"Both modes are variants of the filter
+toolbar component"*, and *"consolidate into the filter toolbar so that we can
+eventually ditch the old implementation."* So `sherpa-filter-stack` is gone: the
+toolbar in portrait over several scopes (`data-scope="view data"`) IS the column
+(`toolbar-column.ts`), and the provider tells a column from a bar by the scopes
+it asked (`isColumn`). The classic panel is untouched, and nothing links to it.
+
+Will's picks: Favorite, Save and Refresh go to the App Header (A); the new
+panel is the DEFAULT (B).
 
 | | Gap |
 |---|---|
 | ⬜ | G1 — a portrait section's heading uses the chip's menu button; it wants a ⋮ of the field's actions, as the panel's field has |
-| ⬜ | G2 — a scope in portrait is not an accordion (the panel's scopes are `sherpa-accordion`) |
-| ⬜ | G3 — each portrait bar has its own Filters button: ONE Filters menu, the stack's |
+| ✅ | G2 — a scope in portrait is not an accordion. Now the toolbar's `portrait` template IS a `sherpa-accordion`: name and icon, a badge while shut, Apply and Discard on its row |
+| ✅ | G3 — ONE Filters menu: the COLUMN's header lists every scope's filters, then what may be added, each row saying its scope; no section has its own |
 | ⬜ | G4 — "Move to View filters", and back, as a chip menu option; in portrait, in the section's ⋮ |
 | ✅ | G5 — a blue border on the View scope's unapplied chips in portrait. Found: a value chip with its Sites menu open wore the open-menu ring on both halves; a section's value chip no longer does |
-| ⬜ | G6 — the panel/toolbar toggle on the new version does odd things: make it its own thing, not the panel's code (or a broadcast bug) |
+| ✅ | G6 — the panel/toolbar toggle did odd things: on the compare page it gave each portrait bar a mode button and shut the classic panel. Now the mode button is the column's header's alone; a section gets none and never steps back; a column inside `[data-filter-mode="none"]` (the compare page) is never opened or shut by the mode |
 | ✅ | G7 — hide the filter Switch in every mode, for now. The stack sets no `data-switchable`; Demos' bars drop it. The attribute stays |
-| ⬜ | G8 — the search goes ABOVE the View filters heading: it is not part of that scope |
+| ✅ | G8 — the ONE search is in the column's header, above every scope |
 | ⬜ | G9 — Favorite, Save and Refresh move to the App Header (Will: A) |
-| ⬜ | G10 — the stack is the default panel; the classic one is the setting (Will: B) |
-| ⬜ | G11 — Suggest filters and Refresh view are not in the portrait ⋮: they are App Header actions |
-| ⬜ | G12 — section spacing, text size and icon size: closer to the classic panel's |
-| ⬜ | G13 — a horizontal divider between the View and the component scopes' sections, with enough white space |
+| ✅ | G10 — the toolbar column is the default panel; Settings › Application › Classic filter panel puts the classic one back. Demos' classic-panel specs say `test.use({ classicPanel: true })` |
+| ✅ | G11 — the column's ⋮ holds only the page's folded buttons and Limit: no Suggest filters, no Refresh view |
+| 🚧 | G12 — section spacing, text size and icon size: closer to the classic panel's. Done: a field heading is the small step (12/16), caps and light, its icon the same size; the scopes are accordions as the classic's. Next: the ⋮ in place of the ▾ (G1) |
+| ✅ | G13 — a rule between each scope's section; each accordion header keeps its own padding above and below |
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 
