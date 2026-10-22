@@ -13016,6 +13016,7 @@ narrow rule rather than a new behaviour:
 | chip | body click |
 |---|---|
 | has a menu, no values picked | OPENS the menu |
+| a DATE, no day picked | turns ON at its default day, Today (Will, TODO 394) |
 | has a menu, holds a value | cycles — off is a state, not a delete |
 | has NO menu (a status segment) | cycles, as before |
 
@@ -13027,8 +13028,13 @@ the menu. "Empty" is read from `this.values`, which covers all three menu kinds
 The click is also `stopPropagation`'d, exactly as the caret's is: opening a menu
 is not a toggle, and a host listening on the bar has no reason to see it as one.
 
+A date is never empty to look at: its face reads Today while it holds nothing.
+So its press is a pick, not a flip: `quick-filter-click` carries `picked`, and
+the bar asks for the day, as the state holds none to resume.
+
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
+- Site: `test/e2e/reforged-menu-calendar.spec.ts`
 
 ### T-the-column-chip-is-the-only-signal
 

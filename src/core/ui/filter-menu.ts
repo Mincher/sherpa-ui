@@ -20,6 +20,7 @@ import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
 import type { MenuItem, SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
+import { today } from './temporal.js';
 // A number body draws a slider and a Range switch, a date body a calendar: whoever
 // asks for one gets its parts. TRAP T-menu-composes-real-components
 import '../../components/sherpa-calendar/sherpa-calendar.js';
@@ -134,15 +135,16 @@ export function menuFor(
   }
 
   if (kind === 'date') {
-    /* TRAP T-calendar-header-has-no-heading — no search; CLEAR stays, as a
-       date chip has no other way back to "no date". */
+    // TRAP T-calendar-header-has-no-heading — no search.
+    // No Clear either: an empty date reads Today, OFF. Will, TODO 394
     menu.removeAttribute('data-search');
     menu.setAttribute('data-body', 'date');
     if (def.range) menu.setAttribute('data-range', '');
     // The Menu set's `Type = Calendar` variant: a wider card.
     menu.setAttribute('data-type', 'calendar');
     // The menu stamps its own calendar; this is what it hands on. TRAP T-a-menu-owns-its-own-bodies
-    if (def.availableDates?.length) menu.setAttribute('data-available', def.availableDates.join(','));
+    // TODAY is always a pick: it is the default, rows or none. Will, TODO 394
+    if (def.availableDates?.length) menu.setAttribute('data-available', [...def.availableDates, today().toString()].join(','));
     /* ADVANCED, where the field opts in: a FILTER menu, its rows asking the
        DATE questions — the calendar stays its Simple body. TODO 90 with 21d */
     if (advancedOf(def) === true) {

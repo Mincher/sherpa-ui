@@ -20,6 +20,7 @@ import '../sherpa-tooltip/sherpa-tooltip.js';
 import { paintSeries } from '../../core/ui/chart-parts.js';
 import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
+import { today } from '../../core/ui/temporal.js';
 
 /** One place a jump chip can scroll to — `value` is the target element's id. */
 interface JumpItem {
@@ -176,7 +177,8 @@ export class SherpaQuickFilter extends SherpaElement {
          draws an answer, never takes one off.
          TRAP T-a-row-remembers-what-it-was-given */
       void Promise.resolve(this.menu?.rendered).then(() => {
-        if (this.isConnected && this.#hasTypedAnswer()) this.#drawFace();
+        // …and a DATE's default day. Will, TODO 394
+        if (this.isConnected && (this.#hasTypedAnswer() || this.#orDefault([]).length)) this.#drawFace();
       });
     }
   }
@@ -621,6 +623,17 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
 
+    /* AN EMPTY DATE switches ON at its default day, Today — a day with no rows
+       too: the view's empty state says so. Will, TODO 394 */
+    const day = menu && !this.values.length ? this.#orDefault([]) : [];
+    if (menu && day.length) {
+      menu.reading = { picked: day };
+      if (this.hasAttribute('data-locked')) this.refresh();
+      else this.#applySelection(menu.values ?? []);
+      this.emit('quick-filter-click', { active: true, picked: true });
+      return;
+    }
+
     /* TRAP T-an-empty-chip-opens-its-menu — the body cycles a chip's states
      * (TRAP T-a-chip-body-cycles-its-states), and an empty chip has none to cycle.
      * Only when there IS a menu: a toggle-only chip keeps toggling.
@@ -811,7 +824,7 @@ export class SherpaQuickFilter extends SherpaElement {
    *  the button for a screen reader, as the tooltip describes only itself.
    *  TRAP T-one-state-per-filtered-field */
   #syncCountTip(values: string[]): void {
-    this.#said = filterFace(this.#state(values)).tip;
+    this.#said = filterFace(this.#state(this.#orDefault(values))).tip;
     this.#writeTip();
   }
 
@@ -883,6 +896,14 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncCondition(state);
   }
 
+  /** A DATE with no day reads its default, Today: OFF, one press from on. Will, TODO 394 */
+  #orDefault(values: string[]): string[] {
+    const menu = this.menu;
+    if (values.length || menu?.dataset['body'] !== 'date' || menu.mode === 'advanced') return values;
+    const day = today().toString();
+    return menu.hasAttribute('data-range') ? [day, day] : [day];
+  }
+
   /** A day or a range was picked in the chip's calendar: redraw the face. */
   #onDated = (): void => {
     if (this.menu?.dataset['body'] === 'date') this.#drawFace();
@@ -951,7 +972,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (field == null) return;
     this.set('data-label', field);
 
-    const face = filterFace(this.#state(values));
+    const face = filterFace(this.#state(this.#orDefault(values)));
     this.valueLabel = face.value;
     this.#syncBadge();
   }

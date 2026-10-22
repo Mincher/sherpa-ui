@@ -577,7 +577,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "active": "boolean"
+        "active": "boolean | true",
+        "picked": "true"
       },
       "trigger": {
         "on": "click",

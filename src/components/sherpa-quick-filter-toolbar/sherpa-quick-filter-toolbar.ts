@@ -1057,6 +1057,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     /* On or off keeps the answer; a toggle answers no field. A locked chip did
        not flip, so it asks for the other state. TRAP T-grid-suspend-is-not-clear */
+    // A date that took its default day asks for that day, not a flip. Will, TODO 394
+    if ((event as CustomEvent).detail?.picked) return this.#emitChange(this.#answerRequest(chip));
     const field = this.#fieldFor(chip.dataset['id'] ?? '');
     const on = chip.hasAttribute('data-locked') ? !chip.current : chip.current;
     this.#emitChange(field != null && chip.reading ? { field, suspended: !on } : undefined);

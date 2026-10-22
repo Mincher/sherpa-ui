@@ -77,12 +77,13 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zw | 393 | BUG — a `fetch: "server"` field does not light its grid heading: the source names the KEY its answer matched (`email in […]`), not the field. Found when Demos' Customer and Region became server fields | filters |
 | ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
 | ✅ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
-| 🚧 | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
+| ✅ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
+| ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1778,7 +1779,7 @@ not the key that stands in for it.
 `filterFields(filter, standsFor)` names the field it stands for. On :4200 the
 grid now hears `customer`, not `email`.
 
-### `[ ]` 🚧 394 — FILTERS: no Clear button in a menu footer
+### `[x]` ✅ 394 — FILTERS: no Clear button in a menu footer
 
 Will, 2026-10-22: *"No more clear buttons in footers!"* Each menu kind has
 another way to say "nothing":
@@ -1787,19 +1788,27 @@ another way to say "nothing":
   (unless the definition says otherwise). Off is the empty state.
 - **Single-select:** a "None" row at the top of the values.
 
-**🚧 First half done 2026-10-22.** No footer has a Clear (the class, its rules and
+**✅ Done 2026-10-22.** First half: No footer has a Clear (the class, its rules and
 its listener are gone; a typed number keeps its Reset). A single LIST chip that
 is not persistent gets `data-none`: its menu leads with a None row in the same
 radio group, ticked while nothing else is; picking it answers nothing. A
 persistent chip (the View selector) has no None. Tests: `reforged-menu` (None),
-`reforged-menu-calendar` (four footer buttons, no Clear). Still to do: the date
-half, below.
+`reforged-menu-calendar` (four footer buttons, no Clear). The date half is below.
 
 **Will, 2026-10-22, on the date half:** *"As a default date is selected then the
 filter chips value label should be populated with that date. Even if the date
 has no records associated with it the user should still be able to activate the
 filter chip. Empty States in the view and components will handle informing the
 user that there is nothing to show."*
+
+**Date half, done.** A date chip with no day is OFF and its face reads Today (a
+range reads one day). One press turns it ON at Today: the chip asks for that
+day, as the state holds none to resume. Today is always a pick in its calendar,
+rows or none. The default is the chip's to draw, never stored, so it is always
+today's date. "On unless the definition says otherwise" is a View's answer: a
+preset View that names the date turns it on. Tests: `reforged-menu-calendar`
+(face, press, a range), `reforged-chip-tips` (Reset reads Today). Demos'
+`filter-coordination` skips the None row a Sort menu now leads with.
 
 ### `[x]` ✅ 395 — FILTERS: Cancel becomes Discard, and Discard keeps the menu open
 
@@ -1840,6 +1849,40 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
+
+Will, 2026-10-22: *"Sticky metric items eventually scroll off screen (out of the
+content area). They also don't activate on all views with metrics in the content
+area. Come to think of it metrics be in a single full column span metric-group
+container element. This metric-group supports a max of 4 metric items with 16px
+gutter between items (use tokens). That way metrics are always added to their own
+row in the layout-grid and handling stickiness becomes much easier. We can apply
+grouping (default 'solo') to each metric item. In sticky mode we can apply the
+start, mid, and end grouping attributes. We can also apply the grouping styles at
+mobile breakpoint so they unify into 1 visual. All of this will allow for more
+than 1 metric group in a view. If there are multiple then they should stack when
+stickiness kicks in. Half the height of the metric items, and metric-group, when
+there's 2 or more stuck metric-groups."*
+
+**Two bugs** (today's sticky metrics, 143/175): they scroll off the content area
+after a while, and they do not start on every View that has metrics.
+
+**The fix is a component**, `sherpa-metric-group`:
+- One full row of the layout grid (every column). It holds 1–4 metrics, a 16px
+  gap between them, from a space token.
+- Each metric is grouped `solo` by default. Stuck, and at mobile width (a
+  container query, never `@media`), they take start / mid / end, so the row
+  reads as one object.
+- A View may hold more than one group. Stuck groups stack, one under the other.
+  From two stuck groups, each group and its metrics are half height.
+- Stuck is a CSS `scroll-state(stuck: top)` query where it can be (Chromium
+  only today, as 175 found — see 401); the rest of the engines get a plain row.
+
+**To find out first:** how a group knows how many groups are stuck above it (the
+stack offset and the half height), with no JS if it can be done. Then the five
+files, the Demos Views moved onto it, and the old sticky-metrics experiment
+deleted.
 
 ### `[ ]` ⬜ 401 — LOOK: a scroll shadow for any scroll box (investigate)
 

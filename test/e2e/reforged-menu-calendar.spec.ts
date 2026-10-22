@@ -836,3 +836,61 @@ test('a range calendar: both months\' day names on one line, each over its own c
   expect(r.narrowest).toBeGreaterThanOrEqual(31.9);
   expect(r.offCentre).toBeLessThanOrEqual(1);
 });
+
+/** TRAP T-an-empty-chip-opens-its-menu — a date's press is a pick. */
+test('an empty date chip reads Today, OFF, and one press turns it on at Today — rows or none (TODO 394)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Chip = HTMLElement & { current: boolean; values: string[]; valueLabel: string };
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    // The data's days are all long ago: Today has no rows.
+    el.populate([
+      { id: 'day', label: 'Due', kind: 'date', availableDates: ['2001-02-03'] },
+      { id: 'span', label: 'Created', kind: 'date', range: true, availableDates: ['2001-02-03'] },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const asks: unknown[] = [];
+    el.addEventListener('quick-filter-change', (e) => asks.push((e as CustomEvent).detail.request));
+
+    const read = (id: string) => {
+      const chip = el.shadowRoot.querySelector(`.chip[data-id="${id}"]`) as Chip;
+      return { on: chip.current, values: [...chip.values], face: chip.valueLabel };
+    };
+    const press = async (id: string) => {
+      const chip = el.shadowRoot.querySelector(`.chip[data-id="${id}"]`) as Chip & { shadowRoot: ShadowRoot };
+      (chip.shadowRoot.querySelector('.body') as HTMLElement).click();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    };
+    const menu = el.shadowRoot.querySelector('.chip[data-id="day"] sherpa-menu')!;
+    const before = { day: read('day'), span: read('span'), available: menu.getAttribute('data-available') };
+    await press('day');
+    await press('span');
+    const now = new Date();
+    const p2 = (n: number) => String(n).padStart(2, '0');
+    return {
+      before, after: { day: read('day'), span: read('span') }, asks,
+      iso: `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`,
+      said: new Intl.DateTimeFormat(undefined, { day: 'numeric' }).format(now),
+    };
+  });
+
+  // OFF, holding nothing — and the face still says the default day.
+  for (const c of [r.before.day, r.before.span]) {
+    expect(c.on).toBe(false);
+    expect(c.values).toEqual([]);
+    expect(c.face).toContain(r.said);
+  }
+  // Today is a pick though no row has it.
+  expect(r.before.available).toContain(r.iso);
+
+  // One press: ON at Today, and the bar asks for that day.
+  expect(r.after.day).toMatchObject({ on: true, values: [r.iso] });
+  expect(r.after.span).toMatchObject({ on: true, values: [r.iso, r.iso] });
+  expect(r.asks).toEqual([
+    expect.objectContaining({ field: 'day', reading: expect.objectContaining({ picked: [r.iso] }) }),
+    expect.objectContaining({ field: 'span', reading: expect.objectContaining({ picked: [r.iso, r.iso], range: true }) }),
+  ]);
+});

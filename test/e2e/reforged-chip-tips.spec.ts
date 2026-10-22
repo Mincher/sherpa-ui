@@ -158,7 +158,7 @@ test('a chip switched OFF still shows its tooltip — on or off has no bearing (
   expect(await text()).toBe('Pro, Free');
 });
 
-test('a RESET leaves a date chip with no value — a kept range holds no ends, never `undefined`', async ({ page }) => {
+test('a RESET leaves a date chip with no value — a kept range holds no ends, never `undefined`; its face reads Today', async ({ page }) => {
   const r = await page.evaluate(async (wait) => {
     const bar = await window.__mount<Bar & { setChipReading(id: string, reading: unknown): void; setChipValues(id: string, v: string[]): void }>('sherpa-quick-filter-toolbar', [
       { id: 'created', label: 'Date', kind: 'date', range: true, active: true },
@@ -181,11 +181,16 @@ test('a RESET leaves a date chip with no value — a kept range holds no ends, n
     const set = face().values;
     bar.setChipValues('created', []);
     await settle();
-    return { fresh, set, emptied: face(), range: menu.hasAttribute('data-range') };
+    const now = new Date();
+    return { fresh, set, emptied: face(), range: menu.hasAttribute('data-range'), today: `${now.getDate()} ${now.getFullYear()}` };
   }, frames);
-  expect(r.fresh).toEqual({ label: '', values: [], start: null });
+  // No value; the face reads the default day, Today. TODO 394
+  const [day, year] = r.today.split(' ');
+  for (const empty of [r.fresh, r.emptied]) {
+    expect(empty).toMatchObject({ values: [], start: null });
+    expect(empty.label).toMatch(new RegExp(`^${day} \\S+ ${year}$`));
+  }
   expect(r.set).toEqual(['2024-01-05', '2024-02-06']);
-  expect(r.emptied).toEqual({ label: '', values: [], start: null });
   // The shape is kept: it is still a range.
   expect(r.range).toBe(true);
 });
