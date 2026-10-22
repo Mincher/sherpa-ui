@@ -2086,7 +2086,7 @@
         },
         {
           "name": "data-commit",
-          "description": "show the Apply / Cancel footer and DEFER changes until Apply",
+          "description": "show the Apply / Discard footer and DEFER changes until Apply",
           "valueSet": "v"
         },
         {

@@ -568,8 +568,8 @@
 
 /* Cancel and Apply are the COMMIT pair, gated separately now that Today and
    Remove can raise the row on their own. */
-.cancel, .apply { display: none; }
-:host([data-commit]) :is(.cancel, .apply) { display: inline-flex; }
+.discard, .apply { display: none; }
+:host([data-commit]) :is(.discard, .apply) { display: inline-flex; }
 
 /* A separator row between groups. */
 ::slotted(hr) {

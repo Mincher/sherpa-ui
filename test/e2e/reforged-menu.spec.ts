@@ -230,7 +230,7 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
     await menu.rendered;
 
     const events: Array<[string, unknown]> = [];
-    for (const name of ['menu-change', 'menu-apply', 'menu-cancel']) {
+    for (const name of ['menu-change', 'menu-apply', 'menu-discard']) {
       menu.addEventListener(name, (e) => events.push([name, (e as CustomEvent).detail]));
     }
     const sr = menu.shadowRoot!;
@@ -251,13 +251,14 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const draft = { events: events.length, ticked: inputs[0]!.checked, values: menu.values };
 
-    // Cancel restores the values the menu OPENED with.
-    press('.cancel');
+    // Discard restores the values the menu OPENED with, and it stays open. TODO 395
+    press('.discard');
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const cancelled = {
       names: events.map(([n]) => n),
       ticked: inputs[0]!.checked,
       values: menu.values,
+      open: (menu as unknown as { open: boolean }).open,
     };
 
     // Reopen, tick a different row, Apply.
@@ -283,14 +284,15 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
   expect(r.draft.values).toEqual(['a']);
   expect(r.draft.events).toBe(0);
 
-  // Cancel un-ticks it and reports only menu-cancel — never a menu-change.
+  // Discard un-ticks it, keeps the menu open, and reports only menu-discard — never a menu-change.
   expect(r.cancelled.ticked).toBe(false);
   expect(r.cancelled.values).toEqual([]);
-  expect(r.cancelled.names).toEqual(['menu-cancel']);
+  expect(r.cancelled.open).toBe(true);
+  expect(r.cancelled.names).toEqual(['menu-discard']);
 
   // Apply reports BOTH: menu-apply for callers that care about the interaction,
   // and menu-change for the ones that just want the committed selection.
-  expect(r.applied.names).toEqual(['menu-cancel', 'menu-apply', 'menu-change']);
+  expect(r.applied.names).toEqual(['menu-discard', 'menu-apply', 'menu-change']);
   expect(r.applied.values).toEqual(['b']);
   expect(r.applied.lastChange).toEqual({ values: ['b'] });
 });
@@ -693,7 +695,7 @@ test('a committing menu\'s Apply and Cancel wait for a change', async ({ page })
     const sr = menu.shadowRoot!;
     const off = () => ({
       apply: sr.querySelector('.apply')!.hasAttribute('disabled'),
-      cancel: sr.querySelector('.cancel')!.hasAttribute('disabled'),
+      cancel: sr.querySelector('.discard')!.hasAttribute('disabled'),
     });
     menu.show();
     await settle();

@@ -365,8 +365,8 @@
                 },
                 {
                   "el": "sherpa-button",
-                  "class": "cancel",
-                  "part": "cancel",
+                  "class": "discard",
+                  "part": "discard",
                   "attrs": {
                     "data-footer": "revert"
                   }
@@ -912,8 +912,8 @@
                 },
                 {
                   "el": "sherpa-button",
-                  "class": "cancel",
-                  "part": "cancel",
+                  "class": "discard",
+                  "part": "discard",
                   "attrs": {
                     "data-footer": "revert"
                   }
@@ -1041,7 +1041,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the Apply / Cancel footer and DEFER changes until Apply"
+      "description": "show the Apply / Discard footer and DEFER changes until Apply"
     },
     {
       "$type": "prop",
@@ -1452,8 +1452,8 @@
     },
     {
       "$type": "event",
-      "name": "menu-cancel",
-      "description": "Cancel was clicked; the values are already restored.",
+      "name": "menu-discard",
+      "description": "Discard put the values back as they were when the menu opened; it stays open.",
       "bubbles": true,
       "composed": true
     },
@@ -1593,7 +1593,7 @@
           "$type": "method",
           "name": "takeBaseline",
           "args": "",
-          "description": "What Cancel restores becomes what it holds NOW — for a host that wrote an answer while it is open."
+          "description": "What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open."
         },
         {
           "$type": "method",

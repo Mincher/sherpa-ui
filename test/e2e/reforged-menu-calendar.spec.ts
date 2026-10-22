@@ -234,7 +234,7 @@ test('a calendar heads its own two-row header; the footer buttons are default si
         // The footer's LEFT position. Today is the calendar's; Clear leads the
         // row on any menu that has it.
         today: btn('today'),
-        cancel: btn('cancel'), apply: btn('apply'),
+        discard: btn('discard'), apply: btn('apply'),
         clear: btn('clear'),
         // Clear leads, Apply trails — the spacer splits them.
         clearX: Math.round((m.shadowRoot.querySelector('.clear') as HTMLElement).getBoundingClientRect().left),
@@ -272,13 +272,13 @@ test('a calendar heads its own two-row header; the footer buttons are default si
   // the button's DEFAULT size at 32 tall, matching the Container Footer's own
   // 32-tall slots. They used to carry data-size="sm".
   for (const shape of [r.list, r.calendar]) {
-    for (const b of [shape.cancel, shape.apply]) {
+    for (const b of [shape.discard, shape.apply]) {
       expect(b.h).toBe(32);
       expect(b.size).toBeNull();
     }
     // Apply is the only saturated one.
     expect(shape.apply.look).toBe('saturated');
-    expect(shape.cancel.look).toBeNull();
+    expect(shape.discard.look).toBeNull();
   }
 
   // Only a calendar fills the footer's left slot, and Today is a default-size
@@ -454,7 +454,7 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
       '<sherpa-calendar data-embedded></sherpa-calendar></sherpa-menu>');
     const calendar = {
       today: box(cal.m, 'today'), clear: box(cal.m, 'clear'),
-      cancel: box(cal.m, 'cancel'), apply: box(cal.m, 'apply'),
+      discard: box(cal.m, 'discard'), apply: box(cal.m, 'apply'),
     };
 
     // Drive it from somewhere far away — a year view with no date picked.
@@ -490,12 +490,13 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   expect(r.calendar.today.x).toBeLessThan(r.calendar.clear.x);
 
   // Today is on the LEFT, away from the pair a thumb reaches for.
-  expect(r.calendar.today.x).toBeLessThan(r.calendar.cancel.x);
-  expect(r.calendar.cancel.x).toBeLessThan(r.calendar.apply.x);
+  expect(r.calendar.today.x).toBeLessThan(r.calendar.discard.x);
+  expect(r.calendar.discard.x).toBeLessThan(r.calendar.apply.x);
 
-  // The node's own widths: Today 57, Cancel 62, Apply 54 (±1 for text metrics).
+  // The node's own widths: Today 57, Apply 54 (±1 for text metrics); Discard, its
+  // text's — Figma's node still says Cancel (62). TODO 395
   expect(Math.abs(r.calendar.today.w - 57)).toBeLessThanOrEqual(1);
-  expect(Math.abs(r.calendar.cancel.w - 62)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.calendar.discard.w - 67)).toBeLessThanOrEqual(1);
   expect(Math.abs(r.calendar.apply.w - 54)).toBeLessThanOrEqual(1);
 
   // The BUTTON is the menu's; the BEHAVIOUR is the calendar's. Clicking it from
@@ -565,7 +566,7 @@ test('the footer holds all five: Today, Clear, Remove, then the committing pair'
     };
     const before = {
       clear: box('clear'), remove: box('remove'),
-      today: box('today'), cancel: box('cancel'), apply: box('apply'),
+      today: box('today'), discard: box('discard'), apply: box('apply'),
       card: rect(card), footer: rect(footerRow), grid: rect(grid),
       chips: [...el.shadowRoot.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']),
     };
@@ -583,26 +584,26 @@ test('the footer holds all five: Today, Clear, Remove, then the committing pair'
   });
 
   // All five are present on a COMMITTING, removable date chip's menu.
-  for (const b of [r.before.clear, r.before.remove, r.before.today, r.before.cancel, r.before.apply]) {
+  for (const b of [r.before.clear, r.before.remove, r.before.today, r.before.discard, r.before.apply]) {
     expect(b.shown).toBe(true);
   }
 
   // ALL FIVE ARE THE FOOTER'S — the header holds the heading and the stepper
   // and nothing else.
   for (const b of [r.before.clear, r.before.remove, r.before.today,
-                   r.before.cancel, r.before.apply]) {
+                   r.before.discard, r.before.apply]) {
     expect(b.inHeader).toBe(false);
   }
 
   // ONE row, in order: Today, Clear, Remove — the reversible action before the
   // destructive one — then the committing pair behind the spacer.
-  for (const b of [r.before.clear, r.before.remove, r.before.cancel, r.before.apply]) {
+  for (const b of [r.before.clear, r.before.remove, r.before.discard, r.before.apply]) {
     expect(b.y).toBe(r.before.today.y);
   }
   expect(r.before.today.x).toBeLessThan(r.before.clear.x);
   expect(r.before.clear.x).toBeLessThan(r.before.remove.x);
-  expect(r.before.remove.x).toBeLessThan(r.before.cancel.x);
-  expect(r.before.cancel.x).toBeLessThan(r.before.apply.x);
+  expect(r.before.remove.x).toBeLessThan(r.before.discard.x);
+  expect(r.before.discard.x).toBeLessThan(r.before.apply.x);
 
   // Labelled, default size and DEFAULT look — an action-bar control, not the
   // transparent icon each was while it lived in the header.
@@ -635,7 +636,7 @@ test('the footer holds all five: Today, Clear, Remove, then the committing pair'
  *
  * Each control hides on its OWN flag; the row shows when any of them is in it.
  */
-test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/Apply', async ({ page }) => {
+test('an auto-applying date chip keeps Today and Remove, and drops only Discard/Apply', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
@@ -671,7 +672,7 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
         footer: shown(date, '.footer'),
         today: shown(date, '.today'),
         remove: shown(date, '.remove'),
-        cancel: shown(date, '.cancel'),
+        discard: shown(date, '.discard'),
         apply: shown(date, '.apply'),
       },
       plain: {
@@ -681,7 +682,7 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
         clear: shown(plain, '.clear'),
         today: shown(plain, '.today'),
         remove: shown(plain, '.remove'),
-        cancel: shown(plain, '.cancel'),
+        discard: shown(plain, '.discard'),
         apply: shown(plain, '.apply'),
       },
     };
@@ -698,7 +699,7 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
 
   // …and loses exactly the commit pair, which would otherwise offer to apply a
   // selection that has already applied.
-  expect(r.date.cancel).toBe(false);
+  expect(r.date.discard).toBe(false);
   expect(r.date.apply).toBe(false);
 
   // A non-persistent chip is CLEARABLE, and Clear lives in the row now, so the
@@ -706,7 +707,7 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
   expect(r.plain.clearable).toBe(true);
   expect(r.plain.footer).toBe(true);
   expect(r.plain.clear).toBe(true);
-  for (const s of [r.plain.today, r.plain.remove, r.plain.cancel, r.plain.apply]) {
+  for (const s of [r.plain.today, r.plain.remove, r.plain.discard, r.plain.apply]) {
     expect(s).toBe(false);
   }
 });

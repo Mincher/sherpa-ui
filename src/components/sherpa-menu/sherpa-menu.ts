@@ -180,7 +180,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** The open menu's trigger — re-measured on scroll / resize. */
   #trigger: HTMLElement | null = null;
-  /** What Cancel restores. TRAP T-cancel-baseline-captured-on-open */
+  /** What Discard restores. TRAP T-cancel-baseline-captured-on-open */
   #baseline: string[] = [];
 
   /** The popover card. */
@@ -230,7 +230,7 @@ export class SherpaMenu extends SherpaElement {
     this.addEventListener('pointerleave', this.#onRowHover);
     this.addEventListener('keydown', this.#onRowKey);
     this.$('.apply')?.addEventListener('click', this.#onApply);
-    this.$('.cancel')?.addEventListener('click', this.#onCancel);
+    this.$('.discard')?.addEventListener('click', this.#onDiscard);
     /* The FOOTER owns "nothing to apply"; this menu only reports whether its
        draft changed — a calendar's pick included, which is neither `input` nor
        `change`. TRAP T-the-footer-owns-nothing-to-save */
@@ -880,7 +880,7 @@ export class SherpaMenu extends SherpaElement {
     });
   }
 
-  /** What Cancel restores, captured on open beside `#baseline`. */
+  /** What Discard restores, captured on open beside `#baseline`. */
   #conditionBaseline: FieldCondition[] = [];
   /** Whether the rows mirrored the picks when the menu opened. */
   #mirrorBaseline = false;
@@ -898,13 +898,13 @@ export class SherpaMenu extends SherpaElement {
     else this.values = this.#baseline;
   }
 
-  /** What Cancel restores becomes what it holds NOW — for a host that wrote an
+  /** What Discard restores becomes what it holds NOW — for a host that wrote an
    *  answer while it is open. TRAP T-the-baseline-is-taken-at-show */
   takeBaseline(): void {
     this.#takeBaseline();
   }
 
-  /** Remember what Cancel restores. TRAP T-the-baseline-is-taken-at-show */
+  /** Remember what Discard restores. TRAP T-the-baseline-is-taken-at-show */
   #takeBaseline(): void {
     this.#baseline = this.values;
     this.#numberBaseline = this.dataset['body'] === 'number' ? this.reading : null;
@@ -1852,7 +1852,7 @@ export class SherpaMenu extends SherpaElement {
     this.hide();
   };
 
-  /** Opened: remember the picks Cancel restores. Closed: settle them. */
+  /** Opened: remember the picks Discard restores. Closed: settle them. */
   #onToggle = (event: Event): void => {
     const open = (event as ToggleEvent).newState === 'open';
     this.toggleAttribute('open', open);
@@ -1889,7 +1889,7 @@ export class SherpaMenu extends SherpaElement {
       this.on(document, 'keydown', this.#onEscape, whileOpen);
     } else {
       /* A COMMITTING menu holds ticks as a DRAFT until Apply. Closing any other
-         way — clicking away, Escape — discards them, exactly as Cancel does.
+         way — clicking away, Escape — discards them, as Discard does.
          Without this the draft survived: the chip read ["Northwind"] while
          `current` stayed false, so it LOOKED set and filtered nothing.
          TRAP T-a-draft-dies-with-its-menu */
@@ -2173,17 +2173,17 @@ export class SherpaMenu extends SherpaElement {
     this.#syncDirty();
   };
 
-  /** True while Apply or Cancel is closing the card — they own the values. */
+  /** True while Apply or Discard settles the card — they own the values. */
   #applying = false;
 
-  /** Apply or Cancel has already settled this draft, so the CLOSE must not
+  /** Apply has already settled this draft, so the CLOSE must not
    *  restore anything. `hidePopover()` fires `toggle` asynchronously, so
    *  `#applying` is false again by then. TRAP T-a-condition-is-a-draft-too */
   #settledByAction = false;
 
   /** Apply: commit the picks and close. */
   #onApply = (): void => {
-    // Apply rewrites the baseline Cancel would restore.
+    // Apply rewrites the baseline Discard would restore.
     this.#applying = true;
     this.#settledByAction = true;
     this.#takeBaseline();
@@ -2196,18 +2196,20 @@ export class SherpaMenu extends SherpaElement {
     this.#applying = false;
   };
 
-  /** Cancel: put the picks back as they were, then close. */
-  #onCancel = (): void => {
+  /** Discard: every change since the menu opened goes, and it STAYS OPEN. Will, TODO 395 */
+  #onDiscard = (): void => {
     // Restore, THEN report.
     this.#applying = true;
-    this.#settledByAction = true;
     this.#restoreValues();
     this.mode = this.#modeBaseline;
-    if (this.mode === 'advanced') this.conditions = this.#conditionBaseline;
+    // Rows only when they differ: a rebuilt row reads empty for a tick. TRAP T-a-condition-is-a-draft-too
+    if (this.mode === 'advanced' && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline)) {
+      this.conditions = this.#conditionBaseline;
+    }
     this.#mirror = this.#mirrorBaseline;
-    this.emit('menu-cancel');
-    this.hide();
     this.#applying = false;
+    this.#syncDirty();
+    this.emit('menu-discard');
   };
 
   /** Empty the selection and report it — the checkboxes AND a slotted

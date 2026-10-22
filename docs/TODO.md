@@ -76,7 +76,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zv | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
 | ✅ | 0zw | 393 | BUG — a `fetch: "server"` field does not light its grid heading: the source names the KEY its answer matched (`email in […]`), not the field. Found when Demos' Customer and Region became server fields | filters |
 | ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
-| ⬜ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
+| ✅ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
 | ⬜ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ⬜ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
@@ -1791,12 +1791,22 @@ filter chips value label should be populated with that date. Even if the date
 has no records associated with it the user should still be able to activate the
 filter chip. Empty States in the view and components will handle informing the
 user that there is nothing to show."*
-### `[ ]` ⬜ 395 — FILTERS: Cancel becomes Discard, and Discard keeps the menu open
+
+### `[x]` ✅ 395 — FILTERS: Cancel becomes Discard, and Discard keeps the menu open
 
 Will, 2026-10-22: in a re-fetch menu (one with Apply — a remote source or a
 `fetch: "server"` field) and in an Advanced filter, the footer's Cancel button
 becomes **Discard**. Discard puts back what the menu held when it opened (it
 discards every change since then). Discard does NOT close the menu.
+
+**✅ Done 2026-10-22** (taken over from the other session, Will). The footer has
+one revert button, shown wherever a menu has Apply, so it is Discard in every
+such menu (re-fetch, Advanced, a typed number, the Filters menu). It puts back
+the picks, the mode and the rows held at open — rows only when they differ, as
+a rebuilt row reads empty for a tick — turns Apply off, and stays open. Its
+class and part are `discard`, its event `menu-discard`. Tests: `reforged-menu`
+(stays open, reports only menu-discard), the calendar footer, the number
+filter, the toolbar. Figma's node still says Cancel.
 
 ### `[x]` ✅ 396 — BUG: a new condition in an Advanced filter does not re-enable Apply
 

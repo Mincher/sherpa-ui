@@ -19,7 +19,7 @@
     actions — <button type="button" value="…">Label</button>
 
   Public API:
-    data-commit     show the Apply / Cancel footer and DEFER changes until Apply
+    data-commit     show the Apply / Discard footer and DEFER changes until Apply
     data-readonly   SHOW an answer held elsewhere — rows and conditions inert, no
                     footer, no Add condition, no Advanced button
     data-heading  optional heading (rendered upper-case at 10/16)
@@ -98,7 +98,7 @@
     change — the number body's field or slider changed. NOT composed, as a
                   row's native change is not.
     menu-apply  — Apply was clicked. detail: { values: string[] }
-    menu-cancel — Cancel was clicked; the values are already restored. detail: {}
+    menu-discard — Discard put the values back as they were when the menu opened; it stays open. detail: {}
     menu-clear  — Clear was clicked; the selection is already empty. detail: {}
     menu-select — an action row was clicked. detail: { value, label }
     menu-drill — a row's child-menu caret. detail: { value }
@@ -232,7 +232,7 @@
       DEFAULT size, as Figma pins them.
 
       A committing menu holds row changes as DRAFT until Apply, so what is behind
-      the card does not re-query on every tick; Cancel restores the opening values.
+      the card does not re-query on every tick; Discard restores the opening values.
     -->
     <sherpa-container-footer class="footer" part="footer" data-align="end">
       <!-- The HOST's own buttons, leading the row. The footer shows when it is filled. -->
@@ -241,7 +241,7 @@
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
         Clear, Save and Remove act on the filter, not on the draft, so they lead the
-        row, separated from Cancel·Apply by the spacer. Default look — NOT
+        row, separated from Discard·Apply by the spacer. Default look — NOT
         transparent — as Figma pins them. Remove's critical ink is re-stated in
         CSS: a bare [data-status] rule in tokens.css reaches the document only,
         never a shadow root.
@@ -253,7 +253,7 @@
                      data-icon-start="arrow-rotate-left">Reset</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
-      <sherpa-button class="cancel" part="cancel" data-footer="revert">Cancel</sherpa-button>
+      <sherpa-button class="discard" part="discard" data-footer="revert">Discard</sherpa-button>
       <sherpa-button class="apply" part="apply" data-look="saturated" data-footer="commit">Apply</sherpa-button>
     </sherpa-container-footer>
   </div>
@@ -426,14 +426,14 @@
       DEFAULT size, as Figma pins them.
 
       A committing menu holds row changes as DRAFT until Apply, so what is behind
-      the card does not re-query on every tick; Cancel restores the opening values.
+      the card does not re-query on every tick; Discard restores the opening values.
     -->
     <sherpa-container-footer class="footer" part="footer" data-align="end">
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
         Clear, Save and Remove act on the filter, not on the draft, so they lead the
-        row, separated from Cancel·Apply by the spacer. Default look — NOT
+        row, separated from Discard·Apply by the spacer. Default look — NOT
         transparent — as Figma pins them. Remove's critical ink is re-stated in
         CSS: a bare [data-status] rule in tokens.css reaches the document only,
         never a shadow root.
@@ -445,7 +445,7 @@
                      data-icon-start="arrow-rotate-left">Reset</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
-      <sherpa-button class="cancel" part="cancel" data-footer="revert">Cancel</sherpa-button>
+      <sherpa-button class="discard" part="discard" data-footer="revert">Discard</sherpa-button>
       <sherpa-button class="apply" part="apply" data-look="saturated" data-footer="commit">Apply</sherpa-button>
     </sherpa-container-footer>
   </div>

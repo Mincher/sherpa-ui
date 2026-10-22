@@ -35,7 +35,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-body` | `number` `date` |  |  |
 | `data-bounds` | text |  |  |
 | `data-clearable` | boolean |  | show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today there instead — see the footer) |
-| `data-commit` | boolean |  | show the Apply / Cancel footer and DEFER changes until Apply |
+| `data-commit` | boolean |  | show the Apply / Discard footer and DEFER changes until Apply |
 | `data-commit-fixed` | boolean |  |  |
 | `data-conditions` | text |  | FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set. |
 | `data-drill` | boolean |  | the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked. |
@@ -84,7 +84,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | Method | What it does |
 |---|---|
 | `addCondition()` | addCondition() — a new row, as the menu's own Add condition does: for a host that draws that button itself, as the panel's action row does. TODO 98 |
-| `takeBaseline()` | What Cancel restores becomes what it holds NOW — for a host that wrote an answer while it is open. |
+| `takeBaseline()` | What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open. |
 | `setCount(value: string, count: number)` | Write a child menu's pick count on its row. An empty badge draws nothing. |
 | `show(trigger?: HTMLElement)` | Open the menu under `trigger`, which is also what it measures against. |
 | `hide()` |  |
@@ -102,7 +102,7 @@ Each one bubbles.
 | `menu-change` | `{ values: string[] }` | The selection was COMMITTED. |
 | `change` |  | The number body's field or slider changed. It stops at the shadow root. |
 | `menu-apply` | `{ values: string[] }` | Apply was clicked. |
-| `menu-cancel` |  | Cancel was clicked; the values are already restored. |
+| `menu-discard` |  | Discard put the values back as they were when the menu opened; it stays open. |
 | `menu-clear` |  | Clear was clicked; the selection is already empty. |
 | `menu-select` | `{ label: string; value: 'remove' \| string }` | An action row was clicked. |
 | `menu-drill` | `{ value: string }` | A row's child-menu caret. |
@@ -127,7 +127,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-number`, `body-range`, `cancel`, `clear`, `condition-rows`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
+`add-condition`, `apply`, `body-number`, `body-range`, `clear`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 

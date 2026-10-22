@@ -1308,7 +1308,7 @@ test('a date\'s Range switch brings Apply/Cancel on a remote source and leads it
         const n = menu.shadowRoot.querySelector(sel);
         return !!n && getComputedStyle(n).display !== 'none';
       };
-      const state = () => ({ commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') });
+      const state = () => ({ commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), discard: shown('.discard') });
       if (!shown('.body-range')) return { switch: false, single: state() };
       const row = menu.shadowRoot.querySelector('.body-range')!;
       const sw = row.querySelector('sherpa-switch') as HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot };
@@ -1338,15 +1338,15 @@ test('a date\'s Range switch brings Apply/Cancel on a remote source and leads it
   // A DATE: one day is the whole answer, a span defers.
   expect(r.date).toEqual({
     switch: true, leads: true,
-    single: { commits: false, apply: false, cancel: false },
-    ranged: { commits: true, apply: true, cancel: true },
-    back: { commits: false, apply: false, cancel: false },
+    single: { commits: false, apply: false, discard: false },
+    ranged: { commits: true, apply: true, discard: true },
+    back: { commits: false, apply: false, discard: false },
   });
   // A NUMBER has no switch, and waits for Apply, remote or local.
-  expect(r.number).toEqual({ switch: false, single: { commits: true, apply: true, cancel: true } });
-  expect(r.local).toEqual({ switch: false, single: { commits: true, apply: true, cancel: true } });
+  expect(r.number).toEqual({ switch: false, single: { commits: true, apply: true, discard: true } });
+  expect(r.local).toEqual({ switch: false, single: { commits: true, apply: true, discard: true } });
   // A definition that NAMED `commit: false` keeps it.
-  expect(r.pinned).toEqual({ switch: false, single: { commits: false, apply: false, cancel: false } });
+  expect(r.pinned).toEqual({ switch: false, single: { commits: false, apply: false, discard: false } });
 });
 
 /**

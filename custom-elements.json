@@ -5517,7 +5517,7 @@
             },
             {
               "name": "data-commit",
-              "description": "show the Apply / Cancel footer and DEFER changes until Apply",
+              "description": "show the Apply / Discard footer and DEFER changes until Apply",
               "type": {
                 "text": "boolean"
               }
@@ -5791,7 +5791,7 @@
               "kind": "method",
               "name": "takeBaseline",
               "parameters": [],
-              "description": "What Cancel restores becomes what it holds NOW — for a host that wrote an answer while it is open."
+              "description": "What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open."
             },
             {
               "kind": "method",
@@ -5892,8 +5892,8 @@
               }
             },
             {
-              "name": "menu-cancel",
-              "description": "Cancel was clicked; the values are already restored.",
+              "name": "menu-discard",
+              "description": "Discard put the values back as they were when the menu opened; it stays open.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -6002,13 +6002,13 @@
               "name": "body-range"
             },
             {
-              "name": "cancel"
-            },
-            {
               "name": "clear"
             },
             {
               "name": "condition-rows"
+            },
+            {
+              "name": "discard"
             },
             {
               "name": "drill-back"

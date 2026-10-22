@@ -47,7 +47,7 @@ test('a toolbar number chip sends a typed number, or a Between row\'s drag, on A
       if (!menu.hasAttribute('open')) menu.show(chip);
       await window.__settled();
     };
-    const press = async (which: 'apply' | 'cancel'): Promise<void> => {
+    const press = async (which: 'apply' | 'discard'): Promise<void> => {
       sr.querySelector<HTMLElement>(`.${which}`)!.click();
       await window.__settled();
     };
@@ -60,7 +60,7 @@ test('a toolbar number chip sends a typed number, or a Between row\'s drag, on A
     const applied = heard.splice(0);
     await open();
     await edit(sr.querySelector('.body-number-one')!, '700');
-    await press('cancel');
+    await press('discard');
     const cancelled = { heard: heard.splice(0), values: menu.values };
     // Advanced: a Between row, its slider dragged.
     await open();
