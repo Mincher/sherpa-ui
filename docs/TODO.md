@@ -82,6 +82,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ⬜ | 0zze | 401 | LOOK — the scroll shadow moves from under the app header to an INNER shadow at the top of the layout grid while its content scrolls; an attribute on the layout grid turns it off (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1832,6 +1833,14 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[ ]` ⬜ 401 — LOOK: the scroll shadow is an inner shadow at the top of the layout grid
+
+Will, 2026-10-22: *"We show a drop shadow under the app header when it's scrolled
+under but instead this should be an inner shadow at the top of the content area
+(layout-grid) when it's content scrolls. This should be configurable, with an
+attribute, on the layout grid component so that we can override it when we don't
+need it."*
 
 ### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
 
