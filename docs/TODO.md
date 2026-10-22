@@ -1909,6 +1909,10 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
 - ✅ **Step 5 — Reset of Group and Sort (2026-10-22).** The chip's own
   `clear()` forgets a Group or Sort chip's column and way; the bar's Reset all
   and the panel's field Reset call it, rather than each clearing it by hand.
+- ✅ **Step 6 — ON after an Apply (2026-10-22).** The chip's `answered` is the
+  one rule — a pick, typing or a row, or none — and the chip, the bar (a filter's
+  Apply, a calendar's pick) and the panel (a value chip's Apply) all use it; the
+  panel's dropped a typed answer and none.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

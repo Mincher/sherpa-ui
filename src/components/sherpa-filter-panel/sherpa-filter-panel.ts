@@ -1723,7 +1723,8 @@ export class SherpaFilterPanel extends SherpaElement {
       }
       if (held) {
         const picked = ((event as CustomEvent).detail?.values ?? []) as string[];
-        chip.toggleAttribute('data-current', picked.length > 0);
+        // ON by the chip's own rule: a typed answer and none too. TODO 424
+        chip.toggleAttribute('data-current', picked.length > 0 || (chip as SherpaQuickFilter).answered);
         this.#syncAnswered(held);
         // Group and Sort say their own change, with its direction: #onArrange passes it on.
         this.#report(held);

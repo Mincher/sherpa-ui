@@ -431,9 +431,17 @@ export class SherpaQuickFilter extends SherpaElement {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
   }
 
-  /** Does the chip hold an answer — a pick, a day, a number, typing or a row? */
+  /** Does the chip hold an answer — a pick, a day, a number, typing or a row, or
+   *  none (on, where picks fetch)? Whether it is ON after its menu applies: ONE
+   *  rule for the chip and every host. TODO 424 · TRAP T-none-is-an-answer */
   get answered(): boolean {
-    return this.values.length > 0 || this.#hasTypedAnswer();
+    return this.#answers(this.values);
+  }
+
+  /** The rule, over the picks as given. */
+  #answers(values: readonly string[]): boolean {
+    // A TYPING condition answers with text; a chip whose picks fetch STAYS on as its last goes.
+    return values.length > 0 || this.#hasTypedAnswer() || (this.current && this.#fetches());
   }
 
   /** Does its menu hold a change not yet sent — a draft its Apply would send?
@@ -444,9 +452,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Everything the chip derives from its picks. */
   #applySelection(values: string[]): void {
-    // A TYPING condition answers with text, so the chip is on without a tick; a
-    // chip whose picks fetch STAYS on as its last goes — none. TRAP T-none-is-an-answer
-    this.current = values.length > 0 || this.#hasTypedAnswer() || (this.current && this.#fetches());
+    this.current = this.#answers(values);
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
     this.#syncBadge();

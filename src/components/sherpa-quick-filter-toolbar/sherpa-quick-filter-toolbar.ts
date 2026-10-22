@@ -254,7 +254,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A committing menu's pick is a draft: its Apply asks. TRAP T-commit-follows-select-mode
     if (!chip || chip.querySelector('sherpa-menu')?.hasAttribute('data-commit')) return;
     // A date chip turns itself ON by picking — it has no body toggle. Locked, it is drawn.
-    if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
+    if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0 || (chip as SherpaQuickFilter).answered);
     this.#emitChange(this.#answerRequest(chip));
   };
 
