@@ -10393,6 +10393,32 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-page-loads-the-bundle
+
+**A page with no bundler loads `dist/bundle/`: Sherpa joined into a few files.**
+TODO 350 D1 (Will, A, 2026-10-22). The module files are about 200, and the
+browser finds each import only after the file before it lands: Records asked
+for 221 files, so on a fast 4G network its first paint waited 3.45 s for the
+chain. The production build joins each entry (`index`, `data`, `app`,
+`components`) with esbuild, split so they share their common code. Records now
+asks for 33: fast 4G 2.1 s cold, 1.4 s warm (Demos also compresses).
+
+Four things make it work, and each looks odd. **Every file sits in one folder**,
+and the build moves each module's own `new URL(…, import.meta.url)` to point
+from there (`installTokens()` links `tokens.css` beside `components.js`). **The
+icons the components draw ride inside** (`registerIcons`): any icon name quoted
+in the built component code — their DATA, because an imported icon module stays
+a file of its own, and the import is marked as having side effects, because
+`package.json`'s `sideEffects` would drop it. An app's own icons still load the
+first time each is drawn. **A DEV build** writes each entry as a pass-through to
+the modules, so the same import map serves live reload — a bundle of fetched
+templates would ask for them beside the bundle, where they are not. **One page,
+one copy:** map every entry to the bundle or every one to the modules; a mix
+defines each class twice.
+
+- Site: `scripts/build-reforged.mjs`
+- Site: `src/core/ui/render-icon.ts`
+
 ### T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
 
 **A `role="toolbar"` moves between its controls on Left, Right, Home and End,

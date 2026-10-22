@@ -26,6 +26,22 @@
       "types": "./dist/components.d.ts",
       "default": "./dist/components.js"
     },
+    "./bundle": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/bundle/index.js"
+    },
+    "./bundle/data": {
+      "types": "./dist/data.d.ts",
+      "default": "./dist/bundle/data.js"
+    },
+    "./bundle/app": {
+      "types": "./dist/app.d.ts",
+      "default": "./dist/bundle/app.js"
+    },
+    "./bundle/components": {
+      "types": "./dist/components.d.ts",
+      "default": "./dist/bundle/components.js"
+    },
     "./css": "./dist/styles/tokens/tokens.css",
     "./css/page": "./dist/styles/tokens/page.css",
     "./css/button": "./dist/styles/button.css",
@@ -43,6 +59,7 @@
   },
   "sideEffects": [
     "./dist/index.js",
+    "./dist/bundle/**/*.js",
     "./dist/app.js",
     "./dist/components.js",
     "./dist/components/**/*.js",

@@ -17,6 +17,7 @@
  * - renderIcon — Replace `el`'s contents with the icon's SVG: now, or once its module has loaded.
  * - upgradeIcons — turn every icon in a freshly stamped tree into a fitted SVG
  * - iconsLoading — every icon module still loading, for `settled()`
+ * - registerIcons — Icons already in hand, drawn at once: the bundle's own.
  */
 import { ICON_NAMES, type IconArt } from './icon-names.js';
 import { ownHtml } from './trusted-html.js';
@@ -57,6 +58,12 @@ function load(name: string): Promise<IconArt | undefined> {
 /** Every icon module still loading, for `settled()`. */
 export function iconsLoading(): Promise<unknown> {
   return Promise.all(loading.values());
+}
+
+/** Icons already in hand, drawn at once: the bundle carries the ones its
+ *  components draw. TRAP T-a-page-loads-the-bundle */
+export function registerIcons(arts: Readonly<Record<string, IconArt>>): void {
+  for (const [name, art] of Object.entries(arts)) loaded.set(name, art);
 }
 
 /**

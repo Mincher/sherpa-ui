@@ -354,7 +354,7 @@
   "src/core/ui/mark-text.ts": 81,
   "src/core/ui/more-menu.ts": 158,
   "src/core/ui/radio-group.ts": 21,
-  "src/core/ui/render-icon.ts": 129,
+  "src/core/ui/render-icon.ts": 136,
   "src/core/ui/roving-focus.ts": 199,
   "src/core/ui/settled.ts": 83,
   "src/core/ui/shared-constants.ts": 105,

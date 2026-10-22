@@ -8,17 +8,20 @@
  * keeps the URLs for live reload. Will, TODO 208. TRAP T-the-text-is-in-the-js
  * Then each module is MINIFIED, one by one — never bundled, so every import
  * path holds; a dev build stays readable. Will, TODO 199.
+ * Last, dist/bundle/: each entry as a few files, for a page with no bundler of
+ * its own. Will, TODO 350 D1. TRAP T-a-page-loads-the-bundle
  *
  *   node scripts/build-reforged.mjs [--watch | --dev | --no-minify]
  *   (--no-minify: inlined as shipped, but with readable names — to profile)
  */
 import { execSync, spawn } from 'node:child_process';
-import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync } from 'node:fs';
-import { join, dirname, relative } from 'node:path';
+import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync, rmSync } from 'node:fs';
+import { join, dirname, relative, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
-import { transform } from 'esbuild';
+import { build, transform } from 'esbuild';
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, 'src');
@@ -160,6 +163,73 @@ if (!DEV) {
     console.log(`✓ ${await minifyFiles(OUT)}`);
   }
 }
+
+/* The BUNDLE: each entry joined into a few files in dist/bundle/, sharing their
+   common code; each icon stays a small lazy file. Every file sits in that one
+   folder, so a module's own URL — tokens.css beside components.js — is moved to
+   point from there. A DEV build writes each entry as a pass-through to the
+   modules, so the same path serves live reload. TRAP T-a-page-loads-the-bundle */
+const BUNDLED = ['index', 'data', 'app', 'components'];
+const BUNDLE = join(OUT, 'bundle');
+/** The two entries that draw components: each is first given the icons they draw. */
+const DRAWS = ['index', 'components'];
+
+/** Every icon a component draws: its name, quoted, in the built code. */
+function componentIcons() {
+  const icons = join(OUT, 'core/ui/icons');
+  const names = readdirSync(icons).filter((f) => f.endsWith('.js')).map((f) => f.slice(0, -3));
+  const code = globSync('{components,core}/**/*.js', { cwd: OUT })
+    .filter((f) => !f.startsWith('core/ui/icons/') && f !== 'core/ui/icon-names.js')
+    .map((f) => readFileSync(join(OUT, f), 'utf8')).join('\n');
+  const quoted = (name) => new RegExp(`["'\`]${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\\\?["'\`]`);
+  return names.filter((name) => quoted(name).test(code));
+}
+async function writeBundle() {
+  rmSync(BUNDLE, { recursive: true, force: true });
+  mkdirSync(BUNDLE, { recursive: true });
+  if (DEV) {
+    for (const entry of BUNDLED) writeFileSync(join(BUNDLE, `${entry}.js`), `export * from '../${entry}.js';\n`);
+    return 'pass-through to the modules (a dev build)';
+  }
+  const moveUrls = {
+    name: 'bundle-inputs',
+    setup(b) {
+      // The icons a bundle carries register as it loads: package.json's sideEffects would drop the import.
+      b.onResolve({ filter: /^\.\/icons\.js$/ }, (args) => ({ path: join(args.resolveDir, args.path), sideEffects: true }));
+      b.onLoad({ filter: /\.js$/ }, (args) => {
+        const code = readFileSync(args.path, 'utf8');
+        const moved = code.replace(/new URL\((['"])(\.{1,2}\/[^'"]+)\1,\s*import\.meta\.url\)/g, (_call, q, rel) => {
+          const to = relative(BUNDLE, resolve(dirname(args.path), rel)).split('\\').join('/');
+          return `new URL(${q}${to.startsWith('.') ? to : `./${to}`}${q}, import.meta.url)`;
+        });
+        return { contents: moved, loader: 'js' };
+      });
+    },
+  };
+  /* The icons the components draw ride in the bundle: one file, not a request
+     each. An app's own icons still load the first time each is drawn. */
+  const inputs = join(OUT, '.bundle-in');
+  rmSync(inputs, { recursive: true, force: true });
+  mkdirSync(inputs, { recursive: true });
+  const icons = componentIcons();
+  // Their DATA, not their modules: an imported icon module would stay a file of its own.
+  const arts = {};
+  for (const name of icons) arts[name] = (await import(pathToFileURL(join(OUT, 'core/ui/icons', `${name}.js`)).href)).default;
+  writeFileSync(join(inputs, 'icons.js'),
+    `import { registerIcons } from '../core/ui/render-icon.js';\nregisterIcons(${JSON.stringify(arts)});\n`);
+  for (const entry of DRAWS) writeFileSync(join(inputs, `${entry}.js`), `import './icons.js';\nexport * from '../${entry}.js';\n`);
+  const out = await build({
+    entryPoints: BUNDLED.map((entry) => join(DRAWS.includes(entry) ? inputs : OUT, `${entry}.js`)),
+    bundle: true, splitting: true, format: 'esm', target: 'es2022', minify: MINIFY,
+    legalComments: 'none', outdir: BUNDLE, entryNames: '[name]', write: true, metafile: true, logLevel: 'warning', plugins: [moveUrls],
+  });
+  rmSync(inputs, { recursive: true, force: true });
+  const files = Object.keys(out.metafile.outputs);
+  const bytes = files.reduce((n, f) => n + out.metafile.outputs[f].bytes, 0);
+  return `${files.length} files, ${Math.round(bytes / 1024)} KB, ${icons.length} icons in it`;
+}
+console.log('› bundle each entry into dist/bundle/');
+console.log(`✓ ${await writeBundle()}`);
 
 if (WATCH) {
   const tsc = spawn('npx', ['tsc', '-p', 'tsconfig.reforged.json', '--watch', '--preserveWatchOutput'],

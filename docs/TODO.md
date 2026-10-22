@@ -1227,7 +1227,8 @@ little: the chain of requests costs the time. The bundle was esbuild over
 lazy chunk; `index.js` is 174 KB gzipped. The 74 requests left are Demos' own
 files (its Context, templates, definitions, stores) and the icons.
 
-**❓ D1 — how an app loads Sherpa.** **A (my pick):** sherpa-ui's build also
+**✅ D1 — how an app loads Sherpa: Will, 2026-10-22, A** (*"let's move the
+bundling to sherpa rather than the consumer apps"*). **A (my pick):** sherpa-ui's build also
 writes a BUNDLE per entry (`dist/bundle/`, split, minified; a new export such
 as `sherpa-ui/bundle`), Demos' import map points at it, and Demos' server
 compresses. An app with its own bundler keeps the modules as today. Cost: a
@@ -1248,6 +1249,22 @@ import-map line; its code does not change, and the Starter template starts on
 the bundle. A page uses the bundle OR the files, never both (two copies of
 every class); `check-usage` would warn. One component alone, and live reload,
 stay on the files. Compression is the app server's: Demos turns it on.
+
+**✅ Built 2026-10-22.** `npm run build` writes `dist/bundle/` (esbuild, split,
+minified); exports `sherpa-ui/bundle`, `/bundle/data`, `/bundle/app`,
+`/bundle/components`. The 73 icons the components draw ride inside it as data
+(`registerIcons`); an app's own icons stay lazy. A dev build writes
+pass-throughs, so live reload still works. Demos, Gallery and the Starter
+template map to it; Demos' server compresses text (brotli or gzip) and keeps a
+hashed chunk for good. Records, 4x CPU, Demos on its own server:
+
+| | requests | fast 4G cold | fast 4G warm | slow 4G cold |
+|---|---:|---:|---:|---:|
+| before | 221 | 3.45 s | — | 10.2 s |
+| after | 33 | 2.1 s | 1.4 s | 4.0 s |
+
+TRAP `T-a-page-loads-the-bundle`. **Will:** restart Demos' :4200 server to get
+its compression; the bundle itself is live already.
 
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 

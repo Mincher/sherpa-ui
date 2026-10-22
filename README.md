@@ -86,19 +86,23 @@ installed, so nothing is downloaded.
   its attributes, events, slots, parts and an example, written from its spec.
 
 A bundler or Node finds these names through the package's `exports`. A page
-with no bundler needs an import map to use them in its own modules. Put it in
-`<head>`, before the first module script:
+with no bundler needs an import map to use them in its own modules: point it at
+the BUNDLE, `dist/bundle/`, which is each entry joined into a few files. Put it
+in `<head>`, before the first module script:
 
 ```html
 <script type="importmap">
   { "imports": {
-    "sherpa-ui": "./node_modules/sherpa-ui/dist/index.js",
-    "sherpa-ui/components": "./node_modules/sherpa-ui/dist/components.js",
-    "sherpa-ui/app": "./node_modules/sherpa-ui/dist/app.js",
-    "sherpa-ui/data": "./node_modules/sherpa-ui/dist/data.js"
+    "sherpa-ui": "./node_modules/sherpa-ui/dist/bundle/index.js",
+    "sherpa-ui/components": "./node_modules/sherpa-ui/dist/bundle/components.js",
+    "sherpa-ui/app": "./node_modules/sherpa-ui/dist/bundle/app.js",
+    "sherpa-ui/data": "./node_modules/sherpa-ui/dist/bundle/data.js"
   } }
 </script>
 ```
+
+Map every entry to the bundle, or every one to the module files
+(`dist/index.js` …), never a mix: a mix loads two copies of every class.
 
 Every import is safe on a server. There, a component module loads and defines
 nothing.

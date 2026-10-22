@@ -30,13 +30,20 @@ Plus the app's stores, and its Views as JSON.
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script type="importmap">
-    { "imports": { "sherpa-ui": "/node_modules/sherpa-ui/dist/index.js" } }
+    { "imports": { "sherpa-ui": "/node_modules/sherpa-ui/dist/bundle/index.js" } }
   </script>
   <link rel="stylesheet" href="/node_modules/sherpa-ui/dist/styles/tokens/tokens.css">
   <link rel="stylesheet" href="/node_modules/sherpa-ui/dist/styles/tokens/page.css">
 </head>
 ```
 
+- `dist/bundle/` is Sherpa joined into a few files: a page with no bundler of
+  its own loads about 10, not 200. The icons the components draw are inside it;
+  an app's own icons load the first time each is drawn. Use the bundle OR the
+  module files (`dist/index.js`), never both: two copies of every class. An app
+  with its own bundler imports `sherpa-ui` as usual. `T-a-page-loads-the-bundle`
+- Serve text files compressed (brotli or gzip). A bundle file whose name ends in
+  a hash (`chunk-AB12CD34.js`) never changes: it can be cached for good.
 - `tokens.css` gives every component its variables. `page.css` styles the
   page itself — margins, the body font. Leave `page.css` out when the
   components go into someone else's page. `T-tokens-are-safe-to-embed`
