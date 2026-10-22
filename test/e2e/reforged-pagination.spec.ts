@@ -46,6 +46,19 @@ test('renders the page input + "of N" total and the rows-per-page select', async
   expect(r.opts).toEqual(['10', '25', '50']);
 });
 
+/** TRAP T-pages-are-one-based-and-default-to-100 */
+test('with no size named it shows 100 rows a page, from 10, 25, 50 and 100', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-pagination') as PagerEl;
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const opts = Array.from(el.shadowRoot!.querySelectorAll('.rows option')).map((o) => o.textContent);
+    return { size: el.pageSize, opts };
+  });
+  expect(r).toEqual({ size: 100, opts: ['10', '25', '50', '100'] });
+});
+
 test('first / prev / next / last move the page and fire page-change', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-pagination') as PagerEl;

@@ -2563,11 +2563,11 @@
         },
         {
           "name": "data-page-size",
-          "description": "active rows-per-page value: 25 when it is an option, else the first"
+          "description": "active rows-per-page value: 100 when it is an option, else the first"
         },
         {
           "name": "data-rows-options",
-          "description": "comma list of rows-per-page choices, e.g. \"10,25,50\""
+          "description": "comma list of rows-per-page choices, e.g. \"10,25,50,100\""
         },
         {
           "name": "data-total-pages",

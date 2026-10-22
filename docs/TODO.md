@@ -84,6 +84,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
+| ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
+| ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1849,6 +1851,42 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[x]` ✅ 404 — LOOK: 100 rows a page by default
+
+Will, 2026-10-22: *"Default the data grid pagination rows per page to 100 rather
+than 10."*
+
+**✅ Done 2026-10-22.** `sherpa-pagination` shows 100 a page when no size is
+named, and its default options are 10, 25, 50 and 100. Demos (the session's
+default and `records.json`), Starter's `records.json` and Gallery (it was 10)
+say 100. A reader's saved Items per page still wins: Settings › Appearance.
+TRAP `T-pages-are-one-based-and-default-to-100` (was `…-to-25`). Tests:
+`reforged-pagination` (the default), Demos `items-per-page` and
+`records-grid-pages` (it sets 25 to get four pages), Gallery's data story.
+
+### `[ ]` ⬜ 403 — FILTERS: a fetching filter never asks for every row
+
+Will, 2026-10-22: *"For the customer and region filters the Select All in the off
+state should select none and return no results. This is divergent from the
+default behaviour. The current behaviour would mean that all Customer and Region
+data is fetched on page load which would be horrible in a real app scenario. I
+think this will apply to all menus that fetch, with an apply action, rather than
+update the UI automatically. These filters should also have their first value
+selected by default and default to being active (unless the definition specifies
+otherwise)."*
+
+**What changes, for a menu that fetches (it has Apply — a remote source or a
+`fetch: "server"` field, as 395 names them):**
+- Nothing ticked (Select All off) answers NO rows. Today it answers every row
+  (TRAP `T-everything-on-is-no-filter`: empty is all). Every other menu keeps
+  that rule.
+- It starts ON with its FIRST value ticked, unless the definition says otherwise.
+- So the first load asks for one value's rows, never the whole set.
+
+**To settle when it is worked:** what a fetching chip switched OFF asks for (all
+rows would be the whole fetch again); and the definition's key for "start
+otherwise".
 
 ### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
 

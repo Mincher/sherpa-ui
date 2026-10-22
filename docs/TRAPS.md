@@ -9437,7 +9437,7 @@ one number is all they need, and no per-dot x position comes from JS.
 
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 
-### T-pages-are-one-based-and-default-to-25
+### T-pages-are-one-based-and-default-to-100
 
 Two `sherpa-pagination` numbers that look arbitrary and are not.
 
@@ -9445,10 +9445,11 @@ Two `sherpa-pagination` numbers that look arbitrary and are not.
 are not "a page" at all, and clamping them UP is the only sane reading — hence
 `min: 1` on both `data-page` and `data-total-pages`.
 
-**The default page size is 25, not the first option.** 10 rows is a thin slice of
-a real table: it fills less than half a panel and makes paging the main way to
-read the data. A host can still name any size with `data-page-size`, and an
-options set that does not OFFER 25 falls back to its own first option. The
+**The default page size is 100, not the first option** (Will, 2026-10-22; it
+was 25). 10 rows is a thin slice of a real table: it fills less than half a
+panel and makes paging the main way to read the data. A host can still name any
+size with `data-page-size`, and an options set that does not OFFER 100 falls
+back to its own first option. The default options are 10, 25, 50 and 100. The
 constant is public as `SherpaPagination.DEFAULT_PAGE_SIZE`.
 
 `#clamp` states the **NaN** case rather than leaning on `Math.trunc(n) || 1`.
@@ -9458,6 +9459,7 @@ comment calls out as the reason it exists. It happened to be harmless here (page
 coincidence.
 
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
+- Site: `test/e2e/reforged-pagination.spec.ts`
 
 ### T-select-card-keeps-both-footer-controls
 

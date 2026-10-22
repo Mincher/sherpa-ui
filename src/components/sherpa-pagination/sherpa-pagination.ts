@@ -45,7 +45,7 @@ export class SherpaPagination extends SherpaElement {
 
   /* ── Public API ──────────────────────────────────────────────────────── */
 
-  // TRAP T-pages-are-one-based-and-default-to-25 — 1 is the default AND the floor.
+  // TRAP T-pages-are-one-based-and-default-to-100 — 1 is the default AND the floor.
   get totalPages(): number {
     return this.num('data-total-pages', 1, { min: 1, int: true });
   }
@@ -61,7 +61,7 @@ export class SherpaPagination extends SherpaElement {
   }
 
   /** The default rows-per-page when a host does not name one. */
-  static readonly DEFAULT_PAGE_SIZE = 25;
+  static readonly DEFAULT_PAGE_SIZE = 100;
 
   get pageSize(): number {
     const opts = this.#rowsOptions();
@@ -69,7 +69,7 @@ export class SherpaPagination extends SherpaElement {
     // reads back as 0 and divides by zero.
     const raw = this.num('data-page-size', NaN, { min: 1, int: true });
     if (Number.isFinite(raw)) return raw;
-    // 25, not the first option.
+    // 100, not the first option. Will, 2026-10-22
     const preferred = SherpaPagination.DEFAULT_PAGE_SIZE;
     return opts.includes(preferred) ? preferred : (opts[0] ?? preferred);
   }
@@ -107,7 +107,7 @@ export class SherpaPagination extends SherpaElement {
       .split(',')
       .map((s) => parseInt(s.trim(), 10))
       .filter((n) => !Number.isNaN(n) && n > 0);
-    return parsed.length ? parsed : [10, 25, 50];
+    return parsed.length ? parsed : [10, 25, 50, 100];
   }
 
   /** Stamp the rows-per-page <option>s from a cloning prototype. */

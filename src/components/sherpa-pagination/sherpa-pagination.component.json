@@ -166,7 +166,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "active rows-per-page value: 25 when it is an option, else the first"
+      "description": "active rows-per-page value: 100 when it is an option, else the first"
     },
     {
       "$type": "prop",
@@ -175,7 +175,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "comma list of rows-per-page choices, e.g. \"10,25,50\""
+      "description": "comma list of rows-per-page choices, e.g. \"10,25,50,100\""
     },
     {
       "$type": "prop",

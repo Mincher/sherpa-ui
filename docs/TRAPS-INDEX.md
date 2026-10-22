@@ -684,7 +684,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — data-grid
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — data-grid
 - [T-one-value-one-declaration](TRAPS.md#t-one-value-one-declaration) — data-grid
-- [T-pages-are-one-based-and-default-to-25](TRAPS.md#t-pages-are-one-based-and-default-to-25) — pagination
+- [T-pages-are-one-based-and-default-to-100](TRAPS.md#t-pages-are-one-based-and-default-to-100) — pagination
 - [T-radios-in-shadow-roots-are-not-one-group](TRAPS.md#t-radios-in-shadow-roots-are-not-one-group) — data-grid
 - [T-select-all-is-the-visible-rows](TRAPS.md#t-select-all-is-the-visible-rows) — data-grid
 - [T-selection-lives-in-the-keys-not-the-objects](TRAPS.md#t-selection-lives-in-the-keys-not-the-objects) — data-grid
