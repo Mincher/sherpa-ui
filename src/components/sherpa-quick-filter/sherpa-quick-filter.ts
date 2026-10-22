@@ -6,7 +6,7 @@
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
-  DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection,
+  DEFAULT_OP, OP_TAKES, valueKey, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
   fieldState, readingRows, rowAnswered, type FieldReading, type FilterState,
@@ -385,7 +385,8 @@ export class SherpaQuickFilter extends SherpaElement {
       this.refresh();
       return;
     }
-    this.#setPicks((next.picked ?? []).map(String), next.suspended, next.none);
+    // By KEY: a site pick is an object, and String() makes it "[object Object]". TODO 422
+    this.#setPicks((next.picked ?? []).map(valueKey), next.suspended, next.none);
   }
 
   /** Picks, and OFF where there are none or the answer is suspended — ON for none.

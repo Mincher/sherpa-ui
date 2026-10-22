@@ -287,7 +287,7 @@ export class SherpaFilterPanel extends SherpaElement {
   get values(): Record<string, Record<string, string[]>> {
     if (this.#stale) {
       return Object.fromEntries(Object.entries(this.#describedReadings()).map(([scope, fields]) =>
-        [scope, Object.fromEntries(Object.entries(fields).map(([id, r]) => [id, (r.picked ?? []).map(String)]))]));
+        [scope, Object.fromEntries(Object.entries(fields).map(([id, r]) => [id, (r.picked ?? []).map(valueKey)]))]));
     }
     const out: Record<string, Record<string, string[]>> = {};
     for (const [, held] of this.#held) {
@@ -824,7 +824,7 @@ export class SherpaFilterPanel extends SherpaElement {
       // A date is ONE chip, and a chip has an OFF of its own: it keeps its days.
       const shown = state && (!state.suspended || given.kind === 'date');
       const f: FieldFilter | HeldFilter = shown ? { ...rest, state } : rest;
-      const picked = new Set((shown ? state.picked ?? [] : []).map(String));
+      const picked = new Set((shown ? state.picked ?? [] : []).map(valueKey));
       return {
         ...f,
         ...(f.kind === 'date' ? { asChip: true } : {}),

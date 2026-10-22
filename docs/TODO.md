@@ -103,6 +103,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
 | ✅ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
 | ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
+| ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
+| ⬜ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1868,6 +1870,23 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[ ]` ⬜ 423 — LOOK: an accordion header has a hover
+
+Will, 2026-10-22: *"Accordion headers need a hover style (light grey fill using
+sherpa tokens)"*
+
+### `[x]` ✅ 422 — BUG: a Customer chip shows no labels until its menu opens
+
+Will, 2026-10-22: *"Customer value labels aren't shown, on the chip, until the
+menu is opened for the first time. So there's an initialisation issue."*
+
+**✅ Done 2026-10-22.** A SITE pick is an object (`{ customer, site }`). A chip
+told its answer read each pick with `String()`, so after a reload — or any
+answer drawn onto the chip — a site pick became "[object Object]" and left the
+face and tip; only the Query still held it. The chip reads picks by
+`valueKey` now, and so do two panel spots that had the same fault. Test: Demos
+`reforged-a-site-pick-keeps-its-label`.
 
 ### `[ ]` ⬜ 421 — LOOK: a stuck element casts a shadow
 
