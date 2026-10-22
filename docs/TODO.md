@@ -1896,6 +1896,10 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   every chip of a field — a run, tier parents, the answer chip — and its menus,
   late-built ones too. A pending run's value chips hide their badges, as the
   bar's chip does (304). Test: Demos `reforged-panel-scope-header` (a new case).
+- ✅ **Step 2 — drafts (2026-10-22).** The chip says `drafting` — its menu
+  holds a change not yet sent — and both hosts read it into `markField`; the
+  panel now hears a menu's draft, Apply and Cancel as the bar does, so a panel
+  field whose menu holds a draft reads as a warning too.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

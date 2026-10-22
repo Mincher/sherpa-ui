@@ -188,6 +188,10 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('quick-filter-open', this.#onKidsOpen);
     this.$('.scopes')?.addEventListener('menu-close', this.#onKidsClose);
     this.$('.scopes')?.addEventListener('menu-discard', this.#onMenuDiscard);
+    // A draft in an open menu, and its Apply or Cancel, as the bar hears them. TODO 424
+    for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
+      this.$('.scopes')?.addEventListener(type, this.#queuePending);
+    }
     // Rows and bodies change their answer without a chip click — a calendar's pick
     // too, where no Apply follows it (a View's, TODO 406).
     for (const type of ['condition-change', 'input', 'change', 'menu-change', 'range-select', 'datetime-change']) {
@@ -1431,6 +1435,11 @@ export class SherpaFilterPanel extends SherpaElement {
       .filter(Boolean);
   }
 
+  /** Re-read the pending flags once the event that moved a draft has landed. */
+  #queuePending = (): void => {
+    queueMicrotask(() => this.#syncPending());
+  };
+
   /**
    * REMOTE: each changed field shows its own Apply and Discard. The source
    * says which, by FIELD. TRAP T-apply-and-discard-wait-for-a-change
@@ -1443,9 +1452,10 @@ export class SherpaFilterPanel extends SherpaElement {
       const field = held.def.field ?? held.def.id;
       const on = waits && pending.has(field);
       held.box.toggleAttribute('data-pending', on);
-      // EVERY chip of the field, as the bar's one, and its menus. TODO 424
-      const chips = [this.#answerChip(held), ...[...held.values.querySelectorAll<HTMLElement>('.value')].filter((c) => this.#heldOfChip(c) === held)];
-      markField(chips, [held.menu, ...held.values.querySelectorAll('sherpa-menu[data-kids]')], { pending: on, failed: failed.has(field) });
+      // EVERY chip of the field, as the bar's one, and its menus — a draft in one too. TODO 424
+      const chips = [this.#answerChip(held), ...[...held.values.querySelectorAll<SherpaQuickFilter>('.value')].filter((c) => this.#heldOfChip(c) === held)];
+      const drafting = chips.some((c) => !!c?.drafting) || !!held.menu?.dirty;
+      markField(chips, [held.menu, ...held.values.querySelectorAll('sherpa-menu[data-kids]')], { pending: on, failed: failed.has(field), drafting });
     }
   }
 

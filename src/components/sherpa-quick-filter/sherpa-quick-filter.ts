@@ -428,6 +428,12 @@ export class SherpaQuickFilter extends SherpaElement {
     return this.values.length > 0 || this.#hasTypedAnswer();
   }
 
+  /** Does its menu hold a change not yet sent — a draft its Apply would send?
+   *  Its host reads it as pending. TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning */
+  get drafting(): boolean {
+    return !!this.menu?.dirty;
+  }
+
   /** Everything the chip derives from its picks. */
   #applySelection(values: string[]): void {
     // A TYPING condition answers with text, so the chip is on without a tick; a

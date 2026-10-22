@@ -548,7 +548,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
       const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
-      markField([chip], [menu], { pending: waiting.has(field), failed: failed.has(field), drafting: !!menu?.dirty });
+      markField([chip], [menu], { pending: waiting.has(field), failed: failed.has(field), drafting: (chip as SherpaQuickFilter).drafting });
     }
   }
 
@@ -686,8 +686,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Is the reader working in this chip's menu — open, with a draft not applied? */
   #drafting(id: string): boolean {
-    const chip = this.#chips().find((c) => c.dataset['id'] === id);
-    return !!chip?.hasAttribute('data-open') && !!this.#filterMenu(id)?.dirty;
+    const chip = this.#chips().find((c) => c.dataset['id'] === id) as SherpaQuickFilter | undefined;
+    return !!chip?.hasAttribute('data-open') && !!chip.drafting;
   }
 
   /** The chip that answers a field: its def's `field`, else its id. */

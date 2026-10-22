@@ -9053,6 +9053,14 @@
             },
             {
               "kind": "field",
+              "name": "drafting",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "column",
               "type": {
                 "text": "string"

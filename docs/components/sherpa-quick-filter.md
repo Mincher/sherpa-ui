@@ -67,6 +67,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `values` | `string[]` | read and write |  |
 | `reading` | `FieldReading \| null` | read and write |  |
 | `answered` | `boolean` | read only |  |
+| `drafting` | `boolean` | read only |  |
 | `column` | `string` | read only |  |
 | `direction` | `SortDirection \| null` | read only |  |
 | `results` | `number \| null` | read and write |  |
