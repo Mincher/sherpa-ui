@@ -1932,7 +1932,7 @@ Four things that are not obvious:
 - **A draft is read INSIDE the pick** (`onViewPicked`'s `draft` hook), in
   place of the View's Query, so the View's own filters never flash. It is a
   RESTORE, so it is exact: a carry-over field does not follow into it.
-- **Reset all to default, Save and Delete clear it**: the View's own filters
+- **Reset all on view, Save and Delete clear it**: the View's own filters
   are on, or the filters have a home.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
@@ -1952,7 +1952,7 @@ pick puts it on. So a filter the reader ADDED since goes, as it is not the
 View's. A page may call `resetView()` itself. Reset and its ▾ are one
 `.sherpa-group`, like Save and its ▾; folded, the ⋮ lists both.
 
-**The row reads "Reset all to default", and the ask is CANCELABLE** — Will,
+**The row reads "Reset all on view", and the ask is CANCELABLE** — Will,
 TODO 129: it *"should throw a confirmation sherpa dialog informing the user
 that it will reset all filters across all scopes to the view default"*, with
 a switch to *"Save filters before reset"* and a name. A dialog is the APP's,
@@ -2123,7 +2123,7 @@ the group NEVER folded. Its block sits before the steps now, and the width
 rule names the view type too.
 
 **The filter PANEL has one too** — Will, TODO 178: after the host's own
-toggle, holding Reset and Reset all to default once the panel is narrow
+toggle, holding Reset and Reset all on view once the panel is narrow
 (≤ 380px), and the host's own buttons when they fold. **Both ⋮ menus end in
 the host's own option**, "Limit to matching filters", a check row, shown while
 the host says it offers one (`data-limit-options="on|off"`, written by the
@@ -16502,7 +16502,14 @@ list) and `data-dirty`. Over a local store the draft IS the applied Query —
 one object — so nothing is ever pending. A scope that narrows one component
 (a legend) applies at once even on a remote store: its rows are already here.
 
+**A LOCAL scope can wait too** (TODO 406): `query.wait(scope)` splits the draft
+over a local store, and only that scope's answers wait; every other scope, and
+what each scope holds, is copied onto `applied` at once, and a field that moves
+scope carries its answer. The app waits its View, so a page fetches nothing
+until its Apply. A bound control over a waiting scope wears `data-waits`.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/a-waiting-scope-holds-its-picks.test.mjs`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/spoof-remote.ts`
 - Site: `src/core/data/store.ts`

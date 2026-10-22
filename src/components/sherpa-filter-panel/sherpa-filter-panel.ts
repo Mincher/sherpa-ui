@@ -1735,7 +1735,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /**
    * THE ⋮ MENU, built on each open: what has FOLDED away at this width — Reset,
-   * Reset all to default, the host's own buttons — then the host's own option,
+   * Reset all on view, the host's own buttons — then the host's own option,
    * "Limit to matching filters". A row does what its button does. Will, TODO 178.
    * TRAP T-the-more-menu-holds-what-folded
    */

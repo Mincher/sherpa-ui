@@ -92,7 +92,7 @@
     quick-filter-open — the caret was pressed on a chip with no menu yet: its host appends one now, and the chip opens it.
     jump-select — a jump row was picked, and its target scrolled into view. detail: { value, label }
     group-change — a GROUP chip picked or cleared its column. detail: { field }
-    sort-change — a SORT chip picked its column or way. detail: { field, direction }
+    sort-change — a SORT chip picked its column or way. detail: { field, direction, clear? } — clear: None, no sort to resume
 -->
 <template id="default">
   <div class="chip" part="chip">

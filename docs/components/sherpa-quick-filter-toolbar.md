@@ -125,7 +125,7 @@ Each one bubbles.
 | `sort-change` | `{ direction: 'asc' \| SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |
 | `filter-add` | `{ filters: FilterDef[]; holds: string[]; ids: string[] }` | Chips were added. |
-| `view-reset` |  | Reset all to default: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
+| `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
 | `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
 | `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |

@@ -864,7 +864,7 @@ test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away
   // Narrow: Reset folds into the ⋮.
   expect(r.narrow).toEqual({ more: true, reset: false });
   // Limit OFF: Hide invalid filters is there, below it, and inactive. Will, TODO 376.
-  expect(r.rows).toEqual(['Reset filters', 'Reset all to default', 'HR', 'Limit to matching filters', 'Hide invalid filters']);
+  expect(r.rows).toEqual(['Reset filters', 'Reset all on view', 'HR', 'Limit to matching filters', 'Hide invalid filters']);
   expect(r.hideOff).toBe(true);
   expect(r.heard).toEqual([{ on: true }]);
   // Wide, and no host option: no ⋮.

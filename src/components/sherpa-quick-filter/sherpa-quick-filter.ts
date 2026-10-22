@@ -458,10 +458,10 @@ export class SherpaQuickFilter extends SherpaElement {
        column would have had it forgotten. Its rows are RADIOS, so this can
        only ever fall back, never overrule a pick.
        TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-    const ticked = this.menu
-      ? this.querySelector<HTMLInputElement>('[slot="menu"] input:checked')?.value
-      : undefined;
-    return ticked || this.dataset['column'] || '';
+    const box = this.menu ? this.querySelector<HTMLInputElement>('[slot="menu"] input:checked') : null;
+    // NONE picks no column, not the one it remembers. TODO 407
+    if (box?.closest('.qf-none')) return '';
+    return box?.value || this.dataset['column'] || '';
   }
 
   /** Which way a SORT chip is pointing, or null when it is off. */
@@ -514,6 +514,9 @@ export class SherpaQuickFilter extends SherpaElement {
   /** A column was picked from the menu: apply it and say so. */
   #arrangeFromMenu(): void {
     const field = this.column;
+    // NONE clears: the column is forgotten, and a sort is not kept to resume. TODO 407
+    const none = !field;
+    if (none) this.set('data-column', null);
     if (this.dataset['kind'] === 'group') {
       if (!this.#drawn()) {
         this.current = !!field;
@@ -523,7 +526,7 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     // The way it is ALREADY pointing — picking a column does not rewind it.
-    this.#applySort(field, field ? sortDirectionFrom(this.dataset['direction']) ?? 'asc' : null);
+    this.#applySort(field, field ? sortDirectionFrom(this.dataset['direction']) ?? 'asc' : null, none);
   }
 
   /**
@@ -534,7 +537,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * built the chip, and that container's attribute sync.
    * TRAP T-one-cycle-for-one-value
    */
-  #applySort(field: string | null, direction: SortDirection | null): void {
+  #applySort(field: string | null, direction: SortDirection | null, clear = false): void {
     if (!this.#drawn()) {
       // A suspended chip rewinds to `asc` — that is where a resume starts.
       this.set('data-direction', direction ?? 'asc');
@@ -544,6 +547,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.emit('sort-change', {
       field: direction === null ? null : field,
       direction: direction ?? 'asc',
+      ...(clear ? { clear: true } : {}),
     });
   }
 

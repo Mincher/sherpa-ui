@@ -236,8 +236,8 @@ export interface BindSink {
   view(view: BoundView): void;
   /** A page, or every row — never to a steer-only bind. */
   rows(rows: readonly Row[]): void;
-  /** Its scopes' pending fields, and whether one is dirty. TRAP T-apply-and-discard-wait-for-a-change */
-  pending(fields: readonly string[], dirty: boolean): void;
+  /** Its scopes' pending fields, whether one is dirty, and whether one waits. TRAP T-apply-and-discard-wait-for-a-change */
+  pending(fields: readonly string[], dirty: boolean, waits: boolean): void;
   /** The source let it go. */
   off(): void;
 }

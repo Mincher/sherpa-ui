@@ -117,7 +117,7 @@ Each one bubbles.
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
 | `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set on. |
-| `view-reset` |  | Reset all to default: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
+| `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 

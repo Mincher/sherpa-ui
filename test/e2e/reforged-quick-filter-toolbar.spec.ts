@@ -388,7 +388,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
 
   expect(r.collapse).toBe(3);
   expect(r.rows).toEqual([
-    'Suggest filters', 'Reset filters', 'Reset all to default', 'View as filter panel', '---',
+    'Suggest filters', 'Reset filters', 'Reset all on view', 'View as filter panel', '---',
     'Favorite', 'Save view', 'Save view as', 'Refresh view',
   ]);
   expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra', 'clear', 'favourite:true', 'favourite:false']);
@@ -2674,4 +2674,42 @@ test('a chip whose every pick is ruled out stays active, toggles, and its menu g
     row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true, refused: true } });
   expect(r.stillTicked).toBe(true);
   expect(r.off).toBe(true);
+});
+
+test('None in a Group or Sort menu clears it: the chip goes off with no column, and a sort asks to CLEAR (TODO 407)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Chip = HTMLElement & { current: boolean; column: string };
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
+    el.populate([{ id: 'live', label: 'Live' }]);
+    el.organise({ group: [{ field: 'team', label: 'Team' }], sort: [{ field: 'name', label: 'Name' }] });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const chip = (id: string) => sr.querySelector<Chip>(`.organise-chip[data-id="${id}"]`)!;
+    const tick = async (c: HTMLElement, sel: string) => {
+      const input = c.querySelector('sherpa-menu')!.querySelector<HTMLInputElement>(sel)!;
+      input.checked = true;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      await window.__settled();
+    };
+    const events: Array<Record<string, unknown>> = [];
+    el.addEventListener('sort-change', (e) => events.push({ type: 'sort', ...(e as CustomEvent).detail }));
+    el.addEventListener('group-change', (e) => events.push({ type: 'group', ...(e as CustomEvent).detail }));
+    await tick(chip('sort'), 'input[value="name"]');
+    await tick(chip('group'), 'input[value="team"]');
+    const on = { sort: chip('sort').current, group: chip('group').current };
+    events.length = 0;
+    await tick(chip('sort'), '.qf-none input');
+    await tick(chip('group'), '.qf-none input');
+    return {
+      on,
+      off: { sort: [chip('sort').current, chip('sort').column], group: [chip('group').current, chip('group').column] },
+      events,
+    };
+  });
+  expect(r.on).toEqual({ sort: true, group: true });
+  expect(r.off).toEqual({ sort: [false, ''], group: [false, ''] });
+  expect(r.events).toEqual([
+    { type: 'sort', field: null, direction: 'asc', clear: true },
+    { type: 'group', field: null },
+  ]);
 });

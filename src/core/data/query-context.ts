@@ -28,6 +28,8 @@
  * - .scopeLabel — A scope's name as a reader sees it, or its id.
  * - .arranges — Does Group and Sort arrange this scope's rows?
  * - .sets — A scope's filter sets, as declared.
+ * - .waiting — Does this scope — or, naming none, any — wait for Apply?
+ * - .wait — This scope's answers wait for Apply, local or remote.
  * - .pending — Has this field been changed and not yet applied?
  * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
  * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
@@ -43,8 +45,8 @@
  * - .setReading — ONE field's answer — at its home, or a component's own; the answer in force is a no-op.
  * - .reset — Clear all, Reset all: every answer homed in these scopes goes.
  * - .batch — The doors one act calls are ONE change to the page.
- * - .commit — SEND the draft — Apply, with a remote member.
- * - .discard — Put the applied answers back over the draft — Discard, with a remote member.
+ * - .commit — SEND the draft — Apply, where a scope waits.
+ * - .discard — Put the applied answers back over the draft — Discard, where a scope waits.
  * - .setSort — Order by one field, or stop; `null` suspends.
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
@@ -309,15 +311,61 @@ export class QueryContext extends EventTarget {
     return structuredClone(this.#live.sets.get(scope) ?? []);
   }
 
-  /** Has this field been changed and not yet applied? Never, with no remote member. */
+  /** Does this scope — or, naming none, any — wait for Apply? A remote member's
+   *  do; a local one's, once `wait()` named it. TODO 406 */
+  waiting(scope?: string): boolean {
+    return this.remote || (scope ? this.#waiting.has(scope) : this.#waiting.size > 0);
+  }
+
+  /**
+   * wait(scope) — this scope's answers wait for Apply, local or remote: a write
+   * lands in the draft, and `commit()` sends it. The app waits its View, so no
+   * pick fetches until the reader asks. `false` sends what waits. TODO 406
+   * TRAP T-apply-and-discard-wait-for-a-change
+   */
+  wait(scope: string, on = true): void {
+    if (on === this.#waiting.has(scope)) return;
+    if (!on) {
+      this.commit({ scope });
+      this.#waiting.delete(scope);
+      if (!this.#waiting.size && !this.remote) this.#live.draft = this.#live.applied;
+      return;
+    }
+    this.#waiting.add(scope);
+    if (this.#live.draft === this.#live.applied) this.#live.draft = copyQuery(this.#live.applied);
+    this.#tell({ kind: 'drawn', fields: [], pending: true });
+  }
+
+  /** The scopes `wait()` named. */
+  readonly #waiting = new Set<string>();
+
+  /** A LOCAL draft: a scope that does not wait is in force at once, and so is
+   *  what each scope holds. A remote one keeps its own rule. TODO 406 */
+  #settle(): void {
+    const { draft, applied } = this.#live;
+    if (this.remote || draft === applied) return;
+    for (const id of new Set([...Object.keys(draft.scopes), ...Object.keys(applied.scopes)])) {
+      if (!this.#waiting.has(id)) copyScope(draft, applied, id);
+    }
+    copyHolds(draft, applied);
+  }
+
+  /** Fields that MOVED scope carry their answer at once, waiting or not.
+   *  TRAP T-up-is-open-down-is-closed */
+  #carry(fields: readonly string[]): void {
+    if (this.remote || this.#live.draft === this.#live.applied) return;
+    for (const field of fields) copyField(this.#live.draft, this.#live.applied, field);
+  }
+
+  /** Has this field been changed and not yet applied? Never, where nothing waits. */
   pending(field: string): boolean {
-    if (!this.remote) return false;
+    if (!this.waiting()) return false;
     return !sameReading(answerIn(this.#live.applied, field), answerIn(this.#live.draft, field));
   }
 
   /** Has anything in this scope — or in any scope — been changed and not applied? */
   dirty(scope?: string): boolean {
-    if (!this.remote) return false;
+    if (!this.waiting()) return false;
     const ids = scope ? [scope]
       : [...new Set([...Object.keys(this.#live.applied.scopes), ...Object.keys(this.#live.draft.scopes)])];
     return ids.some((id) => JSON.stringify(answersOf(this.#live.applied.scopes[id]))
@@ -546,6 +594,7 @@ export class QueryContext extends EventTarget {
        TRAP T-up-is-open-down-is-closed */
     const now = homes(draft);
     const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
+    this.#carry(moved);
     this.#tell({ kind: 'hold', scope: name, moved });
   }
 
@@ -585,7 +634,9 @@ export class QueryContext extends EventTarget {
     rehome(this.#live.draft);
     // An answer that moved narrows from where it lives now, at once. TRAP T-up-is-open-down-is-closed
     const now = homes(this.#live.draft);
-    this.#tell({ kind: 'move', scopes, moved: [...now].some(([f, home]) => was.get(f) !== home) });
+    const moved = [...now].filter(([f, home]) => was.get(f) !== home).map(([f]) => f);
+    this.#carry(moved);
+    this.#tell({ kind: 'move', scopes, moved: moved.length > 0 });
     return true;
   }
 
@@ -726,9 +777,9 @@ export class QueryContext extends EventTarget {
     }
   }
 
-  /** SEND the draft — Apply, with a remote member. One field, one scope, or all. It loads. */
+  /** SEND the draft — Apply, where a scope waits. One field, one scope, or all. It loads. */
   commit(at: { scope?: string; field?: string } = {}): void {
-    if (!this.remote) return;
+    if (!this.waiting()) return;
     if (this.#batched) this.#applies.push(at);
     else if (this.#send(at)) this.#tell({ kind: 'commit' });
   }
@@ -745,10 +796,10 @@ export class QueryContext extends EventTarget {
     return true;
   }
 
-  /** Put the applied answers back over the draft — Discard, with a remote member.
+  /** Put the applied answers back over the draft — Discard, where a scope waits.
    *  One field, one scope, or all. Every control over them is drawn the applied answer. */
   discard(at: { scope?: string; field?: string } = {}): void {
-    if (!this.remote) return;
+    if (!this.waiting()) return;
     const before = new Set(this.#answered());
     if (at.field) copyField(this.#live.applied, this.#live.draft, at.field);
     else if (at.scope) copyScope(this.#live.applied, this.#live.draft, at.scope);
@@ -819,7 +870,7 @@ export class QueryContext extends EventTarget {
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();
     this.#live.applied = next;
-    this.#live.draft = this.remote ? structuredClone(next) : next;
+    this.#live.draft = this.waiting() ? structuredClone(next) : next;
     rehome(this.#live.draft);
     await Promise.all([...this.#members].map((m) => m.heard({ kind: 'query', was, before })));
     this.#announce({
@@ -920,6 +971,7 @@ export class QueryContext extends EventTarget {
   /** Each member hears what the context did, at once, in the order they joined;
    *  then, if a field's answer or a scope's holds moved, the page is told. */
   #tell(change: QueryChange): void {
+    this.#settle();
     for (const member of this.#members) void member.heard(change);
     const said = ((): QueryChangeDetail | null => {
       switch (change.kind) {
@@ -948,7 +1000,7 @@ export class QueryContext extends EventTarget {
    *  `applied` once; a draft that exists is kept. */
   join(member: QueryMember): QueryHandle {
     this.#members.add(member);
-    if (member.remote && this.#live.draft === this.#live.applied) this.#live.draft = copyQuery(this.#live.applied);
+    if ((member.remote || this.#waiting.size) && this.#live.draft === this.#live.applied) this.#live.draft = copyQuery(this.#live.applied);
     return {
       live: () => this.#live,
       mintId: () => `bind-${++this.#binds}`,

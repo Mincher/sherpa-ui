@@ -65,7 +65,7 @@
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. detail: { id, filter, holds }
     filter-add           — chips were added. detail: { ids, filters, holds }
-    view-reset           — Reset all to default: put back the View's own filters, in every scope. Cancelable
+    view-reset           — Reset all on view: put back the View's own filters, in every scope. Cancelable
     filters-apply        — a saved set's row was ticked: take it, so the filters match it. detail: { id }
     filters-dismiss      — a saved set's row was unticked: the scopes it names lose their filters. detail: { id }
     filters-save         — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
@@ -129,7 +129,7 @@
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="wand-magic-sparkles"
                      aria-label="Suggest filters"></sherpa-button>
-      <!-- RESET, and its menu: Reset all to default. Will, TODO 109 and 129.
+      <!-- RESET, and its menu: Reset all on view. Will, TODO 109 and 129.
            TRAP T-reset-to-default-is-the-views-own -->
       <span class="reset-group sherpa-group">
         <sherpa-button class="act" data-size="sm" data-act="clear" data-group="start"
@@ -139,7 +139,7 @@
                        data-group="end" data-icon-start="triangle-down"
                        aria-label="Reset options" aria-haspopup="dialog">
           <sherpa-menu slot="menu" data-align="end">
-            <button type="button" value="reset-default">Reset all to default</button>
+            <button type="button" value="reset-default">Reset all on view</button>
           </sherpa-menu>
         </sherpa-button>
       </span>

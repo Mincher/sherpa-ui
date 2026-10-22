@@ -303,7 +303,7 @@ export class SherpaProvider extends SherpaElement {
       }
       const shipped = options.views;
       const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
-      // The page as DEFINED, before a kept Query: what Reset all to default starts from.
+      // The page as DEFINED, before a kept Query: what Reset all on view starts from.
       this.#pages.begin({
         id: definition.id, store: def.store, source, query: source.query, library, initial: source.query.applied,
         savedFilters: savedFiltersOf(definition),
@@ -420,7 +420,7 @@ export class SherpaProvider extends SherpaElement {
    * Copy-001`. With none, over the reader's own View on screen; a preset is
    * never overwritten, so that answers undefined. The saved View's id, else
    * undefined. `stay`: keep it for later, and stay on the View on screen — the
-   * save before a Reset all to default.
+   * save before a Reset all on view.
    * TRAP T-a-view-is-json · TRAP T-a-saved-view-is-the-readers-own
    */
   saveView(label?: string, options: { stay?: boolean } = {}): Promise<string | undefined> {
@@ -475,7 +475,7 @@ export class SherpaProvider extends SherpaElement {
   /**
    * Put the filters back as the View on screen DEFINES them: the page's first
    * Query, then the View's, as a pick puts it on. A filter the reader added
-   * since goes. What "Reset all to default" does. TRAP T-reset-to-default-is-the-views-own
+   * since goes. What "Reset all on view" does. TRAP T-reset-to-default-is-the-views-own
    */
   resetView(): Promise<void> {
     return this.#pages.resetView();

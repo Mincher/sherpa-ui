@@ -1,13 +1,13 @@
 import { test, expect } from './harness';
 
 /**
- * "Reset all to default" is not offered while the filters already ARE the
+ * "Reset all on view" is not offered while the filters already ARE the
  * View's default, nor Reset while nothing is left to clear — the host says so
  * with `data-at-default` and `data-nothing-to-reset` (TODO 231).
  * TRAP T-reset-to-default-is-the-views-own
  */
 for (const tag of ['sherpa-quick-filter-toolbar', 'sherpa-filter-panel']) {
-  test(`${tag}: data-at-default makes Reset all to default inactive, before and after it draws`, async ({ page }) => {
+  test(`${tag}: data-at-default makes Reset all on view inactive, before and after it draws`, async ({ page }) => {
     const r = await page.evaluate(async (name) => {
       const el = document.createElement(name);
       el.setAttribute('data-at-default', '');

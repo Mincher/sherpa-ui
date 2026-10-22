@@ -7,8 +7,8 @@
  * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, whether it is off, and a name it says.
  * - MORE_MENU — The ⋮ menu's own markup and sheet: a host lists each FIRST.
  * - folded — Is this element folded away at this width?
- * - resetRows — Reset filters, then Reset all to default — off where they would change nothing.
- * - syncResets — Reset, and Reset all to default, as buttons: off where they would change nothing.
+ * - resetRows — Reset filters, then Reset all on view — off where they would change nothing.
+ * - syncResets — Reset, and Reset all on view, as buttons: off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters, or "Save <name>" with Save as and Delete; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
@@ -37,12 +37,12 @@ export function folded(el: Element | null): boolean {
   return !!el && getComputedStyle(el).display === 'none';
 }
 
-/** Reset filters, then Reset all to default — off where they would change nothing. TODO 231 */
+/** Reset filters, then Reset all on view — off where they would change nothing. TODO 231 */
 export function resetRows(host: HTMLElement): MoreRow[] {
   return [['reset', host.hasAttribute('data-nothing-to-reset')], ['reset-default', host.hasAttribute('data-at-default')]];
 }
 
-/** Reset, and Reset all to default, as buttons: off where they would change
+/** Reset, and Reset all on view, as buttons: off where they would change
  *  nothing — the host says. `reset` is the host's own Reset button. TODO 231 */
 export function syncResets(host: HTMLElement, root: ParentNode, reset: string): void {
   root.querySelector(reset)?.toggleAttribute('disabled', host.hasAttribute('data-nothing-to-reset'));

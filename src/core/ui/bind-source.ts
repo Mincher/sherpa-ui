@@ -89,9 +89,11 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
       give(into ? mergeInto(el, into, payload) : payload);
     },
-    pending: (fields, dirty) => {
+    pending: (fields, dirty, waits) => {
       setAttr(el, 'data-pending', fields.length ? fields.join(' ') : undefined);
       setAttr(el, 'data-dirty', dirty ? '' : undefined);
+      // Its scope waits for ONE Apply, local too. TODO 406
+      setAttr(el, 'data-waits', waits ? '' : undefined);
     },
     off: () => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
@@ -99,6 +101,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       el.removeAttribute('data-locked');
       el.removeAttribute('data-remote');
       el.removeAttribute('data-apply-on');
+      el.removeAttribute('data-waits');
     },
   });
   return () => source.unbind(el);
@@ -223,6 +226,11 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
 
   switch (type) {
     case 'sort-change': {
+      // None: no sort at all, not one kept to resume. TODO 407
+      if (detail['clear'] === true) {
+        source.query.clearSort();
+        return;
+      }
       const field = detail['field'];
       const direction = detail['direction'] === 'desc' ? 'desc' : 'asc';
       source.query.setSort(typeof field === 'string' ? field : null, direction, arranger(detail, bind));

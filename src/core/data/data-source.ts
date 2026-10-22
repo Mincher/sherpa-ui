@@ -738,7 +738,7 @@ export class DataSource extends EventTarget {
       // The readings and holds the filter is compiled from. TRAP T-one-query-one-owner
       query: structuredClone(this.#applied),
       // …and what the reader is editing, where it differs. TRAP T-apply-and-discard-wait-for-a-change
-      ...(this.#remote ? { draft: structuredClone(this.#draft), dirty: this.#context.dirty() } : {}),
+      ...(this.#context.waiting() ? { draft: structuredClone(this.#draft), dirty: this.#context.dirty() } : {}),
       selections: Object.fromEntries(this.selectedFields.map((f) => [f, this.selection(f)])),
       // …and what narrows ONE component alone, by bind id.
       only: this.#only,
@@ -789,7 +789,7 @@ export class DataSource extends EventTarget {
   }
 
   /** Compile the applied Query. Says whether the SHARED filter
-   *  stood still, and — remote — whether nothing a load reads moved. */
+   *  stood still, and — where a scope waits — whether nothing a load reads moved. */
   #compileNow(): { still: boolean; same: boolean } {
     const { filter, view, scoped, only, skipped } = compile(this.#applied, this.#compileFacts());
     this.#skipped = skipped ?? [];
@@ -797,7 +797,8 @@ export class DataSource extends EventTarget {
     const viewed = view;
     // The SHARED filter stood still: no load follows, whatever one component's own did.
     const still = JSON.stringify(next) === JSON.stringify(this.#filter);
-    const same = this.#remote && still && JSON.stringify(only) === JSON.stringify(this.#only);
+    // A draft edit loads nothing: remote, or a scope that waits. TODO 406
+    const same = this.#context.waiting() && still && JSON.stringify(only) === JSON.stringify(this.#only);
     this.#only = only;
     this.#filter = next;
     this.#viewFilter = viewed;
@@ -988,11 +989,11 @@ export class DataSource extends EventTarget {
 
   /** Tell each bound control over a scope its PENDING fields and whether its scope is DIRTY. */
   #syncPending(): void {
-    this.#binding.syncPending((scopes) => (this.#remote
+    this.#binding.syncPending((scopes) => (this.#context.waiting()
       ? [...new Set(scopes.flatMap((id) => Object.keys({
         ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
       })))].filter((f) => this.#context.pending(f))
-      : []), (id) => this.#context.dirty(id));
+      : []), (id) => this.#context.dirty(id), (id) => this.#context.waiting(id));
   }
 
   /** The SEARCH as needles, so a view marks what it found: a `contains` on each

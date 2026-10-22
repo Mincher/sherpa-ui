@@ -66,7 +66,7 @@
     filters-save — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
     filters-save-as — Save filters as: a new set, by name. detail: { }
     filters-delete — Delete filters: forget the set on. detail: { id }
-    view-reset — Reset all to default: put back the View's own filters, in every scope. Cancelable
+    view-reset — Reset all on view: put back the View's own filters, in every scope. Cancelable
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
 -->
@@ -82,7 +82,7 @@
                              data-icon="filter" data-heading="Filters">
       <!-- BOTH scopes at once, applied as the toolbar's Reset is. Both header
            buttons wear the DEFAULT look. Will, 2026-09-26. -->
-      <!-- …and its menu: Reset all to default. TRAP T-reset-to-default-is-the-views-own -->
+      <!-- …and its menu: Reset all on view. TRAP T-reset-to-default-is-the-views-own -->
       <!-- ONE Filters menu, for every scope: what each holds, then what may be
            added — each row says its scope. The SAME button a toolbar shows,
            attribute for attribute. Will, TODO 124. TRAP T-the-add-menu-is-the-whole-list -->
@@ -97,7 +97,7 @@
                        data-group="end" data-icon-start="triangle-down"
                        aria-label="Reset options" aria-haspopup="dialog">
           <sherpa-menu slot="menu" data-align="end">
-            <button type="button" value="reset-default">Reset all to default</button>
+            <button type="button" value="reset-default">Reset all on view</button>
           </sherpa-menu>
         </sherpa-button>
       </span>

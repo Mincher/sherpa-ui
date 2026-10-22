@@ -87,8 +87,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
-| ⬜ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
-| ⬜ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
+| 🚧 | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
+| ✅ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
+| ✅ | 0zzl | 408 | WORDS — the Reset menu's "Reset all to default" reads "Reset all on view" (Will, 2026-10-22) | words |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1855,13 +1856,26 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 407 — BUG: None in a Group or Sort menu does nothing
+### `[x]` ✅ 408 — WORDS: "Reset all on view"
+
+Will, 2026-10-22: *"Change the 'Reset all to default' menu item label to read
+'Reset all on view'."* **✅ Done 2026-10-22**: the bar's Reset menu, the panel's
+and the ⋮ row, with the tests and docs that name it. The trap keeps its id,
+`T-reset-to-default-is-the-views-own`.
+
+### `[x]` ✅ 407 — BUG: None in a Group or Sort menu does nothing
 
 Will, 2026-10-22: *"Selecting 'None' in the Group and Sort filters doesn't clear
 the value and toggle the chips off."* The None row came with 394 (a single list
 leads with None); an arranging chip reads its pick its own way and never heard it.
 
-### `[ ]` ⬜ 406 — FILTERS: the View scope waits for one Apply
+**✅ Done 2026-10-22.** None's value is empty, so the chip fell back to the
+column it remembered and picked it again. Now None reads as no column, the chip
+forgets it and goes off, and a Sort's None asks to CLEAR (`sort-change` with
+`clear`), not to suspend: nothing is kept to resume. Tests: the toolbar spec
+(both chips off, no column), `none-clears-a-sort` (the binding forgets it).
+
+### `[ ]` 🚧 406 — FILTERS: the View scope waits for one Apply
 
 Will, 2026-10-22: *"Overarching the explicit rules for Customer, Region, and Date
 filters requiring and explicit 'Apply' action we should just enforce explicit
@@ -1894,6 +1908,10 @@ the view scope as well as date filters."*
    discard changes since the last apply for that filter."* It stays open (395).
 4. **Outside the View scope**, nothing changes: a fetching filter (remote, or
    `fetch: "server"`) and a date keep their own Apply (395, 405).
+
+**🚧 Step 1 done 2026-10-22**: `query.wait(scope)`, `waiting()`, the local
+draft (`#settle`, `#carry`), `data-waits` on a bound control, and no load on a
+draft-only edit. Nothing calls `wait()` yet. Test: `a-waiting-scope-holds-its-picks`.
 
 ### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
 

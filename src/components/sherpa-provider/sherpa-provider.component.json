@@ -171,7 +171,7 @@
           "$type": "method",
           "name": "saveView",
           "args": "label?: string, options: { stay?: boolean } = {}",
-          "description": "Save what is on screen as a View of the open page, and put it on the View chip. With a name, a NEW View — a name any View has already gets ` - Copy-001`. With none, over the reader's own View on screen; a preset is never overwritten, so that answers undefined. The saved View's id, else undefined. `stay`: keep it for later, and stay on the View on screen — the save before a Reset all to default."
+          "description": "Save what is on screen as a View of the open page, and put it on the View chip. With a name, a NEW View — a name any View has already gets ` - Copy-001`. With none, over the reader's own View on screen; a preset is never overwritten, so that answers undefined. The saved View's id, else undefined. `stay`: keep it for later, and stay on the View on screen — the save before a Reset all on view."
         },
         {
           "$type": "method",
@@ -207,7 +207,7 @@
           "$type": "method",
           "name": "resetView",
           "args": "",
-          "description": "Put the filters back as the View on screen DEFINES them: the page's first Query, then the View's, as a pick puts it on. A filter the reader added since goes. What \"Reset all to default\" does."
+          "description": "Put the filters back as the View on screen DEFINES them: the page's first Query, then the View's, as a pick puts it on. A filter the reader added since goes. What \"Reset all on view\" does."
         },
         {
           "$type": "method",
