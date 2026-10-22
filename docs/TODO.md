@@ -1906,6 +1906,11 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   page"* — a Context's `chrome.filters: false` (app schema) takes the header's
   filter row away (`data-no-filters` on the app header). Test: Demos
   `reforged-filter-layouts`. Chromium: sherpa-ui 1148, Demos 172.
+- ✅ **Phase 2 (2026-10-22).** A section's value chips wear their own counts
+  (the bar's `drawValueResults`), read as pending only where the draft changed
+  them (the bar's `drawApplied` → the chip's `applied`), and are greyed and
+  removed as the panel's are (`limitField` with the section's value chips). With
+  Northwind applied and Limit on, Latin America goes in both, alike.
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 

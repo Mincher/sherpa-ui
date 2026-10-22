@@ -746,7 +746,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawApplied, drawValueResults, drawResults, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -967,6 +967,18 @@
           "name": "setChipReading",
           "args": "id: string, reading: FieldReading",
           "description": "setChipReading(id, reading) — steer ONE chip with a whole reading."
+        },
+        {
+          "$type": "method",
+          "name": "drawApplied",
+          "args": "applied: Readonly<Record<string, FieldReading>>",
+          "description": "drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED: a section marks only the values its draft changed. SILENT. TODO 425"
+        },
+        {
+          "$type": "method",
+          "name": "drawValueResults",
+          "args": "results: Readonly<Record<string, Readonly<Record<string, number>>>>",
+          "description": "drawValueResults(results, scope) — each picked value's own count, by field then value: a section's value chips wear them. SILENT. TODO 425"
         },
         {
           "$type": "method",

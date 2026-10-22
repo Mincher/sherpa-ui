@@ -71,6 +71,8 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `drafting` | `boolean` | read only |  |
 | `column` | `string` | read only |  |
 | `direction` | `SortDirection \| null` | read only |  |
+| `applied` | `FieldReading \| null` | read and write |  |
+| `valueResults` | `Readonly<Record<string, number>> \| null` | read and write |  |
 | `results` | `number \| null` | read and write |  |
 
 ## Methods

@@ -581,6 +581,37 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   }
 
+  /**
+   * drawApplied(applied) — a bound source says what each field that waits for
+   * Apply holds APPLIED: a section marks only the values its draft changed.
+   * SILENT. TODO 425 · TRAP T-a-pending-chip-reads-as-a-warning
+   */
+  drawApplied(applied: Readonly<Record<string, FieldReading>>): void {
+    for (const chip of this.#chips()) {
+      const field = this.#filters.find((f) => f.id === chip.dataset['id'])?.field ?? chip.dataset['id'] ?? '';
+      if (chip.dataset['layout'] === 'section') chip.applied = applied[field] ?? null;
+    }
+  }
+
+  /**
+   * drawValueResults(results, scope) — each picked value's own count, by field
+   * then value: a section's value chips wear them. SILENT. TODO 425
+   */
+  drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>): void {
+    this.#valueResults = results;
+    this.#drawValueResults();
+  }
+  /** Each field's value counts, as the source last said. */
+  #valueResults: Readonly<Record<string, Readonly<Record<string, number>>>> = {};
+
+  /** Give each section chip its field's value counts; a chip that is no section, none. */
+  #drawValueResults(): void {
+    for (const chip of this.#chips()) {
+      const field = this.#filters.find((f) => f.id === chip.dataset['id'])?.field ?? chip.dataset['id'] ?? '';
+      chip.valueResults = chip.dataset['layout'] === 'section' ? this.#valueResults[field] ?? null : null;
+    }
+  }
+
   /** Re-read the pending flags once the event that moved a draft has landed. */
   #queuePending = (): void => {
     queueMicrotask(() => this.#syncPending());
@@ -667,7 +698,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = chip.dataset['id'] ?? '';
     const field = this.#filters.find((f) => f.id === id)?.field ?? id;
     if (!chip.querySelector('sherpa-menu') || this.superseded.includes(id)) return;
-    limitField([], this.#field(chip as SherpaQuickFilter).menus(), { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
+    // A section's value chips are greyed too. TODO 425
+    limitField(chip.querySelectorAll<HTMLElement>(':scope > .value'), this.#field(chip as SherpaQuickFilter).menus(),
+      { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
   }
 
   /**
@@ -889,6 +922,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderAvailable();
     this.#syncPending();
     this.#syncLayout();
+    this.#drawValueResults();
 
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
@@ -1153,6 +1187,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   override onChange(name?: string): void {
     if (name === 'data-orientation') {
       this.#syncLayout();
+      this.#drawValueResults();
       this.#reflow();
     }
     // A Switch it no longer shows — hidden, or the panel answering — gives the filters back.

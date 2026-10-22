@@ -8425,6 +8425,32 @@
             },
             {
               "kind": "method",
+              "name": "drawApplied",
+              "parameters": [
+                {
+                  "name": "applied",
+                  "type": {
+                    "text": "Readonly<Record<string, FieldReading>>"
+                  }
+                }
+              ],
+              "description": "drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED: a section marks only the values its draft changed. SILENT. TODO 425"
+            },
+            {
+              "kind": "method",
+              "name": "drawValueResults",
+              "parameters": [
+                {
+                  "name": "results",
+                  "type": {
+                    "text": "Readonly<Record<string, Readonly<Record<string, number>>>>"
+                  }
+                }
+              ],
+              "description": "drawValueResults(results, scope) — each picked value's own count, by field then value: a section's value chips wear them. SILENT. TODO 425"
+            },
+            {
+              "kind": "method",
               "name": "drawResults",
               "parameters": [
                 {
@@ -9119,6 +9145,20 @@
                 "text": "SortDirection | null"
               },
               "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "applied",
+              "type": {
+                "text": "FieldReading | null"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "valueResults",
+              "type": {
+                "text": "Readonly<Record<string, number>> | null"
+              }
             },
             {
               "kind": "field",

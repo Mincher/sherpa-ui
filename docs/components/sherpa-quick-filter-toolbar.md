@@ -104,6 +104,8 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 |---|---|
 | `setChipValues(id: string, picks: readonly string[] \| undefined)` | Set ONE chip's picks, leaving every other chip alone. |
 | `setChipReading(id: string, reading: FieldReading)` | setChipReading(id, reading) — steer ONE chip with a whole reading. |
+| `drawApplied(applied: Readonly<Record<string, FieldReading>>)` | drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED: a section marks only the values its draft changed. SILENT. TODO 425 |
+| `drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>)` | drawValueResults(results, scope) — each picked value's own count, by field then value: a section's value chips wear them. SILENT. TODO 425 |
 | `drawResults(results: Readonly<Record<string, number>>)` | drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60. |
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |

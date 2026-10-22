@@ -630,7 +630,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (current, valueLabel, menu, values, reading, answered, drafting, column, direction, results). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (current, valueLabel, menu, values, reading, answered, drafting, column, direction, applied, valueResults, results). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -810,6 +810,16 @@
           "name": "direction",
           "type": "SortDirection | null",
           "access": "read"
+        },
+        {
+          "name": "applied",
+          "type": "FieldReading | null",
+          "access": "read-write"
+        },
+        {
+          "name": "valueResults",
+          "type": "Readonly<Record<string, number>> | null",
+          "access": "read-write"
         },
         {
           "name": "results",

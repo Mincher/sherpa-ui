@@ -191,6 +191,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-layout') return this.#syncValues();
+    // A section marks only the values its draft changed. TODO 425
+    if (name === 'data-pending' && this.dataset['layout'] === 'section') this.#syncValues();
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
@@ -957,6 +959,9 @@ export class SherpaQuickFilter extends SherpaElement {
     const tops = items.filter((i) => i.parent === undefined);
     const mine = new Map([...this.querySelectorAll<HTMLElement>(':scope > .value')].map((c) => [c.dataset['value'] ?? '', c]));
     const picked = new Set(menu?.values ?? []);
+    // What is APPLIED, while the field waits: only a value its draft changed reads as pending. TODO 425
+    const waiting = this.hasAttribute('data-pending');
+    const was = new Set((this.#applied && !this.#applied.suspended ? this.#applied.picked ?? [] : []).map(valueKey));
     for (const item of tops) {
       const one = mine.get(item.value) ?? this.clone('template.value-chip-tpl');
       if (!one) return;
@@ -964,13 +969,37 @@ export class SherpaQuickFilter extends SherpaElement {
       one.dataset['value'] = item.value;
       one.dataset['id'] = this.dataset['id'] ?? '';
       one.setAttribute('data-label', item.label);
-      const kids = items.filter((k) => k.parent === item.value).map((k) => k.value);
-      one.toggleAttribute('data-current', [item.value, ...kids].some((k) => picked.has(k)));
+      const kids = [item.value, ...items.filter((k) => k.parent === item.value).map((k) => k.value)];
+      one.toggleAttribute('data-current', kids.some((k) => picked.has(k)));
+      one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));
+      (one as SherpaQuickFilter).results = this.#valueResults?.[item.value] ?? null;
       // In the menu's order: appending one already here moves it.
       this.append(one);
     }
     for (const gone of mine.values()) gone.remove();
   }
+
+  /** A SECTION's applied answer, while its field waits: its host says it. TODO 425 */
+  get applied(): FieldReading | null {
+    return this.#applied;
+  }
+  set applied(reading: FieldReading | null) {
+    this.#applied = reading;
+    this.#syncValues();
+  }
+  /** What is applied of this field, as its host last said. */
+  #applied: FieldReading | null = null;
+
+  /** A SECTION's value chips' own counts, by value: its host says them. TODO 425 */
+  get valueResults(): Readonly<Record<string, number>> | null {
+    return this.#valueResults;
+  }
+  set valueResults(results: Readonly<Record<string, number>> | null) {
+    this.#valueResults = results;
+    this.#syncValues();
+  }
+  /** Each value's count, as its host last said. */
+  #valueResults: Readonly<Record<string, number>> | null = null;
 
   /** A value chip was pressed: pick its row — a parent with its children — as a
    *  reader would, through the menu, Apply too. TODO 425 */
