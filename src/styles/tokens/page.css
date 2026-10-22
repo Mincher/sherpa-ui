@@ -10,6 +10,9 @@
   }
   body {
     font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+    /* The body text size: what a dialog's or a menu's slotted content inherits. TODO 419 */
+    font-size: var(--sherpa-font-size-body-base, 14px);
+    line-height: var(--sherpa-theme-content-line-height-base, 20px);
     color: var(--sherpa-theme-content-body-base, #0c0b11);
     background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   }

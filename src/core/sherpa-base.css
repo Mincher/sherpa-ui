@@ -18,7 +18,10 @@
   box-sizing: border-box;
 
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-display-mode-fonts-scale-lg, 16px);
+  /* The BODY size, as the page's: slotted content — a dialog's, a menu's rows —
+     inherits it. It was the lg step, 16px. Will, TODO 419 */
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   -webkit-font-smoothing: antialiased;
 

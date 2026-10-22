@@ -100,7 +100,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
 | ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
-| ⬜ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
+| ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
 | ⬜ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
 | ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
@@ -1888,12 +1888,21 @@ f(x) chip (`.field-advanced`). They become ONE icon-only `ellipses-vertical`
 button with a menu: Send to View filters / Send down, Advanced (on or off),
 Reset — each only where it applies today.
 
-### `[ ]` ⬜ 419 — BUG: larger text in some menu rows and dialogs
+### `[x]` ✅ 419 — BUG: larger text in some menu rows and dialogs
 
 Will, 2026-10-22: *"Some menu items and content in dialogs etc has larger text
 than expected."* To find: which rows and which dialogs, and what sets their
 size — a shared sheet, a row slotted from another tree (the Filters menu's
 action rows, 383, are `.more-item` rows in a filter menu), or the page's own.
+
+**✅ Done 2026-10-22.** Measured on Demos: the shared `:host` rule
+(`sherpa-base.css`) gave every component 16px — the type scale's `lg` step —
+while the body text is 14/20, and `page.css` set the page's font family but no
+size. So content SLOTTED into a component (a dialog's form, a menu's
+`.more-item` rows) inherited 16px, while the components' own parts state their
+sizes. Now the shared host, and `page.css`'s body, are the body size, 14px with
+a 20px line, and `.more-item` states its size too. Every Chromium spec passes
+(1148), Demos 164.
 
 ### `[x]` ✅ 418 — LOOK: a shut scope says what its filters match
 
