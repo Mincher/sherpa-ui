@@ -95,10 +95,14 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
 | ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
-| ❓ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
+| ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
 | ⬜ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
 | ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
+| ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
+| ⬜ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
+| ⬜ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
+| ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1865,6 +1869,53 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 421 — LOOK: a stuck element casts a shadow
+
+Will, 2026-10-22: *"Sticky elements should show a drop shadow from the sherpa
+shadow definitions when stuck and scrolled under. All possible with CSS."* With
+401's findings: `scroll-state(stuck: top)` is Chromium only; a scroll-driven
+animation (Chromium and WebKit) can show it once its scroller has moved, and a
+view timeline for one stuck part-way down (a panel's scope header). The shadow
+is the elevation tokens' (`--sherpa-shadow-*`). Settle with 401's A or B.
+
+### `[ ]` ⬜ 420 — UX: one ⋮ per panel field section
+
+Will, 2026-10-22: *"Combine all filter panel filter section action buttons into
+a single overflow menu button with an ellipses icon. Clicking this button
+reveals the scope and advanced options."* Today each field's header holds Reset
+(`.field-clear`), Send up / Send down (`.field-raise`, `.field-lower`) and the
+f(x) chip (`.field-advanced`). They become ONE icon-only `ellipses-vertical`
+button with a menu: Send to View filters / Send down, Advanced (on or off),
+Reset — each only where it applies today.
+
+### `[ ]` ⬜ 419 — BUG: larger text in some menu rows and dialogs
+
+Will, 2026-10-22: *"Some menu items and content in dialogs etc has larger text
+than expected."* To find: which rows and which dialogs, and what sets their
+size — a shared sheet, a row slotted from another tree (the Filters menu's
+action rows, 383, are `.more-item` rows in a filter menu), or the page's own.
+
+### `[x]` ✅ 418 — LOOK: a shut scope says what its filters match
+
+Will, 2026-10-22: *"A badge with count of matches of all section filters should
+be shown in the accordion header when the accordion is collapsed. The tooltip
+for this badge should show: Filter A - 1 match, Filter B - 2 matches, and so
+on."* With Will's other ask the same day — the View scope's Apply and Discard
+on the right of its accordion header — which needs the accordion's `actions`
+slot moved OUT of its `<summary>` (a button may not hold buttons, TRAP
+`T-an-accordion-action-is-not-a-toggle`).
+
+**✅ Done 2026-10-22.** The accordion is a grid: its card fills it, and the
+`actions` slot is a grid item laid over the header row, outside the summary,
+the titles leaving it its measured room (a ResizeObserver). A host that makes
+the header sticky makes `::part(actions)` sticky too (the panel does). A new
+`badge` slot in the summary shows only while SHUT. The panel: the View scope's
+header holds ONE Apply and an icon-only Discard (the panel's header no longer
+does); every scope's header a badge — the rows its filters leave (the last
+answered field's count) — and its tip each field's, one per line (the tooltip
+keeps line breaks now). Will, later: the header row is CENTRED, in an even 12px
+padding. a11y 68/68. Test: Demos `reforged-panel-scope-header`.
+
 ### `[ ]` ⬜ 417 — LOOK, later: Discard wears a trash can
 
 Will, 2026-10-22: *"Todo later: Use a trash can icon for discard. Add the discard
@@ -1890,7 +1941,7 @@ toolbar and panel code, with the querycontext component now in the data layer,
 to simplify the logic and minimise duplication, redundancy, or divergence where
 we don't need it."* Plan first, with Will, as the optimisations re-plan.
 
-### `[ ]` ⬜ 414 — BUG: switching panel and toolbar asks for Apply again
+### `[x]` ✅ 414 — BUG: switching panel and toolbar asks for Apply again
 
 Will, 2026-10-22: *"Toggling between the filter panel and toolbar require
 reapplying the view scope filters. These are just re-presentations of the same
@@ -1903,6 +1954,16 @@ cfa82795): a Region, Customer and Date pick, applied in the bar or in the
 panel, then the mode button there and back, twice — the Query stays applied,
 nothing reads pending, the rows stay. ❓ Will: the steps, after a reload of
 the page (a tab open across several rebuilds runs old code).
+
+**Will's steps:** Customer values set and applied in the panel, then the toggle:
+the bar's Customer chip reads unapplied and Apply is on. Still not reproduced
+headless (two customers, a site, Limit on, opened in panel mode). **✅ Fixed
+2026-10-22 at its root, a weak compare:** `sameReading` read the picks as an
+ordered JSON string, and a panel and a bar's tree list Customer's picks — a
+customer and its site paths — in their own order, a path as an object or as
+its key. Re-sent by the bar, the same answer read as a change, and waited. It
+compares picks as a set of keys now. Test: `the-same-picks-in-any-order-are-the-same-answer`
+(fails before the fix). Will to confirm on his page.
 
 ### `[ ]` ⬜ 413 — BUG: no count badge on the View's chips in the panel
 

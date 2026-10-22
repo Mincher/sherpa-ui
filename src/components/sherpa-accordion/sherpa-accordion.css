@@ -4,7 +4,9 @@
  */
 
 :host {
-  display: block;
+  /* A GRID: the card fills it, and the actions lie over its header row. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-inline-size: 0;
 
   --_surface: var(--sherpa-style-surface-base, #ffffff);
@@ -25,6 +27,8 @@
 }
 
 .root {
+  grid-row: 1;
+  grid-column: 1 / -1;
   border-radius: inherit;
 }
 
@@ -36,13 +40,10 @@
 /* ── Summary: the toggle row ─────────────────────────────────────────── */
 .header {
   display: flex;
-  /* START, not centre: the titles are a COLUMN — a heading, a description, and
-     whatever a host slots under them — so centring put the chevron and the
-     actions halfway down a two-row header instead of on the row that names it.
-     TRAP T-an-accordion-chevron-rides-the-heading-row */
-  align-items: start;
+  /* CENTRED, in an even padding. Will, 2026-10-22. TRAP T-an-accordion-chevron-rides-the-heading-row */
+  align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding-block: var(--sherpa-theme-padding-lg, 16px) var(--sherpa-theme-padding-sm, 4px);
+  padding-block: var(--sherpa-display-mode-space-sm, 12px);
   padding-inline: var(--sherpa-theme-padding-md, 8px);
   cursor: pointer;
   list-style: none;
@@ -60,17 +61,33 @@
 }
 
 /* ── Actions ─────────────────────────────────────────────────────────────
- * Trailing controls in the summary row. Hidden until something is slotted, so
- * an accordion without them is unchanged. */
+ * Trailing controls on the header row, OUTSIDE the summary: a grid item laid
+ * over it, before the chevron, and the titles leave them their measured room
+ * (`--_actions`). A host that makes the header sticky makes these sticky too
+ * (`::part(actions)`). Hidden until something is slotted. TRAP T-an-accordion-action-is-not-a-toggle */
 .actions {
   display: none;
+  grid-row: 1;
+  grid-column: 2;
+  align-self: start;
+  z-index: 1;
+  margin-block-start: var(--sherpa-display-mode-space-sm, 12px);
+  margin-inline-end: calc(var(--sherpa-theme-padding-md, 8px) + var(--sherpa-theme-content-size-base, 14px) + var(--sherpa-theme-gap-sm, 4px));
   align-items: center;
-  /* The heading's own line height, so `align-items: start` puts these on the
-     row that names the section rather than halfway down a two-row header. */
-  min-block-size: var(--sherpa-theme-content-line-height-base, 20px);
+  /* The heading's own line height, EXACTLY: a taller control overflows it evenly,
+     so it is centred on the row that names the section. */
+  block-size: var(--sherpa-theme-content-line-height-base, 20px);
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 :host(:state(has-actions)) .actions { display: flex; }
+:host(:state(has-actions)) .titles { margin-inline-end: calc(var(--_actions, 0px) + var(--sherpa-theme-gap-sm, 4px)); }
+
+/* ── Badge ── a mark while SHUT, on the heading's row. Will, TODO 418 */
+.badge {
+  display: none;
+  align-self: center;
+}
+:host(:state(has-badge)) .root:not([open]) .badge { display: inline-flex; }
 
 /* ── Titles ──────────────────────────────────────────────────────────── */
 .titles {

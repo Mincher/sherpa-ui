@@ -296,7 +296,19 @@ export function readingAnswered(reading: FieldReading): boolean {
 
 /** Do two readings give the same answer? Only the answer keys count. */
 export function sameReading(a: FieldReading | null | undefined, b: FieldReading | null | undefined): boolean {
-  return JSON.stringify(a ? answerOf(a) : null) === JSON.stringify(b ? answerOf(b) : null);
+  return JSON.stringify(a ? canon(answerOf(a)) : null) === JSON.stringify(b ? canon(answerOf(b)) : null);
+}
+
+/** The same picks in any order, or written as a key, are the same answer: a bar's
+ *  tree and a panel list one field's picks in their own order. TODO 414 */
+function canon(reading: FieldReading): FieldReading {
+  const keys = (picks: readonly unknown[] | undefined): string[] | undefined => picks && [...new Set(picks.map(valueKey))].sort();
+  return {
+    ...reading,
+    ...(reading.picked ? { picked: keys(reading.picked)! } : {}),
+    ...(reading.off ? { off: keys(reading.off)! } : {}),
+    ...(reading.conditions ? { conditions: reading.conditions.map((row) => (row.picked ? { ...row, picked: keys(row.picked)! } : row)) } : {}),
+  };
 }
 
 /** A filter as one string, its AND and OR children in one order: the same filter

@@ -28,29 +28,24 @@ export class SherpaAccordion extends SherpaElement {
     if (!details) return;
     if (this.hasAttribute('open')) details.open = true;
     details.addEventListener('toggle', this.#onToggle);
-    /* An ACTION in the summary row is a control, not a handle. Without this a
-       click on it opens or shuts the disclosure as well as doing its own job.
-       TRAP T-an-accordion-action-is-not-a-toggle */
-    this.$('.actions')?.addEventListener('click', this.#onActionClick);
   }
 
-  #onActionClick = (event: Event): void => {
-    /* ONLY for a click that really is on the summary row. A control here may
-       open a POPOVER, whose card is in the top layer and outside this element
-       — but the click on a row inside it still passes through this listener,
-       and `preventDefault()` then ate the checkbox's own tick and let the
-       popover light-dismiss with nothing chosen.
-       TRAP T-an-accordion-action-is-not-a-toggle */
-    const path = event.composedPath();
-    /* A control here may open a POPOVER whose card is in the top layer. Its
-       rows still pass through this listener, and `preventDefault()` ate the
-       checkbox's own tick — the Add menu opened and nothing could be picked.
-       A popover is not the summary row, whatever the path says. */
-    if (path.some((n) => n instanceof HTMLElement && n.matches?.('[popover]'))) return;
-    const summary = this.$('.header');
-    if (!path.some((n) => n === summary)) return;
-    event.preventDefault();
-  };
+  override onConnect(): void {
+    // The titles leave the actions their room: they are laid over the row. TRAP T-an-accordion-action-is-not-a-toggle
+    const actions = this.$('.actions');
+    if (!actions) return;
+    this.#room?.disconnect();
+    this.#room = new ResizeObserver(() => this.$('.header')?.style.setProperty('--_actions', `${actions.offsetWidth}px`));
+    this.#room.observe(actions);
+  }
+
+  override onDisconnect(): void {
+    this.#room?.disconnect();
+    this.#room = null;
+  }
+
+  /** Watches the actions' width, for the room the titles leave them. */
+  #room: ResizeObserver | null = null;
 
   override onChange(name: string): void {
     if (name === 'open') {

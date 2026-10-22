@@ -80,12 +80,6 @@
   <sherpa-container class="panel" part="panel" data-padding="none">
     <sherpa-container-header slot="header" class="head" part="head"
                              data-icon="filter" data-heading="Filters">
-      <!-- APPLY and its Discard, icon only: ONE pair for a scope that waits, for
-           every change held in it. Will, TODO 406 -->
-      <sherpa-button slot="actions" class="head-apply" part="apply" data-size="sm"
-                     data-look="saturated" disabled>Apply</sherpa-button>
-      <sherpa-button slot="actions" class="head-discard" part="discard" data-size="sm" data-type="icon"
-                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
       <!-- "Save <name>", active, while a saved set is taken: it saves over it.
            Will, 366. TRAP T-saved-filters-are-every-scope -->
       <sherpa-button slot="actions" class="save-filters" part="save-filters" data-size="sm"
@@ -131,6 +125,21 @@
     <!-- NOTHING in the header: a summary is a button, and a button may not
          hold buttons. TRAP T-an-accordion-action-is-not-a-toggle -->
     <sherpa-accordion class="scope" open></sherpa-accordion>
+  </template>
+
+  <!-- A scope that WAITS: ONE Apply and its Discard, icon only, on the right of
+       its own header. Will, TODO 406 -->
+  <template class="scope-acts-tpl">
+    <span slot="actions" class="scope-acts">
+      <sherpa-button class="scope-apply" data-size="sm" data-look="saturated" disabled>Apply</sherpa-button>
+      <sherpa-button class="scope-discard" data-size="sm" data-type="icon" data-icon-start="cross"
+                     aria-label="Discard changes" disabled></sherpa-button>
+    </span>
+  </template>
+
+  <!-- A SHUT scope's matches; its tip, each filter's. Will, TODO 418 -->
+  <template class="scope-badge-tpl">
+    <sherpa-tooltip slot="badge" class="scope-tip"><sherpa-badge class="scope-results" role="img"></sherpa-badge></sherpa-tooltip>
   </template>
 
   <template class="field-tpl">

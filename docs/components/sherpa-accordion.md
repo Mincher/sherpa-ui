@@ -52,14 +52,15 @@ Each one bubbles.
 |---|---|---|
 | `heading` | text | rich summary title (overrides data-heading) |
 | `description` | text | rich secondary line under the title (overrides data-description) |
-| `actions` | control | trailing controls in the summary row, before the chevron. |
+| `badge` | badge | a mark in the header row, shown only while the disclosure is SHUT |
 | (default) | content | the disclosure body |
+| `actions` | control | trailing controls on the header row, before the chevron. |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`actions`, `body`, `description`, `header`, `heading`, `icon`, `root`, `titles`
+`actions`, `badge`, `body`, `description`, `header`, `heading`, `icon`, `root`, `titles`
 
 ## CSS custom properties it reads
 
@@ -68,10 +69,12 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-theme-gap-sm` | `.header` | `gap` |
-| `--sherpa-theme-padding-lg` | `.header` | `padding-block` |
+| `--sherpa-display-mode-space-sm` | `.header` | `padding-block` |
 | `--sherpa-theme-padding-md` | `.header` | `padding-inline` |
 | `--sherpa-style-content-base` | `.header` | `color` |
-| `--sherpa-theme-content-line-height-base` | `.actions` | `min-block-size` |
+| `--sherpa-display-mode-space-sm` | `.actions` | `margin-block-start` |
+| `--sherpa-theme-padding-md` | `.actions` | `margin-inline-end` |
+| `--sherpa-theme-content-line-height-base` | `.actions` | `block-size` |
 | `--sherpa-display-mode-space-2xs` | `.actions` | `gap` |
 | `--sherpa-display-mode-space-3xs` | `.titles` | `gap` |
 | `--sherpa-theme-content-body-base` | `.heading` | `color` |

@@ -167,9 +167,7 @@ export class SherpaFilterPanel extends SherpaElement {
     // REMOTE: every field's Apply or Discard at once. Will, TODO 98.
     this.$('.apply-all')?.addEventListener('button-click', () => this.emit('filter-apply', {}));
     this.$('.discard-all')?.addEventListener('button-click', () => this.emit('filter-discard', {}));
-    // …and a scope that waits: ONE pair, in the header. Will, TODO 406
-    this.$('.head-apply')?.addEventListener('button-click', () => this.emit('filter-apply', {}));
-    this.$('.head-discard')?.addEventListener('button-click', () => this.emit('filter-discard', {}));
+
     // ⋮ — what folded, and the host's own option. Will, TODO 178.
     this.$('.more-btn')?.addEventListener('button-click', this.#openMore);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
@@ -223,9 +221,7 @@ export class SherpaFilterPanel extends SherpaElement {
       syncHide(this, this.root);
     }
     // ONE Apply and its Discard are on while a change waits. TODO 406
-    if (name === 'data-dirty' || name === 'data-waits') {
-      for (const btn of this.$$('.head-apply, .head-discard')) btn.toggleAttribute('disabled', !this.hasAttribute('data-dirty'));
-    }
+    if (name === 'data-dirty' || name === 'data-waits') this.#syncScopeActs();
   }
 
   /** Follow the arrangement onto each Group and Sort chip: a toolbar, a grid
@@ -466,10 +462,41 @@ export class SherpaFilterPanel extends SherpaElement {
       if (one) one.results = results[held.def.field ?? held.def.id] ?? null;
       else this.#headResults(held, results[held.def.field ?? held.def.id] ?? null);
     }
+    if (scope != null) this.#scopeResults(scope);
   }
 
   /** Each scope's results as last drawn. */
   #counted = new Map<string, Readonly<Record<string, number>>>();
+
+  /** A SHUT scope's badge: the rows its filters leave — the last answered one's
+   *  results, as each counts within those before it — and each one's in its tip.
+   *  Will, TODO 418. TRAP T-a-chip-counts-within-the-filters-before-it */
+  #scopeResults(scope: string): void {
+    const box = this.#scopeBox(scope);
+    const tip = box?.querySelector<HTMLElement>('.scope-tip');
+    const badge = box?.querySelector<HTMLElement>('.scope-results');
+    if (!tip || !badge) return;
+    const results = this.#counted.get(scope) ?? {};
+    const count = (held: Held): number | undefined => results[held.def.field ?? held.def.id];
+    // The source counts only a field that holds an answer.
+    const answered = [...this.#held.values()].filter((held) => held.scope === scope && count(held) != null);
+    const last = answered.at(-1);
+    if (!last) {
+      delete badge.dataset['count'];
+      tip.removeAttribute('data-text');
+      return;
+    }
+    const { said, label } = countSaid(count(last)!, ['match', 'matches']);
+    badge.dataset['count'] = said;
+    badge.textContent = said;
+    badge.setAttribute('aria-label', label);
+    tip.dataset['text'] = answered.map((held) => `${held.def.label} - ${countSaid(count(held)!, ['match', 'matches']).label}`).join('\n');
+  }
+
+  /** The View's ONE Apply and Discard are on while a change waits. TODO 406 */
+  #syncScopeActs(): void {
+    for (const btn of this.$$('.scope-apply, .scope-discard')) btn.toggleAttribute('disabled', !this.hasAttribute('data-dirty'));
+  }
 
   /**
    * drawValueResults(results, scope) — a bound source tells the panel the rows
@@ -632,6 +659,10 @@ export class SherpaFilterPanel extends SherpaElement {
       if (icon) box.setAttribute('data-icon', icon);
       if (this.#shut.has(scope.scope)) box.removeAttribute('open');
       box.toggleAttribute('data-part', !!scope.part);
+      // The View waits for ONE Apply, on its own header; every scope says its matches, shut. TODO 406, 418
+      const acts = scope.scope === VIEW ? this.clone('template.scope-acts-tpl') : null;
+      const badge = this.clone('template.scope-badge-tpl');
+      box.append(...[acts, badge].filter((n): n is HTMLElement => !!n));
 
       const mine = (scope.filters ?? []).filter((f) => {
         // One HELD ABOVE keeps its place here, and says so. TRAP T-a-panel-asks-for-its-scopes
@@ -711,6 +742,7 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-custom-element-upgrade */
     this.#syncAllAnswered();
     this.#syncPending();
+    this.#syncScopeActs();
     for (const [scope, results] of this.#counted) this.drawResults(results, scope);
     for (const [scope, results] of this.#valueCounted) this.drawValueResults(results, scope);
     for (const [scope, present] of this.#presentBy) this.drawPresent(present, scope);
@@ -1471,6 +1503,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A field's own buttons. */
   #onAction = (event: Event): void => {
+    // The View's ONE Apply and Discard, on its header: every change held. TODO 406
+    if (this.pathFind(event, '.scope-apply')) return void this.emit('filter-apply', {});
+    if (this.pathFind(event, '.scope-discard')) return void this.emit('filter-discard', {});
     const clear = this.pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
     // The action row's Add condition is the field's inline menu's. Will, TODO 98.

@@ -11335,23 +11335,23 @@ the one list on screen, and it is told, never asked.
 
 ### T-an-accordion-action-is-not-a-toggle
 
-`sherpa-accordion` has an `actions` slot in its summary row, and a click on one
-must NOT open or shut the disclosure.
+`sherpa-accordion`'s `actions` sit on its header row, and a click on one must
+NOT open or shut the disclosure.
 
-The slot is inside the `<summary>`, which is a handle by definition — so
-without `preventDefault()` on the slot, pressing a button there did its own job
-AND flipped the accordion. `preventDefault` rather than `stopPropagation`: the
-event still has to reach the button.
-
-**And a host should put nothing a reader can PRESS there.** A `<summary>` is
-a button, and a button may not hold buttons: axe reports it
-(`nested-interactive`), and it was the last structural failure in the
-accessibility baseline (TODO 117). The filter panel kept two there. Its
-`Filters` is in the panel's own header now (124), and `Save filter` is the
-first row of the scope's BODY.
+**They are OUTSIDE the `<summary>`** (TODO 406, Will asking for the View's Apply
+on its header). A `<summary>` is a button, and a button may not hold buttons:
+axe reports it (`nested-interactive`), the last structural failure in the
+accessibility baseline once (TODO 117). The slot was inside it, with a
+`preventDefault()` so a press did not flip the accordion too. Now the host is a
+GRID: the `<details>` fills it, and the actions are a grid item laid over the
+header row before the chevron; the titles leave them their measured room
+(`--_actions`, from a ResizeObserver). A press is the control's alone. A host
+whose header is sticky makes `::part(actions)` sticky too, or the header
+scrolls over them (the filter panel does).
 
 ---
 - Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
+- Site: `src/components/sherpa-accordion/sherpa-accordion.css`
 - Site: `src/components/sherpa-accordion/sherpa-accordion.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
@@ -11467,11 +11467,12 @@ than left to position.
 
 ### T-an-accordion-chevron-rides-the-heading-row
 
-`sherpa-accordion`'s summary row is `align-items: start`, not `center`.
-
-Its titles are a COLUMN — a heading, a description, and whatever a host slots
-under them — so centring put the chevron and the trailing actions halfway down
-a two-row header instead of on the row that names the section.
+`sherpa-accordion`'s summary row is CENTRED, in an even padding — Will,
+2026-10-22. It was `align-items: start` (and 16px over, 4px under): its titles
+are a COLUMN, so centring puts the chevron halfway down a two-row header; Will
+chose the centre. The actions, outside the summary (TRAP
+`T-an-accordion-action-is-not-a-toggle`), sit in a box exactly one heading line
+tall, so a taller control overflows it evenly and stays on the heading's row.
 
 The chevron keeps its OWN drawn size and centres itself within the heading's
 line height. Setting `block-size` on it instead made it 20px and broke the

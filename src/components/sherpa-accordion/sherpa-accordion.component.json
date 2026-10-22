@@ -20,103 +20,118 @@
     "default"
   ],
   "anatomy": {
-    "root": {
-      "el": "details",
-      "class": "root",
-      "part": "root",
-      "children": [
-        {
-          "el": "summary",
-          "class": "header",
-          "part": "header",
-          "children": [
-            {
-              "el": "i",
-              "class": "icon sherpa-icon-box",
-              "part": "icon",
-              "attrs": {
-                "aria-hidden": "true"
-              }
-            },
-            {
-              "el": "span",
-              "class": "titles",
-              "part": "titles",
-              "children": [
-                {
-                  "el": "span",
-                  "class": "heading",
-                  "part": "heading",
-                  "children": [
-                    {
-                      "el": "span",
-                      "class": "heading-text"
-                    },
-                    {
-                      "slot": "heading",
-                      "attrs": {
-                        "data-accepts": "text"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "el": "span",
-                  "class": "description",
-                  "part": "description",
-                  "children": [
-                    {
-                      "el": "span",
-                      "class": "description-text"
-                    },
-                    {
-                      "slot": "description",
-                      "attrs": {
-                        "data-accepts": "text"
-                      }
-                    }
-                  ]
+    "roots": [
+      {
+        "el": "details",
+        "class": "root",
+        "part": "root",
+        "children": [
+          {
+            "el": "summary",
+            "class": "header",
+            "part": "header",
+            "children": [
+              {
+                "el": "i",
+                "class": "icon sherpa-icon-box",
+                "part": "icon",
+                "attrs": {
+                  "aria-hidden": "true"
                 }
-              ]
-            },
-            {
-              "el": "span",
-              "class": "actions",
-              "part": "actions",
-              "children": [
-                {
-                  "slot": "actions",
-                  "attrs": {
-                    "data-accepts": "control"
+              },
+              {
+                "el": "span",
+                "class": "titles",
+                "part": "titles",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "heading",
+                    "part": "heading",
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "heading-text"
+                      },
+                      {
+                        "slot": "heading",
+                        "attrs": {
+                          "data-accepts": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "el": "span",
+                    "class": "description",
+                    "part": "description",
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "description-text"
+                      },
+                      {
+                        "slot": "description",
+                        "attrs": {
+                          "data-accepts": "text"
+                        }
+                      }
+                    ]
                   }
+                ]
+              },
+              {
+                "el": "span",
+                "class": "badge",
+                "part": "badge",
+                "children": [
+                  {
+                    "slot": "badge",
+                    "attrs": {
+                      "data-accepts": "badge"
+                    }
+                  }
+                ]
+              },
+              {
+                "el": "i",
+                "class": "chevron sherpa-icon-box",
+                "attrs": {
+                  "data-icon": "chevron-down",
+                  "aria-hidden": "true"
                 }
-              ]
-            },
-            {
-              "el": "i",
-              "class": "chevron sherpa-icon-box",
-              "attrs": {
-                "data-icon": "chevron-down",
-                "aria-hidden": "true"
               }
-            }
-          ]
-        },
-        {
-          "el": "div",
-          "class": "body",
-          "part": "body",
-          "children": [
-            {
-              "slot": "",
-              "attrs": {
-                "data-accepts": "content"
+            ]
+          },
+          {
+            "el": "div",
+            "class": "body",
+            "part": "body",
+            "children": [
+              {
+                "slot": "",
+                "attrs": {
+                  "data-accepts": "content"
+                }
               }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "span",
+        "class": "actions",
+        "part": "actions",
+        "children": [
+          {
+            "slot": "actions",
+            "attrs": {
+              "data-accepts": "control"
             }
-          ]
-        }
-      ]
-    }
+          }
+        ]
+      }
+    ]
   },
   "props": [
     {
@@ -183,11 +198,11 @@
     },
     {
       "$type": "slot",
-      "name": "actions",
+      "name": "badge",
       "accepts": [
-        "control"
+        "badge"
       ],
-      "description": "trailing controls in the summary row, before the chevron."
+      "description": "a mark in the header row, shown only while the disclosure is SHUT"
     },
     {
       "$type": "slot",
@@ -196,6 +211,14 @@
         "content"
       ],
       "description": "the disclosure body"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control"
+      ],
+      "description": "trailing controls on the header row, before the chevron."
     }
   ],
   "populate": {
@@ -242,10 +265,12 @@
   ],
   "tokens": {
     "header.gap": "{sherpa.theme-gap-sm}",
-    "header.padding-block": "{sherpa.theme-padding-lg}",
+    "header.padding-block": "{sherpa.display-mode-space-sm}",
     "header.padding-inline": "{sherpa.theme-padding-md}",
     "header.color": "{sherpa.style-content-base}",
-    "actions.min-block-size": "{sherpa.theme-content-line-height-base}",
+    "actions.margin-block-start": "{sherpa.display-mode-space-sm}",
+    "actions.margin-inline-end": "{sherpa.theme-padding-md}",
+    "actions.block-size": "{sherpa.theme-content-line-height-base}",
     "actions.gap": "{sherpa.display-mode-space-2xs}",
     "titles.gap": "{sherpa.display-mode-space-3xs}",
     "heading.color": "{sherpa.theme-content-body-base}",

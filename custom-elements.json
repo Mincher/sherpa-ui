@@ -84,17 +84,24 @@
               "description": "rich secondary line under the title (overrides data-description) (accepts: text)"
             },
             {
-              "name": "actions",
-              "description": "trailing controls in the summary row, before the chevron. (accepts: control)"
+              "name": "badge",
+              "description": "a mark in the header row, shown only while the disclosure is SHUT (accepts: badge)"
             },
             {
               "name": "",
               "description": "the disclosure body (accepts: content)"
+            },
+            {
+              "name": "actions",
+              "description": "trailing controls on the header row, before the chevron. (accepts: control)"
             }
           ],
           "cssParts": [
             {
               "name": "actions"
+            },
+            {
+              "name": "badge"
             },
             {
               "name": "body"
@@ -3905,12 +3912,6 @@
             }
           ],
           "cssParts": [
-            {
-              "name": "apply"
-            },
-            {
-              "name": "discard"
-            },
             {
               "name": "field-body"
             },

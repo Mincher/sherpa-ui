@@ -134,7 +134,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`apply`, `discard`, `field-body`, `field-row`, `filters`, `footer`, `head`, `more`, `panel`, `save-filters`, `scopes`, `search`
+`field-body`, `field-row`, `filters`, `footer`, `head`, `more`, `panel`, `save-filters`, `scopes`, `search`
 
 ## CSS custom properties it reads
 
@@ -148,6 +148,7 @@ What each class's base rule reads:
 | `--sherpa-font-weight-light` | `.field-title` | `font-weight` |
 | `--sherpa-display-mode-space-2xs` | `.field-acts` | `gap` |
 | `--sherpa-display-mode-space-2xs` | `.field-row` | `gap` |
+| `--sherpa-display-mode-space-2xs` | `.scope-acts` | `gap` |
 
 ## populate()
 

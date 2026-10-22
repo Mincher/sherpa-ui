@@ -37,30 +37,6 @@
             "children": [
               {
                 "el": "sherpa-button",
-                "class": "head-apply",
-                "part": "apply",
-                "attrs": {
-                  "slot": "actions",
-                  "data-size": "sm",
-                  "data-look": "saturated",
-                  "disabled": ""
-                }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "head-discard",
-                "part": "discard",
-                "attrs": {
-                  "slot": "actions",
-                  "data-size": "sm",
-                  "data-type": "icon",
-                  "data-icon-start": "cross",
-                  "aria-label": "Discard changes",
-                  "disabled": ""
-                }
-              },
-              {
-                "el": "sherpa-button",
                 "class": "save-filters",
                 "part": "save-filters",
                 "attrs": {
@@ -167,6 +143,63 @@
             "attrs": {
               "open": ""
             }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "scope-acts-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "scope-acts",
+            "attrs": {
+              "slot": "actions"
+            },
+            "children": [
+              {
+                "el": "sherpa-button",
+                "class": "scope-apply",
+                "attrs": {
+                  "data-size": "sm",
+                  "data-look": "saturated",
+                  "disabled": ""
+                }
+              },
+              {
+                "el": "sherpa-button",
+                "class": "scope-discard",
+                "attrs": {
+                  "data-size": "sm",
+                  "data-type": "icon",
+                  "data-icon-start": "cross",
+                  "aria-label": "Discard changes",
+                  "disabled": ""
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "scope-badge-tpl",
+        "children": [
+          {
+            "el": "sherpa-tooltip",
+            "class": "scope-tip",
+            "attrs": {
+              "slot": "badge"
+            },
+            "children": [
+              {
+                "el": "sherpa-badge",
+                "class": "scope-results",
+                "attrs": {
+                  "role": "img"
+                }
+              }
+            ]
           }
         ]
       },
@@ -772,7 +805,8 @@
     "field-title.color": "{sherpa.style-content-secondary}",
     "field-title.font-weight": "{sherpa.font-weight-light}",
     "field-acts.gap": "{sherpa.display-mode-space-2xs}",
-    "field-row.gap": "{sherpa.display-mode-space-2xs}"
+    "field-row.gap": "{sherpa.display-mode-space-2xs}",
+    "scope-acts.gap": "{sherpa.display-mode-space-2xs}"
   },
   "$extensions": {
     "sherpa": {

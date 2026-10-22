@@ -12,9 +12,10 @@
   Slots:
     heading     — rich summary title (overrides data-heading)
     description — rich secondary line under the title (overrides data-description)
-    actions     — trailing controls in the summary row, before the chevron.
-                  A click on one does NOT toggle the disclosure.
-                  TRAP T-an-accordion-action-is-not-a-toggle
+    actions     — trailing controls on the header row, before the chevron. OUTSIDE
+                  the <summary>, so a click on one never toggles the disclosure
+                  and no button sits in a button. TRAP T-an-accordion-action-is-not-a-toggle
+    badge       — a mark in the header row, shown only while the disclosure is SHUT
     (default)   — the disclosure body
 
   Fires:
@@ -29,14 +30,15 @@
         <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading" data-accepts="text"></slot></span>
         <span class="description" part="description"><span class="description-text"></span><slot name="description" data-accepts="text"></slot></span>
       </span>
-      <!-- Trailing controls, BEFORE the chevron. They sit inside the
-           <summary>, so a click on one would also toggle the disclosure — the
-           slot stops that itself. TRAP T-an-accordion-action-is-not-a-toggle -->
-      <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
+      <!-- A mark while SHUT — its matches, say. Will, TODO 418 -->
+      <span class="badge" part="badge"><slot name="badge" data-accepts="badge"></slot></span>
       <i class="chevron sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
     </summary>
     <div class="body" part="body">
       <slot data-accepts="content"></slot>
     </div>
   </details>
+  <!-- Trailing controls, OUTSIDE the <summary> — a button may not hold buttons —
+       laid over its row, before the chevron. TRAP T-an-accordion-action-is-not-a-toggle -->
+  <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
 </template>

@@ -109,6 +109,14 @@
   z-index: 1;
   background: var(--sherpa-style-surface-base, #fff);
 }
+/* …and the actions on its row stay with it, at the fields' right edge: this
+   chevron is at the start. TODO 406 */
+.scope::part(actions) {
+  position: sticky;
+  inset-block-start: var(--sherpa-display-mode-space-sm, 12px);
+  z-index: 2;
+  margin-inline-end: var(--sherpa-theme-padding-lg, 16px);
+}
 .scope:last-of-type { border-block-end-width: 0; }
 
 /* ── Fields ──────────────────────────────────────────────────────────── */
@@ -169,9 +177,11 @@
 .field:not([data-answered]) .field-clear { display: none; }
 .field-apply, .field-discard { display: none; }
 :host([data-remote]:not([data-waits])) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
-/* A scope that WAITS has ONE Apply and Discard, in the header. Will, TODO 406 */
-.head :is(.head-apply, .head-discard) { display: none; }
-:host([data-waits]) .head :is(.head-apply, .head-discard) { display: inline-flex; }
+/* A scope that WAITS has ONE Apply and Discard, on its own header. Will, TODO 406 */
+.scope-acts { display: none; gap: var(--sherpa-display-mode-space-2xs, 4px); }
+:host([data-waits]) .scope-acts { display: inline-flex; }
+/* A shut scope's badge, only once its filters match something. TODO 418 */
+.scope-results:not([data-count]) { display: none; }
 /* The row's Add condition IS the inline menu's own, so the menu's goes. */
 .field-body sherpa-menu::part(add-condition) { display: none; }
 
@@ -211,6 +221,8 @@
 .scope::part(header) { align-items: center; }
 .scope::part(icon),
 .scope::part(titles) { order: 1; }
+/* A shut scope's matches at the row's end, as the actions are. TODO 418 */
+.scope::part(badge) { order: 2; }
 
 /* No wrap: "Save / filters" on two lines reads as two controls. */
 .save-filters,

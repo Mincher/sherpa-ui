@@ -70,7 +70,7 @@
   translate: -50% 0;
 }
 
-.tip-text { color: inherit; }
+.tip-text { color: inherit; white-space: pre-line; }
 slot[name="tip"] { display: none; }
 :host(:state(has-tip)) slot[name="tip"] { display: inline; }
 :host(:state(has-tip)) .tip-text { display: none; }
