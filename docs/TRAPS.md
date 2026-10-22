@@ -10610,11 +10610,17 @@ picks (Will's Q2), so they move to the reading's `off` — picks kept and not in
 force, which count as an answer and compile to nothing. The next press brings
 them back; with none, the parent is picked whole.
 
+Its BADGE counts what makes it ON. The walk counts each pick by its own key, so
+a parent with only children picked had no count of its own, and its ON chip
+showed no badge. A parent not picked itself now counts its picked children
+together, under its own key.
+
 A parent's caret asks for its children's menu (`quick-filter-open`): built
 then, shown once it has drawn, and removed when it shuts, so a shut chip holds
 no menu and a body press is never mistaken for an empty chip's open.
 
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/source-counts.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-a-tiered-panel-chip.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

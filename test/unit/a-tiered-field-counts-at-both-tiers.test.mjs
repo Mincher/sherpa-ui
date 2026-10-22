@@ -62,10 +62,20 @@ test('a path key is the key valueKey gives the pair, whichever name sorts first'
   assert.deepEqual(walkInOrder(rows, plan).present.view.zone, ['North', valueKey({ zone: 'North', area: 'Hills' })]);
 });
 
-test('a path pick counts its own rows', () => {
+test('a path pick counts its own rows, and its customer counts them too', () => {
   const w = walkInOrder(ROWS, planWalk(view({ customer: { picked: ['Contoso', at('Northwind', 'London')] } }), facts()));
-  assert.deepEqual(w.values.view.customer, { Contoso: 2, [key('Northwind', 'London')]: 1 });
+  assert.deepEqual(w.values.view.customer, { Contoso: 2, [key('Northwind', 'London')]: 1, Northwind: 1 });
   assert.equal(w.ends.view, 3);
+});
+
+test('a customer with only sites picked counts them together; one picked itself counts its own', async () => {
+  const plan = planWalk(view({ customer: { picked: [at('Northwind', 'Leeds'), at('Northwind', 'London')] } }), facts());
+  const want = { [key('Northwind', 'Leeds')]: 1, [key('Northwind', 'London')]: 1, Northwind: 2 };
+  assert.deepEqual(walkInOrder(ROWS, plan).values.view.customer, want);
+  // Asked step by step, the same counts.
+  assert.deepEqual((await walkStepwise(new ArrayStore(ROWS, { key: 'id' }), plan)).values.view.customer, want);
+  const q = view({ customer: { picked: ['Northwind', at('Northwind', 'London')] } });
+  assert.deepEqual(walkInOrder(ROWS, planWalk(q, facts())).values.view.customer, { Northwind: 3, [key('Northwind', 'London')]: 1 });
 });
 
 test('a path its ruler rules out is set aside, as a customer is', () => {

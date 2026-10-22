@@ -53,7 +53,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — data-source-types, query-context
 - [T-a-page-is-its-definition](TRAPS.md#t-a-page-is-its-definition) — data, page-definition
 - [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — data-source, data-source-types
-- [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — filter-state
+- [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — filter-state, source-counts
 - [T-a-path-is-judged-by-its-parent-when-stepwise](TRAPS.md#t-a-path-is-judged-by-its-parent-when-stepwise) — source-counts
 - [T-a-projected-row-is-checked-on-what-it-was-sent](TRAPS.md#t-a-projected-row-is-checked-on-what-it-was-sent) — base-store, store
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — data-source-types
