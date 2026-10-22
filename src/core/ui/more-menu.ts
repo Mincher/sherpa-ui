@@ -13,10 +13,9 @@
  * - saveRows — Save filters, or "Save <name>" with Save as and Delete; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
- * - syncHide — Hide invalid values is inactive while Limit is off.
- * - toggleHide — Hide invalid values, pressed: the host is asked to flip it, only while Limit is on.
+ * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
- * - askSwitches — The ⋮ menu's Limit switch, when it moved, is asked for.
+ * - askSwitches — The ⋮ menu's two switches: each that MOVED is asked for, Limit first.
  */
 
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
@@ -82,24 +81,21 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
     return one ? [one] : [];
   }));
   const limit = host.dataset['limitOptions'];
-  const box = limit ? check(root, 'limit-options', limit === 'on') : null;
-  if (box) drawn.push([box]);
-  // The header's toggle stays: it is the menu's own markup.
-  const header = [...menu.children].filter((child) => child.slot === 'header');
-  menu.replaceChildren(...header, ...drawn.filter((g) => g.length)
+  if (limit) {
+    // …and below it, whether what Limit rules out is shown at all. Will, TODOs 205 and 376
+    drawn.push([check(root, 'limit-options', limit === 'on'), check(root, 'hide-unmatched', host.dataset['hideUnmatched'] === 'on')]
+      .filter((n): n is HTMLElement => !!n));
+  }
+  menu.replaceChildren(...drawn.filter((g) => g.length)
     .flatMap((g, i) => (i ? [divider.cloneNode(true) as HTMLElement, ...g] : g)));
   syncHide(host, root);
   menu.show?.(trigger);
 }
 
-/** Hide invalid values is inactive while Limit is off. Will, TODO 376 */
+/** Hide invalid filters is inactive — not hidden — while Limit is off. Will, TODO 376 */
 export function syncHide(host: HTMLElement, root: ParentNode): void {
-  root.querySelector('.more-hide')?.toggleAttribute('disabled', host.dataset['limitOptions'] !== 'on');
-}
-
-/** Hide invalid values, pressed: the host owns it, so it is ASKED to flip — only while Limit is on. */
-export function toggleHide(host: HTMLElement, ask: (name: 'hide-unmatched-change', on: boolean) => void): void {
-  if (host.dataset['limitOptions'] === 'on') ask('hide-unmatched-change', host.dataset['hideUnmatched'] !== 'on');
+  const box = root.querySelector<HTMLInputElement>('.more-menu input[value="hide-unmatched"]');
+  if (box) box.disabled = host.dataset['limitOptions'] !== 'on';
 }
 
 /** A row's prototype, by value, from any more-rows-tpl: the family's or its host's own. */
@@ -145,11 +141,19 @@ export function pickMore(host: HTMLElement, root: ParentNode, event: Event): str
   return '';
 }
 
-/** The ⋮ menu's Limit switch, when it MOVED, is asked for: the host owns it. */
-export function askSwitches(host: HTMLElement, event: Event, ask: (name: 'limit-options-change', on: boolean) => void): void {
+/** The ⋮ menu's two switches: each that MOVED is asked for, Limit first — the
+ *  host owns both: Limit to matching filters, and Hide invalid filters. */
+export function askSwitches(
+  host: HTMLElement, event: Event,
+  ask: (name: 'limit-options-change' | 'hide-unmatched-change', on: boolean) => void,
+): void {
   event.stopPropagation();
-  const limit = (((event as CustomEvent).detail?.values ?? []) as string[]).includes('limit-options');
+  const on = ((event as CustomEvent).detail?.values ?? []) as string[];
+  const limit = on.includes('limit-options');
+  const hide = on.includes('hide-unmatched');
   if (limit !== (host.dataset['limitOptions'] === 'on')) ask('limit-options-change', limit);
+  // Read AFTER the Limit ask: its host answers by rewriting both attributes.
+  if (hide !== (host.dataset['hideUnmatched'] === 'on')) ask('hide-unmatched-change', hide);
 }
 
 function extras(host: HTMLElement): HTMLElement[] {

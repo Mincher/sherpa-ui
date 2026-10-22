@@ -138,7 +138,7 @@ Each one bubbles.
 | `view-save-as` |  | Save view as, from the Save group's ▾ (view type) |
 | `view-delete` |  | Delete view, the reader's own View (view type) |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
-| `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid values" toggle, while Limit is on. |
+| `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 
 ## Slots
 

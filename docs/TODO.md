@@ -81,6 +81,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ⬜ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
+| ⬜ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1832,6 +1833,12 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 400 — BUG: a View scope pick does not limit the other View filters
+
+Will, 2026-10-22: *"Changing values in View Scope filters doesn't seem to
+invalidate values in other View Scope filters. Only Component Scopes are being
+affected."*
+
 ### `[x]` ✅ 399 — BUG: Recents lists Settings pages and Context names; a switch for Views or Contexts
 
 Will, 2026-10-22: *"Settings views shouldn't appear in the Recents section of the
@@ -1899,6 +1906,12 @@ a press. Pressed (`aria-pressed`, the `active` Style mode) follows
 `askSwitches` went. Bar and panel alike. Tests: the panel's two ⋮ cases and
 Demos `reforged-limit-options` (Chromium). **For Will to look at by eye:** Demos
 Records › ⋮ — the icon at the menu's top right.
+
+**Redone 2026-10-22 — Will:** *"The 'Hide invalid filters' menu item is now just
+a weirdly placed eye icon in the menu. It should be a menu item below 'Limited to
+matching filters'."* So it is a check row again, "Hide invalid filters", right
+below Limit; always there while a page has Limit, and inactive (its box
+disabled) while Limit is off. The header icon went.
 
 ### `[x]` ✅ 375 — FILTERS: a range is an Advanced condition
 

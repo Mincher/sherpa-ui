@@ -3876,7 +3876,7 @@
             },
             {
               "name": "hide-unmatched-change",
-              "description": "The ⋮ menu's \"Hide invalid values\" toggle, while Limit is on.",
+              "description": "The ⋮ menu's \"Hide invalid filters\" row, while Limit is on.",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }
@@ -8657,7 +8657,7 @@
             },
             {
               "name": "hide-unmatched-change",
-              "description": "The ⋮ menu's \"Hide invalid values\" toggle, while Limit is on.",
+              "description": "The ⋮ menu's \"Hide invalid filters\" row, while Limit is on.",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }

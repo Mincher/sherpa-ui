@@ -853,7 +853,7 @@ test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away
     sr.querySelector('.more-btn')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
     await new Promise((res) => setTimeout(res, 150));
     const rows = [...sr.querySelectorAll<HTMLElement>('.more-menu > :not([slot])')].map((n) => n.textContent!.trim() || n.tagName);
-    const hideOff = sr.querySelector('.more-hide')!.hasAttribute('disabled');
+    const hideOff = sr.querySelector<HTMLInputElement>('.more-menu input[value="hide-unmatched"]')!.disabled;
     sr.querySelector<HTMLInputElement>('.more-menu input[value="limit-options"]')!.click();
     await new Promise((res) => setTimeout(res, 50));
     el.style.inlineSize = '480px';
@@ -863,8 +863,8 @@ test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away
   });
   // Narrow: Reset folds into the ⋮.
   expect(r.narrow).toEqual({ more: true, reset: false });
-  // Limit OFF: Hide invalid values is there, and inactive. Will, TODO 376.
-  expect(r.rows).toEqual(['Reset filters', 'Reset all to default', 'HR', 'Limit to matching filters']);
+  // Limit OFF: Hide invalid filters is there, below it, and inactive. Will, TODO 376.
+  expect(r.rows).toEqual(['Reset filters', 'Reset all to default', 'HR', 'Limit to matching filters', 'Hide invalid filters']);
   expect(r.hideOff).toBe(true);
   expect(r.heard).toEqual([{ on: true }]);
   // Wide, and no host option: no ⋮.
@@ -872,11 +872,11 @@ test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away
 });
 
 /**
- * HIDE INVALID VALUES — Will, TODOs 205 and 376. The ⋮ menu's icon-only toggle,
+ * HIDE INVALID FILTERS — Will, TODOs 205 and 376. The ⋮ menu's row below Limit,
  * live while Limit is on; on, a value the other answers rule out is HIDDEN, not
  * greyed — unless it is picked, so the reader can untick it. TRAP T-a-ruled-out-value-is-greyed
  */
-test('while Limit is on, the ⋮ toggle Hide invalid values asks; on, a ruled-out value goes unless picked', async ({ page }) => {
+test('while Limit is on, the ⋮ row Hide invalid filters asks; on, a ruled-out value goes unless picked', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount('sherpa-filter-panel', undefined, { open: true, style: 'inline-size: 360px' }) as HTMLElement & {
       populate(d: unknown): Promise<void>; drawPresent(p: unknown, scope: string): void };
@@ -891,9 +891,9 @@ test('while Limit is on, the ⋮ toggle Hide invalid values asks; on, a ruled-ou
     sr.querySelector('.more-btn')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
     await new Promise((res) => setTimeout(res, 150));
     const rows = [...sr.querySelectorAll<HTMLElement>('.more-menu .more-check')].map((n) => n.textContent!.trim());
-    const hide = sr.querySelector<HTMLElement>('.more-hide')!;
-    const live = !hide.hasAttribute('disabled') && hide.getAttribute('aria-label');
-    hide.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    const hide = sr.querySelector<HTMLInputElement>('.more-menu input[value="hide-unmatched"]')!;
+    const live = !hide.disabled;
+    hide.click();
     await new Promise((res) => setTimeout(res, 50));
     // The other answers leave EMEA alone; AMER is picked.
     el.drawPresent({ region: ['EMEA'] }, 'view');
@@ -902,11 +902,10 @@ test('while Limit is on, the ⋮ toggle Hide invalid values asks; on, a ruled-ou
     const greyed = shown();
     el.setAttribute('data-hide-unmatched', 'on');
     await new Promise((res) => requestAnimationFrame(() => res(null)));
-    return { rows, live, heard, greyed, hidden: shown(), pressed: hide.getAttribute('aria-pressed') };
+    return { rows, live, heard, greyed, hidden: shown() };
   });
-  expect(r.rows).toEqual(['Limit to matching filters']);
-  expect(r.live).toBe('Hide invalid values');
-  expect(r.pressed).toBe('true');
+  expect(r.rows).toEqual(['Limit to matching filters', 'Hide invalid filters']);
+  expect(r.live).toBe(true);
   expect(r.heard).toEqual([{ on: true }]);
   expect(r.greyed).toEqual(['EMEA', 'APAC', 'AMER']);
   expect(r.hidden).toEqual(['EMEA', 'AMER']);

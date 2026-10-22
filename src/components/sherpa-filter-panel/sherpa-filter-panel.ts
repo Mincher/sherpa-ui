@@ -24,7 +24,7 @@ import {
   type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide, syncResets, toggleHide,
+  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide, syncResets,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
@@ -177,7 +177,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.more-btn')?.addEventListener('button-click', this.#openMore);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
     this.$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
-    this.$('.more-hide')?.addEventListener('button-click', this.#onHide);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
     // The f(x) is a chip, so it reports a chip's click.
@@ -1798,12 +1797,6 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => askSwitches(this, event, (name, on) => this.emit(name, { on }));
-
-  /** Hide invalid values, pressed: the menu stays open. TODO 376 */
-  #onHide = (event: Event): void => {
-    event.stopPropagation();
-    toggleHide(this, (name, on) => this.emit(name, { on }));
-  };
 
   /** RESET ALL: every field in every scope, Group and Sort too — ONE request,
    *  as the toolbar's Reset is. Will, 2026-09-26 · 366 step 20 */
