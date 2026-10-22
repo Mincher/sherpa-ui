@@ -1,11 +1,11 @@
 {
   "app.js": {
-    "js": 416637,
+    "js": 416884,
     "files": 61,
     "fetched": 0
   },
   "components.js": {
-    "js": 867795,
+    "js": 867477,
     "files": 108,
     "fetched": 204523
   },
@@ -30,7 +30,7 @@
     "fetched": 0
   },
   "components/sherpa-barchart/sherpa-barchart.js": {
-    "js": 240879,
+    "js": 240810,
     "files": 15,
     "fetched": 0
   },
@@ -60,7 +60,7 @@
     "fetched": 0
   },
   "components/sherpa-chart-legend/sherpa-chart-legend.js": {
-    "js": 393134,
+    "js": 392816,
     "files": 36,
     "fetched": 0
   },
@@ -95,7 +95,7 @@
     "fetched": 0
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "js": 509653,
+    "js": 509335,
     "files": 51,
     "fetched": 0
   },
@@ -120,12 +120,12 @@
     "fetched": 0
   },
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
-    "js": 510697,
+    "js": 510379,
     "files": 53,
     "fetched": 0
   },
   "components/sherpa-gauge-chart/sherpa-gauge-chart.js": {
-    "js": 242473,
+    "js": 242404,
     "files": 16,
     "fetched": 0
   },
@@ -135,7 +135,7 @@
     "fetched": 0
   },
   "components/sherpa-input-text/sherpa-input-text.js": {
-    "js": 348441,
+    "js": 348203,
     "files": 25,
     "fetched": 0
   },
@@ -145,7 +145,7 @@
     "fetched": 0
   },
   "components/sherpa-layout-canvas/sherpa-layout-canvas.js": {
-    "js": 361578,
+    "js": 361340,
     "files": 27,
     "fetched": 0
   },
@@ -155,7 +155,7 @@
     "fetched": 0
   },
   "components/sherpa-line-chart/sherpa-line-chart.js": {
-    "js": 241202,
+    "js": 241133,
     "files": 15,
     "fetched": 0
   },
@@ -175,7 +175,7 @@
     "fetched": 0
   },
   "components/sherpa-menu/sherpa-menu.js": {
-    "js": 348441,
+    "js": 348203,
     "files": 25,
     "fetched": 0
   },
@@ -200,12 +200,12 @@
     "fetched": 0
   },
   "components/sherpa-notifications/sherpa-notifications.js": {
-    "js": 359552,
+    "js": 359314,
     "files": 27,
     "fetched": 0
   },
   "components/sherpa-outlet/sherpa-outlet.js": {
-    "js": 277117,
+    "js": 277048,
     "files": 27,
     "fetched": 0
   },
@@ -215,7 +215,7 @@
     "fetched": 0
   },
   "components/sherpa-pagination/sherpa-pagination.js": {
-    "js": 361796,
+    "js": 361558,
     "files": 27,
     "fetched": 0
   },
@@ -240,22 +240,22 @@
     "fetched": 0
   },
   "components/sherpa-provider/sherpa-provider.js": {
-    "js": 360014,
+    "js": 360261,
     "files": 42,
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 482944,
+    "js": 482626,
     "files": 47,
     "fetched": 0
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
-    "js": 272458,
+    "js": 272309,
     "files": 22,
     "fetched": 0
   },
   "components/sherpa-radial-chart/sherpa-radial-chart.js": {
-    "js": 239425,
+    "js": 239356,
     "files": 16,
     "fetched": 0
   },
@@ -270,27 +270,27 @@
     "fetched": 0
   },
   "components/sherpa-select-card/sherpa-select-card.js": {
-    "js": 367587,
+    "js": 367349,
     "files": 29,
     "fetched": 0
   },
   "components/sherpa-select-checkbox/sherpa-select-checkbox.js": {
-    "js": 356320,
+    "js": 356082,
     "files": 26,
     "fetched": 0
   },
   "components/sherpa-select-group/sherpa-select-group.js": {
-    "js": 366373,
+    "js": 366135,
     "files": 29,
     "fetched": 0
   },
   "components/sherpa-select-radio/sherpa-select-radio.js": {
-    "js": 229781,
+    "js": 229712,
     "files": 13,
     "fetched": 0
   },
   "components/sherpa-slider/sherpa-slider.js": {
-    "js": 357716,
+    "js": 357478,
     "files": 26,
     "fetched": 0
   },
@@ -305,7 +305,7 @@
     "fetched": 0
   },
   "components/sherpa-switch/sherpa-switch.js": {
-    "js": 230533,
+    "js": 230464,
     "files": 12,
     "fetched": 0
   },
@@ -340,12 +340,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 136776,
+    "js": 137092,
     "files": 40,
     "fetched": 0
   },
   "index.js": {
-    "js": 1034724,
+    "js": 1034722,
     "files": 151,
     "fetched": 204523
   }

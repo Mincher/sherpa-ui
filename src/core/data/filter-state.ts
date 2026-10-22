@@ -27,7 +27,7 @@
  * - rowOffer — What row `index` may offer: the values the rows before it in its AND chain leave.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
- * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
+ * - ruleOut — A field's limits as one test: what its chain offers first, then what the other filters leave.
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
@@ -236,11 +236,11 @@ export function rowAnswered(row: FieldCondition): boolean {
   return (row.picked ?? []).length >= (takes === 'range' ? 2 : 1);
 }
 
-/** Why the source rules a value out: its chain does not offer it, or the filters before it leave none of it. */
+/** Why the source rules a value out: its chain does not offer it, or the other filters leave none of it. */
 export type RuledOut = 'unoffered' | 'unmatched' | null;
 
 /** A field's limits as one test: what its chain OFFERS first, then what the
- *  filters before it LEAVE — compared as a filter compares, case aside, so it
+ *  other filters LEAVE — compared as a filter compares, case aside, so it
  *  agrees with the source's walk. A null list limits nothing. TRAP T-a-ruled-out-value-is-greyed */
 export function ruleOut(present: Iterable<string> | null | undefined, offered?: Iterable<string> | null): (value: string) => RuledOut {
   const left = looseSet(present);

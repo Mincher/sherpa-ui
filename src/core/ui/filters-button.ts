@@ -49,7 +49,7 @@ export interface ListedFilter {
   label: string;
   /** A second fact the row shows, muted. */
   note?: string | undefined;
-  /** No value is left under the filters before it: greyed — hidden while Hide
+  /** No value is left under the other filters: greyed — hidden while Hide
    *  unmatching is on. TRAP T-the-add-menu-is-the-whole-list */
   spent?: boolean;
 }

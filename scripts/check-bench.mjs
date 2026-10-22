@@ -67,13 +67,14 @@ const countCompiles = {
     // The walk's one pass over a scope's rows is a scan too. TRAP T-one-walk-counts-and-limits-in-order
     b.onLoad({ filter: /src[\\/]core[\\/]data[\\/]walk\.ts$/ }, (args) => {
       const text = readFileSync(args.path, 'utf8');
-      for (const fn of ['passOver', 'walkInOrder']) {
+      for (const fn of ['passOver', 'presentBothWays', 'walkInOrder']) {
         if (!text.includes(`export function ${fn}(`)) throw new Error(`check-bench: walk.ts has no \`export function ${fn}(\` to count`);
       }
       return {
         loader: 'ts',
-        contents: `${text.replace('export function passOver(', 'function passOverOnce(').replace('export function walkInOrder(', 'function walkInOrderOnce(')}
+        contents: `${text.replace('export function passOver(', 'function passOverOnce(').replace('export function presentBothWays(', 'function presentBothWaysOnce(').replace('export function walkInOrder(', 'function walkInOrderOnce(')}
 export function passOver(rows, scan, from) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c) c.scans++; return passOverOnce(rows, scan, from); }
+export function presentBothWays(rows, scan, taps) { const out = presentBothWaysOnce(rows, scan, taps); const c = globalThis[Symbol.for('sherpa.bench')]; if (c && out.size) c.scans++; return out; }
 export function walkInOrder(rows, plan) { const c = globalThis[Symbol.for('sherpa.bench')]; if (c) c.walks++; return walkInOrderOnce(rows, plan); }
 `,
       };

@@ -175,14 +175,10 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
     const rule = ruleOf(scope);
     if (!rule) return [];
     const stepped = new Set(steps.flatMap((s) => (s.field ? [s.field] : [])));
-    const sets = facts.sets(scope);
     const taps: WalkTap[] = [];
     for (const f of new Set([...facts.fields(scope), ...extra])) {
       if (stepped.has(f) || !facts.isList(f) || (scope !== VIEW && viewHolds.has(f)) || (facts.has && !facts.has(f))) continue;
-      // Where it would stand: after its set's last step here, else at the end.
-      const set = sets.find((x) => x.fields.includes(f));
-      const last = set ? steps.findLastIndex((s) => !!s.field && set.fields.includes(s.field)) : -1;
-      taps.push({ at: last >= 0 ? last + 1 : steps.length, field: f, ruler: rule, ...tierOf(facts.field(f)) });
+      taps.push({ field: f, ruler: rule, ...tierOf(facts.field(f)) });
     }
     return taps;
   };
@@ -219,8 +215,12 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
   };
   // Tallies asked under one filter in one turn go as ONE request.
   const batches = new Map<string, { filter: Filter | undefined; fields: Set<string>; asked: Promise<Record<string, string[]>> }>();
+  // A field asked twice under one filter is asked once: Limit's last tally is often its set-aside's.
+  const asked = new Map<string, Promise<string[]>>();
   const tally = (filter: Filter | undefined, field: string): Promise<string[]> => {
     const key = JSON.stringify(filter ?? null);
+    const known = asked.get(`${key}\u0000${field}`);
+    if (known) return known;
     let batch = batches.get(key);
     if (!batch) {
       const fields = new Set<string>();
@@ -232,7 +232,9 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       batches.set(key, batch);
     }
     batch.fields.add(field);
-    return later(batch.asked.then((found) => found[field] ?? []));
+    const keys = later(batch.asked.then((found) => found[field] ?? []));
+    asked.set(`${key}\u0000${field}`, keys);
+    return keys;
   };
   /* No pairs from a store tallied field by field: a path stands with its parent.
      TRAP T-a-path-is-judged-by-its-parent-when-stepwise */
@@ -254,25 +256,24 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
     const offered: Record<string, string[]> = {};
     const aside: Record<string, string[]> = {};
     const tapped: Array<[WalkTap, Promise<string[]>]> = [];
-    const tap = (at: number): void => {
-      for (const t of sc.taps) if (t.at === at) tapped.push([t, t.ruler === 'here' ? withPaths(tally(andFilter(before), t.field), t.tier) : start(t.field, t.tier)]);
-    };
+    // Each step's clause in force, for Limit to grey by every OTHER one. TODO 400
+    const finals: Array<Filter | undefined> = [];
     for (let i = 0; i < sc.steps.length; i++) {
       const step = sc.steps[i]!;
       const field = step.field;
       const here = [...before];
-      tap(i);
       const offers = !!step.offers && narrowed;
-      // Its tally only where something reads it.
-      const keys = field && (step.ruler === 'here' || offers) ? withPaths(tally(andFilter(here), field), step.tier) : null;
-      const ruled = field && step.ruler ? (step.ruler === 'here' ? keys! : start(field, step.tier)) : null;
+      const asides = !!(sc.setsAside && step.on && step.clause && step.picks?.length && step.less);
+      // Its tally only where something reads it: a set-aside, or what it offers.
+      const keys = field && ((step.ruler === 'here' && asides) || offers) ? withPaths(tally(andFilter(here), field), step.tier) : null;
+      const ruled = field && step.ruler ? (step.ruler === 'here' ? keys : start(field, step.tier)) : null;
       if (field && step.each?.length) {
         const counts: Record<string, number> = {};
         values[field] = counts;
         for (const [key, clause] of step.each) void count([...here, clause]).then((n) => { counts[key] = n; }, () => undefined);
       }
       let test = step.clause;
-      if (sc.setsAside && step.on && test && step.picks?.length && step.less && field && (ruled || offers)) {
+      if (asides && step.picks?.length && step.less && field && (ruled || offers)) {
         const [rule, held] = await Promise.all([ruled, offers ? keys : null]);
         const ruledOut = step.picks.filter((k) => (rule && !holdsKey(rule, k)) || (held && !holdsKey(held, k)));
         // Every pick ruled out: it stays in force. TRAP T-a-ruled-out-value-is-greyed
@@ -283,14 +284,23 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       }
       const final = test;
       if (step.counts && final) void count([...here, final]).then((n) => { results[step.id] = n; }, () => undefined);
-      if (field && ruled) void ruled.then((k) => { present[field] = k; }, () => undefined);
+      if (field && step.ruler === 'start') void ruled!.then((k) => { present[field] = k; }, () => undefined);
       if (field && offers && keys) void keys.then((k) => { offered[field] = k; }, () => undefined);
       if (step.on && final) {
         before.push(final);
+        finals[i] = final;
         narrowed = true;
       }
     }
-    tap(sc.steps.length);
+    // Limit greys under every OTHER filter in force, after it as well as before.
+    const base = from?.filter ? [from.filter] : [];
+    sc.steps.forEach((step, i) => {
+      const field = step.field;
+      if (!field || step.ruler !== 'here') return;
+      const others = [...base, ...finals.filter((f, j): f is Filter => j !== i && !!f)];
+      void withPaths(tally(andFilter(others), field), step.tier).then((k) => { present[field] = k; }, () => undefined);
+    });
+    for (const t of sc.taps) tapped.push([t, t.ruler === 'here' ? withPaths(tally(andFilter(before), t.field), t.tier) : start(t.field, t.tier)]);
     const spent: string[] = [];
     out.results[sc.scope] = results;
     out.values[sc.scope] = values;

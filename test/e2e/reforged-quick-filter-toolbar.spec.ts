@@ -2690,7 +2690,7 @@ test('a chip whose every pick is ruled out stays active, toggles, and its menu g
     return { before, stillTicked, off: !chip.current };
   });
   expect(r.before).toEqual({ greyed: false, on: true,
-    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true, refused: true } });
+    row: { greyed: true, ticked: true, says: 'Limited by your other filters: no matches.', inactiveBox: true, refused: true } });
   expect(r.stillTicked).toBe(true);
   expect(r.off).toBe(true);
 });

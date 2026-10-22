@@ -171,7 +171,7 @@ export interface DataSourceOptions {
   searchFields?: string[];
   /** Load as soon as the first component binds. Default true. */
   autoLoad?: boolean;
-  /** Each list field offers only the values the filters before it leave; the rest
+  /** Each list field offers only the values the other filters leave; the rest
    *  are drawn greyed. Default false. TRAP T-a-ruled-out-value-is-greyed */
   limitOptions?: boolean;
   /** `'input'`: a filter applies LIVE, while its value moves, `debounce` ms after
@@ -255,7 +255,7 @@ export interface BoundControl {
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
-  /** Each field's values the filters before it leave, as value keys; a field not named is not limited. */
+  /** Each field's values the other filters leave, as value keys; a field not named is not limited. */
   drawPresent?: (present: Readonly<Record<string, readonly string[]>>, scope: string) => void;
   /** Each serial-set field's values to OFFER, as value keys; the rest are removed. A field not named offers all. */
   drawOffered?: (offered: Readonly<Record<string, readonly string[]>>, scope: string) => void;

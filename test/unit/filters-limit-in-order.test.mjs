@@ -78,12 +78,13 @@ test('OFF counts what it would match within the filters before it, and narrows n
   assert.deepEqual(w.aside.view, {});
 });
 
-test('Limit on: an earlier pick limits a later field, never the other way', () => {
+test('Limit on: every other pick in force greys a field, both ways; set-aside stays in order (TODO 400)', () => {
   // AW, then LATAM: LATAM has no AW row, so LATAM is set aside — AW stands.
   const q = query({ view: { holds: ['customer', 'region'], readings: { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } } } });
   const w = walk(q);
   assert.deepEqual(w.aside.view, { region: ['LATAM'] });
-  assert.deepEqual(w.present.view.customer.sort(), ['Adventure Works', 'Contoso', 'Litware', 'Tailspin']);
+  // Region, after Customer, greys it too: by EMEA, what is left in force.
+  assert.deepEqual(w.present.view.customer.sort(), ['Adventure Works', 'Contoso']);
   assert.deepEqual(w.present.view.region.sort(), ['AMER', 'APAC', 'EMEA']);
   assert.deepEqual(w.results.view, { customer: 3, region: 1 });
   assert.equal(w.ends.view, 1);
@@ -142,7 +143,7 @@ test('a serial set\'s lower field offers only what the rows at its place hold, o
   assert.deepEqual(data.offered.data.customer.sort(), ['Contoso', 'Tailspin']);
 });
 
-test('a field no chip holds is tapped where it would stand; one with nothing left is spent', () => {
+test('a field no chip holds is greyed by every filter in force; one with nothing left is spent', () => {
   const q = query({ view: { holds: ['region'], readings: { region: { picked: ['LATAM'] } } } });
   const w = walk(q, { fields: () => ['region', 'customer', 'status'] });
   assert.deepEqual(w.present.view.customer.sort(), ['Contoso', 'Tailspin']);
@@ -210,8 +211,8 @@ function referenceWalk(rows, plan) {
     let reach = start;
     const at = [];
     const results = {}; const values = {}; const present = {}; const offered = {}; const aside = {};
+    const finals = [];
     sc.steps.forEach((step) => {
-      at.push(reach);
       let test = step.clause;
       const tally = step.field ? keysOf(reach, step.field) : [];
       if (sc.setsAside && step.on && test && step.picks?.length && step.less) {
@@ -221,14 +222,19 @@ function referenceWalk(rows, plan) {
       }
       if (step.field && step.each?.length) values[step.field] = Object.fromEntries(step.each.map(([k, c]) => [k, match(reach, c).length]));
       if (step.counts && test) results[step.id] = match(reach, test).length;
-      if (step.field && step.ruler) present[step.field] = step.ruler === 'here' ? tally : keysOf(start, step.field);
+      if (step.field && step.ruler === 'start') present[step.field] = keysOf(start, step.field);
       if (step.field && step.offers && narrowed) offered[step.field] = tally;
+      finals.push(step.on && test ? test : null);
       if (step.on && test) { reach = match(reach, test); narrowed = true; }
     });
-    at.push(reach);
+    // Limit greys a field by every OTHER filter in force, after it as well as before.
+    sc.steps.forEach((step, i) => {
+      if (!step.field || step.ruler !== 'here') return;
+      present[step.field] = keysOf(finals.reduce((rs, f, j) => (f && j !== i ? match(rs, f) : rs), start), step.field);
+    });
     const spent = [];
     for (const t of sc.taps) {
-      const keys = t.ruler === 'here' ? keysOf(at[t.at], t.field) : keysOf(start, t.field);
+      const keys = t.ruler === 'here' ? keysOf(reach, t.field) : keysOf(start, t.field);
       present[t.field] = keys;
       if (!keys.length) spent.push(t.field);
     }

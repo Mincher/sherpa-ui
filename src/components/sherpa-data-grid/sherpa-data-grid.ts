@@ -761,8 +761,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * drawPresent(present, scope) — a bound source says what the filters before
-   * each field leave; a heading's menu greys the rest. A field not named is not
+   * drawPresent(present, scope) — a bound source says what the other filters
+   * leave each field; a heading's menu greys the rest. A field not named is not
    * limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
@@ -779,7 +779,7 @@ export class SherpaDataGrid extends SherpaElement {
   /** What each chained field offers, as last drawn. */
   #offered: Readonly<Record<string, readonly string[]>> = {};
 
-  /** One heading's menu, told what the filters before its field leave and what
+  /** One heading's menu, told what the other filters leave its field and what
    *  its chain offers. Its chip is never greyed for it: a filter whose every pick
    *  is ruled out stays in force (Will, 2026-10-20). TRAP T-a-ruled-out-value-is-greyed */
   #markPresent(cell: HTMLElement): void {
@@ -790,7 +790,7 @@ export class SherpaDataGrid extends SherpaElement {
     menu.present = this.#present[field] ?? null;
     menu.offered = this.#offered[field] ?? null;
   }
-  /** What the filters before each field leave, as the source last said. */
+  /** What the other filters leave each field, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
 
   /** The values the ROWS on screen carry. */

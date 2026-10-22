@@ -2493,7 +2493,7 @@
                   }
                 }
               ],
-              "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited."
+              "description": "drawPresent(present, scope) — a bound source says what the other filters leave each field; a heading's menu greys the rest. A field not named is not limited."
             },
             {
               "kind": "method",
@@ -3713,7 +3713,7 @@
                   }
                 }
               ],
-              "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave in a scope. A value chip they rule out is greyed — refused if off, set aside if on; a field's menu greys its rows. A field not named is not limited."
+              "description": "drawPresent(present, scope) — a bound source says what the other filters leave each field in a scope. A value chip they rule out is greyed and refused; a field's menu greys its rows. A field not named is not limited."
             },
             {
               "kind": "method",
@@ -8406,7 +8406,7 @@
                   }
                 }
               ],
-              "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
+              "description": "drawPresent(present) — a bound source says what the other filters leave each field; a chip's menu greys the rest. SILENT. A field not named is not limited."
             },
             {
               "kind": "method",
@@ -8980,7 +8980,7 @@
             },
             {
               "name": "data-unavailable",
-              "description": "the filters before it rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
+              "description": "the other filters rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed",
               "type": {
                 "text": "boolean"
               }

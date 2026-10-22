@@ -81,7 +81,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
-| ⬜ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
 | ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
@@ -2369,7 +2369,7 @@ attribute. First users: the layout grid (in place of the app header's drop
 shadow), the data grid's body, a menu's list, the nav list, a form's scroll
 area — each checked for a `::before`/`::after` it already uses.
 
-### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
+### `[x]` ✅ 400 — BUG: a View scope pick does not limit the other View filters
 
 Will, 2026-10-22: *"Changing values in View Scope filters doesn't seem to
 invalidate values in other View Scope filters. Only Component Scopes are being
@@ -2385,6 +2385,14 @@ limits a field's values, both ways (as before 349); the chip COUNTS stay ordered
 (348). **B:** keep the order rule: only the filters before a field limit it.
 
 **Will, 2026-10-22: "Still not working" — A.**
+
+**✅ Done 2026-10-22.** Limit greys each field by every OTHER filter in force in
+its scope, both ways (`presentBothWays` in `walk.ts`; step by step, one tally per
+Limit field under all the others). Counts and set-aside stay in order: a later
+pick still never sets an earlier one aside. A remote store not held asks 6 value
+requests per act in the bench, not 3; a held one makes one more pass over its
+rows. Tests: `filters-limit-in-order` (its plain walk is two-way now; the
+200-Query property holds), `present-limits-each-field`.
 
 ### `[x]` ✅ 399 — BUG: Recents lists Settings pages and Context names; a switch for Views or Contexts
 

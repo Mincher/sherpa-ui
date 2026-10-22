@@ -45,8 +45,8 @@
  * - .close — Let the store go: a change no longer reloads it, and its held set is dropped.
  * - .results — Each answered chip's results: the rows that reach it and match its answer.
  * - .valueResults — Each picked value's own results: the rows that reach its field and match that one value.
- * - .limitOptions — Does each list field offer only the values the filters before it leave? Settable, unlike applyOn.
- * - .present — Each list field's values its ruler leaves in a scope: the filters before it, or the View's subset.
+ * - .limitOptions — Does each list field offer only the values the other filters leave? Settable, unlike applyOn.
+ * - .present — Each list field's values its ruler leaves in a scope: the other filters, or the View's subset.
  * - .offered — What each field below the top of a SERIAL set offers: the values the rows hold at its place.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
  * - .allRows — Every row a bound component is under, UNPAGED — what "Select all rows" ticks on a grid that holds one page.
@@ -1652,7 +1652,7 @@ export class DataSource extends EventTarget {
   /* ── What the filters BEFORE a field leave — Will, TODOs 174 and 349 ────
    * TRAP T-a-ruled-out-value-is-greyed */
 
-  /** Does each list field offer only the values the filters before it leave? Settable at any time, unlike `applyOn`. */
+  /** Does each list field offer only the values the other filters leave? Settable at any time, unlike `applyOn`. */
   get limitOptions(): boolean {
     return this.#limitOptions;
   }
@@ -1713,7 +1713,7 @@ export class DataSource extends EventTarget {
     if (facts.scope && this.#context.waiting()) this.#syncPending();
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
-    // …and what the filters before each field leave. TRAP T-a-ruled-out-value-is-greyed
+    // …and what the other filters leave each field. TRAP T-a-ruled-out-value-is-greyed
     // …and its chips' counts. TRAP T-a-chip-counts-within-the-filters-before-it
     if (facts.scope && (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && this.#loaded) this.#walkSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the
