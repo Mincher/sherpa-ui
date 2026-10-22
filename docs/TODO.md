@@ -31,7 +31,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ✅ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
 | ✅ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
-| ⬜ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. After 345–349 | explore |
+| ❓ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests) — ❓ D1, bundle or preload | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
@@ -1112,7 +1112,7 @@ Limit on, the filters BEFORE a field grey its values and set picks aside, one
 way only; a menu's Advanced rows and a grid heading follow it; the Add list
 greys a field with no value left, and hides it with Hide unmatching.
 
-### `[ ]` ⬜ 350 — PERFORMANCE: what costs, what can be faster, and the options
+### `[~]` ❓ 350 — PERFORMANCE: what costs, what can be faster, and the options
 
 Will, 2026-10-19: *"I set cpu throttling to 4x in dev tools and the performance
 of Sherpa-UI is miserable. We need to investigate what the performance hits
@@ -1198,6 +1198,44 @@ body (a number slider, inputs, a footer — `sherpa-menu` inside `.act`), and ea
 chart legend's 4 entries with their tooltips. The bar parts wait for 366's
 commits 13–14, which rewrite how a bar paints; row reuse in the grid is its own
 item if a measure asks for it (the click is 56 ms at 4x).
+
+**Measured 2026-10-22, after 345 and 366** — the same scripts, Chromium, 4x
+CPU, against :4200: LCP 980 ms (toolbars) and 864 ms (panel), CLS 0.011 and
+0.013, worst INP 96 ms (a panel tick; it was 176 ms). Every act is GOOD.
+
+✅ **The gate exists:** Demos' own script `check:perf` (its perf/gate.mjs) opens
+Records in both modes at 4x CPU and fails over the GOOD line — LCP 2.5 s, CLS
+0.1, INP 200 ms per act, the median of 3. It needs :4200 up, and runs alone,
+never beside a test run. Not in `npm test`: a loaded machine moves the numbers.
+Note: INP counts until the next paint, so work an act starts after it (a
+load, a publish) is not in the number.
+
+**The gap to Will's 6.18 s is the NETWORK, not the CPU.** With an empty cache,
+Records asks for 221 files — 211 scripts — and the browser finds each import
+only after the file before it lands, uncompressed (1,435 KB). Measured with
+three copies of Demos on a probe server (4x CPU, empty cache, LCP of 2 runs):
+
+| | as served today | gzip only | sherpa-ui bundled + gzip |
+|---|---:|---:|---:|
+| Fast 4G (60 ms, 9 Mb/s) | 3.45 s | 3.15 s | **1.6 s** |
+| Slow 4G (150 ms, 1.6 Mb/s) | 10.2 s | 7.2 s | 3.8 s |
+| requests · bytes | 221 · 1,435 KB | 221 · 415 KB | 74 · 307 KB |
+
+On localhost (no latency) all three are about 1.0 s. Compression alone helps
+little: the chain of requests costs the time. The bundle was esbuild over
+`dist/index.js` and `dist/data.js`, split, minified; each icon stays a small
+lazy chunk; `index.js` is 174 KB gzipped. The 74 requests left are Demos' own
+files (its Context, templates, definitions, stores) and the icons.
+
+**❓ D1 — how an app loads Sherpa.** **A (my pick):** sherpa-ui's build also
+writes a BUNDLE per entry (`dist/bundle/`, split, minified; a new export such
+as `sherpa-ui/bundle`), Demos' import map points at it, and Demos' server
+compresses. An app with its own bundler keeps the modules as today. Cost: a
+second copy in `dist/`, a few seconds of build. Measured: Fast 4G 3.45 s →
+1.6 s (GOOD). **B:** keep the modules, and the build writes a
+`modulepreload` list per entry, so the browser asks for every file at once;
+plus compression. Less change, but still 221 requests (6 at a time on
+HTTP/1.1), and not measured yet.
 
 ### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
 
