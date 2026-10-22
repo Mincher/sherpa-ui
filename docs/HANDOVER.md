@@ -46,7 +46,15 @@ again whole. Each phase's note is in 345's section of `docs/TODO.md`.
 - 369 (tiered values) is done but for its remote part, TODO 392, which waits
   for Will (A).
 - Commits since the push of 2026-10-21 are local. Push is Will's call.
-- **Next:** 350 (performance: re-measure after 366 and 345); the ❓ rows.
+- **Done 2026-10-22, after 345:** 391 (a tiered field is never drilled), 376
+  (Hide invalid values is the ⋮ menu's header toggle), 389 and 390 (Demos
+  flakes: a missed wait, and machine load). 350 measured: GOOD at 4x on
+  localhost, held by Demos' `check:perf`; the slow first load is the network.
+- **Waiting on Will:** 350 D1 (ship a bundle, or a modulepreload list), 321
+  (one key for saved Views), 318 (toolbar arrow keys), 388, 392, and the
+  "for later" rows 379–384.
+- **In reach, but plan again first** (their plans predate 366): 287 step 5b,
+  288 steps 8b–10, 291 step 8 (one compile per act).
 
 ## Where the work stood (2026-10-21)
 

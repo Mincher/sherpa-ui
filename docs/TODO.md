@@ -9162,6 +9162,15 @@ Space press the focused slice. **⬜ Toolbars:** three `role="toolbar"` bars
 no arrow keys; their items are SLOTTED, which `rovingFocus()` does not reach yet.
 **Not run yet.**
 
+**❓ Toolbars — Will (2026-10-22).** A bar can hold a text box (the toolbar's
+trailing search, a chip's value box), where Left and Right move the caret.
+**A (my pick):** the arrows move between the bar's controls and Tab still
+visits each one, as today; inside a text box the arrows stay the box's. Small,
+and no control leaves the Tab order. **B:** the APG pattern: the bar is ONE Tab
+stop and the arrows move inside it. Fewer Tab presses, but every chip, button
+and box needs `data-no-tab`-style handling, and the bar's keys change for every
+reader.
+
 ### `[ ]` ⬜ 315 — Phase 5: the calendar's roving grid
 
 Waits for a measured run. The plan: `sherpa-calendar-cell` gets
