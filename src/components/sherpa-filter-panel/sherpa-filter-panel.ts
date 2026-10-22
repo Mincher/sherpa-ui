@@ -1660,11 +1660,7 @@ export class SherpaFilterPanel extends SherpaElement {
         const picked = ((event as CustomEvent).detail?.values ?? []) as string[];
         chip.toggleAttribute('data-current', picked.length > 0);
         this.#syncAnswered(held);
-        if (held.def.id === 'group' || held.def.id === 'sort') {
-          this.emit(held.def.id === 'sort' ? 'sort-change' : 'group-change', {
-            scope: held.scope, field: picked[0] ?? null,
-          });
-        }
+        // Group and Sort say their own change, with its direction: #onArrange passes it on.
         this.#report(held);
       }
       return;

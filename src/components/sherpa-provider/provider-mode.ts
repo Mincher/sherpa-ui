@@ -40,7 +40,7 @@ export class ProviderMode {
   /** The shell has room for a panel area. TRAP T-the-panel-is-desktop-only */
   #room = true;
   /** The mode buttons, by the bar or panel each sits in. */
-  #toggles = new Map<Element, HTMLElement>();
+  #toggles = new WeakMap<Element, HTMLElement>();
 
   constructor(host: ModeHost) {
     this.#host = host;

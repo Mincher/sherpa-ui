@@ -208,16 +208,15 @@ export class JsonStore extends BaseStore {
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     await this.#ensure();
-    // The inner ArrayStore holds no schema, so the check happens once, here —
-    // over EVERY row, before the page is cut. TRAP T-schema-guard-belongs-at-the-store
-    return this.page((await this.#inner.load()).rows, options);
+    // The inner ArrayStore has the same schema: it checks every row once, and says what it refused.
+    // TRAP T-schema-guard-belongs-at-the-store
+    return this.#inner.load(options);
   }
 
   /** Every row the schema accepts, read in place from the rows it fetched. */
   async scan(): Promise<readonly Row[]> {
     await this.#ensure();
-    const rows = [...await this.#inner.scan()];
-    return (await this.checkRows({ rows, total: rows.length })).rows;
+    return this.#inner.scan();
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {

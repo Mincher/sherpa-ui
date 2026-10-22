@@ -922,11 +922,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A drilled chip's rows are in the Filters menu.
     const chip = this.pathFind(event, 'sherpa-quick-filter') ?? this.#drill.home?.closest<HTMLElement>('sherpa-quick-filter');
     if (!chip) return;
-    this.#emitChange(this.#answerRequest(chip));
-    /* AGAIN next frame. A rebuilt condition row's value select is filled
-       ASYNCHRONOUSLY, so `states` reads an unanswered row for one tick — and
-       the host, told the bar holds no clause, drops the filter the reader
-       just applied. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    /* ONE request, next frame: a rebuilt condition row's value select fills
+       ASYNCHRONOUSLY, and read now it says no clause. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
     this.#conditioned.add(chip);
     if (this.#conditionFrame != null) return;
     this.#conditionFrame = requestAnimationFrame(() => {
@@ -937,7 +934,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     });
   };
 
-  /** The pending re-report after a condition row rebuilt. */
+  /** The pending report after a condition row changed. */
   #conditionFrame: number | null = null;
   /** The chips whose rows changed since that frame was asked for. */
   #conditioned = new Set<HTMLElement>();

@@ -110,8 +110,8 @@ Each one bubbles.
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It closed. |
 | `filter-add` | `{ from: string; ids: string[]; scope: 'view' \| string }` | A REQUEST: the Filters menu committed, or a field sent up or down. |
 | `filter-remove` | `{ id: string; scope: string }` | A field's Remove. |
-| `group-change` | `{ field: null \| string; scope: string }` | A Group chip or Reset all, with its scope. |
-| `sort-change` | `{ field: null \| string; scope: string }` | A Sort chip or Reset all, with its scope. |
+| `group-change` | `{ scope: string }` | A Group chip or Reset all, with its scope. |
+| `sort-change` | `{ scope: string }` | A Sort chip or Reset all, with its scope. |
 | `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
 | `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |

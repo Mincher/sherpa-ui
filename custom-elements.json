@@ -3815,14 +3815,14 @@
               "name": "group-change",
               "description": "A Group chip or Reset all, with its scope.",
               "type": {
-                "text": "CustomEvent<{ field: null | string; scope: string }>"
+                "text": "CustomEvent<{ scope: string }>"
               }
             },
             {
               "name": "sort-change",
               "description": "A Sort chip or Reset all, with its scope.",
               "type": {
-                "text": "CustomEvent<{ field: null | string; scope: string }>"
+                "text": "CustomEvent<{ scope: string }>"
               }
             },
             {

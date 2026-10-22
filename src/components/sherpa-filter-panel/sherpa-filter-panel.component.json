@@ -758,7 +758,6 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "null | string",
         "scope": "string"
       }
     },
@@ -769,7 +768,6 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "null | string",
         "scope": "string"
       }
     },
