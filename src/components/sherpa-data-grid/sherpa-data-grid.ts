@@ -964,8 +964,8 @@ export class SherpaDataGrid extends SherpaElement {
   /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */
   #columnFilterLabel(field: string, held: FieldReading): string {
     const state = this.#inForce(field, held);
-    // A chain says itself: `Contains: Da or Starts with: R`.
-    if (state.rows.length > 1) return spellConditions({ ...state, conditions: state.rows });
+    // An Advanced answer says itself: `contains(Da) OR startsWith(R)`. Will, TODO 409
+    if (state.condition === 'advanced') return spellConditions({ ...state, conditions: state.rows });
     const row = state.rows[0];
     if (!row) return '';
     const picks = (row.picked ?? []).map(String);
@@ -1387,7 +1387,11 @@ export class SherpaDataGrid extends SherpaElement {
     const chip = this.#cellChip;
     if (!td || !at || !chip) return;
     if (chip.parentElement !== td) td.appendChild(chip);
-    chip.toggleAttribute('data-current', this.#cellOn(at));
+    const on = this.#cellOn(at);
+    chip.toggleAttribute('data-current', on);
+    // ON, it takes the value off: a cross, in critical (its pin). Will, TODO 416
+    if (on) chip.setAttribute('data-icon-start', 'cross');
+    else chip.removeAttribute('data-icon-start');
     // HELD HIGHER: shown inactive, as its heading is. Will, 374. TRAP T-a-view-held-heading-shows-and-refuses
     chip.toggleAttribute('data-superseded', at.held);
     if (at.held && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);

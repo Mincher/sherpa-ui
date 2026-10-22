@@ -46,13 +46,13 @@ test('a toolbar chip says a number, a range and a date — and its matches, on o
     return { said, counted, off, one: [value('seats'), tip('seats')], described: chip('plan').shadowRoot!.querySelector('.body')!.getAttribute('aria-description') };
   }, frames);
 
-  // A Between row reads as the range did; its tip is an Advanced one's. Will, 26 Sept; TODO 375
-  expect(r.said.seats).toEqual(['37 to 120', '1 condition applied']);
+  // A Between row reads as its condition, face and tip. Will, TODO 375 and 409
+  expect(r.said.seats).toEqual(['between(37, 120)', 'between(37, 120)']);
   expect(r.said.created[0]).toBe(r.said.created[1]);
   expect(r.said.created[0]).toMatch(/05 .* to 06 .* 2024/);
   expect(r.said.plan).toBe('Pro, Free');
-  expect(r.counted).toEqual({ seats: '1 condition applied - 28 matches', plan: 'Pro, Free - 1 match' });
-  expect(r.off).toBe('1 condition applied - 28 matches');
+  expect(r.counted).toEqual({ seats: 'between(37, 120) - 28 matches', plan: 'Pro, Free - 1 match' });
+  expect(r.off).toBe('between(37, 120) - 28 matches');
   expect(r.one).toEqual(['12', '12 - 28 matches']);
   // The same words for a screen reader, on the button.
   expect(r.described).toBe('Pro, Free - 1 match');

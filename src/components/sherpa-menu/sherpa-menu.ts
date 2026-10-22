@@ -1504,8 +1504,10 @@ export class SherpaMenu extends SherpaElement {
       }
     }
     /* FIRST, keeping whatever the caller put below — in practice a Remove
-       action, which a chip appends after this. */
+       action, which a chip appends after this — and a caller row marked
+       `data-lead` above: a Filters menu's actions. TODO 383 */
     this.prepend(...out);
+    this.prepend(...[...this.children].filter((n) => n.hasAttribute('data-lead')));
     this.#stamped = true;
     this.#drawTicks();
     this.#drawOpen();

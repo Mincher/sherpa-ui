@@ -3906,6 +3906,12 @@
           ],
           "cssParts": [
             {
+              "name": "apply"
+            },
+            {
+              "name": "discard"
+            },
+            {
               "name": "field-body"
             },
             {
@@ -3927,16 +3933,7 @@
               "name": "panel"
             },
             {
-              "name": "reset-all"
-            },
-            {
-              "name": "reset-more"
-            },
-            {
               "name": "save-filters"
-            },
-            {
-              "name": "save-more"
             },
             {
               "name": "scopes"
@@ -8631,7 +8628,7 @@
             },
             {
               "name": "filter-discard",
-              "description": "A menu's Discard, where the scope waits: put back that field's applied answer.",
+              "description": "Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's.",
               "type": {
                 "text": "CustomEvent<{ field: string }>"
               }

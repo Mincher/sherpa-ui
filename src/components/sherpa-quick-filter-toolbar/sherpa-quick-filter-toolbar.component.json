@@ -82,6 +82,18 @@
                 }
               },
               {
+                "el": "sherpa-button",
+                "class": "act discard-all",
+                "attrs": {
+                  "data-act": "discard",
+                  "data-size": "sm",
+                  "data-type": "icon",
+                  "data-icon-start": "cross",
+                  "aria-label": "Discard changes",
+                  "disabled": ""
+                }
+              },
+              {
                 "el": "span",
                 "class": "act-divider apply-divider",
                 "attrs": {
@@ -93,6 +105,21 @@
                 "attrs": {
                   "data-accepts": "control"
                 }
+              },
+              {
+                "el": "sherpa-button",
+                "class": "act save-set",
+                "attrs": {
+                  "data-act": "filters-save",
+                  "data-size": "sm",
+                  "data-icon-start": "upload"
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "save-name"
+                  }
+                ]
               },
               {
                 "el": "sherpa-button",
@@ -115,54 +142,6 @@
                   "data-icon-start": "wand-magic-sparkles",
                   "aria-label": "Suggest filters"
                 }
-              },
-              {
-                "el": "span",
-                "class": "reset-group sherpa-group",
-                "children": [
-                  {
-                    "el": "sherpa-button",
-                    "class": "act",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-act": "clear",
-                      "data-group": "start",
-                      "data-icon-start": "arrow-rotate-left",
-                      "aria-label": "Reset all filters"
-                    }
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "act reset-more",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-act": "reset-more",
-                      "data-type": "icon",
-                      "data-group": "end",
-                      "data-icon-start": "triangle-down",
-                      "aria-label": "Reset options",
-                      "aria-haspopup": "dialog"
-                    },
-                    "children": [
-                      {
-                        "el": "sherpa-menu",
-                        "attrs": {
-                          "slot": "menu",
-                          "data-align": "end"
-                        },
-                        "children": [
-                          {
-                            "el": "button",
-                            "attrs": {
-                              "type": "button",
-                              "value": "reset-default"
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
               },
               {
                 "el": "span",
@@ -806,7 +785,7 @@
     {
       "$type": "event",
       "name": "filter-discard",
-      "description": "A menu's Discard, where the scope waits: put back that field's applied answer.",
+      "description": "Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's.",
       "bubbles": true,
       "composed": true,
       "detail": {

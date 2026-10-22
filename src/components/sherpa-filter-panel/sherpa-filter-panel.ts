@@ -24,7 +24,7 @@ import {
   type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide, syncResets,
+  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
@@ -163,19 +163,13 @@ export class SherpaFilterPanel extends SherpaElement {
   #built: { menu: SherpaMenu; held: Held } | null = null;
 
   override onRender(): void {
-    syncResets(this, this.root, '.reset-all');
-    this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
-    // Only the provider knows the View's own filters. TRAP T-reset-to-default-is-the-views-own
-    this.$('.reset-more')?.addEventListener('menu-select', (event) => {
-      if ((event as CustomEvent).detail?.value !== 'reset-default') return;
-      event.stopPropagation();
-      // CANCELABLE: a host that asks the reader first takes it over.
-      this.emit('view-reset', {}, { cancelable: true });
-    });
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // REMOTE: every field's Apply or Discard at once. Will, TODO 98.
     this.$('.apply-all')?.addEventListener('button-click', () => this.emit('filter-apply', {}));
     this.$('.discard-all')?.addEventListener('button-click', () => this.emit('filter-discard', {}));
+    // …and a scope that waits: ONE pair, in the header. Will, TODO 406
+    this.$('.head-apply')?.addEventListener('button-click', () => this.emit('filter-apply', {}));
+    this.$('.head-discard')?.addEventListener('button-click', () => this.emit('filter-discard', {}));
     // ⋮ — what folded, and the host's own option. Will, TODO 178.
     this.$('.more-btn')?.addEventListener('button-click', this.#openMore);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
@@ -204,9 +198,10 @@ export class SherpaFilterPanel extends SherpaElement {
     filters?.addEventListener('menu-drill', this.#onMenuDrill);
     filters?.addEventListener('menu-back', this.#onDrillBack);
     filters?.addEventListener('menu-close', this.#onDrillBack);
-    // Save filters, and its menu. Will, TODO 105.
+    // …and its filter actions. Will, TODO 383
+    filters?.addEventListener('menu-select', this.#onFilterAction);
+    // "Save <name>". Will, TODO 105.
     this.$('.save-filters')?.addEventListener('button-click', () => this.emit('filters-save'));
-    this.$('.save-menu')?.addEventListener('menu-select', this.#onSaveMenu as EventListener);
     this.#drawSave();
     /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
        to, so it annotates and passes it on rather than working the
@@ -219,13 +214,17 @@ export class SherpaFilterPanel extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'open') this.#fresh();
-    else if (name === 'data-at-default' || name === 'data-nothing-to-reset') syncResets(this, this.root, '.reset-all');
+    else if (name === 'data-at-default' || name === 'data-nothing-to-reset') this.#syncFilterActions();
     else if (name === 'data-saveable') this.#drawSave();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote' || name === 'data-waits' || name === 'data-failed') this.#syncPending();
     else if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
       for (const held of this.#held.values()) this.#markPresent(held);
       syncHide(this, this.root);
+    }
+    // ONE Apply and its Discard are on while a change waits. TODO 406
+    if (name === 'data-dirty' || name === 'data-waits') {
+      for (const btn of this.$$('.head-apply, .head-discard')) btn.toggleAttribute('disabled', !this.hasAttribute('data-dirty'));
     }
   }
 
@@ -1085,6 +1084,7 @@ export class SherpaFilterPanel extends SherpaElement {
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     btn.append(menu);
     menu.items?.(items);
+    this.#syncFilterActions();
     this.#syncFilters();
   }
 
@@ -1743,25 +1743,32 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /**
-   * THE ⋮ MENU, built on each open: what has FOLDED away at this width — Reset,
-   * Reset all on view, the host's own buttons — then the host's own option,
-   * "Limit to matching filters". A row does what its button does. Will, TODO 178.
+   * THE ⋮ MENU, built on each open: the host's own buttons folded away at this
+   * width, then the host's own option, "Limit to matching filters". Reset and
+   * Save filters are the Filters menu's (TODO 383). Will, TODO 178.
    * TRAP T-the-more-menu-holds-what-folded
    */
   #openMore = (event: Event): void => {
-    const first = folded(this.$('.reset-group')) ? resetRows(this) : [];
-    // Save filters, folded away for want of room. TODO 105
-    const save = folded(this.$('.save-group')) ? saveRows(this, this.#saved.applied) : [];
-    openMore(this, this.root, event.currentTarget as HTMLElement, [[...first, ...extraRows(this)], save]);
+    openMore(this, this.root, event.currentTarget as HTMLElement, [extraRows(this)]);
   };
 
-  /** Save filters' menu, or its folded ⋮ rows: Save as, or Delete. */
-  #onSaveMenu = (event: CustomEvent<{ value?: string }>): void => this.#saveAct(String(event.detail?.value ?? ''));
-
-  /** One save action, whichever button or row asked. */
-  #saveAct(act: string): void {
-    if (act === 'filters-save' || act === 'filters-save-as') this.emit(act);
+  /** The Filters menu's own actions: Reset, Reset all on view, and the save rows. Will, TODO 383 */
+  #onFilterAction = (event: Event): void => {
+    const act = String((event as CustomEvent).detail?.value ?? '');
+    if (!FILTER_ACTIONS.has(act)) return;
+    event.stopPropagation();
+    this.$<SherpaMenu>('.filters-btn sherpa-menu')?.hide?.();
+    if (act === 'reset') this.#onResetAll();
+    // Only the provider knows the View's own filters; CANCELABLE. TRAP T-reset-to-default-is-the-views-own
+    else if (act === 'reset-default') this.emit('view-reset', {}, { cancelable: true });
     else if (act === 'filters-delete') this.emit('filters-delete', { id: this.#saved.applied?.id });
+    else if (act === 'filters-save-as') this.emit('filters-save-as');
+    else this.emit('filters-save');
+  };
+
+  /** The Filters menu ends with the filter actions, as they stand now. TODO 383 */
+  #syncFilterActions(): void {
+    drawFilterActions(this, this.root, this.$('.filters-btn sherpa-menu'), this.#saved.applied);
   }
 
   /**
@@ -1787,21 +1794,16 @@ export class SherpaFilterPanel extends SherpaElement {
     const taken = this.#saved.applied;
     this.toggleState('saved-on', !!taken);
     const name = this.$('.save-name');
-    if (name) name.textContent = taken?.label ?? this.word('filters');
-    const group = this.$('.save-group');
-    if (taken) group?.setAttribute('data-status', 'active');
-    else group?.removeAttribute('data-status');
-    // Its name is what it says, narrow too, where the name is not shown.
+    if (name) name.textContent = taken?.label ?? '';
     const save = this.$('.save-filters');
-    save?.setAttribute('aria-label', (save.textContent ?? '').replace(/\s+/g, ' ').trim());
+    if (taken) save?.setAttribute('data-status', 'active');
+    else save?.removeAttribute('data-status');
+    this.#syncFilterActions();
   }
 
-  /** A ⋮ row was chosen: do what its folded button does. */
+  /** A ⋮ row was chosen: a page button's row presses it. */
   #onMore = (event: Event): void => {
-    const picked = pickMore(this, this.root, event);
-    if (picked === 'reset') this.#onResetAll();
-    else if (picked === 'reset-default') this.emit('view-reset', {}, { cancelable: true });
-    else this.#saveAct(picked);
+    pickMore(this, this.root, event);
   };
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

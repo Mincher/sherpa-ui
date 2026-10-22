@@ -250,7 +250,8 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
 test('the action cluster is built in, and data-type=view adds the save group', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const probe = async (type?: string) => {
-      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': type });
+      // Filled, though empty: the Filters menu draws then.
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': type });
       const sr = el.shadowRoot!;
       const shown = (sel: string) => {
         const n = sr.querySelector(sel) as HTMLElement | null;
@@ -259,7 +260,11 @@ test('the action cluster is built in, and data-type=view adds the save group', a
       return {
         add: shown('.add-btn'),
         ai: shown('[data-act="ai"]'),
-        clear: shown('[data-act="clear"]'),
+        // Filter actions are the Filters menu's rows. TODO 383
+        clear: !!sr.querySelector('[data-act="clear"], .reset-group'),
+        actions: [...sr.querySelectorAll<HTMLButtonElement>('.add-btn sherpa-menu > .filter-action')].map((b) => b.value),
+        // "Save <name>" only while a saved set is taken.
+        saveSet: shown('.save-set'),
         // The panel switch is the PAGE's, never the bar's own. TRAP T-the-mode-switch-is-the-pages-own
         configure: !!sr.querySelector('[data-act="configure"]'),
         refresh: shown('[data-act="refresh"]'),
@@ -272,11 +277,14 @@ test('the action cluster is built in, and data-type=view adds the save group', a
     return { data: await probe(), view: await probe('view') };
   });
 
-  // Both types carry the shared run: Add · AI · undo · | · refresh.
+  // Both types carry the shared run: Filters · AI · | · refresh — and Filters'
+  // menu leads with Reset, then Reset all on view.
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
     expect(t.ai).toBe(true);
-    expect(t.clear).toBe(true);
+    expect(t.clear).toBe(false);
+    expect(t.actions).toEqual(['reset', 'reset-default']);
+    expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);
     // The ⋮ is NOT among them. It is where the cluster folds when the bar runs
@@ -336,8 +344,8 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
 /**
  * THE ⋮ MENU HOLDS WHAT FOLDED — TODO 43. With every action folded, it lists
- * them in Will's order: the filter actions, the page's own buttons, a
- * divider, then the view's. A row does what its button does.
+ * them in Will's order: AI, the page's own buttons, a divider, then the
+ * view's. A row does what its button does. Reset is the Filters menu's (TODO 383).
  * TRAP T-the-more-menu-holds-what-folded
  */
 test('the ⋮ menu lists every folded action in order, and a row does what its button does', async ({ page }) => {
@@ -377,7 +385,9 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
     (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
-    await pick('Reset filters');
+    // Filter actions are the Filters menu's rows. TODO 383
+    sr.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
+    await settle();
     el.addEventListener('view-favorite', (e) => heard.push(`favourite:${(e as CustomEvent).detail.favourite}`));
     await pick('Favorite');
     await open();
@@ -388,7 +398,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
 
   expect(r.collapse).toBe(3);
   expect(r.rows).toEqual([
-    'Suggest filters', 'Reset filters', 'Reset all on view', 'View as filter panel', '---',
+    'Suggest filters', 'View as filter panel', '---',
     'Favorite', 'Save view', 'Save view as', 'Refresh view',
   ]);
   expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra', 'clear', 'favourite:true', 'favourite:false']);
@@ -441,12 +451,16 @@ test('a trigger button goes active while its menu is open, and back on a second 
  */
 test('the bar\'s icon actions are named for what they do', async ({ page }) => {
   await page.evaluate(async () => {
-    await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
+    await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
     await window.__settled();
   });
   // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
-  for (const name of ['Suggest filters', 'Reset all filters',
-    'Add to Favorites', 'Save view options']) {
+  for (const name of ['Suggest filters', 'Add to Favorites', 'Save view options']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
+  }
+  // Filter actions are the Filters menu's rows, named once it opens. TODO 383
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  for (const name of ['Reset filters', 'Reset all on view']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
 });
@@ -604,8 +618,8 @@ test('the undo button clears every chip and the organise state', async ({ page }
     for (const ev of ['quick-filter-change', 'group-change', 'sort-change'])
       el.addEventListener(ev, () => seen.push(ev));
 
-    const undo = el.shadowRoot!.querySelector('[data-act="clear"]') as HTMLElement;
-    (undo.shadowRoot!.querySelector('button') as HTMLElement).click();
+    // Filter actions are the Filters menu's rows. TODO 383
+    el.shadowRoot!.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
@@ -699,8 +713,8 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
     const afterTrial = { view: on(view), trial: on(trial) };
 
     // A full reset must not leave the page with no view.
-    const undo = el.shadowRoot!.querySelector('[data-act="clear"]') as HTMLElement;
-    (undo.shadowRoot!.querySelector('button') as HTMLElement).click();
+    // Filter actions are the Filters menu's rows. TODO 383
+    el.shadowRoot!.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };
@@ -1401,8 +1415,9 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
       };
     };
 
-    // 860, not 900: the bar lost its panel switch (the page's now), so it folds later.
-    return { wide: await at(1400), mid: await at(860), narrow: await at(620) };
+    // 820, not 900: the bar lost its panel switch (the page's now) and its Reset
+    // group (the Filters menu's, TODO 383), so it folds later.
+    return { wide: await at(1400), mid: await at(820), narrow: await at(620) };
   });
 
   // WIDE: nothing folded, and the ⋮ is absent — an empty overflow button is one
@@ -1478,8 +1493,10 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
       drill: menu.hasAttribute('data-drill'),
       heading: menu.shadowRoot.querySelector('.heading')?.textContent,
       // The rows ARE the Filters list, a folded one opening its child menu —
-      // or ARE that filter's values.
-      firstDrill: [...menu.children].find((n) => !n.classList.contains('menu-section'))
+      // or ARE that filter's values. Filter actions are the Filters menu's rows,
+      // and lead it. TODO 383
+      lead: (menu.firstElementChild as HTMLButtonElement | null)?.value ?? null,
+      firstDrill: [...menu.children].find((n) => !n.classList.contains('menu-section') && !n.classList.contains('filter-action'))
         ?.hasAttribute('data-drill') ?? false,
       trail: getComputedStyle(menu.shadowRoot.querySelector('.drill-trail')!).display !== 'none',
       open: getComputedStyle(menu.shadowRoot.querySelector('.menu')!).display !== 'none',
@@ -1522,7 +1539,8 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     return { list, drilled, ticked, target, out, kept: el.readings[target]?.picked ?? null };
   });
 
-  // The Filters list: a row with a caret for each folded filter.
+  // The Filters list: its actions, then a row with a caret for each folded filter.
+  expect(r.list.lead).toBe('reset');
   expect(r.list.drill).toBe(false);
   expect(r.list.heading).toBe('Filters');
   expect(r.list.caretTag).toBe('SHERPA-BUTTON');
@@ -1539,7 +1557,8 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
   expect(r.ticked).toEqual(['a']);
   expect(r.kept).toEqual(['a']);
 
-  // BACK: the list is restored and the menu stays open.
+  // BACK: the list is restored, its actions leading, and the menu stays open.
+  expect(r.out.lead).toBe('reset');
   expect(r.out.drill).toBe(false);
   expect(r.out.heading).toBe('Filters');
   expect(r.out.firstDrill).toBe(true);
@@ -2551,10 +2570,10 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
     };
     return { owner: face('owner'), email: face('email') };
   });
-  // The VALUES, not the condition labels. Will, TODO 139.
+  // Each condition, its value in brackets, the join between. Will, TODO 409 (it was the values alone, 139).
   expect(r.owner).toEqual({ on: true, condition: 'advanced',
-    value: 'Da, R', tip: '2 conditions applied' });
-  expect(r.email).toEqual({ on: true, condition: 'advanced', value: 'zz', tip: '1 condition applied' });
+    value: 'contains(Da) OR startsWith(R)', tip: 'contains(Da) OR startsWith(R)' });
+  expect(r.email).toEqual({ on: true, condition: 'advanced', value: 'contains(zz)', tip: 'contains(zz)' });
 });
 
 /**

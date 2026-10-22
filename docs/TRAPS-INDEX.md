@@ -24,7 +24,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-part-narrows-one-component](TRAPS.md#t-a-component-part-narrows-one-component) — bind-selection, query, query-context, source-binding
 - [T-a-condition-badge-says-that-not-which](TRAPS.md#t-a-condition-badge-says-that-not-which) — data, filter-face
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — store
-- [T-a-condition-tip-counts-its-rows](TRAPS.md#t-a-condition-tip-counts-its-rows) — filter-face
 - [T-a-conditioned-chip-answers-with-its-clause](TRAPS.md#t-a-conditioned-chip-answers-with-its-clause) — data-source
 - [T-a-container-shows-its-datas-state](TRAPS.md#t-a-container-shows-its-datas-state) — data-source, field-catalogue
 - [T-a-context-holds-the-only-query](TRAPS.md#t-a-context-holds-the-only-query) — query-context
@@ -86,6 +85,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — query, query-context
 - [T-adapter-lives-at-the-binding](TRAPS.md#t-adapter-lives-at-the-binding) — source-binding
 - [T-aggregation-is-data](TRAPS.md#t-aggregation-is-data) — aggregate
+- [T-an-advanced-answer-reads-as-its-conditions](TRAPS.md#t-an-advanced-answer-reads-as-its-conditions) — filter-face
 - [T-an-aggregate-returns-the-number](TRAPS.md#t-an-aggregate-returns-the-number) — aggregate
 - [T-an-allow-list-is-a-filter-not-an-order](TRAPS.md#t-an-allow-list-is-a-filter-not-an-order) — allow
 - [T-an-and-row-offers-what-the-rows-before-it-leave](TRAPS.md#t-an-and-row-offers-what-the-rows-before-it-leave) — filter-state

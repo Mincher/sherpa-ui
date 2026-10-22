@@ -454,11 +454,11 @@ test('the BADGE never names a condition; the tip says which', async ({ page }) =
     'Does not contain', 'Starts with', 'Ends with',
   ]);
   // No mark, whatever the condition is: the badge is results, and no source
-  // counted any here. The tip says the picks, or how many conditions apply —
-  // the chip's own name spells which (`T-a-condition-tip-counts-its-rows`).
+  // counted any here. A condition reads as itself, face and tip, `!` for a
+  // negative one (`T-an-advanced-answer-reads-as-its-conditions`, TODO 409).
   expect(r.onEq).toEqual({ sign: null, said: 'Gold', caret: 'Gold' });
-  expect(r.onNe).toEqual({ sign: null, said: '1 condition applied', caret: 'Gold' });
-  expect(r.onTyped).toEqual({ sign: null, said: '1 condition applied', caret: 'Go' });
+  expect(r.onNe).toEqual({ sign: null, said: '!equals(Gold)', caret: '!equals(Gold)' });
+  expect(r.onTyped).toEqual({ sign: null, said: 'startsWith(Go)', caret: 'startsWith(Go)' });
 });
 
 test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => {
@@ -640,11 +640,10 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
   // The DEFAULT names no condition — there is nothing to explain.
   expect(r.onEq).toEqual({ badge: null, size: '14px', weight: '400', tip: 'Gold' });
   /* The badge is RESULTS (TODO 60) — none here, with no source — so the TOOLTIP
-     says a condition applies. The VALUE is what was TYPED: a typing condition
-     is answered by its box, not by ticks left over from the list condition.
-     TRAP T-one-state-per-filtered-field */
+     says the condition, as its value reads: what was TYPED, not ticks left
+     over from the list condition (TODO 409). TRAP T-one-state-per-filtered-field */
   expect(r.onCondition).toEqual({
-    badge: null, size: '14px', weight: '400', tip: '1 condition applied',
+    badge: null, size: '14px', weight: '400', tip: '!contains(Ravi)',
   });
 });
 

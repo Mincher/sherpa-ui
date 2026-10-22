@@ -18,25 +18,15 @@
 /* ── The ⋮ — Will, TODO 178. TRAP T-the-more-menu-holds-what-folded ── */
 .panel { container: sherpa-filter-panel / inline-size; }
 .more-btn { display: none; }
-/* Narrow, Reset folds into it; and it always holds the host's own option. */
+/* Narrow, the host's own buttons fold into it; and it always holds its own option. */
 @container sherpa-filter-panel (max-width: 380px) {
-  /* `.head` too: the pair's own inline-flex comes later in this sheet. */
-  .head :is(.reset-group, .save-group) { display: none; }
   .more-btn { display: inline-flex; }
 }
 :host([data-limit-options]) .more-btn { display: inline-flex; }
 
-/* Save filters — a saving host's. TODO 105 */
-.head .save-group { display: none; }
-:host([data-saveable]) .head .save-group { display: inline-flex; }
-@container sherpa-filter-panel (max-width: 380px) {
-  :host([data-saveable]) .head .save-group { display: none; }
-}
-/* Narrow, it says "Save": the panel's own title keeps its room — but "Save
-   <name>" while a set is taken, which is the point of it. Will, 366. */
-@container sherpa-filter-panel (max-width: 520px) {
-  :host(:not(:state(saved-on))) .save-word { display: none; }
-}
+/* "Save <name>" only while a saved set is taken; Save filters is in the Filters menu. TODO 383 */
+.head .save-filters { display: none; }
+:host([data-saveable]:state(saved-on)) .head .save-filters { display: inline-flex; }
 /* A long name is cut short. */
 .save-name {
   display: inline-block;
@@ -45,7 +35,6 @@
   text-overflow: ellipsis;
   vertical-align: bottom;
 }
-:host(:not(:state(saved-on))) .save-delete { display: none; }
 
 :host([hidden]) { display: none; }
 
@@ -105,13 +94,12 @@
   block-size: var(--sherpa-theme-content-size-large, 16px);
 }
 
-/* Reset and its ▾, and a field's Send to, up and down: each set one control. */
-.reset-group,
+/* A field's Send to, up and down: one control. */
 .field-group {
   display: inline-flex;
   align-items: center;
 }
-:is(.reset-group, .field-group, .save-group) > :not(:first-child) {
+.field-group > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
@@ -174,21 +162,24 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 .field[data-advanced]:not([data-chip]) .field-row,
-:host(:is([data-remote], [data-waits])) .field[data-pending] .field-row { display: flex; }
+:host([data-remote]:not([data-waits])) .field[data-pending] .field-row { display: flex; }
 .field-row-spacer { flex: 1 1 auto; }
 .field-add-condition { display: none; }
 .field[data-advanced]:not([data-chip]) .field-add-condition { display: inline-flex; }
 .field:not([data-answered]) .field-clear { display: none; }
 .field-apply, .field-discard { display: none; }
-:host(:is([data-remote], [data-waits])) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
+:host([data-remote]:not([data-waits])) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
+/* A scope that WAITS has ONE Apply and Discard, in the header. Will, TODO 406 */
+.head :is(.head-apply, .head-discard) { display: none; }
+:host([data-waits]) .head :is(.head-apply, .head-discard) { display: inline-flex; }
 /* The row's Add condition IS the inline menu's own, so the menu's goes. */
 .field-body sherpa-menu::part(add-condition) { display: none; }
 
-/* APPLY ALL and DISCARD ALL: remote or a scope that waits (TODO 406), while a change does. `!important`: a
+/* APPLY ALL and DISCARD ALL: remote, while a change waits — a scope that waits has its header's. `!important`: a
    composed component's own `:host` display wins otherwise.
    TRAP T-a-composed-child-hides-with-important */
 .panel-footer { display: none !important; }
-:host(:is([data-remote], [data-waits])[data-dirty]) .panel-footer { display: block !important; }
+:host([data-remote][data-dirty]:not([data-waits])) .panel-footer { display: block !important; }
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }

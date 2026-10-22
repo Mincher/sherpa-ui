@@ -144,7 +144,7 @@ THE WORDS.
 - One spelling helper, sayDays(days), in filter-face.ts. It gives the label of a set that matches one of the nine, or else the single-day labels joined by ', '.
 - The menu fills .condition-day from WEEKDAY_SETS, as it fills .condition-unit from DATE_UNITS. An option's value is its days joined by ','.
 - The DOM-free face (filter-face.ts: filterFace, spellConditions, conditionLines) and the grid's #columnFilterLabel all use sayDays. So a chip reads condition 'Contains', value 'Weekends'.
-- The TIP of an Advanced state stays 'N condition(s) applied'. This is Will's rule (T-a-condition-tip-counts-its-rows, filter-face.ts:105). A test therefore checks the face's condition and value, not the tip.
+- The TIP of an Advanced state stays 'N condition(s) applied'. This is Will's rule (T-an-advanced-answer-reads-as-its-conditions, filter-face.ts:105). A test therefore checks the face's condition and value, not the tip.
 - The SPAN. A range row reads 'a and b'. A face shows its lead row as a span when that row's op takes 'range'. That is the only source of a span now, because Simple has no range. filter-face.ts:76 `dated = state.type === 'date' && !lead` becomes `state.type === 'date'`. An Advanced Between on a date then reads '01 to 31 Mar 2024', not '2024-03-01 to 2024-03-31'.
 - The grid's #columnFilterLabel (:931-945) and #reportColumn (:876) find the ends with OP_TAKES[op] === 'range', so a notbetween row reports `from` and `to` and reads 'Not between: 10 - 50'. A weekday row reads 'Contains: Weekends'. Neither falls through to the count form.
 - The fixed words on the new boxes are aria-labels in the markup: 'To value' and 'Day'.

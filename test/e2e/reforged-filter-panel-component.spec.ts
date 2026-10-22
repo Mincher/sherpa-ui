@@ -250,8 +250,9 @@ test('a field header\'s label, count and buttons start at the top of its row', a
 
 /**
  * RESET ALL clears BOTH scopes — picks, Group and Sort — and applies
- * at once, as the toolbar's Reset does: ONE request. Both header buttons wear
- * the DEFAULT look. Will, 2026-09-26 · 366 step 20
+ * at once, as the toolbar's Reset does: ONE request. It is the Filters menu's
+ * first row, and the Filters button wears the DEFAULT look. Will, 2026-09-26 ·
+ * 366 step 20 · TODO 383
  */
 test('Reset all clears every scope, Group and Sort too, as one request', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
@@ -261,12 +262,13 @@ test('Reset all clears every scope, Group and Sort too, as one request', async (
       el.addEventListener(n, (e) => heard.push([n, e.detail]));
     }
     const before = q('.value[data-current]').map((c) => c.dataset.value);
-    press('.reset-all');
+    // Filter actions are the Filters menu's rows. TODO 383
+    sr.querySelector('.filters-btn sherpa-menu > .filter-action[value="reset"]').click();
     await new Promise((r) => setTimeout(r, 150));
     return {
       before, after: q('.value[data-current]').length,
       heard: heard.map(([n, d]) => [n, d.request]),
-      looks: ['.reset-all'].map((s) => sr.querySelector(s).getAttribute('data-look')),
+      looks: ['.filters-btn'].map((s) => sr.querySelector(s).getAttribute('data-look')),
     };
   })()`) as { before: string[]; after: number; heard: unknown[]; looks: (string | null)[] };
 
@@ -846,7 +848,8 @@ test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away
     await window.__settled();
     const sr = el.shadowRoot!;
     const shown = (sel: string) => getComputedStyle(sr.querySelector(sel)!).display !== 'none';
-    const narrow = { more: shown('.more-btn'), reset: shown('.reset-group') };
+    // Filter actions are the Filters menu's rows, so Filters never folds. TODO 383
+    const narrow = { more: shown('.more-btn'), filters: shown('.filters-btn') };
     const heard: unknown[] = [];
     el.addEventListener('limit-options-change', (e) => heard.push((e as CustomEvent).detail));
     el.setAttribute('data-limit-options', 'off');
@@ -859,16 +862,16 @@ test('the ⋮ holds the host\'s "Limit to matching filters", and what folds away
     el.style.inlineSize = '480px';
     el.removeAttribute('data-limit-options');
     await new Promise((res) => requestAnimationFrame(() => res(null)));
-    return { narrow, rows, hideOff, heard, wide: { more: shown('.more-btn'), reset: shown('.reset-group') } };
+    return { narrow, rows, hideOff, heard, wide: { more: shown('.more-btn'), filters: shown('.filters-btn') } };
   });
-  // Narrow: Reset folds into the ⋮.
-  expect(r.narrow).toEqual({ more: true, reset: false });
-  // Limit OFF: Hide invalid filters is there, below it, and inactive. Will, TODO 376.
-  expect(r.rows).toEqual(['Reset filters', 'Reset all on view', 'HR', 'Limit to matching filters', 'Hide invalid filters']);
+  // Narrow: the ⋮ shows, and Filters, which holds Reset, stays on the header.
+  expect(r.narrow).toEqual({ more: true, filters: true });
+  // No Reset in the ⋮ (TODO 383). Limit OFF: Hide invalid filters is there, below it, and inactive. Will, TODO 376.
+  expect(r.rows).toEqual(['Limit to matching filters', 'Hide invalid filters']);
   expect(r.hideOff).toBe(true);
   expect(r.heard).toEqual([{ on: true }]);
   // Wide, and no host option: no ⋮.
-  expect(r.wide).toEqual({ more: false, reset: true });
+  expect(r.wide).toEqual({ more: false, filters: true });
 });
 
 /**
@@ -941,25 +944,33 @@ test('an answer given before the field is drawn is held, read back, and drawn', 
   expect(r).toEqual({ early: ['churned'], on: ['churned'], read: ['churned'] });
 });
 
-/** Wide, the header's button reads "Save filters", with its space: the space
- *  inside the word's span is a FLEX item's first character, and a plain one
- *  collapsed to nothing. Will, 2026-10-20 (TODO 378). */
-test('the header\'s Save filters keeps the space between its two words', async ({ page }) => {
+/** Wide, the header's button reads "Save <name>" while a set is taken, with its
+ *  space: a space at a FLEX item's edge collapses to nothing. Will, 2026-10-20
+ *  (TODO 378) · TODO 383 */
+test('the header\'s Save <name> keeps the space between its two words', async ({ page }) => {
   const gap = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-filter-panel') as HTMLElement & { rendered?: Promise<void> };
+    const el = document.createElement('sherpa-filter-panel') as HTMLElement & { rendered?: Promise<void>; savedSets: unknown; show(): void };
     el.setAttribute('data-saveable', '');
     el.style.inlineSize = '720px';
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    (el as HTMLElement & { show(): void }).show();
+    // "Save <name>" shows while a saved set is taken. TODO 383
+    el.savedSets = [{ id: 'gold', label: 'Gold', applied: true, own: true }];
+    el.show();
     await new Promise((r) => setTimeout(r, 150));
-    const word = el.shadowRoot!.querySelector('.save-word')!;
+    const save = el.shadowRoot!.querySelector<HTMLElement>('.save-filters')!;
+    const name = save.querySelector('.save-name')!;
+    // "Save", up to its last letter, then the name.
+    const word = [...save.childNodes].find((n) => n.nodeType === Node.TEXT_NODE && /Save/.test(n.textContent ?? ''))!;
+    const at = word.textContent!.indexOf('Save');
     const range = document.createRange();
-    range.setStart(word.firstChild!, 0);
-    range.setEnd(word.firstChild!, 1);
-    return { shown: (word as HTMLElement).getClientRects().length > 0, space: range.getBoundingClientRect().width };
+    range.setStart(word, at);
+    range.setEnd(word, at + 4);
+    return { shown: save.getClientRects().length > 0, name: name.textContent,
+      space: name.getBoundingClientRect().left - range.getBoundingClientRect().right };
   });
   expect(gap.shown).toBe(true);
+  expect(gap.name).toBe('Gold');
   expect(gap.space).toBeGreaterThan(1);
 });
 

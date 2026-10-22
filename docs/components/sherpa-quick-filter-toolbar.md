@@ -130,7 +130,7 @@ Each one bubbles.
 | `filter-add` | `{ filters: FilterDef[]; holds: string[]; ids: string[] }` | Chips were added. |
 | `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
-| `filter-discard` | `{ field: string }` | A menu's Discard, where the scope waits: put back that field's applied answer. |
+| `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |
 | `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
 | `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |

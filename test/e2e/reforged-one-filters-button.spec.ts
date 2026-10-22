@@ -37,7 +37,8 @@ const look = (page: import('@playwright/test').Page) => page.evaluate(() => {
   const sr = document.querySelector('sherpa-quick-filter-toolbar')!.shadowRoot!;
   const btn = sr.querySelector<HTMLElement>('.add-btn')!;
   const menu = btn.querySelector('sherpa-menu')!;
-  const rows = [...menu.children].filter((n) => !n.classList.contains('qf-all')).map((n) => {
+  // The filter actions lead it (TODO 383); these are its filters.
+  const rows = [...menu.children].filter((n) => !n.classList.contains('qf-all') && !n.classList.contains('filter-action')).map((n) => {
     if (n.classList.contains('menu-section')) return `§${n.textContent}`;
     const box = n.querySelector('input');
     // A folded chip's row opens its child menu: `›` is its caret.
@@ -136,7 +137,8 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     return {
       on, shape, drilled, ticked, target,
       back: { heading: menu.getAttribute('data-heading'), commit: menu.hasAttribute('data-commit'),
-        first: menu.firstElementChild?.classList.contains('menu-section') ?? false },
+        // The first row after the filter actions (TODO 383).
+        first: [...menu.children].find((n) => !n.classList.contains('filter-action'))?.classList.contains('menu-section') ?? false },
       // A pick inside a drill is that chip's, never an Add or a Remove.
       held: el.heldFields.join(',') === held.join(','),
       kept: el.readings[target]?.picked ?? null,

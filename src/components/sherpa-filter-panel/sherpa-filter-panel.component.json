@@ -37,6 +37,46 @@
             "children": [
               {
                 "el": "sherpa-button",
+                "class": "head-apply",
+                "part": "apply",
+                "attrs": {
+                  "slot": "actions",
+                  "data-size": "sm",
+                  "data-look": "saturated",
+                  "disabled": ""
+                }
+              },
+              {
+                "el": "sherpa-button",
+                "class": "head-discard",
+                "part": "discard",
+                "attrs": {
+                  "slot": "actions",
+                  "data-size": "sm",
+                  "data-type": "icon",
+                  "data-icon-start": "cross",
+                  "aria-label": "Discard changes",
+                  "disabled": ""
+                }
+              },
+              {
+                "el": "sherpa-button",
+                "class": "save-filters",
+                "part": "save-filters",
+                "attrs": {
+                  "slot": "actions",
+                  "data-size": "sm",
+                  "data-icon-start": "upload"
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "save-name"
+                  }
+                ]
+              },
+              {
+                "el": "sherpa-button",
                 "class": "filters-btn",
                 "part": "filters",
                 "attrs": {
@@ -46,129 +86,6 @@
                   "data-icon-end": "triangle-down",
                   "aria-haspopup": "dialog"
                 }
-              },
-              {
-                "el": "span",
-                "class": "reset-group sherpa-group",
-                "attrs": {
-                  "slot": "actions"
-                },
-                "children": [
-                  {
-                    "el": "sherpa-button",
-                    "class": "reset-all",
-                    "part": "reset-all",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-group": "start",
-                      "data-icon-start": "arrow-rotate-left",
-                      "aria-label": "Reset all filters"
-                    }
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "reset-more",
-                    "part": "reset-more",
-                    "attrs": {
-                      "data-type": "icon",
-                      "data-size": "sm",
-                      "data-group": "end",
-                      "data-icon-start": "triangle-down",
-                      "aria-label": "Reset options",
-                      "aria-haspopup": "dialog"
-                    },
-                    "children": [
-                      {
-                        "el": "sherpa-menu",
-                        "attrs": {
-                          "slot": "menu",
-                          "data-align": "end"
-                        },
-                        "children": [
-                          {
-                            "el": "button",
-                            "attrs": {
-                              "type": "button",
-                              "value": "reset-default"
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "el": "span",
-                "class": "save-group sherpa-group",
-                "attrs": {
-                  "slot": "actions"
-                },
-                "children": [
-                  {
-                    "el": "sherpa-button",
-                    "class": "save-filters",
-                    "part": "save-filters",
-                    "attrs": {
-                      "data-size": "sm",
-                      "data-group": "start",
-                      "data-icon-start": "upload",
-                      "aria-label": "Save filters"
-                    },
-                    "children": [
-                      {
-                        "el": "span",
-                        "class": "save-word",
-                        "children": [
-                          {
-                            "el": "span",
-                            "class": "save-name"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "save-more",
-                    "part": "save-more",
-                    "attrs": {
-                      "data-type": "icon",
-                      "data-size": "sm",
-                      "data-group": "end",
-                      "data-icon-start": "triangle-down",
-                      "aria-label": "Save options",
-                      "aria-haspopup": "dialog"
-                    },
-                    "children": [
-                      {
-                        "el": "sherpa-menu",
-                        "class": "save-menu",
-                        "attrs": {
-                          "slot": "menu",
-                          "data-align": "end"
-                        },
-                        "children": [
-                          {
-                            "el": "button",
-                            "attrs": {
-                              "type": "button",
-                              "value": "filters-save-as"
-                            }
-                          },
-                          {
-                            "el": "button",
-                            "class": "save-delete",
-                            "attrs": {
-                              "type": "button",
-                              "value": "filters-delete"
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
               },
               {
                 "slot": "actions",
@@ -458,12 +375,6 @@
             "attrs": {
               "data-word": "sort"
             }
-          },
-          {
-            "el": "span",
-            "attrs": {
-              "data-word": "filters"
-            }
           }
         ]
       }
@@ -673,16 +584,6 @@
       "$type": "state",
       "name": "limit-options",
       "selector": ":host([data-limit-options])"
-    },
-    {
-      "$type": "state",
-      "name": "saveable",
-      "selector": ":host([data-saveable])"
-    },
-    {
-      "$type": "state",
-      "name": "remote",
-      "selector": ":host([data-remote])"
     },
     {
       "$type": "state",

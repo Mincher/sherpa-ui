@@ -1473,7 +1473,7 @@ test('applying a column filter flags the column and reports a ready clause', asy
   expect(first['header']).toBe('Name');
   expect(first['clause']).toEqual(['name', 'startswith', 'Ad']);
   // And the chip text a toolbar should show.
-  expect(first['label']).toBe('Starts with: Ad');
+  expect(first['label']).toBe('startsWith(Ad)');
 
   // It survives its OWN round trip — the re-populate the clause caused.
   expect(r.afterRepopulate.status).toBe('active');
@@ -1630,7 +1630,7 @@ test('a NUMBER column filters by one value, an Advanced condition, or a Between 
   expect(single['clause']).toEqual(['spend', 'eq', 100]);
   const row = r.events[1] as Record<string, unknown>;
   expect(row['clause']).toEqual(['spend', 'gte', 100]);
-  expect(row['label']).toBe('At least: 100');
+  expect(row['label']).toBe('atLeast(100)');
 
   // No Range switch: the range is an Advanced row, its slider on the column's span.
   expect(r.ranged).toEqual({ switch: false, bounds: ['5', '50'], slider: [5, 50] });
@@ -1638,7 +1638,7 @@ test('a NUMBER column filters by one value, an Advanced condition, or a Between 
   // A span: the store's own `between`, ends coerced.
   const both = r.events[r.events.length - 1] as Record<string, unknown>;
   expect(both['clause']).toEqual(['spend', 'between', [5, 50]]);
-  expect(both['label']).toBe('Between: 5 - 50');
+  expect(both['label']).toBe('between(5, 50)');
 });
 
 test('a DATE column filters with a calendar, one day or a span', async ({ page }) => {
@@ -2929,7 +2929,7 @@ test('a heading holds a chain: set from outside, or typed in, it shows and appli
   });
   expect(r.held).toEqual({
     clause: ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
-    label: 'Contains: Da or Starts with: R',
+    label: 'contains(Da) OR startsWith(R)',
     mode: 'advanced',
     rows: [{ op: 'contains', text: 'Da' }, { op: 'startswith', text: 'R', join: 'or' }],
   });
@@ -3141,6 +3141,23 @@ test.describe('a cell filter chip', () => {
     expect((await heard(page)).slice(-2)).toEqual([{ picked: ['Blue'], mode: 'simple' }, null]);
     // A press is a filter, not a row.
     expect(await page.evaluate(() => (window as unknown as { rowSelects: number }).rowSelects)).toBe(0);
+  });
+
+  test('ON, the cell chip reads as Discard: a cross, in critical (TODO 416)', async ({ page }) => {
+    await cell(page, 'team', 0).hover();
+    const chip = chipOf(page, 'team', 0);
+    // Its ink is the critical mode's: a border is neutral in most modes.
+    const look = () => chip.evaluate((c) => ({
+      icon: c.getAttribute('data-icon-start'),
+      critical: getComputedStyle(c).getPropertyValue('--sherpa-style-content-base').trim()
+        === getComputedStyle(document.documentElement).getPropertyValue('--sherpa-style-critical-content-base').trim(),
+    }));
+    expect(await look()).toEqual({ icon: null, critical: false });
+    await chip.locator('.caret').click();
+    await expect.poll(look).toEqual({ icon: 'cross', critical: true });
+    // Off again, it is the funnel.
+    await chip.locator('.caret').click();
+    await expect.poll(look).toEqual({ icon: null, critical: false });
   });
 
   test('a date filters by one DAY, and a number by values, not a range', async ({ page }) => {

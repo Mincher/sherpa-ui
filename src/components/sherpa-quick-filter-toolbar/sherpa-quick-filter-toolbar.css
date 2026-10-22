@@ -74,10 +74,11 @@
 }
 .act-divider { flex: 0 0 auto; }
 
-/* ONE Apply, where the scope waits for it; the panel has its own. TODO 406 */
+/* ONE Apply and its Discard, where the scope waits for it; the panel has its own. TODO 406 */
 .apply-all,
+.discard-all,
 .apply-divider { display: none; }
-:host([data-waits]:not([data-panel-mode])) .apply-all { display: inline-flex; }
+:host([data-waits]:not([data-panel-mode])) :is(.apply-all, .discard-all) { display: inline-flex; }
 :host([data-waits]:not([data-panel-mode])) .apply-divider { display: block; }
 
 /* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
@@ -143,16 +144,12 @@
 .view-delete { color: var(--sherpa-style-content-base, #35353d); }
 :host(:not([data-custom-view])) .view-delete { display: none; }
 
-.view-group > :not(:first-child),
-.reset-group > :not(:first-child) {
+.view-group > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
-/* Reset and its ▾, as one control. */
-.reset-group {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
+/* "Save <name>" only while a saved set is taken. TODO 383 */
+.save-set { display: none; }
+:host(:state(set-taken)) .save-set { display: inline-flex; }
 
 /* Step 1 — the view group: widest, least used mid-filtering. BEFORE the steps
    and as specific as them, or the view type's own display wins and the group
@@ -175,10 +172,9 @@
 /* Step 3 — all but Add (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {
   .act-divider,
-  .reset-group,
-  .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"]) { display: none; }
+  .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"], [data-act="discard"]) { display: none; }
 }
-:host(:state(collapse-3)) :is(.act-divider, .reset-group, .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"])) {
+:host(:state(collapse-3)) :is(.act-divider, .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"], [data-act="discard"])) {
   display: none;
 }
 
@@ -219,12 +215,10 @@
 }
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
-   also carries are hidden here: AI, Reset, and Filters, which is now the
-   scope's own action. Two of each is two answers
-   to one question. A DATA bar has nothing left, so it goes entirely.
+   also carries are hidden here: AI, and Filters with its actions. Two of each
+   is two answers to one question. A DATA bar has nothing left, so it goes entirely.
    TRAP T-panel-mode-hides-what-the-panel-answers */
-:host([data-panel-mode]) :is([data-act="ai"], .reset-group,
-                             .add-btn) { display: none; }
+:host([data-panel-mode]) :is([data-act="ai"], .add-btn, .save-set) { display: none; }
 :host([data-panel-mode]:not([data-type="view"])) { display: none; }
 
 /* The PANEL draws every filter of this scope instead, so the bar keeps only

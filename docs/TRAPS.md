@@ -1946,11 +1946,12 @@ Four things that are not obvious:
 **Reset puts every filter back to ITS own default; Reset to default puts the
 page back as the View on screen DEFINES it** — Will, TODO 109. Only the
 provider knows that: the bar and the panel send `view-reset` (an intent) from
-the menu beside Reset, and `provider.resetView()` answers — the page's first
-Query (kept at `open()`, before any kept one), then the View's Query as a
-pick puts it on. So a filter the reader ADDED since goes, as it is not the
-View's. A page may call `resetView()` itself. Reset and its ▾ are one
-`.sherpa-group`, like Save and its ▾; folded, the ⋮ lists both.
+the Filters menu's "Reset all on view" row, and `provider.resetView()` answers
+— the page's first Query (kept at `open()`, before any kept one), then the
+View's Query as a pick puts it on. So a filter the reader ADDED since goes, as
+it is not the View's. A page may call `resetView()` itself. Both Resets, and
+Save filters, are rows that LEAD the Filters menu now (Will, TODO 383), drawn
+by `drawFilterActions`; the Reset group is gone.
 
 **The row reads "Reset all on view", and the ask is CANCELABLE** — Will,
 TODO 129: it *"should throw a confirmation sherpa dialog informing the user
@@ -1975,15 +1976,13 @@ default clears it, as it is in the Query (366 step 8) — against
 the page as defined with the View's own Query over it, compiled so the same
 filter always reads the same; and `answered(scope)`: a reading that filters, a
 saved filter on, the rows arranged. It sets `data-at-default` and
-`data-nothing-to-reset` on each bar and panel, and their buttons and ⋮ rows
+`data-nothing-to-reset` on each bar and panel, and their Filters menu rows
 follow. Asking applies nothing: the Query builder no longer arranges the rows
 as it goes — `setQuery` applies what it returns.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-reset-to-default.spec.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-reset-at-default.spec.ts`
@@ -11051,7 +11050,7 @@ So no mark ever names an operator. A grid HEADING wears ONE glyph — `fx`, the
 spreadsheet's formula sign — which says only THAT conditions apply. A CHIP's
 badge is its RESULTS since TODO 60 (`T-a-chip-counts-within-the-filters-before-it`), so it
 wears no condition mark at all. The tooltip says HOW MANY
-(`T-a-condition-tip-counts-its-rows`); the chip's value and accessible name
+(`T-an-advanced-answer-reads-as-its-conditions`); the chip's value and accessible name
 spell the chain, `Contains: ab or Equals: churned`, from `spellConditions()`.
 
 The accessible name stays the WORD, never the mark: a sign announces as
@@ -15130,12 +15129,11 @@ the query definition."*
   set that matched the screen, and two showed ticked.
 - **The set taken** — applied or saved — is remembered in the tab
   (`sherpa:filter-set-on:<page>`) through a change and a reload, until another
-  is taken, it is unticked or deleted, or the View changes or resets. Save
-  filters then reads "Save <name>", active, and saves over it, change and all;
-  its ▾ (or the bar's ⋮) holds Save filters as and Delete filters. With none
-  taken, Save filters asks for a name. Will, 366: *"This way it is clear that
-  clicking the left side will save over the filter definition and the right
-  will open the Save Filters As menu."*
+  is taken, it is unticked or deleted, or the View changes or resets. A "Save
+  <name>" button, active, then sits before Filters and saves over it, change
+  and all; the Filters menu's rows hold Save <name>, Save filters as and Delete
+  filters (Will, TODO 383: every filter action is that one menu's). With none
+  taken, its Save filters row asks for a name.
 - **Saving**: each control asks with `filters-save`, `filters-save-as` or
   `filters-delete`; the HOST names it, confirms an overwrite by name, and calls
   `saveFilters(label?)` or `deleteFilters(id?)`.
@@ -17228,15 +17226,18 @@ other's answer.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/shared-constants.ts`
 
-### T-a-condition-tip-counts-its-rows
+### T-an-advanced-answer-reads-as-its-conditions
 
-**An Advanced chip's tooltip says how many conditions apply:** `1 condition
-applied`, `3 conditions applied`. Will, 2026-09-26. It used to spell the chain,
-which the chip's own value already does; the `fx` button is where a reader
-reads the rows themselves.
+**An Advanced answer reads as its conditions — on the chip's face, in its tip
+and on a grid heading:** each condition's word, its value in brackets, the join
+between, `!` before a negative one: `equals(John) AND contains(Smith)`,
+`!equals(John) OR !contains(Smith)`. Will, 2026-10-22 (TODO 409). Before, the
+face showed the values alone and the tip counted the rows (`2 conditions
+applied`, Will, 2026-09-26). A date's `eq`, `lt` and `gt` read `on`, `before`,
+`after`; a typed count reads `last(7 days)`.
 
-It counts `state.rows` — the ANSWERED rows only. A half-built row narrows
-nothing, so counting it would promise a filter that is not there.
+It spells `state.rows` — the ANSWERED rows only. A half-built row narrows
+nothing, so saying it would promise a filter that is not there.
 
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-state.test.mjs`

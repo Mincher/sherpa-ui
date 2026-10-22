@@ -121,11 +121,10 @@ test('another condition wears the ONE badge, and its tip counts the conditions',
      chained filter has no single sign to show anyway.
      TRAP T-a-condition-badge-says-that-not-which */
   assert.equal(face.badge, CONDITION_BADGE);
-  assert.equal(face.condition, 'Does not contain');
-  // HOW MANY apply; the rows themselves are read in the menu. Will, 2026-09-26.
-  // TRAP T-a-condition-tip-counts-its-rows
-  assert.equal(face.tip, '1 condition applied');
-  assert.equal(face.value, 'Ravi', 'the caret keeps the whole width for the value');
+  // It reads as its condition, `!` for a negative one. Will, TODO 409.
+  // TRAP T-an-advanced-answer-reads-as-its-conditions
+  assert.equal(face.tip, '!contains(Ravi)');
+  assert.equal(face.value, '!contains(Ravi)');
 });
 
 test('several picks read as first + ellipsis, and count', () => {
@@ -141,7 +140,7 @@ test('a chained condition counts only its ANSWERED rows', () => {
     { op: 'startswith', text: 'U', join: 'or' },
     { op: 'contains', text: '', join: 'and' },
   ] }));
-  assert.equal(face.tip, '2 conditions applied');
+  assert.equal(face.tip, 'contains(Ra) OR startsWith(U)');
 });
 
 test('an OFF field draws nothing', () => {

@@ -791,5 +791,6 @@ test('a chip whose menu has no list keeps an "Is" row it is given, and says it',
     };
   });
   expect(r.reading).toMatchObject({ conditions: [{ op: 'eq', picked: ['Bo'] }], mode: 'advanced' });
-  expect(r).toMatchObject({ on: true, says: 'Bo', box: 'Bo' });
+  // An "Is" row reads as its condition. TODO 409
+  expect(r).toMatchObject({ on: true, says: 'equals(Bo)', box: 'Bo' });
 });

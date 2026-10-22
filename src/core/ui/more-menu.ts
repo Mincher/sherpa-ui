@@ -8,11 +8,12 @@
  * - MORE_MENU — The ⋮ menu's own markup and sheet: a host lists each FIRST.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all on view — off where they would change nothing.
- * - syncResets — Reset, and Reset all on view, as buttons: off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters, or "Save <name>" with Save as and Delete; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
+ * - FILTER_ACTIONS — The rows the Filters menu ends with: its filter actions.
+ * - drawFilterActions — Lead a Filters menu with its filter actions: Reset, Reset all on view, then the save rows.
  * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
  * - askSwitches — The ⋮ menu's two switches: each that MOVED is asked for, Limit first.
@@ -42,13 +43,6 @@ export function resetRows(host: HTMLElement): MoreRow[] {
   return [['reset', host.hasAttribute('data-nothing-to-reset')], ['reset-default', host.hasAttribute('data-at-default')]];
 }
 
-/** Reset, and Reset all on view, as buttons: off where they would change
- *  nothing — the host says. `reset` is the host's own Reset button. TODO 231 */
-export function syncResets(host: HTMLElement, root: ParentNode, reset: string): void {
-  root.querySelector(reset)?.toggleAttribute('disabled', host.hasAttribute('data-nothing-to-reset'));
-  root.querySelector('.reset-more')?.toggleAttribute('disabled', host.hasAttribute('data-at-default'));
-}
-
 /** Limit is on, and hides what it rules out. Will, TODO 205. */
 export function hidesUnmatched(host: HTMLElement): boolean {
   return host.dataset['limitOptions'] === 'on' && host.dataset['hideUnmatched'] === 'on';
@@ -72,14 +66,7 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   const menu = root.querySelector<SherpaMenu>('.more-menu');
   const divider = cloneFirst(root, 'template.more-divider-tpl');
   if (!menu || !divider) return;
-  const drawn = groups.map((rows) => rows.flatMap(([value, disabled, name]) => {
-    const one = value.startsWith(EXTRA) ? pageRow(host, root, value) : row(root, value);
-    one?.toggleAttribute('disabled', !!disabled);
-    // A row that names what it acts on: "Save At risk". Its own word stays otherwise.
-    const said = name ? one?.querySelector('.more-name') : null;
-    if (said) said.textContent = name!;
-    return one ? [one] : [];
-  }));
+  const drawn = groups.map((rows) => drawRows(host, root, rows));
   const limit = host.dataset['limitOptions'];
   if (limit) {
     // …and below it, whether what Limit rules out is shown at all. Will, TODOs 205 and 376
@@ -90,6 +77,34 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
     .flatMap((g, i) => (i ? [divider.cloneNode(true) as HTMLElement, ...g] : g)));
   syncHide(host, root);
   menu.show?.(trigger);
+}
+
+/** Each row, cloned from its prototype: off where it says, and naming what it acts on. */
+function drawRows(host: HTMLElement, root: ParentNode, rows: readonly MoreRow[]): HTMLElement[] {
+  return rows.flatMap(([value, disabled, name]) => {
+    const one = value.startsWith(EXTRA) ? pageRow(host, root, value) : row(root, value);
+    one?.toggleAttribute('disabled', !!disabled);
+    // A row that names what it acts on: "Save At risk". Its own word stays otherwise.
+    const said = name ? one?.querySelector('.more-name') : null;
+    if (said) said.textContent = name!;
+    return one ? [one] : [];
+  });
+}
+
+/** The rows the Filters menu ends with: its filter actions. Will, TODO 383 */
+export const FILTER_ACTIONS = new Set(['reset', 'reset-default', 'filters-save', 'filters-save-as', 'filters-delete']);
+
+/** Lead a Filters menu with its filter actions — Reset, Reset all on view, then
+ *  Save filters or "Save <name>", Save as and Delete — in place of the ones it
+ *  had; the first section's own rule divides them. ONE button for every filter
+ *  action. Will, TODO 383 */
+export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined, applied?: { label: string }): void {
+  if (!menu) return;
+  for (const old of menu.querySelectorAll(':scope > .filter-action')) old.remove();
+  const rows = drawRows(host, root, [...resetRows(host), ...saveRows(host, applied)]);
+  // `data-lead`: above the values, whenever the menu stamps them.
+  for (const one of rows) { one.classList.add('filter-action'); one.setAttribute('data-lead', ''); }
+  menu.prepend(...rows);
 }
 
 /** Hide invalid filters is inactive — not hidden — while Limit is off. Will, TODO 376 */

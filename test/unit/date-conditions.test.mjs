@@ -80,7 +80,8 @@ test('a date row reads in its own words', () => {
     { join: 'or', op: 'last', text: '7', unit: 'day' },
     { join: 'or', op: 'eq', picked: ['2026-10-01'] },
   ]));
-  assert.equal(spellConditions(state), 'Before: 03 Sep 2026 or In the last: 7 days or On: 01 Oct 2026');
+  // Each condition's word and its value in brackets. Will, TODO 409
+  assert.equal(spellConditions(state), 'before(03 Sep 2026) OR last(7 days) OR on(01 Oct 2026)');
 });
 
 test('a source filters by a date from today', async () => {

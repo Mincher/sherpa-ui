@@ -14,7 +14,7 @@
  * - filterFace — How one field's state READS, for any control that draws it.
  * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
  * - countSaid — A count as a badge shows it and its name says it: `1,204`, and `1,204 results`.
- * - spellConditions — Chained rows, in words: `Contains "ab" or Equals cd`.
+ * - spellConditions — Advanced rows as they read: `equals(John) AND !contains(Smith)`.
  */
 import { DATE_OP_LABELS, DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp } from './store.js';
 import { formatDate } from './format-date.js';
@@ -80,16 +80,10 @@ export function filterFace(state: FilterState): FilterFace {
   const value = typed ? typedSaid : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
   const spelled = typed ? typedSaid : span || said.join(', ');
 
-  /* Many rows say their own story; one row falls back to the old wording. */
-  const chained = state.conditions.length > 1 ? spellConditions(state) : '';
-  /* …and on a chip's face, what each row ANSWERS with — no condition labels:
-     `U, an`. The words are the condition's, for a name. Will, TODO 139. */
-  const answered = state.conditions.flatMap((row) => ((OP_TAKES[row.op] ?? 'list') === 'text'
-    ? (row.text ? [row.text] : [])
-    : (row.picked ?? []).map((v) => labelOf.get(valueKey(v)) ?? String(v))));
-  // Answered rows only. Will, 2026-09-26. TRAP T-a-condition-tip-counts-its-rows
-  const rows = state.rows.length;
-  const counted = `${rows} condition${rows === 1 ? '' : 's'} applied`;
+  /* AN ADVANCED ANSWER reads as its conditions, on the face and in the tip:
+     `equals(John) AND !contains(Smith)`. Will, TODO 409.
+     TRAP T-an-advanced-answer-reads-as-its-conditions */
+  const advanced = state.condition === 'advanced' ? spellConditions({ ...state, conditions: state.rows }) : '';
 
   return {
     current: state.fieldState === 'active',
@@ -97,11 +91,10 @@ export function filterFace(state: FilterState): FilterFace {
        how many. Read from the state's own type, which the chip's green reads
        too. TRAP T-a-condition-badge-says-that-not-which · TRAP T-one-condition-system */
     badge: state.condition === 'advanced' ? CONDITION_BADGE : '',
-    condition: chained || condition,
-    value: chained ? answered.join(', ') : value,
+    condition: advanced ? '' : condition,
+    value: advanced || value,
     count: picks.length,
-    tip: state.condition === 'advanced' ? counted
-      : (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
+    tip: advanced || (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
   };
 }
 
@@ -143,20 +136,35 @@ function sayTyped(row: Pick<FieldCondition, 'op' | 'text' | 'unit'>, dated: bool
   return dated ? formatDate(text) : text;
 }
 
+/** Each condition's word, as it reads before its value: `equals(John)`. Will, TODO 409 */
+const OP_WORDS: Record<FilterOp, string> = {
+  eq: 'equals', ne: 'equals', in: 'equals', notin: 'equals',
+  lt: 'lessThan', lte: 'atMost', gt: 'greaterThan', gte: 'atLeast',
+  contains: 'contains', notcontains: 'contains', startswith: 'startsWith', endswith: 'endsWith',
+  between: 'between', notbetween: 'between', last: 'last', next: 'next',
+};
+/** …and a date's: a day is on, before or after. */
+const DATE_OP_WORDS: Partial<Record<FilterOp, string>> = { eq: 'on', lt: 'before', gt: 'after' };
+/** The NEGATIVE conditions: `!` and the positive word. */
+const NEGATIVE = new Set<FilterOp>(['ne', 'notin', 'notcontains', 'notbetween']);
+
 /**
- * Chained rows, in words: `Contains "ab" or Equals cd` — the chip's value and
- * its accessible name. TRAP T-a-condition-badge-says-that-not-which
+ * Advanced rows as they read — each condition's word, its value in brackets,
+ * the join between, `!` before a negative one: `equals(John) AND !contains(Smith)`.
+ * The chip's value, its tip and a grid heading's. Will, TODO 409.
+ * TRAP T-a-condition-badge-says-that-not-which
  */
 export function spellConditions(state: FilterState): string {
   const dated = state.type === 'date';
+  const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
   const part = (row: FieldCondition): string => {
-    const name = opName(row.op, dated);
+    const word = `${NEGATIVE.has(row.op) ? '!' : ''}${(dated ? DATE_OP_WORDS[row.op] : undefined) ?? OP_WORDS[row.op] ?? row.op}`;
     const said = (OP_TAKES[row.op] ?? 'list') === 'text'
       ? sayTyped(row, dated)
-      : (row.picked ?? []).map((v) => (dated ? formatDate(String(v)) : String(v))).join(', ');
-    return said ? `${name}: ${said}` : name;
+      : (row.picked ?? []).map((v) => (dated ? formatDate(String(v)) : labelOf.get(valueKey(v)) ?? String(v))).join(', ');
+    return `${word}(${said})`;
   };
   return state.conditions
-    .map((row, i) => (i ? `${row.join === 'or' ? 'or' : 'and'} ${part(row)}` : part(row)))
+    .map((row, i) => (i ? `${row.join === 'or' ? 'OR' : 'AND'} ${part(row)}` : part(row)))
     .join(' ');
 }

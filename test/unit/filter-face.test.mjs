@@ -17,20 +17,20 @@ import { fieldState, filterFace, formatDate } from '../../dist/data.js';
 const face = (facts, reading) => filterFace(fieldState({ field: 'f', ...facts }, reading));
 
 test('a number with no list: its picks are its values', () => {
-  // A number's range is an Advanced Between row (TODO 375): it reads as a range, and its tip counts it.
+  // A number's range is an Advanced Between row (TODO 375): it reads as its condition. TODO 409
   const two = face({ type: 'number' }, { conditions: [{ op: 'between', picked: ['37', '120'] }], mode: 'advanced' });
-  assert.equal(two.value, '37 to 120');
-  assert.equal(two.tip, '1 condition applied');
+  assert.equal(two.value, 'between(37, 120)');
+  assert.equal(two.tip, 'between(37, 120)');
   assert.equal(two.current, true);
 
   const one = face({ type: 'number' }, { picked: ['12'], range: false });
   assert.equal(one.value, '12');
   assert.equal(one.tip, '12');
 
-  // A typed op is a CONDITION, and its tip counts it. TRAP T-a-condition-tip-counts-its-rows
+  // A typed op is a CONDITION, and reads as one. TRAP T-an-advanced-answer-reads-as-its-conditions
   const typed = face({ type: 'number' }, { picked: [], op: 'gte', text: '100', range: false });
-  assert.equal(typed.value, '100');
-  assert.equal(typed.tip, '1 condition applied');
+  assert.equal(typed.value, 'atLeast(100)');
+  assert.equal(typed.tip, 'atLeast(100)');
 });
 
 test('an EMPTY value list is "nothing to pick" — the mistake the chip made', () => {
@@ -52,17 +52,17 @@ test('a list is unchanged: the first pick and an ellipsis, every pick in the tip
   assert.equal(list.tip, 'active, trial');
 });
 
-/* Will, TODO 139: "The values should be shown, truncated, but not the
-   condition labels." The words stay, for a name. */
-test('chained rows: the face shows each row\'s VALUES, and the words keep the conditions', () => {
+/* Will, TODO 409: each condition before its value in brackets, the join
+   between, `!` before a negative one. It was the values alone (TODO 139). */
+test('chained rows read as their conditions: `startsWith(U) OR contains(an)`', () => {
   const typed = face({ values: ['Una', 'Dana'] }, { picked: [], mode: 'advanced', conditions: [
     { op: 'startswith', text: 'U' }, { op: 'contains', text: 'an', join: 'or' }] });
-  assert.equal(typed.value, 'U, an');
-  assert.equal(typed.condition, 'Starts with: U or Contains: an');
-  assert.equal(typed.tip, '2 conditions applied');
+  assert.equal(typed.value, 'startsWith(U) OR contains(an)');
+  assert.equal(typed.condition, '');
+  assert.equal(typed.tip, typed.value);
 
   // A row that picks from the list shows its picks, by their labels.
   const picked = face({ values: ['a', 'b'], labels: { a: 'Alpha', b: 'Beta' } }, { picked: [], mode: 'advanced', conditions: [
     { op: 'eq', picked: ['a'] }, { op: 'ne', picked: ['b'], join: 'and' }] });
-  assert.equal(picked.value, 'Alpha, Beta');
+  assert.equal(picked.value, 'equals(Alpha) AND !equals(Beta)');
 });

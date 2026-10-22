@@ -64,7 +64,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later) | filters |
 | ⬜ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
-| ⬜ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
+| ✅ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
@@ -90,10 +90,15 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
 | ✅ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
 | ✅ | 0zzl | 408 | WORDS — the Reset menu's "Reset all to default" reads "Reset all on view" (Will, 2026-10-22) | words |
-| ⬜ | 0zzm | 409 | WORDS — an Advanced filter's answer reads `equals(John) AND contains(Smith)` in its chip, tip and everywhere it is said: each condition before its value in brackets, the join between, `!` before a negative one (Will, 2026-10-22) | words |
-| ⬜ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
+| ✅ | 0zzm | 409 | WORDS — an Advanced filter's answer reads `equals(John) AND contains(Smith)` in its chip, tip and everywhere it is said: each condition before its value in brackets, the join between, `!` before a negative one (Will, 2026-10-22) | words |
+| ✅ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
 | ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
+| ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| ❓ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
+| ⬜ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
+| ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
+| ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1860,6 +1865,55 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 417 — LOOK, later: Discard wears a trash can
+
+Will, 2026-10-22: *"Todo later: Use a trash can icon for discard. Add the discard
+icon on the left of menu footer discard buttons."* The bar's and the panel's
+icon-only Discard (406) take it, and every menu footer's Discard leads its label
+with it. Check the icon set has one first.
+
+### `[x]` ✅ 416 — LOOK: an ON cell filter button reads as Discard
+
+Will, 2026-10-22: *"When a grid cell has been filtered on then the cell filter
+button should show a discard icon and be critical status styled."*
+
+**✅ Done 2026-10-22:** the grid sets the cell chip's `data-icon-start` to
+`cross` while its value is in force (the funnel is the default), and a grid pin
+(`'& .cell-filter[data-current]': critical` in state-pins.yaml) paints it
+critical, outranking the chip's own on pin. Test: `reforged-data-grid` (cross
+and critical on, funnel off).
+
+### `[ ]` ⬜ 415 — REFACTOR: the toolbar and the panel, simplified
+
+Will, 2026-10-22: *"With the second bug it's perhaps time to review the filter
+toolbar and panel code, with the querycontext component now in the data layer,
+to simplify the logic and minimise duplication, redundancy, or divergence where
+we don't need it."* Plan first, with Will, as the optimisations re-plan.
+
+### `[ ]` ⬜ 414 — BUG: switching panel and toolbar asks for Apply again
+
+Will, 2026-10-22: *"Toggling between the filter panel and toolbar require
+reapplying the view scope filters. These are just re-presentations of the same
+query and data so this shouldn't happen."* Likely 406: a bar or panel that
+draws again re-sends what it shows, and in a scope that waits that lands as a
+draft.
+
+**Not reproduced, 2026-10-22** (Demos on :4300, a fresh page, the build of
+cfa82795): a Region, Customer and Date pick, applied in the bar or in the
+panel, then the mode button there and back, twice — the Query stays applied,
+nothing reads pending, the rows stay. ❓ Will: the steps, after a reload of
+the page (a tab open across several rebuilds runs old code).
+
+### `[ ]` ⬜ 413 — BUG: no count badge on the View's chips in the panel
+
+Will, 2026-10-22: *"Count badges on view scope filters don't show in the filter
+panel."*
+
+**Not reproduced, 2026-10-22** (same page): Customer 10, Region 27 and Date 2
+show on the panel's chips and field headers, as on the bar. A pick NOT yet
+applied shows no count by design (a pending chip's badge waits, TODO 304), and
+in panel mode the bar's Apply is hidden. ❓ Will: the steps, after a reload.
+
 ### `[x]` ✅ 412 — BUG: a chip with 0 matches stays on
 
 Will, 2026-10-22: *"A chip with 0 matches, that returned successfully, should
@@ -1896,17 +1950,24 @@ page load: the card alone says it (Will: my pick); a chip says only its own read
 (node: marked, then cleared; 0 rows is not a failure), `reforged-a-chip-that-cannot-fetch`
 (critical edge, the tip's lead, the bar and the panel alike).
 
-### `[ ]` ⬜ 410 — FILTERS: every scope's picks survive a reload
+### `[x]` ✅ 410 — FILTERS: every scope's picks survive a reload
 
 Will, 2026-10-22: *"Selected filter values, in all scopes, should survive a page
 reload. The base definition is only used if there isn't a session definition or
 when the user resets filters."*
 
-**To find out first:** what is kept today (the kept Query, `records-persist`'s
-"filters survive a reload") and which scopes it misses; and, with 406, whether a
-View pick not yet applied is kept too.
+**Found 2026-10-22 (probe on Demos Records):** every scope's APPLIED picks
+already survive a reload — the provider keeps the applied Query in the tab's
+session (`sherpa:session:/filters/<page>`) and puts it back; the page
+definition is used only without one, or on a reset. A chart legend in Records
+answers through the View, so the View covers it. The one gap: a View pick NOT
+yet applied (406) was lost.
 
-### `[ ]` ⬜ 409 — WORDS: an Advanced answer reads as its conditions
+**✅ Done 2026-10-22:** the kept entry carries the draft too while a pick
+waits (`keptEntry`), and a reload puts that pick back, still waiting
+(`redraft`). Test: Demos `records-persist` (a pending pick survives, pending).
+
+### `[x]` ✅ 409 — WORDS: an Advanced answer reads as its conditions
 
 Will, 2026-10-22: *"Prefix advanced filter value labels, in the chip, tooltip,
 etc., with the condition. Include the condition label between values. Wrap the
@@ -1914,12 +1975,16 @@ value in parentheses after them like so: `equals(John) AND contains(Smith)`.
 Prefix with an exclamation mark for the negative conditions like so:
 `!equals(John) OR !contains(Smith)`."*
 
-**To do:** `filterFace` (`src/core/data/filter-face.ts`) says an Advanced answer
-one way for the chip's face, its tip and the panel. Each row: its condition's
-name, then its value in brackets; the join (AND / OR) between rows; a negative
-condition (not equals, not contains, not between…) is `!` and its positive
-name. Settle the names: the ops' own words (`equals`, `contains`) or their
-labels as the menu shows them.
+**✅ Done 2026-10-22.** `spellConditions` (`filter-face.ts`) is the one
+wording, for the chip's face, its tip and a grid heading: each row's word, its
+value in brackets (picks by their labels, days as days), `AND` / `OR` between,
+`!` and the positive word for `ne`, `notin`, `notcontains`, `notbetween`. The
+words, my pick: `equals`, `lessThan`, `atMost`, `greaterThan`, `atLeast`,
+`contains`, `startsWith`, `endsWith`, `between`, `last`, `next`; a date's `eq`,
+`lt` and `gt` read `on`, `before`, `after`. Any Advanced answer reads so —
+one row too, and a Simple pick under another condition (`!equals(Gold)`). The
+tip no longer counts rows (`2 conditions applied`): the trap is now
+`T-an-advanced-answer-reads-as-its-conditions`.
 
 ### `[x]` ✅ 408 — WORDS: "Reset all on view"
 
@@ -2002,6 +2067,18 @@ answer. 410 settles whether a pick not yet applied survives a reload.
 **Design question the helper raised, for Will:** a chart legend's press over a
 field the View holds now waits for Apply too (its own ticks move at once, its
 bars and the grid at Apply).
+
+**Will, 2026-10-22, later:** *"Each View Scope filter section in the filter panel
+has an apply and discard button. We should just have 1 apply button in the View
+Scope header to the left of the Filters button. Add an icon only discard to the
+right of the apply button in both the filter section header and filter
+toolbar."* Written: the panel's header holds ONE Apply and an icon-only Discard
+(`.head-apply`, `.head-discard`) while a scope waits, before Save <name> and
+Filters; its fields' own Apply and Discard, and the footer's Apply all, are
+only a remote panel's that does not wait. The bar: Apply, then an icon-only
+Discard (`data-act="discard"`, `filter-discard` for every field), then the
+divider. The View has no header of its own in the panel (an accordion's summary
+may not hold buttons), so the panel's header is the one.
 
 ### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
 
@@ -2091,6 +2168,10 @@ after a while, and they do not start on every View that has metrics.
   From two stuck groups, each group and its metrics are half height.
 - Stuck is a CSS `scroll-state(stuck: top)` query where it can be (Chromium
   only today, as 175 found — see 401); the rest of the engines get a plain row.
+
+Will, later: *"Metric group rows should be exempt from the vertical resizing
+functionality. They are always 1 row high when not in sticky mode."* So a group
+row takes no resize handle and is one grid row while not stuck.
 
 **To find out first:** how a group knows how many groups are stuck above it (the
 stack offset and the half height), with no JS if it can be done. Then the five
@@ -2185,7 +2266,7 @@ force (`arrangementOf`), and the flip arranges the rows again; its search stays.
 Tests: `the-switch-suspends-the-arrangement` (node); the bar, panel and grid
 specs pass. **Will:** look at Demos Records' data bar: Switch, then Group.
 
-### `[ ]` ⬜ 383 — UX: one "Filter actions" button
+### `[x]` ✅ 383 — UX: one "Filter actions" button
 
 Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
 definitions, Reset, Reset all, Save Filters, Save Filters As into 1 'Filter
@@ -2210,6 +2291,17 @@ now, on my picks (Will to look at by eye):
 - The ⋮ keeps what is not a filter action: Limit, Hide invalid filters, the
   host's own rows, the View's Save group, Refresh.
 - The panel the same, in its header.
+
+**🚧 Built 2026-10-22, on these picks — changed in the build:** no split button.
+"Filters" stays one button; while a saved set is taken a separate "Save <name>"
+button (active) sits just before it. The action rows LEAD the menu (`data-lead`
+keeps a caller's rows above the values a menu stamps): at the end of a long,
+scrolling list nobody would find them. The bar's Reset group and the panel's
+Reset and Save groups are gone, and the ⋮ keeps only what is not a filter
+action. **✅ Done 2026-10-22.** Tests: 25 in sherpa-ui and 4 Demos files moved
+to the menu rows (a helper agent); it found "Save <name>" drawn with no space
+("SaveGold", 378 again) — fixed with `&nbsp;`. **For Will to look at by eye:**
+Demos Records › Filters.
 
 ### `[x]` ✅ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
 
@@ -10667,7 +10759,7 @@ Equals: churned`, `spellConditions()`); the `fx` button (49, 50) is where the
 rows themselves are read now. The badge is NOT a condition count — Will
 changed that ask for 60.
 
-**✅ Done 2026-09-26:** a conditional chip's tooltip says "X conditions applied" — `T-a-condition-tip-counts-its-rows`
+**✅ Done 2026-09-26:** a conditional chip's tooltip says "X conditions applied" — `T-an-advanced-answer-reads-as-its-conditions`
 
 ### `[x]` ✅ 40 — A switch has no accessible name
 
@@ -11096,7 +11188,7 @@ it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its reco
 - Organise and Presets carry no Conditional switch — 8623c084
 - A disabled Today keeps its Today fill — 9baa9f57
 - 39: the panel header's Reset all clears both scopes, and both header buttons wear the default look
-- 53: a conditional chip's tooltip says "X conditions applied" — `T-a-condition-tip-counts-its-rows`
+- 53: a conditional chip's tooltip says "X conditions applied" — `T-an-advanced-answer-reads-as-its-conditions`
 - 40: a host's `aria-label` names its inner control — button, input, checkbox, radio, switch; 59 template sites + 18 in code were unnamed — `T-a-host-label-must-reach-its-control`
 - A button with no visible label shows a tip that says its action; `data-tip` sets one, `data-no-tip` turns it off — `T-every-button-says-its-action`
 - Toolbar icon actions named in Will's words: Suggest filters, Reset all filters, View as filter panel, Add to / Remove from Favorites, Save view options

@@ -5,7 +5,7 @@ import { test, expect } from './fixture';
  * kept with the page beside its Views. Taken from the Filters menu's Saved
  * section, it LOADS into the chips: every scope matches it, and no chip names
  * it. The panel's Save filters then reads "Save <name>", active, and saves over
- * it; the Filters menu ticks the set taken; unticked, the
+ * it; the Filters menu ticks the set taken, and leads with its Save rows; unticked, the
  * scopes it names lose their filters. ONE set is taken at a time.
  * TRAP T-saved-filters-are-every-scope
  */
@@ -32,11 +32,18 @@ const SETUP = `
   ];
   const open = () => provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {}, session });
   const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
-  // What the panel's Save filters says, and whether it wears the active look.
-  const save = () => ({
-    says: panel.shadowRoot.querySelector('.save-filters').textContent.replace(/\\s+/g, ' ').trim(),
-    active: panel.shadowRoot.querySelector('.save-group').dataset.status === 'active',
-  });
+  // What the panel's "Save <name>" says while it shows, whether it wears the
+  // active look, and what its Filters menu's Save row says.
+  // Filter actions are the Filters menu's rows. TODO 383
+  const save = () => {
+    const btn = panel.shadowRoot.querySelector('.save-filters');
+    const row = panel.shadowRoot.querySelector('.filters-btn sherpa-menu > .filter-action[value="filters-save"]');
+    return {
+      says: getComputedStyle(btn).display === 'none' ? null : btn.textContent.replace(/\\s+/g, ' ').trim(),
+      active: btn.dataset.status === 'active',
+      row: row ? row.textContent.replace(/\\s+/g, ' ').trim() : null,
+    };
+  };
   // Each set as the bar was told it, and whether it is the one taken.
   const told = () => bar.savedSets.map(({ id, applied }) => ({ id, applied: !!applied }));
 `;
@@ -75,7 +82,7 @@ test('Save filters keeps every scope under a name; the button then says it, acti
     const again = JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}')['gold-pro'].query.scopes.data.where;
     return { before, id, stored, saved, edited, over, again, told: told() };
   })()`) as Record<string, any>;
-  expect(r['before']).toEqual({ says: 'Save filters', active: false });
+  expect(r['before']).toEqual({ says: null, active: false, row: 'Save filters…' });
   expect(r['id']).toBe('gold-pro');
   const scopes = r['stored']['gold-pro'].query.scopes;
   expect(r['stored']['gold-pro'].label).toBe('Gold Pro');
@@ -84,11 +91,12 @@ test('Save filters keeps every scope under a name; the button then says it, acti
   // The filter half: no arrangement.
   expect(scopes.view.sort).toBeUndefined();
   expect(r['saved']).toEqual({
-    save: { says: 'Save Gold Pro', active: true }, told: [{ id: 'gold-pro', applied: true }],
+    save: { says: 'Save Gold Pro', active: true, row: 'Save Gold Pro' }, told: [{ id: 'gold-pro', applied: true }],
     read: [{ id: 'gold-pro', label: 'Gold Pro', applied: true, own: true }],
   });
   // Changed, it is still the set taken, and the one Save saves over.
-  expect(r['edited']).toEqual({ save: { says: 'Save Gold Pro', active: true }, told: [{ id: 'gold-pro', applied: true }] });
+  expect(r['edited']).toEqual({ save: { says: 'Save Gold Pro', active: true, row: 'Save Gold Pro' },
+    told: [{ id: 'gold-pro', applied: true }] });
   expect(r['over']).toBe('gold-pro');
   expect(r['again']).toEqual({ plan: { eq: 'Free' } });
   expect(r['told']).toEqual([{ id: 'gold-pro', applied: true }]);
@@ -129,9 +137,10 @@ test('a set taken: every scope matches it, one it does not name is cleared, anot
   expect(r['listed']).toEqual([{ id: 'silver', applied: false }]);
   // Plan was Free: the set does not name the data scope, so it is cleared (Will, 366). Its chip stays.
   expect(r['taken']).toEqual({ tier: ['silver'], plan: [], total: 1, holds: ['plan'],
-    told: [{ id: 'silver', applied: true }], save: { says: 'Save Silver', active: true } });
-  expect(r['kept']).toEqual({ says: 'Save Silver', active: true });
-  expect(r['off']).toEqual({ tier: [], total: 3, told: [{ id: 'silver', applied: false }], save: { says: 'Save filters', active: false } });
+    told: [{ id: 'silver', applied: true }], save: { says: 'Save Silver', active: true, row: 'Save Silver' } });
+  expect(r['kept']).toEqual({ says: 'Save Silver', active: true, row: 'Save Silver' });
+  expect(r['off']).toEqual({ tier: [], total: 3, told: [{ id: 'silver', applied: false }],
+    save: { says: null, active: false, row: 'Save filters…' } });
 });
 
 test('ONE set is taken at a time: another replaces it, and only it is ticked', async ({ page }) => {
@@ -159,7 +168,7 @@ test('ONE set is taken at a time: another replaces it, and only it is ticked', a
   // Pro does not name the View: Silver's tier went with it.
   expect(r['tier']).toEqual([]);
   expect(r['plan']).toEqual(['Pro']);
-  expect(r['save']).toEqual({ says: 'Save Pro', active: true });
+  expect(r['save']).toEqual({ says: 'Save Pro', active: true, row: 'Save Pro' });
 });
 
 test('Delete forgets the set last taken; an old one-scope saved filter is not adopted', async ({ page }) => {
@@ -183,11 +192,11 @@ test('Delete forgets the set last taken; an old one-scope saved filter is not ad
   expect(r['old']).not.toBeNull();
   expect(r['deleted']).toBe(true);
   expect(r['left']).toEqual({});
-  expect(r['save']).toEqual({ says: 'Save filters', active: false });
+  expect(r['save']).toEqual({ says: null, active: false, row: 'Save filters…' });
   expect(r['rows']).toEqual([]);
 });
 
-test('the bar\'s ⋮, the panel\'s Save filters and a Saved row each ask, and the host answers', async ({ page }) => {
+test('the Filters menus\' rows, the bar\'s and the panel\'s Save <name>, and a Saved row each ask, and the host answers', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bar = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered: Promise<void>; populate(d: unknown): Promise<void>; savedSets: unknown;
@@ -204,15 +213,23 @@ test('the bar\'s ⋮, the panel\'s Save filters and a Saved row each ask, and th
     await bar.populate([{ id: 'plan', label: 'Plan', removable: true, options: [{ value: 'Pro', label: 'Pro' }] }]);
     await panel.populate([{ scope: 'data', label: 'Rows', filters: [{ id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] }] }]);
     const sr = bar.shadowRoot!;
-    const more = async (): Promise<(string | null)[]> => {
-      sr.querySelector<HTMLElement>('.act[data-act="overflow"]')!.shadowRoot!.querySelector('button')!.click();
+    // Filter actions are the Filters menu's rows. TODO 383
+    const action = (host: HTMLElement, value: string): HTMLElement =>
+      host.shadowRoot!.querySelector<HTMLElement>(`:is(.add-btn, .filters-btn) sherpa-menu > .filter-action[value="${value}"]`)!;
+    const actions = async (): Promise<(string | null)[]> => {
       await window.__settled();
-      return [...sr.querySelectorAll('.more-menu .more-label')].map((l) => (l.textContent ?? '').trim());
+      return [...sr.querySelectorAll('.add-btn sherpa-menu > .filter-action .more-label')].map((l) => (l.textContent ?? '').trim());
+    };
+    // The bar's "Save <name>": what it says while it shows, and its look.
+    const saveSet = (): { says: string | null; active: boolean } => {
+      const btn = sr.querySelector<HTMLElement>('.save-set')!;
+      return { says: getComputedStyle(btn).display === 'none' ? null : (btn.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        active: btn.dataset['status'] === 'active' };
     };
     // Nothing taken: one row, and it asks for a name.
     bar.savedSets = [{ id: 'a', label: 'A', own: true }];
-    const none = await more();
-    (sr.querySelector('.more-menu') as HTMLElement & { hide?(): void }).hide?.();
+    const none = await actions();
+    const noneSet = saveSet();
     const sets = [{ id: 'a', label: 'A', applied: true, own: true }, { id: 'b', label: 'B', own: true }];
     bar.savedSets = sets;
     panel.savedSets = sets;
@@ -223,25 +240,29 @@ test('the bar\'s ⋮, the panel\'s Save filters and a Saved row each ask, and th
         el.addEventListener(type, (e) => heard.push(`${el.localName.replace('sherpa-', '')}:${type}:${(e as CustomEvent).detail?.id ?? ''}`));
       }
     }
-    const taken = await more();
-    sr.querySelector<HTMLElement>('.more-menu .more-item[value="filters-save-as"]')!.click();
-    // The panel's own button, and its menu's Delete.
+    const taken = await actions();
+    const takenSet = saveSet();
+    action(bar, 'filters-save-as').click();
+    // The bar's own "Save A", then the panel's, and its Filters menu's Delete.
+    sr.querySelector('.save-set')!.shadowRoot!.querySelector('button')!.click();
     panel.shadowRoot!.querySelector('.save-filters')!.shadowRoot!.querySelector('button')!.click();
-    panel.shadowRoot!.querySelector('.save-menu')!.dispatchEvent(
-      new CustomEvent('menu-select', { bubbles: true, composed: true, detail: { value: 'filters-delete' } }));
+    action(panel, 'filters-delete').click();
     // The Filters menu: B ticked takes it; A unticked takes it off.
     const menu = sr.querySelector('.add-btn sherpa-menu')!;
     const values = (menu as unknown as { values: string[] }).values;
     menu.dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true, detail: { values: [...values, 'set:b'] } }));
     menu.dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true,
       detail: { values: values.filter((v: string) => v !== 'set:a') } }));
-    return { none, taken, ticked: values.filter((v: string) => v.startsWith('set:')), heard };
+    return { none, noneSet, taken, takenSet, ticked: values.filter((v: string) => v.startsWith('set:')), heard };
   });
   expect(r.none.filter((l) => l?.startsWith('Save') || l?.startsWith('Delete'))).toEqual(['Save filters…']);
-  expect(r.taken).toEqual(expect.arrayContaining(['Save A', 'Save filters as…', 'Delete filters']));
+  expect(r.noneSet).toEqual({ says: null, active: false });
+  expect(r.taken).toEqual(['Reset filters', 'Reset all on view', 'Save A', 'Save filters as…', 'Delete filters']);
+  expect(r.takenSet).toEqual({ says: 'Save A', active: true });
   expect(r.ticked).toEqual(['set:a']);
   expect(r.heard).toEqual([
-    'quick-filter-toolbar:filters-save-as:', 'filter-panel:filters-save:', 'filter-panel:filters-delete:a',
+    'quick-filter-toolbar:filters-save-as:', 'quick-filter-toolbar:filters-save:',
+    'filter-panel:filters-save:', 'filter-panel:filters-delete:a',
     'quick-filter-toolbar:filters-apply:b', 'quick-filter-toolbar:filters-dismiss:a',
   ]);
 });

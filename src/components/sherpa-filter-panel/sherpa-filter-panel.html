@@ -80,43 +80,23 @@
   <sherpa-container class="panel" part="panel" data-padding="none">
     <sherpa-container-header slot="header" class="head" part="head"
                              data-icon="filter" data-heading="Filters">
-      <!-- BOTH scopes at once, applied as the toolbar's Reset is. Both header
-           buttons wear the DEFAULT look. Will, 2026-09-26. -->
-      <!-- …and its menu: Reset all on view. TRAP T-reset-to-default-is-the-views-own -->
+      <!-- APPLY and its Discard, icon only: ONE pair for a scope that waits, for
+           every change held in it. Will, TODO 406 -->
+      <sherpa-button slot="actions" class="head-apply" part="apply" data-size="sm"
+                     data-look="saturated" disabled>Apply</sherpa-button>
+      <sherpa-button slot="actions" class="head-discard" part="discard" data-size="sm" data-type="icon"
+                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+      <!-- "Save <name>", active, while a saved set is taken: it saves over it.
+           Will, 366. TRAP T-saved-filters-are-every-scope -->
+      <sherpa-button slot="actions" class="save-filters" part="save-filters" data-size="sm"
+                     data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <!-- ONE Filters menu, for every scope: what each holds, then what may be
-           added — each row says its scope. The SAME button a toolbar shows,
-           attribute for attribute. Will, TODO 124. TRAP T-the-add-menu-is-the-whole-list -->
+           added — each row says its scope — then every filter action: Reset,
+           Reset all on view, Save filters. The SAME button a toolbar shows.
+           Will, TODOs 124 and 383. TRAP T-the-add-menu-is-the-whole-list -->
       <sherpa-button slot="actions" class="filters-btn" part="filters" data-size="sm"
                      data-icon-start="plus" data-icon-end="triangle-down"
                      aria-haspopup="dialog">Filters</sherpa-button>
-      <span slot="actions" class="reset-group sherpa-group">
-        <sherpa-button class="reset-all" part="reset-all" data-size="sm" data-group="start"
-                       data-icon-start="arrow-rotate-left"
-                       aria-label="Reset all filters">Reset</sherpa-button>
-        <sherpa-button class="reset-more" part="reset-more" data-type="icon" data-size="sm"
-                       data-group="end" data-icon-start="triangle-down"
-                       aria-label="Reset options" aria-haspopup="dialog">
-          <sherpa-menu slot="menu" data-align="end">
-            <button type="button" value="reset-default">Reset all on view</button>
-          </sherpa-menu>
-        </sherpa-button>
-      </span>
-      <!-- SAVE FILTERS — every scope under one name — and its menu, as a View's:
-           Save filters as, and Delete filters while a set is taken. A set taken,
-           it reads "Save <name>", active, and saves over it. Will, TODO 105, 366.
-           TRAP T-saved-filters-are-every-scope -->
-      <span slot="actions" class="save-group sherpa-group">
-        <sherpa-button class="save-filters" part="save-filters" data-size="sm" data-group="start"
-                       data-icon-start="upload" aria-label="Save filters">Save<span class="save-word">&nbsp;<span class="save-name">filters</span></span></sherpa-button>
-        <sherpa-button class="save-more" part="save-more" data-type="icon" data-size="sm"
-                       data-group="end" data-icon-start="triangle-down"
-                       aria-label="Save options" aria-haspopup="dialog">
-          <sherpa-menu slot="menu" class="save-menu" data-align="end">
-            <button type="button" value="filters-save-as">Save filters as</button>
-            <button type="button" value="filters-delete" class="save-delete">Delete filters</button>
-          </sherpa-menu>
-        </sherpa-button>
-      </span>
       <!-- The HOST's buttons — the page's switch back to the toolbars is one.
            TRAP T-the-mode-switch-is-the-pages-own -->
       <slot name="actions" slot="actions" data-accepts="control"></slot>
@@ -227,6 +207,5 @@
     <span data-word="organise">Organise</span>
     <span data-word="group">Group by</span>
     <span data-word="sort">Sort by</span>
-    <span data-word="filters">filters</span>
   </template>
 </template>

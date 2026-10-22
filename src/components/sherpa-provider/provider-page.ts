@@ -432,13 +432,15 @@ export class ProviderPage {
     const library = (): ViewLibrary => (typeof views === 'function' ? views() : views ?? {});
     const first = Object.keys(library())[0];
     this.#view = options.view ?? first;
-    const kept = key ? session?.get(key) as { view?: string; query?: Query } | undefined : undefined;
+    const kept = key ? session?.get(key) as { view?: string; query?: Query; draft?: Query } | undefined : undefined;
     const start = this.#view ? library()[this.#view] : undefined;
     this.#drafts = options.drafts ? { ...options.drafts, source, library } : null;
     // A link to a View the reader left a draft on opens on the draft.
     const draft = this.#view ? this.#draftOf(this.#view) : undefined;
-    if (kept?.query && kept.view === this.#view) await source.query.setQuery(kept.query);
-    else if (draft) await source.query.setQuery(draft);
+    if (kept?.query && kept.view === this.#view) {
+      await source.query.setQuery(kept.query);
+      if (kept.draft) redraft(source, kept.draft);
+    } else if (draft) await source.query.setQuery(draft);
     else if (this.#view !== first && start?.query) await source.query.setQuery(start.query, { holds: 'keep' });
     if (signal.aborted) return;
     this.#hear = () => this.#hearPicks(source, library, signal);
@@ -449,7 +451,7 @@ export class ProviderPage {
     let frame = 0;
     const write = (): void => {
       frame = 0;
-      if (key && session) session.set(key, { view: this.#view, query: source.query.applied });
+      if (key && session) session.set(key, keptEntry(source, this.#view));
       this.#keepDraft();
     };
     /* The READER's changes only: a pick or a reset writes the Query too, says
@@ -468,7 +470,7 @@ export class ProviderPage {
       write();
     };
     // After a pick or a reset, the page's kept Query is the one on screen.
-    this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
+    this.#settle = () => { if (key && session) session.set(key, keptEntry(source, this.#view)); };
     source.query.addEventListener('query-change', keep, { signal });
     signal.addEventListener('abort', () => {
       cancelAnimationFrame(frame);
@@ -553,6 +555,25 @@ export class ProviderPage {
     }>('sherpa-quick-filter-toolbar')) {
       const chip = Object.keys(bar.values ?? {}).find((k) => bar.values?.[k]?.[0] === was);
       if (chip) bar.setChipValues?.(chip, [id]);
+    }
+  }
+}
+
+/** What a page keeps across a reload: the View, the Query applied, and —
+ *  while a pick waits for Apply — the draft. Will, TODO 410 */
+function keptEntry(source: DataSource, view: string | undefined): { view?: string; query: Query; draft?: Query } {
+  return { ...(view ? { view } : {}), query: source.query.applied, ...(source.query.dirty() ? { draft: source.query.draft } : {}) };
+}
+
+/** A pick that waited for Apply comes back waiting, in each scope that waits. TODO 410 */
+function redraft(source: DataSource, draft: Query): void {
+  const applied = source.query.applied;
+  for (const [scope, s] of Object.entries(draft.scopes)) {
+    if (!source.query.named(scope)) continue;
+    const was = applied.scopes[scope]?.readings ?? {};
+    for (const field of new Set([...Object.keys(s.readings), ...Object.keys(was)])) {
+      const want = s.readings[field] ?? null;
+      if (JSON.stringify(want) !== JSON.stringify(was[field] ?? null)) source.query.setReading(scope, field, want);
     }
   }
 }

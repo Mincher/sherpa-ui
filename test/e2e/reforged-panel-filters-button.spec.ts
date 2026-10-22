@@ -42,8 +42,10 @@ const SETUP = `
   const scope = () => sr.querySelector('.scope[data-scope="data"]');
   const btn = () => sr.querySelector('.filters-btn');
   const menu = () => btn().querySelector('sherpa-menu');
-  /* The menu's rows in order: §Heading, a tick's value (+ ticked), › a caret. */
+  /* The menu's rows in order: !an action, §Heading, a tick's value (+ ticked), › a caret. */
   const rows = () => [...menu().children].filter((n) => !n.classList.contains('qf-all')).map((n) => {
+    // Filter actions are the Filters menu's rows. TODO 383
+    if (n.classList.contains('filter-action')) return '!' + n.value;
     if (n.classList.contains('menu-section')) return '§' + n.textContent;
     const box = n.querySelector('input');
     const caret = n.hasAttribute('data-drill') ? '›' : '';
@@ -64,6 +66,8 @@ test('the Filters button is in the panel header; a scope header holds no button,
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     el.setAttribute('data-saveable', '');
+    // "Save <name>" shows while a saved set is taken. TODO 383
+    el.savedSets = [{ id: 'a', label: 'A', applied: true, own: true }];
     await settle();
     const box = scope();
     const rect = (n) => { const b = n.getBoundingClientRect();
@@ -74,8 +78,10 @@ test('the Filters button is in the panel header; a scope header holds no button,
       heading: rect(box.shadowRoot.querySelector('.heading')),
       chevron: rect(box.shadowRoot.querySelector('.chevron')),
       filters: rect(btn()),
-      reset: rect(sr.querySelector('.reset-all')),
-      // Save filters is the header's, for every scope (TODO 105).
+      // Filter actions are the Filters menu's rows: Reset leads it. TODO 383
+      lead: rows().slice(0, 2),
+      resets: sr.querySelectorAll('.reset-group, .reset-all').length,
+      // "Save <name>" is the header's, for every scope (TODO 105).
       save: rect(el.shadowRoot.querySelector('.save-filters')),
       // A summary is a button: nothing a reader can press may sit in it. TODO 117.
       inSummary: box.querySelectorAll(':scope > [slot="actions"]').length,
@@ -84,19 +90,19 @@ test('the Filters button is in the panel header; a scope header holds no button,
       old: sr.querySelectorAll('.scope-add').length,
     };
   })()`) as Record<string, { top: number; bottom: number; left: number; right: number; mid: number }> &
-    { inSummary: number; inPanelHead: boolean; old: number };
+    { inSummary: number; inPanelHead: boolean; old: number; lead: string[]; resets: number };
 
   // Will, 2026-09-26: the chevron LEFT of the label.
   expect(r['chevron']!.right).toBeLessThanOrEqual(r['heading']!.left);
   expect(r.inSummary).toBe(0);
   expect(r.old).toBe(0);
-  // ONE Filters button, in the panel's header, before Reset on its row.
+  // ONE Filters button, in the panel's header; Reset is its menu's first row, not a button.
   expect(r.inPanelHead).toBe(true);
-  expect(r['filters']!.right).toBeLessThanOrEqual(r['reset']!.left);
-  expect(Math.abs(r['filters']!.mid - r['reset']!.mid)).toBeLessThanOrEqual(2);
-  // Save filters: in the header, on Filters' row, after Reset (TODO 105).
+  expect(r.lead).toEqual(['!reset', '!reset-default']);
+  expect(r.resets).toBe(0);
+  // "Save <name>": in the header, on Filters' row, before it (TODOs 105, 383).
   expect(Math.abs(r['save']!.mid - r['filters']!.mid)).toBeLessThanOrEqual(2);
-  expect(r['save']!.left).toBeGreaterThanOrEqual(r['reset']!.right);
+  expect(r['save']!.right).toBeLessThanOrEqual(r['filters']!.left);
 });
 
 test('open, it is the whole list; shut, it leads with what the scope hides', async ({ page }) => {
@@ -107,15 +113,16 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
     return { open, shut: look() };
   })()`) as Record<string, { rows: string[]; badge: string | null; on: string | null }>;
 
-  // OPEN: nothing is hidden, so no section of hidden filters and no badge.
+  // OPEN: nothing is hidden, so no section of hidden filters and no badge. The actions lead.
   expect(r['open']).toEqual({
-    rows: ['§Added filters', 'data:status+', '§Available filters', 'data:plan'],
+    rows: ['!reset', '!reset-default', '§Added filters', 'data:status+', '§Available filters', 'data:plan'],
     badge: null, on: null,
   });
   /* SHUT: every filter it draws, in its order, IN Added filters — one section,
      each row with a caret into its child menu. Only Status can be taken off,
      so only Status has a box. TRAP T-a-row-opens-its-child-menu */
   expect(r['shut']!.rows).toEqual([
+    '!reset', '!reset-default',
     '§Added filters', '›data:sort', 'data:status+›', '›data:seats', '§Available filters', 'data:plan',
   ]);
   expect(r['shut']!.badge).toBe('3');
@@ -146,7 +153,8 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
     return {
       drilled, heard,
       chips: [...sr.querySelectorAll('.field[data-field="status"] .value[data-current]')].map((c) => c.dataset.value),
-      back: { drill: menu().hasAttribute('data-drill'), first: rows()[0], selectAll: !!menu().querySelector('.qf-all') },
+      back: { drill: menu().hasAttribute('data-drill'), lead: rows()[0], first: rows().find((x) => !x.startsWith('!')),
+        selectAll: !!menu().querySelector('.qf-all') },
       // The menu built for the drill is gone with it.
       built: sr.querySelectorAll('.field[data-field="status"] sherpa-menu').length,
     };
@@ -157,7 +165,7 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
   });
   expect(r['chips']).toEqual(['active', 'churned']);
   expect(r['heard']).toEqual([['active', 'churned']]);
-  expect(r['back']).toEqual({ drill: false, first: '§Added filters', selectAll: false });
+  expect(r['back']).toEqual({ drill: false, lead: '!reset', first: '§Added filters', selectAll: false });
   expect(r['built']).toBe(0);
 });
 
@@ -204,14 +212,15 @@ test('Back returns the list; a body of its own opens the scope on it', async ({ 
     await new Promise((r) => setTimeout(r, 50));
     press(menu().shadowRoot.querySelector('.drill-back'));
     await settle();
-    const back = { heading: menu().getAttribute('data-heading'), first: rows()[0], drill: menu().hasAttribute('data-drill') };
+    const back = { heading: menu().getAttribute('data-heading'), lead: rows()[0],
+      first: rows().find((x) => !x.startsWith('!')), drill: menu().hasAttribute('data-drill') };
     // SEATS is a number: its answer is drawn in the scope, so the door opens it.
     caret('seats').click();
     await settle();
     return { back, open: scope().hasAttribute('open'), after: look() };
   })()`) as Record<string, unknown>;
 
-  expect(r['back']).toEqual({ heading: 'Filters', first: '§Added filters', drill: false });
+  expect(r['back']).toEqual({ heading: 'Filters', lead: '!reset', first: '§Added filters', drill: false });
   expect(r['open']).toBe(true);
   expect(r['after']).toMatchObject({ badge: null });
 });
@@ -252,6 +261,8 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
     const btn = sr.querySelector<HTMLElement>('.filters-btn')!;
     const menu = (): HTMLElement => btn.querySelector('sherpa-menu')!;
     const rows = (): string[] => [...menu().children].map((n) => {
+      // Filter actions are the Filters menu's rows. TODO 383
+      if (n.classList.contains('filter-action')) return `!${(n as HTMLButtonElement).value}`;
       if (n.classList.contains('menu-section')) return `§${n.textContent}`;
       const box = n.querySelector('input');
       return `${box?.value ?? (n as HTMLElement).dataset['value']}${box?.checked ? '+' : ''} · ${(n as HTMLElement).dataset['note'] ?? ''}`;
@@ -271,6 +282,8 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
 
   expect(r.buttons).toBe(1);
   expect(r.listed).toEqual([
+    // Every filter action leads, before any scope's rows.
+    '!reset', '!reset-default',
     '§Added filters',
     'view:region+ · View filters',
     'data:status+ · Customer records',

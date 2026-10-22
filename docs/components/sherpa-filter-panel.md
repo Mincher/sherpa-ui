@@ -134,7 +134,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`field-body`, `field-row`, `filters`, `footer`, `head`, `more`, `panel`, `reset-all`, `reset-more`, `save-filters`, `save-more`, `scopes`, `search`
+`apply`, `discard`, `field-body`, `field-row`, `filters`, `footer`, `head`, `more`, `panel`, `save-filters`, `scopes`, `search`
 
 ## CSS custom properties it reads
 
