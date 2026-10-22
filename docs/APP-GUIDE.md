@@ -293,6 +293,8 @@ session.persist('/nav/pinned');
   `T-session-persist-defaults-shared`
 - A control bound to a pointer says so in its markup — the outlet binds it:
   `<sherpa-switch data-setting="/nav/hierarchy">`. `T-a-setting-is-a-pointer`
+- Recents and Favorites name each View; `/nav/views: false` lists each Context
+  once instead. `T-the-outlet-keeps-the-nav`
 
 ## 10. Questions and saved filters
 

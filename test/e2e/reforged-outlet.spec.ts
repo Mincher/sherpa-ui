@@ -125,7 +125,7 @@ test('the nav is drawn from app.json, Recents follow each load, and the star kee
     return { first, recent: session.get('/nav/recent'), favorites: session.get('/nav/favorites'), current: nav.dataset.currentId, ids: ids() };
   })()`) as Record<string, unknown>;
   expect(r['first']).toEqual({ ids: ['home', 'recent', 'favorites'], current: 'home', recent: 0 });
-  expect(r['recent']).toEqual([{ context: 'beta', label: 'Beta' }]);
+  expect(r['recent']).toEqual([{ context: 'beta', key: 'beta', label: 'Beta' }]);
   expect(r['favorites']).toEqual([{ context: 'beta', label: 'Beta', key: 'beta' }]);
   expect(r['current']).toBe('context-beta');
   expect(r['ids']).toEqual(expect.arrayContaining(['recent:beta', 'favorites:beta']));

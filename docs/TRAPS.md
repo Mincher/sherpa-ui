@@ -18787,15 +18787,18 @@ View's own row when "Show full view hierarchy" (`/nav/hierarchy`) is on.
 
 **Recents and Favorites are the session's**: `/nav/recent` (five, newest
 first; Home never) and `/nav/favorites`, which it persists with a shape
-guard. A favourite is a VIEW, keyed `context:view`, the first View's by the
-Context alone. The ★ is a request
-(`view-favorite`); the outlet toggles the favourite and writes
+guard. Each is a VIEW, keyed `context:view`, the first View's by the Context
+alone, and named after the View ("All customers", not "Records"). With
+`/nav/views` false (TODO 399) both list each Context once, by its name, and the
+★ stars the Context. A stored row whose Context the app no longer has (a
+Settings page, from before Settings was an overlay) is dropped at boot. The ★ is
+a request (`view-favorite`); the outlet toggles the favourite and writes
 `data-favourite` back on the View chip's bar.
 
 A re-draw keeps the open Areas — the nav's own state (TODO 116) — and opens
 the one holding the page. The rail's pin is `/nav/pinned`; the settings button
 is an INTENT to open or leave Settings; an Area's row names the header. An
-app declares `nav: { pinned, favorites, recent, hierarchy }` in its session's
+app declares `nav: { pinned, favorites, recent, hierarchy, views }` in its session's
 defaults, and calls `outlet.refreshNav()` after it saves or deletes a View.
 
 - Site: `src/components/sherpa-outlet/outlet-nav.ts`

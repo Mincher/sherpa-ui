@@ -80,6 +80,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ⬜ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
+| ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1784,6 +1785,12 @@ another way to say "nothing":
   (unless the definition says otherwise). Off is the empty state.
 - **Single-select:** a "None" row at the top of the values.
 
+
+**Will, 2026-10-22, on the date half:** *"As a default date is selected then the
+filter chips value label should be populated with that date. Even if the date
+has no records associated with it the user should still be able to activate the
+filter chip. Empty States in the view and components will handle informing the
+user that there is nothing to show."*
 ### `[ ]` ⬜ 395 — FILTERS: Cancel becomes Discard, and Discard keeps the menu open
 
 Will, 2026-10-22: in a re-fetch menu (one with Apply — a remote source or a
@@ -1814,6 +1821,29 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[x]` ✅ 399 — BUG: Recents lists Settings pages and Context names; a switch for Views or Contexts
+
+Will, 2026-10-22: *"Settings views shouldn't appear in the Recents section of the
+Navigation. The Recents section also shows Navigation Spaces names instead of the
+literal View name (e.g. shows Records instead of All Customers.) Actually, we could
+add a toggle to settings to allow the user to decide if Spaces or Views go into
+the Recents & Favorites sections. It will be Views by default."*
+
+Found: Recents keeps one row per CONTEXT, named after it; a stored row whose
+Context the app no longer has (a Settings page, from before Settings was an
+overlay) is drawn anyway — no visit today adds one.
+
+**✅ Done 2026-10-22.** A Recent is a VIEW now, keyed as a favourite is, named
+after the View ("All customers"), and added each time a View is on screen (a
+pick too); Settings never adds one. At boot, a stored row whose Context the app
+no longer has is dropped. `/nav/views` (default true) picks Views or Contexts for
+both lists; false lists each Context once, by its name, and the ★ stars the
+Context. Demos' Settings › Application has the switch, "Name views in Recents
+and Favorites" (Demos calls a Context a page). Tests: Demos
+`reforged-nav-favorites-recents` (19, three new); `reforged-outlet` reads the new
+stored shape. **Will:** the word on the switch is "views" and "page" — say if
+you want "Spaces".
 
 ### `[ ]` ⬜ 398 — UX: the toolbar Switch leads the Group chip, and toggles grouping and sorting too
 

@@ -249,6 +249,8 @@ export class SherpaOutlet extends SherpaElement {
     this.#pickView(route['view'] ?? this.firstView(context));
     this.#nav?.syncCurrent();
     this.#nav?.syncStar();
+    // A View picked here is a Recent too. TODO 399
+    this.#nav?.viewed();
   };
 
   /** Make Settings match the URL: the page it names opens over the Context,
@@ -393,7 +395,7 @@ export class SherpaOutlet extends SherpaElement {
     bindSettings(this, options.session, { signal: leaving.signal });
     if (view) this.#pickView(view);
     this.emit('context-load', { context: name, view });
-    this.#nav?.loaded(name);
+    this.#nav?.loaded();
   }
 
   /** Tear the Context on screen down: its own teardown, its signal, its page. */

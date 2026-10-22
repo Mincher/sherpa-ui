@@ -10,7 +10,8 @@
  * - .syncCurrent — The lit row: the Context's, or its View's with the hierarchy on.
  * - .syncStar — The ★ says whether the View on screen is a favourite.
  * - .changed — A Context begins to load: its row lights, and a pinned rail stays pinned.
- * - .loaded — A Context has loaded: it enters Recents — Home never does.
+ * - .loaded — A Context has loaded: its View enters Recents — Home's never does.
+ * - .viewed — A View is on screen: it enters Recents, newest first.
  * - .settingsOpened — Settings opened over the Context: the rail shows the Settings rows.
  * - .settingsClosed — Settings closed: back to the Context's row, and the rail as it was.
  */
@@ -29,7 +30,7 @@ export interface NavHost {
 
 type Nav = HTMLElement & { populate(config: NavConfig): Promise<void> | void; state: NavState };
 
-/** A stored Favourite or Recent: one Context — a Favourite, one View of it. */
+/** A stored Favourite or Recent: one View of a Context, keyed `context` for its first. */
 interface Kept { context: string; label: string; key?: string; view?: string }
 
 const isKeptList = (value: unknown): value is Kept[] => Array.isArray(value)
@@ -53,7 +54,7 @@ export class OutletNav {
   readonly #config: NavConfig;
   /** The reader's starred Views. */
   readonly #favorites: SessionList<Kept>;
-  /** The last five Contexts, newest first. */
+  /** The last five Views, newest first. */
   readonly #recents: SessionList<Kept>;
   /** The Settings page the settings button opens: the last one shown. */
   #lastSettings: string | null;
@@ -73,16 +74,25 @@ export class OutletNav {
        A favourite is a VIEW, keyed `context:view`. */
     at.session.persist('/nav/favorites', { guard: isKeptList });
     at.session.persist('/nav/recent', { guard: isKeptList });
+    /* A row whose Context the app no longer has goes (a Settings page, from
+       before Settings was an overlay); a Recent kept by Context is its first
+       View's. Home never belongs in Recents. TODO 399 */
+    for (const pointer of ['/nav/favorites', '/nav/recent']) {
+      const kept = at.session.get(pointer);
+      if (!isKeptList(kept)) continue;
+      const live = kept.filter((k) => at.app.contexts[k.context] && (pointer === '/nav/favorites' || k.context !== at.app.default))
+        .map((k) => ({ ...k, key: k.key ?? k.context }));
+      if (JSON.stringify(live) !== JSON.stringify(kept)) at.session.set(pointer, live);
+    }
     this.#favorites = at.session.list<Kept>('/nav/favorites', { by: 'key' });
-    this.#recents = at.session.list<Kept>('/nav/recent', { by: 'context', max: 5, front: true });
-    // Home never belongs in Recents.
-    this.#recents.remove({ context: at.app.default, label: '' });
+    this.#recents = at.session.list<Kept>('/nav/recent', { by: 'key', max: 5, front: true });
     this.#config = this.#build();
 
     const stops = [
       this.#favorites.subscribe(() => void this.refresh()),
       this.#recents.subscribe(() => void this.refresh()),
       at.session.subscribe('/nav/hierarchy', () => { this.syncCurrent(); void this.refresh(); }),
+      at.session.subscribe('/nav/views', () => { this.syncStar(); void this.refresh(); }),
     ];
     at.signal.addEventListener('abort', () => { for (const stop of stops) stop(); }, { once: true });
     const { signal } = at;
@@ -125,11 +135,15 @@ export class OutletNav {
     this.#nav.dataset['currentId'] = row && view && this.#session.get('/nav/hierarchy') === true ? `${id}:${view}` : id;
   }
 
-  /** The ★ says whether the View on screen is a favourite. */
+  /** The ★ says whether the View on screen is a favourite — or, listing
+   *  Contexts, whether any View of its Context is. */
   syncStar(): void {
     const bar = this.#header?.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
     const context = this.#context();
-    bar?.toggleAttribute('data-favourite', this.#favorites.has({ context, label: '', key: this.#favKey(context, this.#view()) }));
+    const on = this.#byView()
+      ? this.#favorites.has({ context, label: '', key: this.#favKey(context, this.#view()) })
+      : this.#favorites.all.some((k) => k.context === context);
+    bar?.toggleAttribute('data-favourite', on);
   }
 
   /** A Context begins to load: its row lights, and a pinned rail stays pinned. */
@@ -138,10 +152,20 @@ export class OutletNav {
     if (!this.#host.settingsPage) this.#nav.state = this.#session.get('/nav/pinned') === true ? 'pinned' : 'collapsed';
   }
 
-  /** A Context has loaded: it enters Recents — Home never does — and the ★ follows. */
-  loaded(context: string): void {
-    if (context !== this.#app.default) this.#recents.add(this.#kept(context));
+  /** A Context has loaded: its View enters Recents — Home's never does — and the ★ follows. */
+  loaded(): void {
+    this.viewed();
     this.syncStar();
+  }
+
+  /** A View is on screen: it enters Recents, newest first, named after itself. TODO 399 */
+  viewed(): void {
+    const context = this.#context();
+    if (context === this.#app.default || this.#host.settingsPage) return;
+    const view = this.#view();
+    const key = this.#favKey(context, view);
+    const kept = { context, key, ...(key === context ? {} : { view: view! }) };
+    this.#recents.add({ ...kept, label: this.#viewLabel({ ...kept, label: this.#kept(context).label }) });
   }
 
   /** Settings opened over the Context: the rail shows the Settings rows. */
@@ -229,14 +253,26 @@ export class OutletNav {
     return this.#router ? new URL(this.#router.href({ context, view, settings: null })).search : `?context=${context}`;
   }
 
-  /** Stored rows as an Area's children. Its id is the Area's and its own, never the
+  /** Do Recents and Favorites name Views (the default), or Contexts? TODO 399 */
+  #byView(): boolean {
+    return this.#session.get('/nav/views') !== false;
+  }
+
+  /** Stored rows as an Area's children: each View, or — listing Contexts — each
+   *  Context once, under its own name. Its id is the Area's and its own, never the
    *  Context row's. No icon: TRAP T-nav-child-rows-carry-no-icon */
-  #children(area: string, all: readonly Kept[]): NavEntry[] {
-    const labels = all.map((kept) => (area === 'favorites' ? this.#viewLabel(kept) : kept.label));
+  #children(area: string, stored: readonly Kept[]): NavEntry[] {
+    if (!this.#byView()) {
+      const seen = new Set<string>();
+      return stored.filter((k) => !seen.has(k.context) && seen.add(k.context)).map((k) => (
+        { id: `${area}:${k.context}`, label: this.#kept(k.context).label, href: this.#href(k.context, null) }));
+    }
+    const all = stored;
+    const labels = all.map((kept) => this.#viewLabel(kept));
     return all.map((kept, i) => {
       const label = labels[i] ?? kept.label;
-      // Two favourites of one name: each says its Context, so they read apart.
-      const shared = area === 'favorites' && labels.indexOf(label) !== labels.lastIndexOf(label);
+      // Two of one name: each says its Context, so they read apart.
+      const shared = labels.indexOf(label) !== labels.lastIndexOf(label);
       return {
         id: `${area}:${kept.key ?? kept.context}`,
         label: shared ? `${this.#app.contexts[kept.context]?.label ?? kept.context} › ${label}` : label,
@@ -245,9 +281,9 @@ export class OutletNav {
     });
   }
 
-  /** A favourite is a VIEW, so it is named after the View — its first View's too
-   *  ("All customers", not "Records") — read when drawn, so one starred before
-   *  reads right. A View gone since keeps the name it was kept with. Will, TODO 357 */
+  /** A favourite or a Recent is a VIEW, so it is named after the View — its first
+   *  View's too ("All customers", not "Records") — read when drawn, so one kept
+   *  before reads right. A View gone since keeps the name it was kept with. Will, TODOs 357 and 399 */
   #viewLabel(kept: Kept): string {
     const view = kept.view ?? this.#host.firstView(kept.context);
     return (view && this.#host.viewsOf(kept.context)[view]?.label) || kept.label;
@@ -269,11 +305,18 @@ export class OutletNav {
     return view && view !== this.#host.firstView(context) ? `${context}:${view}` : context;
   }
 
-  /** The ★: star or unstar the View on screen. */
+  /** The ★: star or unstar the View on screen — or, listing Contexts, its Context. */
   #onStar = (): void => {
     const context = this.#context();
     const view = this.#view();
     const kept = this.#kept(context);
+    if (!this.#byView()) {
+      const mine = this.#favorites.all.filter((k) => k.context === context);
+      if (mine.length) for (const k of mine) this.#favorites.remove(k);
+      else this.#favorites.add({ ...kept, key: context });
+      this.syncStar();
+      return;
+    }
     const key = this.#favKey(context, view);
     this.#favorites.toggle(key === context ? { ...kept, key }
       : { ...kept, key, ...(view ? { view } : {}), label: `${kept.label} › ${this.#host.viewsOf(context)[view ?? '']?.label ?? view}` });
