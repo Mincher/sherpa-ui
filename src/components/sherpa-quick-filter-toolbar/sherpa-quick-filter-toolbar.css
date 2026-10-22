@@ -214,46 +214,72 @@
   pointer-events: auto;
 }
 
-/* ── PORTRAIT — the same bar as the panel's column: its heading and actions on
-   top, the Switch, Group and Sort on one row, then each field — a list field a
-   SECTION of value chips. Nothing folds. TODO 425 */
-.scope-head { display: none; }
+/* ── PORTRAIT — the same bar as the panel's column: its heading (and, leading,
+   the search), its actions, the Switch, Group and Sort on one row, then each
+   field — a list field a SECTION of value chips. Nothing folds. TODO 425 */
+.scope-head,
+.find { display: none; }
 :host([data-orientation="portrait"]) .bar {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    "head head"
-    "actions actions"
-    "switch organise"
-    "chips chips";
-  align-items: center;
-  gap: var(--sherpa-display-mode-space-sm, 12px) var(--sherpa-display-mode-space-xs, 8px);
+  flex-wrap: wrap;
+  row-gap: var(--sherpa-display-mode-space-sm, 12px);
 }
+:host([data-orientation="portrait"]) :is(.find, .chips) { flex: 1 1 100%; }
+/* The heading and its actions share a row, as a panel scope's header does. */
 :host([data-orientation="portrait"]) .scope-head {
-  grid-area: head;
+  order: -3;
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
+}
+:host([data-orientation="portrait"]:state(lead)) .find {
+  order: -1;
+  display: block;
 }
 :host([data-orientation="portrait"]) .view-zone { display: none; }
-:host([data-orientation="portrait"]) .switch-zone { grid-area: switch; }
-:host([data-orientation="portrait"]) .organise-zone { grid-area: organise; }
 /* The chips are BELOW Group and Sort: no divider after them. */
 :host([data-orientation="portrait"]) .organise-zone::after { display: none; }
 :host([data-orientation="portrait"]) .actions-zone {
-  grid-area: actions;
+  order: -2;
+  flex: 0 1 auto;
   justify-content: flex-end;
   flex-wrap: wrap;
-  margin-inline-start: 0;
 }
 :host([data-orientation="portrait"]) .chips {
-  grid-area: chips;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sherpa-display-mode-space-base, 16px);
   overflow: visible;
 }
+
+/* The heading is a button: it shuts the section, as a panel's scope does. */
+.scope-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font: inherit;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  cursor: pointer;
+}
+.scope-toggle:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+.scope-chevron { transition: transform 160ms ease; }
+:host(:state(shut)) .scope-chevron { transform: rotate(-90deg); }
+/* Shut: only its heading, and its actions — Apply still applies. */
+:host([data-orientation="portrait"]:state(shut)) :is(.find, .switch-zone, .organise-zone, .chips) { display: none; }
+/* Its matches, while shut and only while some filter answers. TODO 418 */
+.scope-tip { display: none; }
+:host([data-orientation="portrait"]:state(shut)) .scope-tip:has(.scope-results[data-count]) { display: inline-flex; }
+
+/* Found by the lead bar's search: what holds no match goes. */
+.chips > .chip[data-no-matches],
+.chips > .chip > .value[data-filtered-out] { display: none; }
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
    also carries are hidden here: AI, and Filters with its actions. Two of each

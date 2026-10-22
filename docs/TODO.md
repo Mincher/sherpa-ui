@@ -1921,6 +1921,13 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   waiting field's applied answer, an empty one where nothing is. **Not the
   panel's yet:** a customer switched OFF in the panel keeps its sites for when it
   comes back on; here it lets them go.
+- ✅ **Phase 4 — a section shuts, and finds (2026-10-22).** A portrait bar's
+  heading is a button: it shuts the section to its heading and its actions (on
+  the heading's row, as a panel scope's header), and shut, a badge says the rows
+  its filters match, its tip each filter's ("Status - 25 matches"). The FIRST
+  portrait bar among its siblings carries the one search (`search(text)` on
+  every portrait bar beside it): a field shows while its name, or one of its
+  values, holds the text.
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 

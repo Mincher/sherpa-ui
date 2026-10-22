@@ -8464,6 +8464,19 @@
             },
             {
               "kind": "method",
+              "name": "search",
+              "parameters": [
+                {
+                  "name": "text",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425"
+            },
+            {
+              "kind": "method",
               "name": "drawPresent",
               "parameters": [
                 {
@@ -8814,10 +8827,16 @@
               "name": "chips"
             },
             {
+              "name": "find"
+            },
+            {
               "name": "organise"
             },
             {
               "name": "scope-head"
+            },
+            {
+              "name": "scope-toggle"
             },
             {
               "name": "switch"

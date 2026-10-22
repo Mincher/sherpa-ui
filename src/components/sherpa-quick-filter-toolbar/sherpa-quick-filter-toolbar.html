@@ -100,8 +100,20 @@
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
-    <!-- A PORTRAIT bar's heading: its scope's name. TODO 425 -->
-    <div class="scope-head" part="scope-head"><span class="scope-title"></span></div>
+    <!-- A PORTRAIT bar's heading: its scope's name. It shuts and opens the
+         section, as a panel's scope does; shut, a badge says the rows its
+         filters match, and its tip each filter's. TODO 425 -->
+    <div class="scope-head" part="scope-head">
+      <button class="scope-toggle" part="scope-toggle" type="button" aria-expanded="true">
+        <i class="scope-chevron sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
+        <span class="scope-title"></span>
+      </button>
+      <sherpa-tooltip class="scope-tip"><sherpa-badge class="scope-results" role="img"></sherpa-badge></sherpa-tooltip>
+    </div>
+    <!-- The FIRST portrait bar's search, across every portrait bar beside it. TODO 425 -->
+    <sherpa-input-text class="find" part="find" data-icon-start="magnifying-glass" data-clearable
+                       placeholder="Search filters" autocomplete="off"
+                       aria-label="Search every filter"></sherpa-input-text>
     <div class="view-zone" part="view-zone">
       <slot name="view" data-accepts="control"></slot>
     </div>

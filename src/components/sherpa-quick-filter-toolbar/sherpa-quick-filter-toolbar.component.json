@@ -33,10 +33,54 @@
             "part": "scope-head",
             "children": [
               {
-                "el": "span",
-                "class": "scope-title"
+                "el": "button",
+                "class": "scope-toggle",
+                "part": "scope-toggle",
+                "attrs": {
+                  "type": "button",
+                  "aria-expanded": "true"
+                },
+                "children": [
+                  {
+                    "el": "i",
+                    "class": "scope-chevron sherpa-icon-box",
+                    "attrs": {
+                      "data-icon": "chevron-down",
+                      "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "span",
+                    "class": "scope-title"
+                  }
+                ]
+              },
+              {
+                "el": "sherpa-tooltip",
+                "class": "scope-tip",
+                "children": [
+                  {
+                    "el": "sherpa-badge",
+                    "class": "scope-results",
+                    "attrs": {
+                      "role": "img"
+                    }
+                  }
+                ]
               }
             ]
+          },
+          {
+            "el": "sherpa-input-text",
+            "class": "find",
+            "part": "find",
+            "attrs": {
+              "data-icon-start": "magnifying-glass",
+              "data-clearable": "",
+              "placeholder": "Search filters",
+              "autocomplete": "off",
+              "aria-label": "Search every filter"
+            }
           },
           {
             "el": "div",
@@ -735,6 +779,11 @@
       "$type": "state",
       "name": "not-custom-view",
       "selector": ":host(:not([data-custom-view]))"
+    },
+    {
+      "$type": "state",
+      "name": "focus-visible",
+      "selector": ".scope-toggle:focus-visible"
     }
   ],
   "capabilities": [
@@ -746,7 +795,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawApplied, drawValueResults, drawResults, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawApplied, drawValueResults, drawResults, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -950,7 +999,10 @@
     "act-divider.background": "{sherpa.theme-border-default-2}",
     "chips.gap": "{sherpa.display-mode-space-xs}",
     "actions-zone.gap": "{sherpa.display-mode-space-xs}",
-    "view-delete.color": "{sherpa.style-content-base}"
+    "view-delete.color": "{sherpa.style-content-base}",
+    "scope-toggle.gap": "{sherpa.display-mode-space-xs}",
+    "scope-toggle.color": "{sherpa.style-content-base}",
+    "scope-toggle.font-weight": "{sherpa.font-weight-medium}"
   },
   "$extensions": {
     "sherpa": {
@@ -985,6 +1037,12 @@
           "name": "drawResults",
           "args": "results: Readonly<Record<string, number>>",
           "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60."
+        },
+        {
+          "$type": "method",
+          "name": "search",
+          "args": "text: string",
+          "description": "search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425"
         },
         {
           "$type": "method",

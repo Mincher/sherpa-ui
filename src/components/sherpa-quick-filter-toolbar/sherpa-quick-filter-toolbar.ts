@@ -19,9 +19,10 @@ import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
-import { answerWhenDrawn, arrangeFrom, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
+import { countSaid } from '../../core/data/filter-face.js';
 import type { SortDirection } from '../../core/data/store.js';
 import { readingAnswered, type QueryRequest } from '../../core/data/query.js';
 import {
@@ -35,6 +36,8 @@ import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-switch/sherpa-switch.js';
+import '../sherpa-input-text/sherpa-input-text.js';
+import '../sherpa-badge/sherpa-badge.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
@@ -333,6 +336,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Left and Right move between the bar's controls. TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
     const bar = this.$('.bar');
     if (bar) toolbarKeys(bar);
+    // PORTRAIT: the heading shuts the section; the lead bar's search finds across its peers. TODO 425
+    this.$('.scope-toggle')?.addEventListener('click', this.#onScopeToggle);
+    for (const type of ['input', 'change']) this.$('.find')?.addEventListener(type, this.#onFind);
+    this.#syncLead();
     this.addEventListener('quick-filter-click', this.#onChipClick);
     // Delegated: every control fires the same button-click; data-act says which.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
@@ -630,6 +637,72 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
       chip.results = results[field] ?? results[id] ?? null;
+    }
+    this.#syncScopeBadge();
+  }
+
+  /** A SHUT portrait section's badge: the rows its filters leave — the last
+   *  answered one's results — and each one's in its tip, as a panel's shut
+   *  scope says them. TODO 425 */
+  #syncScopeBadge(): void {
+    const tip = this.$<HTMLElement>('.scope-tip');
+    const badge = this.$<HTMLElement>('.scope-results');
+    if (!tip || !badge) return;
+    const answered = this.#chips().flatMap((chip) => {
+      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const n = def ? this.#results[def.field ?? def.id] ?? this.#results[def.id] : undefined;
+      return def && n != null && !chip.hasAttribute('data-persistent') ? [{ label: def.label, n }] : [];
+    });
+    const said = drawCount(badge, answered.at(-1)?.n, ['match', 'matches']);
+    if (said == null) delete badge.dataset['count'];
+    else badge.dataset['count'] = said;
+    tip.dataset['text'] = answered.map((one) => `${one.label} - ${countSaid(one.n, ['match', 'matches']).label}`).join('\n');
+  }
+
+  /** The heading was pressed: the section shuts, or opens. */
+  #onScopeToggle = (): void => {
+    this.#shut = !this.#shut;
+    this.toggleState('shut', this.#shut);
+    this.$('.scope-toggle')?.setAttribute('aria-expanded', String(!this.#shut));
+    this.#syncScopeBadge();
+  };
+  /** A portrait section is shut. */
+  #shut = false;
+
+  /** The FIRST portrait bar among its siblings leads: it carries the one search. TODO 425 */
+  #syncLead(): void {
+    this.toggleState('lead', this.dataset['orientation'] === 'portrait' && this.#peers()[0] === this);
+  }
+
+  /** The portrait bars beside this one, itself among them, in the page's order. */
+  #peers(): SherpaQuickFilterToolbar[] {
+    return [...(this.parentElement?.children ?? [])].filter((el): el is SherpaQuickFilterToolbar =>
+      el.localName === this.localName && (el as HTMLElement).dataset['orientation'] === 'portrait');
+  }
+
+  /** The lead bar's search was typed in: every portrait bar beside it finds. */
+  #onFind = (): void => {
+    const text = this.$<HTMLInputElement>('.find')?.value ?? '';
+    for (const bar of this.#peers()) bar.search(text);
+  };
+
+  /**
+   * search(text) — a portrait bar shows only the fields whose name, or one of
+   * whose values, holds the text; empty shows all. The lead bar's search asks
+   * it of every portrait bar beside it. TODO 425
+   */
+  search(text: string): void {
+    const q = text.trim().toLowerCase();
+    for (const chip of this.#chips()) {
+      const name = (this.#filters.find((f) => f.id === chip.dataset['id'])?.label ?? chip.dataset['label'] ?? '').toLowerCase();
+      const named = !q || name.includes(q);
+      let any = named;
+      for (const one of chip.querySelectorAll<HTMLElement>(':scope > .value')) {
+        const hit = named || (one.dataset['label'] ?? '').toLowerCase().includes(q);
+        one.toggleAttribute('data-filtered-out', !hit);
+        any ||= hit;
+      }
+      chip.toggleAttribute('data-no-matches', !any);
     }
   }
 
@@ -1188,6 +1261,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-orientation') {
+      this.#syncLead();
       this.#syncLayout();
       this.#drawValueResults();
       this.#reflow();

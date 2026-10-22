@@ -107,6 +107,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `drawApplied(applied: Readonly<Record<string, FieldReading>>)` | drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED: a section marks only the values its draft changed. SILENT. TODO 425 |
 | `drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>)` | drawValueResults(results, scope) — each picked value's own count, by field then value: a section's value chips wear them. SILENT. TODO 425 |
 | `drawResults(results: Readonly<Record<string, number>>)` | drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60. |
+| `search(text: string)` | search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425 |
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |
 | `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
@@ -160,7 +161,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `organise`, `scope-head`, `switch`, `view-zone`
+`actions`, `bar`, `chips`, `find`, `organise`, `scope-head`, `scope-toggle`, `switch`, `view-zone`
 
 ## CSS custom properties it reads
 
@@ -177,6 +178,9 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.chips` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions-zone` | `gap` |
 | `--sherpa-style-content-base` | `.view-delete` | `color` |
+| `--sherpa-display-mode-space-xs` | `.scope-toggle` | `gap` |
+| `--sherpa-style-content-base` | `.scope-toggle` | `color` |
+| `--sherpa-font-weight-medium` | `.scope-toggle` | `font-weight` |
 
 ## populate()
 
