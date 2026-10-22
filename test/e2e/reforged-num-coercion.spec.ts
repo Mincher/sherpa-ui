@@ -140,7 +140,7 @@ test('pagination: an EMPTY data-page-size falls back to the default', async ({ p
   const size = await page.evaluate(
     () => (document.querySelector('sherpa-pagination') as HTMLElement & { pageSize: number }).pageSize,
   );
-  expect(size).toBe(25);
+  expect(size).toBe(100);
 });
 
 test('pagination: a REAL data-page-size is honoured', async ({ page }) => {

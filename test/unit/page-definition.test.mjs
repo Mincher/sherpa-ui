@@ -265,14 +265,20 @@ test('a carry-over field keeps its answer through a View change; any other reset
   assert.equal(source.query.applied.scopes.view.readings.customer, undefined);
 });
 
-test('the View\'s date is a RANGE; a component\'s date stays one day', async () => {
+test('a date is a RANGE only when its field says so, in the View too (TODO 397)', async () => {
   // TRAP T-a-range-is-bounded-by-the-data
-  const store = new ArrayStore([{ created: '2024-01-02', seen: '2024-02-03' }]);
+  const store = new ArrayStore([{ created: '2024-01-02', due: '2024-01-09', seen: '2024-02-03' }]);
   const source = await openSource({
     store: 'rows',
-    fields: { created: { label: 'Date', type: 'date' }, seen: { label: 'Last seen', type: 'date' } },
-    scopes: { view: { label: 'View filters', holds: ['created'] }, data: { label: 'Alerts', holds: ['seen'] } },
+    fields: {
+      created: { label: 'Date', type: 'date', range: true },
+      due: { label: 'Due', type: 'date' },
+      seen: { label: 'Last seen', type: 'date' },
+    },
+    scopes: { view: { label: 'View filters', holds: ['created', 'due'] }, data: { label: 'Alerts', holds: ['seen'] } },
   }, store);
-  assert.equal(source.describe('view').filters.find((f) => f.id === 'created').range, true);
+  const view = source.describe('view').filters;
+  assert.equal(view.find((f) => f.id === 'created').range, true);
+  assert.equal(view.find((f) => f.id === 'due').range, undefined);
   assert.equal(source.describe('data').filters.find((f) => f.id === 'seen').range, undefined);
 });

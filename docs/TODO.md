@@ -87,6 +87,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
+| ⬜ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
+| ⬜ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1852,6 +1854,46 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[ ]` ⬜ 407 — BUG: None in a Group or Sort menu does nothing
+
+Will, 2026-10-22: *"Selecting 'None' in the Group and Sort filters doesn't clear
+the value and toggle the chips off."* The None row came with 394 (a single list
+leads with None); an arranging chip reads its pick its own way and never heard it.
+
+### `[ ]` ⬜ 406 — FILTERS: the View scope waits for one Apply
+
+Will, 2026-10-22: *"Overarching the explicit rules for Customer, Region, and Date
+filters requiring and explicit 'Apply' action we should just enforce explicit
+apply actions on any filter elevated to the View Scope. This ensures we don't
+start churning through multiple data sources and stores until absolutely needed.
+Actually this also let's us unify all of their Apply buttons into a single Apply
+button to the left of the toggle filter panel/toolbar button. No need for per
+menu apply buttons. Just Remove and Discard in the menu footers. Put a divider
+between the Apply button and Toggle panel button in the Filter Toolbar."* Then:
+*"We will still need menu footer apply buttons for filters that fetch outside of
+the view scope as well as date filters."*
+
+**The plan:**
+1. **Data layer.** A scope WAITS when it is the View scope, or when its store is
+   remote and it narrows more than one component (today's rule). A waiting
+   scope's field writes go to the DRAFT; `commit()` sends them. Local or remote.
+   Today the draft is a separate Query only over a remote store; it becomes
+   separate whenever a scope can wait, and a write to a scope that does not wait
+   is copied to the applied Query at once. Group, Sort, search and the Switch
+   stay immediate (they arrange; TRAP `T-apply-and-discard-wait-for-a-change`).
+   `pending` and `dirty` are pushed for a waiting scope, local too.
+2. **Bar.** A View-scope bar draws one Apply (`data-act="apply"`) before its
+   `actions` slot — the provider's panel toggle sits first in that slot — and a
+   divider between them. Off until the scope is dirty; it sends `filter-apply`
+   for the scope.
+3. **Menus in the View scope.** No Apply: a pick goes into the draft at once
+   (the chip reads pending). The footer keeps Remove and Discard. Discard puts
+   back that filter's answer as LAST APPLIED (`discard({ field })`), not what
+   the menu opened with — Will: *"Discard buttons, in menus, will have to
+   discard changes since the last apply for that filter."* It stays open (395).
+4. **Outside the View scope**, nothing changes: a fetching filter (remote, or
+   `fetch: "server"`) and a date keep their own Apply (395, 405).
 
 ### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
 
