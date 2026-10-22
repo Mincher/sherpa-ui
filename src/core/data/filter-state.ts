@@ -117,6 +117,8 @@ export interface FilterState {
    * TRAP T-one-condition-system
    */
   rows: readonly FieldCondition[];
+  /** Nothing picked, on purpose: it matches no row. Will, TODO 403 · TRAP T-none-is-an-answer */
+  none?: boolean;
 }
 
 /**
@@ -197,6 +199,9 @@ export interface FieldReading {
   /** Picks KEPT and not in force: a tiered parent switched off keeps its
    *  children's picks for when it comes on. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
   off?: readonly unknown[];
+  /** Nothing picked, ON PURPOSE: no rows — a fetching list's Select All off.
+   *  Will, TODO 403 · TRAP T-none-is-an-answer */
+  none?: boolean;
 }
 
 /** One row of a multi-condition filter. */
@@ -366,11 +371,13 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const tops = parentOf ? values.filter((v) => !v.parent) : values;
   const chosen = tops.filter((v) => v.state === 'picked').length;
   const paths = parentOf ? values.filter((v) => v.parent && own(v)).length : 0;
-  const answered = takesText
+  // Nothing ticked on purpose: an answer, of no rows. TRAP T-none-is-an-answer
+  const none = !!reading.none && !takesText && !range && type !== 'date' && chosen + paths === 0;
+  const answered = none || (takesText
     ? text !== ''
     : range || !facts.values || type === 'date'
       ? chosen + paths > 0
-      : (chosen > 0 && chosen < tops.length) || paths > 0;
+      : (chosen > 0 && chosen < tops.length) || paths > 0);
 
   /* ROWS answer for themselves. A row is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows
@@ -406,6 +413,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
+    ...(none && mode !== 'advanced' ? { none: true } : {}),
   };
 }
 
@@ -419,7 +427,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
  */
 export function stateClause(state: FilterState): Filter | undefined {
   if (state.fieldState !== 'active') return undefined;
-  return chainRows(state);
+  return state.none ? [state.field, 'in', []] : chainRows(state);
 }
 
 /**
@@ -439,6 +447,7 @@ export function readingClause(facts: FieldFacts, reading: FieldReading): Filter 
  */
 export function savedReading(state: FilterState): FieldReading | undefined {
   if (!state.rows.length) return undefined;
+  if (state.none) return { picked: [], none: true };
   if (state.condition === 'advanced') return { conditions: state.rows.map((row) => ({ ...row })) };
   const picked = [...(state.rows[0]?.picked ?? [])];
   return state.range ? { picked, range: true } : { picked };

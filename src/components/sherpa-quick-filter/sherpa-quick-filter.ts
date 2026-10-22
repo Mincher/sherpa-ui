@@ -337,7 +337,16 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   get reading(): FieldReading | null {
     const menu = this.#fieldMenu();
-    return menu ? { ...menu.reading, ...(this.current ? {} : { suspended: true }) } : null;
+    if (!menu) return null;
+    const own = menu.reading;
+    // ON with nothing ticked, where a pick fetches: no rows. Will, TODO 403 · TRAP T-none-is-an-answer
+    const none = this.current && this.#fetches() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
+    return { ...own, ...(none ? { none: true } : {}), ...(this.current ? {} : { suspended: true }) };
+  }
+
+  /** Its picks FETCH: nothing ticked, while on, answers no rows. */
+  #fetches(): boolean {
+    return !!this.#fieldMenu()?.hasAttribute('data-fetches');
   }
   set reading(next: FieldReading) {
     const menu = this.#fieldMenu();
@@ -376,14 +385,15 @@ export class SherpaQuickFilter extends SherpaElement {
       this.refresh();
       return;
     }
-    this.#setPicks((next.picked ?? []).map(String), next.suspended);
+    this.#setPicks((next.picked ?? []).map(String), next.suspended, next.none);
   }
 
-  /** Picks, and OFF where there are none or the answer is suspended.
-   *  TRAP T-everything-on-is-no-filter */
-  #setPicks(picks: readonly string[], off = false): void {
+  /** Picks, and OFF where there are none or the answer is suspended — ON for none.
+   *  TRAP T-everything-on-is-no-filter · TRAP T-none-is-an-answer */
+  #setPicks(picks: readonly string[], off = false, none = false): void {
     this.values = picks;
-    if (!picks.length || off) this.current = false;
+    if (none && !off) this.current = true;
+    else if (!picks.length || off) this.current = false;
   }
 
   /**
@@ -419,8 +429,9 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Everything the chip derives from its picks. */
   #applySelection(values: string[]): void {
-    // A TYPING condition answers with text, so the chip is on without a tick.
-    this.current = values.length > 0 || this.#hasTypedAnswer();
+    // A TYPING condition answers with text, so the chip is on without a tick; a
+    // chip whose picks fetch STAYS on as its last goes — none. TRAP T-none-is-an-answer
+    this.current = values.length > 0 || this.#hasTypedAnswer() || (this.current && this.#fetches());
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
     this.#syncBadge();
@@ -647,7 +658,8 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced') {
+    // ON at none is answered: it toggles too. TRAP T-none-is-an-answer
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#fetches())) {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -773,7 +785,7 @@ export class SherpaQuickFilter extends SherpaElement {
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
     const empty = !!menu && this.current && !advanced
-      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
+      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !this.#fetches();
 
     this.set('data-filters-nothing', empty);
     /* AND CHECK AGAIN. `data-filters-nothing` is the AMBER warning, and a rebuilt menu

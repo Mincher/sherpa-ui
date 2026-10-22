@@ -2119,6 +2119,10 @@
           "description": "names the list that was replaced — the breadcrumb's text"
         },
         {
+          "name": "data-fetches",
+          "valueSet": "v"
+        },
+        {
           "name": "data-has-value",
           "description": "written BY the menu: the typed value is not empty, so the input's Clear button shows."
         },

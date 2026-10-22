@@ -96,6 +96,8 @@ interface Held {
    *  drawn, by value key — and each parent's children. Its chips are its
    *  parents. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
   tiers?: { picks: Set<string>; off: Set<string>; kids: Map<string, string[]> };
+  /** Its last value let go by the reader, where picks fetch: no rows. TRAP T-none-is-an-answer */
+  none?: boolean;
 }
 
 /** One filter a scope draws, in its order: a field, or Group or Sort. */
@@ -345,7 +347,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  Advanced's, and the menu says which is in force. TRAP T-both-answers-are-kept */
   #readingOf(held: Held): FieldReading {
     const tiers = held.tiers;
-    if (tiers) return { picked: [...tiers.picks], ...(tiers.off.size ? { off: [...tiers.off] } : {}) };
+    if (tiers) return { picked: [...tiers.picks], ...(tiers.off.size ? { off: [...tiers.off] } : {}), ...(held.none && !tiers.picks.size ? { none: true } : {}) };
     const menu = held.menu;
     // A NUMBER body answers for itself, as it does on a bar chip.
     if (menu?.dataset['body'] === 'number') return menu.reading;
@@ -357,7 +359,8 @@ export class SherpaFilterPanel extends SherpaElement {
     const one = this.#answerChip(held);
     if (one) return one.reading ?? menu?.reading ?? {};
     const picked = this.#picked(held);
-    return menu ? { ...menu.reading, picked } : { picked };
+    const none = held.none && !picked.length ? { none: true } : {};
+    return menu ? { ...menu.reading, picked, ...none } : { picked, ...none };
   }
 
   /** Rows that still MIRROR the chips follow them. TRAP T-both-answers-are-kept */
@@ -407,6 +410,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if (held.tiers) {
         held.tiers.picks = new Set((reading.picked ?? []).map(valueKey));
         held.tiers.off = new Set((given.off ?? []).map(valueKey));
+        held.none = !!reading.none && !held.tiers.picks.size;
         this.#paintTiers(held);
         this.#syncAnswered(held);
         return;
@@ -425,6 +429,7 @@ export class SherpaFilterPanel extends SherpaElement {
         // BOTH answers: the chips, then the rows — and the mode only where the
         // reading names one or only rows answer. TRAP T-both-answers-are-kept
         const want = new Set((reading.picked ?? []).map(valueKey));
+        held.none = !!reading.none && !want.size;
         for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
           if (this.#heldOfChip(one) === held) {
             one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
@@ -503,6 +508,11 @@ export class SherpaFilterPanel extends SherpaElement {
    *  keep Discard alone. Will, TODO 406 */
   #waits(held: Held): boolean {
     return held.scope === VIEW && this.hasAttribute('data-waits');
+  }
+
+  /** Its picks FETCH — its scope waits, or its source is remote. Will, TODO 403 */
+  #fetches(held: Held): boolean {
+    return kindOf(held.def) === 'multi' && (this.#waits(held) || this.hasAttribute('data-remote'));
   }
 
   /** A waiting menu's Discard: its field's applied answer comes back. TODO 406 */
@@ -1011,7 +1021,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
     // TRAP T-an-inline-menu-is-the-same-menu — the same card, drawn in the flow.
     const waits = this.#waits(held);
-    const { menu, items } = menuFor(this.root, def, { inline, live: this.dataset['applyOn'] === 'input', waits });
+    const { menu, items } = menuFor(this.root, def, { inline, live: this.dataset['applyOn'] === 'input', waits, fetches: this.#fetches(held) });
     if (inline) {
       menu.removeAttribute('slot');
     } else {
@@ -1284,7 +1294,7 @@ export class SherpaFilterPanel extends SherpaElement {
         value: o.value, label: o.label ?? o.value, selected: picked.has(o.value),
       })),
     };
-    const { menu, items } = menuFor(this.root, def, { waits: this.#waits(held) });
+    const { menu, items } = menuFor(this.root, def, { waits: this.#waits(held), fetches: this.#fetches(held) });
     // A filter's menu in the panel COMMITS — but a View's waits for its header's Apply. TRAP T-a-chip-menu-in-the-panel-commits
     if (!this.#waits(held)) menu.setAttribute('data-commit', '');
     held.box.append(menu);
@@ -1481,6 +1491,7 @@ export class SherpaFilterPanel extends SherpaElement {
     // A PARENT is on or off, and keeps its children's picks. Will, TODO 369
     if (held.tiers) {
       this.#flipParent(held.tiers, one.dataset['value'] ?? '');
+      held.none = this.#fetches(held) && !held.tiers.picks.size;
       this.#paintTiers(held);
       this.#syncAnswered(held);
       this.#report(held);
@@ -1499,6 +1510,8 @@ export class SherpaFilterPanel extends SherpaElement {
         }
       }
     }
+    // The last value let go, where picks fetch: none — no rows. TRAP T-none-is-an-answer
+    held.none = this.#fetches(held) && !this.#picked(held).length;
     /* GROUP and SORT handle their own click and report it themselves — a
        filter waits for Apply, an arrangement does not, and which it is depends
        on WHAT THE CHIP IS, not on which container drew it.
@@ -1656,7 +1669,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const menu = held.menu;
     const advanced = held.box.hasAttribute('data-advanced')
       && (menu?.conditions?.length ?? 0) > 0;
-    held.box.toggleAttribute('data-answered', ticked || advanced);
+    held.box.toggleAttribute('data-answered', ticked || advanced || !!held.none);
     this.#syncFilters();
   }
 

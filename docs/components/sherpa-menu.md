@@ -41,6 +41,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-discard` | boolean |  | show Discard without Apply: its bar holds ONE Apply for the scope |
 | `data-drill` | boolean |  | the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked. |
 | `data-drill-from` | text |  | names the list that was replaced — the breadcrumb's text |
+| `data-fetches` | boolean |  |  |
 | `data-has-value` | text |  | written BY the menu: the typed value is not empty, so the input's Clear button shows. |
 | `data-heading` | text |  | optional heading (rendered upper-case at 10/16) |
 | `data-hide-unavailable` | boolean |  |  |

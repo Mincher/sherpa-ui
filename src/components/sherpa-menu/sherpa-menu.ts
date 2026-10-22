@@ -98,6 +98,8 @@ export class SherpaMenu extends SherpaElement {
     // A list of filters: no Select all. Read when the items stamp.
     'data-no-select-all': { type: 'boolean', kind: 'style' },
     'data-none': { type: 'boolean', kind: 'behaviour' },
+    // Its picks FETCH: its host reads nothing ticked, while on, as no rows. Will, TODO 403
+    'data-fetches': { type: 'boolean', kind: 'behaviour' },
     // Its rows are still being read. TODO 345
     'data-loading': { type: 'boolean', kind: 'visibility' },
     /* FILTER type only — which ops its condition dropdown offers, and which

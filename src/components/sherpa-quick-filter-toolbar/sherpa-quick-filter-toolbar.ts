@@ -898,6 +898,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const { menu, items } = menuFor(this.root, def, {
       bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
       live: this.dataset['applyOn'] === 'input', waits: this.hasAttribute('data-waits'),
+      fetches: this.hasAttribute('data-waits') || this.hasAttribute('data-remote'),
     });
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the

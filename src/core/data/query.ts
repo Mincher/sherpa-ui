@@ -11,15 +11,15 @@
  * Map:
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
+ * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
+ * - arranging — Does a scope arrange — a sort, a group, a suspended sort or a search?
+ * - arrangementOf — How a Query arranges its rows; none, an empty arrangement.
+ * - withoutArrangement — The Query with no arrangement: what filters, and nothing of the order.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
  * - QueryRequest — One reader act, as a control asks it of the Query; a list is one change.
  * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
  * - isSavedFilter — Is this a saved filter — a name, and a query definition?
  * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
- * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
- * - arranging — Does a scope arrange — a sort, a group, a suspended sort or a search?
- * - arrangementOf — How a Query arranges its rows; none, an empty arrangement.
- * - withoutArrangement — The Query with no arrangement: what filters, and nothing of the order.
  * - CompileFacts — What compiling needs to know that the Query does not say.
  * - withoutDropped — A reading without the picks set aside.
  * - Compiled — A Query as the source runs it: one shared filter, and each one-component filter.
@@ -241,7 +241,7 @@ export function heldInView(query: Query): ReadonlySet<string> {
 
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
-  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0,
+  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, none: 0,
 } satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -288,8 +288,8 @@ export function freezeReading(reading: FieldReading): FieldReading {
  *  rows has no picks and no text — but an EMPTY row does not: a cleared menu
  *  keeps one. TRAP T-many-conditions-are-one-reading */
 export function readingAnswered(reading: FieldReading): boolean {
-  // Picks kept OFF are an answer too: the Query keeps them. TODO 369
-  return (reading.picked ?? []).length > 0 || (reading.off ?? []).length > 0
+  // Picks kept OFF are an answer too: the Query keeps them (TODO 369); so is none (403).
+  return (reading.picked ?? []).length > 0 || (reading.off ?? []).length > 0 || reading.none === true
     || (reading.text ?? '').trim() !== ''
     || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
 }

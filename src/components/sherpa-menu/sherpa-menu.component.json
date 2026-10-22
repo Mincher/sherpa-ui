@@ -1125,6 +1125,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-fetches",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-has-value",
       "type": "string",
       "observed": false,

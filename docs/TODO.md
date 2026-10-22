@@ -84,7 +84,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
-| ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
+| 🚧 | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
 | ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
@@ -2214,7 +2214,7 @@ TRAP `T-pages-are-one-based-and-default-to-100` (was `…-to-25`). Tests:
 `reforged-pagination` (the default), Demos `items-per-page` and
 `records-grid-pages` (it sets 25 to get four pages), Gallery's data story.
 
-### `[ ]` ⬜ 403 — FILTERS: a fetching filter never asks for every row
+### `[ ]` 🚧 403 — FILTERS: a fetching filter never asks for every row
 
 Will, 2026-10-22: *"For the customer and region filters the Select All in the off
 state should select none and return no results. This is divergent from the
@@ -2253,6 +2253,16 @@ otherwise".
 - A fetching chip switched OFF asks for all rows, as any other does (my pick):
   off is the reader's choice, and Apply still gates it.
 - **Will, 2026-10-22: my picks — Q1 A, Q2 A.**
+
+**🚧 Part 1 done 2026-10-22 — none is an answer.** `{ picked: [], none: true }`
+compiles to `in []` (no rows), is answered, and is written `{ in: [] }`. A menu
+whose picks fetch (`data-fetches`: a multiple list in the View, or any on a
+remote source) keeps its chip ON as the last value goes — Select all off too —
+at 0, not amber; its body then toggles it, and off asks for every row. The
+panel sends none only for a field whose last value the reader let go (a tiered
+Customer too). Not yet: a grid heading's menu. TRAP `T-none-is-an-answer`.
+Tests: `none-is-an-answer` (unit), Demos `reforged-none-is-an-answer`.
+**Part 2 next:** the first value ON at open and at Reset; `"start": "all"`.
 
 ### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
 

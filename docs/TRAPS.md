@@ -14770,6 +14770,33 @@ that follows is what makes it read as unset.
 - Site: `src/core/data/source-counts.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 
+### T-none-is-an-answer
+
+Will, TODO 403: *"the Select All in the off state should select none and return
+no results … all Customer and Region data is fetched on page load which would be
+horrible in a real app."* So where a list's picks FETCH — a multiple list in the
+View (the scope that waits for one Apply), or any on a remote source — nothing
+ticked while the chip is ON answers NO rows. Everywhere else the old rule stands:
+nothing ticked is no filter (`T-everything-on-is-no-filter`).
+
+It is said on purpose, in the reading: `{ picked: [], none: true }`, compiled to
+`[field, 'in', []]`, and written plainly as `{ in: [] }`. Nothing else may mean
+it: a bar or panel reports every field at once, and an untouched field read as
+none would empty the page. So the CHIP adds `none` only while it is on, and the
+panel only for a field whose last value the READER let go (`held.none`).
+
+The chip stays on as its last value goes — Select all off too — wears 0, and
+is not the amber "filtering nothing". Its body then toggles it: OFF asks for
+every row, as any chip does (Will's pick). A pick outranks none; a date, a
+range and a typed answer have none.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/none-is-an-answer.test.mjs`
+
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the

@@ -69,6 +69,9 @@ export interface FilterMenuOptions {
   /** Its scope WAITS for one Apply, its bar's: a pick goes to the draft at once,
    *  and the footer keeps Discard alone. Will, TODO 406 */
   waits?: boolean | undefined;
+  /** Its picks FETCH — its scope waits, or its source is remote: a list with
+   *  nothing ticked, on, answers no rows. Will, TODO 403 · TRAP T-none-is-an-answer */
+  fetches?: boolean | undefined;
 }
 
 /**
@@ -116,6 +119,7 @@ export function menuFor(
   // A single LIST leads with None, its "nothing" — no Clear in any footer. Will, TODO 394
   if (one && !hasOwnBody(kind) && !def.persistent) menu.setAttribute('data-none', '');
   if (def.loading) menu.setAttribute('data-loading', '');
+  if (opts.fetches && kind === 'multi') menu.setAttribute('data-fetches', '');
 
   /* THE MENU OWNS ITS BODY. This says WHICH and hands over the numbers; the
      switch, the field, the slider and their rules are the menu's.
