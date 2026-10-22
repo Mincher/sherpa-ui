@@ -393,9 +393,12 @@ test('data-view-actions shows the View\'s own actions, and each fires its event'
     await press('.save');
     await press('.refresh');
     const menu = el.shadowRoot!.querySelector('.view-menu')!;
+    // Read OPEN: WebKit restyles a shut menu's rows only once it opens.
+    await press('.view-more');
     const deleteShown = () => getComputedStyle(menu.querySelector('.view-delete')!).display !== 'none';
     const plain = deleteShown();
     el.setAttribute('data-custom-view', '');
+    await window.__settled();
     const own = deleteShown();
     menu.querySelector<HTMLElement>('button[value="save-as"]')!.click();
     menu.querySelector<HTMLElement>('button[value="delete"]')!.click();

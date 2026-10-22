@@ -8,7 +8,8 @@
  * - ColumnHost — What the column asks of its toolbar.
  * - ToolbarColumn — A column's sections and its header.
  * - .wire — Hear the header's controls, once per stamp.
- * - .draw — One portrait toolbar per scope, in order, and the Filters menu for them all.
+ * - .draw — One portrait toolbar per scope, in order, and the Filters menu for them all — once it is open.
+ * - .opened — It opened: what it was told while shut is drawn now.
  * - .present — What the filters before a scope's fields leave: an offer with nothing left is spent.
  * - .saved — The reader's saved sets: the Filters menu's Saved section, and Save <name>.
  */
@@ -77,9 +78,12 @@ export class ToolbarColumn {
 
   /** One portrait toolbar per scope, in order; each asks for its own scope, as
    *  any toolbar does. One already here is not moved, so it keeps what the
-   *  reader did. A chart's PART adds nothing: no actions. TRAP T-a-chart-scope-is-its-legend-field */
+   *  reader did. A chart's PART adds nothing: no actions. TRAP T-a-chart-scope-is-its-legend-field
+   *  SHUT, it only keeps them: a section asks for data, and a page in toolbars
+   *  mode should not wait on a column no one sees. TRAP T-a-shut-column-draws-nothing */
   draw(scopes: readonly ScopeDescription[]): void {
     this.#scopes = [...scopes];
+    if (!this.#host.el.hasAttribute('open')) return;
     const list = this.#$('.sections');
     if (!list) return;
     const had = new Map([...list.children].map((bar) => [(bar as HTMLElement).dataset['scope'] ?? '', bar as Section]));
@@ -93,6 +97,11 @@ export class ToolbarColumn {
     }
     for (const gone of had.values()) gone.remove();
     this.#drawFilters();
+  }
+
+  /** It opened: what it was told while shut is drawn now. */
+  opened(): void {
+    if (this.#scopes.length && !this.#$('.sections')?.children.length) this.draw(this.#scopes);
   }
 
   /** What the filters before a scope's fields leave: the Filters menu is drawn

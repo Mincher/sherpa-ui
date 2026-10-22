@@ -9,15 +9,15 @@ import { test, expect, type Bar } from './harness';
 type Toolbar = Bar & { organise(d: unknown): void; populate(d: unknown): void };
 const TIER = [{ id: 'tier', label: 'Tier', options: [{ value: 'a', label: 'A' }] }];
 
-test('the View divider needs a chip after it; the action divider, an action before it', async ({ page }) => {
+test('the View divider needs a chip after it', async ({ page }) => {
   const r = await page.evaluate(async (TIER) => {
     const el = await window.__mount<Toolbar>('sherpa-quick-filter-toolbar', undefined,
       { 'data-type': 'view', style: 'inline-size: 1400px' });
     const sr = el.shadowRoot!;
     const shown = (sel: string, pseudo?: string) =>
       getComputedStyle(sr.querySelector(sel)!, pseudo).display !== 'none';
-    // The action divider — not Apply's, which shows only where a scope waits. TODO 406
-    const snap = () => ({ view: shown('.view-zone', '::after'), actions: shown('.act-divider:not(.apply-divider)') });
+    // The divider after Suggest filters went with the View's ★, Save and Refresh (TODO 425 G9).
+    const snap = () => ({ view: shown('.view-zone', '::after'), actions: !!sr.querySelector('.act-divider:not(.apply-divider)') });
     const view = document.createElement('span');
     view.slot = 'view';
     view.textContent = 'View';
@@ -28,14 +28,14 @@ test('the View divider needs a chip after it; the action divider, an action befo
     await window.__settled();
     const withChip = snap();
     /* PANEL MODE: the panel draws the chip instead, so nothing is after the
-       View zone — and it takes every action before the action divider. */
+       View zone. */
     el.setAttribute('data-panel-mode', '');
     await window.__settled();
     return { alone, withChip, panelMode: snap() };
   }, TIER);
 
-  expect(r.alone).toEqual({ view: false, actions: true });
-  expect(r.withChip).toEqual({ view: true, actions: true });
+  expect(r.alone).toEqual({ view: false, actions: false });
+  expect(r.withChip).toEqual({ view: true, actions: false });
   expect(r.panelMode).toEqual({ view: false, actions: false });
 });
 

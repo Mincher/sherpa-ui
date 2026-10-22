@@ -14868,6 +14868,19 @@ were (`joined`); it never steps back for panel mode and gets no mode button.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 
+### T-a-shut-column-draws-nothing
+
+**A toolbar column draws its sections only once it is OPEN** — TODO 425. The
+column is the panel area's occupant on every page, shut in toolbars mode. Each
+section is a toolbar that asks the provider for its scope, and drawing one asks
+for data — so a shut column cost a trip back to Records over a slow store
+about 700 ms (Firefox: 270 ms with the classic panel, 990 with the column;
+Demos `reforged-a-reopen-shows-at-once`). Shut, `drawScopes` only keeps the
+scopes; `open` draws them. The classic panel does the same (`#stale`).
+
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
 ### T-a-fetching-list-opens-on-its-first-value
 
 Will, TODO 403: a fetching filter (Customer, Region) *"should also have its first

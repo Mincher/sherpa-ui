@@ -1391,6 +1391,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onChange(name?: string): void {
+    // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
+    if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-orientation') {
       this.#syncLayout();
       this.#drawValueResults();
