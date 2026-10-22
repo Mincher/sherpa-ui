@@ -334,7 +334,7 @@ test('the bell reports the panel state the host gives it', async ({ page }) => {
     const read = (): Record<string, unknown> => ({
       open: bell.hasAttribute('data-open'),
       // `data-open` is what sherpa-button already draws its ring from.
-      ring: getComputedStyle(bell.shadowRoot!.querySelector('.trigger')!).boxShadow,
+      ring: ((cs) => (cs.outlineStyle === 'none' ? 'none' : cs.outlineColor))(getComputedStyle(bell.shadowRoot!.querySelector('.trigger')!)),
     });
 
     const closed = read();

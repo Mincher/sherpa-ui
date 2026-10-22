@@ -208,7 +208,7 @@
 }
 .nav:focus-visible,
 .expand:focus-visible { outline: none; }
-:host([data-type="promo"]:focus-within) { box-shadow: none; }
+:host([data-type="promo"]:focus-within) { outline: none; }
 :host(:focus-within) .promo {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);

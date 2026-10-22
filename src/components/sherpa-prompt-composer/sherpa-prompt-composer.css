@@ -24,7 +24,7 @@
     var(--sherpa-border-rounding-top-right, 4px)
     var(--sherpa-border-rounding-bottom-right, 4px)
     var(--sherpa-border-rounding-bottom-left, 4px);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: border-color 120ms ease;
 
   &:focus-within {
     border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */

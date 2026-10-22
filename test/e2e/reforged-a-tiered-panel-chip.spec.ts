@@ -106,7 +106,7 @@ test('a press turns a customer off and keeps its sites; the next brings them bac
   expect(on.on).toEqual(['Northwind']);
 });
 
-test('a pick made through the Filters menu keeps the sites already picked', async ({ page }) => {
+test('the Filters menu door to a tiered field opens its scope, and the sites picked stay', async ({ page }) => {
   await mount(page);
   await act(page, [['caret', 'Northwind'], ['tick', LONDON], ['apply']]);
   const r = await page.evaluate(async () => {
@@ -116,27 +116,19 @@ test('a pick made through the Filters menu keeps the sites already picked', asyn
       await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     };
     // A SHUT scope's filters are doors in the Filters menu.
-    (sr.querySelector('.scope[data-scope="view"]') as HTMLElement & { open: boolean }).open = false;
+    const scope = sr.querySelector('.scope[data-scope="view"]') as HTMLElement & { open: boolean };
+    scope.open = false;
     await settle();
     const btn = sr.querySelector<HTMLElement>('.filters-btn')!;
-    const menu = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: Element): void; shadowRoot: ShadowRoot };
+    const menu = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: Element): void; open: boolean };
     menu.show(btn);
     await settle();
-    // Drill into Customer: its rows are the tree, ticked from the picks.
+    // A tree is never drilled: its door opens the scope, where each customer is a chip. TODO 391
     menu.querySelector<HTMLElement>('.menu-row[data-value="view:customer"] .menu-row-drill')!.click();
     await settle();
-    await new Promise((res) => setTimeout(res, 50));
-    menu.querySelector<HTMLInputElement>('input[value="Contoso"]')!.click();
-    await settle();
-    menu.shadowRoot.querySelector<HTMLElement>('.apply')!.shadowRoot!.querySelector('button')!.click();
-    await settle();
-    const src = (window as unknown as { __src: { rows: { id: number }[]; query: { reading(s: string, f: string): { picked?: unknown[] } | undefined } } }).__src;
-    return {
-      rows: src.rows.map((x) => x.id).sort((a, b) => a - b),
-      picked: src.query.reading('view', 'customer')?.picked ?? null,
-    };
+    const src = (window as unknown as { __src: { query: { reading(s: string, f: string): { picked?: unknown[] } | undefined } } }).__src;
+    return { open: scope.open, menu: menu.open, drilled: menu.hasAttribute('data-drill'), picked: src.query.reading('view', 'customer')?.picked ?? null };
   });
-  expect(r.rows).toEqual([2, 3, 4]);
-  expect(r.picked).toEqual(expect.arrayContaining(['Contoso', { customer: 'Northwind', site: 'London' }]));
-  expect(r.picked).toHaveLength(2);
+  expect(r).toMatchObject({ open: true, menu: false, drilled: false });
+  expect(r.picked).toEqual([{ customer: 'Northwind', site: 'London' }]);
 });

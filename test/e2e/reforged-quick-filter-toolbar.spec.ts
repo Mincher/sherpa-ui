@@ -362,7 +362,8 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     };
     await open();
     const menu = sr.querySelector('.more-menu') as HTMLElement;
-    const rows = [...menu.children].map((n) => (n.tagName === 'HR' ? '---' : (n.textContent ?? '').trim()));
+    // The header's Hide toggle is the menu's own, not a row. TODO 376
+    const rows = [...menu.children].filter((n) => !n.slot).map((n) => (n.tagName === 'HR' ? '---' : (n.textContent ?? '').trim()));
     const heard: string[] = [];
     for (const ev of ['data-refresh', 'view-save']) el.addEventListener(ev, () => heard.push(ev));
     extra.addEventListener('button-click', () => heard.push('extra'));

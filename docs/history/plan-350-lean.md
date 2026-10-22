@@ -58,6 +58,23 @@ and Settings lifecycles; `this.set(a, x)` written as an if/else (8 sites);
 attributes that follow one host attribute, to `data-swap-*` (5 sites); the
 button's badge and icons, to `props` with `to`; the slider's 8 handlers.
 
+## Batch 4b — CSS (the fourth audit)
+
+About 1,100 lines, ~500 of them comments: re-declarations of what a shared class
+on the same element already sets (`.sherpa-border-edges`, `.sherpa-icon-box`);
+zeroes and `:host` font/colour the base sheet already gives; default values
+written out; fades and cursors that can never show (`display: none`,
+`pointer-events: none`); `@supports` guards around `color-mix()` used unguarded
+elsewhere; vendor prefixes no target needs; the grid's divider written 9 times;
+bar and line charts repeating their family sheet; `sherpa-group.css`
+re-implementing `sherpa-grouping.css` (~100 lines); checkbox, radio and switch
+repeating one label column; two unread `--sherpa-card-*` properties and an unused
+`.sherpa-inert`. Bugs it found: a focused promo nav item drew two rings after the
+focus-ring change (fixed); two "hide when empty" rules that can never fire
+(`.footer:not(:has(*))` in the nav, `.filters:not(:has(*))` in the app header —
+each always holds its slot); an active grid heading is tinted though its comment
+says unpainted (check on screen); five `var(--sherpa-shadow-*)` without a fallback.
+
 ## Batch 5 — comments
 
 About 400 lines of history, measurements and worked examples, cut to one line
@@ -68,7 +85,7 @@ comments, `data-source.ts` 29%, `shared-constants.ts` 67%.
 
 | # | Question | My pick |
 |---|---|---|
-| W1 | Remove public doors no one uses: `installTokens()`, `bindSource`'s `into`, `QueryContext.move()`, the `search-change` event | A — remove them |
+| W1 | Remove public doors no one uses: `installTokens()`, `bindSource`'s `into`, `QueryContext.move()`, the `search-change` event; and the allow-list's `isAllowed`, `unknownEntries`, `nextState`, kept on purpose for later work (TODO 10721) | A — remove the first four; keep the allow-list three for their planned callers |
 | W2 | The Style pins: every component carries all 39 components' state pins (~135 KB of the 190 KB shared sheet). Move each component's pins into its own CSS | A — move them |
 | W3 | The grid's span and count rules live in `tokens.css` (~220 lines). Move them into `sherpa-layout-grid.css`, one rule each with typed `attr()` | A — move them; the breakpoint bands keep their `@media` there |
 
