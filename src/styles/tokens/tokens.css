@@ -854,32 +854,13 @@
      column count also re-scales every named span, since a span is stated
      against the 12-column system. */
   :is(.sherpa-grid, sherpa-layout-grid)[data-col-count] {
+    --_col-count: clamp(1, attr(data-col-count type(<integer>), 12), 12);
     grid-template-columns: repeat(var(--_col-count), minmax(0, 1fr));
   }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='1'] { --_col-count: 1; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='2'] { --_col-count: 2; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='3'] { --_col-count: 3; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='4'] { --_col-count: 4; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='5'] { --_col-count: 5; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='6'] { --_col-count: 6; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='8'] { --_col-count: 8; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='10'] { --_col-count: 10; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-col-count='12'] { --_col-count: 12; }
+  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count] { --_row-count: clamp(1, attr(data-row-count type(<integer>), 1), 12); }
   :is(.sherpa-grid, sherpa-layout-grid)[data-row-count]:not([data-rows='fit']) {
     grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
   }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='1'] { --_row-count: 1; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='2'] { --_row-count: 2; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='3'] { --_row-count: 3; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='4'] { --_row-count: 4; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='5'] { --_row-count: 5; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='6'] { --_row-count: 6; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='7'] { --_row-count: 7; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='8'] { --_row-count: 8; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='9'] { --_row-count: 9; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='10'] { --_row-count: 10; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='11'] { --_row-count: 11; }
-  :is(.sherpa-grid, sherpa-layout-grid)[data-row-count='12'] { --_row-count: 12; }
 
   /* Column spans — a child says what it IS; the breakpoint blocks above turn
      that into a span. The table and the reasoning live with COL_SPANS in
@@ -889,18 +870,7 @@
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='1']  { grid-row: span 1; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='2']  { grid-row: span 2; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='3']  { grid-row: span 3; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='4']  { grid-row: span 4; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='5']  { grid-row: span 5; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='6']  { grid-row: span 6; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='7']  { grid-row: span 7; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='8']  { grid-row: span 8; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='9']  { grid-row: span 9; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='10'] { grid-row: span 10; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='11'] { grid-row: span 11; }
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span='12'] { grid-row: span 12; }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span] { grid-row: span clamp(1, attr(data-row-span type(<integer>), 1), 12); }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -1015,26 +985,8 @@
       & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-8]) { grid-column: 1 / -1; }
       & > [data-col-span='xsmall'] { grid-column: span 2; }
       & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span-8='1'] { grid-column: span 1; }
-      & > [data-col-span-8='2'] { grid-column: span 2; }
-      & > [data-col-span-8='3'] { grid-column: span 3; }
-      & > [data-col-span-8='4'] { grid-column: span 4; }
-      & > [data-col-span-8='5'] { grid-column: span 5; }
-      & > [data-col-span-8='6'] { grid-column: span 6; }
-      & > [data-col-span-8='7'] { grid-column: span 7; }
-      & > [data-col-span-8='8'] { grid-column: span 8; }
-      & > [data-row-span-8='1'] { grid-row: span 1; block-size: calc(1 * var(--sherpa-layout-grid-row-height, 88px) + 0 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='2'] { grid-row: span 2; block-size: calc(2 * var(--sherpa-layout-grid-row-height, 88px) + 1 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='3'] { grid-row: span 3; block-size: calc(3 * var(--sherpa-layout-grid-row-height, 88px) + 2 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='4'] { grid-row: span 4; block-size: calc(4 * var(--sherpa-layout-grid-row-height, 88px) + 3 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='5'] { grid-row: span 5; block-size: calc(5 * var(--sherpa-layout-grid-row-height, 88px) + 4 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='6'] { grid-row: span 6; block-size: calc(6 * var(--sherpa-layout-grid-row-height, 88px) + 5 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='7'] { grid-row: span 7; block-size: calc(7 * var(--sherpa-layout-grid-row-height, 88px) + 6 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='8'] { grid-row: span 8; block-size: calc(8 * var(--sherpa-layout-grid-row-height, 88px) + 7 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='9'] { grid-row: span 9; block-size: calc(9 * var(--sherpa-layout-grid-row-height, 88px) + 8 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='10'] { grid-row: span 10; block-size: calc(10 * var(--sherpa-layout-grid-row-height, 88px) + 9 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='11'] { grid-row: span 11; block-size: calc(11 * var(--sherpa-layout-grid-row-height, 88px) + 10 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='12'] { grid-row: span 12; block-size: calc(12 * var(--sherpa-layout-grid-row-height, 88px) + 11 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span-8] { grid-column: span clamp(1, attr(data-col-span-8 type(<integer>), 1), 8); }
+      & > [data-row-span-8] { --_rows: clamp(1, attr(data-row-span-8 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
@@ -1050,30 +1002,8 @@
       & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
       & > [data-col-span='xsmall'] { grid-column: span 3; }
       & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12='1'] { grid-column: span 1; }
-      & > [data-col-span-12='2'] { grid-column: span 2; }
-      & > [data-col-span-12='3'] { grid-column: span 3; }
-      & > [data-col-span-12='4'] { grid-column: span 4; }
-      & > [data-col-span-12='5'] { grid-column: span 5; }
-      & > [data-col-span-12='6'] { grid-column: span 6; }
-      & > [data-col-span-12='7'] { grid-column: span 7; }
-      & > [data-col-span-12='8'] { grid-column: span 8; }
-      & > [data-col-span-12='9'] { grid-column: span 9; }
-      & > [data-col-span-12='10'] { grid-column: span 10; }
-      & > [data-col-span-12='11'] { grid-column: span 11; }
-      & > [data-col-span-12='12'] { grid-column: span 12; }
-      & > [data-row-span-12='1'] { grid-row: span 1; block-size: calc(1 * var(--sherpa-layout-grid-row-height, 88px) + 0 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='2'] { grid-row: span 2; block-size: calc(2 * var(--sherpa-layout-grid-row-height, 88px) + 1 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='3'] { grid-row: span 3; block-size: calc(3 * var(--sherpa-layout-grid-row-height, 88px) + 2 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='4'] { grid-row: span 4; block-size: calc(4 * var(--sherpa-layout-grid-row-height, 88px) + 3 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='5'] { grid-row: span 5; block-size: calc(5 * var(--sherpa-layout-grid-row-height, 88px) + 4 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='6'] { grid-row: span 6; block-size: calc(6 * var(--sherpa-layout-grid-row-height, 88px) + 5 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='7'] { grid-row: span 7; block-size: calc(7 * var(--sherpa-layout-grid-row-height, 88px) + 6 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='8'] { grid-row: span 8; block-size: calc(8 * var(--sherpa-layout-grid-row-height, 88px) + 7 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='9'] { grid-row: span 9; block-size: calc(9 * var(--sherpa-layout-grid-row-height, 88px) + 8 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='10'] { grid-row: span 10; block-size: calc(10 * var(--sherpa-layout-grid-row-height, 88px) + 9 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='11'] { grid-row: span 11; block-size: calc(11 * var(--sherpa-layout-grid-row-height, 88px) + 10 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='12'] { grid-row: span 12; block-size: calc(12 * var(--sherpa-layout-grid-row-height, 88px) + 11 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
@@ -1089,30 +1019,8 @@
       & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
       & > [data-col-span='xsmall'] { grid-column: span 3; }
       & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12='1'] { grid-column: span 1; }
-      & > [data-col-span-12='2'] { grid-column: span 2; }
-      & > [data-col-span-12='3'] { grid-column: span 3; }
-      & > [data-col-span-12='4'] { grid-column: span 4; }
-      & > [data-col-span-12='5'] { grid-column: span 5; }
-      & > [data-col-span-12='6'] { grid-column: span 6; }
-      & > [data-col-span-12='7'] { grid-column: span 7; }
-      & > [data-col-span-12='8'] { grid-column: span 8; }
-      & > [data-col-span-12='9'] { grid-column: span 9; }
-      & > [data-col-span-12='10'] { grid-column: span 10; }
-      & > [data-col-span-12='11'] { grid-column: span 11; }
-      & > [data-col-span-12='12'] { grid-column: span 12; }
-      & > [data-row-span-12='1'] { grid-row: span 1; block-size: calc(1 * var(--sherpa-layout-grid-row-height, 88px) + 0 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='2'] { grid-row: span 2; block-size: calc(2 * var(--sherpa-layout-grid-row-height, 88px) + 1 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='3'] { grid-row: span 3; block-size: calc(3 * var(--sherpa-layout-grid-row-height, 88px) + 2 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='4'] { grid-row: span 4; block-size: calc(4 * var(--sherpa-layout-grid-row-height, 88px) + 3 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='5'] { grid-row: span 5; block-size: calc(5 * var(--sherpa-layout-grid-row-height, 88px) + 4 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='6'] { grid-row: span 6; block-size: calc(6 * var(--sherpa-layout-grid-row-height, 88px) + 5 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='7'] { grid-row: span 7; block-size: calc(7 * var(--sherpa-layout-grid-row-height, 88px) + 6 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='8'] { grid-row: span 8; block-size: calc(8 * var(--sherpa-layout-grid-row-height, 88px) + 7 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='9'] { grid-row: span 9; block-size: calc(9 * var(--sherpa-layout-grid-row-height, 88px) + 8 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='10'] { grid-row: span 10; block-size: calc(10 * var(--sherpa-layout-grid-row-height, 88px) + 9 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='11'] { grid-row: span 11; block-size: calc(11 * var(--sherpa-layout-grid-row-height, 88px) + 10 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='12'] { grid-row: span 12; block-size: calc(12 * var(--sherpa-layout-grid-row-height, 88px) + 11 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
@@ -1139,26 +1047,8 @@
       & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-8]) { grid-column: 1 / -1; }
       & > [data-col-span='xsmall'] { grid-column: span 2; }
       & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span-8='1'] { grid-column: span 1; }
-      & > [data-col-span-8='2'] { grid-column: span 2; }
-      & > [data-col-span-8='3'] { grid-column: span 3; }
-      & > [data-col-span-8='4'] { grid-column: span 4; }
-      & > [data-col-span-8='5'] { grid-column: span 5; }
-      & > [data-col-span-8='6'] { grid-column: span 6; }
-      & > [data-col-span-8='7'] { grid-column: span 7; }
-      & > [data-col-span-8='8'] { grid-column: span 8; }
-      & > [data-row-span-8='1'] { grid-row: span 1; block-size: calc(1 * var(--sherpa-layout-grid-row-height, 88px) + 0 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='2'] { grid-row: span 2; block-size: calc(2 * var(--sherpa-layout-grid-row-height, 88px) + 1 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='3'] { grid-row: span 3; block-size: calc(3 * var(--sherpa-layout-grid-row-height, 88px) + 2 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='4'] { grid-row: span 4; block-size: calc(4 * var(--sherpa-layout-grid-row-height, 88px) + 3 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='5'] { grid-row: span 5; block-size: calc(5 * var(--sherpa-layout-grid-row-height, 88px) + 4 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='6'] { grid-row: span 6; block-size: calc(6 * var(--sherpa-layout-grid-row-height, 88px) + 5 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='7'] { grid-row: span 7; block-size: calc(7 * var(--sherpa-layout-grid-row-height, 88px) + 6 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='8'] { grid-row: span 8; block-size: calc(8 * var(--sherpa-layout-grid-row-height, 88px) + 7 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='9'] { grid-row: span 9; block-size: calc(9 * var(--sherpa-layout-grid-row-height, 88px) + 8 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='10'] { grid-row: span 10; block-size: calc(10 * var(--sherpa-layout-grid-row-height, 88px) + 9 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='11'] { grid-row: span 11; block-size: calc(11 * var(--sherpa-layout-grid-row-height, 88px) + 10 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-8='12'] { grid-row: span 12; block-size: calc(12 * var(--sherpa-layout-grid-row-height, 88px) + 11 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span-8] { grid-column: span clamp(1, attr(data-col-span-8 type(<integer>), 1), 8); }
+      & > [data-row-span-8] { --_rows: clamp(1, attr(data-row-span-8 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
@@ -1174,30 +1064,8 @@
       & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
       & > [data-col-span='xsmall'] { grid-column: span 3; }
       & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12='1'] { grid-column: span 1; }
-      & > [data-col-span-12='2'] { grid-column: span 2; }
-      & > [data-col-span-12='3'] { grid-column: span 3; }
-      & > [data-col-span-12='4'] { grid-column: span 4; }
-      & > [data-col-span-12='5'] { grid-column: span 5; }
-      & > [data-col-span-12='6'] { grid-column: span 6; }
-      & > [data-col-span-12='7'] { grid-column: span 7; }
-      & > [data-col-span-12='8'] { grid-column: span 8; }
-      & > [data-col-span-12='9'] { grid-column: span 9; }
-      & > [data-col-span-12='10'] { grid-column: span 10; }
-      & > [data-col-span-12='11'] { grid-column: span 11; }
-      & > [data-col-span-12='12'] { grid-column: span 12; }
-      & > [data-row-span-12='1'] { grid-row: span 1; block-size: calc(1 * var(--sherpa-layout-grid-row-height, 88px) + 0 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='2'] { grid-row: span 2; block-size: calc(2 * var(--sherpa-layout-grid-row-height, 88px) + 1 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='3'] { grid-row: span 3; block-size: calc(3 * var(--sherpa-layout-grid-row-height, 88px) + 2 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='4'] { grid-row: span 4; block-size: calc(4 * var(--sherpa-layout-grid-row-height, 88px) + 3 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='5'] { grid-row: span 5; block-size: calc(5 * var(--sherpa-layout-grid-row-height, 88px) + 4 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='6'] { grid-row: span 6; block-size: calc(6 * var(--sherpa-layout-grid-row-height, 88px) + 5 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='7'] { grid-row: span 7; block-size: calc(7 * var(--sherpa-layout-grid-row-height, 88px) + 6 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='8'] { grid-row: span 8; block-size: calc(8 * var(--sherpa-layout-grid-row-height, 88px) + 7 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='9'] { grid-row: span 9; block-size: calc(9 * var(--sherpa-layout-grid-row-height, 88px) + 8 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='10'] { grid-row: span 10; block-size: calc(10 * var(--sherpa-layout-grid-row-height, 88px) + 9 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='11'] { grid-row: span 11; block-size: calc(11 * var(--sherpa-layout-grid-row-height, 88px) + 10 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='12'] { grid-row: span 12; block-size: calc(12 * var(--sherpa-layout-grid-row-height, 88px) + 11 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
@@ -1213,30 +1081,8 @@
       & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
       & > [data-col-span='xsmall'] { grid-column: span 3; }
       & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12='1'] { grid-column: span 1; }
-      & > [data-col-span-12='2'] { grid-column: span 2; }
-      & > [data-col-span-12='3'] { grid-column: span 3; }
-      & > [data-col-span-12='4'] { grid-column: span 4; }
-      & > [data-col-span-12='5'] { grid-column: span 5; }
-      & > [data-col-span-12='6'] { grid-column: span 6; }
-      & > [data-col-span-12='7'] { grid-column: span 7; }
-      & > [data-col-span-12='8'] { grid-column: span 8; }
-      & > [data-col-span-12='9'] { grid-column: span 9; }
-      & > [data-col-span-12='10'] { grid-column: span 10; }
-      & > [data-col-span-12='11'] { grid-column: span 11; }
-      & > [data-col-span-12='12'] { grid-column: span 12; }
-      & > [data-row-span-12='1'] { grid-row: span 1; block-size: calc(1 * var(--sherpa-layout-grid-row-height, 88px) + 0 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='2'] { grid-row: span 2; block-size: calc(2 * var(--sherpa-layout-grid-row-height, 88px) + 1 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='3'] { grid-row: span 3; block-size: calc(3 * var(--sherpa-layout-grid-row-height, 88px) + 2 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='4'] { grid-row: span 4; block-size: calc(4 * var(--sherpa-layout-grid-row-height, 88px) + 3 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='5'] { grid-row: span 5; block-size: calc(5 * var(--sherpa-layout-grid-row-height, 88px) + 4 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='6'] { grid-row: span 6; block-size: calc(6 * var(--sherpa-layout-grid-row-height, 88px) + 5 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='7'] { grid-row: span 7; block-size: calc(7 * var(--sherpa-layout-grid-row-height, 88px) + 6 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='8'] { grid-row: span 8; block-size: calc(8 * var(--sherpa-layout-grid-row-height, 88px) + 7 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='9'] { grid-row: span 9; block-size: calc(9 * var(--sherpa-layout-grid-row-height, 88px) + 8 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='10'] { grid-row: span 10; block-size: calc(10 * var(--sherpa-layout-grid-row-height, 88px) + 9 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='11'] { grid-row: span 11; block-size: calc(11 * var(--sherpa-layout-grid-row-height, 88px) + 10 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
-      & > [data-row-span-12='12'] { grid-row: span 12; block-size: calc(12 * var(--sherpa-layout-grid-row-height, 88px) + 11 * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 

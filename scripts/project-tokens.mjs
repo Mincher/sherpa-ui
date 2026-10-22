@@ -1514,14 +1514,12 @@ const colBlock = (mode, cols, min, max, kind = 'media') => {
       + ' { grid-column: 1 / -1; }');
   }
   if (counted) {
-    // AFTER the names, at the same weight, so a count wins.
-    for (let n = 1; n <= cols; n++) {
-      rules.push(`      & > [data-col-span-${cols}='${n}'] { grid-column: span ${n}; }`);
-    }
+    /* AFTER the names, at the same weight, so a count wins. ONE rule each: the
+       attribute's own number, read by typed attr(). Will, 2026-10-22 */
+    rules.push(`      & > [data-col-span-${cols}] { grid-column: span clamp(1, attr(data-col-span-${cols} type(<integer>), 1), ${cols}); }`);
     // Sized in EVERY row mode: a counted row is a real height.
-    for (let n = 1; n <= 12; n++) {
-      rules.push(`      & > [data-row-span-${cols}='${n}'] { grid-row: span ${n}; block-size: calc(${n} * var(--sherpa-layout-grid-row-height, 88px) + ${n - 1} * var(--sherpa-layout-grid-gap-vertical, 16px)); }`);
-    }
+    rules.push(`      & > [data-row-span-${cols}] { --_rows: clamp(1, attr(data-row-span-${cols} type(<integer>), 1), 12); grid-row: span var(--_rows); `
+      + 'block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }');
   }
   if (!rules.length) return null;
   return '  ' + at(kind, ranged(kind, min, max)) + ' {\n    ' + GRID[kind] + ' {\n'
@@ -1679,21 +1677,13 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
      column count also re-scales every named span, since a span is stated
      against the 12-column system. */
   ${GRID_SEL}[data-col-count] {
+    --_col-count: clamp(1, attr(data-col-count type(<integer>), 12), 12);
     grid-template-columns: repeat(var(--_col-count), minmax(0, 1fr));
   }
-  ${GRID_SEL}[data-col-count='1'] { --_col-count: 1; }
-  ${GRID_SEL}[data-col-count='2'] { --_col-count: 2; }
-  ${GRID_SEL}[data-col-count='3'] { --_col-count: 3; }
-  ${GRID_SEL}[data-col-count='4'] { --_col-count: 4; }
-  ${GRID_SEL}[data-col-count='5'] { --_col-count: 5; }
-  ${GRID_SEL}[data-col-count='6'] { --_col-count: 6; }
-  ${GRID_SEL}[data-col-count='8'] { --_col-count: 8; }
-  ${GRID_SEL}[data-col-count='10'] { --_col-count: 10; }
-  ${GRID_SEL}[data-col-count='12'] { --_col-count: 12; }
+  ${GRID_SEL}[data-row-count] { --_row-count: clamp(1, attr(data-row-count type(<integer>), 1), 12); }
   ${GRID_SEL}[data-row-count]:not([data-rows='fit']) {
     grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
   }
-${Array.from({ length: 12 }, (_, i) => `  ${GRID_SEL}[data-row-count='${i + 1}'] { --_row-count: ${i + 1}; }`).join('\n')}
 
   /* Column spans — a child says what it IS; the breakpoint blocks above turn
      that into a span. The table and the reasoning live with COL_SPANS in
@@ -1703,7 +1693,7 @@ ${Array.from({ length: 12 }, (_, i) => `  ${GRID_SEL}[data-row-count='${i + 1}']
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-${Array.from({ length: 12 }, (_, i) => `  ${GRID_SEL} > [data-row-span='${i + 1}']${i < 9 ? ' ' : ''} { grid-row: span ${i + 1}; }`).join('\n')}
+  ${GRID_SEL} > [data-row-span] { grid-row: span clamp(1, attr(data-row-span type(<integer>), 1), 12); }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
