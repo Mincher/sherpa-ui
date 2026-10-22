@@ -830,7 +830,7 @@ export class DataSource extends EventTarget {
     const { suspended: _off, ...on } = answerOf(reading);
     const answer = JSON.stringify(on);
     const got = this.#fetchedKeys.get(field);
-    if (got?.answer === answer) return [key, 'in', [...got.keys]];
+    if (got?.answer === answer) return got.clause;
     if (this.#fetching.get(field) !== answer) void this.#fetchKeys(field, on, answer);
     return undefined;
   };
@@ -844,7 +844,7 @@ export class DataSource extends EventTarget {
       const projected = this.store.projects ? { fields: [this.store.key] } : {};
       const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected });
       if (this.#fetching.get(field) !== answer || this.#closed) return;
-      this.#fetchedKeys.set(field, { answer, keys: rows.map((row) => readField(row, this.store.key!)) });
+      this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
     } catch (error) {
       report({
         code: 'fetch-field-failed',
@@ -858,8 +858,8 @@ export class DataSource extends EventTarget {
     this.#recompose();
   }
 
-  /** Each server field's last answer and the keys it matched. */
-  #fetchedKeys = new Map<string, { answer: string; keys: readonly unknown[] }>();
+  /** Each server field's last answer, and its clause: the keys it matched. */
+  #fetchedKeys = new Map<string, { answer: string; clause: Filter }>();
   /** Each server field's answer being asked now. */
   #fetching = new Map<string, string>();
 
@@ -1757,7 +1757,7 @@ export class DataSource extends EventTarget {
       sortField: shown?.field,
       sortDirection: first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined),
       groupField: group ?? undefined,
-      filterFields: filterFields(filter),
+      filterFields: filterFields(filter, (c) => [...this.#fetchedKeys].find(([, got]) => got.clause === c)?.[0]),
       /* …and WHAT it matched on, so a component can point at the hit, whichever
          control set the filter. TRAP T-a-needle-comes-from-either-direction */
       needles: [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n'),

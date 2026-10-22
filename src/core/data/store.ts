@@ -22,8 +22,8 @@
  * - FilterGroup — ['and' | 'or', ...filters] — conditions joined
  * - Filter — a clause or a group; the one filter shape the whole layer speaks
  * - LoadOptions — What a caller asks a store for.
- * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
  * - StoreChanges — What moved in a store since a mark, and the mark now.
+ * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
  * - Store — where records come from; the same interface whatever backs it
  * - RowOrder — The order a whole read returns rows in, asked no sort.
  * - StoreChangeDetail — Fired after an insert, update or remove.
@@ -31,7 +31,7 @@
  * - distinctOf — Each field's values among rows, one per value key: the last raw, in first-seen order.
  * - compareValues — Compare two field values.
  * - sortRows — Sort by specs, first wins and later ones break ties.
- * - filterFields — Every FIELD a filter touches, first-appearance order.
+ * - filterFields — Every FIELD a filter touches, first-appearance order; a clause that stands for a field is named by it.
  * - filterNeedles — every substring clause in a filter, so a view can mark what matched
  * - matchesFilter — Does one row satisfy one filter?
  * - sameKey — Do two KEYS name the same row?
@@ -353,17 +353,17 @@ export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[
 
 /* ── Filtering ─────────────────────────────────────────────────────────── */
 
-/** Every FIELD a filter touches, first-appearance order. TRAP T-filter-fields-flattens-the-tree */
-export function filterFields(filter: Filter | undefined): string[] {
+/** Every FIELD a filter touches, first-appearance order; a clause `standsFor` a field is named by it. TRAP T-filter-fields-flattens-the-tree */
+export function filterFields(filter: Filter | undefined, standsFor?: (clause: Filter) => string | undefined): string[] {
   const out: string[] = [];
   const walk = (f: Filter | undefined): void => {
     if (!f) return;
-    const [head, ...rest] = f;
-    if (head === 'and' || head === 'or') {
+    const [head, ...rest] = f, named = standsFor?.(f);
+    if (!named && (head === 'and' || head === 'or')) {
       (rest as Filter[]).forEach(walk);
       return;
     }
-    const [field] = f as FilterClause;
+    const field = named ?? (f as FilterClause)[0];
     // A range is two clauses on one field — list it once.
     if (typeof field === 'string' && !out.includes(field)) out.push(field);
   };

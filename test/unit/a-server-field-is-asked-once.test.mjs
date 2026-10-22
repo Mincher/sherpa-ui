@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
 
 const ROWS = Array.from({ length: 10 }, (_, i) => ({ id: i + 1, seats: (i + 1) * 10 }));
 const settle = () => new Promise((r) => setTimeout(r, 10));
@@ -47,4 +47,22 @@ test('Apply asks the store once for the keys; off and on ask nothing; a new answ
   await source.load();
   assert.equal(asked.length, before + 2, 'a new answer asks again');
   assert.deepEqual(source.rows.map((r) => r.id), [10]);
+});
+
+test('a bound grid hears the server FIELD filters, not the key its answer matched (TODO 393)', async () => {
+  const source = new DataSource({ store: new ArrayStore(ROWS.map((r) => ({ ...r, plan: r.id > 5 ? 'Pro' : 'Free' })), { key: 'id' }) });
+  source.declareField('plan', { label: 'Plan', fetch: 'server' });
+  const attrs = {};
+  const grid = Object.assign(new EventTarget(), {
+    setAttribute: (n, v) => { attrs[n] = v; }, removeAttribute: (n) => { delete attrs[n]; }, toggleAttribute() {},
+  });
+  bindSource(source, grid);
+  await source.load();
+  source.query.hold('data', ['plan']);
+  source.query.setReading('data', 'plan', { picked: ['Pro'] });
+  source.query.commit({ field: 'plan' });
+  await settle();
+  await source.load();
+  assert.deepEqual(source.rows.map((r) => r.id), [6, 7, 8, 9, 10]);
+  assert.equal(attrs['data-filter-fields'], 'plan');
 });
