@@ -12,14 +12,15 @@ interface DayParts {
   year: string;
 }
 
+/** One formatter for every day drawn. */
+const DAY = new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+
 /** An ISO day's parts, read in UTC: parsed UTC, so formatted UTC, or a browser
  *  west of Greenwich shows the day before. Day first, whatever the locale. */
 function partsOf(iso: string): DayParts | null {
   const at = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
   if (Number.isNaN(at.getTime())) return null;
-  const parts = new Intl.DateTimeFormat(undefined, {
-    day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC',
-  }).formatToParts(at);
+  const parts = DAY.formatToParts(at);
   const part = (type: string): string => parts.find((p) => p.type === type)?.value ?? '';
   return { day: part('day'), month: part('month'), year: part('year') };
 }

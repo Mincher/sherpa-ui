@@ -441,10 +441,9 @@ export class SherpaCalendar extends SherpaElement {
     this.#render();
   }
 
-  /** The label zooms out: day → month → year. */
+  /** The label zooms out: day → month → year. A set that moves an attribute draws (onChange). */
   #onLabel = (): void => {
     this.set('data-view', this.#view === 'day' ? 'month' : 'year');
-    this.#render();
   };
 
   /** A month was picked: show its days. */
@@ -454,7 +453,6 @@ export class SherpaCalendar extends SherpaElement {
     if (m == null || cell?.hasAttribute('disabled')) return;
     this.#shown = this.#shown.with({ month: Number(m) + 1 });
     this.set('data-view', 'day');
-    this.#render();
   };
 
   /** A year was picked: show its months. */
@@ -464,7 +462,6 @@ export class SherpaCalendar extends SherpaElement {
     if (y == null || cell?.hasAttribute('disabled')) return;
     this.#shown = this.#shown.with({ year: Number(y) });
     this.set('data-view', 'month');
-    this.#render();
   };
 
   /** A day was picked: set the value, or one end of a range. */
@@ -482,8 +479,6 @@ export class SherpaCalendar extends SherpaElement {
     const time = this.#hasTime ? this.#currentTime() : '';
     const value = time ? `${iso}T${time}` : iso;
     this.set('value', value);
-    this.#syncTimeInput();
-    this.#render();
     this.emit('datetime-change', { value });
   }
 
@@ -496,14 +491,12 @@ export class SherpaCalendar extends SherpaElement {
       if (!start || (start && end)) {
         this.set('data-value-start', iso);
         this.set('data-value-end', null);
-        this.#render();
         return;
       }
       let s = start, e = iso;
       if (e < s) { [s, e] = [e, s]; }
       this.set('data-value-start', s);
       this.set('data-value-end', e);
-      this.#render();
       this.emit('range-select', { start: s, end: e });
     } finally {
       // A stuck flag would ignore the host for good.
