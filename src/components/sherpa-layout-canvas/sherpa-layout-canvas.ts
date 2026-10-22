@@ -11,6 +11,7 @@
 import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
+import { toolbarKeys } from '../../core/ui/roving-focus.js';
 
 /** One press of Zoom in or Zoom out. */
 const ZOOM_STEP = 1.25;
@@ -51,6 +52,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
   #observer: ResizeObserver | null = null;
 
   override onRender(): void {
+    // TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
+    const controls = this.$('.controls');
+    if (controls) toolbarKeys(controls);
     const viewport = this.$<HTMLElement>('.viewport');
     viewport?.addEventListener('wheel', this.#onWheel, { passive: false });
     viewport?.addEventListener('pointerdown', this.#onPointerDown);

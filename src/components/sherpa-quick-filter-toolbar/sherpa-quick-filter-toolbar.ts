@@ -29,6 +29,7 @@ import {
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
+import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -300,6 +301,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   override onRender(): void {
+    // Left and Right move between the bar's controls. TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
+    const bar = this.$('.bar');
+    if (bar) toolbarKeys(bar);
     this.addEventListener('quick-filter-click', this.#onChipClick);
     // Delegated: every control fires the same button-click; data-act says which.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
@@ -339,7 +343,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('menu-back', this.#drillOutHandler);
 
     this.#observer = new ResizeObserver(this.#onResize);
-    const bar = this.$('.bar');
     if (bar) this.#observer.observe(bar);
   }
 

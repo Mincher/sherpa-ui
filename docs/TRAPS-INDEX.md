@@ -309,7 +309,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (170)
+## Filters (171)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -378,6 +378,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — filter-panel
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — quick-filter
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — quick-filter-toolbar
+- [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — quick-filter-toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — quick-filter-toolbar
@@ -755,7 +756,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (101)
+## SherpaElement and the shared sheets (102)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -789,6 +790,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-anchor, sherpa-element
+- [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — roving-focus
 - [T-a-tree-menu-keeps-its-ticks-as-data](TRAPS.md#t-a-tree-menu-keeps-its-ticks-as-data) — tree-picks
 - [T-a-tree-rule-beats-slotted](TRAPS.md#t-a-tree-rule-beats-slotted) — sherpa-base
 - [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — sherpa-element
@@ -859,7 +861,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (104)
+## Other components (105)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -896,6 +898,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — button
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
+- [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — layout-canvas, toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — button
 - [T-a-trigger-shows-what-it-opened](TRAPS.md#t-a-trigger-shows-what-it-opened) — app-header
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — input-text, prompt-composer

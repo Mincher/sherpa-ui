@@ -360,7 +360,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 62.60 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
-| 🚧 | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
+| ✅ | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | ✅ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ✅ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour. Closed with 366: its steps 20–22 did it (Will, 2026-10-21: A) | refactor |
 | 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
@@ -9149,7 +9149,7 @@ it underlines on hover as a live crumb does. **Not run yet.**
 skip a key whose real target is a text field, a textarea, a slider or editable
 text: there an arrow moves the caret or the value. **Not run yet.**
 
-### `[~]` 🚧 318 — A11Y: toolbars, radios and a slice's click by keyboard
+### `[x]` ✅ 318 — A11Y: toolbars, radios and a slice's click by keyboard
 
 **✅ Radios, 2026-10-15.** Each `sherpa-select-radio` has its native radio in a
 shadow root of its own, so the browser gave a group neither its one Tab stop nor
@@ -9170,6 +9170,16 @@ and no control leaves the Tab order. **B:** the APG pattern: the bar is ONE Tab
 stop and the arrows move inside it. Fewer Tab presses, but every chip, button
 and box needs `data-no-tab`-style handling, and the bar's keys change for every
 reader.
+
+**✅ Toolbars, 2026-10-22 — Will: A**, *"However, in number inputs the up/down
+arrows should increment/decrement the value. In select inputs the up/down
+arrows should walk the menu items."* `toolbarKeys()` (`roving-focus.ts`): Left,
+Right, Home and End move between the controls of `sherpa-toolbar`,
+`sherpa-quick-filter-toolbar` and `sherpa-layout-canvas`, slotted ones too;
+Tab is unchanged. A text or number box keeps every arrow (a number steps on Up
+and Down, natively), a select keeps Up and Down, an open menu its own; Up and
+Down never move between controls. `reforged-a-toolbar-moves-by-arrow` (2,
+Chromium). TRAP `T-a-toolbar-moves-by-arrow-and-keeps-its-tabs`.
 
 ### `[ ]` ⬜ 315 — Phase 5: the calendar's roving grid
 

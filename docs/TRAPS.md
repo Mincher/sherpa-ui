@@ -10393,6 +10393,26 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
+### T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
+
+**A `role="toolbar"` moves between its controls on Left, Right, Home and End,
+and Tab still visits every one.** TODO 318, Will (A, 2026-10-22). The APG's one
+Tab stop was option B: it would take every chip, button and box out of the Tab
+order. `toolbarKeys(bar)` walks the bar's controls in reading order, through
+its slots, never inside a control; it focuses each one's own target — itself, a
+host that delegates focus, or the first stop in its shadow root (a
+`sherpa-button`'s inner button, a chip's `.body`). A control keeps the keys it
+uses: a text or number box all four arrows and Home and End (a number steps on
+Up and Down), a select Up and Down (Will: they walk its items), and an open
+menu, list or dialog its own. Up and Down never move between controls, so a
+chip or a menu button keeps them too.
+
+- Site: `src/core/ui/roving-focus.ts`
+- Site: `src/components/sherpa-toolbar/sherpa-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
+- Site: `test/e2e/reforged-a-toolbar-moves-by-arrow.spec.ts`
+
 ### T-a-remote-store-says-what-changed
 
 **A store that may miss a writer, and says `changes`, is asked what moved since
