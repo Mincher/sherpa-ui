@@ -81,7 +81,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
-| ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
 | ✅ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
@@ -105,6 +105,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
+| 🚧 | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1871,6 +1872,21 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` 🚧 424 — BUG: the panel's unapplied chips are not warning; one chip logic
+
+Will, 2026-10-22: *"unapplied chips in the filter panel don't use the warning
+style. I really hope we don't have 2 bespoke implementations of filter chips
+across the filter toolbar and filter panel with custom logic in each. All filter
+chips should be variants of the filter chip component and all logic
+centralised."*
+
+Found: both draw `sherpa-quick-filter`, but the per-field logic around it is
+written twice — the bar's (a chip per field) and the panel's (a chip per value,
+a tiered run, or one answer chip): a told reading, pending, failed, greying,
+results, none. The panel marks pending on its field box and its one answer chip,
+never on a run's value chips, so a run shows no warning. The plan for one chip
+logic is TODO 415's.
+
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 
 Will, 2026-10-22: *"Accordion headers need a hover style (light grey fill using
@@ -2303,7 +2319,10 @@ specs whose pages are not about it say `start: "all"`.
 
 **❓ For Will — the Demos.** On, Records opens on Northwind and EMEA: ONE row;
 the Dashboard on Northwind and EMEA too. 58 Demos tests assume the whole set.
-So for now Demos' Customer and Region say `"start": "all"`. **A (my pick):** keep
+So for now Demos' Customer and Region say `"start": "all"` — and so do the
+Gallery's data story (Region) and the Starter's template (Status), whose tests
+count the whole set. 3-engine round after: sherpa-ui 3313, Demos 498, Gallery
+and Starter green. **A (my pick):** keep
 the Demos on the whole set, and show the start on one page made for it. **B:**
 turn it on in the Demos (Customer and Region), and I move the 58 tests.
 
@@ -2430,7 +2449,7 @@ attribute. First users: the layout grid (in place of the app header's drop
 shadow), the data grid's body, a menu's list, the nav list, a form's scroll
 area — each checked for a `::before`/`::after` it already uses.
 
-### `[ ]` ❓ 400 — BUG: a View scope pick does not limit the other View filters
+### `[x]` ✅ 400 — BUG: a View scope pick does not limit the other View filters
 
 Will, 2026-10-22: *"Changing values in View Scope filters doesn't seem to
 invalidate values in other View Scope filters. Only Component Scopes are being
@@ -2453,6 +2472,8 @@ goes against the serial nature of each scope's filters."* So B was right: the
 order rule stands — only the filters before a field limit it — and the two-way
 change below is undone (`presentBothWays` gone, "Limited by the filters before
 it" back, the set-aside words back).
+
+**✅ Will, 2026-10-22: "400, we're good"** — the order rule, as it is now.
 
 **❓ What "still not working" is — my reading.** The View WAITS for one Apply
 (406), and the walk reads the APPLIED Query: a Customer ticked but not applied
