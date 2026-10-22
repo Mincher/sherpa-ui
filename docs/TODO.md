@@ -83,7 +83,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ❓ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
-| ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
+| ❓ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
 | ❓ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
@@ -2281,6 +2281,25 @@ row takes no resize handle and is one grid row while not stuck.
 stack offset and the half height), with no JS if it can be done. Then the five
 files, the Demos Views moved onto it, and the old sticky-metrics experiment
 deleted.
+
+**Plan, 2026-10-22 (read the experiment and the layout grid):**
+- `sherpa-metric-group`: a layout-grid child spanning every column, ONE row, no
+  resize handle (the grid's `data-resizable` skips it). 1–4 slotted metrics, a
+  16px gap (`--sherpa-display-mode-space-md`), each metric `solo`.
+- It is itself `position: sticky` — no copies, so it cannot scroll out of the
+  content area the way the experiment's copy row did (it sticks inside the
+  grid's own box). The experiment (`experiments/sticky-metrics.js`) is deleted.
+- Joined (start / mid / end, the gap 0) at mobile width — a container query on
+  the group — and while STUCK.
+- ❓ **How "stuck" is known — the same question as 401 and 421.** A: CSS
+  scroll-driven animations, for Chromium and WebKit (iOS): a zero-height marker
+  before each group names a view timeline, and the group animates its corners,
+  borders and height over the marker's exit. B: `scroll-state(stuck: top)` —
+  simpler, Chromium only. My pick: A, the same as 401.
+- Stacking: each group sticks below the ones before it (`--_stack`, its index
+  among the groups); from two stuck, each is half height — with A, the second
+  group's marker drives the first one's half height too (`timeline-scope`).
+
 
 ### `[ ]` ⬜ 401 — LOOK: a scroll shadow for any scroll box (investigate)
 
