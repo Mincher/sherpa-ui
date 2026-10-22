@@ -155,13 +155,14 @@ test('a panel number field reports a typed number, and a Between row\'s ends', a
       const one = panel.readings['data']?.['seats'];
       heard.push(one?.mode === 'advanced' ? one.conditions : one?.picked);
     });
-    const menu = panel.shadowRoot!.querySelector('.field[data-field="seats"] sherpa-menu') as Menu;
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    const menu = panel.shadowRoot!.querySelector('.field[data-field="seats"] sherpa-menu:not(.field-menu)') as Menu;
     await menu.rendered;
     await edit(menu.shadowRoot.querySelector('.body-number-one')!, '40');
     await frames();
     const typed = heard.splice(0);
     // The field's own f(x), then a Between row's two boxes.
-    panel.shadowRoot!.querySelector('.field[data-field="seats"] .field-advanced')!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    panel.shadowRoot!.querySelector<HTMLInputElement>('.field[data-field="seats"] .field-menu input[value="advanced"]')!.click();
     await window.__settled();
     await frames();
     const row = menu.shadowRoot.querySelector<HTMLElement>('.condition-row')!;

@@ -101,7 +101,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
 | ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
-| ⬜ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
+| ✅ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
 | ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -1878,7 +1878,7 @@ animation (Chromium and WebKit) can show it once its scroller has moved, and a
 view timeline for one stuck part-way down (a panel's scope header). The shadow
 is the elevation tokens' (`--sherpa-shadow-*`). Settle with 401's A or B.
 
-### `[ ]` ⬜ 420 — UX: one ⋮ per panel field section
+### `[x]` ✅ 420 — UX: one ⋮ per panel field section
 
 Will, 2026-10-22: *"Combine all filter panel filter section action buttons into
 a single overflow menu button with an ellipses icon. Clicking this button
@@ -1887,6 +1887,16 @@ reveals the scope and advanced options."* Today each field's header holds Reset
 f(x) chip (`.field-advanced`). They become ONE icon-only `ellipses-vertical`
 button with a menu: Send to View filters / Send down, Advanced (on or off),
 Reset — each only where it applies today.
+
+**🚧 Built 2026-10-22:** `.field-more` (icon-only `ellipses-vertical`, named
+"<Field> options") and its `.field-menu`: an Advanced tick row (the ⋮ menu's own
+switch-row look), Send to View filters, Send to / Return to <scope>, Reset
+(hidden while nothing is set). A row a field does not offer is removed, and a
+field with none has no ⋮. The f(x) chip is gone: Advanced is the field's
+`data-advanced` and its tick. **✅ Done 2026-10-22.** 13 test files moved to the
+rows (a helper agent), and three more that looked up "the field's menu" now skip
+the ⋮'s (`sherpa-menu:not(.field-menu)`). A ⋮ whose only row is a hidden Reset is
+hidden too. Chromium: sherpa-ui 1148, Demos 164.
 
 ### `[x]` ✅ 419 — BUG: larger text in some menu rows and dialogs
 

@@ -155,25 +155,19 @@
           <!-- role=img so its aria-label is said, as the chip's count is. -->
           <sherpa-badge class="field-results" role="img"></sherpa-badge>
         </span>
-        <!-- DEFAULT look. No Remove: the scope's Add menu is the whole list. -->
+        <!-- ONE ⋮ for the field's own options: Advanced, Send up or down, and
+             Reset — each only where it applies. Will, TODO 420.
+             TRAP T-send-to-view-filters -->
         <span slot="actions" class="field-acts">
-          <!-- RESET, left of Send to and its size (Will, 360) — beside the group, not
-               in it: hidden while nothing is set, it would square Send to's corners. -->
-          <sherpa-button class="field-clear" data-type="icon" data-size="sm"
-                         data-icon-start="arrow-rotate-left"></sherpa-button>
-          <!-- Send to, up or down. -->
-          <span class="field-group sherpa-group">
-            <!-- A component's field, SENT UP to the View's filters. TRAP T-send-to-view-filters -->
-            <sherpa-button class="field-raise" data-type="icon" data-size="sm"
-                           data-icon-start="arrow-up"></sherpa-button>
-            <!-- …and a View field, SENT DOWN to the scope it came from. TODO 120. -->
-            <sherpa-button class="field-lower" data-type="icon" data-size="sm"
-                           data-icon-start="arrow-down"></sherpa-button>
-          </span>
-          <!-- ADVANCED: f(x), at the header's end — a filter chip, ON in Advanced, as a
-               grid heading's. LOCKED: the panel sets its on-state. Will, TODO 141, 372. -->
-          <sherpa-quick-filter class="field-advanced" data-icon-only data-icon-start="function"
-                               data-no-value data-locked></sherpa-quick-filter>
+          <sherpa-button class="field-more" data-type="icon" data-size="sm"
+                         data-icon-start="ellipses-vertical" aria-haspopup="dialog">
+            <sherpa-menu slot="menu" class="field-menu" data-align="end">
+              <label class="menu-row more-check field-act" data-act="advanced"><input type="checkbox" value="advanced" /><span class="menu-row-label">Advanced</span></label>
+              <button class="more-item field-act" type="button" value="raise"><span class="more-label">Send to View filters</span></button>
+              <button class="more-item field-act" type="button" value="lower"><span class="more-label"></span></button>
+              <button class="more-item field-act" type="button" value="clear"><span class="more-label">Reset</span></button>
+            </sherpa-menu>
+          </sherpa-button>
         </span>
       </sherpa-section-header>
       <!-- `hug`: each chip at its own width. Every other value STRETCHES its

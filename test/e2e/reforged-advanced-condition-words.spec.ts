@@ -162,11 +162,11 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     // The switch is in the field's answer, as every report carries it.
     panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.request.reading.mode));
     const sr = panel.shadowRoot!;
-    const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced')!
-      .shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    const press = () => sr.querySelector<HTMLInputElement>('.field[data-field="owner"] .field-menu input[value="advanced"]')!.click();
     press();
     await window.__settled();
-    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu') as Menu | null;
+    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu:not(.field-menu)') as Menu | null;
     const on = { box: sr.querySelector('.field[data-field="owner"]')!.hasAttribute('data-advanced'), mode: menu?.mode };
     press();
     await window.__settled();
@@ -222,13 +222,14 @@ test('a def says advanced — and the old custom and conditions keys offer nothi
     (panel as HTMLElement & { show(): void }).show();
     await window.__settled();
     const psr = panel.shadowRoot!;
-    const field = !!psr.querySelector('.field[data-field="owner"] .field-advanced');
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    const field = !!psr.querySelector('.field[data-field="owner"] .field-act[data-act="advanced"]');
     /* CONDITIONS ONLY: nowhere to switch to, so no switch — and its rows show
        from the start. Will, 2026-09-26. */
-    const emailRows = psr.querySelector('.field[data-field="email"] sherpa-menu')
+    const emailRows = psr.querySelector('.field[data-field="email"] sherpa-menu:not(.field-menu)')
       ?.shadowRoot?.querySelector('.condition-row');
     const onlyField = {
-      switch: !!psr.querySelector('.field[data-field="email"] .field-advanced'),
+      switch: !!psr.querySelector('.field[data-field="email"] .field-act[data-act="advanced"]'),
       rows: !!emailRows && emailRows.getClientRects().length > 0,
     };
     return { chips, column, field, onlyField };

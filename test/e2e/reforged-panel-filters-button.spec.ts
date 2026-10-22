@@ -156,7 +156,7 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
       back: { drill: menu().hasAttribute('data-drill'), lead: rows()[0], first: rows().find((x) => !x.startsWith('!')),
         selectAll: !!menu().querySelector('.qf-all') },
       // The menu built for the drill is gone with it.
-      built: sr.querySelectorAll('.field[data-field="status"] sherpa-menu').length,
+      built: sr.querySelectorAll('.field[data-field="status"] sherpa-menu:not(.field-menu)').length /* not the ⋮'s, TODO 420 */,
     };
   })()`) as Record<string, unknown>;
 

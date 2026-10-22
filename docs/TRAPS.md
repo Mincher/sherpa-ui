@@ -10949,10 +10949,10 @@ A filter menu asks ONE question two ways, and they are not two menus.
 
 **SIMPLE** is a search over ticked rows. **ADVANCED** is the And/Or rows. An
 f(x) control, named **Advanced**, at the end of the header moves between
-them, in the menu and in a panel field's header alike; it is ON in Advanced.
-In the menu it is an icon button (`aria-pressed`). In a panel field it is an
-icon-only filter chip, so ON takes the filter-on look (TODO 372). It was a
-button first, then a switch (2026-09-26), and the button again — Will,
+them; it is ON in Advanced. In the menu it is an icon button (`aria-pressed`).
+In a panel field it is the "Advanced" tick row of the field's ⋮ menu (Will,
+2026-10-22, TODO 420; it was an icon-only filter chip in the header, TODO 372).
+It was a button first, then a switch (2026-09-26), and the button again — Will,
 2026-09-30, TODO 141.
 
 Both stay STAMPED. Flipping a mode is a change of VIEW, not a reset: the ticks

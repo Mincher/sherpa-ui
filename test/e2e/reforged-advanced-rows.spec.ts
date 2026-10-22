@@ -183,9 +183,10 @@ test('Equals offers the field\'s values on the bar and in the panel; a field wit
     const panel = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-filter-panel', undefined, { open: true });
     await panel.populate([{ scope: 'data', label: 'Rows', filters: [list] }]);
     await settle();
-    panel.shadowRoot!.querySelector('.field[data-field="owner"] .field-advanced')!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    panel.shadowRoot!.querySelector<HTMLInputElement>('.field[data-field="owner"] .field-menu input[value="advanced"]')!.click();
     await settle();
-    const inPanel = await eqRow(panel.shadowRoot!.querySelector('.field[data-field="owner"] sherpa-menu') as Menu);
+    const inPanel = await eqRow(panel.shadowRoot!.querySelector('.field[data-field="owner"] sherpa-menu:not(.field-menu)') as Menu);
     return { onBar, inPanel };
   }, { list: KINDS.list.def, only: KINDS.only.def });
   expect(r.onBar.owner.list).toEqual(['', 'Dana', 'Ravi']);

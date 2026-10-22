@@ -39,9 +39,9 @@ test('the switch carries the chips over, the rows follow them until edited, and 
       one.shadowRoot.querySelector<HTMLElement>('.body')!.click();
       await wait();
     };
+    // A field's own options are its ⋮ menu's rows. TODO 420
     const flip = async (): Promise<void> => {
-      const sw = field.querySelector('.field-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('.caret')!.click();
+      field.querySelector<HTMLInputElement>('.field-menu input[value="advanced"]')!.click();
       await wait();
     };
     const read = (): Reading => {
@@ -57,7 +57,7 @@ test('the switch carries the chips over, the rows follow them until edited, and 
     await chip('Mo');
     const followed = read();
     await flip();
-    const menu = field.querySelector('sherpa-menu')!;
+    const menu = field.querySelector('sherpa-menu:not(.field-menu)')!;
     const row = menu.shadowRoot!.querySelector('.condition-row')!;
     const cond = row.querySelector('.condition') as HTMLElement & { value: string };
     cond.value = 'startswith';

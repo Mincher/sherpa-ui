@@ -31,8 +31,9 @@ test('more than 16 values is one chip; its menu holds them, and a pick reports t
       picked: menu.values,
       on: chip.hasAttribute('data-current'),
       // The switch is the HEADER's, a one-chip list's too (Will, TODO 385); its menu's is not shown.
-      ownerSwitch: !!field('owner').querySelector('.field-advanced'),
-      tierSwitch: !!field('tier').querySelector('.field-advanced'),
+      // A field's own options are its ⋮ menu's rows. TODO 420
+      ownerSwitch: !!field('owner').querySelector('.field-menu .field-act[data-act="advanced"]'),
+      tierSwitch: !!field('tier').querySelector('.field-menu .field-act[data-act="advanced"]'),
       menuSwitch: menu.hasAttribute('data-advanced'),
     };
     const heard: unknown[] = [];

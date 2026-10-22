@@ -118,12 +118,13 @@ test('in the panel, a number field\'s f(x) carries its number into the rows, and
     await window.__settled();
     const sr = panel.shadowRoot!;
     const field = sr.querySelector<HTMLElement>('.field[data-field="seats"]')!;
-    const menu = field.querySelector('sherpa-menu') as Menu;
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    const menu = field.querySelector('sherpa-menu:not(.field-menu)') as Menu;
     panel.setFieldReading('seats', { picked: ['37'], range: false }, 'data');
     await window.__settled();
     const heard: unknown[] = [];
     panel.addEventListener('quick-filter-change', () => heard.push(panel.readings['data']?.['seats']));
-    const fx = () => field.querySelector<HTMLElement>('.field-advanced')!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    const fx = () => field.querySelector<HTMLInputElement>('.field-menu input[value="advanced"]')!.click();
     fx();
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));

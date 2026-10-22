@@ -248,46 +248,87 @@
                     "children": [
                       {
                         "el": "sherpa-button",
-                        "class": "field-clear",
+                        "class": "field-more",
                         "attrs": {
                           "data-type": "icon",
                           "data-size": "sm",
-                          "data-icon-start": "arrow-rotate-left"
-                        }
-                      },
-                      {
-                        "el": "span",
-                        "class": "field-group sherpa-group",
+                          "data-icon-start": "ellipses-vertical",
+                          "aria-haspopup": "dialog"
+                        },
                         "children": [
                           {
-                            "el": "sherpa-button",
-                            "class": "field-raise",
+                            "el": "sherpa-menu",
+                            "class": "field-menu",
                             "attrs": {
-                              "data-type": "icon",
-                              "data-size": "sm",
-                              "data-icon-start": "arrow-up"
-                            }
-                          },
-                          {
-                            "el": "sherpa-button",
-                            "class": "field-lower",
-                            "attrs": {
-                              "data-type": "icon",
-                              "data-size": "sm",
-                              "data-icon-start": "arrow-down"
-                            }
+                              "slot": "menu",
+                              "data-align": "end"
+                            },
+                            "children": [
+                              {
+                                "el": "label",
+                                "class": "menu-row more-check field-act",
+                                "attrs": {
+                                  "data-act": "advanced"
+                                },
+                                "children": [
+                                  {
+                                    "el": "input",
+                                    "attrs": {
+                                      "type": "checkbox",
+                                      "value": "advanced"
+                                    }
+                                  },
+                                  {
+                                    "el": "span",
+                                    "class": "menu-row-label"
+                                  }
+                                ]
+                              },
+                              {
+                                "el": "button",
+                                "class": "more-item field-act",
+                                "attrs": {
+                                  "type": "button",
+                                  "value": "raise"
+                                },
+                                "children": [
+                                  {
+                                    "el": "span",
+                                    "class": "more-label"
+                                  }
+                                ]
+                              },
+                              {
+                                "el": "button",
+                                "class": "more-item field-act",
+                                "attrs": {
+                                  "type": "button",
+                                  "value": "lower"
+                                },
+                                "children": [
+                                  {
+                                    "el": "span",
+                                    "class": "more-label"
+                                  }
+                                ]
+                              },
+                              {
+                                "el": "button",
+                                "class": "more-item field-act",
+                                "attrs": {
+                                  "type": "button",
+                                  "value": "clear"
+                                },
+                                "children": [
+                                  {
+                                    "el": "span",
+                                    "class": "more-label"
+                                  }
+                                ]
+                              }
+                            ]
                           }
                         ]
-                      },
-                      {
-                        "el": "sherpa-quick-filter",
-                        "class": "field-advanced",
-                        "attrs": {
-                          "data-icon-only": "",
-                          "data-icon-start": "function",
-                          "data-no-value": "",
-                          "data-locked": ""
-                        }
                       }
                     ]
                   }

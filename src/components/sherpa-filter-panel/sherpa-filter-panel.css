@@ -94,14 +94,6 @@
   block-size: var(--sherpa-theme-content-size-large, 16px);
 }
 
-/* A field's Send to, up and down: one control. */
-.field-group {
-  display: inline-flex;
-  align-items: center;
-}
-.field-group > :not(:first-child) {
-  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
-}
 
 .scope::part(header) {
   position: sticky;
@@ -174,7 +166,9 @@
 .field-row-spacer { flex: 1 1 auto; }
 .field-add-condition { display: none; }
 .field[data-advanced]:not([data-chip]) .field-add-condition { display: inline-flex; }
-.field:not([data-answered]) .field-clear { display: none; }
+.field:not([data-answered]) .field-act[value="clear"] { display: none; }
+/* …and a ⋮ with nothing else to show goes with it. TODO 420 */
+.field:not([data-answered]) .field-more:not(:has(.field-act:not([value="clear"]))) { display: none; }
 .field-apply, .field-discard { display: none; }
 :host([data-remote]:not([data-waits])) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
 /* A scope that WAITS has ONE Apply and Discard, on its own header. Will, TODO 406 */

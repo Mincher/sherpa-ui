@@ -177,6 +177,10 @@ export class SherpaFilterPanel extends SherpaElement {
     // The f(x) is a chip, so it reports a chip's click.
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
+    // A field's ⋮ first: its rows are not the field's answer. TODO 420
+    this.$('.scopes')?.addEventListener('menu-select', this.#onFieldAct);
+    this.$('.scopes')?.addEventListener('menu-change', this.#onFieldSwitch);
+    this.$('.scopes')?.addEventListener('change', this.#onFieldSwitch);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     // A parent's children, as a menu built when its caret asks, gone when it shuts. TODO 369
     this.$('.scopes')?.addEventListener('quick-filter-open', this.#onKidsOpen);
@@ -834,7 +838,6 @@ export class SherpaFilterPanel extends SherpaElement {
     /* A section is not a field: nothing here to clear, remove or condition.
        Group and Sort ARRANGE rows; they never filter. Will, 2026-09-26. */
     box.querySelector('.field-acts')?.remove();
-    box.querySelector('.field-advanced')?.remove();
     box.querySelector('.field-row')?.remove();
     return { box, values: box.querySelector('.field-values') as HTMLElement };
   }
@@ -923,22 +926,21 @@ export class SherpaFilterPanel extends SherpaElement {
     // Every field that offers Advanced: its f(x) is in its header, a one-chip list's too. Will, TODO 385
     box.toggleAttribute('data-advanced-ok', !organise && advancedOf(def) === true);
 
-    // What this field does not offer is not drawn.
-    if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
-    if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
-    if (!box.hasAttribute('data-raisable')) box.querySelector('.field-raise')?.remove();
+    // What this field does not offer is not in its ⋮. Will, TODO 420
+    const row = (act: string): Element | null => box.querySelector(`.field-act[value="${act}"], .field-act[data-act="${act}"]`);
+    if (!box.hasAttribute('data-advanced-ok')) row('advanced')?.remove();
+    if (!box.hasAttribute('data-clearable')) row('clear')?.remove();
+    if (!box.hasAttribute('data-raisable')) row('raise')?.remove();
     // A View field, SENT DOWN to a scope that has it. TRAP T-send-to-view-filters
     const target = organise ? undefined : def.sendTo;
-    if (!target) box.querySelector('.field-lower')?.remove();
+    if (!target) row('lower')?.remove();
+    if (!box.querySelector('.field-act')) box.querySelector('.field-more')?.remove();
 
-    const head = box.querySelector('.field-head');
     const title = box.querySelector('.field-title');
     if (title) title.textContent = def.label;
     const name = def.label;
-    box.querySelector('.field-clear')?.setAttribute('aria-label', `Reset ${name}`);
-    head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
-    this.#drawLower(head?.querySelector<HTMLElement>('.field-lower') ?? null, name, target);
-    box.querySelector('.field-advanced')?.setAttribute('aria-label', `Advanced ${name}`);
+    box.querySelector('.field-more')?.setAttribute('aria-label', `${name} options`);
+    this.#drawLower(row('lower')?.querySelector<HTMLElement>('.more-label') ?? null, target);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
 
@@ -1520,39 +1522,42 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
   };
 
+  /** A row of a field's ⋮: Send up or down, or Reset. Will, TODO 420 */
+  #onFieldAct = (event: Event): void => {
+    const more = this.pathFind(event, '.field-more');
+    const held = more ? this.#fieldOf(more) : undefined;
+    if (!more || !held) return;
+    event.stopPropagation();
+    more.querySelector<SherpaMenu>('.field-menu')?.hide?.();
+    const act = String((event as CustomEvent).detail?.value ?? '');
+    /* SENT UP: the View holds it, and its answer goes with it; the chip below
+       keeps its place, suspended. TRAP T-send-to-view-filters */
+    if (act === 'raise') this.emit('filter-add', { scope: VIEW, ids: [held.def.field ?? held.def.id], from: held.scope });
+    // …and SENT DOWN, to the one scope the source named.
+    else if (act === 'lower' && held.def.sendTo) this.#sendDown(held, held.def.sendTo.scope);
+    else if (act === 'clear') this.#clearField(more);
+  };
+
+  /** A field's ⋮ "Advanced" row: the field's mode flips. TODO 420 */
+  #onFieldSwitch = (event: Event): void => {
+    const menu = this.pathFind(event, '.field-menu');
+    if (!menu) return;
+    // Not the field's answer: no other listener hears it.
+    event.stopImmediatePropagation();
+    const held = this.#fieldOf(menu);
+    const on = !!menu.querySelector<HTMLInputElement>('input[value="advanced"]')?.checked;
+    if (held && on !== held.box.hasAttribute('data-advanced')) this.#flipCondition(held);
+  };
+
   /** A field's own buttons. */
   #onAction = (event: Event): void => {
     // The View's ONE Apply and Discard, on its header: every change held. TODO 406
     if (this.pathFind(event, '.scope-apply')) return void this.emit('filter-apply', {});
     if (this.pathFind(event, '.scope-discard')) return void this.emit('filter-discard', {});
-    const clear = this.pathFind(event, '.field-clear');
-    if (clear) return this.#clearField(clear);
     // The action row's Add condition is the field's inline menu's. Will, TODO 98.
     const add = this.pathFind(event, '.field-add-condition');
     if (add) {
       this.#fieldOf(add)?.menu?.addCondition?.();
-      return;
-    }
-    // ADVANCED: the f(x) button flips the field's mode.
-    const advanced = this.pathFind(event, '.field-advanced');
-    if (advanced) {
-      const flipped = this.#fieldOf(advanced);
-      if (flipped) this.#flipCondition(flipped);
-      return;
-    }
-    /* SENT UP: the View holds it, and its answer goes with it; the chip below
-       keeps its place, suspended. TRAP T-send-to-view-filters */
-    const raise = this.pathFind(event, '.field-raise');
-    if (raise) {
-      const up = this.#fieldOf(raise);
-      if (up) this.emit('filter-add', { scope: VIEW, ids: [up.def.field ?? up.def.id], from: up.scope });
-      return;
-    }
-    // …and SENT DOWN, to the one scope the source named.
-    const lower = this.pathFind(event, '.field-lower');
-    if (lower) {
-      const down = this.#fieldOf(lower);
-      if (down?.def.sendTo) this.#sendDown(down, down.def.sendTo.scope);
       return;
     }
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
@@ -1617,7 +1622,8 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Put a field in Advanced mode, or take it out: its flag, its switch, its menu. */
   #setCustom(held: Held, on: boolean, atDraw = false): void {
     held.box.toggleAttribute('data-advanced', on);
-    held.box.querySelector('.field-advanced')?.toggleAttribute('data-current', on);
+    const tick = held.box.querySelector<HTMLInputElement>('.field-menu input[value="advanced"]');
+    if (tick) tick.checked = on;
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off
@@ -1666,9 +1672,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The Send down button says the ONE scope it sends to — a RETURN where the
    *  field came up from (Will, TODO 234). TRAP T-send-to-view-filters */
-  #drawLower(button: HTMLElement | null, name: string, target: { label: string; origin?: boolean } | undefined): void {
-    if (!button || !target) return;
-    button.setAttribute('aria-label', target.origin ? `Return ${name} to ${target.label}` : `Send ${name} to ${target.label}`);
+  #drawLower(label: HTMLElement | null, target: { label: string; origin?: boolean } | undefined): void {
+    if (!label || !target) return;
+    label.textContent = target.origin ? `Return to ${target.label}` : `Send to ${target.label}`;
   }
 
   /** Untick a field's values and clear its conditions. */

@@ -43,7 +43,8 @@ const SETUP = `
   const q = (s) => [...sr.querySelectorAll(s)];
   const press = (s) => sr.querySelector(s).dispatchEvent(
     new CustomEvent('button-click', { bubbles: true, composed: true }));
-  const flip = (s) => { const r = sr.querySelector(s).shadowRoot; (r.querySelector('.caret') ?? r.querySelector('button')).click(); };
+  // A field's own options are its ⋮ menu's rows. TODO 420
+  const flip = (s) => sr.querySelector(s).click();
 `;
 
 test('a scope draws its fields, and nothing it cannot', async ({ page }) => {
@@ -53,13 +54,15 @@ test('a scope draws its fields, and nothing it cannot', async ({ page }) => {
       scopes: q('.scope').map((s) => s.getAttribute('data-heading')),
       fields: q('.field').map((f) => f.dataset.field),
       // The field actions are OPT-IN, per field; one not offered is not drawn.
-      ownerActions: ['advanced', 'clear', 'remove']
-        .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
-      statusActions: ['advanced', 'clear', 'remove']
-        .filter((a) => !!sr.querySelector('.field[data-field="status"] .field-' + a)),
-      // Group and Sort ARRANGE; a condition means nothing to them.
-      organiseActions: ['advanced', 'clear', 'remove']
-        .filter((a) => !!sr.querySelector('.field[data-field="organise"] .field-' + a)),
+      // A field's own options are its ⋮ menu's rows. TODO 420
+      ownerActions: ['advanced', 'clear', 'remove'].filter((a) => !!sr.querySelector(
+        '.field[data-field="owner"] .field-act:is([value="' + a + '"], [data-act="' + a + '"])')),
+      statusActions: ['advanced', 'clear', 'remove'].filter((a) => !!sr.querySelector(
+        '.field[data-field="status"] .field-act:is([value="' + a + '"], [data-act="' + a + '"])')),
+      // Group and Sort ARRANGE; a condition means nothing to them. No row, so no ⋮.
+      organiseActions: ['advanced', 'clear', 'remove'].filter((a) => !!sr.querySelector(
+        '.field[data-field="organise"] .field-act:is([value="' + a + '"], [data-act="' + a + '"])')),
+      organiseMore: !!sr.querySelector('.field[data-field="organise"] .field-more'),
       // ONE Filters button, in the panel's header, live while any scope has a list.
       canAdd: [q('.filters-btn').length, q('.filters-btn[disabled]').length, q('.scope-add').length],
       emptyScopes: q('.scope-empty').length,
@@ -81,6 +84,7 @@ test('a scope draws its fields, and nothing it cannot', async ({ page }) => {
   expect(r['ownerActions']).toEqual(['advanced', 'clear']);
   expect(r['statusActions']).toEqual(['clear']);
   expect(r['organiseActions']).toEqual([]);
+  expect(r['organiseMore']).toBe(false);
 
   expect(r['canAdd']).toEqual([1, 0, 0]);
   // An empty scope SAYS SO; absent, it reads as a bug rather than an answer.
@@ -168,33 +172,33 @@ test('the condition button flags the field and hides its chips', async ({ page }
     el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.request.reading.mode));
     const read = () => ({
       flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-advanced'),
-      pressed: sr.querySelector('.field[data-field="owner"] .field-advanced').shadowRoot.querySelector('.caret').getAttribute('aria-pressed'),
+      ticked: sr.querySelector('.field[data-field="owner"] .field-menu input[value="advanced"]').checked,
       chips: getComputedStyle(
         sr.querySelector('.field[data-field="owner"] .field-values')).display,
     });
 
     const before = read();
-    flip('.field[data-field="owner"] .field-advanced');
+    flip('.field[data-field="owner"] .field-menu input[value="advanced"]');
     await new Promise((r) => setTimeout(r, 120));
     const on = read();
-    flip('.field[data-field="owner"] .field-advanced');
+    flip('.field[data-field="owner"] .field-menu input[value="advanced"]');
     await new Promise((r) => setTimeout(r, 120));
     return { before, on, off: read(), heard };
   })()`) as Record<string, unknown>;
 
-  expect(r['before']).toEqual({ flag: false, pressed: 'false', chips: 'flex' });
+  expect(r['before']).toEqual({ flag: false, ticked: false, chips: 'flex' });
   // The rows REPLACE them: two answers side by side is what this avoids.
-  expect(r['on']).toEqual({ flag: true, pressed: 'true', chips: 'none' });
-  expect(r['off']).toEqual({ flag: false, pressed: 'false', chips: 'flex' });
+  expect(r['on']).toEqual({ flag: true, ticked: true, chips: 'none' });
+  expect(r['off']).toEqual({ flag: false, ticked: false, chips: 'flex' });
   expect([...new Set(r['heard'] as string[])]).toEqual(['advanced', 'simple']);
 });
 
 /**
  * A FIELD'S HEADER IS ONE HEIGHT, with or without its buttons, so the column
  * does not jump as Clear comes and goes. A token gap sits under it.
- * Will, 2026-09-26.
+ * Will, 2026-09-26. Its options are ONE ⋮ at its end, Advanced a row. TODO 420
  */
-test('a field header keeps one height with or without its buttons, and Advanced is an f(x) chip at its end', async ({ page }) => {
+test('a field header keeps one height with or without its buttons, and its options are a ⋮ at its end', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const shown = (e) => e.getClientRects().length > 0;
@@ -209,15 +213,16 @@ test('a field header keeps one height with or without its buttons, and Advanced 
         gap: next ? Math.round(next.getBoundingClientRect().top - head.bottom) : null,
       };
     });
-    // ADVANCED is an f(x) icon-only CHIP IN the header, at its end. Will, TODO 141, 372.
+    // A field's own options are its ⋮ menu's rows, the ⋮ IN the header, at its end. TODO 420
     const owner = sr.querySelector('.field[data-field="owner"]');
-    const button = owner.querySelector('.field-advanced');
+    const button = owner.querySelector('.field-more');
     const b = button.getBoundingClientRect();
     const h = owner.querySelector('.field-head').getBoundingClientRect();
+    const tick = owner.querySelector('.field-menu input[value="advanced"]');
     const advanced = {
-      is: button.localName, glyph: button.getAttribute('data-icon-start'), iconOnly: button.hasAttribute('data-icon-only'),
-      name: button.shadowRoot.querySelector('.caret').getAttribute('aria-label'),
-      pressed: button.shadowRoot.querySelector('.caret').getAttribute('aria-pressed'),
+      is: button.localName, glyph: button.getAttribute('data-icon-start'), type: button.getAttribute('data-type'),
+      name: button.getAttribute('aria-label'),
+      row: tick.closest('.field-act').textContent.trim(), ticked: tick.checked,
       inHead: b.top >= h.top && b.bottom <= h.bottom, atEnd: Math.abs(b.right - h.right) <= 1,
     };
     return { fields: read(), advanced };
@@ -228,8 +233,8 @@ test('a field header keeps one height with or without its buttons, and Advanced 
   expect(r.fields.some((f) => !f.acts)).toBe(true);
   expect(new Set(r.fields.map((f) => f.height)).size).toBe(1);
   for (const f of r.fields) if (f.gap !== null) expect(f.gap).toBe(8);
-  expect(r.advanced).toEqual({ is: 'sherpa-quick-filter', glyph: 'function', iconOnly: true,
-    name: 'Advanced Owner', pressed: 'false', inHead: true, atEnd: true });
+  expect(r.advanced).toEqual({ is: 'sherpa-button', glyph: 'ellipses-vertical', type: 'icon',
+    name: 'Owner options', row: 'Advanced', ticked: false, inHead: true, atEnd: true });
 });
 
 /** A field's header lines up at its TOP: the label, its count and its buttons.
@@ -243,7 +248,8 @@ test('a field header\'s label, count and buttons start at the top of its row', a
       const el = owner.querySelector(sel);
       return el && el.getClientRects().length ? Math.round(el.getBoundingClientRect().top - row.top) : null;
     };
-    return { title: top('.field-title'), lead: top('.field-lead'), acts: top('.field-acts'), button: top('.field-advanced') };
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    return { title: top('.field-title'), lead: top('.field-lead'), acts: top('.field-acts'), button: top('.field-more') };
   })()`) as Record<string, number | null>;
   expect(r).toEqual({ title: 0, lead: 0, acts: 0, button: 0 });
 });
@@ -504,7 +510,8 @@ test('a number field draws its own menu body, inline', async ({ page }) => {
 
     const sr = el.shadowRoot;
     const seats = sr.querySelector('.field[data-field="seats"]');
-    const menu = seats.querySelector('sherpa-menu');
+    // A field's own options are its ⋮ menu's rows; its answer is the other menu. TODO 420
+    const menu = seats.querySelector('sherpa-menu:not(.field-menu)');
     await menu.rendered;
     const card = menu.shadowRoot.querySelector('.menu');
     return {
@@ -626,7 +633,8 @@ test('opening and closing the panel leaves a chip\'s own menu alone', async ({ p
     await new Promise((r) => setTimeout(r, 250));
     const whileOpen = home();
     // The panel drew its OWN, and it is not this one.
-    const own = el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu');
+    // A field's own options are its ⋮ menu's rows; its answer is the other menu. TODO 420
+    const own = el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu:not(.field-menu)');
     const mine = !!own && own !== menu;
 
     el.close();
@@ -636,7 +644,7 @@ test('opening and closing the panel leaves a chip\'s own menu alone', async ({ p
     el.show();
     await new Promise((r) => setTimeout(r, 300));
     const afterReopen = home()
-      && !!el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu');
+      && !!el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu:not(.field-menu)');
     return { whileOpen, mine, afterClose, afterReopen };
   })()`) as Record<string, boolean>;
 
@@ -707,7 +715,8 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
     const box = el.shadowRoot!.querySelector('.field[data-field="owner"]')!;
     return {
       advanced: box.hasAttribute('data-advanced'),
-      switchOn: box.querySelector('.field-advanced')?.hasAttribute('data-current'),
+      // A field's own options are its ⋮ menu's rows. TODO 420
+      switchOn: box.querySelector<HTMLInputElement>('.field-menu input[value="advanced"]')?.checked,
       reading: el.readings['data']?.['owner']?.conditions,
     };
   });
@@ -715,11 +724,11 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
 });
 
 /**
- * SEND TO leads the header, alone (TODO 121 and 155); RESET is the field's
- * ACTION ROW's, once there is something to reset — the row is drawn only while
- * it holds a button. Will, TODO 98.
+ * SEND TO is a row of the field's ⋮ (TODO 121, 155, 420); RESET joins it, last,
+ * once there is something to reset. The action row is drawn only while it
+ * holds a button. Will, TODO 98.
  */
-test('Send to is alone in the header; Reset is in the action row, once there is something to reset', async ({ page }) => {
+test('Send to is in the field\'s ⋮; Reset joins it once there is something to reset', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     el.populate([
@@ -732,39 +741,28 @@ test('Send to is alone in the header; Reset is in the action row, once there is 
     ]);
     await new Promise((r) => setTimeout(r, 300));
     const seen = (box) => [...box.children].filter((b) => b.localName === 'sherpa-button' && b.getClientRects().length > 0);
+    // A field's own options are its ⋮ menu's rows. TODO 420
     const read = (field) => {
       const f = sr.querySelector('.field[data-field="' + field + '"]');
       const row = f.querySelector('.field-row');
       return {
-        // Reset, left of Send to and its size (Will, 360).
-        reset: seen(f.querySelector('.field-acts')).map((b) => [b.className, Math.round(b.getBoundingClientRect().height)]),
-        head: seen(f.querySelector('.field-group')).map((b) => [b.className,
-          [getComputedStyle(b.shadowRoot.querySelector('button')).borderStartStartRadius,
-            getComputedStyle(b.shadowRoot.querySelector('button')).borderStartEndRadius]]),
+        // The rows its ⋮ offers now, in their order.
+        acts: [...f.querySelectorAll('.field-menu .field-act')]
+          .filter((a) => getComputedStyle(a).display !== 'none')
+          .map((a) => a.getAttribute('value') ?? a.dataset.act),
         row: row.getClientRects().length ? seen(row).map((b) => b.className) : null,
         last: f.lastElementChild === row,
       };
     };
-    const size = (field) => {
-      const f = sr.querySelector('.field[data-field="' + field + '"]');
-      const at = (sel) => f.querySelector(sel)?.getBoundingClientRect();
-      const reset = at('.field-clear');
-      const send = at('.field-raise');
-      return { left: reset.right <= send.left, height: reset.height === send.height, width: reset.width === send.width };
-    };
-    return { view: read('region'), data: read('status'), idle: read('plan'), nowhere: read('customer'), size: size('status') };
-  })()`) as Record<string, { reset: [string, number][]; head: [string, string[]][]; row: string[] | null; last: boolean }>;
+    return { view: read('region'), data: read('status'), idle: read('plan'), nowhere: read('customer') };
+  })()`) as Record<string, { acts: string[]; row: string[] | null; last: boolean }>;
 
-  expect(r['view']).toMatchObject({ head: [], row: null, last: true });
-  expect(r['view'].reset.map(([c]) => c)).toEqual(['field-clear']);
-  expect(r['data']).toMatchObject({ head: [['field-raise', ['4px', '4px']]], row: null, last: true });
-  expect(r['data'].reset.map(([c]) => c)).toEqual(['field-clear']);
+  expect(r['view']).toEqual({ acts: ['clear'], row: null, last: true });
+  // Reset last, after Send to.
+  expect(r['data']).toEqual({ acts: ['raise', 'clear'], row: null, last: true });
   // NO ANSWER YET: Send to is there all the same; nothing to reset.
-  expect(r['idle']).toMatchObject({ head: [['field-raise', ['4px', '4px']]], row: null, last: true });
-  expect(r['idle'].reset).toEqual([]);
-  expect(r['nowhere']).toMatchObject({ head: [], row: null, last: true });
-  // Reset is LEFT of Send to, and the same size.
-  expect(r['size']).toEqual({ left: true, height: true, width: true });
+  expect(r['idle']).toEqual({ acts: ['raise'], row: null, last: true });
+  expect(r['nowhere']).toEqual({ acts: [], row: null, last: true });
 });
 
 /** In ADVANCED the action row leads with Add condition — the inline menu's own
@@ -772,7 +770,7 @@ test('Send to is alone in the header; Reset is in the action row, once there is 
 test('in Advanced, the action row\'s Add condition adds a row to the field\'s menu', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    flip('.field[data-field="owner"] .field-advanced');
+    flip('.field[data-field="owner"] .field-menu input[value="advanced"]');
     await new Promise((r) => setTimeout(r, 200));
     const f = sr.querySelector('.field[data-field="owner"]');
     const menu = f.querySelector('.field-body sherpa-menu');
@@ -983,19 +981,20 @@ test('a menu built by f(x) is told what the filters before it leave', async ({ p
     // The filters before Owner leave Dana only.
     el.drawPresent({ owner: ['Dana'] }, 'data');
     await new Promise((r) => setTimeout(r, 60));
-    const before = !!sr.querySelector('.field[data-field="owner"] sherpa-menu');
-    flip('.field[data-field="owner"] .field-advanced');
+    // A field's own options are its ⋮ menu's rows; its answer is the other menu. TODO 420
+    const before = !!sr.querySelector('.field[data-field="owner"] sherpa-menu:not(.field-menu)');
+    flip('.field[data-field="owner"] .field-menu input[value="advanced"]');
     await new Promise((r) => setTimeout(r, 150));
-    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu');
+    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu:not(.field-menu)');
     return { before, present: menu ? [...(menu.present ?? [])] : null };
   })()`) as { before: boolean; present: string[] | null };
   expect(r.before).toBe(false);
   expect(r.present).toEqual(['Dana']);
 });
 
-/** EVERY field that offers Advanced has its f(x) in its HEADER — a one-chip
- *  list's too — and its menu's own is not shown. Will, TODO 385. */
-test('a one-chip list has its f(x) in its header, and its menu does not', async ({ page }) => {
+/** EVERY field that offers Advanced has it in its HEADER — the ⋮'s row (TODO 420),
+ *  a one-chip list's too — and its menu's own is not shown. Will, TODO 385. */
+test('a one-chip list has its Advanced in its header, and its menu does not', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const options = Array.from({ length: 20 }, (_, i) => ({ value: `a${i}@x.io`, label: `a${i}@x.io` }));
     const panel = await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel', [{
@@ -1005,16 +1004,18 @@ test('a one-chip list has its f(x) in its header, and its menu does not', async 
     await window.__settled();
     const sr = panel.shadowRoot!;
     const field = sr.querySelector<HTMLElement>('.field[data-field="email"]')!;
-    const fx = field.querySelector<HTMLElement>('.field-advanced');
+    // A field's own options are its ⋮ menu's rows. TODO 420
+    const more = field.querySelector<HTMLElement>('.field-more');
+    const fx = field.querySelector<HTMLInputElement>('.field-menu input[value="advanced"]');
     const chip = field.querySelector<HTMLElement>('.field-values sherpa-quick-filter');
     const menu = chip?.querySelector('sherpa-menu') as (HTMLElement & { mode: string }) | null;
     const shown = (el: Element | null | undefined) => !!el && el.getClientRects().length > 0;
-    const look = () => ({ mode: menu?.mode, on: fx?.hasAttribute('data-current'), chip: shown(chip) });
-    const before = { fx: shown(fx), chipFx: getComputedStyle(menu!.shadowRoot!.querySelector('.use-condition')!).display, ...look() };
-    fx!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    const look = () => ({ mode: menu?.mode, on: fx?.checked, chip: shown(chip) });
+    const before = { fx: shown(more) && !!fx, chipFx: getComputedStyle(menu!.shadowRoot!.querySelector('.use-condition')!).display, ...look() };
+    fx!.click();
     await window.__settled();
     const on = look();
-    fx!.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    fx!.click();
     await window.__settled();
     return { before, on, off: look() };
   });
