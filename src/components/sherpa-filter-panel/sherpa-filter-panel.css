@@ -101,6 +101,8 @@
   z-index: 1;
   background: var(--sherpa-style-surface-base, #fff);
 }
+/* Its own fill outranks the accordion's hover, so the hover is said here too. TODO 423 */
+.scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 /* …and the actions on its row stay with it, at the fields' right edge: this
    chevron is at the start. TODO 406 */
 .scope::part(actions) {

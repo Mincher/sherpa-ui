@@ -58,6 +58,9 @@
     outline: var(--sherpa-focus-ring);
     outline-offset: var(--sherpa-focus-offset);
   }
+
+  /* Style +1 is hover. Will, TODO 423 */
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 }
 
 /* ── Actions ─────────────────────────────────────────────────────────────
