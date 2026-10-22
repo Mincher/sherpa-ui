@@ -239,8 +239,10 @@ export interface BindSink {
   view(view: BoundView): void;
   /** A page, or every row — never to a steer-only bind. */
   rows(rows: readonly Row[]): void;
-  /** Its scopes' pending fields, whether one is dirty or waits, and the fields that failed to fetch. TRAP T-apply-and-discard-wait-for-a-change */
-  pending(fields: readonly string[], dirty: boolean, waits: boolean, failed: readonly string[]): void;
+  /** Its scopes' pending fields, whether one is dirty or waits, the fields that failed to
+   *  fetch, and each pending field's APPLIED answer. TRAP T-apply-and-discard-wait-for-a-change */
+  pending(fields: readonly string[], dirty: boolean, waits: boolean, failed: readonly string[],
+    applied: Readonly<Record<string, FieldReading>>): void;
   /** The source let it go. */
   off(): void;
 }
@@ -256,6 +258,9 @@ export interface BoundControl {
   drawScope?: (scope: ScopeDescription, live?: () => ScopeDescription) => void | Promise<void>;
   /** Each answered chip's results — the rows its own answer matches. */
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
+  /** What each field that waits for Apply holds APPLIED — a control that draws a chip per
+   *  value marks only those its draft changed. TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning */
+  drawApplied?: (applied: Readonly<Record<string, FieldReading>>) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
   /** Each field's values the filters before it leave, as value keys; a field not named is not limited. */

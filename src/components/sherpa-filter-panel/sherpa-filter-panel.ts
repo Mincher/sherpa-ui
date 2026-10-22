@@ -1276,6 +1276,19 @@ export class SherpaFilterPanel extends SherpaElement {
     if (menu?.hasAttribute('data-kids')) menu.remove();
   };
 
+  /**
+   * drawApplied(applied) — a bound source says what each field that waits for
+   * Apply holds APPLIED, so only the chips a draft changed read as pending.
+   * SILENT. Will, TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning
+   */
+  drawApplied(applied: Readonly<Record<string, FieldReading>>): void {
+    this.#applied = applied;
+    // A second change leaves `data-pending` as it was: the chips are marked again here.
+    this.#syncPending();
+  }
+  /** Each waiting field's applied answer, as the source last said. */
+  #applied: Readonly<Record<string, FieldReading>> = {};
+
   /** Re-read the pending flags once the event that moved a draft has landed. */
   #queuePending = (): void => {
     queueMicrotask(() => this.#syncPending());
@@ -1293,10 +1306,11 @@ export class SherpaFilterPanel extends SherpaElement {
       const field = held.def.field ?? held.def.id;
       const on = waits && pending.has(field);
       held.box.toggleAttribute('data-pending', on);
-      // EVERY chip of the field, as the bar's one, and its menus — a draft in one too. TODO 424
+      // Its chips and menus — only the chips its draft CHANGED read as pending. TODO 424
       const chips = held.chips();
       const drafting = chips.some((c) => c.drafting) || !!held.menu?.dirty;
-      markField(chips, held.menus(), { pending: on, failed: failed.has(field), drafting });
+      const changed = on ? held.changed(this.#applied[field]) : undefined;
+      markField(chips, held.menus(), { pending: on, failed: failed.has(field), drafting, ...(changed ? { changed } : {}) });
     }
   }
 

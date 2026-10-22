@@ -674,7 +674,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setFieldReading, drawReading, drawResults, drawValueResults, drawPresent, drawOffered, show, hide, close, toggle, drawScopes). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setFieldReading, drawReading, drawResults, drawValueResults, drawPresent, drawOffered, show, hide, close, toggle, drawScopes, drawApplied). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -916,6 +916,12 @@
           "name": "drawScopes",
           "args": "scopes: readonly ScopeDescription[]",
           "description": "The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A date is one chip, its menu a calendar."
+        },
+        {
+          "$type": "method",
+          "name": "drawApplied",
+          "args": "applied: Readonly<Record<string, FieldReading>>",
+          "description": "drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED, so only the chips a draft changed read as pending. SILENT. Will, TODO 424"
         }
       ],
       "jsProps": [

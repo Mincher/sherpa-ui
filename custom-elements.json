@@ -3785,6 +3785,19 @@
                 }
               ],
               "description": "The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A date is one chip, its menu a calendar."
+            },
+            {
+              "kind": "method",
+              "name": "drawApplied",
+              "parameters": [
+                {
+                  "name": "applied",
+                  "type": {
+                    "text": "Readonly<Record<string, FieldReading>>"
+                  }
+                }
+              ],
+              "description": "drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED, so only the chips a draft changed read as pending. SILENT. Will, TODO 424"
             }
           ],
           "events": [

@@ -89,7 +89,9 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
       give(into ? mergeInto(el, into, payload) : payload);
     },
-    pending: (fields, dirty, waits, failed) => {
+    pending: (fields, dirty, waits, failed, applied) => {
+      // What is applied first, so the flags that follow are read against it. TODO 424
+      el.drawApplied?.(applied);
       setAttr(el, 'data-pending', fields.length ? fields.join(' ') : undefined);
       setAttr(el, 'data-dirty', dirty ? '' : undefined);
       // Its scope waits for ONE Apply, local too. TODO 406

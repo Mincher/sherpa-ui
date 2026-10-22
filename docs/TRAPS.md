@@ -17309,7 +17309,14 @@ of its run, its tier parents and its menus, as the bar marks its one chip. Until
 read as a warning, and its menus' Discard was always off. Two writers of one
 attribute each undo the other's answer.
 
+ONLY WHAT CHANGED (Will, 2026-10-22: *"Just the altered value chips need to be
+styled."*). The source tells a bound control each waiting field's APPLIED answer
+(`drawApplied`, beside `data-pending`), and a panel field marks only the chips
+whose tick differs from it (`FilterField.changed`); one chip is its whole field.
+
 - Site: `src/core/ui/filter-host.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`

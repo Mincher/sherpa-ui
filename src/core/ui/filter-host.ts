@@ -37,15 +37,17 @@ export function pendingFields(host: HTMLElement, list: 'pending' | 'failed' = 'p
 
 /** One field's chips and menus — a bar's one chip, or a panel's every chip of
  *  the field — told it waits for Apply (`warning`, and Discard on) and whether
- *  its read failed (`critical`). ONE door for both hosts. TODO 424 ·
+ *  its read failed (`critical`). Where it says which chips its draft `changed`,
+ *  only those read as pending. ONE door for both hosts. TODO 424 ·
  *  TRAP T-a-pending-chip-reads-as-a-warning */
 export function markField(
   chips: Iterable<Element | null | undefined>, menus: Iterable<Element | null | undefined>,
-  said: { pending: boolean; failed: boolean; drafting?: boolean },
+  said: { pending: boolean; failed: boolean; drafting?: boolean; changed?: ReadonlySet<Element> },
 ): void {
   for (const chip of chips) {
-    chip?.toggleAttribute('data-pending', said.pending || !!said.drafting);
-    chip?.toggleAttribute('data-failed', said.failed);
+    if (!chip) continue;
+    chip.toggleAttribute('data-pending', (said.pending && (said.changed?.has(chip) ?? true)) || !!said.drafting);
+    chip.toggleAttribute('data-failed', said.failed);
   }
   for (const menu of menus) menu?.toggleAttribute('data-pending', said.pending);
 }

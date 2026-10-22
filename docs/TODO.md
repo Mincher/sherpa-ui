@@ -1921,6 +1921,14 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   `#paintTiers`, `#flipParent`, `#takeKids`, `#empty`) are gone. Each chip says
   its field in `data-id`. TRAP `T-a-field-is-one-object`. Chromium: sherpa-ui
   1148, Demos 169.
+- ✅ **Only the changed chips (2026-10-22).** Will: *"All panel chips in a
+  section are being set to unapplied. Just the altered value chips need to be
+  styled."* The source now tells a bound control each waiting field's APPLIED
+  answer (`drawApplied`, sent with `data-pending`); `FilterField.changed` gives
+  the chips whose tick differs from it, and `markField` marks only those. One
+  chip is still its whole field (the bar's, a date). Test: Demos
+  `reforged-panel-scope-header` — one region ticked is pending and the others
+  are not; with EMEA applied, a second region is pending and EMEA is not.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

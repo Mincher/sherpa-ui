@@ -277,12 +277,13 @@ export class SourceBinding {
    */
   syncPending(
     fieldsOf: (scopes: string[]) => string[], dirty: (scope: string) => boolean, waits: (scope: string) => boolean,
-    failed: (scopes: string[]) => string[],
+    failed: (scopes: string[]) => string[], applied: (scopes: string[], fields: readonly string[]) => Record<string, FieldReading>,
   ): void {
     for (const [, { scope, sink }] of this.#bound) {
       if (!scope) continue;
       const scopes = typeof scope === 'string' ? [scope] : [...scope];
-      sink.pending(fieldsOf(scopes), scopes.some((id) => dirty(id)), scopes.some((id) => waits(id)), failed(scopes));
+      const fields = fieldsOf(scopes);
+      sink.pending(fields, scopes.some((id) => dirty(id)), scopes.some((id) => waits(id)), failed(scopes), applied(scopes, fields));
     }
   }
 

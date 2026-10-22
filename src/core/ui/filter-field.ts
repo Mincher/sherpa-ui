@@ -21,6 +21,7 @@
  * - .takeKids — A parent's children menu applied.
  * - .paintTiers — Draw each parent chip: ON while it, or a child of it, is picked.
  * - .empty — Empty it, whatever answers it.
+ * - .changed — Its chips whose tick differs from the answer applied: only those read as pending.
  * - .answered — Has it an answer: a chip ticked, a row, or none.
  */
 import { modeOf, type ConditionType, type FieldReading } from '../data/filter-state.js';
@@ -188,6 +189,21 @@ export class FilterField {
     // Each chip clears itself — a Group or Sort chip its column and way.
     for (const chip of this.chips()) chip.clear();
     if (this.menu && !arranges(kindOf(this.def))) this.menu.reading = { picked: [] };
+  }
+
+  /** ONE chip is the whole field; a run's or a tiered field's chip changed when
+   *  its value — or a child of its — is ticked now and was not applied, or the
+   *  other way. Will, TODO 424 */
+  changed(applied: FieldReading | undefined): Set<SherpaQuickFilter> {
+    const chips = this.chips();
+    if (this.oneChip()) return new Set(chips);
+    const was = new Set((applied && !applied.suspended ? applied.picked ?? [] : []).map(valueKey));
+    const t = this.tiers;
+    const now = new Set(t ? t.picks : this.picked());
+    return new Set(chips.filter((chip) => {
+      const v = chip.dataset['value'] ?? '';
+      return [v, ...t?.kids.get(v) ?? []].some((k) => now.has(k) !== was.has(k));
+    }));
   }
 
   get answered(): boolean {

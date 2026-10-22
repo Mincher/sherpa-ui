@@ -1067,7 +1067,12 @@ export class DataSource extends EventTarget {
         ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
       })))].filter((f) => this.#context.pending(f))
       : []), (id) => this.#context.dirty(id), (id) => this.#context.named(id),
-    (scopes) => [...this.#failed].filter((f) => scopes.some((id) => this.#context.scope(id).includes(f))));
+    (scopes) => [...this.#failed].filter((f) => scopes.some((id) => this.#context.scope(id).includes(f))),
+    // Each pending field's answer as APPLIED, so a control marks only what its draft changed. TODO 424
+    (scopes, fields) => Object.fromEntries(fields.flatMap((f) => {
+      const at = scopes.find((id) => this.#applied.scopes[id]?.readings[f]);
+      return at ? [[f, this.#applied.scopes[at]!.readings[f]!] as const] : [];
+    })));
   }
 
   /** The SEARCH as needles, so a view marks what it found: a `contains` on each

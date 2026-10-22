@@ -99,6 +99,7 @@ For a page's filters as a column, in the `panel-start` area of `sherpa-app-shell
 | `close(reason: 'reader' \| 'width' \| 'page' = 'reader')` | `hide()`, in the spelling every surface keeps. |
 | `toggle()` |  |
 | `drawScopes(scopes: readonly ScopeDescription[])` | The source draws each scope WHOLE — what it holds and answers, what it may add, how its rows are arranged. A date is one chip, its menu a calendar. |
+| `drawApplied(applied: Readonly<Record<string, FieldReading>>)` | drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED, so only the chips a draft changed read as pending. SILENT. Will, TODO 424 |
 
 ## Events
 
