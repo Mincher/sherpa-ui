@@ -81,10 +81,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
-| ❓ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
-| ❓ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
-| ❓ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
-| ❓ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
+| ⬜ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
+| ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
+| ⬜ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
 | ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
@@ -94,7 +94,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
 | ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
-| ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| ⬜ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
 | ⬜ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
@@ -1993,6 +1993,7 @@ panel."*
 show on the panel's chips and field headers, as on the bar. A pick NOT yet
 applied shows no count by design (a pending chip's badge waits, TODO 304), and
 in panel mode the bar's Apply is hidden. ❓ Will: the steps, after a reload.
+**Will, 2026-10-22: still missing after a reload.**
 
 ### `[x]` ✅ 412 — BUG: a chip with 0 matches stays on
 
@@ -2243,6 +2244,7 @@ otherwise".
   all its fields.
 - A fetching chip switched OFF asks for all rows, as any other does (my pick):
   off is the reader's choice, and Apply still gates it.
+- **Will, 2026-10-22: my picks — Q1 A, Q2 A.**
 
 ### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
 
@@ -2295,7 +2297,7 @@ deleted.
   scroll-driven animations, for Chromium and WebKit (iOS): a zero-height marker
   before each group names a view timeline, and the group animates its corners,
   borders and height over the marker's exit. B: `scroll-state(stuck: top)` —
-  simpler, Chromium only. My pick: A, the same as 401.
+  simpler, Chromium only. My pick: A, the same as 401. **Will: A.**
 - Stacking: each group sticks below the ones before it (`--_stack`, its index
   among the groups); from two stuck, each is half height — with A, the second
   group's marker drives the first one's half height too (`timeline-scope`).
@@ -2358,7 +2360,7 @@ with their own fill, shot in each):
 
 ❓ **For Will — the mechanism.** A (my pick): scroll-driven animations —
 Chromium and WebKit, so iOS too (mobile is a target). B: `scroll-state()`, as
-asked — Chromium only.
+asked — Chromium only. **Will, 2026-10-22: A.**
 
 **Then the build:** `data-scroll-shadow` on any Sherpa element (off by default);
 each component marks its scroll box with one shared class
@@ -2381,6 +2383,8 @@ Will's 349 ("scopes and preceding filters"). Before 349, Limit worked both ways.
 **❓ For Will.** **A (my pick):** within a scope, every OTHER answered filter
 limits a field's values, both ways (as before 349); the chip COUNTS stay ordered
 (348). **B:** keep the order rule: only the filters before a field limit it.
+
+**Will, 2026-10-22: "Still not working" — A.**
 
 ### `[x]` ✅ 399 — BUG: Recents lists Settings pages and Context names; a switch for Views or Contexts
 
