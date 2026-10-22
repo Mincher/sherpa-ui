@@ -1887,6 +1887,16 @@ results, none. The panel marks pending on its field box and its one answer chip,
 never on a run's value chips, so a run shows no warning. The plan for one chip
 logic is TODO 415's.
 
+**Will, 2026-10-22: "2 go"** — move the logic into one place. The plan, in 11
+commits: `docs/history/plan-424-one-chip-logic.md`.
+
+- ✅ **Step 1 — the warning (2026-10-22).** One door, `markField` in
+  `filter-host.ts`, marks a field's chips and menus pending (warning, Discard
+  on) and failed (critical); the bar marks its one chip through it, the panel
+  every chip of a field — a run, tier parents, the answer chip — and its menus,
+  late-built ones too. A pending run's value chips hide their badges, as the
+  bar's chip does (304). Test: Demos `reforged-panel-scope-header` (a new case).
+
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 
 Will, 2026-10-22: *"Accordion headers need a hover style (light grey fill using

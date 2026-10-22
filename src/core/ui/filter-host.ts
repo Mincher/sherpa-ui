@@ -6,6 +6,7 @@
  * - organiseOptions — A Group or Sort chip's rows: each column, the one in force ticked.
  * - arrangeFrom — Follow the host's arrangement onto its Group or Sort chip; the chip knows how.
  * - pendingFields — The fields the host's source says wait for their Apply, or could not be fetched.
+ * - markField — One field's chips and menus, told whether it waits for Apply and whether its read failed.
  */
 import type { OrganiseColumn } from '../data/data-source.js';
 import type { FilterOption } from './filter-def.js';
@@ -27,4 +28,19 @@ export function arrangeFrom(host: HTMLElement, chip: SherpaQuickFilter | null | 
  *  space-separated — or, with `failed`, could not be fetched (TODO 411). */
 export function pendingFields(host: HTMLElement, list: 'pending' | 'failed' = 'pending'): Set<string> {
   return new Set((host.dataset[list] ?? '').split(' ').filter(Boolean));
+}
+
+/** One field's chips and menus — a bar's one chip, or a panel's every chip of
+ *  the field — told it waits for Apply (`warning`, and Discard on) and whether
+ *  its read failed (`critical`). ONE door for both hosts. TODO 424 ·
+ *  TRAP T-a-pending-chip-reads-as-a-warning */
+export function markField(
+  chips: Iterable<Element | null | undefined>, menus: Iterable<Element | null | undefined>,
+  said: { pending: boolean; failed: boolean; drafting?: boolean },
+): void {
+  for (const chip of chips) {
+    chip?.toggleAttribute('data-pending', said.pending || !!said.drafting);
+    chip?.toggleAttribute('data-failed', said.failed);
+  }
+  for (const menu of menus) menu?.toggleAttribute('data-pending', said.pending);
 }

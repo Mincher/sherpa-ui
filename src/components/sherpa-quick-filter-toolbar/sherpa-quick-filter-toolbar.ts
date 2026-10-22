@@ -19,7 +19,7 @@ import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
-import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { arrangeFrom, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
 import { readingAnswered, type QueryRequest } from '../../core/data/query.js';
@@ -548,11 +548,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
       const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
-      chip.toggleAttribute('data-pending', !!menu?.dirty || waiting.has(field));
-      // A waiting scope's menu: Discard is on while its field is. TODO 406
-      menu?.toggleAttribute('data-pending', waiting.has(field));
-      // Its own read failed. TODO 411
-      chip.toggleAttribute('data-failed', failed.has(field));
+      markField([chip], [menu], { pending: waiting.has(field), failed: failed.has(field), drafting: !!menu?.dirty });
     }
   }
 

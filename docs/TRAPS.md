@@ -17275,10 +17275,15 @@ the bar's `data-pending` — a panel edit waiting for its Apply.
 
 The look is a PIN (`'&[data-pending]': warning` in state-pins.yaml, written
 after the on pin so it outranks it); the chip's CSS only thickens the edge, as
-an on chip's, and its tip starts "Unapplied changes - " (Will, TODO 406). The BAR is the
-one writer of the chip's flag: two writers of one attribute each undo the
-other's answer.
+an on chip's, and its tip starts "Unapplied changes - " (Will, TODO 406). The chip's
+HOST is the one writer of its flag — the bar, or the panel — and both write it
+through ONE door, `markField` (`filter-host.ts`): a panel field marks EVERY chip
+of its run, its tier parents and its menus, as the bar marks its one chip. Until
+424 the panel marked only a field drawn as one chip, so a run of values never
+read as a warning, and its menus' Discard was always off. Two writers of one
+attribute each undo the other's answer.
 
+- Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`

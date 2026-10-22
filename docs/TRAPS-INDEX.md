@@ -359,7 +359,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-flush-between-surfaces-draws-two-edges](TRAPS.md#t-a-panel-flush-between-surfaces-draws-two-edges) — filter-panel
 - [T-a-panel-follows-the-query-open-or-shut](TRAPS.md#t-a-panel-follows-the-query-open-or-shut) — filter-panel
 - [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — filter-panel
-- [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — quick-filter, quick-filter-toolbar
+- [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, quick-filter, quick-filter-toolbar
 - [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
 - [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-panel, quick-filter, quick-filter-toolbar

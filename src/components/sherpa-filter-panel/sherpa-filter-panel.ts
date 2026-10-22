@@ -26,7 +26,7 @@ import {
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
-import { arrangeFrom, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { arrangeFrom, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { modeOf, readingRows, ruleOut, type FieldReading } from '../../core/data/filter-state.js';
 import { countSaid } from '../../core/data/filter-face.js';
@@ -1301,6 +1301,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#built = { menu, held };
     await menu.rendered;
     menu.items?.(items);
+    this.#syncPending();
     return menu;
   }
 
@@ -1412,6 +1413,7 @@ export class SherpaFilterPanel extends SherpaElement {
     chip.append(menu);
     this.#fill(menu, items, undefined);
     this.#markPresent(held);
+    this.#syncPending();
   };
 
   /** A children menu shut: it goes, so a shut chip holds no menu. */
@@ -1441,12 +1443,9 @@ export class SherpaFilterPanel extends SherpaElement {
       const field = held.def.field ?? held.def.id;
       const on = waits && pending.has(field);
       held.box.toggleAttribute('data-pending', on);
-      // A field drawn as ONE chip shows it too, so its badge waits. TODO 304
-      this.#answerChip(held)?.toggleAttribute('data-pending', on);
-      // Its own read failed: each of its chips says so. TODO 411
-      for (const chip of [this.#answerChip(held), ...held.values.querySelectorAll<HTMLElement>('.value')]) {
-        if (chip && (chip === this.#answerChip(held) || this.#heldOfChip(chip) === held)) chip.toggleAttribute('data-failed', failed.has(field));
-      }
+      // EVERY chip of the field, as the bar's one, and its menus. TODO 424
+      const chips = [this.#answerChip(held), ...[...held.values.querySelectorAll<HTMLElement>('.value')].filter((c) => this.#heldOfChip(c) === held)];
+      markField(chips, [held.menu, ...held.values.querySelectorAll('sherpa-menu[data-kids]')], { pending: on, failed: failed.has(field) });
     }
   }
 
