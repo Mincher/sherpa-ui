@@ -123,6 +123,22 @@
           ]
         },
         {
+          "el": "div",
+          "class": "values",
+          "part": "values",
+          "attrs": {
+            "data-status": "default"
+          },
+          "children": [
+            {
+              "slot": "values",
+              "attrs": {
+                "data-accepts": "item"
+              }
+            }
+          ]
+        },
+        {
           "el": "span",
           "class": "menu-slot",
           "children": [
@@ -130,6 +146,20 @@
               "slot": "menu",
               "attrs": {
                 "data-accepts": "menu"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "value-chip-tpl",
+          "children": [
+            {
+              "el": "sherpa-quick-filter",
+              "class": "value",
+              "attrs": {
+                "slot": "values",
+                "data-locked": ""
               }
             }
           ]
@@ -312,6 +342,19 @@
     },
     {
       "$type": "prop",
+      "name": "data-layout",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "chip",
+        "section"
+      ],
+      "description": "chip | section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425"
+    },
+    {
+      "$type": "prop",
       "name": "data-locked",
       "type": "boolean",
       "observed": true,
@@ -458,6 +501,13 @@
     },
     {
       "$type": "slot",
+      "name": "values",
+      "accepts": [
+        "item"
+      ]
+    },
+    {
+      "$type": "slot",
       "name": "menu",
       "accepts": [
         "menu"
@@ -479,6 +529,11 @@
       "$type": "state",
       "name": "open",
       "selector": ":host([data-open])"
+    },
+    {
+      "$type": "state",
+      "name": "section",
+      "selector": ":host([data-layout=\"section\"])"
     },
     {
       "$type": "state",

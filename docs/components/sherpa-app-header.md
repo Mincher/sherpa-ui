@@ -50,6 +50,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-labs` | boolean |  | show the labs/beaker button |
 | `data-loading` | boolean |  | run the indeterminate loading bar |
 | `data-menu` | boolean |  | show the app-switcher button |
+| `data-no-filters` | boolean |  | no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425 |
 | `data-notifications` | number |  | unread count — shows the bell + its badge |
 | `data-notifications-open` | boolean |  | the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened |
 | `data-theme-mode` | `light` `dark` |  | light \| dark — the mode on screen; the button offers the other |

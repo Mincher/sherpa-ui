@@ -366,6 +366,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-filters",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425"
+    },
+    {
+      "$type": "prop",
       "name": "data-notifications",
       "type": "number",
       "observed": true,
@@ -488,6 +497,11 @@
       "$type": "state",
       "name": "icon",
       "selector": ":host([data-icon])"
+    },
+    {
+      "$type": "state",
+      "name": "no-filters",
+      "selector": ":host([data-no-filters])"
     },
     {
       "$type": "state",

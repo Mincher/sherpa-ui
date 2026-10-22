@@ -46,7 +46,7 @@ export interface ContextDefinition {
   module?: string;
   /** `header: false` takes the app header away while it is open; `resizable`
    *  lets a reader resize its cards. */
-  chrome?: { header?: boolean; resizable?: boolean };
+  chrome?: { header?: boolean; filters?: boolean; resizable?: boolean };
 }
 
 /** One Settings page: its row's name and icon, and its markup. */

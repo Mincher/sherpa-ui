@@ -80,6 +80,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-no-filters",
+          "description": "no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425",
+          "valueSet": "v"
+        },
+        {
           "name": "data-notifications",
           "description": "unread count — shows the bell + its badge"
         },
@@ -2744,6 +2749,10 @@
           "description": "the field the Group chip points at (the standard name)"
         },
         {
+          "name": "data-heading",
+          "description": "its scope's name, written by its source: a portrait bar's heading."
+        },
+        {
           "name": "data-hide-unmatched",
           "description": "on | off — the host hides what Limit rules out, when it is on",
           "values": [
@@ -2781,6 +2790,18 @@
           "name": "data-nothing-to-reset",
           "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231.",
           "valueSet": "v"
+        },
+        {
+          "name": "data-orientation",
+          "description": "landscape | portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425",
+          "values": [
+            {
+              "name": "landscape"
+            },
+            {
+              "name": "portrait"
+            }
+          ]
         },
         {
           "name": "data-panel-mode",
@@ -2963,6 +2984,18 @@
         {
           "name": "data-label",
           "description": "chip text (or use the default slot). Rewritten to \"Field: Value\" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge."
+        },
+        {
+          "name": "data-layout",
+          "description": "chip | section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425",
+          "values": [
+            {
+              "name": "chip"
+            },
+            {
+              "name": "section"
+            }
+          ]
         },
         {
           "name": "data-locked",

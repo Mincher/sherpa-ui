@@ -61,6 +61,7 @@
           "type": "object", "additionalProperties": false,
           "properties": {
             "header": { "description": "false takes the app header away while it is open.", "type": "boolean" },
+          "filters": { "description": "false takes the header's filter row away while it is open: the page holds its own filters.", "type": "boolean" },
             "resizable": { "description": "A reader may resize its cards.", "type": "boolean" }
           }
         }

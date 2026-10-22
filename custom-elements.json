@@ -229,6 +229,13 @@
               }
             },
             {
+              "name": "data-no-filters",
+              "description": "no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-notifications",
               "description": "unread count — shows the bell + its badge",
               "type": {
@@ -8164,6 +8171,13 @@
               }
             },
             {
+              "name": "data-heading",
+              "description": "its scope's name, written by its source: a portrait bar's heading.",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-hide-unmatched",
               "description": "on | off — the host hides what Limit rules out, when it is on",
               "type": {
@@ -8197,6 +8211,14 @@
               "type": {
                 "text": "boolean"
               }
+            },
+            {
+              "name": "data-orientation",
+              "description": "landscape | portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425",
+              "type": {
+                "text": "'landscape' | 'portrait'"
+              },
+              "default": "\"landscape\""
             },
             {
               "name": "data-panel-mode",
@@ -8769,6 +8791,9 @@
               "name": "organise"
             },
             {
+              "name": "scope-head"
+            },
+            {
               "name": "switch"
             },
             {
@@ -8915,6 +8940,13 @@
               "description": "chip text (or use the default slot). Rewritten to \"Field: Value\" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge.",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-layout",
+              "description": "chip | section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425",
+              "type": {
+                "text": "'chip' | 'section'"
               }
             },
             {
@@ -9200,6 +9232,10 @@
               "description": "the chip label (accepts: text)"
             },
             {
+              "name": "values",
+              "description": "(accepts: item)"
+            },
+            {
               "name": "menu",
               "description": "a <sherpa-menu> of values for this field (accepts: menu)"
             }
@@ -9234,6 +9270,9 @@
             },
             {
               "name": "swatch"
+            },
+            {
+              "name": "values"
             }
           ]
         }

@@ -18,6 +18,12 @@
 
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)
+    data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
+                    column: its heading and actions on top, then the Switch,
+                    Group and Sort, then each list field as a SECTION of value
+                    chips. Nothing folds. TODO 425
+    data-heading   its scope's name, written by its source: a portrait bar's
+                    heading.
     data-fetch-fields  the fields the STORE answers, space-separated: each Apply
                     asks it once for the keys they match. Read by the provider.
     data-at-default  the filters already ARE the View's default: "Reset all to
@@ -94,6 +100,8 @@
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
+    <!-- A PORTRAIT bar's heading: its scope's name. TODO 425 -->
+    <div class="scope-head" part="scope-head"><span class="scope-title"></span></div>
     <div class="view-zone" part="view-zone">
       <slot name="view" data-accepts="control"></slot>
     </div>

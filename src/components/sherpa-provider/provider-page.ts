@@ -376,6 +376,8 @@ export class ProviderPage {
       }] : [];
       // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
       if (scope === VIEW) bar.toggleAttribute('data-custom-view', !!view && custom.has(view));
+      // Its scope's name: a portrait bar's heading. TODO 425
+      if (described.label) bar.setAttribute('data-heading', described.label);
       // Its sets first, so one render draws them. TRAP T-a-filter-set-groups-or-chains
       bar.groupSets?.(described.sets ?? []);
       await bar.populate([...picker, ...described.filters]);

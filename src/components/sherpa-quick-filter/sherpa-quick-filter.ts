@@ -79,6 +79,8 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-an-inactive-chip-says-where-its-filter-went */
     'data-applied-at': { type: 'string', kind: 'style' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
+    // A field's whole answer in the flow: its menu's rows as value chips. TODO 425
+    'data-layout': { type: 'enum', kind: 'behaviour', values: ['chip', 'section'] },
     /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
        selects on it; the chip reads it to name its own state. */
     'data-id': { type: 'string', kind: 'style' },
@@ -119,6 +121,8 @@ export class SherpaQuickFilter extends SherpaElement {
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
+    // A value chip's press, in a section: it picks its row. TODO 425
+    this.addEventListener('quick-filter-click', this.#onValuePress);
     /* The menu's rows can arrive AFTER this chip connects — a toolbar hands
        them over once the chip is in the page — and pre-ticked rows fire no
        native change. TRAP T-chip-empty-check-waits-for-onconnect */
@@ -186,6 +190,7 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   override onChange(name: string): void {
+    if (name === 'data-layout') return this.#syncValues();
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
@@ -453,6 +458,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** Everything the chip derives from its picks. */
   #applySelection(values: string[]): void {
     this.current = this.#answers(values);
+    this.#syncValues();
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
     this.#syncBadge();
@@ -909,6 +915,8 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-chip-empty-check-waits-for-onconnect
    */
   #onMenuItems = (): void => {
+    // A section's value chips are the rows: drawn as they come. TODO 425
+    this.#syncValues();
     /* A TICKED answer is only readable once the rows stamp — and a TYPED one
        has none to tick, so it is asked too: the menu now draws before the
        chip has looked. TRAP T-a-chip-says-its-own-answer */
@@ -935,7 +943,51 @@ export class SherpaQuickFilter extends SherpaElement {
     const state = this.#state(values);
     this.#syncBadge();
     this.#syncCondition(state);
+    this.#syncValues();
   }
+
+  /**
+   * A SECTION's value chips: one per menu row — a tiered field's parents —
+   * ticked as the menu is, a parent while it or a child is. The answer stays
+   * the menu's; these only show it. TODO 425
+   */
+  #syncValues(): void {
+    const menu = this.#fieldMenu();
+    const items = this.dataset['layout'] === 'section' && menu && !menu.dataset['body'] ? menu.itemData ?? [] : [];
+    const tops = items.filter((i) => i.parent === undefined);
+    const mine = new Map([...this.querySelectorAll<HTMLElement>(':scope > .value')].map((c) => [c.dataset['value'] ?? '', c]));
+    const picked = new Set(menu?.values ?? []);
+    for (const item of tops) {
+      const one = mine.get(item.value) ?? this.clone('template.value-chip-tpl');
+      if (!one) return;
+      mine.delete(item.value);
+      one.dataset['value'] = item.value;
+      one.dataset['id'] = this.dataset['id'] ?? '';
+      one.setAttribute('data-label', item.label);
+      const kids = items.filter((k) => k.parent === item.value).map((k) => k.value);
+      one.toggleAttribute('data-current', [item.value, ...kids].some((k) => picked.has(k)));
+      // In the menu's order: appending one already here moves it.
+      this.append(one);
+    }
+    for (const gone of mine.values()) gone.remove();
+  }
+
+  /** A value chip was pressed: pick its row — a parent with its children — as a
+   *  reader would, through the menu, Apply too. TODO 425 */
+  #onValuePress = (event: Event): void => {
+    const one = event.target as HTMLElement;
+    if (one === this || one.parentElement !== this || !one.classList.contains('value')) return;
+    event.stopPropagation();
+    // Inactive is not interactive. TRAP T-a-ruled-out-value-is-greyed
+    const menu = this.#fieldMenu();
+    if (!menu || one.hasAttribute('data-unavailable')) return;
+    const value = one.dataset['value'] ?? '';
+    const mine = new Set([value, ...(menu.itemData ?? []).filter((i) => i.parent === value).map((i) => i.value)]);
+    const on = !one.hasAttribute('data-current');
+    const rest = menu.values.filter((v) => !mine.has(v));
+    menu.values = menu.dataset['select'] === 'single' ? (on ? [value] : []) : on ? [...rest, value] : rest;
+    menu.apply();
+  };
 
   /** A DATE with no day reads its default, Today: OFF, one press from on. Will, TODO 394 */
   #orDefault(values: string[]): string[] {

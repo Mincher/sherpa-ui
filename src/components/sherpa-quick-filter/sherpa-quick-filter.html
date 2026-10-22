@@ -22,6 +22,11 @@
                     tall. Its ON is SHOWN, so at rest every key is on.
                     TODO 149
     data-current    selected/on state (boolean)
+    data-layout     chip | section — a SECTION is a field's whole answer in
+                    the flow, as a portrait bar draws it: its toggle part is the
+                    heading, its menu part still opens the menu, and each menu
+                    row is a VALUE chip below, whose press picks that row.
+                    TODO 425
     data-label      chip text (or use the default slot). Rewritten to
                     "Field: Value" while exactly ONE menu value is picked;
                     two or more revert to the field name plus the count badge.
@@ -124,7 +129,15 @@
       <span class="caret-icon sherpa-icon-box" part="caret-icon" aria-hidden="true"></span>
     </button>
 
+    <!-- A SECTION's values: one value chip per menu row, the answer still the
+         menu's. Shown only in `data-layout="section"`. TODO 425 -->
+    <!-- `default`: a value chip shows ITS state, never its field chip's. -->
+    <div class="values" part="values" data-status="default"><slot name="values" data-accepts="item"></slot></div>
+
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
+
+    <!-- One value chip: a toggle its field chip draws, locked to its row. -->
+    <template class="value-chip-tpl"><sherpa-quick-filter class="value" slot="values" data-locked></sherpa-quick-filter></template>
 
     <!-- A jump row, cloned into the slotted menu. No `slot`: rows go in the
          menu's DEFAULT slot, and a row carrying one is never projected. -->

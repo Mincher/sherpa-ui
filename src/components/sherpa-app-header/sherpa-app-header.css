@@ -192,6 +192,7 @@
 }
 /* A toolbar fills the row; a lone chip (Jump to) keeps its own size. */
 .filters ::slotted(sherpa-quick-filter-toolbar) { inline-size: 100%; }
+:host([data-no-filters]) .filters { display: none; }
 
 /* ── Loading bar ─────────────────────────────────────────────────────── */
 /* Absolutely placed on the header's bottom edge so it NEVER adds height — in the

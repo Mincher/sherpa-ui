@@ -73,6 +73,44 @@
   outline-offset: var(--sherpa-focus-offset);
 }
 
+/* ── A SECTION — a field's whole answer in the flow, as a portrait bar draws
+   it: the toggle part is its heading, the menu part opens its menu, and its
+   values are value chips below. TODO 425 */
+.values { display: none; }
+:host([data-layout="section"]) {
+  display: flex;
+  inline-size: 100%;
+}
+:host([data-layout="section"]) .chip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
+  inline-size: 100%;
+  block-size: auto;
+}
+:host([data-layout="section"]) .body {
+  justify-self: start;
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  padding-inline: 0;
+  border-color: transparent;
+  background: none;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-weight: var(--sherpa-font-weight-light, 300);
+  text-transform: uppercase;
+}
+:host([data-layout="section"]) .caret {
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+}
+/* The values say what is picked: the menu part keeps only its icon. */
+:host([data-layout="section"]) .caret-label { display: none; }
+:host([data-layout="section"]) .values {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
+
 /* Snapped: flat right corners on the body (Structure ext `snap-right-edge`). */
 :host([data-menu]) .body {
   border-start-end-radius: 0;

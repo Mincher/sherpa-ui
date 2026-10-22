@@ -29,6 +29,17 @@
         "children": [
           {
             "el": "div",
+            "class": "scope-head",
+            "part": "scope-head",
+            "children": [
+              {
+                "el": "span",
+                "class": "scope-title"
+              }
+            ]
+          },
+          {
+            "el": "div",
             "class": "view-zone",
             "part": "view-zone",
             "children": [
@@ -484,6 +495,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-heading",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "its scope's name, written by its source: a portrait bar's heading."
+    },
+    {
+      "$type": "prop",
       "name": "data-hide-unmatched",
       "type": "enum",
       "observed": true,
@@ -534,6 +554,20 @@
       "declared": true,
       "kind": "style",
       "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231."
+    },
+    {
+      "$type": "prop",
+      "name": "data-orientation",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "landscape",
+        "portrait"
+      ],
+      "default": "landscape",
+      "description": "landscape | portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425"
     },
     {
       "$type": "prop",
@@ -686,6 +720,11 @@
       "$type": "state",
       "name": "no-actions",
       "selector": ":host([data-no-actions])"
+    },
+    {
+      "$type": "state",
+      "name": "portrait",
+      "selector": ":host([data-orientation=\"portrait\"])"
     },
     {
       "$type": "state",

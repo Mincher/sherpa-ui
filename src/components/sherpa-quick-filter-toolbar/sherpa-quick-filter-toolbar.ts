@@ -9,7 +9,7 @@
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
-import { advancedOf, kindOf } from '../../core/ui/filter-kind.js';
+import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
@@ -63,6 +63,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
+    /* LANDSCAPE, a strip; PORTRAIT, the panel's column: actions on top, then
+       each list field as a SECTION of value chips. Nothing folds. TODO 425 */
+    'data-orientation': { type: 'enum', kind: 'behaviour', values: ['landscape', 'portrait'] },
+    // The scope's name, as its source says it: a portrait bar's heading.
+    'data-heading': { type: 'string', kind: 'content', to: '.scope-title' },
     /* The host offers "Limit to matching filters", on or off. Will, TODO 178.
        TRAP T-the-more-menu-holds-what-folded */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
@@ -285,8 +290,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Does the chip run want more room than it has? TRAP T-overflowing-needs-1px-slack */
   #overflowing(): boolean {
+    // A portrait column never folds. TODO 425
+    if (this.dataset['orientation'] === 'portrait') return false;
     const chips = this.$('.chips');
     return !!chips && chips.scrollWidth > chips.clientWidth + 1;
+  }
+
+  /** PORTRAIT: each LIST field's chip is a SECTION — its heading, then its
+   *  values as value chips. A date, a number, a long list, Group, Sort and the
+   *  View chip stay chips. TODO 425 */
+  #syncLayout(): void {
+    const portrait = this.dataset['orientation'] === 'portrait';
+    for (const chip of this.#chips()) {
+      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const menu = chip.querySelector<SherpaMenu>(':scope > sherpa-menu');
+      const list = !!def && menu?.getAttribute('data-type') === 'filter' && !menu.dataset['body']
+        && !chip.hasAttribute('data-persistent') && !arranges(kindOf(def)) && !oneChipList(def);
+      if (portrait && list) chip.setAttribute('data-layout', 'section');
+      else chip.removeAttribute('data-layout');
+    }
   }
 
   /** Put every chip back, before a fresh measurement. */
@@ -866,6 +888,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-the-add-menu-is-the-whole-list */
     this.#renderAvailable();
     this.#syncPending();
+    this.#syncLayout();
 
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
@@ -1128,6 +1151,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onChange(name?: string): void {
+    if (name === 'data-orientation') {
+      this.#syncLayout();
+      this.#reflow();
+    }
     // A Switch it no longer shows — hidden, or the panel answering — gives the filters back.
     if ((name === 'data-panel-mode' || name === 'data-switchable' || name === 'data-type') && this.filtersSuspended
       && (!this.#switchable || this.hasAttribute('data-panel-mode'))) {
@@ -1329,6 +1356,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   async drawScope(scope: ScopeDescription, live?: () => ScopeDescription): Promise<void> {
     this.#scoped = true;
+    // The scope's name: a portrait bar's heading. TODO 425
+    this.set('data-heading', scope.label);
     // A list this bar kept before a source drew it goes to the source, below.
     const handover = this.#switchedOff;
     this.#switchedOff = null;

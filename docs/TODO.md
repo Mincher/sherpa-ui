@@ -106,6 +106,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
+| 🚧 | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1871,6 +1872,40 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
+
+### `[ ]` 🚧 425 — REWORK: the panel is the bar, in portrait
+
+Will, 2026-10-22: *"We need to rethink the filter panel and toolbar approach.
+The elements are the same across both so they should really just be 2
+presentations of the same component … a flip between landscape and portrait
+mode (still consolidating all toolbars and moving the content to the panel area
+for panel mode)."* Left: Toggle, divider, Group, Sort, divider, filter chips
+(toggle part: badge, label; menu part: value label, menu icon, menu). Right:
+Apply, Discard, panel/toolbar toggle, Filters menu, Suggest filters, ⋮. *"If we
+have 2 variants of a filter chip — Field and Values (the default chip), Value
+only (the boolean chip) — we can unpack toolbar chips into a series of Value only
+chips in each filter section of the panel. Where there are tiers of values
+(Customer) the chip unpacks to a series of Field and Value chips … Use HTML and
+CSS as much as possible … Don't remove the existing filter panel. Add a page to
+the demo app with the old panel and the new toolbar orientation side by side."*
+And: Favorite, Save and Refresh may move to the App Header (they never move).
+
+**The plan:** `docs/history/plan-425-portrait-toolbar.md`.
+
+- ✅ **Phase 1 (2026-10-22).** `data-orientation="portrait"` on the bar: its
+  heading (`data-heading`, the scope's name), then its actions, the Switch,
+  Group and Sort, then its fields in a column; nothing folds. Its LIST fields'
+  chips are SECTIONS (`data-layout="section"` on the chip): the toggle part is
+  the heading, the menu part still opens the menu, and each menu row is a VALUE
+  chip whose press picks it through the menu (`values`, `apply()`) — so the
+  field chip stays the one owner, and none, pending, waits and Limit hold as
+  they do in landscape. A date, a number, a long list, Group, Sort and the View
+  chip stay chips. Demos: a **Filter layouts** page (in Customers) — the panel,
+  the portrait bars (View, Customer records) and the rows, over the Records
+  source. Will: *"Hide the app header's filter toolbar in the filter example
+  page"* — a Context's `chrome.filters: false` (app schema) takes the header's
+  filter row away (`data-no-filters` on the app header). Test: Demos
+  `reforged-filter-layouts`. Chromium: sherpa-ui 1148, Demos 172.
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 

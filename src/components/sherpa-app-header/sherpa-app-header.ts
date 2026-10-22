@@ -44,6 +44,8 @@ export class SherpaAppHeader extends SherpaElement {
     'data-ai': { type: 'boolean', kind: 'style' },
     'data-back': { type: 'boolean', kind: 'style' },
     'data-help': { type: 'boolean', kind: 'style' },
+    // A Context with no filter row: its page holds its filters. TODO 425
+    'data-no-filters': { type: 'boolean', kind: 'style' },
     'data-labs': { type: 'boolean', kind: 'style' },
     'data-loading': { type: 'boolean', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },

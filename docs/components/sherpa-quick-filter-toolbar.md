@@ -63,11 +63,13 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-favourite` | boolean |  | the ★ is lit (view type) — the value, IN |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
+| `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178. |
 | `data-locked` | boolean |  | the host owns the ★; report the click, never self-set |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
+| `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column: its heading and actions on top, then the Switch, Group and Sort, then each list field as a SECTION of value chips. Nothing folds. TODO 425 |
 | `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
@@ -156,7 +158,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `organise`, `switch`, `view-zone`
+`actions`, `bar`, `chips`, `organise`, `scope-head`, `switch`, `view-zone`
 
 ## CSS custom properties it reads
 

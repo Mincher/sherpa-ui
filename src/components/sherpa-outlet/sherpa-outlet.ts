@@ -423,6 +423,8 @@ export class SherpaOutlet extends SherpaElement {
     const context = this.#options?.app.contexts[name];
     if (!header || !context) return;
     header.setAttribute('data-heading', context.label);
+    // A page that holds its own filters takes the header's row away. TODO 425
+    header.toggleAttribute('data-no-filters', context.chrome?.filters === false);
     // No icon on the row → none on the header: a stale glyph is worse than none.
     if (context.icon) header.setAttribute('data-icon', context.icon);
     else header.removeAttribute('data-icon');
