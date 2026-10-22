@@ -105,7 +105,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
-| 🚧 | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
+| ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1872,7 +1872,7 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` 🚧 424 — BUG: the panel's unapplied chips are not warning; one chip logic
+### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 
 Will, 2026-10-22: *"unapplied chips in the filter panel don't use the warning
 style. I really hope we don't have 2 bespoke implementations of filter chips
@@ -1947,6 +1947,15 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   its click and change handlers are gone: those chips report their own, and
   never send `quick-filter-click` or `quick-filter-change`. A selector chip's
   click no longer "puts back" a flip it never made (it is locked).
+
+**✅ Done 2026-10-22.** Every filter chip was already `sherpa-quick-filter`; now
+a FIELD's logic is in one place too: `FilterField` (`filter-field.ts`) for both
+hosts, and `markField`, `limitField`, `drawCount`, `NextFrame`,
+`answerWhenDrawn` (`filter-host.ts`); the chip owns `drafting`, `answered` (on
+after an Apply) and clearing Group and Sort. A panel run marks only the chips a
+draft changed. Three engines: sherpa-ui 3313, Demos 501, Gallery 207, Starter 3,
+node 689. Still each host's own: its layout (a bar's fold, Organise zone, View
+chip, Switch; a panel's sections, header ⋮, inline bodies, search, scope badge).
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 
