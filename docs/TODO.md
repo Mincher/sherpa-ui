@@ -1934,6 +1934,12 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   its told answer (`draw`), Reset (`empty`, back to the def's condition — the
   panel's one chip now does that too), its marks and its limits. Chromium:
   sherpa-ui 1148, Demos 169.
+- ✅ **Step 9 — timing, once (2026-10-22).** `NextFrame` (`filter-host.ts`)
+  gathers what changed this frame and hands it over once, the next — the bar's
+  condition edits and the panel's field edits; `answerWhenDrawn` gives a menu
+  its answer once it has drawn and redraws its chip — the bar's rebuild and the
+  panel's fill. Three engines: the specs that hold the timing pass (sherpa-ui
+  264, Demos 18).
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

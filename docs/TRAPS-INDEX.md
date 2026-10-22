@@ -360,9 +360,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-flush-between-surfaces-draws-two-edges](TRAPS.md#t-a-panel-flush-between-surfaces-draws-two-edges) — filter-panel
 - [T-a-panel-follows-the-query-open-or-shut](TRAPS.md#t-a-panel-follows-the-query-open-or-shut) — filter-panel
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, filter-panel, quick-filter, quick-filter-toolbar
-- [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — quick-filter-toolbar
+- [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — filter-host, quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
-- [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-host, filter-panel, quick-filter, quick-filter-toolbar
 - [T-a-reflow-that-moves-nothing-keeps-its-menus](TRAPS.md#t-a-reflow-that-moves-nothing-keeps-its-menus) — quick-filter-toolbar
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — quick-filter-toolbar
 - [T-a-row-opens-its-child-menu](TRAPS.md#t-a-row-opens-its-child-menu) — filter-panel, quick-filter-toolbar
@@ -372,7 +372,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — filter-panel
 - [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — filter-panel
 - [T-a-shut-scope-folds-like-a-bar](TRAPS.md#t-a-shut-scope-folds-like-a-bar) — filter-panel
-- [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-host, quick-filter
 - [T-a-silent-write-still-needs-a-way-to-report](TRAPS.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
 - [T-a-stale-draw-keeps-the-bars-own-change](TRAPS.md#t-a-stale-draw-keeps-the-bars-own-change) — quick-filter-toolbar
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — quick-filter

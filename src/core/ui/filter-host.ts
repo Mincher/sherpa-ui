@@ -9,9 +9,13 @@
  * - markField — One field's chips and menus, told whether it waits for Apply and whether its read failed.
  * - limitField — One field's value chips and menus, told what the filters before it leave and what its chain offers.
  * - drawCount — A count on a badge that is not a chip's: its number, and its words for a reader.
+ * - NextFrame — What changed this frame, handed over ONCE, the frame after.
+ * - .add — Hand this over next frame; with nothing, only make sure the frame comes.
+ * - .cancel — Drop what waits — the host left the page.
+ * - answerWhenDrawn — Give a menu an answer once it has drawn, and redraw its chip.
  */
 import type { OrganiseColumn } from '../data/data-source.js';
-import { ruleOut } from '../data/filter-state.js';
+import { ruleOut, type FieldReading } from '../data/filter-state.js';
 import { countSaid } from '../data/filter-face.js';
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 import type { FilterOption } from './filter-def.js';
@@ -91,4 +95,50 @@ export function drawCount(
     badge.setAttribute('aria-label', label);
   }
   return said;
+}
+
+/** What changed this frame — a field, a chip — handed over ONCE, the frame
+ *  after: a rebuilt row reads empty for a tick, and one edit is one request.
+ *  TODO 424 · TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+export class NextFrame<T> {
+  /** What changed since the frame was asked for. */
+  #items = new Set<T>();
+  /** The frame asked for, or null. */
+  #frame: number | null = null;
+
+  constructor(private readonly run: (items: T[]) => void) {}
+
+  /** Hand this over next frame; with nothing, only make sure the frame comes. */
+  add(item?: T): void {
+    if (item !== undefined) this.#items.add(item);
+    if (this.#frame != null) return;
+    this.#frame = requestAnimationFrame(() => {
+      this.#frame = null;
+      const items = [...this.#items];
+      this.#items.clear();
+      this.run(items);
+    });
+  }
+
+  /** Drop what waits — the host left the page. */
+  cancel(): void {
+    if (this.#frame != null) cancelAnimationFrame(this.#frame);
+    this.#frame = null;
+    this.#items.clear();
+  }
+}
+
+/** Give a menu an answer once it has DRAWN — rows set into nothing are dropped —
+ *  and redraw its chip from it. `still` says it is still wanted when the time
+ *  comes. TODO 424 · TRAP T-a-rebuild-keeps-every-answer · TRAP T-a-silent-steer-still-redraws-its-chip */
+export function answerWhenDrawn(
+  menu: SherpaMenu, reading: FieldReading, still: () => boolean = () => true, onDrawn?: (chip: SherpaQuickFilter | null) => void,
+): Promise<void> {
+  return Promise.resolve(menu.rendered).then(() => {
+    if (!still()) return;
+    menu.reading = reading;
+    const chip = menu.closest<SherpaQuickFilter>('sherpa-quick-filter');
+    onDrawn?.(chip);
+    chip?.refresh?.();
+  });
 }

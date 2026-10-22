@@ -19,7 +19,7 @@ import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
-import { arrangeFrom, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { answerWhenDrawn, arrangeFrom, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
 import type { SortDirection } from '../../core/data/store.js';
@@ -353,8 +353,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    if (this.#conditionFrame != null) cancelAnimationFrame(this.#conditionFrame);
-    this.#conditionFrame = null;
+    this.#conditioned.cancel();
     this.#observer?.disconnect();
     this.#observer = null;
     if (this.#frame != null) cancelAnimationFrame(this.#frame);
@@ -936,19 +935,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* ONE request, next frame: a rebuilt condition row's value select fills
        ASYNCHRONOUSLY, and read now it says no clause. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
     this.#conditioned.add(chip);
-    if (this.#conditionFrame != null) return;
-    this.#conditionFrame = requestAnimationFrame(() => {
-      this.#conditionFrame = null;
-      const asks = [...this.#conditioned].flatMap((one) => this.#answerRequest(one) ?? []);
-      this.#conditioned.clear();
-      this.#emitChange(asks);
-    });
   };
 
-  /** The pending report after a condition row changed. */
-  #conditionFrame: number | null = null;
-  /** The chips whose rows changed since that frame was asked for. */
-  #conditioned = new Set<HTMLElement>();
+  /** The chips whose rows changed this frame: ONE request for them, the next. */
+  #conditioned = new NextFrame<HTMLElement>((chips) => this.#emitChange(chips.flatMap((one) => this.#answerRequest(one) ?? [])));
 
 
   /**
@@ -972,9 +962,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (gist(menu.reading) === gist(reading)) return;
     const held: FieldReading = { ...reading };
     this.#pendingAnswers.set(id, held);
-    void Promise.resolve(menu.rendered).then(() => {
-      // A later rebuild has taken over.
-      if (this.#pendingAnswers.get(id) !== held || !menu.isConnected) return;
+    // The menu refuses Advanced mode unless the field opted in.
+    if (rows.length) menu.setAttribute('data-advanced', '');
+    // A later rebuild may have taken over.
+    void answerWhenDrawn(menu, held, () => this.#pendingAnswers.get(id) === held && menu.isConnected, (chip) => {
       /* HELD two frames MORE: a rebuilt row fills a frame late, and a report in
          that gap read Owner as unanswered — the source dropped it, and the
          mirror switched the chip off. Adding Email reset Owner.
@@ -982,14 +973,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       requestAnimationFrame(() => requestAnimationFrame(() => {
         if (this.#pendingAnswers.get(id) === held) this.#pendingAnswers.delete(id);
       }));
-      // The menu refuses Advanced mode unless the field opted in.
-      if (rows.length) menu.setAttribute('data-advanced', '');
-      menu.reading = held;
       // The chip draws its face from the menu it holds now; on or off as it was.
-      const chip = menu.closest<SherpaQuickFilter>('sherpa-quick-filter');
       if (chip) chip.current = !reading.suspended;
-      // TRAP T-a-silent-steer-still-redraws-its-chip
-      chip?.refresh();
     });
   }
 

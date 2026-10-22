@@ -26,7 +26,7 @@ import {
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
-import { arrangeFrom, drawCount, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
 import { modeOf, readingRows, type FieldReading } from '../../core/data/filter-state.js';
@@ -964,11 +964,7 @@ export class SherpaFilterPanel extends SherpaElement {
     if (items.length) menu.items?.(items);
     // `range`: a date's shape.
     if (!state || (!readingRows(state).length && !state.mode && !state.mirror && state.range == null)) return;
-    this.#answering.push(Promise.resolve(menu.rendered).then(() => {
-      menu.reading = state;
-      // SILENT, so its chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
-      menu.closest<SherpaQuickFilter>('sherpa-quick-filter')?.refresh?.();
-    }));
+    this.#answering.push(answerWhenDrawn(menu, state));
     if (this.#answering.length === 1) queueMicrotask(() => this.#settleAnswers());
   }
 
@@ -1327,21 +1323,11 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Report a field a frame on, once its rows have settled — a rebuilt row
    *  reads empty for a tick. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
   #reportSoon(held?: Held): void {
-    if (held) this.#edited.add(held);
-    if (this.#editFrame != null) return;
-    this.#editFrame = requestAnimationFrame(() => {
-      this.#editFrame = null;
-      const done = [...this.#edited];
-      this.#edited.clear();
-      for (const one of done) this.#report(one);
-    });
+    this.#edited.add(held);
   }
 
-  /** The fields edited since the last frame. */
-  #edited = new Set<Held>();
-
-  /** The pending re-read after an edit. */
-  #editFrame: number | null = null;
+  /** The fields edited this frame, each reported the next. */
+  #edited = new NextFrame<Held>((done) => { for (const one of done) this.#report(one); });
 
   /* ── Acting ───────────────────────────────────────────────────────── */
 

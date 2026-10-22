@@ -11192,6 +11192,7 @@ the flip, so an immediate report read "Advanced, no rows" and dropped the
 filter until the next edit. The flip reports a frame after the menu has
 rendered (`#reportSoon`).
 
+- Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -15334,6 +15335,7 @@ re-draws its face. A later rebuild takes over from an earlier one.
 This was found building pack (`§16.6`), which rebuilds the bar — it would have
 taken every OTHER chip's Advanced condition with it.
 
+- Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-a-rebuild-keeps-every-answer.spec.ts`
 
@@ -17905,10 +17907,9 @@ off the menu two frames later — a rebuilt row fills a frame late
 (`T-a-rebuilt-row-reads-empty-for-a-tick`) — and never turns the chip on or
 off, which stays the host's. Both silent paths call it.
 
+- Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-view-change-resets-the-header-chips
 
