@@ -1696,10 +1696,9 @@ export class SherpaFilterPanel extends SherpaElement {
     // ONE chip that answers a field empties itself. TRAP T-a-chip-says-its-own-answer
     const chip = this.#answerChip(held);
     if (chip) return chip.clear();
-    for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-      if (this.#heldOfChip(one) !== held) continue;
-      one.removeAttribute('data-current');
-      delete one.dataset['direction'];
+    // Each chip clears itself — a Group or Sort chip its column and way. TODO 424
+    for (const one of held.values.querySelectorAll<SherpaQuickFilter>('.value')) {
+      if (this.#heldOfChip(one) === held) one.clear();
     }
     const menu = held.menu;
     if (menu && !arranges(kindOf(held.def))) menu.reading = { picked: [] };

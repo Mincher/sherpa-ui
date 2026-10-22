@@ -1906,6 +1906,9 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
 - ✅ **Step 4 — counts (2026-10-22).** `drawCount` (`filter-host.ts`) writes a
   count on a badge that is not a chip's — a panel field's and a shut scope's —
   in the chip's words (`countSaid`).
+- ✅ **Step 5 — Reset of Group and Sort (2026-10-22).** The chip's own
+  `clear()` forgets a Group or Sort chip's column and way; the bar's Reset all
+  and the panel's field Reset call it, rather than each clearing it by hand.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

@@ -1794,13 +1794,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Group and Sort off, and the Sort's way forgotten. */
   #clearOrganise(): void {
-    for (const chip of this.$$<HTMLElement>('.organise-chip')) {
-      chip.removeAttribute('data-current');
-      for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
-      /* FORGET the way, rather than write one: the chip answers `asc` for a
-         chip with none. TRAP T-one-cycle-for-one-value */
-      delete chip.dataset['direction'];
-    }
+    // The chip clears its own column and way. TODO 424
+    for (const chip of this.$$<SherpaQuickFilter>('.organise-chip')) chip.clear();
   }
 
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */

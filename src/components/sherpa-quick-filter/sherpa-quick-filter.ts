@@ -404,6 +404,14 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-empty-is-every-kind-of-answer
    */
   clear(op: FilterOp = DEFAULT_OP): void {
+    /* GROUP or SORT: no column, and no way — FORGOTTEN, not written: the chip
+       answers `asc` for one with none. TODO 424 · TRAP T-one-cycle-for-one-value */
+    if (this.#arranges()) {
+      this.set('data-current', null);
+      this.set('data-direction', null);
+      for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+      return;
+    }
     const menu = this.#fieldMenu();
     if (menu?.dataset['body'] === 'number') {
       // BOTH shapes: `values = []` empties only the one in force.
