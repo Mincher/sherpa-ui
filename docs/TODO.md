@@ -26,7 +26,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 |:-:|---:|---:|---|---|
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
-| 🚧 | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. Building, phase by phase | explore |
+| ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |
 | ✅ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
 | ✅ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ✅ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
@@ -534,7 +534,7 @@ has a stale navigation token region; the outlet writes Context markup by plain
 the Starter template asks npm for `sherpa-ui@^2.1.0-beta.0`, another person's
 package.
 
-### `[ ]` 🚧 345 — EXPLORE: fetch each field's values on demand, and cache them
+### `[x]` ✅ 345 — EXPLORE: fetch each field's values on demand, and cache them
 
 Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
 *"I think this has serious performance implications."* What he wants instead:
@@ -897,6 +897,12 @@ against the code). The full plan, with every file:line, is
   (changes 1 and 2); `missed-change` 0; `recheck` 1 changes + 1 load of the
   owner column (20,000 cells); `recheck-again` 1 changes, 0 loads. TRAP
   `T-a-remote-store-says-what-changed`. **All nine phases are done.**
+- ✅ **Closed 2026-10-22, after the full round:** sherpa-ui node 668 and
+  browsers 3,253 (21 flaky, all timeouts under load; the Chromium ones pass
+  alone), Demos 466 (8 flaky, Firefox timeouts), Gallery 207 + 3, Starter
+  3 + 2. Four old node tests expected a whole read on a reopen: they now keep a
+  store with no `changes`, and a new test shows a store that says nothing moved
+  is confirmed with no read (`125f29e8`).
 
   **Decisions — Will, 2026-10-19: "A for all, sure."**
   - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
