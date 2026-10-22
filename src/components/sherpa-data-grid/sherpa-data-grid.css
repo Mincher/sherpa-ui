@@ -256,8 +256,8 @@
     }
   }
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 .filter-cell[data-has-value] .filter-clear { display: inline-flex; }
@@ -276,7 +276,8 @@
    button inside it, rather than drawing a second ring around it. */
 .filter-field:focus-within {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 
 /* ── Header ────────────────────────────────────────────────────────── */
@@ -431,8 +432,8 @@
   cursor: pointer;
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 
@@ -551,8 +552,8 @@
   background: var(--sherpa-style-surface-base-1, #e8e8f64d);
 }
 .actions-trigger:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 
 /* One menu row. A real <button>, so it keeps Enter, Space and focus for free.
@@ -574,8 +575,8 @@
   background: var(--sherpa-style-surface-base-1, #e8e8f64d);
 }
 .action-item:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 .action-icon {
   inline-size: var(--sherpa-theme-content-size-base, 14px);
@@ -738,8 +739,8 @@
   transition: rotate 120ms ease;
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
     border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
     border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
     border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);

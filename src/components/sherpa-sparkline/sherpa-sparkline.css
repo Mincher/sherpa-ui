@@ -170,7 +170,7 @@
 
   &:focus-visible {
     outline: none;
-    &::after { box-shadow: var(--sherpa-focus-ring); }
+    &::after { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
   }
 }
 

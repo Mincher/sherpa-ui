@@ -182,8 +182,8 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

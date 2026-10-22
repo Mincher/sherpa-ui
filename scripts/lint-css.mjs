@@ -124,26 +124,31 @@ function lintFile(file, cssRaw) {
 
   root.walkDecls((decl) => {
     const line = decl.source?.start?.line ?? 0;
-    // A focus ring on the wrong token fails silently — it draws in the fallback
-    // colour only.
-    if (decl.prop === 'box-shadow' && /inset 0 0 0 2px/.test(decl.value)) {
-      const inFocus = (() => {
-        let p2 = decl.parent;
-        while (p2 && p2.type === 'rule') {
-          if (/:focus-visible|:focus\b/.test(p2.selector)) return true;
-          p2 = p2.parent;
-        }
-        return false;
-      })();
-      const ok = /--sherpa-theme-border-accent-2\s*,\s*#3b4ccd/.test(decl.value)
-        // A `--_*` private var passes — error-state components route through one.
-        || /var\(--_/.test(decl.value);
-      if (inFocus && !ok) {
-        report('error', file, line, 'focus-ring',
-          `focus ring must be `
-          + `inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd) `
-          + `(or a --_* private var that resolves to it). Got: ${decl.value}`);
+    /* A focus ring written by hand drifts — a wrong token draws in the fallback
+       colour only. It is the ONE shared outline, inside the box and 1px clear of
+       its edge: `outline: var(--sherpa-focus-ring)` with its offset. */
+    const inFocus = (() => {
+      let p2 = decl.parent;
+      let found = false;
+      while (p2 && p2.type !== 'root') {
+        if (p2.type === 'rule' && /:focus-visible|:focus\b/.test(p2.selector)) found = true;
+        // High contrast draws in system colours: its own ring is right there.
+        if (p2.type === 'atrule' && /forced-colors/.test(p2.params)) return false;
+        p2 = p2.parent;
       }
+      return found;
+    })();
+    const shared = /var\(--sherpa-focus-ring\)|var\(--_/;
+    if (inFocus && decl.prop === 'box-shadow' && /inset 0 0 0 2px/.test(decl.value) && !/var\(--_/.test(decl.value)) {
+      report('error', file, line, 'focus-ring',
+        `a focus ring is outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset). Got box-shadow: ${decl.value}`);
+    }
+    if (decl.prop === 'outline' && decl.value !== 'none' && !shared.test(decl.value) && inFocus) {
+      report('error', file, line, 'focus-ring', `a focus ring is outline: var(--sherpa-focus-ring). Got: ${decl.value}`);
+    }
+    if (decl.prop === 'outline' && /var\(--sherpa-focus-ring\)/.test(decl.value)
+      && !decl.parent?.some?.((d) => d.type === 'decl' && d.prop === 'outline-offset' && /var\(--sherpa-focus-offset\)/.test(d.value))) {
+      report('error', file, line, 'focus-ring', 'outline: var(--sherpa-focus-ring) needs outline-offset: var(--sherpa-focus-offset) beside it.');
     }
     if (/\blight-dark\(/.test(decl.value)) {
       report('error', file, line, 'light-dark',

@@ -13909,7 +13909,9 @@ verbatim", which is the shape of a rule nothing enforces: the doc had named the
 WRONG token for months, and everyone who followed it got a ring drawn in the
 fallback colour only.
 
-It is a **custom property on `:host` in `sherpa-base.css`**, not a class:
+It is a **custom property on `:host` in `sherpa-base.css`**, not a class (since
+2026-10-22 an outline, `--sherpa-focus-ring` with `--sherpa-focus-offset`, so it
+sits 1px clear of the edge — an inset box-shadow cannot leave that gap):
 
 - A bare `:host` cannot wear a class from its own sheet — the note on
   `.sherpa-border-edges` records the same problem, and seven sites there still

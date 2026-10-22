@@ -20,8 +20,8 @@
   background: var(--sherpa-style-surface-base-1, #e8e8f64d);
 }
 .more-item:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 .more-divider {
   margin: var(--sherpa-display-mode-space-3xs, 2px) 0;

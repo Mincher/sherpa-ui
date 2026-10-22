@@ -203,14 +203,15 @@
 /* The controls are transparent, so the ring goes on the box; :focus-within so
    either control lights the same row. */
 :host(:focus-within) {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 .nav:focus-visible,
 .expand:focus-visible { outline: none; }
 :host([data-type="promo"]:focus-within) { box-shadow: none; }
 :host(:focus-within) .promo {
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 
 /* Current and disabled are PINS (transparent/active, transparent/inactive).

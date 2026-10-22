@@ -133,10 +133,12 @@
 
   /* Explicit box-shadow — a CSS @function fails silently where unsupported. */
   &:focus-visible::-webkit-slider-thumb {
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
   &:focus-visible::-moz-range-thumb {
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

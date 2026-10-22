@@ -152,7 +152,8 @@
 .content-button:focus-visible {
   outline: none;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 
 /* ── Current and disabled are PINS on the row; the weight is not a colour. ── */

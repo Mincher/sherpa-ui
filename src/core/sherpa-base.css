@@ -29,10 +29,10 @@
      reaches all 58 components.
      TRAP T-one-value-one-declaration. */
 
-  /* The focus indicator — an INSET stroke, so it is drawn inside the
-     component's own box rather than over its neighbours. 48 sites across 29
-     files wrote this by hand. */
-  --sherpa-focus-ring: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  /* The focus indicator — an outline drawn INSIDE the component's own box, 1px
+     clear of its edge (Will, 2026-10-22), never over its neighbours. */
+  --sherpa-focus-ring: 2px solid var(--sherpa-theme-border-accent-2, #3b4ccd);
+  --sherpa-focus-offset: -3px;
 
   /* A CARD's four values — the box that holds other things. Six components had
      these four lines verbatim: accordion, container, dialog, overlay-panel,

@@ -615,18 +615,17 @@ and down, and nothing called them. Add one only with the same guard and the
 same three-engine proof — a function without its longhand is a rule that
 vanishes for a third of the web. TRAP `T-a-css-function-needs-its-longhand-first`.
 
-For focus rings, always use the explicit fallback pattern — and an INSET ring, so
-the stroke is drawn INSIDE the component's own box rather than bleeding over its
-neighbours (an outer ring on a snapped control pair, a table cell or a tight
-toolbar overlaps whatever sits beside it):
+A focus ring is drawn INSIDE the component's own box, 1px clear of its edge
+(Will, 2026-10-22), never over its neighbours (an outer ring on a snapped control
+pair, a table cell or a tight toolbar overlaps whatever sits beside it):
 ```css
 :host(:focus-visible) {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  outline: var(--sherpa-focus-ring);          /* 2px solid accent-2 */
+  outline-offset: var(--sherpa-focus-offset); /* -3px: 1px in from the edge */
 }
 ```
 
-**Use `var(--sherpa-focus-ring)`.** Declared once on `:host` in
+**Use `var(--sherpa-focus-ring)` and `var(--sherpa-focus-offset)`.** Declared once on `:host` in
 `sherpa-base.css`, which every shadow root adopts, so it inherits everywhere.
 It was written by hand at 48 sites across 29 files — see
 `T-one-value-one-declaration` for why it is a custom property and not a class.
@@ -794,7 +793,7 @@ Components use `@container` for responsive adaptation — **no viewport `@media`
 | `:host:not(…)` chained form | `:host(:not(…))` functional form |
 | `&` nesting inside `:host {}` | Standalone `:host(…)` rules |
 | `light-dark()` in component CSS | Theme files own mode; components are mode-agnostic |
-| `outline: --focus-ring()` for focus indicators | `outline: none; box-shadow: inset 0 0 0 2px var(…, #hex)` |
+| A focus ring written by hand | `outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset)` |
 | Odd px (`3px`, `11px`) for spacing/size/radius | On-grid step (8/4/2px) or the token's real value |
 | A paragraph of rationale beside the code | One line, or a `TRAP` citation into `docs/TRAPS.md` |
 

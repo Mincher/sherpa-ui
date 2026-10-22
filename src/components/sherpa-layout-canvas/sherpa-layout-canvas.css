@@ -28,8 +28,8 @@
   touch-action: none;
 }
 .viewport:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 
 /* THE GRID: a cross at every step, moving and scaling with the plane. A MASK,

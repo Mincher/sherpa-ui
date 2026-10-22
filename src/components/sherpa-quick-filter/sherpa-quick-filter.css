@@ -69,8 +69,8 @@
 :host([data-open]) :is(.body, .caret) {
   position: relative;
   z-index: 1;
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 
 /* Snapped: flat right corners on the body (Structure ext `snap-right-edge`). */

@@ -115,8 +115,8 @@
 
 .bar-col:hover .bar { filter: brightness(1.08); }
 .bar-col:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 

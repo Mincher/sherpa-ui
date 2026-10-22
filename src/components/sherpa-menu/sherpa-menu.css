@@ -537,8 +537,8 @@
 }
 ::slotted(:is(label, button):focus-visible),
 ::slotted(label:focus-within) {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
 }
 ::slotted(:is(label, button)[disabled]),
 ::slotted(:is(label, button):disabled),

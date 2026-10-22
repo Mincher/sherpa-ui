@@ -47,8 +47,8 @@
   &:is([href], [role="link"]):hover { text-decoration: underline; }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

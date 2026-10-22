@@ -71,8 +71,8 @@
 
   /* Inset box-shadow ring, never a bare outline (WCAG 2.4.11). */
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

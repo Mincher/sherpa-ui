@@ -74,8 +74,8 @@
 
   /* Focus ring lives on the track — the focused input is the hidden sibling. */
   &:has(.input:focus-visible) {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 
   &:has(.input:disabled) { cursor: not-allowed; }

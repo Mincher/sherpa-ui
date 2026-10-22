@@ -60,8 +60,8 @@
   &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
   &:active { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

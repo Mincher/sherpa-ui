@@ -23,8 +23,8 @@
   cursor: pointer;
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
     border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   }
 }

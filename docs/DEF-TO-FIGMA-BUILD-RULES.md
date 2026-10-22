@@ -110,7 +110,8 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   `node scripts/project-tokens.mjs`. Never `opacity` (PRINCIPLES 3), and never a
   Theme colour: `lint:css` `theme-colour` counts Theme reads per component
   against a baseline that may only fall, and a new component's is 0.
-- **Focus:** `box-shadow: var(--sherpa-focus-ring)`, with `outline: none`. Never
+- **Focus:** `outline: var(--sherpa-focus-ring)` with `outline-offset:
+  var(--sherpa-focus-offset)`: inside the box, 1px clear of its edge. Never
   write its value by hand. The ones that differ on purpose: `sherpa-button`,
   `sherpa-progress-step-tracker` and the `sherpa-select-card` tick;
   `sherpa-input-text` and `sherpa-pagination` route it through `--_border-focus`.

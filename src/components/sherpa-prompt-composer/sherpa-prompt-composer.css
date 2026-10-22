@@ -28,7 +28,8 @@
 
   &:focus-within {
     border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 
@@ -84,8 +85,8 @@
   flex-shrink: 0;
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

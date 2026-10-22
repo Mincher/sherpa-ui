@@ -102,7 +102,7 @@
  * state-pins.yaml. Real focus is inside the menu, so `:focus-visible` is false —
  * the ring is drawn from here instead.
  */
-:host([data-open]) .trigger { box-shadow: var(--sherpa-focus-ring); }
+:host([data-open]) .trigger { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
 
 /* ── Icons: CSS owns visibility; JS only sets the glyph value ────────────── */
 

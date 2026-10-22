@@ -37,7 +37,8 @@
 
   &:focus-visible { outline: none; }
   &:focus-visible .marker {
-    box-shadow: var(--sherpa-focus-ring);
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
   }
 }
 

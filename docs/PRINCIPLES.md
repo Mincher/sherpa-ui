@@ -67,7 +67,7 @@ are a reminder of why.
 | 1 | `:host(:not(…))` functional form — chained form is silently broken in shadow DOM | `lint:css` `chained-host` |
 | 2 | No `&` nesting inside `:host {}` — it desugars to the broken chained form | `lint:css` `host-nesting` |
 | 3 | Never `opacity` for a disabled state — it compounds in dark mode. Inactive tokens per property | `lint:css` `disabled-opacity` |
-| 4 | An inset focus ring, `var(--sherpa-focus-ring)` — an outer ring bleeds over a snapped neighbour | `lint:css` `focus-ring` |
+| 4 | A focus ring inside the box, `var(--sherpa-focus-ring)` and its offset — an outer ring bleeds over a snapped neighbour | `lint:css` `focus-ring` |
 | 5 | `@container`, never a viewport `@media`, inside a component. The one `@media` a component writes is `(forced-colors: active)`. `prefers-reduced-motion` is gated once, in `sherpa-motion.css` | `lint:css` `viewport-media` (a warning), `motion-gate` (an error) |
 | 6 | Two grids: 4px for spacing, 2px for text. `/* off-grid-ok */` opts a drawn glyph out | `lint:css` `off-grid` (a warning; `lint:css:strict` blocks it) |
 | 7 | No `light-dark()` in component CSS — the display-mode layer owns mode | `lint:css` `light-dark` |
