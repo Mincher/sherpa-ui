@@ -1928,6 +1928,9 @@ And: Favorite, Save and Refresh may move to the App Header (they never move).
   portrait bar among its siblings carries the one search (`search(text)` on
   every portrait bar beside it): a field shows while its name, or one of its
   values, holds the text.
+- ✅ **The panel's tiers, matched (2026-10-22).** A customer value chip pressed
+  OFF keeps its sites in the answer's `off`, and pressed again brings them back,
+  as the panel's does; the field chip carries `off` in its reading.
 
 ### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
 

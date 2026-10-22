@@ -348,8 +348,13 @@ export class SherpaQuickFilter extends SherpaElement {
     const own = menu.reading;
     // ON with nothing ticked, where a pick fetches: no rows. Will, TODO 403 · TRAP T-none-is-an-answer
     const none = this.current && this.#fetches() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
-    return { ...own, ...(none ? { none: true } : {}), ...(this.current ? {} : { suspended: true }) };
+    // A tiered parent switched OFF keeps its picks. TODO 369, 425 · TRAP T-a-parent-pick-is-the-parent
+    const off = this.#off.size ? { off: [...this.#off] } : {};
+    return { ...own, ...off, ...(none ? { none: true } : {}), ...(this.current ? {} : { suspended: true }) };
   }
+
+  /** Picks a tiered parent switched OFF keeps for when it comes back on, by key. */
+  #off = new Set<string>();
 
   /** Its picks FETCH: nothing ticked, while on, answers no rows. */
   #fetches(): boolean {
@@ -393,6 +398,7 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     // By KEY: a site pick is an object, and String() makes it "[object Object]". TODO 422
+    this.#off = new Set((next.off ?? []).map(valueKey));
     this.#setPicks((next.picked ?? []).map(valueKey), next.suspended, next.none);
   }
 
@@ -411,6 +417,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-empty-is-every-kind-of-answer
    */
   clear(op: FilterOp = DEFAULT_OP): void {
+    this.#off.clear();
     /* GROUP or SORT: no column, and no way — FORGOTTEN, not written: the chip
        answers `asc` for one with none. TODO 424 · TRAP T-one-cycle-for-one-value */
     if (this.#arranges()) {
@@ -1062,10 +1069,22 @@ export class SherpaQuickFilter extends SherpaElement {
     const menu = this.#fieldMenu();
     if (!menu || one.hasAttribute('data-unavailable')) return;
     const value = one.dataset['value'] ?? '';
-    const mine = new Set([value, ...(menu.itemData ?? []).filter((i) => i.parent === value).map((i) => i.value)]);
-    const on = !one.hasAttribute('data-current');
+    const kids = (menu.itemData ?? []).filter((i) => i.parent === value).map((i) => i.value);
+    const mine = new Set([value, ...kids]);
     const rest = menu.values.filter((v) => !mine.has(v));
-    menu.values = menu.dataset['select'] === 'single' ? (on ? [value] : []) : on ? [...rest, value] : rest;
+    const held = menu.values.filter((v) => mine.has(v));
+    if (kids.length && held.length) {
+      // A PARENT on goes OFF, and keeps its picks. Will, TODO 369 · TRAP T-a-parent-pick-is-the-parent
+      for (const v of held) this.#off.add(v);
+      menu.values = rest;
+    } else if (kids.length && [...mine].some((k) => this.#off.has(k))) {
+      // …and off comes back on, with them.
+      const back = [...mine].filter((k) => this.#off.delete(k));
+      menu.values = [...rest, ...back];
+    } else {
+      const on = !held.length;
+      menu.values = menu.dataset['select'] === 'single' ? (on ? [value] : []) : on ? [...rest, value] : rest;
+    }
     menu.apply();
   };
 
