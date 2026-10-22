@@ -14782,7 +14782,9 @@ one per drawn field — a run of value chips, a tiered run of parents, or one
 chip — and a host keeps a Map of them. What is the same on every surface is
 the class's; a host keeps only its layout (a bar's fold, a panel's sections).
 Its pending and failed marks are `markField`, its greying `limitField`
-(`filter-host.ts`). The plan, in eleven commits:
+(`filter-host.ts`). A bar's fields are the same class, each ONE chip
+(`{ single: true }`): its draw, Reset, marks and limits go through it. The plan,
+in eleven commits:
 `docs/history/plan-424-one-chip-logic.md`.
 
 Each chip a field draws says its field in `data-id` — the chip's own "which
@@ -14791,6 +14793,7 @@ holding two fields (Organise: Group and Sort) never mixes them up.
 
 - Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-none-is-an-answer
 

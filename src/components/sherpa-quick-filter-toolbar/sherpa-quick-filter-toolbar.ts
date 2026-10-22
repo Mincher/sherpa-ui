@@ -20,8 +20,9 @@ import {
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { arrangeFrom, limitField, markField, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
-import { DEFAULT_OP, type SortDirection } from '../../core/data/store.js';
+import type { SortDirection } from '../../core/data/store.js';
 import { readingAnswered, type QueryRequest } from '../../core/data/query.js';
 import {
   modeOf, readingRows,
@@ -529,10 +530,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#held.chips.set(id, { reading: { ...reading } });
       return;
     }
-    // The CHIP draws it: it knows what answers it. TRAP T-a-chip-says-its-own-answer
+    // The FIELD draws it, as a panel's does; its chip knows what answers it. TRAP T-a-chip-says-its-own-answer
     const chip = this.#chips().find((c) => c.dataset['id'] === id && c.hasAttribute('data-menu'));
-    if (chip) chip.reading = reading;
+    if (chip) this.#field(chip).draw(reading);
     this.#keepOffChips();
+  }
+
+  /** A chip's FIELD, as the panel holds its own: ONE door to its answer, its
+   *  marks and its limits. TODO 424 · TRAP T-a-field-is-one-object */
+  #field(chip: SherpaQuickFilter): FilterField {
+    const id = chip.dataset['id'] ?? '';
+    const def = this.#filters.find((f) => f.id === id) ?? { id, label: chip.dataset['label'] ?? id };
+    return new FilterField(def, '', chip, chip.parentElement ?? chip, { single: true, chip: '.chip' });
   }
 
   /**
@@ -545,10 +554,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const waiting = pendingFields(this);
     const failed = pendingFields(this, 'failed');
     for (const chip of this.#chips()) {
-      const id = chip.dataset['id'] ?? '';
-      const field = this.#filters.find((f) => f.id === id)?.field ?? id;
-      const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
-      markField([chip], [menu], { pending: waiting.has(field), failed: failed.has(field), drafting: (chip as SherpaQuickFilter).drafting });
+      const one = this.#field(chip);
+      const field = one.def.field ?? one.def.id;
+      markField(one.chips(), one.menus(), { pending: waiting.has(field), failed: failed.has(field), drafting: chip.drafting });
     }
   }
 
@@ -637,9 +645,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';
     const field = this.#filters.find((f) => f.id === id)?.field ?? id;
-    const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
-    if (!menu || this.superseded.includes(id)) return;
-    limitField([], [menu], { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
+    if (!chip.querySelector('sherpa-menu') || this.superseded.includes(id)) return;
+    limitField([], this.#field(chip as SherpaQuickFilter).menus(), { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
   }
 
   /**
@@ -1199,8 +1206,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = chip.dataset['id'] ?? '';
     this.#pendingAnswers.delete(id);
     this.#painted.set(id, '');
-    // The CHIP empties itself; the def says which condition a list opens on.
-    chip.clear(this.#filters.find((f) => f.id === id)?.op ?? DEFAULT_OP);
+    // The FIELD empties its chip, back to the condition its def opens on.
+    this.#field(chip).empty();
   }
 
   /**

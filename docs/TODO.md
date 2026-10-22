@@ -1929,6 +1929,11 @@ commits: `docs/history/plan-424-one-chip-logic.md`.
   chip is still its whole field (the bar's, a date). Test: Demos
   `reforged-panel-scope-header` — one region ticked is pending and the others
   are not; with EMEA applied, a second region is pending and EMEA is not.
+- ✅ **Step 8 — the bar's fields too (2026-10-22).** The bar reaches each chip's
+  field through the same `FilterField`, laid out as ONE chip (`{ single: true }`):
+  its told answer (`draw`), Reset (`empty`, back to the def's condition — the
+  panel's one chip now does that too), its marks and its limits. Chromium:
+  sherpa-ui 1148, Demos 169.
 
 ### `[x]` ✅ 423 — LOOK: an accordion header has a hover
 

@@ -5,6 +5,7 @@
  *
  * Map:
  * - FieldTiers — A tiered field's picks, those kept off, and each parent's children.
+ * - FieldLayout — How a host draws its fields: a bar each as ONE chip of its own class; a panel by kind.
  * - FilterField — One drawn field: its chips, its menu, and its answer, in and out.
  * - .menu — The menu built for it, where it needs one.
  * - .tiers — A TIERED field's picks; its chips are its parents.
@@ -25,7 +26,7 @@
  * - .answered — Has it an answer: a chip ticked, a row, or none.
  */
 import { modeOf, type ConditionType, type FieldReading } from '../data/filter-state.js';
-import { valueKey } from '../data/store.js';
+import { DEFAULT_OP, valueKey } from '../data/store.js';
 import type { FilterDef } from './filter-def.js';
 import { arranges, kindOf, picksOne } from './filter-kind.js';
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
@@ -38,6 +39,13 @@ export interface FieldTiers {
   kids: Map<string, string[]>;
 }
 
+/** How a host draws its fields: a bar draws each as ONE chip (`single`), of
+ *  its own class; a panel by kind, as `.value` chips. */
+export interface FieldLayout {
+  single?: boolean;
+  chip?: string;
+}
+
 /** One drawn field: its chips, its menu, and its answer, in and out. Each chip
  *  it draws says its field in `data-id`. */
 export class FilterField {
@@ -48,13 +56,17 @@ export class FilterField {
   /** Its last value let go by the reader, where picks fetch: no rows. TRAP T-none-is-an-answer */
   none = false;
 
-  constructor(public readonly def: FilterDef, public readonly scope: string, public readonly box: HTMLElement, public readonly values: HTMLElement) {}
+  constructor(
+    public readonly def: FilterDef, public readonly scope: string, public readonly box: HTMLElement,
+    public readonly values: HTMLElement, private readonly layout: FieldLayout = {},
+  ) {}
 
   chips(): SherpaQuickFilter[] {
-    return [...this.values.querySelectorAll<SherpaQuickFilter>(`.value[data-id="${CSS.escape(this.def.id)}"]`)];
+    return [...this.values.querySelectorAll<SherpaQuickFilter>(`${this.layout.chip ?? '.value'}[data-id="${CSS.escape(this.def.id)}"]`)];
   }
 
   oneChip(): SherpaQuickFilter | null {
+    if (this.layout.single) return this.chips()[0] ?? null;
     if (!arranges(kindOf(this.def)) && !this.def.asChip) return null;
     return this.chipIn(this.def.id);
   }
@@ -68,8 +80,8 @@ export class FilterField {
     return this.chips().find((c) => c.dataset['value'] === value) ?? null;
   }
 
-  menus(): Array<SherpaMenu | undefined> {
-    return [this.menu, ...this.chips().flatMap((c) => [...c.querySelectorAll<SherpaMenu>(':scope > sherpa-menu[data-kids]')])];
+  menus(): Array<SherpaMenu | null | undefined> {
+    return [this.menu ?? this.oneChip()?.menu, ...this.chips().flatMap((c) => [...c.querySelectorAll<SherpaMenu>(':scope > sherpa-menu[data-kids]')])];
   }
 
   picked(): string[] {
@@ -184,8 +196,9 @@ export class FilterField {
       this.paintTiers();
       return;
     }
+    // One chip empties itself, back to the condition its def opens on.
     const one = this.answerChip();
-    if (one) return one.clear();
+    if (one) return one.clear(this.def.op ?? DEFAULT_OP);
     // Each chip clears itself — a Group or Sort chip its column and way.
     for (const chip of this.chips()) chip.clear();
     if (this.menu && !arranges(kindOf(this.def))) this.menu.reading = { picked: [] };
