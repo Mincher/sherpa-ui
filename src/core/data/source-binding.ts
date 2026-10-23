@@ -73,6 +73,8 @@ export interface BindHost {
   only(id: string): Filter | undefined;
   /** A component scope's own answer. */
   scoped(scope: string): Filter | undefined;
+  /** What the highlight's driver matches. */
+  highlight(): Filter | undefined;
   /** A bind id no other bind in its context has. */
   mintId(): string;
 }
@@ -183,7 +185,8 @@ export class SourceBinding {
        TRAP T-a-component-part-narrows-one-component */
     const into = entry.rows === 'all' && typeof entry.scope === 'string' ? this.#host.scoped(entry.scope) : undefined;
     const own = andFilter([this.#host.only(entry.id), into].filter((f): f is Filter => !!f));
-    const ownKey = JSON.stringify(own ?? null);
+    // …and the highlight, which moves no row. TODO 441
+    const ownKey = JSON.stringify([own ?? null, this.#host.highlight() ?? null]);
     if (entry.lastRows === base && entry.lastOwn === ownKey) return;
     entry.lastRows = base;
     entry.lastOwn = ownKey;

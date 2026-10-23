@@ -122,7 +122,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
-| ⬜ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
+| 🚧 | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1889,7 +1889,7 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 441 — FEATURE: Highlight matches
+### `[ ]` 🚧 441 — FEATURE: Highlight matches
 
 Will, 2026-10-23, in 436: *"Highlight matches (Highlights grid rows, chart
 segments etc. that match the target filter. With this on, every filter chip
@@ -1907,7 +1907,7 @@ nothing else in the data layer marks without filtering.
 
 | # | Step | Where |
 |---|---|---|
-| 1 | The Query holds ONE driver: `highlight: { scope, field }`. `compile()` leaves the driver's reading out of the filter and compiles it on its own, as `highlight`. A saved filter and a draft keep it, as they keep the rest | `query.ts`, `query-context.ts` |
+| 1 | The Query holds ONE driver: `highlight: { scope, field }`. `compile()` compiles the driver's reading on its own too, as `highlight`. A saved filter and a draft keep it, as they keep the rest | `query.ts`, `query-context.ts` |
 | 2 | A request: `{ highlight: field }` / `{ highlight: null }`, through `quick-filter-change` and `bindSource`'s `ask()` | `query.ts`, `bind-source.ts` |
 | 3 | The chip's menu gets a "Highlight matches" row (ticked while it drives) while its bar has `data-highlight-matches`, written by `provider.highlight` from the app's switch, as 436's are | toolbar, `filter-menu.ts`, provider |
 | 4 | The driver chip wears a highlighter icon and its own look, so a reader sees it marks, not filters | `sherpa-quick-filter` |
@@ -1927,6 +1927,18 @@ True, more work: the provider sums the rows twice, and each chart draws a
 second mark. (2) A segment lights if ANY of its rows match, the rest dim.
 Cheap, but a Customer driver over a Status chart lights almost every bar.
 My pick: (1), bar and radial first, line and gauge after.
+
+Will, 2026-10-23: **A** — the driver FILTERS AND marks (it matters where a
+component does not follow the driver's scope: a chart beside a grid's Local
+chip shows that chip's share). **B** — (1), the matched part.
+
+- ✅ **1–2**, 2026-10-23: `ScopeQuery.highlight` names the driver, one in the
+  Query (`query.highlight(scope, field, on)`, `query.highlighted`), in both
+  copies; `compile()` gives `highlight`, the driver's own clause. The source's
+  `highlight` tests a row; a mark moves no row, so it pushes each component
+  again (the push guard keys on it), and a component's `drawHighlight(test)`
+  gets it. A bar over the driver's scope gets `data-highlight-field`. A chip
+  asks `{ field, highlight: true }`.
 
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 

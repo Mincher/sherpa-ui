@@ -80,7 +80,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   options.signal?.addEventListener('abort', () => source.unbind(el), { once: true });
 
   source.attach(el, options, {
-    view: (view) => writeView(el, view),
+    view: (view) => writeView(el, view, options.scope),
     rows: (rows) => {
       // populate() waits for the first render itself, so a component bound
       // before it upgraded still gets its rows.
@@ -88,6 +88,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       // Through the callback it ASKED with, when a provider bound it.
       const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
       give(into ? mergeInto(el, into, payload) : payload);
+      el.drawHighlight?.(source.highlight);
     },
     pending: (fields, dirty, waits, failed, applied) => {
       // What is applied first, so the flags that follow are read against it. TODO 424
@@ -113,12 +114,14 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
 }
 
 /** The view as attributes, so CSS can select on it. TRAP T-push-writes-state-as-attributes */
-function writeView(el: Element, view: BoundView): void {
+function writeView(el: Element, view: BoundView, scope?: string | readonly string[]): void {
   setAttr(el, 'data-sort-field', view.sortField);
   setAttr(el, 'data-sort-direction', view.sortDirection);
   setAttr(el, 'data-group-field', view.groupField);
   setAttr(el, 'data-filter-fields', view.filterFields.length ? view.filterFields.join(' ') : undefined);
   setAttr(el, 'data-needles', view.needles || undefined);
+  // On a bar over the driver's scope: which chip drives the highlight. TODO 441
+  setAttr(el, 'data-highlight-field', view.highlight && scope === view.highlight.scope ? view.highlight.field : undefined);
   setAttr(el, 'data-page', view.paging ? String(view.paging.page) : undefined);
   setAttr(el, 'data-total-pages', view.paging ? String(view.paging.totalPages) : undefined);
   setAttr(el, 'data-page-size', view.paging ? String(view.paging.pageSize) : undefined);
@@ -220,9 +223,10 @@ function ask(query: QueryContext, request: QueryRequest, scope: string): void {
   const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
   const at = one.scope ?? scope;
   if ('reset' in one) query.reset([at], one.reset);
+  else if ('highlight' in one) query.highlight(at, one.field, one.highlight);
   else if ('reading' in one) query.setReading(at, one.field, one.reading);
   else query.suspend(at, 'field' in one ? one.field : null, one.suspended);
-  if (one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });
+  if ('commit' in one && one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });
 }
 
 /** Turn one component's event into its source's call. TRAP T-steering-events-are-a-closed-list */

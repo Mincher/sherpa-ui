@@ -80,6 +80,9 @@ export interface ScopeQuery {
    *  kept, not in force, and given back when the View lets go — `{}` for none.
    *  Will, D2 A. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
   superseded?: Record<string, FieldReading>;
+  /** The field whose chip DRIVES the highlight: its answer filters and marks
+   *  the rows it matches. One in the whole Query. Will, TODO 441 */
+  highlight?: string;
 }
 
 /** How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches. */
@@ -142,6 +145,7 @@ export type QueryRequest =
   | { scope?: string; field: string; suspended: boolean; commit?: true }
   | { scope?: string; suspended: boolean; commit?: true }
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
+  | { scope?: string; field: string; highlight: boolean }
   | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —
@@ -208,6 +212,8 @@ export interface Compiled {
   scoped: Record<string, Filter>;
   /** Per bound component id, what narrows it alone. */
   only: Record<string, Filter>;
+  /** What the highlight's driver matches. TODO 441 */
+  highlight?: Filter;
   sort: SortSpec[];
   group: string | null;
   search: string;
@@ -359,6 +365,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   const viewHolds = heldInView(query);
   const skipped: string[] = [];
   let arranged: ScopeQuery | undefined;
+  let highlight: Filter | undefined;
 
   for (const [id, scope] of Object.entries(query.scopes)) {
     const mine = !facts.mine || facts.mine(id);
@@ -368,6 +375,10 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     }
     if (facts.has) for (const field of Object.keys(scope.readings)) if (!facts.has(field)) skipped.push(`${id}.${field}`);
     const clauses = scopeClauses(id, scope, viewHolds, facts);
+    const driver = scope.highlight && scope.readings[scope.highlight];
+    if (driver && !highlight) {
+      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [scope.highlight!]: driver } }, viewHolds, facts));
+    }
 
     if (scope.narrows?.length) {
       for (const el of scope.narrows) (only[el] ??= []).push(...clauses);
@@ -406,6 +417,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   if (filter) out.filter = filter;
   const viewed = andFilter(view);
   if (viewed) out.view = viewed;
+  if (highlight) out.highlight = highlight;
   if (skipped.length) out.skipped = skipped;
   return out;
 }

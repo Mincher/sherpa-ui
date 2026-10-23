@@ -234,6 +234,8 @@ export interface BoundView {
   filterFields: readonly string[];
   /** What it matched on, one a line. TRAP T-a-needle-comes-from-either-direction */
   needles: string;
+  /** The chip that drives the highlight. TODO 441 */
+  highlight: { scope: string; field: string } | undefined;
   paging: { page: number; totalPages: number; pageSize: number } | undefined;
 }
 
@@ -267,6 +269,8 @@ export interface BoundControl {
    *  nothing is — so a control that draws a chip per value marks only those its draft changed.
    *  TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning */
   drawApplied?: (applied: Readonly<Record<string, FieldReading>>) => void;
+  /** Mark each row the highlight's driver matches; `null`, none. TODO 441 */
+  drawHighlight?: (matches: ((row: Row) => boolean) | null) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
   /** Each field's values the filters before it leave, as value keys; a field not named is not limited. */

@@ -19,6 +19,7 @@
  * - .rows — The last load's rows, LIVE — state, query and result are copies
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
+ * - .highlight — Does a row match the highlight's driver?
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
@@ -57,7 +58,7 @@
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
-  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
+  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, groupSummaries, matchesFilter, readField, valueKey,
 } from './store.js';
 import { readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
@@ -108,6 +109,7 @@ export class DataSource extends EventTarget {
     rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
+    highlight: () => this.#highlight,
     mintId: () => this.#member.mintId(),
   });
   /** The last load's answer: the rows, and the total before paging. */
@@ -371,6 +373,14 @@ export class DataSource extends EventTarget {
 
   /** What `compile` narrows each bound component by, alone — by bind id. */
   #only: Record<string, Filter> = {};
+  /** What the highlight's driver matches. TODO 441 */
+  #highlight: Filter | undefined;
+
+  /** Does a row match the highlight's driver? Null while no chip drives it. Will, TODO 441 */
+  get highlight(): ((row: Row) => boolean) | null {
+    const filter = this.#highlight;
+    return filter ? (row) => matchesFilter(row, filter) : null;
+  }
 
   /**
    * One scope as a control draws it WHOLE: each field it holds — a field held
@@ -875,7 +885,7 @@ export class DataSource extends EventTarget {
   /** Compile the applied Query. Says whether the SHARED filter
    *  stood still, and — where a scope waits — whether nothing a load reads moved. */
   #compileNow(): { still: boolean; same: boolean } {
-    const { filter, view, scoped, only, skipped } = compile(this.#applied, this.#compileFacts());
+    const { filter, view, scoped, only, highlight, skipped } = compile(this.#applied, this.#compileFacts());
     this.#skipped = skipped ?? [];
     const next = filter;
     const viewed = view;
@@ -887,6 +897,10 @@ export class DataSource extends EventTarget {
     this.#filter = next;
     this.#viewFilter = viewed;
     this.#scoped = scoped;
+    // A new mark moves no row, so nothing loads: each component is pushed it. TODO 441
+    const marked = filterKey(highlight) !== filterKey(this.#highlight);
+    this.#highlight = highlight;
+    if (marked) this.#binding.publish();
     return { still, same };
   }
 
@@ -1859,6 +1873,7 @@ export class DataSource extends EventTarget {
       /* …and WHAT it matched on, so a component can point at the hit, whichever
          control set the filter. TRAP T-a-needle-comes-from-either-direction */
       needles: [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n'),
+      highlight: this.#context.highlighted ?? undefined,
       paging: pageSize ? { page, totalPages: this.totalPages, pageSize } : undefined,
     };
   }

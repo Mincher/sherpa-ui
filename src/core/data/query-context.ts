@@ -48,6 +48,8 @@
  * - .batch — The doors one act calls are ONE change to the page.
  * - .commit — SEND the draft — Apply, where a scope waits.
  * - .discard — Put the applied answers back over the draft — Discard, where a scope waits.
+ * - .highlighted — The chip that drives the highlight, if one does.
+ * - .highlight — Make a field's chip the highlight's driver, or let it go.
  * - .setSort — Order by one field, or stop; `null` suspends.
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
@@ -818,6 +820,25 @@ export class QueryContext extends EventTarget {
     else if (at.scope) copyScope(this.#live.applied, this.#live.draft, at.scope);
     else this.#live.draft = structuredClone(this.#live.applied);
     this.#tell({ kind: 'drawn', fields: [...new Set([...before, ...this.#answered()])], pending: true });
+  }
+
+  /** The chip that drives the highlight, if one does. TODO 441 */
+  get highlighted(): { scope: string; field: string } | null {
+    for (const [scope, s] of Object.entries(this.#live.draft.scopes)) if (s.highlight) return { scope, field: s.highlight };
+    return null;
+  }
+
+  /** Make a field's chip the highlight's driver, or let it go: ONE in the Query,
+   *  in both copies, as a mark is no answer to Apply. Will, TODO 441 */
+  highlight(scope: string, field: string, on: boolean): void {
+    const was = this.highlighted;
+    if (on ? was?.scope === scope && was.field === field : was?.field !== field) return;
+    for (const query of new Set([this.#live.applied, this.#live.draft])) {
+      for (const s of Object.values(query.scopes)) delete s.highlight;
+      if (on) scopeEntry(query, scope).highlight = field;
+    }
+    this.#tell({ kind: 'recompose' });
+    this.#tell({ kind: 'drawn', fields: [...new Set([field, ...(was ? [was.field] : [])])] });
   }
 
   /**
