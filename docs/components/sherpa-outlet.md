@@ -32,6 +32,7 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 |---|---|
 | `viewsOf(context: string)` | A Context's Views: its own, then the reader's saved ones. |
 | `firstView(context: string)` | Its first View, which the URL leaves out. |
+| `reload()` | Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436 |
 | `refreshNav()` | Draw the nav again — after a View is saved or deleted, say. |
 | `start(options: OutletOptions)` | Read app.json, load each Context's Views, then open the route's Context. The router's `context` defaults to the app's own. |
 

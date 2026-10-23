@@ -7100,6 +7100,12 @@
             },
             {
               "kind": "method",
+              "name": "reload",
+              "parameters": [],
+              "description": "Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436"
+            },
+            {
+              "kind": "method",
               "name": "refreshNav",
               "parameters": [],
               "description": "Draw the nav again — after a View is saved or deleted, say."

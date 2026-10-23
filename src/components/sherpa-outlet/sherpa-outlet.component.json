@@ -178,7 +178,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (viewsOf, firstView, refreshNav, start). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (viewsOf, firstView, reload, refreshNav, start). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -247,6 +247,12 @@
           "name": "firstView",
           "args": "context: string",
           "description": "Its first View, which the URL leaves out."
+        },
+        {
+          "$type": "method",
+          "name": "reload",
+          "args": "",
+          "description": "Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436"
         },
         {
           "$type": "method",

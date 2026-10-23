@@ -44,6 +44,9 @@ export interface OutletOptions {
   /** Where a Settings page opens, OVER the Context: the overlay dialog, its
    *  header, and the box the page goes in. */
   settings?: { dialog: HTMLElement & { show(): void; hide(): void }; header?: HTMLElement; root: HTMLElement };
+  /** The app's last word on a Context's definition as it opens — a copy, to
+   *  change: a field's child values left out, say. Will, TODO 436 */
+  definition?(context: string, definition: PageDefinition): PageDefinition;
 }
 
 /** The header's View chip. */
@@ -102,6 +105,16 @@ export class SherpaOutlet extends SherpaElement {
   firstView(context: string): string | null {
     return Object.keys(this.viewsOf(context))[0] ?? null;
   }
+
+  /** Open the Context on screen again: a setting its definition reads moved.
+   *  Its Query is the tab's, so its filters come back with it. Under Settings,
+   *  once Settings closes. TODO 436 */
+  async reload(): Promise<void> {
+    if (this.#settings.page) this.#reload = true;
+    else if (this.#context) await this.#load(this.#context);
+  }
+  /** A reload asked while Settings was open. */
+  #reload = false;
 
   /** Draw the nav again — after a View is saved or deleted, say. */
   async refreshNav(): Promise<void> {
@@ -313,6 +326,10 @@ export class SherpaOutlet extends SherpaElement {
     this.#options?.settings?.dialog.hide();
     this.emit('settings-close');
     this.#nav?.settingsClosed();
+    if (this.#reload) {
+      this.#reload = false;
+      void this.reload();
+    }
   }
 
   /** The open Settings page's teardown and signal. */
@@ -357,10 +374,11 @@ export class SherpaOutlet extends SherpaElement {
     this.emit('context-change', { context: name, view });
     this.#nav?.changed();
     await this.#viewsReady;
-    const [markup, definition] = await Promise.all([
+    const [markup, read] = await Promise.all([
       this.#file(context.template, 'text'),
       context.definition ? this.#file(context.definition, 'json') as Promise<PageDefinition | null> : null,
     ]);
+    const definition = read && options.definition ? options.definition(name, structuredClone(read)) : read;
     if (token !== this.#token) return;
     this.#syncHeader(name);
     this.#shell?.toggleAttribute('data-no-header', context.chrome?.header === false);

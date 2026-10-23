@@ -2057,6 +2057,10 @@ only filters. **h** — its own item, after: 441.
   Filters, in the bar and the column — the sets (a tick takes one at once),
   the save rows, Manage Saved Filters (`savedMenuDef`, `drawSaveActions`). The
   Filters menu and the ⋮ then hold none of them.
+- ✅ **c**, 2026-10-23: "Include Customer Sites" (Behaviour). The outlet's
+  `definition(context, def)` option is the app's last word on a definition as
+  its Context opens (a copy); `outlet.reload()` opens the Context again, and
+  waits while Settings is open. Off, Demos drops each field's `child`.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 
