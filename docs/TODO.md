@@ -110,7 +110,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
-| ✅ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | ⬜ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
 | ⬜ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
 | ⬜ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
@@ -2015,7 +2015,7 @@ Will, 2026-10-23: *"Move the Reset, and Save, actions into the overflow menu of
 the filter toolbar."* Today they lead the Filters menu (TODO 383: every filter
 action is that one menu's), and "Save <name>" also sits beside it.
 
-### `[x]` ✅ 429 — DEMOS: a shareable build that opens from index.html
+### `[ ]` ⬜ 429 — DEMOS: a shareable build that opens from index.html
 
 Will, 2026-10-23: *"Once finished with these filter-toolbar, and sherpa demo,
 changes: Make the Sherpa Demos app a shareable build that can be run locally
@@ -2024,18 +2024,20 @@ index.html and have the app run."* Note: Chrome blocks ES module scripts and
 `fetch()` from a `file://` page, so the build must inline its modules (one
 classic script) and its JSON and templates.
 
-✅ 2026-10-23: in Sherpa Demos, its `build:share` script writes `share/index.html`
+Built 2026-10-23, then discarded: in Sherpa Demos, its `build:share` script wrote `share/index.html`
 — the whole app in one 1.6 MB file: one inline module, the tokens CSS, and
 every file app.json names. The outlet takes them as `files` (a module's
 exports, any other file's text) and fetches none; the Demos script moved from
 index.html to `app/main.js` so it can be bundled. Opened from disk it works in
 Chrome and Firefox; Safari loads the page again on each route change. A Demos
-test builds it and opens it from disk in three engines.
-TRAP T-an-app-in-one-file-fetches-nothing
+test builds it and opens it from disk in three engines. Its trap note went
+with the revert; the revert of the revert brings it back.
 
-❓ Will, 2026-10-23, after it was built: *"Hold off on the Sherpa Demos to
-share build for now."* Asked: A keep it as built (nothing runs unless
-`build:share` is run), or B revert both commits. Nothing more is done on it.
+Will, 2026-10-23, after it was built: *"Hold off on the Sherpa Demos to
+share build for now."* Then: *"429 - discard for now. We'll do it later."* So
+both commits are REVERTED (sherpa-ui 471b50a8, Demos d7d3914). Later: revert
+the two reverts, and it is back — the outlet's `files`, `fileText()`, the
+Demos script in `app/main.js` and its `build:share`.
 
 ### `[x]` ✅ 428 — LOOK: the Favorite and Save group, and Refresh, move
 

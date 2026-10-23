@@ -356,10 +356,6 @@ The outlet loads the route's Context and reports `context-change`,
 `context-markup` (with `waitUntil`) and `context-load`. Hang the app's own
 extras on those.
 
-To share the app as ONE file that opens from disk, bundle it into an inline
-module and hand the outlet `files`: each path app.json names, as a module's
-exports or a file's text. `T-an-app-in-one-file-fetches-nothing`
-
 ## 12. When something is wrong
 
 Sherpa does not fail silently: a broken assumption REPORTS. Route every report

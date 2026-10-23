@@ -7,7 +7,6 @@
  * - OutletOptions — what an app hands its outlet: app.json, where it lives, the session and the stores
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { fileText, inlined } from '../../core/ui/templater.js';
 import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextInit, type ContextModule } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
@@ -45,10 +44,6 @@ export interface OutletOptions {
   /** Where a Settings page opens, OVER the Context: the overlay dialog, its
    *  header, and the box the page goes in. */
   settings?: { dialog: HTMLElement & { show(): void; hide(): void }; header?: HTMLElement; root: HTMLElement };
-  /** An app built into ONE file hands its files here, by their path in
-   *  app.json: a module's exports, any other file's text. None is fetched.
-   *  TRAP T-an-app-in-one-file-fetches-nothing */
-  files?: Readonly<Record<string, string | object>>;
 }
 
 /** The header's View chip. */
@@ -118,9 +113,6 @@ export class SherpaOutlet extends SherpaElement {
   async start(options: OutletOptions): Promise<void> {
     if (!checkApp(options.app)) return;
     this.#options = options;
-    for (const [path, file] of Object.entries(options.files ?? {})) {
-      if (typeof file === 'string') inlined(new URL(this.#url(path)), file);
-    }
     const router = this.#router;
     if (router) {
       const rest = (router.dataset['params'] ?? '').split(/\s+/).filter((p) => p && p.split('=')[0] !== 'context');
@@ -296,7 +288,7 @@ export class SherpaOutlet extends SherpaElement {
     const markup = await this.#file(page.template, 'text');
     if (token !== this.#settings.token) return;
     where.root.innerHTML = String(markup ?? '');
-    const module = await this.#module(app.module);
+    const module = (await import(this.#url(app.module))) as Partial<ContextModule>;
     if (token !== this.#settings.token) return;
     const leaving = (this.#settings.leaving = new AbortController());
     const teardown = await module.init?.(where.root, {
@@ -378,7 +370,7 @@ export class SherpaOutlet extends SherpaElement {
     const waits: Promise<unknown>[] = [];
     this.emit('context-markup', { context: name, root: this, waitUntil: (work: Promise<unknown>) => void waits.push(work) });
     await Promise.all(waits);
-    const module = context.module ? await this.#module(context.module) : null;
+    const module = context.module ? (await import(this.#url(context.module))) as Partial<ContextModule> : null;
     await options.ready;
     if (token !== this.#token) return;
     // Saved Views are kept under the page's id and read here under the Context's name. TODO 321
@@ -459,17 +451,12 @@ export class SherpaOutlet extends SherpaElement {
     return new URL(path, this.#options?.base ?? location.href).href;
   }
 
-  /** A Context's or Settings' module: the app's own when it carries it, else imported. */
-  async #module(path: string): Promise<Partial<ContextModule>> {
-    const own = this.#options?.files?.[path];
-    return (typeof own === 'object' ? own : await import(this.#url(path))) as Partial<ContextModule>;
-  }
-
   /** One of the Context's files, or null — reported — when it cannot be read. */
   async #file(path: string, as: 'text' | 'json'): Promise<unknown> {
     try {
-      const text = await fileText(this.#url(path));
-      return as === 'json' ? JSON.parse(text) : text;
+      const response = await fetch(this.#url(path));
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      return as === 'json' ? await response.json() : await response.text();
     } catch (error) {
       report({
         code: 'context-file-unread',

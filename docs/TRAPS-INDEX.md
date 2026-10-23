@@ -187,7 +187,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](TRAPS.md#t-up-is-open-down-is-closed) — data, data-source, query-context
 - [T-view-state-lives-in-one-object](TRAPS.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (49)
+## Storage, saved Views and the URL (48)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](TRAPS.md#t-a-changed-key-moves-the-row) — idb-store
@@ -200,7 +200,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — persist-view, view-files
 - [T-a-view-keeps-a-draft](TRAPS.md#t-a-view-keeps-a-draft) — persist-view, view-drafts
 - [T-a-views-markup-lives-in-a-template](TRAPS.md#t-a-views-markup-lives-in-a-template) — persist-view, view-files
-- [T-an-app-in-one-file-fetches-nothing](TRAPS.md#t-an-app-in-one-file-fetches-nothing) — view-files
 - [T-apply-degrades-never-throws](TRAPS.md#t-apply-degrades-never-throws) — persist-view
 - [T-attributes-are-the-state-channel](TRAPS.md#t-attributes-are-the-state-channel) — persist-view
 - [T-capture-is-the-save-button](TRAPS.md#t-capture-is-the-save-button) — persist-view
@@ -239,7 +238,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (75)
+## The join and the app layer (74)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -279,7 +278,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — outlet, provider
 - [T-adapter-lives-at-the-binding](TRAPS.md#t-adapter-lives-at-the-binding) — bind-source
 - [T-aggregation-is-data](TRAPS.md#t-aggregation-is-data) — provider
-- [T-an-app-in-one-file-fetches-nothing](TRAPS.md#t-an-app-in-one-file-fetches-nothing) — outlet
 - [T-an-app-is-its-definition](TRAPS.md#t-an-app-is-its-definition) — app
 - [T-an-outlet-loads-the-context](TRAPS.md#t-an-outlet-loads-the-context) — app, outlet
 - [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — bind-source

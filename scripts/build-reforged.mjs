@@ -118,11 +118,6 @@ function inlineFiles(dir, inlinedAssets) {
         return `inlined(${call}, ${JSON.stringify(kind === 'html' ? lean(text) : text)})`;
       });
     if (!used) continue;
-    // A module that carries files of its own already imports it (sherpa-outlet).
-    if (/import\s*\{[^}]*\binlined\b[^}]*\}\s*from/.test(src)) {
-      writeFileSync(path, out);
-      continue;
-    }
     const from = relative(dirname(path), join(dir, 'core/ui/templater.js')).split('\\').join('/');
     writeFileSync(path, `import { inlined } from '${from.startsWith('.') ? from : `./${from}`}';\n${out}`);
   }
