@@ -192,24 +192,26 @@
 
 /* ── PORTRAIT — the panel's column. One scope is an accordion, as a panel's
    scope is: Group and Sort, then each field; nothing folds. TODO 425 */
-/* No card in a card: the column draws the rule between scopes. */
+/* No card in a card: the column draws the rule between scopes. The part rules
+   below are the ACCORDION's: a flat scope's section header has an `actions`
+   part too. */
 .scope { border-width: 0; }
 /* The chevron LEADS the heading; the badge and actions end the row. It stays
    at the top while its fields scroll under it. */
-.scope::part(header) {
+sherpa-accordion.scope::part(header) {
   align-items: center;
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
   background: var(--sherpa-style-surface-base, #fff);
 }
-.scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+sherpa-accordion.scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 /* STUCK, it casts a shadow over its fields scrolled under it: from when its
    scope's top passes the column's, by a VIEW timeline on the scope, so a header
    further down casts none. Will, TODO 421. TRAP T-a-stuck-header-casts-a-shadow */
 @supports (animation-timeline: view()) {
   .scope { view-timeline: --sherpa-scope block; }
-  .scope::part(header)::after {
+  sherpa-accordion.scope::part(header)::after {
     content: '';
     position: absolute;
     inset-block-start: 100%;
@@ -223,10 +225,10 @@
     animation-range: exit-crossing 0px exit-crossing var(--sherpa-display-mode-space-base, 16px);
   }
 }
-.scope::part(icon),
-.scope::part(titles) { order: 1; }
-.scope::part(badge) { order: 2; }
-.scope::part(actions) {
+sherpa-accordion.scope::part(icon),
+sherpa-accordion.scope::part(titles) { order: 1; }
+sherpa-accordion.scope::part(badge) { order: 2; }
+sherpa-accordion.scope::part(actions) {
   position: sticky;
   inset-block-start: var(--sherpa-display-mode-space-sm, 12px);
   z-index: 2;
@@ -322,7 +324,9 @@
 /* The two contexts' labels, small, in the scopes' inset. */
 .local-heading,
 :host([data-flat]) .scope { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
-:host([data-flat]) .scope { padding-block-start: var(--sherpa-display-mode-space-sm, 12px); }
+:host([data-flat]) .scope { padding-block: var(--sherpa-display-mode-space-sm, 12px); }
+/* Its label centred on Apply and Discard. */
+:host([data-flat]) .scope::part(row) { align-items: center; }
 /* The View's fields, in the inset an accordion's body gives the rest. */
 :host([data-flat]) .bar { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
 .view-scope:empty ~ :is(.scope-rule, .local-heading),
