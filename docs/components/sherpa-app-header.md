@@ -100,8 +100,8 @@ Each one bubbles.
 | Slot | Accepts | What it holds |
 |---|---|---|
 | `breadcrumbs` | nav | the breadcrumb trail (row 1, left) |
-| `actions` | control | extra buttons before the standard action set |
 | `heading` | text | rich Context title (overrides data-heading) |
+| `actions` | control | extra buttons before the standard action set |
 | `filters` | toolbar | the quick-filter toolbar (row 2) |
 
 ## Parts

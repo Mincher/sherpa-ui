@@ -56,11 +56,10 @@
   block-size: 100%;
 }
 
-/* ── Row 1: history + actions ───────────────────────────────────────── */
+/* ── Row 1: history, the Context's title, actions ──────────────────── */
 .row-history {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   min-block-size: var(--sherpa-display-mode-size-lg, 24px);
 }
@@ -77,6 +76,7 @@
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   flex: 0 0 auto;
+  margin-inline-start: auto;
 }
 
 /* Figma draws a 12-tall STROKE, border/width/sm, in style-border/base. A
@@ -137,13 +137,12 @@
 :host([data-notifications]) .notif-badge { display: inline-flex; }
 
 
-/* ── Row 2: Context details ─────────────────────────────────────────── */
+/* ── Row 2: the Context's filters ─────────────────────────────────── */
 .row-context {
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
-  /* Pushed to the bottom of the fixed 120: at gap 4 the Title Row lands at 52-76,
-     centring it on the nav's search field (48-80, both midpoints on 64). */
+  /* At the bottom of the fixed 120. */
   margin-block-start: auto;
 }
 
@@ -151,6 +150,8 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* Beside the actions now, it gives way first: the title truncates. TODO 434 */
+  flex: 0 1 auto;
   min-inline-size: 0;
   min-block-size: var(--sherpa-display-mode-size-lg, 24px);
 }

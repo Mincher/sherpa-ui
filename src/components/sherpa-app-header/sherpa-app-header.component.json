@@ -55,6 +55,45 @@
                 },
                 {
                   "el": "div",
+                  "class": "title-row",
+                  "part": "title-row",
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "context-icon sherpa-icon-box",
+                      "part": "context-icon",
+                      "attrs": {
+                        "aria-hidden": "true"
+                      }
+                    },
+                    {
+                      "el": "h1",
+                      "class": "title sherpa-truncate sherpa-text-large",
+                      "part": "title"
+                    },
+                    {
+                      "slot": "heading",
+                      "attrs": {
+                        "data-accepts": "text"
+                      }
+                    },
+                    {
+                      "el": "sherpa-button",
+                      "class": "nav-menu",
+                      "part": "nav-menu",
+                      "attrs": {
+                        "data-type": "icon",
+                        "data-size": "sm",
+                        "data-look": "transparent",
+                        "data-icon-start": "menu",
+                        "aria-label": "Menu",
+                        "aria-haspopup": "dialog"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "el": "div",
                   "class": "actions",
                   "part": "actions",
                   "children": [
@@ -283,45 +322,6 @@
               "class": "row-context",
               "part": "row-context",
               "children": [
-                {
-                  "el": "div",
-                  "class": "title-row",
-                  "part": "title-row",
-                  "children": [
-                    {
-                      "el": "span",
-                      "class": "context-icon sherpa-icon-box",
-                      "part": "context-icon",
-                      "attrs": {
-                        "aria-hidden": "true"
-                      }
-                    },
-                    {
-                      "el": "h1",
-                      "class": "title sherpa-truncate sherpa-text-large",
-                      "part": "title"
-                    },
-                    {
-                      "slot": "heading",
-                      "attrs": {
-                        "data-accepts": "text"
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "nav-menu",
-                      "part": "nav-menu",
-                      "attrs": {
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-look": "transparent",
-                        "data-icon-start": "menu",
-                        "aria-label": "Menu",
-                        "aria-haspopup": "dialog"
-                      }
-                    }
-                  ]
-                },
                 {
                   "el": "div",
                   "class": "filters",
@@ -554,19 +554,19 @@
     },
     {
       "$type": "slot",
-      "name": "actions",
-      "accepts": [
-        "control"
-      ],
-      "description": "extra buttons before the standard action set"
-    },
-    {
-      "$type": "slot",
       "name": "heading",
       "accepts": [
         "text"
       ],
       "description": "rich Context title (overrides data-heading)"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control"
+      ],
+      "description": "extra buttons before the standard action set"
     },
     {
       "$type": "slot",

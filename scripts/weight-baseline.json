@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 898805,
+    "js": 898816,
     "files": 110,
     "fetched": 204546
   },
@@ -15,7 +15,7 @@
     "fetched": 0
   },
   "components/sherpa-app-header/sherpa-app-header.js": {
-    "js": 363839,
+    "js": 363850,
     "files": 26,
     "fetched": 0
   },
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1068633,
+    "js": 1068644,
     "files": 153,
     "fetched": 204546
   }

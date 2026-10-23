@@ -427,12 +427,12 @@
               "description": "the breadcrumb trail (row 1, left) (accepts: nav)"
             },
             {
-              "name": "actions",
-              "description": "extra buttons before the standard action set (accepts: control)"
-            },
-            {
               "name": "heading",
               "description": "rich Context title (overrides data-heading) (accepts: text)"
+            },
+            {
+              "name": "actions",
+              "description": "extra buttons before the standard action set (accepts: control)"
             },
             {
               "name": "filters",

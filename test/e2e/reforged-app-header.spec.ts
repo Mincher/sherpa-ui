@@ -584,3 +584,25 @@ test('the view group is snapped: outer corners round, inner ones square', async 
   expect(r[1]!.left).toBeCloseTo(r[0]!.right, 2);
   expect(r[2]!.left).toBeCloseTo(r[1]!.right, 2);
 });
+
+test('the Context\'s icon and title share the actions\' row, left of them; the filters sit below', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-header') as WithRender;
+    el.setAttribute('data-heading', 'Records');
+    el.setAttribute('data-icon', 'table-columns');
+    el.setAttribute('data-ai', '');
+    el.style.inlineSize = '1200px';
+    el.innerHTML = '<sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await window.__settled();
+    const s = el.shadowRoot!;
+    const box = (sel: string) => s.querySelector(sel)!.getBoundingClientRect();
+    const mid = (b: DOMRect) => Math.round(b.top + b.height / 2);
+    return { title: mid(box('.title')), ai: mid(box('.ai')), titleRight: box('.title').right, aiLeft: box('.ai').left, filters: box('.filters').top };
+  });
+  // Will, TODO 434
+  expect(r.title).toBe(r.ai);
+  expect(r.titleRight).toBeLessThan(r.aiLeft);
+  expect(r.filters).toBeGreaterThan(r.ai);
+});

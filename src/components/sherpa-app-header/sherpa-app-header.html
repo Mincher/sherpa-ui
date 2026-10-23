@@ -59,7 +59,7 @@
 <template id="default">
   <header class="bar" part="bar">
     <div class="content" part="content">
-      <!-- ── Row 1: history + actions ─────────────────────────────── -->
+      <!-- ── Row 1: history, the Context's title, actions ─────────── -->
       <div class="row-history" part="row-history">
         <div class="history" part="history">
           <!-- xs, not sm: the back button belongs to the 16-tall breadcrumb
@@ -68,6 +68,17 @@
                          data-look="transparent" data-icon-start="arrow-left"
                          aria-label="Back"></sherpa-button>
           <slot name="breadcrumbs" data-accepts="nav"></slot>
+        </div>
+
+        <!-- The Context's icon and title, on the actions' row. Will, TODO 434 -->
+        <div class="title-row" part="title-row">
+          <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
+          <h1 class="title sherpa-truncate sherpa-text-large" part="title"></h1>
+          <slot name="heading" data-accepts="text"></slot>
+          <!-- Where the SHELL says its rail is gone. TRAP T-the-nav-is-a-menu-on-a-phone -->
+          <sherpa-button class="nav-menu" part="nav-menu" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="menu"
+                         aria-label="Menu" aria-haspopup="dialog"></sherpa-button>
         </div>
 
         <div class="actions" part="actions">
@@ -142,17 +153,8 @@
         </div>
       </div>
 
-      <!-- ── Row 2: Context details ───────────────────────────────── -->
+      <!-- ── Row 2: the Context's filters ───────────────────────────── -->
       <div class="row-context" part="row-context">
-        <div class="title-row" part="title-row">
-          <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
-          <h1 class="title sherpa-truncate sherpa-text-large" part="title"></h1>
-          <slot name="heading" data-accepts="text"></slot>
-          <!-- Where the SHELL says its rail is gone. TRAP T-the-nav-is-a-menu-on-a-phone -->
-          <sherpa-button class="nav-menu" part="nav-menu" data-type="icon" data-size="sm"
-                         data-look="transparent" data-icon-start="menu"
-                         aria-label="Menu" aria-haspopup="dialog"></sherpa-button>
-        </div>
 
         <div class="filters" part="filters">
           <slot name="filters" data-accepts="toolbar"></slot>

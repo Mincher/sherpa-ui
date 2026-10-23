@@ -115,7 +115,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
 | ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
 | ⬜ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
-| ⬜ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
+| ✅ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
 | ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
 | ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ⬜ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
@@ -2004,12 +2004,17 @@ white space; then the "Local Context" label, over each component scope as an acc
 Move row says "Move to View Context". The templates every toolbar variant
 clones moved to one family file, `toolbar-rows.html`.
 
-### `[ ]` ⬜ 434 — LOOK: the App Header's title joins its actions' row
+### `[x]` ✅ 434 — LOOK: the App Header's title joins its actions' row
 
 Will, 2026-10-23: *"In the App Header, move the icon and title label to be on
 the same row as the Save, Ask N-zo etc. actions."* Today the top row holds the
 actions (★ Save ▾, Ask N-zo and the rest, TODO 428) and the icon and title sit
 on the row under it, above the filter toolbar.
+
+✅ 2026-10-23: the title row is in row 1, after the back button and crumbs;
+the actions keep the right end (an auto margin), and the title truncates first.
+The header stays a fixed 120 with the filters at its foot, so the band above
+them is free — 440's "View Context" label goes there.
 
 ### `[ ]` ⬜ 433 — LOOK: a divider after the View chip
 
