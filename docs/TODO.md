@@ -110,7 +110,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
-| ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| ✅ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1877,7 +1877,7 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 429 — DEMOS: a shareable build that opens from index.html
+### `[x]` ✅ 429 — DEMOS: a shareable build that opens from index.html
 
 Will, 2026-10-23: *"Once finished with these filter-toolbar, and sherpa demo,
 changes: Make the Sherpa Demos app a shareable build that can be run locally
@@ -1885,6 +1885,15 @@ without any installation. Ideally the receiver of this build can just open
 index.html and have the app run."* Note: Chrome blocks ES module scripts and
 `fetch()` from a `file://` page, so the build must inline its modules (one
 classic script) and its JSON and templates.
+
+✅ 2026-10-23: in Sherpa Demos, its `build:share` script writes `share/index.html`
+— the whole app in one 1.6 MB file: one inline module, the tokens CSS, and
+every file app.json names. The outlet takes them as `files` (a module's
+exports, any other file's text) and fetches none; the Demos script moved from
+index.html to `app/main.js` so it can be bundled. Opened from disk it works in
+Chrome and Firefox; Safari loads the page again on each route change. A Demos
+test builds it and opens it from disk in three engines.
+TRAP T-an-app-in-one-file-fetches-nothing
 
 ### `[x]` ✅ 428 — LOOK: the Favorite and Save group, and Refresh, move
 

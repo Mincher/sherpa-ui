@@ -17604,6 +17604,31 @@ without their `data-accepts`: the spec carries it, nothing reads it at run time
 - Site: `scripts/check-weight.mjs`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-an-app-in-one-file-fetches-nothing
+
+**A page opened from disk (`file://`) can fetch nothing and import nothing**:
+Chrome blocks `fetch()` and every module script with a `src`, by CORS — the
+page's origin is `null`. An inline `<script type="module">` still runs. So an
+app shared as ONE file (Will, TODO 429: *"the receiver of this build can just
+open index.html and have the app run"*) bundles its code into that inline
+script, and hands its outlet `files`: each path app.json names — a module's
+exports, any other file's text.
+
+The outlet carries each text as the build carries a component's
+(`inlined()`, `T-the-text-is-in-the-js`), and reads every file through
+`fileText()` — a template, a definition, a Views file and the markup a View
+names — so a carried one is never fetched. A module it holds is never
+imported. Served, an app hands no `files`, and all of it is fetched as before.
+
+Every `import.meta.url` in one bundle is the PAGE's, so the bundler gives each
+library module its own (`file:///sherpa-ui/<its path>`): a component's carried
+file is keyed by the URL it names. WebKit does not intercept a navigation from
+a file (`canIntercept` is false), so Safari loads the page again on each route
+change — slower, but it works. Sherpa Demos' `build:share` script is one.
+
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/core/browser/view-files.ts`
+
 ### T-a-form-control-follows-its-fieldset
 
 **A form control is disabled by its `<fieldset>` too, and a reset puts back

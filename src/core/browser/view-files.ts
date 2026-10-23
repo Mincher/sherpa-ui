@@ -6,7 +6,7 @@
  * - loadViewLibrary — a page's views from a JSON file; a view's `template` fills its content
  */
 import { report } from '../data/report.js';
-import { loadTemplates } from '../ui/templater.js';
+import { fileText, loadTemplates } from '../ui/templater.js';
 import type { ViewLibrary } from './persist-view.js';
 
 /**
@@ -17,7 +17,8 @@ import type { ViewLibrary } from './persist-view.js';
  */
 export async function loadViewLibrary(url: string | URL): Promise<ViewLibrary> {
   const base = new URL(url, document.baseURI);
-  const views = await (await fetch(base)).json() as ViewLibrary;
+  // Read as text, so a carried file is never fetched. TRAP T-an-app-in-one-file-fetches-nothing
+  const views = JSON.parse(await fileText(base.href)) as ViewLibrary;
   await Promise.all(Object.entries(views).map(async ([id, view]) => {
     if (!view.template) return;
     const [file = '', name = ''] = view.template.split('#');

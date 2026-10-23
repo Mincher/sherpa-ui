@@ -11,6 +11,7 @@
  * - filesFor — the markup and sheets a component is drawn from now: a family's, its own, a consumer's.
  * - loadFamily — a family's markup files, each on its own: one that fails is said and left out.
  * - familyBody — each family file's first template, in order; one not loaded adds nothing.
+ * - fileText — a file's text: carried, else fetched; a 404 or a page that came back rejects.
  * - loadTemplates — a markup file, fetched once and split by `<template id>`.
  * - cachedTemplates — the split markup already fetched, for a re-stamp that costs no fetch.
  * - templateBody — one template's markup: the one wanted, else the first, else the whole file.
@@ -129,6 +130,12 @@ function fetchText(url: string, fresh = false): Promise<string> {
     }
     return text;
   });
+}
+
+/** A file's text: carried in the JS — by the build, or an app in one file —
+ *  else fetched. A 404, or a page that came back, rejects. */
+export function fileText(url: string): Promise<string> {
+  return fetchText(url);
 }
 
 /** Vite before 8 copies the package into `.vite/` and leaves each `new URL` pointing there. */
