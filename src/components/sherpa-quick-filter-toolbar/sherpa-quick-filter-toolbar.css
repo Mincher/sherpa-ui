@@ -286,6 +286,30 @@ sherpa-accordion.scope::part(actions) {
 :host([data-orientation="portrait"]:state(has-organise)) .chips {
   margin-block-start: var(--sherpa-display-mode-space-base, 16px);
 }
+/* A SECTION's name over the first chip of its run — a named section's, or a
+   lone chip's own field's — and "Organise" over Group and Sort: a list field's
+   heading, as the chip draws it. Will, TODO 438 · TRAP T-a-section-is-headed-once */
+/* …never over a chip the search hides. */
+:host([data-orientation="portrait"]) .chips > .chip[data-section-start]:not([data-no-matches]) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-orientation="portrait"]:state(has-organise)) .organise-zone { flex-wrap: wrap; }
+:host([data-orientation="portrait"]) .chips > .chip[data-section-start]::before,
+:host([data-orientation="portrait"]:state(has-organise)) .organise-zone::before {
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-size: var(--sherpa-display-mode-fonts-scale-sm, 12px);
+  line-height: var(--sherpa-display-mode-fonts-scale-lg, 16px);
+  font-weight: var(--sherpa-font-weight-light, 300);
+  text-transform: uppercase;
+}
+:host([data-orientation="portrait"]) .chips > .chip[data-section-start]::before { content: attr(data-section-start); }
+:host([data-orientation="portrait"]:state(has-organise)) .organise-zone::before {
+  content: attr(data-section);
+  flex-basis: 100%;
+}
 
 /* ── COLUMN — portrait over several scopes: the panel area's. It opens and
    shuts as a panel does; its BODY scrolls, the header stays. TODO 425 */

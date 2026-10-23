@@ -251,7 +251,10 @@
                 {
                   "el": "div",
                   "class": "organise-zone",
-                  "part": "organise"
+                  "part": "organise",
+                  "attrs": {
+                    "data-section": "Organise"
+                  }
                 },
                 {
                   "el": "div",

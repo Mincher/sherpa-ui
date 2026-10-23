@@ -386,6 +386,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.querySelector(':scope > .field-more')?.remove();
       }
     }
+    this.#markSections();
+  }
+
+  /** Each SECTION's name over the first chip of its run, in portrait: a named
+   *  section's, or a lone chip's own field's — a list field heads itself, and
+   *  a persistent chip is a picker. Will, TODO 438 · TRAP T-a-section-is-headed-once */
+  #markSections(): void {
+    const portrait = this.dataset['orientation'] === 'portrait';
+    let run = '';
+    for (const chip of this.#chips()) {
+      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const own = chip.hasAttribute('data-layout') || chip.hasAttribute('data-persistent') ? '' : def?.label ?? '';
+      const name = def?.section ?? own;
+      const key = def?.section ? `section:${def.section}` : `chip:${chip.dataset['id']}`;
+      if (portrait && name && key !== run) chip.setAttribute('data-section-start', name);
+      else chip.removeAttribute('data-section-start');
+      run = key;
+    }
   }
 
   /** Put every chip back, before a fresh measurement. */

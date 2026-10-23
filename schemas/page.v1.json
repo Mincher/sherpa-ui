@@ -76,6 +76,10 @@
           }
         },
         "icon": { "type": "string" },
+        "section": {
+          "description": "The named section its chip sits in, where a bar heads its sections (a portrait one). Chips of one section sit together under its name; a chip with none is a section of its own, named for it.",
+          "type": "string"
+        },
         "labels": {
           "description": "A value's name as a reader sees it, where it is not the value.",
           "type": "object", "additionalProperties": { "type": "string" }

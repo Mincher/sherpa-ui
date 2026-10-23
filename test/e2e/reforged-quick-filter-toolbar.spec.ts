@@ -2569,3 +2569,27 @@ test('Discard says its word, in every layout', async ({ page }) => {
   // Will, TODO 431
   expect(r).toEqual(['Discard', 'Discard', 'Discard']);
 });
+
+test('in portrait, each SECTION is headed once: a named run of chips, a lone chip by its field, Group and Sort as Organise', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-orientation': 'portrait' });
+    el.populate!([
+      { id: 'from', label: 'From', kind: 'date', section: 'When' },
+      { id: 'to', label: 'To', kind: 'date', section: 'When' },
+      { id: 'seats', label: 'Seats', kind: 'number' },
+      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] },
+    ]);
+    el.organise!({ group: [{ field: 'plan', label: 'Plan' }] });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    return {
+      heads: [...sr.querySelectorAll<HTMLElement>('.chips > .chip')].map((c) => [c.dataset['id'], c.getAttribute('data-section-start')]),
+      drawn: getComputedStyle(sr.querySelector('.chip[data-id="from"]')!, '::before').content,
+      organise: getComputedStyle(sr.querySelector('.organise-zone')!, '::before').content,
+    };
+  });
+  // Will, TODO 438: one heading per run; a list field heads itself.
+  expect(r.heads).toEqual([['from', 'When'], ['to', null], ['seats', 'Seats'], ['plan', null]]);
+  expect(r.drawn).toBe('"When"');
+  expect(r.organise).toBe('"Organise"');
+});

@@ -119,7 +119,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
 | ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ✅ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
-| ⬜ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
+| ✅ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ⬜ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
@@ -1915,7 +1915,7 @@ cards). Demos' `reforged-panel-mode-does-not-shift` bounds panel mode at Good
 (0.1) until this is fixed; put it back to 0.05 after. Draw the chips with the column, or hold the column's
 body back until the View's are drawn (a View with no filters must still show).
 
-### `[ ]` ⬜ 438 — BUG: the column has no "Date" or "Organise" section labels
+### `[x]` ✅ 438 — BUG: the column has no "Date" or "Organise" section labels
 
 Will, 2026-10-23: *"In the filter toolbar as a column/panel mode we lose the
 section labels for 'Date' and 'Organise' that we had in the old filter panel.
@@ -1942,6 +1942,13 @@ scalable, too."* So a toolbar's chips are ALWAYS in sections: a named one
 holds 1 or more chips; a chip in none is a section of its own, named by its
 field. Portrait draws each section with its name; landscape draws the same
 chips in a row (perhaps a divider between sections).
+
+✅ 2026-10-23: a field declares `section` in the page definition (schema,
+`FieldDeclaration`, `FilterDef`). In portrait the toolbar heads each run once,
+over its first chip: a named section's name; a lone chip's field ("DATE");
+none for a list field, which heads itself; "ORGANISE" over Group and Sort —
+all in the list heading's look. Landscape is unchanged (a divider between
+sections there is easy, if wanted). TRAP T-a-section-is-headed-once
 
 ### `[x]` ✅ 437 — BUG: a chip in a section shows its section's tooltip too
 

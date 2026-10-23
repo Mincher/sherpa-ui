@@ -16192,6 +16192,27 @@ has no view timeline and shows none.
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 
+### T-a-section-is-headed-once
+
+**A portrait toolbar's chips sit in SECTIONS, each headed once** (Will, TODO
+438: *"We need to support 1 or more filter chips being in a named section"*).
+A field names its section in the page definition (`"section": "When"`); the
+chips of one section sit TOGETHER, so the fields' order is the page's to keep.
+A chip in no named section is a section of its own, named for its field — a
+LIST field heads itself (its section chip's own heading), and the persistent
+View chip is a picker, not a filter. Group and Sort are "Organise", a word in
+the markup.
+
+The toolbar marks the first chip of each run (`data-section-start`, the name)
+after every layout, so a re-order or an orientation change marks again; CSS
+draws it as the chip's `::before`, in a column over the chip, in the list
+heading's look. Landscape draws no heading. The column's search hides a
+chip with `display: none`, and the heading's `display: flex` is the more
+specific rule: it skips a chip the search hides, or the search shows it.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+
 ### T-a-hairline-resolves-by-density
 
 The border token is `0.5px`, and what a browser resolves that to depends on the

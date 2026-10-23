@@ -49,6 +49,9 @@ export interface FieldDeclaration {
   thresholds?: readonly Threshold[];
   /** Its chip's glyph. TRAP T-only-five-filter-chips-carry-an-icon */
   icon?: string;
+  /** The named SECTION its chip sits in, where a bar heads its sections; none,
+   *  a section of its own, named for it. Will, TODO 438 */
+  section?: string;
   /** A value's name as a reader sees it, where it is not the value. */
   labels?: Record<string, string>;
   /** Its answer SURVIVES a View change that does not answer it; else a View
