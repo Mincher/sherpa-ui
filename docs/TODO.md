@@ -113,7 +113,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | ⬜ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
 | ⬜ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
-| ⬜ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
+| ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
 | ⬜ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ⬜ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
 | ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
@@ -121,6 +121,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
 | ⬜ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ⬜ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
+| ⬜ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1887,6 +1888,15 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 440 — LOOK: "View Context" over the View's filters in toolbar mode
+
+Will, 2026-10-23: *"It would be good to show the 'View context' label in
+toolbar mode just above the first 'View' filter chip."* Read as: the View
+scope's first FILTER chip (Customer on Records) — the View picker chip is not
+a filter (432, 433). The label is the scope's own name, as the panel's. Done
+with 433 (the divider after the View chip) and 434 (the title moves up, which
+frees the row above the chips).
+
 ### `[ ]` ⬜ 439 — PERF: the panel's chips draw late, and `available` runs 6 times
 
 Found in 435, 2026-10-23, Records in panel mode at 4x CPU: the column's cards
@@ -2005,11 +2015,16 @@ on the row under it, above the filter toolbar.
 
 Will, 2026-10-23: *"Also add a divider after the View chip in the toolbar."*
 
-### `[ ]` ⬜ 432 — LOOK: the View chip never looks active
+### `[x]` ✅ 432 — LOOK: the View chip never looks active
 
 Will, 2026-10-23: *"The 'Views' filter chip is a unique case and doesn't need
 any active/success green styling."* Today it takes the active look (magenta),
 and Settings › "Show active filters in green" makes it green.
+
+✅ 2026-10-23: the on pin is `[data-current]:not([data-persistent])` in
+`scripts/figma-data/state-pins.yaml`, and the thicker on border skips it too. A
+persistent chip — only the View chip — is a picker, always on, so on says
+nothing: it wears the plain look, never active or green.
 
 ### `[ ]` ⬜ 431 — LOOK: Discard says "Discard"
 

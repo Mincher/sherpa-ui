@@ -794,3 +794,18 @@ test('a chip whose menu has no list keeps an "Is" row it is given, and says it',
   // An "Is" row reads as its condition. TODO 409
   expect(r).toMatchObject({ on: true, says: 'equals(Bo)', box: 'Bo' });
 });
+
+test('a PERSISTENT chip — the View chip, always on — wears no on look; any other on chip does', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const look = async (attrs: Record<string, string>): Promise<{ fill: string; edge: string }> => {
+      const el = await window.__mount('sherpa-quick-filter', undefined, { 'data-label': 'View', ...attrs });
+      await window.__settled();
+      const body = el.shadowRoot!.querySelector('.body')!;
+      return { fill: getComputedStyle(body).backgroundColor, edge: getComputedStyle(body).borderTopWidth };
+    };
+    return { plain: await look({}), on: await look({ 'data-current': '' }), view: await look({ 'data-current': '', 'data-persistent': '' }) };
+  });
+  // Will, TODO 432
+  expect(r.view).toEqual(r.plain);
+  expect(r.on.fill).not.toBe(r.plain.fill);
+});

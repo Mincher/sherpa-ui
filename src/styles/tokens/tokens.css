@@ -2430,7 +2430,7 @@
   }
 
   /* Component state pins — scripts/figma-data/state-pins.yaml. */
-  sherpa-quick-filter[data-current] {
+  sherpa-quick-filter[data-current]:not([data-persistent]) {
     --sherpa-style-border-base: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
     --sherpa-style-border-base-1: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
     --sherpa-style-border-width: var(--sherpa-filter-on-border-width, var(--sherpa-style-active-border-width));

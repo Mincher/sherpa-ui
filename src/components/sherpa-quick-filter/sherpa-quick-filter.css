@@ -161,7 +161,7 @@
  * at a glance across a bar of twelve.
  * NO weight change — see the trap.
  * TRAP T-an-active-chip-is-heavier-and-more-strongly-drawn */
-:host([data-current]) :is(.body, .caret) {
+:host([data-current]:not([data-persistent])) :is(.body, .caret) {
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
 }
 

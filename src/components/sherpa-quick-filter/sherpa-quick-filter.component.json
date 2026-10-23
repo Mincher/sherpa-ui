@@ -581,11 +581,6 @@
     },
     {
       "$type": "state",
-      "name": "current",
-      "selector": ":host([data-current])"
-    },
-    {
-      "$type": "state",
       "name": "pending",
       "selector": ":host([data-pending])"
     },
