@@ -84,6 +84,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-flat': { type: 'boolean', kind: 'template' },
     // Portrait: a COLUMN, header and all, even over ONE scope and its parts. Will, TODO 436
     'data-column': { type: 'boolean', kind: 'template' },
+    // Its chips say no match counts: the app's choice, its provider's to write. Will, TODO 436
+    'data-no-results': { type: 'boolean', kind: 'behaviour' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -716,9 +718,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Give each section chip its field's value counts; a chip that is no section, none. */
   #drawValueResults(): void {
+    const results = this.hasAttribute('data-no-results') ? {} : this.#valueResults;
     for (const chip of this.#chips()) {
       const field = this.#filters.find((f) => f.id === chip.dataset['id'])?.field ?? chip.dataset['id'] ?? '';
-      chip.valueResults = chip.dataset['layout'] === 'section' ? this.#valueResults[field] ?? null : null;
+      chip.valueResults = chip.dataset['layout'] === 'section' ? results[field] ?? null : null;
     }
   }
 
@@ -734,12 +737,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   drawResults(results: Readonly<Record<string, number>>): void {
     this.#results = results;
+    const shown = this.#shownResults;
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
-      chip.results = results[field] ?? results[id] ?? null;
+      chip.results = shown[field] ?? shown[id] ?? null;
     }
     this.#syncScopeBadge();
+  }
+
+  /** The counts it shows: none while `data-no-results`. TODO 436 */
+  get #shownResults(): Readonly<Record<string, number>> {
+    return this.hasAttribute('data-no-results') ? {} : this.#results;
   }
 
   /** A SHUT portrait section's badge: the rows its filters leave — the last
@@ -751,7 +760,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!tip || !badge) return;
     const answered = this.#chips().flatMap((chip) => {
       const def = this.#filters.find((f) => f.id === chip.dataset['id']);
-      const n = def ? this.#results[def.field ?? def.id] ?? this.#results[def.id] : undefined;
+      const n = def ? this.#shownResults[def.field ?? def.id] ?? this.#shownResults[def.id] : undefined;
       return def && n != null && !chip.hasAttribute('data-persistent') ? [{ label: def.label, n }] : [];
     });
     const said = drawCount(badge, answered.at(-1)?.n, ['match', 'matches']);
@@ -1513,6 +1522,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameContext(chip);
+    if (name === 'data-no-results') {
+      this.drawResults(this.#results);
+      this.#drawValueResults();
+    }
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-orientation') {

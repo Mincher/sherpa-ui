@@ -210,15 +210,28 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: hide what Limit rules out. */
   #hide = false;
 
+  /** Each filter control says its match counts — or, off, none. The app sets
+   *  it, from its session. Will, TODO 436 */
+  get results(): boolean {
+    return this.#results;
+  }
+  set results(on: boolean) {
+    this.#results = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: say the match counts. */
+  #results = true;
+
   /** Every control with a filter menu: a bar, a panel, a grid's headings. TODO 305 */
   #limited(): Element[] {
     return [...this.#asked.keys()].filter((el) => 'drawScope' in el || 'drawPresent' in el);
   }
 
-  /** One control, told the Limit settings its filter menus follow. */
+  /** One control, told the app's filter settings: Limit, and the counts. */
   #offerLimit(el: Element): void {
     el.setAttribute('data-limit-options', this.#limit ? 'on' : 'off');
     el.setAttribute('data-hide-unmatched', this.#hide ? 'on' : 'off');
+    el.toggleAttribute('data-no-results', !this.#results);
   }
   /** The app's choice, for every source. */
   #limit = false;

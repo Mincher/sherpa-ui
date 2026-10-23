@@ -2042,6 +2042,9 @@ only filters. **h** — its own item, after: 441.
   the header. Library: a bar steps back only where a column answers for its
   scope; `data-column` makes a portrait toolbar a column over one scope; the
   provider binds a column's scopes as a list.
+- ✅ **e**, 2026-10-23: "Show match counts" (Look). `provider.results`, on by
+  default, marks every bar and panel; a toolbar with `data-no-results` draws no
+  count — no chip's, no value chip's, no shut scope's badge.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 

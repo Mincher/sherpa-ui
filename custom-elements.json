@@ -7968,6 +7968,13 @@
             },
             {
               "kind": "field",
+              "name": "results",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "reach",
               "type": {
                 "text": "{ reach: 'ok' | 'unreached' | 'down'; failure?: Failure }"
@@ -8356,6 +8363,14 @@
               "type": {
                 "text": "boolean"
               }
+            },
+            {
+              "name": "data-no-results",
+              "description": "its chips say no match counts — the app's choice, written by its provider",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             },
             {
               "name": "data-nothing-to-reset",

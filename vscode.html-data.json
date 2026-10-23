@@ -2838,6 +2838,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-no-results",
+          "description": "its chips say no match counts — the app's choice, written by its provider",
+          "valueSet": "v"
+        },
+        {
           "name": "data-nothing-to-reset",
           "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231.",
           "valueSet": "v"
