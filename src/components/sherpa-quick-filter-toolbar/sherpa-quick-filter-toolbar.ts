@@ -86,6 +86,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-column': { type: 'boolean', kind: 'template' },
     // Its chips say no match counts: the app's choice, its provider's to write. Will, TODO 436
     'data-no-results': { type: 'boolean', kind: 'behaviour' },
+    // How many filters are APPLIED in what it answers, as its provider counts them. TODO 436
+    'data-applied': { type: 'number', kind: 'behaviour' },
+    // Its Filters badge — a column's title — counts them, not the chips folded away. TODO 436
+    'data-count-applied': { type: 'boolean', kind: 'behaviour' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -1522,6 +1526,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameContext(chip);
+    if (name === 'data-applied' || name === 'data-count-applied') {
+      if (name === 'data-count-applied' && !this.hasAttribute(name)) this.#renderAvailable();
+      this.#drawApplied();
+    }
     if (name === 'data-no-results') {
       this.drawResults(this.#results);
       this.#drawValueResults();
@@ -1880,10 +1888,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#oneRows.tell(added);
     const def = drawFiltersButton(add, folded.length, added, offer, this.#saved.listed, this.hasAttribute('data-saveable'));
     if (!def) return;
+    this.#drawApplied();
     this.#addMenu(add, def);
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     this.#syncSave();
     this.#syncOverflowActive();
+  }
+
+  /** The filters APPLIED, where the app counts them: the Filters button's badge,
+   *  or a column's, beside its title. None, a badge of nothing. Will, TODO 436 */
+  #drawApplied(): void {
+    const n = Number(this.dataset['applied']) || 0;
+    const counting = this.hasAttribute('data-count-applied');
+    const add = this.$('.add-btn');
+    if (add && counting) {
+      if (n) add.dataset['badge'] = String(n);
+      else add.removeAttribute('data-badge');
+    }
+    const badge = this.$<HTMLElement>('.applied-count');
+    const said = counting ? drawCount(badge, n || null, ['filter applied', 'filters applied']) : null;
+    if (badge) {
+      if (said == null) delete badge.dataset['count'];
+      else badge.dataset['count'] = said;
+    }
   }
 
   /** "Save <name>" beside the Filters button while a set is taken. Will, 366 */

@@ -374,6 +374,23 @@
               },
               "children": [
                 {
+                  "el": "span",
+                  "class": "column-heading",
+                  "part": "heading",
+                  "attrs": {
+                    "slot": "heading"
+                  },
+                  "children": [
+                    {
+                      "el": "sherpa-badge",
+                      "class": "applied-count",
+                      "attrs": {
+                        "role": "img"
+                      }
+                    }
+                  ]
+                },
+                {
                   "el": "sherpa-button",
                   "class": "column-save",
                   "part": "save",
@@ -488,6 +505,14 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-applied",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-apply-on",
       "type": "enum",
       "observed": true,
@@ -525,6 +550,14 @@
       "kind": "template",
       "default": false,
       "description": "portrait: a column, header and all, even over one scope and its parts"
+    },
+    {
+      "$type": "prop",
+      "name": "data-count-applied",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
     },
     {
       "$type": "prop",
@@ -1034,6 +1067,11 @@
     "act-divider.background": "{sherpa.theme-border-default-2}",
     "chips.gap": "{sherpa.display-mode-space-xs}",
     "actions-zone.gap": "{sherpa.display-mode-space-xs}",
+    "column-heading.gap": "{sherpa.theme-gap-sm}",
+    "column-heading.color": "{sherpa.style-content-base}",
+    "column-heading.font-size": "{sherpa.font-size-body-base}",
+    "column-heading.font-weight": "{sherpa.font-weight-medium}",
+    "column-heading.line-height": "{sherpa.theme-content-line-height-base}",
     "scope-rule.margin": "{sherpa.display-mode-space-base}",
     "scope-rule.border-block-start": "{sherpa.display-mode-border-width-base}",
     "local-heading.padding-inline": "{sherpa.theme-padding-lg}"

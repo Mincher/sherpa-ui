@@ -328,6 +328,17 @@ sherpa-accordion.scope::part(actions) {
   min-block-size: 0;
   padding: 0;
 }
+/* Its title, as the header draws one, and the filters applied beside it. TODO 436 */
+.column-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+}
+.applied-count:not([data-count]) { display: none; }
 /* ONE SIZE UP: the panel area's own chrome. */
 .head::part(icon) {
   inline-size: var(--sherpa-theme-content-size-large, 16px);

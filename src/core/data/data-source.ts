@@ -13,6 +13,7 @@
  * - .query — The Query the rows are under. A copy.
  * - .atDefault — Would a Reset to default change nothing? Applies nothing.
  * - .answered — Is there anything a Reset would clear, in one scope or any?
+ * - .appliedCount — How many fields filter, by their applied readings, in these scopes or all.
  * - .loaded — Has any load completed?
  * - .result — The whole of the last load's answer.
  * - .rows — The last load's rows, LIVE — state, query and result are copies
@@ -319,6 +320,19 @@ export class DataSource extends EventTarget {
       const at = this.#applied.scopes[id];
       return !!at && Object.entries(at.readings).some(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading));
     });
+  }
+
+  /** How many fields FILTER, by their applied readings, in these scopes — and
+   *  every chart's own, with `parts` — or in every scope. Will, TODO 436 */
+  appliedCount(scopes?: readonly string[], parts = false): number {
+    const facts = this.#compileFacts();
+    const ids = scopes ? [...scopes, ...(parts ? this.#narrowing.keys() : [])] : Object.keys(this.#applied.scopes);
+    let n = 0;
+    for (const id of new Set(ids)) {
+      const at = this.#applied.scopes[id];
+      if (at) n += Object.entries(at.readings).filter(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading)).length;
+    }
+    return n;
   }
 
   /** Has any load completed? Before one, there is nothing to count or group. */

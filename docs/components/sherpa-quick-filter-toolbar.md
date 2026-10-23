@@ -55,10 +55,12 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-applied` | number |  |  |
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-bounds` | text |  |  |
 | `data-column` | boolean | `false` | portrait: a column, header and all, even over one scope and its parts |
+| `data-count-applied` | boolean |  |  |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
@@ -169,7 +171,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 
@@ -185,6 +187,11 @@ What each class's base rule reads:
 | `--sherpa-theme-border-default-2` | `.act-divider` | `background` |
 | `--sherpa-display-mode-space-xs` | `.chips` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions-zone` | `gap` |
+| `--sherpa-theme-gap-sm` | `.column-heading` | `gap` |
+| `--sherpa-style-content-base` | `.column-heading` | `color` |
+| `--sherpa-font-size-body-base` | `.column-heading` | `font-size` |
+| `--sherpa-font-weight-medium` | `.column-heading` | `font-weight` |
+| `--sherpa-theme-content-line-height-base` | `.column-heading` | `line-height` |
 | `--sherpa-display-mode-space-base` | `.scope-rule` | `margin` |
 | `--sherpa-display-mode-border-width-base` | `.scope-rule` | `border-block-start` |
 | `--sherpa-theme-padding-lg` | `.local-heading` | `padding-inline` |

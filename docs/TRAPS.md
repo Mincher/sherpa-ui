@@ -10321,6 +10321,13 @@ so a stale fold lists nothing: only connected chips are listed.
 (`T-a-shut-scope-folds-like-a-bar`). Two copies of this drifted every time
 one was touched.
 
+**Or the filters APPLIED, where the app counts them** (Will, TODO 436):
+`provider.countApplied` marks every control `data-count-applied`, and after
+each load the provider writes `data-applied` — `source.appliedCount()` over
+what the control answers: a bar its scope, a column its scopes and their
+charts'. The Filters badge says that count; a column says it beside its
+"Filters" title. Off, the badge counts the chips folded away again.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/core/ui/filters-button.ts`

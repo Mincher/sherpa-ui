@@ -2048,6 +2048,10 @@ only filters. **h** — its own item, after: 441.
 - ✅ **f**, 2026-10-23: "Require Apply on every change" (Behaviour).
   `provider.applyEvery` waits every scope the page declares; each bar shows
   its own Apply. Off sends what waits.
+- ✅ **d**, 2026-10-23: "Count the filters applied" (Look). `provider.countApplied`;
+  `source.appliedCount(scopes, parts)` counts the fields that filter by their
+  applied readings; the provider writes each control's `data-applied`. The
+  Filters badge says it; in panel mode, a badge beside the column's "Filters".
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 

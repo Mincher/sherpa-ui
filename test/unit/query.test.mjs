@@ -436,6 +436,23 @@ test('answered: a reading that filters, a saved filter on, or the rows arranged'
   assert.equal(src.answered(VIEW), true, 'a Reset clears the arrangement too');
 });
 
+/** How many filters are applied: each field that filters, in a scope or all. Will, TODO 436 */
+test('appliedCount: the fields that filter by their applied readings; an arrangement is none', () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.query.hold(VIEW, ['region']);
+  src.query.hold('grid', ['status']);
+  assert.equal(src.appliedCount(), 0);
+  src.query.setReading('view', 'status', { picked: ['active'] });
+  src.query.setReading('view', 'region', { picked: ['EMEA'] });
+  assert.equal(src.appliedCount(), 2);
+  assert.equal(src.appliedCount(['grid']), 1, 'one scope at a time');
+  assert.equal(src.appliedCount([VIEW]), 1);
+  src.query.setSort('region');
+  assert.equal(src.appliedCount(), 2, 'a sort filters nothing');
+  src.query.setReading('view', 'status', { picked: [] });
+  assert.equal(src.appliedCount(), 1);
+});
+
 test('a saved filter set taken clears a scope it does not name, and holds what it answers (Will, 366)', async () => {
   const { takeSet, dropSet } = await import(new URL('../../dist/core/data/query-edits.js', import.meta.url));
   const now = { v: 1, scopes: {

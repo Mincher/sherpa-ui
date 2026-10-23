@@ -136,6 +136,7 @@ export class ProviderPage {
       frame = requestAnimationFrame(() => {
         this.#sayResets();
         this.#saySaved();
+        this.#sayApplied();
       });
     };
     source.addEventListener('change', say, { signal });
@@ -367,6 +368,19 @@ export class ProviderPage {
     if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
     if (this.#applied) this.#take(null);
     this.#settle?.();
+  }
+
+  /** Each bar and panel told how many filters are APPLIED in what it answers:
+   *  a bar its scope; a column its scopes and their charts'; a panel every one.
+   *  Will, TODO 436 */
+  #sayApplied(): void {
+    const source = this.#opened?.source;
+    if (!source) return;
+    for (const bar of this.#host.bars()) bar.setAttribute('data-applied', String(source.appliedCount([this.#host.scopeOf(bar) ?? ''])));
+    for (const panel of this.#host.panels()) {
+      const scopes = 'drawScope' in panel ? (panel.getAttribute('data-scope') ?? '').split(/\s+/).filter(Boolean) : undefined;
+      panel.setAttribute('data-applied', String(source.appliedCount(scopes, true)));
+    }
   }
 
   /** Tell each bar and panel whether its Resets would change nothing: then they

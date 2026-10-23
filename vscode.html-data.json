@@ -2753,6 +2753,9 @@
       "description": "a strip of quick-filter chips above a grid/list.",
       "attributes": [
         {
+          "name": "data-applied"
+        },
+        {
           "name": "data-apply-on",
           "description": "input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107",
           "values": [
@@ -2775,6 +2778,10 @@
         {
           "name": "data-column",
           "description": "portrait: a column, header and all, even over one scope and its parts",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-count-applied",
           "valueSet": "v"
         },
         {

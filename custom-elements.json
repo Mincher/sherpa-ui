@@ -7975,6 +7975,13 @@
             },
             {
               "kind": "field",
+              "name": "countApplied",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8273,6 +8280,12 @@
           "description": "a strip of quick-filter chips above a grid/list.",
           "attributes": [
             {
+              "name": "data-applied",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "data-apply-on",
               "description": "input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107",
               "type": {
@@ -8299,6 +8312,12 @@
                 "text": "boolean"
               },
               "default": "false"
+            },
+            {
+              "name": "data-count-applied",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "name": "data-dirty",
@@ -9089,6 +9108,9 @@
             },
             {
               "name": "head"
+            },
+            {
+              "name": "heading"
             },
             {
               "name": "local-heading"

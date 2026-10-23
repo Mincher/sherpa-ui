@@ -225,6 +225,8 @@
   <sherpa-container class="column" part="column" data-padding="none"
                     data-swap-on="data-scroll-shadow" data-swap-data-scroll-shadow="">
     <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
+      <!-- Its title, and the filters applied beside it, where the app counts them. Will, TODO 436 -->
+      <span slot="heading" class="column-heading" part="heading">Filters<sherpa-badge class="applied-count" role="img"></sherpa-badge></span>
       <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
