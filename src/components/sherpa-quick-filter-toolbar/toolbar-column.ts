@@ -20,7 +20,7 @@ import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import { MANAGE_SETS, SavedSets, drawFiltersButton, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
-import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore } from '../../core/ui/more-menu.js';
+import { askSwitches, extraRows, hidesUnmatched, openMore, pickMore, resetRows, saveRows } from '../../core/ui/more-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 /** What a column says: its toolbar's own events. */
@@ -186,7 +186,6 @@ export class ToolbarColumn {
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this.#host.el));
     btn.append(menu);
     menu.items?.(items);
-    drawFilterActions(this.#host.el, this.#host.root(), menu, this.#saved.applied);
   }
 
   /** "Save <name>" while a saved set is taken. Will, 366 */
@@ -215,12 +214,16 @@ export class ToolbarColumn {
     for (const [scope, ids] of adds) this.#host.emit('filter-add', { scope, ids });
   };
 
-  /** The Filters menu's own actions: Reset, Reset all on view, the save rows and Manage. TODO 383, 427 */
+  /** Manage Saved Filters, the Filters menu's one action. TODO 427 */
   #onFilterAction = (event: Event): void => {
-    const act = String((event as CustomEvent).detail?.value ?? '');
-    if (!FILTER_ACTIONS.has(act) && act !== MANAGE_SETS) return;
+    if ((event as CustomEvent).detail?.value !== MANAGE_SETS) return;
     event.stopPropagation();
     this.#$<SherpaMenu>('.column-filters sherpa-menu')?.hide?.();
+    this.#host.emit(MANAGE_SETS);
+  };
+
+  /** A filter action from the ⋮: Reset, Reset all on view, and the save rows. Will, TODO 430 */
+  #act(act: string): void {
     if (act === 'reset') {
       const request = this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } }));
       this.#host.emit('quick-filter-change', { scope: 'column', request, active: [], values: {} });
@@ -229,19 +232,21 @@ export class ToolbarColumn {
     else if (act === 'reset-default') this.#host.emit('view-reset', {}, { cancelable: true });
     else if (act === 'filters-delete') this.#host.emit('filters-delete', { id: this.#saved.applied?.id });
     else if (act === 'filters-save-as') this.#host.emit('filters-save-as');
-    else if (act === MANAGE_SETS) this.#host.emit(MANAGE_SETS);
-    else this.#host.emit('filters-save');
-  };
+    else if (act === 'filters-save') this.#host.emit('filters-save');
+  }
 
-  /** ⋮ — the page's buttons folded away, then Limit. No Suggest filters or
-   *  Refresh: those are the App Header's. Will, TODO 425 G11 */
+  /** ⋮ — Reset and Save filters (Will, TODO 430), the page's buttons folded
+   *  away, then Limit. No Suggest filters or Refresh: those are the App
+   *  Header's. Will, TODO 425 G11 */
   #onMore = (event: Event): void => {
-    openMore(this.#host.el, this.#host.root(), event.currentTarget as HTMLElement, [extraRows(this.#host.el)]);
+    const el = this.#host.el;
+    openMore(el, this.#host.root(), event.currentTarget as HTMLElement, [resetRows(el), saveRows(el, this.#saved.applied), extraRows(el)]);
   };
 
-  /** A ⋮ row: a page button folded away. */
+  /** A ⋮ row: a filter action, or a page button folded away. */
   #onMoreRow = (event: Event): void => {
-    pickMore(this.#host.el, this.#host.root(), event);
+    const act = pickMore(this.#host.el, this.#host.root(), event);
+    if (act) this.#act(act);
   };
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

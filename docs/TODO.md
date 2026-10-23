@@ -111,7 +111,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
-| ⬜ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
+| ✅ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
 | ✅ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
 | ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
 | ✅ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
@@ -2051,11 +2051,18 @@ icon too.
 ✅ 2026-10-23: "Discard", with its ×, in the bar, a portrait scope's header and
 the View Context row. 417's trash can is still to come.
 
-### `[ ]` ⬜ 430 — LOOK: Reset and Save go into the toolbar's ⋮
+### `[x]` ✅ 430 — LOOK: Reset and Save go into the toolbar's ⋮
 
 Will, 2026-10-23: *"Move the Reset, and Save, actions into the overflow menu of
 the filter toolbar."* Today they lead the Filters menu (TODO 383: every filter
 action is that one menu's), and "Save <name>" also sits beside it.
+
+✅ 2026-10-23: the bar's and the column's ⋮ open on Reset filters and Reset all
+on view, then the save rows (Save filters… or Save <name>, Save filters as…,
+Delete filters), then what has folded and Refresh, then the switches. The
+Filters menu keeps only Manage Saved Filters (427). The ⋮ always shows now:
+it is never empty. "Save <name>" stays beside the Filters button. The legacy
+panel is untouched.
 
 ### `[ ]` ⬜ 429 — DEMOS: a shareable build that opens from index.html
 

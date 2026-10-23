@@ -86,6 +86,8 @@ declare global {
     __settled(): Promise<void>;
     /** A bar's answers as clauses, built by the data layer. */
     __clauses(bar: Element): Promise<Record<string, unknown>>;
+    /** A filter toolbar's ⋮ row by value, the ⋮ opened first. */
+    __moreRow(host: Element, value: string): Promise<HTMLElement | null>;
   }
 }
 

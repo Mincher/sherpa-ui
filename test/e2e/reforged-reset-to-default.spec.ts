@@ -7,7 +7,7 @@ import { test, expect, type Bar } from './harness';
  * an app can ask the reader first — and keep what is on screen under a name.
  * TRAP T-reset-to-default-is-the-views-own
  */
-test('the bar and the panel: the Filters menu leads with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
+test('the bar\'s ⋮ and the panel\'s Filters menu lead with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const heard: string[] = [];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
@@ -16,15 +16,16 @@ test('the bar and the panel: the Filters menu leads with Reset, and Reset all on
     for (const el of [bar, panel]) {
       el.addEventListener('view-reset', (e) => heard.push(`${el.localName}${e.cancelable ? ', cancelable' : ''}`));
     }
-    // Filter actions are the Filters menu's rows. TODO 383
+    // The bar's are its ⋮'s rows (Will, TODO 430); the panel's, its Filters menu's (TODO 383).
     const pick = async (host: HTMLElement): Promise<{ lead: string[][]; old: number; open: boolean }> => {
-      const btn = host.shadowRoot!.querySelector<HTMLElement>('.add-btn, .filters-btn')!;
+      const bar = host.localName === 'sherpa-quick-filter-toolbar';
+      const btn = host.shadowRoot!.querySelector<HTMLElement>(bar ? '[data-act="overflow"]' : '.filters-btn')!;
       btn.shadowRoot!.querySelector<HTMLElement>('button')!.click();
       await window.__settled();
-      const menu = btn.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
+      const menu = (bar ? host.shadowRoot!.querySelector('.more-menu') : btn.querySelector('sherpa-menu')) as HTMLElement & { open: boolean };
       const lead = [...menu.children].slice(0, 2)
         .map((n) => [(n as HTMLButtonElement).value, (n.textContent ?? '').trim()]);
-      menu.querySelector<HTMLElement>(':scope > .filter-action[value="reset-default"]')!.click();
+      menu.querySelector<HTMLElement>(':scope > [value="reset-default"]')!.click();
       await window.__settled();
       // The old Reset button and its ▾ are gone, not hidden.
       const old = host.shadowRoot!.querySelectorAll('.reset-group, .reset-all, .reset-more, [data-act="clear"]').length;

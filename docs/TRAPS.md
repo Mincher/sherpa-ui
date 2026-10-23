@@ -1957,12 +1957,13 @@ Four things that are not obvious:
 **Reset puts every filter back to ITS own default; Reset to default puts the
 page back as the View on screen DEFINES it** — Will, TODO 109. Only the
 provider knows that: the bar and the panel send `view-reset` (an intent) from
-the Filters menu's "Reset all on view" row, and `provider.resetView()` answers
+their "Reset all on view" row, and `provider.resetView()` answers
 — the page's first Query (kept at `open()`, before any kept one), then the
 View's Query as a pick puts it on. So a filter the reader ADDED since goes, as
 it is not the View's. A page may call `resetView()` itself. Both Resets, and
-Save filters, are rows that LEAD the Filters menu now (Will, TODO 383), drawn
-by `drawFilterActions`; the Reset group is gone.
+Save filters, are the filter TOOLBAR's ⋮ rows, first (Will, TODO 430), so its
+⋮ always shows; the legacy panel still leads its Filters menu with them
+(`drawFilterActions`, TODO 383). The Reset group is gone.
 
 **The row reads "Reset all on view", and the ask is CANCELABLE** — Will,
 TODO 129: it *"should throw a confirmation sherpa dialog informing the user
@@ -1987,8 +1988,8 @@ default clears it, as it is in the Query (366 step 8) — against
 the page as defined with the View's own Query over it, compiled so the same
 filter always reads the same; and `answered(scope)`: a reading that filters, a
 saved filter on, the rows arranged. It sets `data-at-default` and
-`data-nothing-to-reset` on each bar and panel, and their Filters menu rows
-follow. Asking applies nothing: the Query builder no longer arranges the rows
+`data-nothing-to-reset` on each bar and panel, and their Reset rows follow
+(a toolbar's ⋮ reads both as it opens). Asking applies nothing: the Query builder no longer arranges the rows
 as it goes — `setQuery` applies what it returns.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
@@ -15300,8 +15301,8 @@ the query definition."*
   (`sherpa:filter-set-on:<page>`) through a change and a reload, until another
   is taken, it is unticked or deleted, or the View changes or resets. A "Save
   <name>" button, active, then sits before Filters and saves over it, change
-  and all; the Filters menu's rows hold Save <name>, Save filters as and Delete
-  filters (Will, TODO 383: every filter action is that one menu's). With none
+  and all; the ⋮ rows hold Save <name>, Save filters as and Delete filters
+  (Will, TODO 430; the Filters menu's until then, TODO 383). With none
   taken, its Save filters row asks for a name.
 - **Saving**: each control asks with `filters-save`, `filters-save-as` or
   `filters-delete`; the HOST names it, confirms an overwrite by name, and calls

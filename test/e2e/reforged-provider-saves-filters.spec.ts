@@ -196,7 +196,7 @@ test('Delete forgets the set last taken; an old one-scope saved filter is not ad
   expect(r['rows']).toEqual([]);
 });
 
-test('the Filters menus\' rows, the bar\'s and the panel\'s Save <name>, and a Saved row each ask, and the host answers', async ({ page }) => {
+test('the bar\'s ⋮ rows, the panel\'s Filters menu rows, each Save <name>, and a Saved row each ask, and the host answers', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bar = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered: Promise<void>; populate(d: unknown): Promise<void>; savedSets: unknown;
@@ -213,12 +213,13 @@ test('the Filters menus\' rows, the bar\'s and the panel\'s Save <name>, and a S
     await bar.populate([{ id: 'plan', label: 'Plan', removable: true, options: [{ value: 'Pro', label: 'Pro' }] }]);
     await panel.populate([{ scope: 'data', label: 'Rows', filters: [{ id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] }] }]);
     const sr = bar.shadowRoot!;
-    // Filter actions are the Filters menu's rows. TODO 383
-    const action = (host: HTMLElement, value: string): HTMLElement =>
-      host.shadowRoot!.querySelector<HTMLElement>(`:is(.add-btn, .filters-btn) sherpa-menu > .filter-action[value="${value}"]`)!;
+    // The bar's are its ⋮'s rows (Will, TODO 430); the panel's, its Filters menu's (TODO 383).
+    const action = async (host: HTMLElement, value: string): Promise<HTMLElement> => (host === bar
+      ? (await window.__moreRow(bar, value))!
+      : host.shadowRoot!.querySelector<HTMLElement>(`.filters-btn sherpa-menu > .filter-action[value="${value}"]`)!);
     const actions = async (): Promise<(string | null)[]> => {
-      await window.__settled();
-      return [...sr.querySelectorAll('.add-btn sherpa-menu > .filter-action .more-label')].map((l) => (l.textContent ?? '').trim());
+      await window.__moreRow(bar, 'reset');
+      return [...sr.querySelectorAll('.more-menu > .more-item .more-label')].map((l) => (l.textContent ?? '').trim());
     };
     // The bar's "Save <name>": what it says while it shows, and its look.
     const saveSet = (): { says: string | null; active: boolean } => {
@@ -242,11 +243,11 @@ test('the Filters menus\' rows, the bar\'s and the panel\'s Save <name>, and a S
     }
     const taken = await actions();
     const takenSet = saveSet();
-    action(bar, 'filters-save-as').click();
+    (await action(bar, 'filters-save-as')).click();
     // The bar's own "Save A", then the panel's, and its Filters menu's Delete.
     sr.querySelector('.save-set')!.shadowRoot!.querySelector('button')!.click();
     panel.shadowRoot!.querySelector('.save-filters')!.shadowRoot!.querySelector('button')!.click();
-    action(panel, 'filters-delete').click();
+    (await action(panel, 'filters-delete')).click();
     // The Filters menu: B ticked takes it; A unticked takes it off.
     const menu = sr.querySelector('.add-btn sherpa-menu')!;
     const values = (menu as unknown as { values: string[] }).values;

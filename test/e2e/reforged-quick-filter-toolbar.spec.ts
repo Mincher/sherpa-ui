@@ -261,8 +261,8 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
         add: shown('.add-btn'),
         // Suggest filters is the App Header's. Will, TODO 425
         ai: !!sr.querySelector('[data-act="ai"]'),
-        // Filter actions are the Filters menu's rows. TODO 383
         clear: !!sr.querySelector('[data-act="clear"], .reset-group'),
+        // Reset and Save are the ⋮'s, not the Filters menu's. Will, TODO 430
         actions: [...sr.querySelectorAll<HTMLButtonElement>('.add-btn sherpa-menu > .filter-action')].map((b) => b.value),
         // "Save <name>" only while a saved set is taken.
         saveSet: shown('.save-set'),
@@ -277,21 +277,18 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
     return { data: await probe(), view: await probe('view') };
   });
 
-  // Both types carry Filters — and its menu leads with Reset, then Reset all
-  // on view.
+  // Both types carry Filters; Reset is the ⋮'s now. Will, TODO 430
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
     expect(t.ai).toBe(false);
     expect(t.clear).toBe(false);
-    expect(t.actions).toEqual(['reset', 'reset-default']);
+    expect(t.actions).toEqual([]);
     expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);
     expect(t.viewActions).toBe(false);
-    // The ⋮ is NOT among them. It is where the cluster folds when the bar runs
-    // out of room, and an empty one on a bar wide enough to show everything is a
-    // button that opens nothing — so it appears only once something has folded.
-    expect(t.overflow).toBe(false);
+    // The ⋮ always shows: it holds Reset and Save. Will, TODO 430
+    expect(t.overflow).toBe(true);
   }
 });
 
@@ -361,14 +358,13 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
     (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
-    // Filter actions are the Filters menu's rows. TODO 383
-    sr.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
-    await settle();
+    // Reset and Save are the ⋮'s rows, first. Will, TODO 430
+    await pick('Reset filters');
     return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard };
   });
 
   expect(r.collapse).toBe(3);
-  expect(r.rows).toEqual(['View as filter panel', '---', 'Refresh data']);
+  expect(r.rows).toEqual(['Reset filters', 'Reset all on view', '---', 'View as filter panel', '---', 'Refresh data']);
   expect(r.heard).toEqual(['data-refresh', 'extra', 'clear']);
 });
 
@@ -424,8 +420,8 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
   // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
   // Suggest filters is the App Header's. Will, TODO 425
   await expect(page.getByRole('button', { name: 'Suggest filters', exact: true })).toHaveCount(0);
-  // Filter actions are the Filters menu's rows, named once it opens. TODO 383
-  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  // Reset and Save are the ⋮'s rows, named once it opens. Will, TODO 430
+  await page.getByRole('button', { name: 'More actions', exact: true }).click();
   for (const name of ['Reset filters', 'Reset all on view']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
@@ -453,8 +449,8 @@ test('the undo button clears every chip and the organise state', async ({ page }
     for (const ev of ['quick-filter-change', 'group-change', 'sort-change'])
       el.addEventListener(ev, () => seen.push(ev));
 
-    // Filter actions are the Filters menu's rows. TODO 383
-    el.shadowRoot!.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
+    // Reset is the ⋮'s row. Will, TODO 430
+    (await window.__moreRow(el, 'reset'))!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
@@ -509,8 +505,8 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
     const afterTrial = { view: on(view), trial: on(trial) };
 
     // A full reset must not leave the page with no view.
-    // Filter actions are the Filters menu's rows. TODO 383
-    el.shadowRoot!.querySelector<HTMLElement>('.add-btn sherpa-menu > .filter-action[value="reset"]')!.click();
+    // Reset is the ⋮'s row. Will, TODO 430
+    (await window.__moreRow(el, 'reset'))!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };
@@ -1225,11 +1221,10 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
     return { wide: await at(1400), mid: await at(800), narrow: await at(620) };
   });
 
-  // WIDE: nothing folded, and the ⋮ is absent — an empty overflow button is one
-  // that opens nothing.
+  // WIDE: nothing folded; the ⋮ shows all the same — it holds Reset and Save. Will, TODO 430
   expect(r.wide.collapse).toBe(0);
   expect(r.wide.folded).toBeNull();
-  expect(r.wide.ellipsis).toBe(false);
+  expect(r.wide.ellipsis).toBe(true);
   expect(r.wide.badge).toBeNull();
   expect(r.wide.rows).toBe(1);
 
@@ -1298,9 +1293,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
       drill: menu.hasAttribute('data-drill'),
       heading: menu.shadowRoot.querySelector('.heading')?.textContent,
       // The rows ARE the Filters list, a folded one opening its child menu —
-      // or ARE that filter's values. Filter actions are the Filters menu's rows,
-      // and lead it. TODO 383
-      lead: (menu.firstElementChild as HTMLButtonElement | null)?.value ?? null,
+      // or ARE that filter's values.
       firstDrill: [...menu.children].find((n) => !n.classList.contains('menu-section') && !n.classList.contains('filter-action'))
         ?.hasAttribute('data-drill') ?? false,
       trail: getComputedStyle(menu.shadowRoot.querySelector('.drill-trail')!).display !== 'none',
@@ -1344,8 +1337,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     return { list, drilled, ticked, target, out, kept: el.readings[target]?.picked ?? null };
   });
 
-  // The Filters list: its actions, then a row with a caret for each folded filter.
-  expect(r.list.lead).toBe('reset');
+  // The Filters list: a row with a caret for each folded filter.
   expect(r.list.drill).toBe(false);
   expect(r.list.heading).toBe('Filters');
   expect(r.list.caretTag).toBe('SHERPA-BUTTON');
@@ -1362,8 +1354,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
   expect(r.ticked).toEqual(['a']);
   expect(r.kept).toEqual(['a']);
 
-  // BACK: the list is restored, its actions leading, and the menu stays open.
-  expect(r.out.lead).toBe('reset');
+  // BACK: the list is restored, and the menu stays open.
   expect(r.out.drill).toBe(false);
   expect(r.out.heading).toBe('Filters');
   expect(r.out.firstDrill).toBe(true);

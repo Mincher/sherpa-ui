@@ -181,16 +181,7 @@
   display: none;
 }
 
-/* The ⋮ appears only once something has folded. */
-.act[data-act="overflow"] { display: none; }
-@container qf-bar (max-width: 900px) {
-  .act[data-act="overflow"] { display: inline-flex; }
-}
-:host(:state(collapse-1)) .act[data-act="overflow"] { display: inline-flex; }
-/* …and always while it holds the host's own option. Will, TODO 178. */
-:host([data-limit-options]) .act[data-act="overflow"] { display: inline-flex; }
-/* …and while it saves filters. TODO 105 */
-:host([data-saveable]) .act[data-act="overflow"] { display: inline-flex; }
+/* The ⋮ always shows: it holds Reset and Save filters. Will, TODO 430 */
 
 /* The Saved chip, while a set is on. TODO 105 */
 :host([data-no-actions]) .actions-zone { display: none; }

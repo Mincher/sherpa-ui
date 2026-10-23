@@ -17,7 +17,7 @@ import {
   MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
+  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
@@ -1373,8 +1373,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       } else this.#move(owner);
       return;
     }
-    // The Filters menu's own actions, and Manage Saved Filters. TODO 383, 427
-    if ((FILTER_ACTIONS.has(value) || value === MANAGE_SETS) && this.pathFind(event, '.add-btn')) {
+    // Manage Saved Filters, the Filters menu's one action. TODO 427
+    if (value === MANAGE_SETS && this.pathFind(event, '.add-btn')) {
       event.stopImmediatePropagation();
       this.$<SherpaMenu>('.add-btn sherpa-menu')?.hide?.();
       this.#act(value);
@@ -1516,7 +1516,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       syncHide(this, this.root);
     }
     this.#syncArrangement();
-    if (name === 'data-at-default' || name === 'data-nothing-to-reset' || name === 'data-saveable') this.#syncFilterActions();
+    if (name === 'data-saveable') this.#syncSave();
   }
 
   /** ONE reader act, as a request — none for an act no field hears. `values`
@@ -1845,14 +1845,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!def) return;
     this.#addMenu(add, def);
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
-    this.#syncFilterActions();
+    this.#syncSave();
     this.#syncOverflowActive();
   }
 
-  /** The Filters menu's own actions, and "Save <name>" beside it while a set is taken. Will, TODO 383 */
-  #syncFilterActions(): void {
+  /** "Save <name>" beside the Filters button while a set is taken. Will, 366 */
+  #syncSave(): void {
     const applied = this.#saved.applied;
-    drawFilterActions(this, this.root, this.$('.add-btn sherpa-menu'), applied);
     this.toggleState('set-taken', !!applied);
     const name = this.$('.save-set .save-name');
     if (name) name.textContent = applied?.label ?? '';
@@ -2001,14 +2000,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
-   * THE ⋮ MENU holds what has FOLDED away at this width: the page's own
-   * buttons, then Refresh. A row does what its button does. Suggest filters
-   * is the App Header's (Will, TODO 425). TRAP T-the-more-menu-holds-what-folded
+   * THE ⋮ MENU: Reset and Save filters (Will, TODO 430), then what has FOLDED
+   * away at this width — the page's own buttons, then Refresh. A row does what
+   * its button does. Suggest filters and the View's ★ and Save are the App
+   * Header's (TODO 425). TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
-    // Reset and Save filters are the Filters menu's; the View's own, the App Header's. TODO 383, 425
     const refresh: MoreRow[] = folded(this.$('.act[data-act="refresh"]')) ? [['refresh']] : [];
-    openMore(this, this.root, trigger, [extraRows(this), refresh]);
+    openMore(this, this.root, trigger, [resetRows(this), saveRows(this, this.#saved.applied), extraRows(this), refresh]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
