@@ -259,7 +259,8 @@ test('the action cluster is built in; the View\'s ★, Save and Refresh are the 
       };
       return {
         add: shown('.add-btn'),
-        ai: shown('[data-act="ai"]'),
+        // Suggest filters is the App Header's. Will, TODO 425
+        ai: !!sr.querySelector('[data-act="ai"]'),
         // Filter actions are the Filters menu's rows. TODO 383
         clear: !!sr.querySelector('[data-act="clear"], .reset-group'),
         actions: [...sr.querySelectorAll<HTMLButtonElement>('.add-btn sherpa-menu > .filter-action')].map((b) => b.value),
@@ -275,11 +276,11 @@ test('the action cluster is built in; the View\'s ★, Save and Refresh are the 
     return { data: await probe(), view: await probe('view') };
   });
 
-  // Both types carry the shared run: Filters · AI — and Filters' menu leads
-  // with Reset, then Reset all on view.
+  // Both types carry Filters — and its menu leads with Reset, then Reset all
+  // on view.
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
-    expect(t.ai).toBe(true);
+    expect(t.ai).toBe(false);
     expect(t.clear).toBe(false);
     expect(t.actions).toEqual(['reset', 'reset-default']);
     expect(t.saveSet).toBe(false);
@@ -299,14 +300,6 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     const seen: string[] = [];
     for (const ev of ['ai-filter-request', 'filter-add']) el.addEventListener(ev, () => seen.push(ev));
 
-    const press = async (act: string) => {
-      const btn = el.shadowRoot!.querySelector(`[data-act="${act}"]`) as HTMLElement;
-      (btn.shadowRoot!.querySelector('button') as HTMLElement).click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    };
-    // The ⋮ opens its own menu now. TRAP T-the-more-menu-holds-what-folded
-    await press('ai');
-
     // ADD is deliberately absent from this list. It is a single button now, and
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
     // fires when the menu commits, which its own test covers.
@@ -315,7 +308,8 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     return { seen, addIsButton: add.localName, addExpanded: expanded() };
   });
 
-  expect(r.seen).toEqual(['ai-filter-request']);
+  // Suggest filters is the App Header's now (TODO 425): nothing here announces.
+  expect(r.seen).toEqual([]);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');
   // Nothing has opened it, so the trigger has not yet said either way.
@@ -324,9 +318,9 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
 /**
  * THE ⋮ MENU HOLDS WHAT FOLDED — TODO 43. With every action folded, it lists
- * them in Will's order: AI, then the page's own buttons. A row does what its
- * button does. Reset is the Filters menu's (TODO 383); the View's own, the App
- * Header's (TODO 425 G9).
+ * the page's own buttons. A row does what its button does. Reset is the
+ * Filters menu's (TODO 383); Suggest filters and the View's own, the App
+ * Header's (TODO 425).
  * TRAP T-the-more-menu-holds-what-folded
  */
 test('the ⋮ menu lists every folded action in order, and a row does what its button does', async ({ page }) => {
@@ -370,7 +364,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
   });
 
   expect(r.collapse).toBe(3);
-  expect(r.rows).toEqual(['Suggest filters', 'View as filter panel']);
+  expect(r.rows).toEqual(['View as filter panel']);
   expect(r.heard).toEqual(['extra', 'clear']);
 });
 
@@ -424,9 +418,8 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
     await window.__settled();
   });
   // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
-  for (const name of ['Suggest filters']) {
-    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
-  }
+  // Suggest filters is the App Header's. Will, TODO 425
+  await expect(page.getByRole('button', { name: 'Suggest filters', exact: true })).toHaveCount(0);
   // Filter actions are the Filters menu's rows, named once it opens. TODO 383
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
   for (const name of ['Reset filters', 'Reset all on view']) {
@@ -1174,6 +1167,14 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
     box.appendChild(el);
     document.getElementById('root')!.replaceChildren(box);
     await el.rendered;
+    // A page's own button: the cluster's one action that folds. Suggest filters
+    // and the View's are the App Header's (TODO 425).
+    const extra = document.createElement('sherpa-button');
+    extra.slot = 'actions';
+    extra.setAttribute('data-type', 'icon');
+    extra.setAttribute('data-icon-start', 'sidebar');
+    extra.setAttribute('aria-label', 'View as filter panel');
+    el.append(extra);
     el.populate(
       ['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner', 'Tier', 'Plan'].map((label) => ({
         id: label.toLowerCase(),
@@ -1214,9 +1215,9 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
       };
     };
 
-    // 800: the bar lost its panel switch (the page's), its Reset group (the
-    // Filters menu's, TODO 383) and the View's ★, Save and Refresh (the App
-    // Header's, TODO 425 G9), so it folds later.
+    // 800: the bar lost its Reset group (the Filters menu's, TODO 383), and
+    // Suggest filters and the View's ★, Save and Refresh (the App Header's,
+    // TODO 425), so it folds later.
     return { wide: await at(1400), mid: await at(800), narrow: await at(620) };
   });
 

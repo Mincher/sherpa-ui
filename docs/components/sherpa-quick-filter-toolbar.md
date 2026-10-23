@@ -69,7 +69,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
 | `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope="view data"`) it is the COLUMN: ONE header — Save &lt;name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425 |
-| `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
+| `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
 | `data-reset-on-populate` | boolean |  |  |
@@ -148,7 +148,6 @@ Each one bubbles.
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
 | `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set last taken. |
-| `ai-filter-request` |  | The AI button |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | A column shut, and why: the reader, the width or the page. |

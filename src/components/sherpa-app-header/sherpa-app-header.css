@@ -96,13 +96,14 @@
 
 /* ── Per-affordance gating ───────────────────────────────────────────── */
 /* Every action must name itself here, or the whole cluster shows unasked. */
-.back, .ai, .labs, .theme-toggle, .notif-btn, .account, .help, .menu {
+.back, .ai, .suggest, .labs, .theme-toggle, .notif-btn, .account, .help, .menu {
   display: none;
   flex-shrink: 0;
 }
 
 :host([data-back]) .back { display: inline-flex; }
 :host([data-ai]) .ai { display: inline-flex; }
+:host([data-suggest]) .suggest { display: inline-flex; }
 :host([data-labs]) .labs { display: inline-flex; }
 :host([data-theme-toggle]) .theme-toggle { display: inline-flex; }
 :host([data-notifications]) .notif-btn { display: inline-flex; }
@@ -112,9 +113,9 @@
 
 /* Dividers show only between two groups that are BOTH present. Figma's grouping:
    Ask N-zo · beaker │ moon │ bell · account · support │ app-switcher */
-:host(:is([data-ai], [data-labs])[data-theme-toggle]) .divider-labs { display: block; }
-:host(:is([data-ai], [data-labs], [data-theme-toggle]):is([data-notifications], [data-account], [data-help])) .divider-tools { display: block; }
-:host([data-menu]:is([data-notifications], [data-account], [data-help], [data-theme-toggle], [data-labs], [data-ai])) .divider-menu { display: block; }
+:host(:is([data-ai], [data-suggest], [data-labs])[data-theme-toggle]) .divider-labs { display: block; }
+:host(:is([data-ai], [data-suggest], [data-labs], [data-theme-toggle]):is([data-notifications], [data-account], [data-help])) .divider-tools { display: block; }
+:host([data-menu]:is([data-notifications], [data-account], [data-help], [data-theme-toggle], [data-labs], [data-ai], [data-suggest])) .divider-menu { display: block; }
 
 /* ── Notifications: button + count badge ────────────────────────────── */
 .notifications { position: relative; display: inline-flex; flex-shrink: 0; }

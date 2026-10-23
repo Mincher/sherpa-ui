@@ -1966,6 +1966,7 @@ panel is the DEFAULT (B).
 | ✅ | G11 — the column's ⋮ holds only the page's folded buttons and Limit: no Suggest filters, no Refresh view |
 | ✅ | G12 — section spacing, text size and icon size: closer to the classic panel's. A field heading is the small step (12/16), caps and light, its icon the same size; the scopes are accordions as the classic's; a ⋮ in place of the ▾ |
 | ✅ | G13 — a rule between each scope's section; each accordion header keeps its own padding above and below |
+| ✅ | G15 — Suggest filters is the App Header's too (Will: A, 2026-10-23): `data-suggest` puts it beside Ask N-zo, bordered as it is; it still fires `ai-filter-request`. The toolbar has no AI button or ⋮ row |
 | ⬜ | G14 — a section's ⋮ has no Advanced, as the classic field's has: in portrait a list field's conditions cannot be reached. Found 2026-10-22 |
 
 **Round 2, 2026-10-22 — done but G14.** Also found: a SHUT column drew its

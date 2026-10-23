@@ -42,7 +42,7 @@
                    provider. Will, TODO 178.
     data-hide-unmatched  on | off — the host hides what Limit rules out, when it is on
     data-scope     ASKED of its provider: the Query scope it draws and answers
-    data-panel-mode  a filter PANEL is answering for this bar: AI, Reset, the
+    data-panel-mode  a filter PANEL is answering for this bar: Reset, the
                   panel toggle and Filters are hidden, and a `data` bar goes
                   entirely. TRAP T-panel-mode-hides-what-the-panel-answers
     data-switchable  show Figma's leading filter Switch, on a data bar: off stops
@@ -91,7 +91,6 @@
     filters-save         — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
     filters-save-as      — Save filters as: a new set, by name. detail: { }
     filters-delete       — Delete filters: forget the set last taken. detail: { id }
-    ai-filter-request    — the AI button
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
     filter-panel-close   — a column shut, and why: the reader, the width or the page. detail: { reason }
@@ -155,20 +154,12 @@
                      data-icon-start="plus" data-icon-end="triangle-down"
                      aria-haspopup="dialog">Filters</sherpa-button>
 
-      <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
-                     data-icon-start="wand-magic-sparkles"
-                     aria-label="Suggest filters"></sherpa-button>
       <sherpa-button class="act" data-size="sm" data-act="overflow" data-type="icon"
                      data-icon-start="ellipses-vertical"
                      aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
     </div>
   </div>
 
-  <!-- The ⋮ rows only a bar draws; the menu and the shared rows are
-       sherpa-filter-more.html's. TRAP T-the-more-menu-holds-what-folded -->
-  <template class="more-rows-tpl">
-    <button class="more-item" type="button" value="ai"><span class="more-label">Suggest filters</span></button>
-  </template>
 
   <template class="qf-tpl">
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>

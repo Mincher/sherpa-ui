@@ -140,43 +140,12 @@
                   "class": "act",
                   "attrs": {
                     "data-size": "sm",
-                    "data-act": "ai",
-                    "data-type": "icon",
-                    "data-icon-start": "wand-magic-sparkles",
-                    "aria-label": "Suggest filters"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "act",
-                  "attrs": {
-                    "data-size": "sm",
                     "data-act": "overflow",
                     "data-type": "icon",
                     "data-icon-start": "ellipses-vertical",
                     "aria-label": "More actions",
                     "aria-haspopup": "dialog"
                   }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "more-rows-tpl",
-          "children": [
-            {
-              "el": "button",
-              "class": "more-item",
-              "attrs": {
-                "type": "button",
-                "value": "ai"
-              },
-              "children": [
-                {
-                  "el": "span",
-                  "class": "more-label"
                 }
               ]
             }
@@ -779,7 +748,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers"
+      "description": "a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers"
     },
     {
       "$type": "prop",
@@ -1083,13 +1052,6 @@
       "detail": {
         "id": "string | undefined"
       }
-    },
-    {
-      "$type": "event",
-      "name": "ai-filter-request",
-      "description": "The AI button",
-      "bubbles": true,
-      "composed": true
     },
     {
       "$type": "event",

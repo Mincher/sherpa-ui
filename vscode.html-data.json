@@ -109,6 +109,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-suggest",
+          "description": "show \"Suggest filters\", beside Ask N-zo. Will, TODO 425",
+          "valueSet": "v"
+        },
+        {
           "name": "data-theme-mode",
           "description": "light | dark — the mode on screen; the button offers the other",
           "values": [
@@ -2816,7 +2821,7 @@
         },
         {
           "name": "data-panel-mode",
-          "description": "a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers",
+          "description": "a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers",
           "valueSet": "v"
         },
         {

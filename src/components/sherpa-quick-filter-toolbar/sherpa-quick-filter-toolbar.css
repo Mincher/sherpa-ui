@@ -301,10 +301,10 @@
 .chips > .chip > .value[data-filtered-out] { display: none; }
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
-   also carries are hidden here: AI, and Filters with its actions. Two of each
+   also carries are hidden here: Filters, with its actions. Two of each
    is two answers to one question. A DATA bar has nothing left, so it goes entirely.
    TRAP T-panel-mode-hides-what-the-panel-answers */
-:host([data-panel-mode]) :is([data-act="ai"], .add-btn, .save-set) { display: none; }
+:host([data-panel-mode]) :is(.add-btn, .save-set) { display: none; }
 :host([data-panel-mode]:not([data-type="view"])) { display: none; }
 
 /* The PANEL draws every filter of this scope instead, so the bar keeps only

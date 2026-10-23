@@ -271,6 +271,13 @@
               }
             },
             {
+              "name": "data-suggest",
+              "description": "show \"Suggest filters\", beside Ask N-zo. Will, TODO 425",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-theme-mode",
               "description": "light | dark — the mode on screen; the button offers the other",
               "type": {
@@ -331,6 +338,13 @@
             },
             {
               "name": "ai-click",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "ai-filter-request",
+              "description": "Suggest filters was pressed.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -489,6 +503,9 @@
             },
             {
               "name": "row-history"
+            },
+            {
+              "name": "suggest"
             },
             {
               "name": "theme-toggle"
@@ -8275,7 +8292,7 @@
             },
             {
               "name": "data-panel-mode",
-              "description": "a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers",
+              "description": "a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers",
               "type": {
                 "text": "boolean"
               }
@@ -8884,13 +8901,6 @@
               "description": "Delete filters: forget the set last taken.",
               "type": {
                 "text": "CustomEvent<{ id: string | undefined }>"
-              }
-            },
-            {
-              "name": "ai-filter-request",
-              "description": "The AI button",
-              "type": {
-                "text": "CustomEvent"
               }
             },
             {

@@ -27,6 +27,7 @@ interface AppHeaderConfig {
 const ACTIONS = [
   ['.back', 'back-click'],
   ['.ai', 'ai-click'],
+  ['.suggest', 'ai-filter-request'],
   ['.labs', 'labs-click'],
   ['.theme-toggle', 'theme-toggle'],
   ['.notif-btn', 'notifications-click'],
@@ -46,6 +47,8 @@ export class SherpaAppHeader extends SherpaElement {
   static override props = {
     'data-account': { type: 'boolean', kind: 'style' },
     'data-ai': { type: 'boolean', kind: 'style' },
+    // Suggest filters, beside Ask N-zo. Will, TODO 425
+    'data-suggest': { type: 'boolean', kind: 'style' },
     'data-back': { type: 'boolean', kind: 'style' },
     'data-help': { type: 'boolean', kind: 'style' },
     // A Context with no filter row: its page holds its filters. TODO 425

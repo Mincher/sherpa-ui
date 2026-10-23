@@ -17,8 +17,7 @@ import {
   MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
-  type MoreRow,
+  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { FilterField } from '../../core/ui/filter-field.js';
@@ -1846,9 +1845,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** One action, whichever button or row asked for it. */
   #act(act: string): void {
     switch (act) {
-      case 'ai':
-        this.emit('ai-filter-request');
-        break;
       case 'clear':
       case 'reset':
         // RESETS, not announces: a host cannot reach chips it did not stamp.
@@ -1889,17 +1885,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
-   * THE ⋮ MENU holds what has FOLDED away at this width, in Will's order:
-   * Suggest filters, then the page's own buttons. A row does what its button
-   * does. TRAP T-the-more-menu-holds-what-folded
+   * THE ⋮ MENU holds what has FOLDED away at this width: the page's own
+   * buttons. A row does what its button does. Suggest filters is the App
+   * Header's (Will, TODO 425). TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
-    const act = (name: string): HTMLElement | null => this.$(`.act[data-act="${name}"]`);
-    const first: MoreRow[] = [];
-    if (folded(act('ai'))) first.push(['ai']);
-    first.push(...extraRows(this));
     // Reset and Save filters are the Filters menu's; the View's own, the App Header's. TODO 383, 425
-    openMore(this, this.root, trigger, [first]);
+    openMore(this, this.root, trigger, [extraRows(this)]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

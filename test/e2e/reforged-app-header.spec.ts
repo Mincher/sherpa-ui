@@ -97,6 +97,7 @@ test('every header action fires its event', async ({ page }) => {
     const actions: ReadonlyArray<readonly [string, string]> = [
       ['.back', 'back-click'],
       ['.ai', 'ai-click'],
+      ['.suggest', 'ai-filter-request'],
       ['.labs', 'labs-click'],
       ['.theme-toggle', 'theme-toggle'],
       ['.notif-btn', 'notifications-click'],
@@ -118,9 +119,9 @@ test('every header action fires its event', async ({ page }) => {
     return {
       seen,
       fired: actions.map(([, e]) => e),
-      // Neither exists any more — asserted so a re-added one is noticed.
+      // No chat; and no star unasked — the View's ★ is `data-view-actions`' (TODO 425 G9).
       hasChat: !!s.querySelector('.chat'),
-      hasStar: !!s.querySelector('.favorite'),
+      hasStar: (s.querySelector('.favourite') as HTMLElement).getBoundingClientRect().width > 0,
     };
   });
   for (const event of r.fired) expect(r.seen[event]).toBe(true);

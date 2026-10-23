@@ -2141,7 +2141,6 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 `limit-options-change`; the provider owns the setting, and the app keeps it.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`

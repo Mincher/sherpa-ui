@@ -56,6 +56,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-no-filters` | boolean |  | no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425 |
 | `data-notifications` | number |  | unread count — shows the bell + its badge |
 | `data-notifications-open` | boolean |  | the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened |
+| `data-suggest` | boolean |  | show "Suggest filters", beside Ask N-zo. Will, TODO 425 |
 | `data-theme-mode` | `light` `dark` |  | light \| dark — the mode on screen; the button offers the other |
 | `data-theme-toggle` | boolean |  | show the light/dark (moon) button |
 | `data-view-actions` | boolean |  | show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9 |
@@ -81,6 +82,7 @@ Each one bubbles.
 |---|---|---|
 | `back-click` |  |  |
 | `ai-click` |  |  |
+| `ai-filter-request` |  | Suggest filters was pressed. |
 | `labs-click` |  |  |
 | `theme-toggle` |  |  |
 | `notifications-click` |  |  |
@@ -107,7 +109,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`account`, `actions`, `ai`, `back`, `bar`, `content`, `context-icon`, `filters`, `help`, `history`, `labs`, `loading-bar`, `menu`, `nav-menu`, `notif-badge`, `notif-btn`, `notifications`, `row-context`, `row-history`, `theme-toggle`, `title`, `title-row`, `view-actions`
+`account`, `actions`, `ai`, `back`, `bar`, `content`, `context-icon`, `filters`, `help`, `history`, `labs`, `loading-bar`, `menu`, `nav-menu`, `notif-badge`, `notif-btn`, `notifications`, `row-context`, `row-history`, `suggest`, `theme-toggle`, `title`, `title-row`, `view-actions`
 
 ## CSS custom properties it reads
 

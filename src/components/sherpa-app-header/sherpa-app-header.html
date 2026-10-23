@@ -9,6 +9,7 @@
     data-back           show the back button
     data-ai             show the "Ask N-zo" AI button
     data-ai-label       its label
+    data-suggest        show "Suggest filters", beside Ask N-zo. Will, TODO 425
     data-labs           show the labs/beaker button
     data-theme-toggle   show the light/dark (moon) button
     data-theme-mode     light | dark — the mode on screen; the button offers the other
@@ -39,6 +40,7 @@
   Fires:
     back-click — detail: {}
     ai-click — detail: {}
+    ai-filter-request — Suggest filters was pressed. detail: {}
     labs-click — detail: {}
     theme-toggle — detail: {}
     notifications-click — detail: {}
@@ -78,6 +80,11 @@
                          data-icon-start="wand-magic-sparkles">
             <span class="ai-label">Ask N-zo</span>
           </sherpa-button>
+          <!-- Suggest filters: the page's, so the header's, not a toolbar's.
+               Bordered, as Ask N-zo is: the two AI actions read as a pair. Will, TODO 425 -->
+          <sherpa-button class="suggest" part="suggest" data-type="icon" data-size="sm"
+                         data-icon-start="wand-magic-sparkles"
+                         aria-label="Suggest filters"></sherpa-button>
 
           <!-- Order and dividers are Figma's (App Header 150:3690). -->
           <sherpa-button class="labs" part="labs" data-type="icon" data-size="sm"

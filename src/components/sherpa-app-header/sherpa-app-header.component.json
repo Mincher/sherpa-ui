@@ -81,6 +81,17 @@
                     },
                     {
                       "el": "sherpa-button",
+                      "class": "suggest",
+                      "part": "suggest",
+                      "attrs": {
+                        "data-type": "icon",
+                        "data-size": "sm",
+                        "data-icon-start": "wand-magic-sparkles",
+                        "aria-label": "Suggest filters"
+                      }
+                    },
+                    {
+                      "el": "sherpa-button",
                       "class": "labs",
                       "part": "labs",
                       "attrs": {
@@ -509,6 +520,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-suggest",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show \"Suggest filters\", beside Ask N-zo. Will, TODO 425"
+    },
+    {
+      "$type": "prop",
       "name": "data-theme-mode",
       "type": "enum",
       "observed": true,
@@ -587,6 +607,11 @@
       "$type": "state",
       "name": "ai",
       "selector": ":host([data-ai])"
+    },
+    {
+      "$type": "state",
+      "name": "suggest",
+      "selector": ":host([data-suggest])"
     },
     {
       "$type": "state",
@@ -671,6 +696,13 @@
     {
       "$type": "event",
       "name": "ai-click",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "ai-filter-request",
+      "description": "Suggest filters was pressed.",
       "bubbles": true,
       "composed": true
     },
