@@ -106,8 +106,10 @@
 <template id="default">
   <div class="chip" part="chip">
     <!-- Sibling of the buttons, not a wrapper: wrapping would break every
-         :host(…) .body rule. data-anchor points it at the whole chip. -->
-    <sherpa-tooltip class="count-wrap" data-anchor=".chip"></sherpa-tooltip>
+         :host(…) .body rule. data-anchor points it at the whole chip — a
+         SECTION's at its header, not its value chips. Will, TODO 437 -->
+    <sherpa-tooltip class="count-wrap" data-anchor=".chip"
+                    data-swap-on="data-layout=section" data-swap-data-anchor=".body"></sherpa-tooltip>
     <button class="body sherpa-border-corners" part="body" type="button">
       <span class="indicator" part="indicator" aria-hidden="true"></span>
       <!-- role=img so the aria-label is announced: no role = no accessible name. -->

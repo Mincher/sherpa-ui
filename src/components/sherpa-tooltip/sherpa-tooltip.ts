@@ -30,16 +30,28 @@ export class SherpaTooltip extends SherpaElement {
   /** On the ANCHOR, so a tooltip can describe a box it does not wrap. Wired on
    *  EVERY connect: `on()` carries the disconnect signal. TRAP T-abort-controller-per-connect */
   override onConnect(): void {
+    this.#wired = null;
+    this.#wire();
+  }
+
+  /** The box its listeners are on. */
+  #wired: HTMLElement | null = null;
+
+  /** Hear the anchor — and only the anchor `data-anchor` names NOW: a section's
+   *  tip is its header's, not its value chips'. TODO 437 */
+  #wire(): void {
     const anchor = this.#anchor();
-    this.on(anchor, 'pointerenter', this.#onShow);
-    this.on(anchor, 'pointerleave', this.#onHide);
-    this.on(anchor, 'focusin', this.#onShow);
-    this.on(anchor, 'focusout', this.#onHide);
+    if (anchor === this.#wired) return;
+    const hears = [['pointerenter', this.#onShow], ['pointerleave', this.#onHide], ['focusin', this.#onShow], ['focusout', this.#onHide]] as const;
+    for (const [type, fn] of hears) this.#wired?.removeEventListener(type, fn);
+    this.#wired = anchor;
+    for (const [type, fn] of hears) this.on(anchor, type, fn);
   }
 
   /** Its text changed while it shows: an empty bubble says nothing, so it
    *  shuts; new words are a new width, so it is placed again. */
   override onChange(name: string): void {
+    if (name === 'data-anchor' && this.isConnected) this.#wire();
     if (name !== 'data-text' || !this.$('.bubble')?.matches(':popover-open')) return;
     if (this.dataset['text'] || this.hasState('has-tip')) this.#place();
     else this.#hide();

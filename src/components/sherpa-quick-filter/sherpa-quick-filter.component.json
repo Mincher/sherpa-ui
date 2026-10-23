@@ -22,7 +22,9 @@
           "el": "sherpa-tooltip",
           "class": "count-wrap",
           "attrs": {
-            "data-anchor": ".chip"
+            "data-anchor": ".chip",
+            "data-swap-on": "data-layout=section",
+            "data-swap-data-anchor": ".body"
           }
         },
         {

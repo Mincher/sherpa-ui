@@ -124,3 +124,29 @@ test('text property reflects to data-text and the bubble', async ({ page }) => {
   expect(r.attr).toBe('Set via property');
   expect(r.bubble).toBe('Set via property');
 });
+
+test('a new data-anchor moves what it hears: the old box opens it no more', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<div class="a">A</div><div class="b">B</div>';
+    const el = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-text', 'Tip');
+    el.setAttribute('data-anchor', '.a');
+    root.appendChild(el);
+    await el.rendered;
+    const open = (): boolean => el.shadowRoot!.querySelector('.bubble')!.matches(':popover-open');
+    const enter = async (sel: string): Promise<boolean> => {
+      root.querySelector(sel)!.dispatchEvent(new PointerEvent('pointerenter'));
+      await new Promise((res) => setTimeout(res, 700));
+      const was = open();
+      root.querySelector(sel)!.dispatchEvent(new PointerEvent('pointerleave'));
+      await new Promise((res) => setTimeout(res, 50));
+      return was;
+    };
+    const first = await enter('.a');
+    el.setAttribute('data-anchor', '.b');
+    return { first, oldBox: await enter('.a'), newBox: await enter('.b') };
+  });
+  // A section's tip is its header's, not its value chips'. Will, TODO 437
+  expect(r).toEqual({ first: true, oldBox: false, newBox: true });
+});
