@@ -74,6 +74,7 @@ export class SherpaBarchart extends SherpaElement {
     if (!bars || !tpl) return;
 
     const shown = this.#data.map((d, i) => ({ d, i }));
+    this.toggleState('highlighting', shown.some(({ d }) => d.matched != null));
 
     /* ONE scale rule for every chart. TRAP T-nan-is-the-not-given-sentinel: an
        absent max is derived. TRAP T-one-scale-for-every-chart */
@@ -115,6 +116,7 @@ export class SherpaBarchart extends SherpaElement {
       col.dataset['sign'] = d.value < 0 ? '-' : '+';
       bar.style.setProperty('--_h', `${Math.abs(at - zero)}%`);
       bar.style.setProperty('--_base', `${zero}%`);
+      if (d.matched != null) bar.style.setProperty('--_m', `${d.value ? Math.min(100, Math.abs(d.matched / d.value) * 100) : 0}%`);
       paintSeries(bar, i, d.colorIndex);
       pairAnchor(`--bar-mark-${i}`, col);
       fillTip(col, d.label, d.value);

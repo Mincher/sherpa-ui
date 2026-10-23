@@ -863,6 +863,9 @@
               "name": "bar-label"
             },
             {
+              "name": "bar-match"
+            },
+            {
               "name": "bars"
             },
             {

@@ -373,3 +373,27 @@ test('a chart of POSITIVE values is untouched — no line, bars on the floor', a
   expect(r.lineShown, 'nothing is drawn for a chart that never dips').toBe('none');
   expect(r.feet.every((f) => f <= 1)).toBe(true);
 });
+
+/** A datum's `matched` is the part the highlight's driver matches: the bar goes
+ *  pale and that part is drawn solid, its share of the bar. Will, TODO 441 */
+test('a bar draws the part the highlight matches, and none without one', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-barchart') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const read = () => ({
+      on: el.matches(':state(highlighting)'),
+      parts: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-match')].map((m) => Math.round(m.getBoundingClientRect().height / m.parentElement!.clientHeight * 100)),
+    });
+    el.populate!([{ label: 'A', value: 40, matched: 10 }, { label: 'B', value: 20, matched: 20 }, { label: 'C', value: 30, matched: 0 }]);
+    await window.__settled();
+    const marked = read();
+    el.populate!([{ label: 'A', value: 40 }, { label: 'B', value: 20 }]);
+    await window.__settled();
+    return { marked, plain: read() };
+  });
+  expect(r.marked.on).toBe(true);
+  // Its share of the bar, give or take a pixel.
+  r.marked.parts.forEach((p, i) => expect(Math.abs(p - [25, 100, 0][i]!)).toBeLessThanOrEqual(2));
+  expect(r.plain).toEqual({ on: false, parts: [0, 0] });
+});

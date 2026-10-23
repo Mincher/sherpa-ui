@@ -26,6 +26,7 @@
  * - BandFacts — A field's bands, as a summary reads them: its thresholds, and the bottom of its scale.
  * - Zoned — A summary with its value field's bands beside it: a gauge's zones.
  * - summariseBanded — Rows into the declared shape, with the fields' bands: a segments cut, and zones.
+ * - summariseMarked — The same, and each segment's part the highlight's driver matches.
  */
 import { readField, groupRows, valueKey, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
@@ -366,5 +367,21 @@ export function summariseBanded(
   const zones = spec.zones && spec.field ? bands(spec.field).thresholds : undefined;
   if (!zones?.length) return value;
   return { ...(typeof value === 'number' ? { value } : value), zones };
+}
+
+/** The same, and each segment's part the highlight's driver matches, as its
+ *  `matched`: the rows summed twice. Segments only, for now. Will, TODO 441 */
+export function summariseMarked(
+  rows: readonly Row[],
+  spec: SummarySpec,
+  domain: (field: string) => readonly unknown[] = () => [],
+  bands: BandFacts = () => ({}),
+  matches: ((row: Row) => boolean) | null = null,
+): Summary | Zoned {
+  const all = summariseBanded(rows, spec, domain, bands);
+  if (!matches || !Array.isArray(all)) return all;
+  const part = summariseBanded(rows.filter(matches), spec, domain, bands) as ChartDatum[];
+  const by = new Map(part.map((d) => [d.label, d.value]));
+  return all.map((d) => ({ ...d, matched: by.get(d.label) ?? 0 }));
 }
 

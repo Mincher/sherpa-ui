@@ -1946,6 +1946,13 @@ chip shows that chip's share). **B** — (1), the matched part.
   the highlighter — Style `saturated/warning` (#FFC44C) — and the grid tints
   each row the test matches, pale (`drawHighlight`). Demos: "Highlight
   matches" on Settings › Filtering (Look).
+- ✅ **6, bar and radial**, 2026-10-23: `summariseMarked()` sums a chart's
+  rows twice — all, and those the driver matches — and gives each segment its
+  `matched` (`ChartDatum.matched`). A bar goes pale and draws its matched share
+  solid from the zero line (`.bar-match`); a slice goes pale and a second path
+  draws its matched share of the angle from its start (`.slice-match`).
+- ⬜ **6, line and gauge**: a series' `matched` values as a second line; the
+  gauge's matched value as a second needle.
 
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 

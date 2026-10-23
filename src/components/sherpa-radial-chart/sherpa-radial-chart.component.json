@@ -113,6 +113,21 @@
       },
       {
         "el": "template",
+        "class": "match-tpl",
+        "children": [
+          {
+            "el": "svg",
+            "children": [
+              {
+                "el": "path",
+                "class": "slice-match"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "hotspot-tpl",
         "children": [
           {
@@ -352,7 +367,8 @@
     "value.color": "{sherpa.theme-content-body-base}",
     "sub.font-size": "{sherpa.font-size-body-xs}",
     "sub.line-height": "{sherpa.theme-content-line-height-xs}",
-    "sub.color": "{sherpa.theme-content-body-1}"
+    "sub.color": "{sherpa.theme-content-body-1}",
+    "slice-match.fill": "{sherpa.data-viz-series-1}"
   },
   "$extensions": {
     "sherpa": {

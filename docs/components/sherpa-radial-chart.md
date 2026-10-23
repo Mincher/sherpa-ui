@@ -102,6 +102,7 @@ What each class's base rule reads:
 | `--sherpa-font-size-body-xs` | `.sub` | `font-size` |
 | `--sherpa-theme-content-line-height-xs` | `.sub` | `line-height` |
 | `--sherpa-theme-content-body-1` | `.sub` | `color` |
+| `--sherpa-data-viz-series-1` | `.slice-match` | `fill` |
 
 ## populate()
 

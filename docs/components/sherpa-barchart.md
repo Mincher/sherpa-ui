@@ -77,7 +77,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`axis-label`, `bar`, `bar-label`, `bars`, `figure`, `gridlines`, `header`, `plot`, `tip`, `x-axis`, `y-axis`, `zero-line`
+`axis-label`, `bar`, `bar-label`, `bar-match`, `bars`, `figure`, `gridlines`, `header`, `plot`, `tip`, `x-axis`, `y-axis`, `zero-line`
 
 ## CSS custom properties it reads
 

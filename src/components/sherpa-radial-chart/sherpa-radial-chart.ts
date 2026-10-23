@@ -116,6 +116,9 @@ export class SherpaRadialChart extends SherpaElement {
     // CLAMPED: a negative arc is not a shape. TRAP T-one-total-for-the-ring-and-the-label
     const total = datumTotal(this.#slices, { clamp: true });
     if (total <= 0) return;
+    const marking = this.#slices.some((s) => s.matched != null);
+    this.toggleState('highlighting', marking);
+    const matchTpl = this.$<HTMLTemplateElement>('template.match-tpl');
 
     let acc = 0;
     this.#slices.forEach((slice, i) => {
@@ -145,11 +148,22 @@ export class SherpaRadialChart extends SherpaElement {
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
       paintSeries(arc, i, slice.colorIndex);
+      // The part the highlight's driver matches: from the slice's start. TODO 441
+      const part = value && slice.matched ? Math.min(1, Math.max(0, slice.matched) / value) : 0;
+      const match = marking && part && matchTpl ? this.clone<SVGPathElement>(matchTpl, '.slice-match') : null;
+      if (match) {
+        match.setAttribute('d', ringSegmentPath({
+          cx: CENTRE, cy: CENTRE, inner, outer, radius: pie ? 0 : CORNER,
+          startDeg: sweepStart + acc * sweep, endDeg: sweepStart + (acc + share * part) * sweep,
+        }));
+        paintSeries(match, i, slice.colorIndex);
+      }
       /* The path IS the datum, not a control; the ring is its one tab stop.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       arc.setAttribute('role', 'img');
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);
+      if (match) group.appendChild(match);
 
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;

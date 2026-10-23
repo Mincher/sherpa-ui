@@ -55,6 +55,10 @@
   <template class="slice-tpl">
     <svg><path class="slice chart-segment" /></svg>
   </template>
+  <!-- The part of a slice the highlight's driver matches, over it. TODO 441 -->
+  <template class="match-tpl">
+    <svg><path class="slice-match" /></svg>
+  </template>
 
   <!--
     Per slice: a zero-size anchor point plus its tooltip. JS sets --_dot-angle; CSS

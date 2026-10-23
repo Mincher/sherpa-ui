@@ -177,6 +177,7 @@ export {
   reduceRows,
   deltaPercent,
   summarise,
+  summariseMarked,
   type Aggregate,
   type AggregateOptions,
   type Bucket,

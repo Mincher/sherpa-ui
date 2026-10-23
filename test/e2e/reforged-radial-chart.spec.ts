@@ -442,3 +442,23 @@ test('data-sweep-start and data-sweep stop the ring short', async ({ page }) => 
   expect(r.thinDiffers).toBe(true);
   expect(r.holeMoves).toBe(true);
 });
+
+/** A slice's `matched`: the slice goes pale, and the matched part of its angle
+ *  is drawn over it from its start. Will, TODO 441 */
+test('a slice draws the part the highlight matches over it, and none without one', async ({ page }) => {
+  const r = await page.evaluate(async (shareSrc) => {
+    const share = eval(shareSrc) as (el: SVGPathElement) => number;
+    const el = document.createElement('sherpa-radial-chart') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([{ label: 'A', value: 60, matched: 30 }, { label: 'B', value: 60, matched: 0 }]);
+    await window.__settled();
+    const parts = [...el.shadowRoot!.querySelectorAll<SVGPathElement>('.slice-match')].map(share);
+    const on = el.matches(':state(highlighting)');
+    el.populate!([{ label: 'A', value: 60 }, { label: 'B', value: 60 }]);
+    await window.__settled();
+    return { on, parts, after: el.shadowRoot!.querySelectorAll('.slice-match').length, off: el.matches(':state(highlighting)') };
+  }, SHARE_FN);
+  // A's half of its half of the ring; B matches nothing, so it has no part.
+  expect(r).toEqual({ on: true, parts: [25], after: 0, off: false });
+});

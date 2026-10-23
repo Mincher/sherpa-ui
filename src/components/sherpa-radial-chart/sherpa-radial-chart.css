@@ -91,3 +91,13 @@
 /* ── Tooltip anchors: zero-size HTML boxes, since an SVG element cannot be a CSS
    anchor in Chromium. The OUTER radius, so a tip pushed outward clears the ring. */
 .hotspots { --_ring-r: 50%; }
+
+/* HIGHLIGHTING: each slice pale, the part the driver matches in the series'
+   full colour over it. Will, TODO 441 */
+:host(:state(highlighting)) .slice {
+  fill: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
+}
+.slice-match {
+  fill: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
+  pointer-events: none;
+}

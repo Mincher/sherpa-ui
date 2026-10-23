@@ -18,7 +18,7 @@ import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
-import { summariseBanded, type SummarySpec } from '../../core/data/aggregate.js';
+import { summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
@@ -852,7 +852,7 @@ export class SherpaProvider extends SherpaElement {
       ...(scope ? { scope } : {}),
       ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
-      ...(spec ? { readonly: true, as: (rows, src) => summariseBanded(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f)) } : {}),
+      ...(spec ? { readonly: true, as: (rows, src) => summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlight) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'

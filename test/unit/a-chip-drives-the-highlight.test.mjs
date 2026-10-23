@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, compile } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, compile, summariseMarked } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, plan: 'Pro', region: 'EMEA' }, { id: 2, plan: 'Free', region: 'EMEA' }, { id: 3, plan: 'Pro', region: 'AMER' }];
 
@@ -74,4 +74,12 @@ test('a chip asks for it by request; the source tests a row, and pushes the mark
   assert.equal(source.highlight, null);
   assert.equal(grid.test, null);
   assert.equal(bar.attrs.has('data-highlight-field'), false);
+});
+
+test('a chart\'s segments say the part the driver matches; with none, they say nothing', () => {
+  const spec = { shape: 'segments', segment: 'region' };
+  const pro = (row) => row.plan === 'Pro';
+  assert.deepEqual(summariseMarked(ROWS, spec, () => [], () => ({}), pro).map((d) => [d.label, d.value, d.matched]),
+    [['EMEA', 2, 1], ['AMER', 1, 1]]);
+  assert.equal(summariseMarked(ROWS, spec).some((d) => 'matched' in d), false);
 });

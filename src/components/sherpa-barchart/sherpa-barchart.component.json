@@ -137,7 +137,14 @@
               {
                 "el": "span",
                 "class": "bar sherpa-anchor-el",
-                "part": "bar"
+                "part": "bar",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "bar-match",
+                    "part": "bar-match"
+                  }
+                ]
               },
               {
                 "el": "span",

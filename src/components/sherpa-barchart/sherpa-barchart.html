@@ -52,7 +52,10 @@
     <button class="bar-col sherpa-anchor" type="button">
       <!-- The BAR is the anchor, not the column: a .bar-col is the full plot
            height, so anchoring to it puts the tip far above a short bar. -->
-      <span class="bar sherpa-anchor-el" part="bar"></span>
+      <span class="bar sherpa-anchor-el" part="bar">
+        <!-- The part the highlight's driver matches. TODO 441 -->
+        <span class="bar-match" part="bar-match"></span>
+      </span>
       <span class="sherpa-tip" popover="manual" part="tip" role="tooltip">
         <span class="chart-tip-label"></span>
         <span class="sherpa-tip-value"></span>

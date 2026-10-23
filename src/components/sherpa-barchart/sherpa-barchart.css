@@ -113,6 +113,27 @@
     var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
+/* HIGHLIGHTING: the whole bar pale, the part the driver matches in the series'
+   full colour, from the zero line. Will, TODO 441 */
+.bar-match { display: none; }
+:host(:state(highlighting)) .bar {
+  background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
+}
+/* Below zero a bar is placed absolutely already, which holds its part too. */
+:host(:state(highlighting):not(:state(below-zero))) .bar { position: relative; }
+:host(:state(highlighting)) .bar-match {
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--_m, 0%);
+  background: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
+}
+:host(:state(highlighting)) .bar-col[data-sign="-"] .bar-match {
+  inset-block-end: auto;
+  inset-block-start: 0;
+}
+
 .bar-col:hover .bar { filter: brightness(1.08); }
 .bar-col:focus-visible {
   outline: var(--sherpa-focus-ring);
