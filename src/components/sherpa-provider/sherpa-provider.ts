@@ -222,6 +222,23 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: say the match counts. */
   #results = true;
 
+  /** Every scope the page declares waits for its bar's Apply — not only the
+   *  View's. The app sets it, from its session. Will, TODO 436.
+   *  TRAP T-apply-and-discard-wait-for-a-change */
+  get applyEvery(): boolean {
+    return this.#applyEvery;
+  }
+  set applyEvery(on: boolean) {
+    this.#applyEvery = on;
+    // Off sends what waits; the View always waits.
+    const query = this.#pages.opened?.query;
+    for (const scope of this.#scopes) if (scope !== VIEW) query?.wait(scope, on);
+  }
+  /** The app's choice: every scope waits for Apply. */
+  #applyEvery = false;
+  /** The scopes the open page declares. */
+  #scopes: string[] = [];
+
   /** Every control with a filter menu: a bar, a panel, a grid's headings. TODO 305 */
   #limited(): Element[] {
     return [...this.#asked.keys()].filter((el) => 'drawScope' in el || 'drawPresent' in el);
@@ -313,6 +330,9 @@ export class SherpaProvider extends SherpaElement {
       if (source) this.#made.add(source);
       // A VIEW pick waits for its bar's ONE Apply: nothing fetches until asked. Will, TODO 406
       source?.query.wait(VIEW);
+      // …and, where the app asks, every scope the page declares. Will, TODO 436
+      this.#scopes = Object.keys(def?.scopes ?? {});
+      if (this.#applyEvery) for (const scope of this.#scopes) source?.query.wait(scope);
       opening?.stop();
       if (page.signal.aborted) return undefined;
       if (!source || !def) {

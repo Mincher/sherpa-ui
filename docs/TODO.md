@@ -2045,6 +2045,9 @@ only filters. **h** — its own item, after: 441.
 - ✅ **e**, 2026-10-23: "Show match counts" (Look). `provider.results`, on by
   default, marks every bar and panel; a toolbar with `data-no-results` draws no
   count — no chip's, no value chip's, no shut scope's badge.
+- ✅ **f**, 2026-10-23: "Require Apply on every change" (Behaviour).
+  `provider.applyEvery` waits every scope the page declares; each bar shows
+  its own Apply. Off sends what waits.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 

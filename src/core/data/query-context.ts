@@ -331,6 +331,8 @@ export class QueryContext extends EventTarget {
       this.commit({ scope });
       this.#waiting.delete(scope);
       if (!this.#waiting.size && !this.remote) this.#live.draft = this.#live.applied;
+      // Told AFTER: the commit's drawing still said it waits. TODO 436
+      this.#tell({ kind: 'drawn', fields: [], pending: true });
       return;
     }
     this.#waiting.add(scope);

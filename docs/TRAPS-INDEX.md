@@ -280,7 +280,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-aggregation-is-data](TRAPS.md#t-aggregation-is-data) — provider
 - [T-an-app-is-its-definition](TRAPS.md#t-an-app-is-its-definition) — app
 - [T-an-outlet-loads-the-context](TRAPS.md#t-an-outlet-loads-the-context) — app, outlet
-- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — bind-source
+- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — bind-source, provider
 - [T-bind-locks-what-it-owns](TRAPS.md#t-bind-locks-what-it-owns) — bind-source
 - [T-configuration-is-not-data](TRAPS.md#t-configuration-is-not-data) — provider
 - [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — provider

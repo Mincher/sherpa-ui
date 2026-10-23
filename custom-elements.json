@@ -7975,6 +7975,13 @@
             },
             {
               "kind": "field",
+              "name": "applyEvery",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "reach",
               "type": {
                 "text": "{ reach: 'ok' | 'unreached' | 'down'; failure?: Failure }"

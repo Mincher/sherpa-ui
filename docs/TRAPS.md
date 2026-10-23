@@ -16782,6 +16782,13 @@ what each scope holds, is copied onto `applied` at once, and a field that moves
 scope carries its answer. The app waits its View, so a page fetches nothing
 until its Apply. A bound control over a waiting scope wears `data-waits`.
 
+
+**Every scope, where the app asks** (Will, TODO 436): `provider.applyEvery`
+waits each scope the page DECLARES, not only the View; a chart's legend scope
+stays live — its section has no Apply. Off sends what waits. `wait(scope,
+false)` tells the bars again AFTER it stops waiting: the commit's own drawing
+still said it waits, and a bar kept its Apply.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/a-waiting-scope-holds-its-picks.test.mjs`
 - Site: `test/e2e/reforged-the-view-waits-for-one-apply.spec.ts`
@@ -16800,6 +16807,7 @@ until its Apply. A bound control over a waiting scope wears `data-waits`.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `test/unit/a-bar-apply-commits-its-own-field.test.mjs`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-view-is-json
 
