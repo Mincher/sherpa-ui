@@ -725,9 +725,10 @@ export class SherpaProvider extends SherpaElement {
       asked.unbind?.();
       this.#asked.delete(el);
     };
-    // One scope, or several — the panel's `data-scope="view data"`.
+    // One scope, or several — the panel's `data-scope="view data"`; a column's
+    // are a LIST, even of one (`data-column`). TRAP T-panel-mode-hides-what-the-panel-answers
     const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
-    const scope = scopes.length > 1 ? scopes : scopes[0];
+    const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
     const fields = spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     const unbind = bindSource(source, el as Populatable, {

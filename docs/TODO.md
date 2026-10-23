@@ -2037,6 +2037,11 @@ only filters. **h** — its own item, after: 441.
   now follows from the session), Behaviour (Keep each view's filters, Limit,
   Hide invalid filters) and Look (Show active filters in green). Application
   keeps Notifications, Navigation, Layout and Experiments.
+- ✅ **b**, 2026-10-23: "Include View Context in the panel" (Layout). Off, the
+  column's `data-scope` is `data`, and its View bar stays a whole toolbar in
+  the header. Library: a bar steps back only where a column answers for its
+  scope; `data-column` makes a portrait toolbar a column over one scope; the
+  provider binds a column's scopes as a list.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 

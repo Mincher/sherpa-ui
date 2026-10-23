@@ -14,11 +14,16 @@
  * - .room — The shell lost room for the panel, or has it again.
  */
 
-/** Is it drawn over SEVERAL scopes — the panel area's occupant: a panel, or a
- *  toolbar turned to portrait over a scope list? TODO 425 */
+/** Is it the panel area's occupant: a panel, or a toolbar turned to portrait
+ *  over a scope list — or over one, said `data-column`? TODO 425, 436 */
 export function isColumn(el: Element): boolean {
   if (!('drawScopes' in el)) return false;
-  return !('drawScope' in el) || (el.getAttribute('data-scope') ?? '').trim().split(/\s+/).length > 1;
+  return !('drawScope' in el) || el.hasAttribute('data-column') || scopesOf(el).length > 1;
+}
+
+/** The scopes it names. */
+function scopesOf(el: Element): string[] {
+  return (el.getAttribute('data-scope') ?? '').trim().split(/\s+/).filter(Boolean);
 }
 
 /** What the mode asks of its provider. */
@@ -84,8 +89,11 @@ export class ProviderMode {
 
   /** A bar or a panel that joins takes the mode — a page loaded later too. */
   join(el: Element): void {
-    if (isColumn(el) && this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
-    else if (!isColumn(el)) this.#stepBack(el);
+    if (isColumn(el)) {
+      if (this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
+      // What it answers for may have changed: each bar steps back, or forward. TODO 436
+      else for (const bar of this.#strips()) this.#stepBack(bar);
+    } else this.#stepBack(el);
     this.#giveToggles();
   }
 
@@ -168,9 +176,13 @@ export class ProviderMode {
     return this.#host.bars().filter((bar) => (bar as HTMLElement).dataset['orientation'] !== 'portrait');
   }
 
-  /** A bar steps back while a panel answers for it. TRAP T-panel-mode-hides-what-the-panel-answers */
+  /** A bar steps back while a panel answers for it — one whose column holds
+   *  its scope; a panel answers for every scope. A View the column leaves out
+   *  stays a toolbar. Will, TODO 436. TRAP T-panel-mode-hides-what-the-panel-answers */
   #stepBack(bar: Element): void {
-    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
+    const scope = scopesOf(bar)[0] ?? '';
+    const answered = this.#host.panels().some((panel) => !('drawScope' in panel) || scopesOf(panel).includes(scope));
+    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && answered && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
   }
 
   /** A mode button: the reader switches the mode. */

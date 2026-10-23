@@ -518,6 +518,16 @@
     },
     {
       "$type": "prop",
+      "name": "data-column",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
+      "default": false,
+      "description": "portrait: a column, header and all, even over one scope and its parts"
+    },
+    {
+      "$type": "prop",
       "name": "data-dirty",
       "type": "boolean",
       "observed": true,

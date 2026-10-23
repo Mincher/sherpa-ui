@@ -2773,6 +2773,11 @@
           "name": "data-bounds"
         },
         {
+          "name": "data-column",
+          "description": "portrait: a column, header and all, even over one scope and its parts",
+          "valueSet": "v"
+        },
+        {
           "name": "data-dirty",
           "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
           "valueSet": "v"

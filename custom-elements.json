@@ -8279,6 +8279,14 @@
               }
             },
             {
+              "name": "data-column",
+              "description": "portrait: a column, header and all, even over one scope and its parts",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
               "name": "data-dirty",
               "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
               "type": {

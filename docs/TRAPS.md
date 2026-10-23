@@ -11552,11 +11552,20 @@ The VIEW bar stays, because three chips never move into the panel — the View
 selector is not a filter, and Customer and Region are global.
 `T-the-view-chip-stays-on-the-header`.
 
+**A bar steps back only where a column ANSWERS for its scope** (Will, TODO
+436): a column covers the scopes its `data-scope` names, the legacy panel
+every scope. An app that leaves the View out of its column (Demos' "Include
+View Context in the panel", off) keeps the View a whole toolbar in panel mode.
+A column over ONE scope says `data-column`, or it is a portrait bar; the
+provider binds a column's scopes as a list, even of one, and steps every bar
+again when a column joins — a changed `data-scope` asks again.
+
 ---
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-panel-flush-between-surfaces-draws-two-edges
 

@@ -58,6 +58,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-bounds` | text |  |  |
+| `data-column` | boolean | `false` | portrait: a column, header and all, even over one scope and its parts |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |

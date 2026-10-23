@@ -82,6 +82,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-orientation': { type: 'enum', kind: 'template', values: ['landscape', 'portrait'] },
     // Portrait: its scope a HEADING, not an accordion — the column's View Context. Will, TODO 435
     'data-flat': { type: 'boolean', kind: 'template' },
+    // Portrait: a COLUMN, header and all, even over ONE scope and its parts. Will, TODO 436
+    'data-column': { type: 'boolean', kind: 'template' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -129,14 +131,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
 
-  static override variantAttrs = ['data-orientation', 'data-scope', 'data-flat'];
+  static override variantAttrs = ['data-orientation', 'data-scope', 'data-flat', 'data-column'];
 
   static override observed = ['open'];
 
   /** Portrait over one scope, an accordion — or flat; over several, the column. TODO 425, 435 */
   protected override get templateId(): string {
     if (this.dataset['orientation'] !== 'portrait') return 'default';
-    if ((this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1) return 'column';
+    if (this.hasAttribute('data-column') || (this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1) return 'column';
     return this.hasAttribute('data-flat') ? 'flat' : 'portrait';
   }
 
@@ -1098,8 +1100,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       list.appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
-        // The chip says its own days. TRAP T-a-chip-says-its-own-answer
-        (chip as SherpaQuickFilter).refresh();
+        /* The chip says its own days. TRAP T-a-chip-says-its-own-answer — not
+           upgraded in a bar drawn after it left the page (a section a column
+           dropped), so asked only if it can. TRAP T-custom-element-upgrade */
+        (chip as Partial<SherpaQuickFilter>).refresh?.();
       }
     }
 
