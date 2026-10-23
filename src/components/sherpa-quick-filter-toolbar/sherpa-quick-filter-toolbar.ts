@@ -63,7 +63,10 @@ export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
   static override css = [MORE_MENU.css, new URL('./sherpa-quick-filter-toolbar.css', import.meta.url)];
-  static override html = [FILTER_MENU_HTML, MORE_MENU.html, new URL('./sherpa-quick-filter-toolbar.html', import.meta.url)];
+  static override html = [
+    FILTER_MENU_HTML, MORE_MENU.html, new URL('./toolbar-rows.html', import.meta.url),
+    new URL('./sherpa-quick-filter-toolbar.html', import.meta.url),
+  ];
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -77,6 +80,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* LANDSCAPE, a strip; PORTRAIT, the panel's column: the scope an accordion,
        each list field a SECTION of value chips. Nothing folds. TODO 425 */
     'data-orientation': { type: 'enum', kind: 'template', values: ['landscape', 'portrait'] },
+    // Portrait: its scope a CARD, not an accordion — the column's View Context. Will, TODO 435
+    'data-card': { type: 'boolean', kind: 'template' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -124,14 +129,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
 
-  static override variantAttrs = ['data-orientation', 'data-scope'];
+  static override variantAttrs = ['data-orientation', 'data-scope', 'data-card'];
 
   static override observed = ['open'];
 
-  /** Portrait over one scope, an accordion; over several, the column. TODO 425 */
+  /** Portrait over one scope, an accordion — or a card; over several, the column. TODO 425, 435 */
   protected override get templateId(): string {
     if (this.dataset['orientation'] !== 'portrait') return 'default';
-    return (this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1 ? 'column' : 'portrait';
+    if ((this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1) return 'column';
+    return this.hasAttribute('data-card') ? 'card' : 'portrait';
   }
 
   /** The column it is, over several scopes. */

@@ -16,6 +16,7 @@
   "templates": [
     "default",
     "portrait",
+    "card",
     "column"
   ],
   "anatomy": {
@@ -161,115 +162,6 @@
               ]
             }
           ]
-        },
-        {
-          "el": "template",
-          "class": "more-rows-tpl",
-          "children": [
-            {
-              "el": "button",
-              "class": "more-item",
-              "attrs": {
-                "type": "button",
-                "value": "refresh"
-              },
-              "children": [
-                {
-                  "el": "span",
-                  "class": "more-label"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "qf-tpl",
-          "children": [
-            {
-              "el": "sherpa-quick-filter",
-              "class": "chip"
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "organise-group-tpl",
-          "children": [
-            {
-              "el": "sherpa-quick-filter",
-              "class": "organise-chip",
-              "attrs": {
-                "data-id": "group",
-                "data-kind": "group",
-                "data-label": "Group"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "organise-sort-tpl",
-          "children": [
-            {
-              "el": "sherpa-quick-filter",
-              "class": "organise-chip",
-              "attrs": {
-                "data-id": "sort",
-                "data-kind": "sort",
-                "data-label": "Sort"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "move-tpl",
-          "children": [
-            {
-              "el": "sherpa-button",
-              "class": "move",
-              "attrs": {
-                "slot": "footer"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "words",
-          "children": [
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "raise"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "lower"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "return"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "advanced"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "simple"
-              }
-            }
-          ]
         }
       ],
       "portrait": [
@@ -373,190 +265,96 @@
               ]
             }
           ]
-        },
+        }
+      ],
+      "card": [
         {
-          "el": "template",
-          "class": "qf-tpl",
+          "el": "sherpa-container",
+          "class": "card",
+          "part": "card",
           "children": [
             {
-              "el": "sherpa-quick-filter",
-              "class": "chip"
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "organise-group-tpl",
-          "children": [
-            {
-              "el": "sherpa-quick-filter",
-              "class": "organise-chip",
+              "el": "sherpa-container-header",
+              "class": "scope",
+              "part": "scope",
               "attrs": {
-                "data-id": "group",
-                "data-kind": "group",
-                "data-label": "Group"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "organise-sort-tpl",
-          "children": [
-            {
-              "el": "sherpa-quick-filter",
-              "class": "organise-chip",
-              "attrs": {
-                "data-id": "sort",
-                "data-kind": "sort",
-                "data-label": "Sort"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "move-tpl",
-          "children": [
-            {
-              "el": "sherpa-button",
-              "class": "move",
-              "attrs": {
-                "slot": "footer"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "words",
-          "children": [
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "raise"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "lower"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "return"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "advanced"
-              }
-            },
-            {
-              "el": "span",
-              "attrs": {
-                "data-word": "simple"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "field-more-tpl",
-          "children": [
-            {
-              "el": "sherpa-button",
-              "class": "field-more",
-              "attrs": {
-                "slot": "more",
-                "data-type": "icon",
-                "data-size": "sm",
-                "data-icon-start": "ellipses-vertical",
-                "aria-haspopup": "dialog"
+                "slot": "header"
               },
               "children": [
                 {
-                  "el": "sherpa-menu",
-                  "class": "field-menu",
+                  "el": "span",
+                  "class": "actions-zone",
+                  "part": "actions",
                   "attrs": {
-                    "slot": "menu",
-                    "data-align": "end"
+                    "slot": "actions"
                   },
                   "children": [
                     {
-                      "el": "button",
-                      "class": "more-item",
+                      "el": "sherpa-button",
+                      "class": "act apply-all",
                       "attrs": {
-                        "type": "button",
-                        "value": "advanced"
-                      },
-                      "children": [
-                        {
-                          "el": "span",
-                          "class": "more-label"
-                        }
-                      ]
+                        "data-act": "apply",
+                        "data-size": "sm",
+                        "data-look": "saturated",
+                        "disabled": ""
+                      }
                     },
                     {
-                      "el": "button",
-                      "class": "more-item",
+                      "el": "sherpa-button",
+                      "class": "act discard-all",
                       "attrs": {
-                        "type": "button",
-                        "value": "raise"
-                      },
-                      "children": [
-                        {
-                          "el": "span",
-                          "class": "more-label"
-                        }
-                      ]
+                        "data-act": "discard",
+                        "data-size": "sm",
+                        "data-type": "icon",
+                        "data-icon-start": "cross",
+                        "aria-label": "Discard changes",
+                        "disabled": ""
+                      }
                     },
                     {
-                      "el": "button",
-                      "class": "more-item",
+                      "slot": "actions",
                       "attrs": {
-                        "type": "button",
-                        "value": "lower"
-                      },
-                      "children": [
-                        {
-                          "el": "span",
-                          "class": "more-label"
-                        }
-                      ]
-                    },
-                    {
-                      "el": "button",
-                      "class": "more-item",
-                      "attrs": {
-                        "type": "button",
-                        "value": "clear"
-                      },
-                      "children": [
-                        {
-                          "el": "span",
-                          "class": "more-label"
-                        }
-                      ]
-                    },
-                    {
-                      "el": "button",
-                      "class": "more-item",
-                      "attrs": {
-                        "type": "button",
-                        "value": "remove"
-                      },
-                      "children": [
-                        {
-                          "el": "span",
-                          "class": "more-label"
-                        }
-                      ]
+                        "data-accepts": "control"
+                      }
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "bar",
+              "part": "bar",
+              "attrs": {
+                "role": "toolbar",
+                "aria-label": "Quick filters"
+              },
+              "children": [
+                {
+                  "el": "div",
+                  "class": "switch-zone",
+                  "part": "switch",
+                  "children": [
+                    {
+                      "el": "sherpa-switch",
+                      "class": "filters-switch",
+                      "attrs": {
+                        "data-type": "simple",
+                        "checked": "",
+                        "aria-label": "Apply filters"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "el": "div",
+                  "class": "organise-zone",
+                  "part": "organise"
+                },
+                {
+                  "el": "div",
+                  "class": "chips",
+                  "part": "chips"
                 }
               ]
             }
@@ -565,21 +363,15 @@
       ],
       "column": [
         {
-          "el": "sherpa-container",
+          "el": "div",
           "class": "column",
           "part": "column",
-          "attrs": {
-            "data-padding": "none",
-            "data-swap-on": "data-scroll-shadow",
-            "data-swap-data-scroll-shadow": ""
-          },
           "children": [
             {
               "el": "sherpa-container-header",
               "class": "head",
               "part": "head",
               "attrs": {
-                "slot": "header",
                 "data-icon": "filter",
                 "data-heading": "Filters"
               },
@@ -649,8 +441,30 @@
             },
             {
               "el": "div",
-              "class": "sections",
-              "part": "sections"
+              "class": "cards sherpa-scroll-shadow",
+              "part": "cards",
+              "children": [
+                {
+                  "el": "div",
+                  "class": "view-section",
+                  "part": "view-section"
+                },
+                {
+                  "el": "sherpa-container",
+                  "class": "scopes",
+                  "part": "scopes",
+                  "attrs": {
+                    "data-padding": "none"
+                  },
+                  "children": [
+                    {
+                      "el": "div",
+                      "class": "sections",
+                      "part": "sections"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -699,6 +513,16 @@
       "observed": true,
       "declared": true,
       "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-card",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
+      "default": false,
+      "description": "portrait: its scope is a CARD, not an accordion — the column's View"
     },
     {
       "$type": "prop",
@@ -1187,7 +1011,9 @@
     "act-divider.block-size": "{sherpa.display-mode-size-sm}",
     "act-divider.background": "{sherpa.theme-border-default-2}",
     "chips.gap": "{sherpa.display-mode-space-xs}",
-    "actions-zone.gap": "{sherpa.display-mode-space-xs}"
+    "actions-zone.gap": "{sherpa.display-mode-space-xs}",
+    "cards.gap": "{sherpa.display-mode-space-base}",
+    "cards.--_scroll-shadow-gap": "{sherpa.display-mode-space-base}"
   },
   "$extensions": {
     "sherpa": {

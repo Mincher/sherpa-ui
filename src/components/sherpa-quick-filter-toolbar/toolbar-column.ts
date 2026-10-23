@@ -1,7 +1,8 @@
 /**
  * toolbar-column.ts — a portrait toolbar over SEVERAL scopes: the panel area's
- * column. A portrait toolbar per scope, under ONE header: Save <name>, ONE
- * Filters menu for every scope, ⋮ and the search. TODO 425 · TRAP T-the-panel-is-the-bar-in-portrait
+ * column. Under ONE header — Save <name>, ONE Filters menu for every scope, ⋮
+ * and the search — the View Context's card, then a card of a portrait toolbar
+ * per component scope. TODO 425, 435 · TRAP T-the-panel-is-the-bar-in-portrait
  *
  * Map:
  * - ColumnEvent — What a column says: its toolbar's own events.
@@ -64,6 +65,11 @@ export class ToolbarColumn {
     return this.#host.root().querySelector<T>(selector);
   }
 
+  /** Each scope's portrait toolbar, the View's first. */
+  #bars(): Section[] {
+    return [...this.#$('.view-section')?.children ?? [], ...this.#$('.sections')?.children ?? []] as Section[];
+  }
+
   /** Hear the header's controls, once per stamp. */
   wire(): void {
     const filters = this.#$('.column-filters');
@@ -86,16 +92,25 @@ export class ToolbarColumn {
   draw(scopes: readonly ScopeDescription[]): void {
     this.#scopes = [...scopes];
     if (!this.#host.el.hasAttribute('open')) return;
+    const view = this.#$('.view-section');
     const list = this.#$('.sections');
-    if (!list) return;
-    const had = new Map([...list.children].map((bar) => [(bar as HTMLElement).dataset['scope'] ?? '', bar as Section]));
-    for (const [i, scope] of scopes.entries()) {
+    if (!view || !list) return;
+    const had = new Map(this.#bars().map((bar) => [bar.dataset['scope'] ?? '', bar]));
+    let i = 0;
+    for (const scope of scopes) {
       const bar = had.get(scope.scope) ?? this.#host.clone('template.section-tpl');
       if (!bar) return;
       had.delete(scope.scope);
       bar.dataset['scope'] = scope.scope;
       bar.toggleAttribute('data-no-actions', !!scope.part);
+      // The View's is a card of its own, not an accordion. Will, TODO 435
+      if (scope.scope === VIEW) {
+        bar.toggleAttribute('data-card', true);
+        if (view.firstElementChild !== bar) view.prepend(bar);
+        continue;
+      }
       if (list.children[i] !== bar) list.insertBefore(bar, list.children[i] ?? null);
+      i++;
     }
     for (const gone of had.values()) gone.remove();
     this.#drawFilters();
@@ -103,7 +118,7 @@ export class ToolbarColumn {
 
   /** It opened: what it was told while shut is drawn now. */
   opened(): void {
-    if (this.#scopes.length && !this.#$('.sections')?.children.length) this.draw(this.#scopes);
+    if (this.#scopes.length && !this.#bars().length) this.draw(this.#scopes);
   }
 
   /** What the filters before a scope's fields leave: the Filters menu is drawn
@@ -118,7 +133,7 @@ export class ToolbarColumn {
    *  TODO 426. TRAP T-a-chart-scope-is-its-legend-field */
   drawReading(field: string, reading: FieldReading, scope: string): void {
     if (!this.#scopes.find((s) => s.scope === scope)?.part) return;
-    const bar = this.#$(`.sections > [data-scope="${CSS.escape(scope)}"]`) as (Section & { drawReading?: (f: string, r: FieldReading) => void }) | null;
+    const bar = this.#bars().find((b) => b.dataset['scope'] === scope) as (Section & { drawReading?: (f: string, r: FieldReading) => void }) | undefined;
     bar?.drawReading?.(field, reading);
   }
 
@@ -235,6 +250,6 @@ export class ToolbarColumn {
   /** ONE search, above every scope: each section finds in its own fields. */
   #onFind = (): void => {
     const text = this.#$<HTMLInputElement>('.find')?.value ?? '';
-    for (const bar of this.#$('.sections')?.children ?? []) (bar as Section).search?.(text);
+    for (const bar of this.#bars()) bar.search?.(text);
   };
 }

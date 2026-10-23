@@ -1383,7 +1383,7 @@ data is.
 - Site: `src/components/sherpa-nav/sherpa-nav.html`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 
 ### T-a-page-sheet-is-for-what-a-component-puts-in-the-page
 
@@ -1447,6 +1447,7 @@ family's markup is not a component's anatomy.
 - Site: `scripts/check-traps.mjs`
 - Site: `src/core/ui/more-menu.ts`
 - Site: `src/core/sherpa-filter-menu.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 
 ### T-a-swapped-label-is-in-the-markup
 
@@ -1666,7 +1667,7 @@ carrying `from` as a request whatever the bar's own scope.
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 
 ### T-a-condition-marks-every-match
 
@@ -2150,7 +2151,7 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 - Site: `src/core/ui/more-menu.ts`
 - Site: `src/core/sherpa-filter-more.html`
 - Site: `src/core/sherpa-filter-more.css`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 
 ### T-a-number-is-reset-not-cleared
 
@@ -14858,8 +14859,13 @@ carries its own Sites menu; the field chip catches its change in CAPTURE.
 
 Over SEVERAL scopes (`data-scope="view data"`) it stamps the `column`
 template: ONE header — Save <name>, one Filters menu for every scope, the
-page's buttons, ⋮, the search above every scope — over a portrait toolbar per
-scope (`toolbar-column.ts`). It asks for its scopes and is drawn
+page's buttons, ⋮, the search above every scope — over two cards, 16px apart
+(Will, TODO 435): the View Context, then a portrait toolbar per component
+scope (`toolbar-column.ts`). The View's section is no accordion: `data-card`
+stamps the `card` template, its name and Apply / Discard in a card header and
+its chips the card's body. The templates every variant clones — a chip, Group
+and Sort, Move, a section's ⋮, the words — are one family file,
+`toolbar-rows.html`, so a variant costs only its own markup. It asks for its scopes and is drawn
 (`drawScopes`), opens and shuts, as a panel does. The provider tells a column
 from a bar by what it ASKED — several scopes — not by the methods it has
 (`isColumn`), since a toolbar has both `drawScope` and `drawScopes`. A column

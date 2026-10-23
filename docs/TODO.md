@@ -116,9 +116,11 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
 | ⬜ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ⬜ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
-| ⬜ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
+| ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
 | ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ⬜ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
+| ⬜ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
+| ⬜ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after its cards show, so the View Context card grows and pushes the card under it (CLS 0.056, test bound raised to Good, 0.1); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1885,6 +1887,45 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 439 — PERF: the panel's chips draw late, and `available` runs 6 times
+
+Found in 435, 2026-10-23, Records in panel mode at 4x CPU: the column's cards
+show at ~720ms with headers only; each section is told its filters
+(`available()`) ~6 times between 768 and 795ms; the chips draw at ~1620ms. The
+View Context card, at the top, grows 51 → 299px and pushes the card under it:
+CLS 0.056. Demos' `reforged-panel-mode-does-not-shift` bound for panel mode is
+Good (0.1) until this is fixed; put it back to 0.05 after. Draw the chips with
+the cards, or hold the cards back until the View's are drawn (a View with no
+filters must still show).
+
+### `[ ]` ⬜ 438 — BUG: the column has no "Date" or "Organise" section labels
+
+Will, 2026-10-23: *"In the filter toolbar as a column/panel mode we lose the
+section labels for 'Date' and 'Organise' that we had in the old filter panel.
+We need to support 1 or more filter chips being in a named section that can be
+used in the panel mode of the filter toolbar."* The old panel headed Group and
+Sort "Organise", and the Date chip "Date". A portrait toolbar needs a named
+group of chips: a label, then 1 or more chips under it.
+
+Will, 2026-10-23, the model: *"We could organise filter chips in the filter
+toolbar like*
+
+```
+Section 1 (Explicitly Named)
+  - Chip A
+  - Chip B
+Section 2 (Implicit from chip field name)
+  - Chip
+Section 3 (Explicitly Named)
+  - Chip
+```
+
+*That would make toggling from toolbar to panel mode super easy. It's very
+scalable, too."* So a toolbar's chips are ALWAYS in sections: a named one
+holds 1 or more chips; a chip in none is a section of its own, named by its
+field. Portrait draws each section with its name; landscape draws the same
+chips in a row (perhaps a divider between sections).
+
 ### `[ ]` ⬜ 437 — BUG: a chip in a section shows its section's tooltip too
 
 Will, 2026-10-23: *"In panel mode, hovering over a chip shows both the chip and
@@ -1922,7 +1963,7 @@ library offers — Sherpa itself stays app agnostic. Some are new library work
 matches); plan those first, with a ❓ for each place to pick. Today's filter
 settings live on Settings › Application (Filtering section).
 
-### `[ ]` ⬜ 435 — LOOK: the panel's View scope and component scopes, a container each
+### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 
 Will, 2026-10-23: *"In panel mode for the filter toolbar put the view scope
 content in a container and the component scopes in another container."* And: *"Stack those containers vertically and have 16px gutter
@@ -1933,6 +1974,17 @@ Today the column is ONE `sherpa-container`: its header (Filters, search), then
 each scope an accordion, the View's set apart by a divider (425 G13). Check how
 the two cards share the column's height and its scroll (each scrolls, or the
 column), and where the header and search go.
+
+Will picked A: the header (Filters, Save, the Filters menu, ⋮, search) stays
+ABOVE both cards.
+
+✅ 2026-10-23: the column is the header over a scrolling box of two cards,
+16px apart: "View Context" (a portrait toolbar with `data-card`: a card, not an
+accordion — its name and Apply / Discard in the card's header, its chips the
+body), then the component scopes, each an accordion. Demos' page definitions
+name the View "View Context"; the Move row says "Move to View Context". The
+templates every variant clones moved to one family file, `toolbar-rows.html`.
+Panel mode's CLS at 4x is 0.056 (TODO 439).
 
 ### `[ ]` ⬜ 434 — LOOK: the App Header's title joins its actions' row
 
@@ -1980,6 +2032,10 @@ index.html to `app/main.js` so it can be bundled. Opened from disk it works in
 Chrome and Firefox; Safari loads the page again on each route change. A Demos
 test builds it and opens it from disk in three engines.
 TRAP T-an-app-in-one-file-fetches-nothing
+
+❓ Will, 2026-10-23, after it was built: *"Hold off on the Sherpa Demos to
+share build for now."* Asked: A keep it as built (nothing runs unless
+`build:share` is run), or B revert both commits. Nothing more is done on it.
 
 ### `[x]` ✅ 428 — LOOK: the Favorite and Save group, and Refresh, move
 

@@ -2773,6 +2773,11 @@
           "name": "data-bounds"
         },
         {
+          "name": "data-card",
+          "description": "portrait: its scope is a CARD, not an accordion — the column's View",
+          "valueSet": "v"
+        },
+        {
           "name": "data-dirty",
           "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
           "valueSet": "v"

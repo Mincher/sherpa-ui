@@ -343,7 +343,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — filter-panel, quick-filter-toolbar
 - [T-a-divider-needs-a-neighbour-on-both-sides](TRAPS.md#t-a-divider-needs-a-neighbour-on-both-sides) — quick-filter-toolbar
 - [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
-- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, sherpa-filter-menu
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, quick-filter-toolbar, sherpa-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
 - [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-panel, quick-filter-toolbar
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar

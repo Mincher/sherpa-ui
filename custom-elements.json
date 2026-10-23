@@ -8279,6 +8279,14 @@
               }
             },
             {
+              "name": "data-card",
+              "description": "portrait: its scope is a CARD, not an accordion — the column's View",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
               "name": "data-dirty",
               "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
               "type": {
@@ -9038,6 +9046,12 @@
               "name": "bar"
             },
             {
+              "name": "card"
+            },
+            {
+              "name": "cards"
+            },
+            {
               "name": "chips"
             },
             {
@@ -9065,10 +9079,16 @@
               "name": "scope"
             },
             {
+              "name": "scopes"
+            },
+            {
               "name": "sections"
             },
             {
               "name": "switch"
+            },
+            {
+              "name": "view-section"
             },
             {
               "name": "view-zone"

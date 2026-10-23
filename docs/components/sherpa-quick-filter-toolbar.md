@@ -7,7 +7,7 @@ A strip of quick-filter chips above a grid/list.
 |  |  |
 |---|---|
 | Category | control |
-| Templates | `default`, `portrait`, `column` |
+| Templates | `default`, `portrait`, `card`, `column` |
 | Figma | Filter Toolbar |
 | Source | [.ts](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts) · [.html](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html) · [.css](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css) · [.component.json](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.component.json) · [.example.json](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.example.json) |
 
@@ -58,6 +58,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-bounds` | text |  |  |
+| `data-card` | boolean | `false` | portrait: its scope is a CARD, not an accordion — the column's View |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
@@ -166,7 +167,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `more`, `organise`, `save`, `scope`, `sections`, `switch`, `view-zone`
+`actions`, `bar`, `card`, `cards`, `chips`, `column`, `filters`, `find`, `head`, `more`, `organise`, `save`, `scope`, `scopes`, `sections`, `switch`, `view-section`, `view-zone`
 
 ## CSS custom properties it reads
 
@@ -182,6 +183,8 @@ What each class's base rule reads:
 | `--sherpa-theme-border-default-2` | `.act-divider` | `background` |
 | `--sherpa-display-mode-space-xs` | `.chips` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions-zone` | `gap` |
+| `--sherpa-display-mode-space-base` | `.cards` | `gap` |
+| `--sherpa-display-mode-space-base` | `.cards` | `--_scroll-shadow-gap` |
 
 ## populate()
 

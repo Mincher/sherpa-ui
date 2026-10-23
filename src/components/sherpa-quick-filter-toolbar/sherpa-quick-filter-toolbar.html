@@ -18,6 +18,7 @@
 
   Public API:
     data-scroll-shadow  an inner shadow on each edge its column is scrolled past (boolean)
+    data-card       portrait: its scope is a CARD, not an accordion — the column's View (boolean)
     data-type      data (default) | view
     data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
                     column. Over ONE scope, the scope is an accordion — its
@@ -166,38 +167,6 @@
                      aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
     </div>
   </div>
-
-
-  <!-- The ⋮ rows only a bar draws; the menu and the shared rows are
-       sherpa-filter-more.html's. TRAP T-the-more-menu-holds-what-folded -->
-  <template class="more-rows-tpl">
-    <button class="more-item" type="button" value="refresh"><span class="more-label">Refresh data</span></button>
-  </template>
-
-  <template class="qf-tpl">
-    <sherpa-quick-filter class="chip"></sherpa-quick-filter>
-  </template>
-
-  <!-- The Group and Sort chips: not a `.chip`, so the filter code passes them by. -->
-  <template class="organise-group-tpl">
-    <sherpa-quick-filter class="organise-chip" data-id="group" data-kind="group" data-label="Group"></sherpa-quick-filter>
-  </template>
-  <template class="organise-sort-tpl">
-    <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
-  </template>
-
-  <!-- MOVE, in a chip menu's footer beside Remove: the field up to the View, or
-       a View field back down. Will, TODO 425 G4 · TRAP T-send-to-view-filters -->
-  <template class="move-tpl"><sherpa-button slot="footer" class="move"></sherpa-button></template>
-  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
-  <template class="words">
-    <span data-word="raise">Move to View filters</span>
-    <span data-word="lower">Move to</span>
-    <span data-word="return">Return to</span>
-    <span data-word="advanced">Advanced</span>
-    <span data-word="simple">Simple</span>
-  </template>
-
 </template>
 
 <!-- PORTRAIT — the panel's column. The scope is an accordion, as a panel's is:
@@ -221,51 +190,39 @@
       <div class="chips" part="chips"></div>
     </div>
   </sherpa-accordion>
+</template>
 
-  <template class="qf-tpl">
-    <sherpa-quick-filter class="chip"></sherpa-quick-filter>
-  </template>
-  <template class="organise-group-tpl">
-    <sherpa-quick-filter class="organise-chip" data-id="group" data-kind="group" data-label="Group"></sherpa-quick-filter>
-  </template>
-  <template class="organise-sort-tpl">
-    <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
-  </template>
-
-  <!-- MOVE, in a chip menu's footer beside Remove: the field up to the View, or
-       a View field back down. Will, TODO 425 G4 · TRAP T-send-to-view-filters -->
-  <template class="move-tpl"><sherpa-button slot="footer" class="move"></sherpa-button></template>
-  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
-  <template class="words">
-    <span data-word="raise">Move to View filters</span>
-    <span data-word="lower">Move to</span>
-    <span data-word="return">Return to</span>
-    <span data-word="advanced">Advanced</span>
-    <span data-word="simple">Simple</span>
-  </template>
-  <!-- A SECTION's ⋮, in its chip's `more` slot: the field's own actions, each
-       only where it applies. Will, TODO 425 G1 -->
-  <template class="field-more-tpl">
-    <sherpa-button slot="more" class="field-more" data-type="icon" data-size="sm"
-                   data-icon-start="ellipses-vertical" aria-haspopup="dialog">
-      <sherpa-menu slot="menu" class="field-menu" data-align="end">
-        <button class="more-item" type="button" value="advanced"><span class="more-label"></span></button>
-        <button class="more-item" type="button" value="raise"><span class="more-label"></span></button>
-        <button class="more-item" type="button" value="lower"><span class="more-label"></span></button>
-        <button class="more-item" type="button" value="clear"><span class="more-label">Reset</span></button>
-        <button class="more-item" type="button" value="remove"><span class="more-label">Remove</span></button>
-      </sherpa-menu>
-    </sherpa-button>
-  </template>
+<!-- CARD — a portrait toolbar whose scope is a CARD, not an accordion: the
+     column's View Context. Its header holds the name and Apply / Discard; its
+     chips are the card's body. Will, TODO 435 -->
+<template id="card">
+  <sherpa-container class="card" part="card">
+    <sherpa-container-header slot="header" class="scope" part="scope">
+      <span slot="actions" class="actions-zone" part="actions">
+        <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
+                       data-look="saturated" disabled>Apply</sherpa-button>
+        <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
+                       data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+        <slot name="actions" data-accepts="control"></slot>
+      </span>
+    </sherpa-container-header>
+    <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
+      <div class="switch-zone" part="switch">
+        <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
+      </div>
+      <div class="organise-zone" part="organise"></div>
+      <div class="chips" part="chips"></div>
+    </div>
+  </sherpa-container>
 </template>
 
 <!-- COLUMN — portrait over SEVERAL scopes: the panel area's. ONE header — Save
      <name>, the Filters menu for every scope, the page's buttons, ⋮, and the
-     one search above every scope — over a portrait toolbar per scope. TODO 425 -->
+     one search above every scope — over two cards: the View Context, and a
+     portrait toolbar per component scope. TODO 425 · Will, TODO 435 -->
 <template id="column">
-  <sherpa-container class="column" part="column" data-padding="none"
-                    data-swap-on="data-scroll-shadow" data-swap-data-scroll-shadow="">
-    <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
+  <div class="column" part="column">
+    <sherpa-container-header class="head" part="head" data-icon="filter" data-heading="Filters">
       <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
@@ -280,8 +237,13 @@
                          placeholder="Search filters" autocomplete="off"
                          aria-label="Search every filter"></sherpa-input-text>
     </sherpa-container-header>
-    <div class="sections" part="sections"></div>
-  </sherpa-container>
+    <div class="cards sherpa-scroll-shadow" part="cards">
+      <div class="view-section" part="view-section"></div>
+      <sherpa-container class="scopes" part="scopes" data-padding="none">
+        <div class="sections" part="sections"></div>
+      </sherpa-container>
+    </div>
+  </div>
 
   <!-- One scope's toolbar, in portrait. -->
   <template class="section-tpl"><sherpa-quick-filter-toolbar data-orientation="portrait"></sherpa-quick-filter-toolbar></template>

@@ -1,0 +1,49 @@
+<!-- toolbar-rows.html — what every filter toolbar template clones: a chip, Group
+     and Sort, Move, a section's ⋮, a bar's ⋮ row and the words. Listed first,
+     so each stamp — landscape, portrait, card or column — holds them.
+     TRAP T-a-family-shares-markup -->
+<template id="default">
+  <!-- The ⋮ rows only a toolbar draws; the menu and the shared rows are
+       sherpa-filter-more.html's. TRAP T-the-more-menu-holds-what-folded -->
+  <template class="more-rows-tpl">
+    <button class="more-item" type="button" value="refresh"><span class="more-label">Refresh data</span></button>
+  </template>
+
+  <template class="qf-tpl">
+    <sherpa-quick-filter class="chip"></sherpa-quick-filter>
+  </template>
+
+  <!-- The Group and Sort chips: not a `.chip`, so the filter code passes them by. -->
+  <template class="organise-group-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="group" data-kind="group" data-label="Group"></sherpa-quick-filter>
+  </template>
+  <template class="organise-sort-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="sort" data-kind="sort" data-label="Sort"></sherpa-quick-filter>
+  </template>
+
+  <!-- MOVE, in a chip menu's footer beside Remove: the field up to the View, or
+       a View field back down. Will, TODO 425 G4 · TRAP T-send-to-view-filters -->
+  <template class="move-tpl"><sherpa-button slot="footer" class="move"></sherpa-button></template>
+  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="raise">Move to View Context</span>
+    <span data-word="lower">Move to</span>
+    <span data-word="return">Return to</span>
+    <span data-word="advanced">Advanced</span>
+    <span data-word="simple">Simple</span>
+  </template>
+  <!-- A SECTION's ⋮, in its chip's `more` slot: the field's own actions, each
+       only where it applies. Will, TODO 425 G1 -->
+  <template class="field-more-tpl">
+    <sherpa-button slot="more" class="field-more" data-type="icon" data-size="sm"
+                   data-icon-start="ellipses-vertical" aria-haspopup="dialog">
+      <sherpa-menu slot="menu" class="field-menu" data-align="end">
+        <button class="more-item" type="button" value="advanced"><span class="more-label"></span></button>
+        <button class="more-item" type="button" value="raise"><span class="more-label"></span></button>
+        <button class="more-item" type="button" value="lower"><span class="more-label"></span></button>
+        <button class="more-item" type="button" value="clear"><span class="more-label">Reset</span></button>
+        <button class="more-item" type="button" value="remove"><span class="more-label">Remove</span></button>
+      </sherpa-menu>
+    </sherpa-button>
+  </template>
+</template>
