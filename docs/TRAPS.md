@@ -16179,8 +16179,17 @@ or a 1px gap splits the shadow.
 A hidden cell never animates: `getComputedStyle` reads its strip at 0. Read a
 SHOWN cell — the select column is hidden on a grid that does not select.
 
+**The panel's Local Context headers** stick inside the column, which scrolls
+for all of them, so its scroll says nothing about ONE header. Each scope
+names a VIEW timeline (`view-timeline: --sherpa-scope block`), and its
+header's strip (`::part(header)::after`) fades in over `exit-crossing 0` to
+`16px`: from when the scope's top passes the column's top — exactly when its
+header sticks. A header further down casts none. Chromium and WebKit; Firefox
+has no view timeline and shows none.
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 
 ### T-a-hairline-resolves-by-density
 

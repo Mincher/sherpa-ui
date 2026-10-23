@@ -417,7 +417,7 @@
   "src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.css": 116,
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.css": 115,
   "src/components/sherpa-provider/sherpa-provider.css": 7,
-  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css": 337,
+  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css": 356,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.css": 413,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.css": 94,
   "src/components/sherpa-router/sherpa-router.css": 7,

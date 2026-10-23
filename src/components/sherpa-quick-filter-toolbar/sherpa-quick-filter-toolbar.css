@@ -204,6 +204,25 @@
   background: var(--sherpa-style-surface-base, #fff);
 }
 .scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+/* STUCK, it casts a shadow over its fields scrolled under it: from when its
+   scope's top passes the column's, by a VIEW timeline on the scope, so a header
+   further down casts none. Will, TODO 421. TRAP T-a-stuck-header-casts-a-shadow */
+@supports (animation-timeline: view()) {
+  .scope { view-timeline: --sherpa-scope block; }
+  .scope::part(header)::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0;
+    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    opacity: 0;
+    animation: sherpa-scroll-shadow linear both;
+    animation-timeline: --sherpa-scope;
+    animation-range: exit-crossing 0px exit-crossing var(--sherpa-display-mode-space-base, 16px);
+  }
+}
 .scope::part(icon),
 .scope::part(titles) { order: 1; }
 .scope::part(badge) { order: 2; }

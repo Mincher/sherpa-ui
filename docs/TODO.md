@@ -102,7 +102,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
 | ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
 | ✅ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
-| 🚧 | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
+| ✅ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
@@ -2314,7 +2314,7 @@ face and tip; only the Query still held it. The chip reads picks by
 `valueKey` now, and so do two panel spots that had the same fault. Test: Demos
 `reforged-a-site-pick-keeps-its-label`.
 
-### `[ ]` 🚧 421 — LOOK: a stuck element casts a shadow
+### `[x]` ✅ 421 — LOOK: a stuck element casts a shadow
 
 Will, 2026-10-22: *"Sticky elements should show a drop shadow from the sherpa
 shadow definitions when stuck and scrolled under. All possible with CSS."* With
@@ -2329,6 +2329,11 @@ Next, after 435 splits the panel into two containers: each component scope's
 sticky header in the column, by a VIEW timeline on its scope
 (`exit-crossing`), so a header lower down shows none until it reaches the top.
 TRAP T-a-stuck-header-casts-a-shadow
+
+✅ 2026-10-23: the panel's Local Context headers too (435 made the View a plain
+label, so it does not stick): each scope names a view timeline, and its
+header's strip fades in from `exit-crossing 0` to `16px`. A Demos test scrolls
+the column in Chromium and WebKit.
 
 ### `[x]` ✅ 420 — UX: one ⋮ per panel field section
 
