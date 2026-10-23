@@ -23,6 +23,7 @@
  * - .drawPanelReading — Tell each control over several scopes one field's reading in a scope.
  * - .drawReading — Tell each control over a field's home its reading.
  * - .drawBars — Draw every bar over one scope, as the panel draws it.
+ * - .drawBarsBehind — Draw each bar over one scope that does not hold what the scope holds now: a scope two bars draw — a strip and…
  * - .drawEveryBar — Draw every bar over one scope each; settles when all have drawn.
  * - .drawScopesSoon — Draw each control over several scopes WHOLE, once per moment.
  * - .supersedeColumns — Tell each grid below the View the fields the View holds.
@@ -212,6 +213,17 @@ export class SourceBinding {
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
     for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(...this.#slice(scope));
+  }
+
+  /** Draw each bar over one scope that does not hold what the scope holds now:
+   *  a scope two bars draw — a strip and a column's section — changed through
+   *  one of them. TRAP T-two-bars-over-one-scope */
+  drawBarsBehind(scope: string): void {
+    const held = this.#host.describe(scope).filters.map((f) => f.id).join();
+    for (const [el, { scope: s }] of this.#bound) {
+      if (s !== scope || !el.drawScope || el.heldFields?.join() === held) continue;
+      void el.drawScope(...this.#slice(scope));
+    }
   }
 
   /** Draw every bar over one scope each; settles when all have drawn. */

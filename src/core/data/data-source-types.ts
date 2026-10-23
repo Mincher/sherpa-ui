@@ -256,6 +256,8 @@ export interface BoundControl {
   /** A whole scope, drawn SILENTLY — its chips, answers and presets — as the panel draws
    *  each; `live` reads it again, for a bar that paints after a wait. */
   drawScope?: (scope: ScopeDescription, live?: () => ScopeDescription) => void | Promise<void>;
+  /** The fields a bar holds now, in its order. */
+  readonly heldFields?: readonly string[];
   /** Each answered chip's results — the rows its own answer matches. */
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
   /** What each field that waits for Apply holds APPLIED — every one named, an empty answer where

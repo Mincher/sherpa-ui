@@ -2114,6 +2114,7 @@ flag.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-the-more-menu-holds-what-folded
 
@@ -14866,6 +14867,20 @@ for its own scope; one made once the page's bars are drawn is drawn as they
 were (`joined`); it never steps back for panel mode and gets no mode button.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+
+### T-two-bars-over-one-scope
+
+**A scope can have two bars, and a change through one must reach the other** —
+TODO 426. Records' grid scope is drawn by its strip (`#qft`) and, in panel
+mode, by the column's section. A bar's own add or remove REPORTS its holds
+(`hold`), and the source drew only the panels again — the bar that asked shows
+it already, and once there was one bar per scope. So a field added on the
+strip never reached the section. On a `hold`, the source now draws each bar
+over that scope whose `heldFields` differ from what the scope holds
+(`drawBarsBehind`): the asking bar matches and is left alone, so an open menu
+of its stays open.
+
+- Site: `src/core/data/source-binding.ts`
 
 ### T-a-shut-column-draws-nothing
 

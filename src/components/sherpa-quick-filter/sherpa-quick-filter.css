@@ -106,6 +106,8 @@
   font-weight: var(--sherpa-font-weight-light, 300);
   text-transform: uppercase;
 }
+/* Its results right of its title, as a panel field's. Will, TODO 133 */
+:host([data-layout="section"]) .count { order: 1; }
 /* …and its icon the same size as its text. */
 :host([data-layout="section"][data-icon-start]) .body .icon {
   --_icon-size: var(--sherpa-theme-content-size-small, 12px);

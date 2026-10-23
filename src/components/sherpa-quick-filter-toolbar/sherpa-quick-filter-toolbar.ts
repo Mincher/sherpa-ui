@@ -370,7 +370,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         && !chip.hasAttribute('data-persistent') && !arranges(kindOf(def)) && !oneChipList(def);
       if (portrait && list) {
         chip.setAttribute('data-layout', 'section');
-        this.#addFieldMore(chip);
+        this.#syncFieldMore(chip);
       } else {
         chip.removeAttribute('data-layout');
         chip.querySelector(':scope > .field-more')?.remove();
@@ -862,10 +862,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const chip = this.#chips().find((c) => c.dataset['id'] === id);
     const menu = chip?.querySelector('sherpa-menu');
     if (chip && (!chip.shadowRoot?.childElementCount || (menu && !menu.shadowRoot?.childElementCount))) {
-      void this.#settled().then(() => { if (!this.superseded.includes(id)) this.#drawChip(id, reading); });
+      /* Only the LATEST held draw of a field lands, and a draw made meanwhile
+         drops it: a stale one put a section's Advanced back to Simple. TODO 426 */
+      const held = { reading };
+      this.#heldDraws.set(id, held);
+      void this.#settled().then(() => {
+        if (this.#heldDraws.get(id) !== held) return;
+        this.#heldDraws.delete(id);
+        if (!this.superseded.includes(id) && !this.#drafting(id)) this.#drawChip(id, reading);
+      });
       return;
     }
+    this.#heldDraws.delete(id);
     this.#drawChip(id, reading);
+  }
+  /** Each field's draw held until its chip's menu has stamped. */
+  #heldDraws = new Map<string, { reading: FieldReading }>();
+
+  /** A field's held draw, drawn NOW — before the reader acts on its menu. */
+  #drawHeld(id: string): void {
+    const held = this.#heldDraws.get(id);
+    if (!held) return;
+    this.#heldDraws.delete(id);
+    if (!this.superseded.includes(id)) this.#drawChip(id, held.reading);
   }
 
   /** One chip's answer, and whether it is ON. OFF keeps the answer and applies
@@ -1205,6 +1224,31 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.setAttribute('data-removable', '');
   }
 
+  /** What the scope says of each field it holds: where it may be sent — a
+   *  field sent up learns its way back, one added from the offers had none.
+   *  Its Move, in its menu and its section's ⋮, follows. TODO 426 */
+  #takeWays(fields: readonly { id: string; sendTo?: FilterDef['sendTo'] }[]): void {
+    const told = new Map(fields.map((f) => [this.#idOf(f.id), f.sendTo] as const));
+    let moved = false;
+    this.#filters = this.#filters.map((d) => {
+      if (!told.has(d.id)) return d;
+      const to = told.get(d.id);
+      if (JSON.stringify(to) === JSON.stringify(d.sendTo)) return d;
+      moved = true;
+      const { sendTo: _was, ...rest } = d;
+      return to ? { ...rest, sendTo: to } : rest;
+    });
+    if (!moved) return;
+    for (const chip of this.#chips()) {
+      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const menu = chip.querySelector<HTMLElement>(':scope > sherpa-menu');
+      if (!def || !menu) continue;
+      menu.querySelector(':scope > .move')?.remove();
+      this.#addMove(chip, menu, def);
+    }
+    this.#syncLayout();
+  }
+
   /** A chip's menu MOVES its field — up to the View, or a View field back down
    *  to the one scope its source names: a button in its footer, beside Remove.
    *  Will, TODO 425 G4 · TRAP T-send-to-view-filters */
@@ -1243,24 +1287,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /** A SECTION's ⋮ — the field's own actions, each only where it applies — in
-   *  its chip's `more` slot, in the caret's place. Will, TODO 425 G1 */
-  #addFieldMore(chip: SherpaQuickFilter): void {
+   *  its chip's `more` slot, in the caret's place; said again on each layout,
+   *  as what applies moves (a field sent up learns its way back). Will, TODO 425 G1 */
+  #syncFieldMore(chip: SherpaQuickFilter): void {
     const def = this.#filters.find((f) => f.id === chip.dataset['id']);
-    if (!def || chip.querySelector(':scope > .field-more')) return;
-    const more = this.clone('template.field-more-tpl');
-    if (!more) return;
-    const row = (value: string): HTMLElement | null => more.querySelector(`.more-item[value="${value}"]`);
+    if (!def) return;
+    let more = chip.querySelector<HTMLElement>(':scope > .field-more');
+    if (!more) {
+      more = this.clone('template.field-more-tpl');
+      if (!more) return;
+      chip.append(more);
+    }
     const move = this.#moveLabel(def);
-    const up = this.#scope !== VIEW;
-    row(up ? 'lower' : 'raise')?.remove();
-    const moving = row(up ? 'raise' : 'lower');
-    if (!move) moving?.remove();
-    else if (moving) moving.querySelector('.more-label')!.textContent = move;
-    if (!def.removable) row('remove')?.remove();
+    const way = this.#scope === VIEW ? 'lower' : 'raise';
+    if (move) more.dataset['move'] = way;
+    else delete more.dataset['move'];
+    const label = more.querySelector(`.more-item[value="${way}"] .more-label`);
+    if (label && move) label.textContent = move;
+    more.toggleAttribute('data-removable', !!def.removable);
     // Advanced only where the field offers it. Will, TODO 425 G14
-    if (!chip.querySelector(':scope > sherpa-menu')?.hasAttribute('data-advanced')) row('advanced')?.remove();
+    more.toggleAttribute('data-advanced-ok', !!chip.querySelector(':scope > sherpa-menu')?.hasAttribute('data-advanced'));
     more.setAttribute('aria-label', `${def.label} options`);
-    chip.append(more);
     this.#labelMode(chip);
   }
 
@@ -1287,12 +1334,20 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (owner && (value === 'raise' || value === 'lower' || value === 'clear' || value === 'advanced')) {
       event.stopImmediatePropagation();
       more?.querySelector<SherpaMenu>('sherpa-menu')?.hide?.();
-      /* ADVANCED: the field's menu goes to its rows, as its own button does,
-         and opens to them; Simple goes back. Will, TODO 425 G14 */
+      /* ADVANCED: the field's menu opens, then goes to its rows as its own
+         button does — so the switch is its draft, Apply on and Discard back.
+         Simple goes back, shut. Will, TODO 425 G14 · TRAP T-the-baseline-is-taken-at-show */
       if (value === 'advanced') {
         const menu = owner.querySelector<SherpaMenu>(':scope > sherpa-menu');
-        menu?.switchMode?.();
-        if (menu?.mode === 'advanced') owner.toggleMenu();
+        if (menu?.mode !== 'advanced' && !menu?.open) owner.toggleMenu();
+        /* A draw held for this menu's first stamp is drawn FIRST — it holds the
+           answer the rows carry — then the switch, which it would undo. TODO 426 */
+        void Promise.resolve(menu?.rendered).then(() => {
+          this.#drawHeld(owner.dataset['id'] ?? '');
+          menu?.switchMode?.();
+          // Reported NOW, not next frame: a draw in between would put it back.
+          this.#emitChange(this.#answerRequest(owner));
+        });
       } else if (value === 'clear') {
         this.#emptyChip(owner);
         this.#emitChange(this.#answerRequest(owner));
@@ -1665,6 +1720,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       && this.#available.some((f) => f.id === id));
     if (add.length) this.#addFilters(add, { silent: true });
     this.#orderAs(fields.map((f) => this.#idOf(f.id)));
+    this.#takeWays(fields);
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     await this.#settled();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));

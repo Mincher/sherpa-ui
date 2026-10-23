@@ -997,6 +997,7 @@ export class DataSource extends EventTarget {
         if (change.moved.length) this.#recompose();
         for (const field of change.moved) this.#draw(field);
         if (change.scope === VIEW) this.#syncSuperseded();
+        this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
       case 'move':
