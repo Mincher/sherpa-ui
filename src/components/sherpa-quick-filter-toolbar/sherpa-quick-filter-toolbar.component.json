@@ -140,12 +140,43 @@
                   "class": "act",
                   "attrs": {
                     "data-size": "sm",
+                    "data-act": "refresh",
+                    "data-type": "icon",
+                    "data-icon-start": "cw-circle-arrow",
+                    "aria-label": "Refresh data"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act",
+                  "attrs": {
+                    "data-size": "sm",
                     "data-act": "overflow",
                     "data-type": "icon",
                     "data-icon-start": "ellipses-vertical",
                     "aria-label": "More actions",
                     "aria-haspopup": "dialog"
                   }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "more-rows-tpl",
+          "children": [
+            {
+              "el": "button",
+              "class": "more-item",
+              "attrs": {
+                "type": "button",
+                "value": "refresh"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "more-label"
                 }
               ]
             }
@@ -1120,6 +1151,13 @@
       "detail": {
         "reason": "'page' | 'reader' | 'width'"
       }
+    },
+    {
+      "$type": "event",
+      "name": "data-refresh",
+      "description": "Refresh: load the page's data again.",
+      "bubbles": true,
+      "composed": true
     }
   ],
   "tokens": {

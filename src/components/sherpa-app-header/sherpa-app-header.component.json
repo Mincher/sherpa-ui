@@ -65,6 +65,79 @@
                       }
                     },
                     {
+                      "el": "span",
+                      "class": "view-group sherpa-group",
+                      "part": "view-actions",
+                      "children": [
+                        {
+                          "el": "sherpa-button",
+                          "class": "favourite",
+                          "attrs": {
+                            "data-size": "sm",
+                            "data-type": "icon",
+                            "data-group": "start",
+                            "data-icon-start": "star",
+                            "aria-label": "Add to Favorites",
+                            "aria-pressed": "false",
+                            "data-swap-on": "data-favourite",
+                            "data-swap-data-icon-start": "star-filled",
+                            "data-swap-aria-label": "Remove from Favorites",
+                            "data-swap-aria-pressed": "true",
+                            "data-swap-data-status": "active"
+                          }
+                        },
+                        {
+                          "el": "sherpa-button",
+                          "class": "save",
+                          "attrs": {
+                            "data-size": "sm",
+                            "data-group": "mid",
+                            "data-icon-start": "upload"
+                          }
+                        },
+                        {
+                          "el": "sherpa-button",
+                          "class": "view-more",
+                          "attrs": {
+                            "data-size": "sm",
+                            "data-type": "icon",
+                            "data-group": "end",
+                            "data-icon-start": "triangle-down",
+                            "aria-label": "Save view options",
+                            "aria-haspopup": "dialog"
+                          },
+                          "children": [
+                            {
+                              "el": "sherpa-menu",
+                              "class": "view-menu",
+                              "attrs": {
+                                "slot": "menu",
+                                "data-align": "end"
+                              },
+                              "children": [
+                                {
+                                  "el": "button",
+                                  "attrs": {
+                                    "type": "button",
+                                    "value": "save-as"
+                                  }
+                                },
+                                {
+                                  "el": "button",
+                                  "class": "view-delete",
+                                  "attrs": {
+                                    "type": "button",
+                                    "value": "delete",
+                                    "data-status": "critical"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
                       "el": "sherpa-button",
                       "class": "ai",
                       "part": "ai",
@@ -259,95 +332,6 @@
                       "attrs": {
                         "data-accepts": "toolbar"
                       }
-                    },
-                    {
-                      "el": "span",
-                      "class": "view-actions",
-                      "part": "view-actions",
-                      "children": [
-                        {
-                          "el": "span",
-                          "class": "view-group sherpa-group",
-                          "children": [
-                            {
-                              "el": "sherpa-button",
-                              "class": "favourite",
-                              "attrs": {
-                                "data-size": "sm",
-                                "data-type": "icon",
-                                "data-group": "start",
-                                "data-icon-start": "star",
-                                "aria-label": "Add to Favorites",
-                                "aria-pressed": "false",
-                                "data-swap-on": "data-favourite",
-                                "data-swap-data-icon-start": "star-filled",
-                                "data-swap-aria-label": "Remove from Favorites",
-                                "data-swap-aria-pressed": "true",
-                                "data-swap-data-status": "active"
-                              }
-                            },
-                            {
-                              "el": "sherpa-button",
-                              "class": "save",
-                              "attrs": {
-                                "data-size": "sm",
-                                "data-group": "mid",
-                                "data-icon-start": "upload"
-                              }
-                            },
-                            {
-                              "el": "sherpa-button",
-                              "class": "view-more",
-                              "attrs": {
-                                "data-size": "sm",
-                                "data-type": "icon",
-                                "data-group": "end",
-                                "data-icon-start": "triangle-down",
-                                "aria-label": "Save view options",
-                                "aria-haspopup": "dialog"
-                              },
-                              "children": [
-                                {
-                                  "el": "sherpa-menu",
-                                  "class": "view-menu",
-                                  "attrs": {
-                                    "slot": "menu",
-                                    "data-align": "end"
-                                  },
-                                  "children": [
-                                    {
-                                      "el": "button",
-                                      "attrs": {
-                                        "type": "button",
-                                        "value": "save-as"
-                                      }
-                                    },
-                                    {
-                                      "el": "button",
-                                      "class": "view-delete",
-                                      "attrs": {
-                                        "type": "button",
-                                        "value": "delete",
-                                        "data-status": "critical"
-                                      }
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "el": "sherpa-button",
-                          "class": "refresh",
-                          "attrs": {
-                            "data-size": "sm",
-                            "data-type": "icon",
-                            "data-icon-start": "cw-circle-arrow",
-                            "aria-label": "Refresh data"
-                          }
-                        }
-                      ]
                     }
                   ]
                 }
@@ -556,7 +540,7 @@
       "observed": true,
       "declared": true,
       "kind": "visibility",
-      "description": "show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9"
+      "description": "show the View's own actions on the top row, left of Ask N-zo: ★, and Save with Save view as and Delete view. They never move, so they are the header's, not a toolbar's. Will, TODOs 425 G9 and 428"
     }
   ],
   "slots": [
@@ -770,13 +754,6 @@
       "$type": "event",
       "name": "view-delete",
       "description": "Delete view, the reader's own View.",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "data-refresh",
-      "description": "Refresh: load the page's data again.",
       "bubbles": true,
       "composed": true
     },

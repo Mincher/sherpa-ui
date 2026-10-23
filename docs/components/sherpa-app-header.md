@@ -59,7 +59,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-suggest` | boolean |  | show "Suggest filters", beside Ask N-zo. Will, TODO 425 |
 | `data-theme-mode` | `light` `dark` |  | light \| dark — the mode on screen; the button offers the other |
 | `data-theme-toggle` | boolean |  | show the light/dark (moon) button |
-| `data-view-actions` | boolean |  | show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9 |
+| `data-view-actions` | boolean |  | show the View's own actions on the top row, left of Ask N-zo: ★, and Save with Save view as and Delete view. They never move, so they are the header's, not a toolbar's. Will, TODOs 425 G9 and 428 |
 
 ## Properties
 
@@ -93,7 +93,6 @@ Each one bubbles.
 | `view-save` |  | Save. |
 | `view-save-as` |  | Save view as. |
 | `view-delete` |  | Delete view, the reader's own View. |
-| `data-refresh` |  | Refresh: load the page's data again. |
 | `nav-menu-request` |  | The mobile nav menu, right of the title. |
 
 ## Slots

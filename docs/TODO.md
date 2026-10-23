@@ -109,7 +109,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
 | ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ⬜ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
-| ⬜ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
+| ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -1886,12 +1886,16 @@ index.html and have the app run."* Note: Chrome blocks ES module scripts and
 `fetch()` from a `file://` page, so the build must inline its modules (one
 classic script) and its JSON and templates.
 
-### `[ ]` ⬜ 428 — LOOK: the Favorite and Save group, and Refresh, move
+### `[x]` ✅ 428 — LOOK: the Favorite and Save group, and Refresh, move
 
 Will, 2026-10-23: *"Move the Favorite & Save button group (and functionality)
 to the App Header component on the left of the Ask N-zo button. Move the
 Refresh Data button to the left of the filter toolbar's overflow menu
 button."* (425 G9 put ★ Save ▾ ⟳ at the end of the header's filter row.)
+
+✅ 2026-10-23: the header's ★ · Save · ▾ group is on its top row, left of Ask
+N-zo (`data-view-actions`); Refresh is the toolbar's again, left of its ⋮, and
+folds into the ⋮ as "Refresh data".
 
 ### `[ ]` ⬜ 427 — UX: Manage Saved Filters
 

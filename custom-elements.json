@@ -293,7 +293,7 @@
             },
             {
               "name": "data-view-actions",
-              "description": "show the View's own actions at the filter row's end: ★, Save with Save view as and Delete view, and Refresh. They never move, so they are the header's, not a toolbar's. Will, TODO 425 G9",
+              "description": "show the View's own actions on the top row, left of Ask N-zo: ★, and Save with Save view as and Delete view. They never move, so they are the header's, not a toolbar's. Will, TODOs 425 G9 and 428",
               "type": {
                 "text": "boolean"
               }
@@ -409,13 +409,6 @@
             {
               "name": "view-delete",
               "description": "Delete view, the reader's own View.",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "data-refresh",
-              "description": "Refresh: load the page's data again.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -8943,6 +8936,13 @@
               "description": "A column shut, and why: the reader, the width or the page.",
               "type": {
                 "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
+              }
+            },
+            {
+              "name": "data-refresh",
+              "description": "Refresh: load the page's data again.",
+              "type": {
+                "text": "CustomEvent"
               }
             }
           ],

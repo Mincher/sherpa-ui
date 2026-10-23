@@ -2150,6 +2150,7 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 - Site: `src/core/ui/more-menu.ts`
 - Site: `src/core/sherpa-filter-more.html`
 - Site: `src/core/sherpa-filter-more.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 
 ### T-a-number-is-reset-not-cleared
 

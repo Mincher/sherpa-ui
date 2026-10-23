@@ -134,12 +134,16 @@
 .save-set { display: none; }
 :host(:state(set-taken)) .save-set { display: inline-flex; }
 
-/* Steps 1 and 2 — the host's own buttons. The View's ★, Save and Refresh are
-   the App Header's now (TODO 425 G9). */
+/* Steps 1 and 2 — Refresh, and the host's own buttons. The View's ★ and Save
+   are the App Header's (TODOs 425 G9, 428). */
 @container qf-bar (max-width: 760px) {
+  .act[data-act="refresh"],
   slot[name="actions"]::slotted(*) { display: none; }
 }
-:host(:state(collapse-2)) slot[name="actions"]::slotted(*) { display: none; }
+:host(:state(collapse-2)) .act[data-act="refresh"],
+:host(:state(collapse-2)) slot[name="actions"]::slotted(*) {
+  display: none;
+}
 
 /* Step 3 — all but Add (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {

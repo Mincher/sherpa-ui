@@ -36,9 +36,8 @@ const ACTIONS = [
   ['.menu', 'menu-click'],
   // A phone's nav menu — the SHELL opens it. TRAP T-the-nav-is-a-menu-on-a-phone
   ['.nav-menu', 'nav-menu-request'],
-  // The View's own. Will, TODO 425 G9
+  // The View's own. Will, TODOs 425 G9 and 428
   ['.save', 'view-save'],
-  ['.refresh', 'data-refresh'],
 ] as const;
 
 export class SherpaAppHeader extends SherpaElement {
@@ -69,7 +68,7 @@ export class SherpaAppHeader extends SherpaElement {
     'data-notifications-open': { type: 'boolean', kind: 'style' },
     'data-icon': { type: 'string', kind: 'content', to: '.context-icon', as: 'icon' },
     'data-notifications': { type: 'number', kind: 'content' },
-    // The View's own actions: ★, Save, Refresh. Will, TODO 425 G9
+    // The View's own actions: ★ and Save, left of Ask N-zo. Will, TODOs 425 G9 and 428
     'data-view-actions': { type: 'boolean', kind: 'visibility' },
     // A host that owns the favourites lights the star. TRAP T-the-star-reports-it-does-not-decide
     'data-favourite': { type: 'boolean', kind: 'behaviour' },

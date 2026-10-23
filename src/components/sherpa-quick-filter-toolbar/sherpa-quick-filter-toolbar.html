@@ -94,10 +94,11 @@
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
     filter-panel-close   — a column shut, and why: the reader, the width or the page. detail: { reason }
+    data-refresh         — Refresh: load the page's data again. detail: {}
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
-  start. The View's ★, Save and Refresh are the App Header's (TODO 425 G9).
+  start. The View's ★ and Save are the App Header's (TODOs 425 G9, 428).
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
@@ -154,12 +155,22 @@
                      data-icon-start="plus" data-icon-end="triangle-down"
                      aria-haspopup="dialog">Filters</sherpa-button>
 
+      <!-- REFRESH, left of the ⋮. Will, TODO 428 -->
+      <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"
+                     data-icon-start="cw-circle-arrow"
+                     aria-label="Refresh data"></sherpa-button>
       <sherpa-button class="act" data-size="sm" data-act="overflow" data-type="icon"
                      data-icon-start="ellipses-vertical"
                      aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
     </div>
   </div>
 
+
+  <!-- The ⋮ rows only a bar draws; the menu and the shared rows are
+       sherpa-filter-more.html's. TRAP T-the-more-menu-holds-what-folded -->
+  <template class="more-rows-tpl">
+    <button class="more-item" type="button" value="refresh"><span class="more-label">Refresh data</span></button>
+  </template>
 
   <template class="qf-tpl">
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>

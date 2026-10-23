@@ -247,7 +247,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
  * on a `Type` axis. This used to be an empty `actions` slot; these tests hold
  * the reversal in place. */
 
-test('the action cluster is built in; the View\'s ★, Save and Refresh are the App Header\'s', async ({ page }) => {
+test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ and Save are the App Header\'s', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const probe = async (type?: string) => {
       // Filled, though empty: the Filters menu draws then.
@@ -269,8 +269,9 @@ test('the action cluster is built in; the View\'s ★, Save and Refresh are the 
         // The panel switch is the PAGE's, never the bar's own. TRAP T-the-mode-switch-is-the-pages-own
         configure: !!sr.querySelector('[data-act="configure"]'),
         overflow: shown('[data-act="overflow"]'),
-        // The View's own are the App Header's. TODO 425 G9
-        viewActions: !!sr.querySelector('[data-act="refresh"], [data-act="favourite"], [data-act="save"], .view-group'),
+        refresh: shown('[data-act="refresh"]'),
+        // The View's own are the App Header's. TODOs 425 G9, 428
+        viewActions: !!sr.querySelector('[data-act="favourite"], [data-act="save"], .view-group'),
       };
     };
     return { data: await probe(), view: await probe('view') };
@@ -285,6 +286,7 @@ test('the action cluster is built in; the View\'s ★, Save and Refresh are the 
     expect(t.actions).toEqual(['reset', 'reset-default']);
     expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
+    expect(t.refresh).toBe(true);
     expect(t.viewActions).toBe(false);
     // The ⋮ is NOT among them. It is where the cluster folds when the bar runs
     // out of room, and an empty one on a bar wide enough to show everything is a
@@ -318,9 +320,9 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
 /**
  * THE ⋮ MENU HOLDS WHAT FOLDED — TODO 43. With every action folded, it lists
- * the page's own buttons. A row does what its button does. Reset is the
- * Filters menu's (TODO 383); Suggest filters and the View's own, the App
- * Header's (TODO 425).
+ * the page's own buttons, then Refresh. A row does what its button does. Reset
+ * is the Filters menu's (TODO 383); Suggest filters and the View's own, the
+ * App Header's (TODOs 425, 428).
  * TRAP T-the-more-menu-holds-what-folded
  */
 test('the ⋮ menu lists every folded action in order, and a row does what its button does', async ({ page }) => {
@@ -354,6 +356,8 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
       [...menu.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent?.trim() === label)!.click();
       await settle();
     };
+    el.addEventListener('data-refresh', () => heard.push('data-refresh'));
+    await pick('Refresh data');
     await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
     (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
@@ -364,8 +368,8 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
   });
 
   expect(r.collapse).toBe(3);
-  expect(r.rows).toEqual(['View as filter panel']);
-  expect(r.heard).toEqual(['extra', 'clear']);
+  expect(r.rows).toEqual(['View as filter panel', '---', 'Refresh data']);
+  expect(r.heard).toEqual(['data-refresh', 'extra', 'clear']);
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {

@@ -17,7 +17,8 @@ import {
   MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, syncHide,
+  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
+  type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { FilterField } from '../../core/ui/filter-field.js';
@@ -1945,6 +1946,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // RESETS, not announces: a host cannot reach chips it did not stamp.
         this.clearAll();
         break;
+      case 'refresh':
+        this.emit('data-refresh');
+        break;
       case 'reset-default':
         /* The View's OWN filters — only its provider knows them. CANCELABLE: a
            host that asks the reader first takes it over.
@@ -1981,12 +1985,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * THE ⋮ MENU holds what has FOLDED away at this width: the page's own
-   * buttons. A row does what its button does. Suggest filters is the App
-   * Header's (Will, TODO 425). TRAP T-the-more-menu-holds-what-folded
+   * buttons, then Refresh. A row does what its button does. Suggest filters
+   * is the App Header's (Will, TODO 425). TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
     // Reset and Save filters are the Filters menu's; the View's own, the App Header's. TODO 383, 425
-    openMore(this, this.root, trigger, [extraRows(this)]);
+    const refresh: MoreRow[] = folded(this.$('.act[data-act="refresh"]')) ? [['refresh']] : [];
+    openMore(this, this.root, trigger, [extraRows(this), refresh]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

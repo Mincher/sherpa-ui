@@ -22,10 +22,10 @@
     data-help           show the support button
     data-menu           show the app-switcher button
     data-loading        run the indeterminate loading bar
-    data-view-actions   show the View's own actions at the filter row's end: ★,
-                        Save with Save view as and Delete view, and Refresh.
+    data-view-actions   show the View's own actions on the top row, left of Ask
+                        N-zo: ★, and Save with Save view as and Delete view.
                         They never move, so they are the header's, not a
-                        toolbar's. Will, TODO 425 G9
+                        toolbar's. Will, TODOs 425 G9 and 428
     data-favourite      the ★ is lit — the value, IN
     data-locked         the host owns the ★: report the click, never light it
     data-custom-view    the View on screen is the reader's own: Delete view shows.
@@ -51,7 +51,6 @@
     view-save — Save. detail: {}
     view-save-as — Save view as. detail: {}
     view-delete — Delete view, the reader's own View. detail: {}
-    data-refresh — Refresh: load the page's data again. detail: {}
     nav-menu-request — detail: {}  the mobile nav menu, right of the title.
                     Its button shows where a host sets --sherpa-app-header-nav-menu
     (breadcrumb-select comes from the slotted sherpa-breadcrumbs and already
@@ -73,6 +72,26 @@
 
         <div class="actions" part="actions">
           <slot name="actions" data-accepts="control"></slot>
+
+          <!-- THE VIEW's own: ★ · Save · ▾ snapped into one box, left of Ask
+               N-zo. They never move, so they are the header's. Two drawings, so
+               the star fills: TRAP T-favourite-star-swaps-its-glyph. Will, TODO 428 -->
+          <span class="view-group sherpa-group" part="view-actions">
+            <sherpa-button class="favourite" data-size="sm" data-type="icon"
+                           data-group="start" data-icon-start="star"
+                           aria-label="Add to Favorites" aria-pressed="false"
+                           data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
+                           data-swap-aria-label="Remove from Favorites" data-swap-aria-pressed="true"
+                           data-swap-data-status="active"></sherpa-button>
+            <sherpa-button class="save" data-size="sm" data-group="mid" data-icon-start="upload">Save</sherpa-button>
+            <sherpa-button class="view-more" data-size="sm" data-type="icon" data-group="end"
+                           data-icon-start="triangle-down" aria-label="Save view options" aria-haspopup="dialog">
+              <sherpa-menu slot="menu" class="view-menu" data-align="end">
+                <button type="button" value="save-as">Save view as</button>
+                <button type="button" value="delete" class="view-delete" data-status="critical">Delete view</button>
+              </sherpa-menu>
+            </sherpa-button>
+          </span>
 
           <!-- The one action that is not transparent — the default border sets
                it apart from the icon run beside it. -->
@@ -137,30 +156,6 @@
 
         <div class="filters" part="filters">
           <slot name="filters" data-accepts="toolbar"></slot>
-          <!-- THE VIEW's own actions: they never move, so they are the header's.
-               Will, TODO 425 G9 -->
-          <span class="view-actions" part="view-actions">
-            <!-- Three controls snapped into one box. Two drawings, so the star
-                 fills: TRAP T-favourite-star-swaps-its-glyph -->
-            <span class="view-group sherpa-group">
-              <sherpa-button class="favourite" data-size="sm" data-type="icon"
-                             data-group="start" data-icon-start="star"
-                             aria-label="Add to Favorites" aria-pressed="false"
-                             data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
-                             data-swap-aria-label="Remove from Favorites" data-swap-aria-pressed="true"
-                             data-swap-data-status="active"></sherpa-button>
-              <sherpa-button class="save" data-size="sm" data-group="mid" data-icon-start="upload">Save</sherpa-button>
-              <sherpa-button class="view-more" data-size="sm" data-type="icon" data-group="end"
-                             data-icon-start="triangle-down" aria-label="Save view options" aria-haspopup="dialog">
-                <sherpa-menu slot="menu" class="view-menu" data-align="end">
-                  <button type="button" value="save-as">Save view as</button>
-                  <button type="button" value="delete" class="view-delete" data-status="critical">Delete view</button>
-                </sherpa-menu>
-              </sherpa-button>
-            </span>
-            <sherpa-button class="refresh" data-size="sm" data-type="icon"
-                           data-icon-start="cw-circle-arrow" aria-label="Refresh data"></sherpa-button>
-          </span>
         </div>
       </div>
     </div>

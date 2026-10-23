@@ -376,23 +376,26 @@ test('data-theme-mode picks the theme button, and notificationsAnchor is the bel
   });
 });
 
-/* THE VIEW's own actions — ★, Save with its ▾, Refresh — are the HEADER's: they
-   never move, so they are not a toolbar's. Will, TODO 425 G9 */
+/* THE VIEW's own actions — ★, and Save with its ▾ — are the HEADER's, on its
+   top row left of Ask N-zo: they never move, so they are not a toolbar's.
+   Will, TODOs 425 G9 and 428 */
 test('data-view-actions shows the View\'s own actions, and each fires its event', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = await window.__mount<HTMLElement>('sherpa-app-header', undefined, {});
+    const el = await window.__mount<HTMLElement>('sherpa-app-header', undefined, { 'data-ai': '' });
     const shown = (sel: string) => (el.shadowRoot!.querySelector(sel) as HTMLElement).getBoundingClientRect().width > 0;
-    const before = shown('.view-actions');
+    const before = shown('.view-group');
     el.setAttribute('data-view-actions', '');
     await window.__settled();
     const heard: string[] = [];
     for (const ev of ['view-save', 'view-save-as', 'view-delete', 'data-refresh']) el.addEventListener(ev, () => heard.push(ev));
+    // Left of Ask N-zo, on the top row.
+    const left = el.shadowRoot!.querySelector('.view-group')!.getBoundingClientRect().right
+      <= el.shadowRoot!.querySelector('.ai')!.getBoundingClientRect().left;
     const press = async (sel: string) => {
       (el.shadowRoot!.querySelector(sel)!.shadowRoot!.querySelector('button') as HTMLElement).click();
       await window.__settled();
     };
     await press('.save');
-    await press('.refresh');
     const menu = el.shadowRoot!.querySelector('.view-menu')!;
     // Read OPEN: WebKit restyles a shut menu's rows only once it opens.
     await press('.view-more');
@@ -404,9 +407,10 @@ test('data-view-actions shows the View\'s own actions, and each fires its event'
     menu.querySelector<HTMLElement>('button[value="save-as"]')!.click();
     menu.querySelector<HTMLElement>('button[value="delete"]')!.click();
     await window.__settled();
-    return { before, after: shown('.view-actions'), heard, plain, own };
+    return { before, after: shown('.view-group'), heard, plain, own, left, refresh: !!el.shadowRoot!.querySelector('.refresh') };
   });
-  expect(r).toEqual({ before: false, after: true, heard: ['view-save', 'data-refresh', 'view-save-as', 'view-delete'], plain: false, own: true });
+  // Refresh is the toolbar's, left of its ⋮. Will, TODO 428
+  expect(r).toEqual({ before: false, after: true, heard: ['view-save', 'view-save-as', 'view-delete'], plain: false, own: true, left: true, refresh: false });
 });
 
 test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
