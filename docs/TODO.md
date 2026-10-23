@@ -114,14 +114,14 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
 | ⬜ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
 | ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
-| ⬜ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
+| ✅ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ✅ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
 | ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
 | ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ⬜ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
 | ⬜ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ⬜ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
-| ⬜ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
+| ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1888,7 +1888,7 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 440 — LOOK: "View Context" over the View's filters in toolbar mode
+### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 
 Will, 2026-10-23: *"It would be good to show the 'View context' label in
 toolbar mode just above the first 'View' filter chip."* Read as: the View
@@ -1896,6 +1896,13 @@ scope's first FILTER chip (Customer on Records) — the View picker chip is not
 a filter (432, 433). The label is the scope's own name, as the panel's. Done
 with 433 (the divider after the View chip) and 434 (the title moves up, which
 frees the row above the chips).
+
+✅ 2026-10-23: a View bar (`data-type="view"`) writes its scope's name — its
+`data-heading`, the source's label — on each chip as `data-context`; CSS shows
+it, 12px secondary, over the first shown filter chip (`:nth-child(1 of …)`),
+so a folded or persistent chip never carries it. The chip run clips across
+only (`overflow: clip visible`), so the label shows above it. Not in panel
+mode.
 
 ### `[ ]` ⬜ 439 — PERF: the panel's chips draw late, and `available` runs 6 times
 
@@ -2016,9 +2023,13 @@ the actions keep the right end (an auto margin), and the title truncates first.
 The header stays a fixed 120 with the filters at its foot, so the band above
 them is free — 440's "View Context" label goes there.
 
-### `[ ]` ⬜ 433 — LOOK: a divider after the View chip
+### `[x]` ✅ 433 — LOOK: a divider after the View chip
 
 Will, 2026-10-23: *"Also add a divider after the View chip in the toolbar."*
+
+✅ 2026-10-23: the bar's 1×16 divider, as the View chip's own `::after`, while
+a filter chip follows it and never in panel mode (the View chip is alone
+there). TRAP T-a-divider-needs-a-neighbour-on-both-sides
 
 ### `[x]` ✅ 432 — LOOK: the View chip never looks active
 

@@ -2537,3 +2537,30 @@ test('None in a Group or Sort menu clears it: the chip goes off with no column, 
     { type: 'group', field: null },
   ]);
 });
+
+test('a View bar sets its View chip apart by a divider, and names its scope over its first filter', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view', 'data-heading': 'View Context' });
+    el.style.inlineSize = '900px';
+    el.populate!([
+      { id: 'view', label: 'View', persistent: true, options: [{ value: 'all', label: 'All' }] },
+      { id: 'customer', label: 'Customer', options: [{ value: 'a', label: 'A' }] },
+      { id: 'region', label: 'Region', options: [{ value: 'b', label: 'B' }] },
+    ]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const chip = (id: string) => sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
+    const read = () => ({
+      divider: getComputedStyle(chip('view'), '::after').content,
+      label: ['customer', 'region'].map((id) => getComputedStyle(chip(id), '::before').content),
+    });
+    const toolbar = read();
+    // Panel mode: the View chip alone, so neither.
+    el.setAttribute('data-panel-mode', '');
+    await window.__settled();
+    return { toolbar, panel: read() };
+  });
+  // Will, TODOs 433 and 440
+  expect(r.toolbar).toEqual({ divider: '""', label: ['"View Context"', 'none'] });
+  expect(r.panel).toEqual({ divider: 'none', label: ['none', 'none'] });
+});

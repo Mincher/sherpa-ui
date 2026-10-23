@@ -826,6 +826,11 @@
       "$type": "state",
       "name": "panel-mode",
       "selector": ":host([data-panel-mode])"
+    },
+    {
+      "$type": "state",
+      "name": "not-panel-mode",
+      "selector": ":host(:not([data-panel-mode]))"
     }
   ],
   "capabilities": [

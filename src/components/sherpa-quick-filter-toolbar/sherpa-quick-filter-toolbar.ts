@@ -1010,6 +1010,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return this.$$<SherpaQuickFilter>(CHIP);
   }
 
+  /** The scope's name, on a chip, for CSS to put over the first: "View Context". Will, TODO 440 */
+  #nameContext(chip: HTMLElement): void {
+    const name = this.dataset['heading'];
+    if (name) chip.setAttribute('data-context', name);
+    else chip.removeAttribute('data-context');
+  }
+
   /** Rebuild the chip run from `#filters`, keeping what the reader did. */
   #render(): void {
     const list = this.$('.chips');
@@ -1045,6 +1052,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
+      this.#nameContext(chip);
       if (f.type) chip.setAttribute('data-type', f.type);
       // Live state wins; an untouched chip falls back to `active`.
       if (prior ? prior.on : f.active) chip.setAttribute('data-current', '');
@@ -1480,6 +1488,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onChange(name?: string): void {
+    if (name === 'data-heading') for (const chip of this.#chips()) this.#nameContext(chip);
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-orientation') {

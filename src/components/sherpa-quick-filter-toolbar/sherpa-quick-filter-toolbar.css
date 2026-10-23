@@ -57,9 +57,10 @@
   flex: 0 0 auto;
 }
 
-/* The 1×16 divider rectangle, in all four places it appears. `::after` on a
-   zone, a real element in the action cluster. */
+/* The 1×16 divider rectangle, in every place it appears. `::after` on a zone
+   or the View chip, a real element in the action cluster. */
 .act-divider,
+.chips > .chip[data-persistent]::after,
 :host(:state(has-view)) .view-zone::after,
 :host(:state(has-organise)) .organise-zone::after,
 :host([data-switchable]:not([data-type="view"])) .switch-zone::after {
@@ -73,6 +74,32 @@
   content: "";
 }
 .act-divider { flex: 0 0 auto; }
+/* After the View chip — a picker, not a filter — while a filter follows it.
+   Will, TODO 433 · TRAP T-a-divider-needs-a-neighbour-on-both-sides */
+:host(:not([data-panel-mode])) .chips > .chip[data-persistent]:has(~ .chip:not([data-folded-away]))::after {
+  content: "";
+  display: block;
+  flex: 0 0 auto;
+  margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* The scope's name — "View Context" — over the View's first filter, as the
+   panel heads them. Clipped across, never above. Will, TODO 440 */
+:host([data-type="view"]:not([data-panel-mode])) .chips { overflow: clip visible; }
+:host([data-type="view"]:not([data-panel-mode])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away])) {
+  position: relative;
+}
+:host([data-type="view"]:not([data-panel-mode])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away]))::before {
+  content: attr(data-context);
+  position: absolute;
+  inset-block-end: calc(100% + var(--sherpa-display-mode-space-2xs, 4px));
+  inset-inline-start: 0;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  white-space: nowrap;
+  pointer-events: none;
+}
 
 /* ONE Apply and its Discard, where the scope waits for it; the panel has its own. TODO 406 */
 .apply-all,
