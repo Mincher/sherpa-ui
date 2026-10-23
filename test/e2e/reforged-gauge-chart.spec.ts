@@ -310,3 +310,27 @@ test('a gauge with no zones outlines its band in its own fill, not a card\'s gre
   });
   expect(r.stroke).toBe(r.fill);
 });
+
+/** What the highlight's driver matches: a second needle at its value, and none
+ *  without it. Will, TODO 441 */
+test('a matched value draws a second needle, and none without one', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const read = () => ({
+      on: el.matches(':state(highlighting)'),
+      shown: getComputedStyle(el.shadowRoot!.querySelector('.needle-match')!).display,
+      angle: el.style.getPropertyValue('--_angle-match'),
+    });
+    el.populate!({ value: 50, matched: 25 });
+    await window.__settled();
+    const marked = read();
+    el.populate!({ value: 50 });
+    await window.__settled();
+    return { marked, plain: read() };
+  });
+  expect(r.marked).toEqual({ on: true, shown: 'block', angle: '-45deg' });
+  expect(r.plain.on).toBe(false);
+  expect(r.plain.shown).toBe('none');
+});

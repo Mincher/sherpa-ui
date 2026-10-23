@@ -1951,8 +1951,13 @@ chip shows that chip's share). **B** — (1), the matched part.
   `matched` (`ChartDatum.matched`). A bar goes pale and draws its matched share
   solid from the zero line (`.bar-match`); a slice goes pale and a second path
   draws its matched share of the angle from its start (`.slice-match`).
-- ⬜ **6, line and gauge**: a series' `matched` values as a second line; the
-  gauge's matched value as a second needle.
+- ✅ **6, line and gauge**, 2026-10-23: `summariseMarked()` gives each series
+  point its `matched` (`Series.matched`) and a value its own; the line goes pale
+  and its matched values are a second line on the same scale (`.line-match`);
+  the gauge draws a second needle, in the highlighter, at its matched value
+  (`.needle-match`). A plain number has nowhere to say it, so a KPI is unmarked.
+- ✅ A section in portrait shows its values as chips and keeps its menu shut, so
+  its ⋮ offers "Highlight matches" too — "Stop highlighting" while it drives.
 
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 

@@ -120,6 +120,22 @@
   transform: rotate(var(--_angle));
   transition: transform 300ms ease;
 }
+
+/* HIGHLIGHTING: a second needle, in the highlighter, at what the driver
+   matches. Will, TODO 441 */
+.needle-match { display: none; }
+:host(:state(highlighting)) .needle-match {
+  display: block;
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 50%;
+  inline-size: calc(2 * var(--sherpa-display-mode-border-width-base, 1px));
+  block-size: calc(100% - 100% * var(--_ring) / 2);
+  background: var(--sherpa-style-saturated-warning-surface-base, #ffc44c);
+  transform-origin: bottom center;
+  transform: rotate(var(--_angle-match, -90deg));
+  transition: transform 300ms ease;
+}
 /* Hub cap: dark disc + light core. */
 .hub-cap {
   position: absolute;

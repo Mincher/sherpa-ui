@@ -2632,3 +2632,24 @@ test('Highlight matches: each chip menu offers it but a picker\'s, the driver we
   expect(r.asked).toEqual([{ field: 'tier', highlight: true }]);
   expect(r.driver).toEqual([[false, false], [true, true]]);
 });
+
+test('in portrait, a section\'s ⋮ offers Highlight matches, asks it, and says Stop once it drives', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-orientation': 'portrait', 'data-highlight-matches': '' });
+    el.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] }]);
+    await window.__settled();
+    const chip = el.shadowRoot!.querySelector<HTMLElement>('.chips > .chip[data-id="plan"]')!;
+    const row = () => chip.querySelector<HTMLElement>(':scope > .field-more .more-item[value="highlight"]')!;
+    const before = { layout: chip.dataset['layout'], shown: getComputedStyle(row()).display !== 'none', label: row().textContent!.trim() };
+    const asked: unknown[] = [];
+    el.addEventListener('quick-filter-change', (e) => asked.push((e as CustomEvent).detail.request));
+    chip.querySelector(':scope > .field-more sherpa-menu')!.dispatchEvent(
+      new CustomEvent('menu-select', { detail: { value: 'highlight' }, bubbles: true, composed: true }));
+    el.setAttribute('data-highlight-field', 'plan');
+    await window.__settled();
+    return { before, asked, after: row().textContent!.trim() };
+  });
+  expect(r.before).toEqual({ layout: 'section', shown: true, label: 'Highlight matches' });
+  expect(r.asked).toEqual([{ field: 'plan', highlight: true }]);
+  expect(r.after).toBe('Stop highlighting');
+});

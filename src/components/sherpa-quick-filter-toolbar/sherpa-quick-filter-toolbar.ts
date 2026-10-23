@@ -419,15 +419,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const menu = chip.querySelector(':scope > sherpa-menu');
       menu?.toggleAttribute('data-highlightable', offer && !chip.hasAttribute('data-persistent'));
       menu?.toggleAttribute('data-highlight', drives);
+      // A section's ⋮ says it too: its values are chips, and its menu stays shut.
+      const more = chip.querySelector(':scope > .field-more');
+      more?.toggleAttribute('data-highlightable', offer);
+      const label = more?.querySelector('.more-item[value="highlight"] .more-label');
+      if (label) label.textContent = this.word(drives ? 'unhighlight' : 'highlight');
     }
   }
 
   /** A chip's "Highlight matches": a REQUEST, which waits for no Apply. TODO 441 */
   #onHighlight = (event: Event): void => {
     const id = this.pathFind(event, 'sherpa-quick-filter')?.dataset['id'];
-    const on = (event as CustomEvent<{ on: boolean }>).detail.on;
-    if (id) this.emit('quick-filter-change', { scope: 'bar', request: { field: id, highlight: on }, active: this.active, values: this.values });
+    if (id) this.#askHighlight(id, (event as CustomEvent<{ on: boolean }>).detail.on);
   };
+
+  /** Ask that a field drive the highlight, or let it go. */
+  #askHighlight(field: string, on: boolean): void {
+    this.emit('quick-filter-change', { scope: 'bar', request: { field, highlight: on }, active: this.active, values: this.values });
+  }
 
   /** Each SECTION's name over the first chip of its run, in portrait: a named
    *  section's, or a lone chip's own field's — a list field heads itself, and
@@ -1421,9 +1430,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A section's ⋮: Move, or Reset. Will, TODO 425 G1
     const more = this.pathFind(event, '.field-more');
     const owner = more?.closest<SherpaQuickFilter>('sherpa-quick-filter');
-    if (owner && (value === 'raise' || value === 'lower' || value === 'clear' || value === 'advanced')) {
+    if (owner && (value === 'raise' || value === 'lower' || value === 'clear' || value === 'advanced' || value === 'highlight')) {
       event.stopImmediatePropagation();
       more?.querySelector<SherpaMenu>('sherpa-menu')?.hide?.();
+      if (value === 'highlight') {
+        this.#askHighlight(owner.dataset['id'] ?? '', !owner.hasAttribute('data-highlight'));
+        return;
+      }
       /* ADVANCED: the field's menu opens, then goes to its rows as its own
          button does — so the switch is its draft, Apply on and Discard back.
          Simple goes back, shut. Will, TODO 425 G14 · TRAP T-the-baseline-is-taken-at-show */

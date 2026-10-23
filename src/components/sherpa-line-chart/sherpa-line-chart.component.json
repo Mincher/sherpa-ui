@@ -148,6 +148,13 @@
                     "attrs": {
                       "fill": "none"
                     }
+                  },
+                  {
+                    "el": "polyline",
+                    "class": "line-match",
+                    "attrs": {
+                      "fill": "none"
+                    }
                   }
                 ]
               }

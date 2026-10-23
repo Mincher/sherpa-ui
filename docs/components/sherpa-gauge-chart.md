@@ -66,7 +66,7 @@ For one value on a scale (0–100 by default), read by a needle, with optional t
 
 Style these from outside with `::part()`:
 
-`caption`, `figure`, `gauge`, `header`, `hotspots`, `hub`, `needle`, `ring`, `scale`, `value`
+`caption`, `figure`, `gauge`, `header`, `hotspots`, `hub`, `needle`, `needle-match`, `ring`, `scale`, `value`
 
 ## CSS custom properties it reads
 

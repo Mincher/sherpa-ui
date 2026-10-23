@@ -83,3 +83,15 @@ test('a chart\'s segments say the part the driver matches; with none, they say n
     [['EMEA', 2, 1], ['AMER', 1, 1]]);
   assert.equal(summariseMarked(ROWS, spec).some((d) => 'matched' in d), false);
 });
+
+test('a series gives each point the part the driver matches, and a value its own', () => {
+  const pro = (row) => row.plan === 'Pro';
+  const line = summariseMarked(ROWS, { shape: 'series', over: 'region' }, () => [], () => ({}), pro);
+  assert.deepEqual(line.labels, ['AMER', 'EMEA']);
+  assert.deepEqual(line.series[0].matched, [1, 1]);
+  const value = summariseMarked(ROWS, { shape: 'aggregate', over: 'region' }, () => [], () => ({}), pro);
+  assert.equal(value.value, 3);
+  assert.equal(value.matched, 2);
+  // A plain number has nowhere to say it.
+  assert.equal(summariseMarked(ROWS, { shape: 'aggregate' }, () => [], () => ({}), pro), 3);
+});

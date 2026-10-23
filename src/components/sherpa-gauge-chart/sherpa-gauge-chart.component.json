@@ -89,6 +89,11 @@
                             "el": "div",
                             "class": "needle",
                             "part": "needle"
+                          },
+                          {
+                            "el": "div",
+                            "class": "needle-match",
+                            "part": "needle-match"
                           }
                         ]
                       },

@@ -169,3 +169,26 @@ test('the y axis spans the data extent, not zero to max', async ({ page }) => {
   expect(r.heightsMatch).toBe(true);
   expect(r.plotNarrowerThanHost).toBe(true);
 });
+
+/** What the highlight's driver matches: the line goes pale, and its matched
+ *  values are a line of their own on the same scale. Will, TODO 441 */
+test('a series\' matched values draw a second line, and none without them', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-line-chart') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const read = () => {
+      const match = el.shadowRoot!.querySelector<SVGPolylineElement>('.line-match')!;
+      return { on: el.matches(':state(highlighting)'), shown: getComputedStyle(match).display, points: match.getAttribute('points')?.split(' ').length ?? 0 };
+    };
+    el.populate!({ labels: ['a', 'b', 'c'], series: [{ name: 's', values: [10, 20, 30], matched: [5, 10, 15] }] });
+    await window.__settled();
+    const marked = read();
+    el.populate!({ labels: ['a', 'b', 'c'], series: [{ name: 's', values: [10, 20, 30] }] });
+    await window.__settled();
+    return { marked, plain: read() };
+  });
+  expect(r.marked).toEqual({ on: true, shown: 'inline', points: 3 });
+  expect(r.plain.on).toBe(false);
+  expect(r.plain.shown).toBe('none');
+});

@@ -199,6 +199,8 @@ export interface Series {
   name: string;
   values: number[];
   colorIndex?: number;
+  /** Each point's part the highlight's driver matches. TODO 441 */
+  matched?: number[];
 }
 
 /**
@@ -369,8 +371,9 @@ export function summariseBanded(
   return { ...(typeof value === 'number' ? { value } : value), zones };
 }
 
-/** The same, and each segment's part the highlight's driver matches, as its
- *  `matched`: the rows summed twice. Segments only, for now. Will, TODO 441 */
+/** The same, and what the highlight's driver matches, as `matched`: each
+ *  segment's part, each series point's, or a value's own. The rows summed
+ *  twice. Will, TODO 441 */
 export function summariseMarked(
   rows: readonly Row[],
   spec: SummarySpec,
@@ -379,9 +382,24 @@ export function summariseMarked(
   matches: ((row: Row) => boolean) | null = null,
 ): Summary | Zoned {
   const all = summariseBanded(rows, spec, domain, bands);
-  if (!matches || !Array.isArray(all)) return all;
-  const part = summariseBanded(rows.filter(matches), spec, domain, bands) as ChartDatum[];
-  const by = new Map(part.map((d) => [d.label, d.value]));
-  return all.map((d) => ({ ...d, matched: by.get(d.label) ?? 0 }));
+  if (!matches || typeof all === 'number') return all;
+  const part = summariseBanded(rows.filter(matches), spec, domain, bands);
+  if (Array.isArray(all)) {
+    const by = new Map((part as ChartDatum[]).map((d) => [d.label, d.value]));
+    return all.map((d) => ({ ...d, matched: by.get(d.label) ?? 0 }));
+  }
+  if ('series' in all && Array.isArray(all.series)) {
+    const { labels, series } = part as { labels: string[]; series: Series[] };
+    return {
+      ...all,
+      series: (all.series as Series[]).map((s) => {
+        const own = series.find((p) => p.name === s.name);
+        const at = new Map(labels.map((label, i) => [label, own?.values[i] ?? 0]));
+        return { ...s, matched: (all.labels as string[]).map((label) => at.get(label) ?? 0) };
+      }),
+    };
+  }
+  const value = typeof part === 'number' ? part : (part as { value?: unknown }).value;
+  return typeof value === 'number' ? { ...all, matched: value } : all;
 }
 

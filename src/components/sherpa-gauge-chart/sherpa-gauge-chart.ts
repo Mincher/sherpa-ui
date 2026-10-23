@@ -80,9 +80,10 @@ export class SherpaGaugeChart extends SherpaElement {
    *  field's thresholds, drawn where `data-zones` says none.
    *  TRAP T-a-threshold-is-a-fact-of-the-field */
   protected override renderData(data: unknown): void {
-    const given = data as { value?: unknown; zones?: readonly Threshold[] } | null;
+    const given = data as { value?: unknown; zones?: readonly Threshold[]; matched?: unknown } | null;
     const value = typeof data === 'number' ? data : given?.value;
     if (Array.isArray(given?.zones)) this.#given = given.zones;
+    this.#matched = typeof given?.matched === 'number' && Number.isFinite(given.matched) ? given.matched : null;
     if (typeof value === 'number' && Number.isFinite(value)) this.value = value;
     // New zones with the same value change no attribute, so it draws here.
     this.#sync();
@@ -90,6 +91,8 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /** Its field's thresholds, as its provider handed them. */
   #given: readonly Threshold[] = [];
+  /** The value the highlight's driver matches, as handed; null, none. TODO 441 */
+  #matched: number | null = null;
 
   get value(): number {
     return this.num('value', 0);
@@ -107,6 +110,13 @@ export class SherpaGaugeChart extends SherpaElement {
     const frac = max > min ? Math.min(1, Math.max(0, (raw - min) / (max - min))) : 0;
 
     this.style.setProperty('--_angle', `${-90 + frac * 180}deg`);
+    // A second needle, at what the highlight's driver matches. TODO 441
+    this.toggleState('highlighting', this.#matched != null);
+    if (this.#matched != null) {
+      const at = this.hasAttribute('data-invert') ? min + max - this.#matched : this.#matched;
+      const part = max > min ? Math.min(1, Math.max(0, (at - min) / (max - min))) : 0;
+      this.style.setProperty('--_angle-match', `${-90 + part * 180}deg`);
+    }
 
     const zones = this.#parseZones(min, max);
     // A value write re-draws every band: keep focus on its own.

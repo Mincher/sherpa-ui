@@ -33,6 +33,8 @@ interface Series {
   name?: string;
   values: number[];
   colorIndex?: number;
+  /** Each point's part the highlight's driver matches. TODO 441 */
+  matched?: number[];
 }
 interface LineData {
   labels?: string[];
@@ -110,7 +112,8 @@ export class SherpaLineChart extends SherpaElement {
     if (!layer || !grid) return;
 
     // Bounds come from the series it is given. TRAP T-hiding-a-series-rescales-the-axis
-    const all = this.#series.flatMap((s) => s.values);
+    const all = this.#series.flatMap((s) => [...s.values, ...(s.matched ?? [])]);
+    this.toggleState('highlighting', this.#series.some((s) => s.matched));
     /* ONE scale rule for every chart. NaN is the not-given sentinel; Number('')
        would be 0. TRAP T-nan-is-the-not-given-sentinel
        TRAP T-one-scale-for-every-chart */
@@ -165,6 +168,10 @@ export class SherpaLineChart extends SherpaElement {
       }
 
       g.querySelector('.line')!.setAttribute('points', pts.map((p) => `${p[0]},${p[1]}`).join(' '));
+      // What the highlight's driver matches: a second line, on the same scale. TODO 441
+      if (s.matched) {
+        g.querySelector('.line-match')!.setAttribute('points', s.matched.map((v, i) => `${pts[i]?.[0] ?? 50},${100 - ((v - min) / span) * 100}`).join(' '));
+      }
       layer.appendChild(g);
 
       if (hotspots && dotTpl) {
