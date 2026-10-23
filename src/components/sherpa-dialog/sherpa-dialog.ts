@@ -6,7 +6,7 @@
  *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
 import '../sherpa-container-header/sherpa-container-header.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
@@ -22,6 +22,7 @@ export class SherpaDialog extends SherpaElement {
   static override props = {
     'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
     'data-type': { type: 'enum', kind: 'style', values: ['modal', 'overlay'] },
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
   } as const;
 
   static override observed = ['open'];

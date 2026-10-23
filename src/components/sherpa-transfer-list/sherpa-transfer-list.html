@@ -3,6 +3,7 @@
   Pool comes from populate([{ value, label, selected? }]); `selected` picks the pane.
 
   Public API:
+    data-scroll-shadow  an inner shadow on each edge each list is scrolled past (boolean)
     data-source-heading  heading for the available pane
     data-target-heading  heading for the selected pane
     name                 the form field its selected values are submitted under
@@ -15,7 +16,7 @@
     <div class="pane source" part="pane">
       <h3 class="pane-heading" part="heading" id="source-heading">Available</h3>
       <!-- A plain list: each row holds a real checkbox, which an `option` may not. -->
-      <ul class="pane-list" part="list" aria-labelledby="source-heading"></ul>
+      <ul class="pane-list sherpa-scroll-shadow" part="list" aria-labelledby="source-heading"></ul>
       <p class="pane-empty" part="empty">No items</p>
     </div>
 
@@ -28,7 +29,7 @@
 
     <div class="pane target" part="pane">
       <h3 class="pane-heading" part="heading" id="target-heading">Selected</h3>
-      <ul class="pane-list" part="list" aria-labelledby="target-heading"></ul>
+      <ul class="pane-list sherpa-scroll-shadow" part="list" aria-labelledby="target-heading"></ul>
       <p class="pane-empty" part="empty">Nothing selected</p>
     </div>
   </div>

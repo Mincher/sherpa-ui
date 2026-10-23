@@ -4,6 +4,7 @@
   sherpa-container; two-zone action strip = sherpa-toolbar.
 
   Public API:
+    data-scroll-shadow  an inner shadow on each edge its run, with data-scroll is scrolled past (boolean)
     data-direction  block (default, a column) | inline (a row)
     data-gap        sm (4) | md (8) | lg (12, default) | xl (16) | 2xl (24)
     data-align      start | center | end | stretch (default) | between
@@ -36,7 +37,7 @@
   Fires: nothing — it is a layout surface; slotted controls emit their own events.
 -->
 <template id="default">
-  <div class="run" part="run">
+  <div class="run sherpa-scroll-shadow" part="run">
     <slot data-accepts="content"></slot>
   </div>
 </template>

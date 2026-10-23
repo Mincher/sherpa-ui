@@ -155,7 +155,7 @@
             },
             {
               "el": "div",
-              "class": "rows",
+              "class": "rows sherpa-scroll-shadow",
               "part": "rows",
               "children": [
                 {
@@ -599,7 +599,7 @@
             },
             {
               "el": "div",
-              "class": "rows",
+              "class": "rows sherpa-scroll-shadow",
               "part": "rows",
               "children": [
                 {
@@ -1313,6 +1313,16 @@
     },
     {
       "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an inner shadow on each edge its list is scrolled past"
+    },
+    {
+      "$type": "prop",
       "name": "data-search",
       "type": "boolean",
       "observed": true,
@@ -1690,6 +1700,7 @@
     "remove.--_status-border": "{sherpa.theme-border-critical-2}",
     "remove.--_status-icon": "{sherpa.theme-content-critical-1}",
     "rows.gap": "{sherpa.display-mode-space-2xs}",
+    "rows.--_scroll-shadow-gap": "{sherpa.display-mode-space-2xs}",
     "body-range-label.color": "{sherpa.theme-content-body-1}",
     "body-range-label.font-size": "{sherpa.theme-content-size-base}"
   },

@@ -1,7 +1,7 @@
 /**
  * sherpa-container — the base card. CSS owns style, padding and state.
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define, SHARED_PROPS } from '../../core/ui/sherpa-element.js';
 import '../sherpa-loader/sherpa-loader.js';
 import '../sherpa-empty-state/sherpa-empty-state.js';
 import '../sherpa-button/sherpa-button.js';
@@ -26,6 +26,7 @@ export class SherpaContainer extends SherpaElement {
 
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
   static override props = {
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-fill': { type: 'boolean', kind: 'style' },
     // The provider sets it while its data loads.
     'data-loading': { type: 'boolean', kind: 'style' },

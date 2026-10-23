@@ -52,7 +52,7 @@
         },
         {
           "el": "div",
-          "class": "body",
+          "class": "body sherpa-scroll-shadow",
           "part": "body",
           "children": [
             {
@@ -88,6 +88,16 @@
       "declared": true,
       "kind": "content",
       "description": "the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an overlay's body: an inner shadow on each edge it is scrolled past"
     },
     {
       "$type": "prop",
@@ -148,7 +158,7 @@
     }
   ],
   "populate": {
-    "shape": "{ heading?, type? }",
+    "shape": "{ heading?, scrollShadow?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

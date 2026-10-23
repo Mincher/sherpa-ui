@@ -89,7 +89,7 @@
       },
       {
         "el": "div",
-        "class": "body",
+        "class": "body sherpa-scroll-shadow",
         "part": "body",
         "children": [
           {
@@ -322,6 +322,16 @@
         "12"
       ],
       "description": "1–12 — a FIXED height of N layout-grid rows. The body's content fills it, so a chart draws into the whole card and a data grid scrolls inside it instead of the card growing with the data."
+    },
+    {
+      "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an inner shadow on each edge its body is scrolled past"
     },
     {
       "$type": "prop",

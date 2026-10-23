@@ -7,6 +7,7 @@
                      mirrored from the rail; drives the content inset
     data-no-nav      drop the nav rail; the content spans the full width (boolean)
     data-no-header   let the content span the full height (no header row) (boolean)
+    data-scroll-shadow   an inner shadow on each edge the Context is scrolled past (boolean)
     data-panel-start-width / data-panel-end-width   a panel area's width, in px —
                      what a reader dragged it to, handed back by the host. The
                      area never goes under its min or over 33% of its row.
@@ -53,7 +54,7 @@
             <div class="edge edge-start" part="panel-start-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
           </aside>
-          <div class="context-frame"><slot data-accepts="content"></slot></div>
+          <div class="context-frame sherpa-scroll-shadow"><slot data-accepts="content"></slot></div>
           <aside class="panel-end" part="panel-end">
             <div class="edge edge-end" part="panel-end-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>

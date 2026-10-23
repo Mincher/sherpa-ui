@@ -32,6 +32,7 @@ For a standalone card with a header, a body and a footer; it shows its data's lo
 | `data-padding` | `none` `sm` `md` `lg` `xl` |  | none \| sm \| md \| lg \| xl — one scale on both axes; unset is the card's own (lg) |
 | `data-padding-inline` | `none` `sm` `md` `lg` `xl` |  |  |
 | `data-row-span` | `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` `11` `12` |  | 1–12 — a FIXED height of N layout-grid rows. The body's content fills it, so a chart draws into the whole card and a data grid scrolls inside it instead of the card growing with the data. |
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its body is scrolled past |
 | `data-state` | `empty` `no-matches` `error` |  | empty \| no-matches \| error — empty and error show their default content IN PLACE of the body; no matches covers nothing, so the card's own filters stay in reach. Written by the provider. TRAP T-a-container-shows-its-datas-state |
 
 ## Events

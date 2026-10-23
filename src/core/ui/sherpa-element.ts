@@ -153,6 +153,8 @@ export const SHARED_PROPS = {
    * falls back to the viewport — wrong inside a scroller.
    */
   'data-bounds': { type: 'string', kind: 'style' },
+  /** An inner shadow on each edge its scroll box is scrolled past. Off by default. TODO 401 */
+  'data-scroll-shadow': { type: 'boolean', kind: 'style' },
 } as const satisfies PropMap;
 
 /**

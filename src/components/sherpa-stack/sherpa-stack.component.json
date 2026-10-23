@@ -15,7 +15,7 @@
   "anatomy": {
     "root": {
       "el": "div",
-      "class": "run",
+      "class": "run sherpa-scroll-shadow",
       "part": "run",
       "children": [
         {
@@ -131,6 +131,16 @@
     },
     {
       "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an inner shadow on each edge its run, with data-scroll is scrolled past"
+    },
+    {
+      "$type": "prop",
       "name": "data-wrap",
       "type": "boolean",
       "observed": true,
@@ -150,7 +160,7 @@
     }
   ],
   "populate": {
-    "shape": "{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, wrap? }",
+    "shape": "{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, scrollShadow?, wrap? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

@@ -16,7 +16,7 @@
     "roots": [
       {
         "el": "div",
-        "class": "scroller",
+        "class": "scroller sherpa-scroll-shadow",
         "part": "scroller",
         "children": [
           {
@@ -610,6 +610,16 @@
       "observed": false,
       "kind": "style",
       "description": "ASKED of its provider: the Query scope its headings answer"
+    },
+    {
+      "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past"
     },
     {
       "$type": "prop",

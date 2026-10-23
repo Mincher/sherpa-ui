@@ -128,6 +128,7 @@ export class SherpaDataGrid extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-bounds': SHARED_PROPS['data-bounds'],
     // The fields the STORE answers, space-separated; read by its provider. 345 phase 6
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },

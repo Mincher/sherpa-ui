@@ -15,6 +15,7 @@
   the store's.
 
   Public API:
+    data-scroll-shadow  an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past (boolean)
     data-sort-field / data-sort-direction   current sort (asc | desc)
     data-fetch-fields  the fields the STORE answers, space-separated: each Apply
                     asks it once for the keys they match. Read by the provider.
@@ -102,7 +103,7 @@
 <template id="default">
   <!-- The wrapper owns the overflow: `display: block` on a <table> drops it out
        of table layout. Sticky <thead> also needs a real scrolling ancestor. -->
-  <div class="scroller" part="scroller">
+  <div class="scroller sherpa-scroll-shadow" part="scroller">
   <table class="grid" part="grid">
     <!-- With `table-layout: fixed` a column's width comes from its <col>, so a
          long label truncates. JS stamps one <col> per drawn column. -->

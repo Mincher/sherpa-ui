@@ -5,7 +5,7 @@
  * Map:
  * - TransferItem — A transfer-list item.
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define, SHARED_PROPS } from '../../core/ui/sherpa-element.js';
 
 /** A transfer-list item. */
 export interface TransferItem {
@@ -24,6 +24,7 @@ export class SherpaTransferList extends SherpaElement {
   static override css = new URL('./sherpa-transfer-list.css', import.meta.url);
   static override html = new URL('./sherpa-transfer-list.html', import.meta.url);
   static override props = {
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-source-heading': { type: 'string', kind: 'content', to: '.source .pane-heading' },
     'data-target-heading': { type: 'string', kind: 'content', to: '.target .pane-heading' },
   } as const;

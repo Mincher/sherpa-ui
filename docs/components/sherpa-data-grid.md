@@ -99,6 +99,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-page` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
 | `data-page-size` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
 | `data-scope` | text |  | ASKED of its provider: the Query scope its headings answer |
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past |
 | `data-select` | `single` `multiple` | `multiple` | multiple \| single — single draws RADIOS, holds one row, and shows no control in the header: "select all" is meaningless where only one can be chosen |
 | `data-selectable` | boolean |  | show a leading selection column |
 | `data-sort-direction` | `asc` `desc` `""` |  | current sort (asc \| desc) |

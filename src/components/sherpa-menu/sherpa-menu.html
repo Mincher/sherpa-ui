@@ -20,6 +20,7 @@
               data-lead stays above the values (a Filters menu's actions)
 
   Public API:
+    data-scroll-shadow  an inner shadow on each edge its list is scrolled past (boolean)
     data-commit     show the Apply / Discard footer and DEFER changes until Apply
     data-discard    show Discard without Apply: its bar holds ONE Apply for the scope
     data-pending    its answer is changed and not applied: Discard is on
@@ -178,7 +179,7 @@
       <sherpa-calendar data-embedded></sherpa-calendar>
     </template>
 
-    <div class="rows" part="rows">
+    <div class="rows sherpa-scroll-shadow" part="rows">
       <slot data-accepts="item"></slot>
     </div>
 
@@ -336,7 +337,7 @@
                          aria-label="Value"></sherpa-input-text>
     </div>
 
-    <div class="rows" part="rows">
+    <div class="rows sherpa-scroll-shadow" part="rows">
       <slot data-accepts="item"></slot>
     </div>
 

@@ -600,6 +600,14 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge the Context is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             }
           ],
           "events": [
@@ -2250,6 +2258,14 @@
               }
             },
             {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge its body is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
               "name": "data-state",
               "description": "empty | no-matches | error — empty and error show their default content IN PLACE of the body; no matches covers nothing, so the card's own filters stay in reach. Written by the provider. TRAP T-a-container-shows-its-datas-state",
               "type": {
@@ -2452,6 +2468,14 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             },
             {
               "name": "data-select",
@@ -3056,6 +3080,14 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "data-scroll-shadow",
+              "description": "an overlay's body: an inner shadow on each edge it is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             },
             {
               "name": "data-status",
@@ -5776,6 +5808,14 @@
               }
             },
             {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge its list is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
               "name": "data-search",
               "description": "show a search input under the heading that filters the rows",
               "type": {
@@ -8356,6 +8396,14 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge its column is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             },
             {
               "name": "data-sort-direction",
@@ -10981,6 +11029,14 @@
               }
             },
             {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge its run, with data-scroll is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
               "name": "data-wrap",
               "description": "inline only: items wrap and share the line",
               "type": {
@@ -11676,6 +11732,14 @@
           "customElement": true,
           "description": "a two-pane shuttle (available ↔ selected). Pool comes from populate([{ value, label, selected? }]); `selected` picks the pane.",
           "attributes": [
+            {
+              "name": "data-scroll-shadow",
+              "description": "an inner shadow on each edge each list is scrolled past",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
             {
               "name": "data-source-heading",
               "description": "heading for the available pane",

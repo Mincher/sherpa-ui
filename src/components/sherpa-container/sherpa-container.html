@@ -3,6 +3,7 @@
   plus loading / empty / error states.
 
   Public API:
+    data-scroll-shadow  an inner shadow on each edge its body is scrolled past (boolean)
     data-elevation  none (default) | sm | md | lg
     data-loading    show the loading overlay (ratified boolean-verb state)
     data-state      empty | no-matches | error — empty and error show their default
@@ -58,7 +59,7 @@
     </sherpa-callout>
   </div>
 
-  <div class="body" part="body">
+  <div class="body sherpa-scroll-shadow" part="body">
     <sherpa-progress-bar class="loading-bar" part="loading-bar" data-indeterminate aria-label="Loading"></sherpa-progress-bar>
     <slot data-accepts="content"></slot>
   </div>

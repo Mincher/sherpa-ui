@@ -92,42 +92,39 @@ test('a Context fills its frame however little it holds, so `100%` inside it mea
   expect(r.scrolls).toBe(false);
 });
 
-test('only the Context scrolls: the header and a panel stay put, and the header takes a shadow', async ({ page }) => {
+test('only the Context scrolls: the header and a panel stay put, and the frame shows its scroll shadow', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
-    root.innerHTML = '<div style="block-size: 400px"><sherpa-app-shell style="min-block-size: 0">'
+    root.innerHTML = '<div style="block-size: 400px"><sherpa-app-shell data-scroll-shadow style="min-block-size: 0">'
       + '<div slot="nav">N</div><div slot="header" class="head" style="block-size: 40px">H</div>'
       + '<div slot="panel-start" class="side" open style="block-size: 100%">Filters</div>'
       // A Context taller than its frame, as a page is: its CONTENT overflows.
       + '<div><div class="page" style="block-size: 1200px">Context</div></div></sherpa-app-shell></div>';
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
-    await settle();
+    await window.__settled();
     const shell = root.querySelector('sherpa-app-shell')!;
     (shell.shadowRoot!.querySelector('.shell') as HTMLElement).style.minBlockSize = '0';
     const frame = shell.shadowRoot!.querySelector<HTMLElement>('.context-frame')!;
     const top = (sel: string): number => Math.round(root.querySelector(sel)!.getBoundingClientRect().top);
-    const shadow = (): string => getComputedStyle(root.querySelector('.head')!).boxShadow;
     const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
-    // The shadow FADES (TODO 161): a transition runs, and the reading waits for its end.
-    const fades: boolean[] = [];
-    const faded = async (): Promise<void> => {
-      await frames();
-      const running = root.querySelector('.head')!.getAnimations()
-        .filter((a) => (a as CSSTransition).transitionProperty === 'box-shadow');
-      fades.push(running.length > 0);
-      await Promise.all(running.map((a) => a.finished));
-    };
-    const at = { head: top('.head'), side: top('.side'), page: top('.page'), shadow: shadow() };
+    // The edges, and where the bottom one is against the frame's bottom.
+    const edges = (): { top: string; bottom: string; low: number } => ({
+      top: getComputedStyle(frame, '::before').opacity,
+      bottom: getComputedStyle(frame, '::after').opacity,
+      low: Math.round(frame.getBoundingClientRect().bottom),
+    });
+    await frames();
+    const at = { head: top('.head'), side: top('.side'), page: top('.page'), edges: edges() };
     frame.scrollTop = 200;
-    await faded();
-    const scrolled = { head: top('.head'), side: top('.side'), page: top('.page'), shadow: shadow() };
-    frame.scrollTop = 0;
-    await faded();
+    await frames();
+    const scrolled = { head: top('.head'), side: top('.side'), page: top('.page'), edges: edges() };
+    frame.scrollTop = frame.scrollHeight;
+    await frames();
     return {
-      at, scrolled, back: shadow(), fades,
+      at, scrolled, end: edges(),
+      headShadow: getComputedStyle(root.querySelector('.head')!).boxShadow,
       panelShown: getComputedStyle(shell.shadowRoot!.querySelector('.panel-start')!).display,
-      // Chromium and WebKit; Firefox has no scroll-driven animation, and draws no shadow.
-      driven: CSS.supports('timeline-scope: --x') && CSS.supports('animation-timeline: --x'),
+      // Chromium and WebKit; Firefox has no scroll timeline, and shows none.
+      driven: CSS.supports('animation-timeline: scroll()'),
     };
   });
   expect(r.panelShown).toBe('block');
@@ -135,15 +132,12 @@ test('only the Context scrolls: the header and a panel stay put, and the header 
   expect(r.scrolled.page).toBe(r.at.page - 200);
   expect(r.scrolled.head).toBe(r.at.head);
   expect(r.scrolled.side).toBe(r.at.side);
-  /* The shadow is there only while something is scrolled under the header. At
-     the top an engine reports `none`, or the animation's start: a shadow of no
-     size and no colour. */
-  const drawn = (shadow: string): boolean => shadow !== 'none' && !/\/ 0\) 0px 0px 0px/.test(shadow);
-  expect(drawn(r.at.shadow)).toBe(false);
-  expect(drawn(r.scrolled.shadow)).toBe(r.driven);
-  expect(drawn(r.back)).toBe(false);
-  // In and out, each by a transition — never a snap.
-  expect(r.fades).toEqual([r.driven, r.driven]);
+  // The header casts none: the frame's own edges say what is scrolled past. TODO 401
+  expect(r.headShadow).toBe('none');
+  test.skip(!r.driven, 'no scroll timeline: no shadow');
+  expect([r.at.edges.top, r.at.edges.bottom]).toEqual(['0', '1']);
+  expect([r.scrolled.edges.top, r.scrolled.edges.bottom]).toEqual(['1', '1']);
+  expect([r.end.top, r.end.bottom]).toEqual(['1', '0']);
 });
 
 test('the content inset holds at the collapsed width until the rail is latched open', async ({ page }) => {

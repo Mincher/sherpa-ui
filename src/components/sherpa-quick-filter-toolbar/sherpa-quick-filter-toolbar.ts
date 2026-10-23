@@ -72,6 +72,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static override asks: DataAsk = { shape: 'scope' };
 
   static override props = {
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-bounds': SHARED_PROPS['data-bounds'],
     /* LANDSCAPE, a strip; PORTRAIT, the panel's column: the scope an accordion,
        each list field a SECTION of value chips. Nothing folds. TODO 425 */

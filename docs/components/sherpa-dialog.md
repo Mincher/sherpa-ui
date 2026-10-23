@@ -28,6 +28,7 @@ For a task that blocks the page until the reader answers, such as a confirm or a
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-heading` | text |  | the title of a composed [sherpa-container-header](sherpa-container-header.md); a slotted [slot=header] replaces it |
+| `data-scroll-shadow` | boolean | `false` | an overlay's body: an inner shadow on each edge it is scrolled past |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) |
 | `data-type` | `modal` `overlay` | `modal` | modal \| overlay — overlay fills its container and opens NON-modal, so the page beside it stays live |
 | `open` | boolean, native | `false` | native boolean (read reflects dialog.open; set → show()/close()) |
@@ -90,6 +91,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ heading?, type? }`
+`{ heading?, scrollShadow?, type? }`
 
 Its declared props by name: `label` sets data-label.

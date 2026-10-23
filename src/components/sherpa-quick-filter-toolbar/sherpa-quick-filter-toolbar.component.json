@@ -569,7 +569,9 @@
           "class": "column",
           "part": "column",
           "attrs": {
-            "data-padding": "none"
+            "data-padding": "none",
+            "data-swap-on": "data-scroll-shadow",
+            "data-swap-data-scroll-shadow": ""
           },
           "children": [
             {
@@ -862,6 +864,16 @@
       "declared": true,
       "kind": "template",
       "description": "ASKED of its provider: the Query scope it draws and answers"
+    },
+    {
+      "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an inner shadow on each edge its column is scrolled past"
     },
     {
       "$type": "prop",

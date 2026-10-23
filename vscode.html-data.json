@@ -191,6 +191,11 @@
         {
           "name": "data-panel-start-width",
           "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
+        },
+        {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge the Context is scrolled past",
+          "valueSet": "v"
         }
       ]
     },
@@ -932,6 +937,11 @@
           ]
         },
         {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge its body is scrolled past",
+          "valueSet": "v"
+        },
+        {
           "name": "data-state",
           "description": "empty | no-matches | error — empty and error show their default content IN PLACE of the body; no matches covers nothing, so the card's own filters stay in reach. Written by the provider. TRAP T-a-container-shows-its-datas-state",
           "values": [
@@ -1037,6 +1047,11 @@
           "description": "ASKED of its provider: the Query scope its headings answer"
         },
         {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past",
+          "valueSet": "v"
+        },
+        {
           "name": "data-select",
           "description": "multiple | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen",
           "values": [
@@ -1112,6 +1127,11 @@
         {
           "name": "data-heading",
           "description": "the title of a composed sherpa-container-header; a slotted [slot=header] replaces it"
+        },
+        {
+          "name": "data-scroll-shadow",
+          "description": "an overlay's body: an inner shadow on each edge it is scrolled past",
+          "valueSet": "v"
         },
         {
           "name": "data-status",
@@ -2230,6 +2250,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge its list is scrolled past",
+          "valueSet": "v"
+        },
+        {
           "name": "data-search",
           "description": "show a search input under the heading that filters the rows",
           "valueSet": "v"
@@ -2845,6 +2870,11 @@
         {
           "name": "data-scope",
           "description": "ASKED of its provider: the Query scope it draws and answers"
+        },
+        {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge its column is scrolled past",
+          "valueSet": "v"
         },
         {
           "name": "data-sort-direction",
@@ -3627,6 +3657,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge its run, with data-scroll is scrolled past",
+          "valueSet": "v"
+        },
+        {
           "name": "data-wrap",
           "description": "inline only: items wrap and share the line",
           "valueSet": "v"
@@ -3846,6 +3881,11 @@
       "name": "sherpa-transfer-list",
       "description": "a two-pane shuttle (available ↔ selected). Pool comes from populate([{ value, label, selected? }]); `selected` picks the pane.",
       "attributes": [
+        {
+          "name": "data-scroll-shadow",
+          "description": "an inner shadow on each edge each list is scrolled past",
+          "valueSet": "v"
+        },
         {
           "name": "data-source-heading",
           "description": "heading for the available pane"

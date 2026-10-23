@@ -44,6 +44,7 @@ To pick a set of items from a pool by moving them between two panes, such as whi
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge each list is scrolled past |
 | `data-source-heading` | text | `Available` | heading for the available pane |
 | `data-target-heading` | text | `Selected` | heading for the selected pane |
 | `disabled` | boolean, native | `false` | disabled state — no move is made |

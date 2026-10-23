@@ -90,6 +90,50 @@
   margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
+/* ── Scroll shadow ───────────────────────────────────────────────────────
+   While its host has `data-scroll-shadow`, a scroll box shows an inner shadow
+   on each edge its content is hidden past. A box with a flex `gap` names it in
+   `--_scroll-shadow-gap`, so the edges take no room. Will, TODO 401.
+   TRAP T-a-scroll-shadow-is-drawn-over-the-content */
+/* Its own, never an outer box's: a custom property inherits into a slotted grid. */
+.sherpa-scroll-shadow { --_scroll-shadow-gap: 0px; }
+@supports (animation-timeline: scroll()) {
+  :host([data-scroll-shadow]) .sherpa-scroll-shadow::before,
+  :host([data-scroll-shadow]) .sherpa-scroll-shadow::after {
+    content: '';
+    position: sticky;
+    /* Pinned across too: a wide box scrolls sideways under it. */
+    inset-inline-start: 0;
+    z-index: 1;
+    display: block;
+    flex: none;
+    grid-column: 1 / -1;
+    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    pointer-events: none;
+    opacity: 0;
+    animation: sherpa-scroll-shadow linear both;
+    animation-timeline: scroll(nearest block);
+  }
+  :host([data-scroll-shadow]) .sherpa-scroll-shadow::before {
+    inset-block-start: 0;
+    margin-block-end: calc(-1 * (var(--sherpa-display-mode-space-sm, 12px) + var(--_scroll-shadow-gap, 0px)));
+    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
+  }
+  /* Held in the box's last 12px from BOTH sides: a squeezed child, its content
+     spilling past it, leaves this mid-box once scrolled. */
+  :host([data-scroll-shadow]) .sherpa-scroll-shadow::after {
+    inset-block: calc(100% - var(--sherpa-display-mode-space-sm, 12px)) 0;
+    margin-block-start: calc(-1 * (var(--sherpa-display-mode-space-sm, 12px) + var(--_scroll-shadow-gap, 0px)));
+    background: linear-gradient(to top, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    animation-direction: reverse;
+    animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%;
+  }
+}
+@keyframes sherpa-scroll-shadow {
+  to { opacity: 1; }
+}
+
 /* ── Disabled ────────────────────────────────────────────────────────────
    The two INTERACTION declarations only. Colour is per-component, because
    each picks a different inactive token — and never `opacity`, which

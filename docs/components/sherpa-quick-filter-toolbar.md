@@ -75,6 +75,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-reset-on-populate` | boolean |  |  |
 | `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
 | `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |

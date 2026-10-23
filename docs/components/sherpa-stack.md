@@ -32,6 +32,7 @@ To lay items out in a column or a row with a token gap, with no box, fill, borde
 | `data-measure` | boolean |  | cap the run's width at a reading measure (90ch) and centre it On a CHILD (not on the stack): |
 | `data-min-item` | `hug` `sm` `md` `lg` `xl` | `md` | with data-wrap: hug — each item at its OWN width (a run of chips); else the floor an item may shrink to while it STRETCHES to share the line — sm (120) \| md (200, default) \| lg (280) \| xl (360) |
 | `data-scroll` | boolean |  | the run scrolls when it is taller than its room, instead of pushing the page. It caps the stack at its parent's height, so the parent must have one. |
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its run, with data-scroll is scrolled past |
 | `data-wrap` | boolean |  | inline only: items wrap and share the line |
 
 ## Slots
@@ -48,6 +49,6 @@ Style these from outside with `::part()`:
 
 ## populate()
 
-`{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, wrap? }`
+`{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, scrollShadow?, wrap? }`
 
 Its declared props by name: `label` sets data-label.

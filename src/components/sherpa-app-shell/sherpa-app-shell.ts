@@ -4,7 +4,7 @@
  * CSS owns the inset past the overlaying nav rail; this file only mirrors the
  * rail's state onto the host.
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
 import type { SherpaNav } from '../sherpa-nav/sherpa-nav.js';
 
@@ -23,6 +23,7 @@ export class SherpaAppShell extends SherpaElement {
     'data-no-room': { type: 'boolean', kind: 'visibility' },
     'data-nav-state': { type: 'enum', kind: 'style', values: ['collapsed', 'hover', 'default', 'pinned', 'settings'] },
     'data-no-nav': { type: 'boolean', kind: 'style' },
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-no-header': { type: 'boolean', kind: 'style' },
     'data-panel-start-width': { type: 'string', kind: 'behaviour' },
     'data-panel-end-width': { type: 'string', kind: 'behaviour' },

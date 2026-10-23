@@ -17,6 +17,7 @@
   Cancel/Apply plus Today.
 
   Public API:
+    data-scroll-shadow  an inner shadow on each edge its column is scrolled past (boolean)
     data-type      data (default) | view
     data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
                     column. Over ONE scope, the scope is an accordion — its
@@ -262,7 +263,8 @@
      <name>, the Filters menu for every scope, the page's buttons, ⋮, and the
      one search above every scope — over a portrait toolbar per scope. TODO 425 -->
 <template id="column">
-  <sherpa-container class="column" part="column" data-padding="none">
+  <sherpa-container class="column" part="column" data-padding="none"
+                    data-swap-on="data-scroll-shadow" data-swap-data-scroll-shadow="">
     <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
       <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>

@@ -16114,22 +16114,10 @@ did not change: `.content` is `overflow: hidden`, a column of the header and
 the body row, and each panel area fills the row's height and scrolls inside
 itself.
 
-**The header's shadow** came from `scroll-state(stuck: top)` on a sticky
-header, and a header outside the scroller is never stuck. It follows the
-scroller's TIMELINE instead: `.context-frame` names a scroll timeline,
-`.content` lifts it into scope (`timeline-scope`) so a non-descendant can use
-it, and the slotted header's `box-shadow` is an animation over the first
-pixel of scroll. No JS. It is inside `@supports`, because without a scroll
-timeline the same animation runs on the CLOCK and leaves the shadow on for
-good. Chromium and WebKit have it; Firefox 155 does not, and draws no shadow.
-
-**The shadow FADES, and the timeline cannot do that itself** (TODO 161). An
-animation over one pixel of scroll is a snap, and a transition cannot follow
-an animation on its own element. So the timeline animates a PROPERTY on the
-header's area — `--_header-shadow`, unregistered, so it flips — and the
-slotted header's `box-shadow` reads it and carries the transition. The
-property needs a value to start FROM: with none, WebKit runs the animation
-to the end and never applies the keyframe.
+**The header casts no shadow** (Will, TODO 401): the frame shows an inner
+scroll shadow instead, while the shell has `data-scroll-shadow`
+(`T-a-scroll-shadow-is-drawn-over-the-content`). Before, the header followed
+the frame's scroll timeline through `timeline-scope`.
 
 **A scroll-driven animation never FINISHES.** `__settled()` waited for every
 animation's `finished` promise, and every test on a page with this one hung.
@@ -16138,6 +16126,36 @@ It waits for animations on the document's own timeline only.
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
+
+### T-a-scroll-shadow-is-drawn-over-the-content
+
+**A scroll shadow is two sticky edges drawn OVER the content** (Will, TODO 401,
+A). With `data-scroll-shadow` on its host, a scroll box marked
+`.sherpa-scroll-shadow` shows an inner shadow on each edge its content is
+hidden past. An inset `box-shadow`, or a `background-attachment: local` one, is
+painted UNDER the content, so a card hides it. So the box's `::before` and
+`::after` are sticky, 12px of gradient in the shadow colour, `z-index: 1`, and
+take no room: a negative margin, and a flex box with a `gap` names it in
+`--_scroll-shadow-gap`. Every box sets that to 0 first: a custom property
+inherits, and a stack's gap reached a grid slotted in it and slid its table
+8px up under its sticky header. Each follows the box's own scroll
+(`animation-timeline: scroll(nearest block)`): the top fades in over the first
+16px, the bottom out over the last 16px. No overflow, no timeline: no shadow.
+Chromium and WebKit, so iOS; Firefox 155 has no scroll timeline and shows
+none. `scroll-state()` would be Chromium only.
+
+**The bottom edge is held from BOTH sides**, in the box's last 12px
+(`inset-block: calc(100% - 12px) 0`; a sticky inset's percentage is the
+scrollport's). The app shell squeezes its Context to the frame and lets the
+content spill past it, so an edge held only at the bottom rode up mid-box once
+scrolled. Both are pinned across too: a wide grid scrolls sideways under them.
+
+A sticky header with its own z-index — the grid's head, a column's scope —
+covers the top edge: a stuck header casts its own shadow (TODO 421). The nav
+list has none yet: its `::after` says "No matches".
+
+- Site: `src/core/sherpa-base.css`
+- Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 
 ### T-a-hairline-resolves-by-density
 

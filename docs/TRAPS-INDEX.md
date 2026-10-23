@@ -761,7 +761,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (116)
+## SherpaElement and the shared sheets (117)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -793,6 +793,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — shared-constants
 - [T-a-property-set-before-upgrade-shadows-its-accessor](TRAPS.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — shared-constants
+- [T-a-scroll-shadow-is-drawn-over-the-content](TRAPS.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base
 - [T-a-section-heading-is-not-a-field](TRAPS.md#t-a-section-heading-is-not-a-field) — filter-field
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — sherpa-element

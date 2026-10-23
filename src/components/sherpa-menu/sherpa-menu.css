@@ -497,6 +497,7 @@
   flex-direction: column;
   /* Figma's `list` frame gaps at 2xs 4 — the CARD gaps at 3xs 2. */
   gap: var(--sherpa-display-mode-space-2xs, 4px);
+  --_scroll-shadow-gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-block-size: 0;
   overflow-y: auto;
 }

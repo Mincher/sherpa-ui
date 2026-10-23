@@ -4,7 +4,7 @@
  * No JS: direction, gap, alignment and wrapping are all [data-*] selectors in
  * the CSS. The class exists only to give the element a shadow root and sheet.
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define, SHARED_PROPS } from '../../core/ui/sherpa-element.js';
 
 export class SherpaStack extends SherpaElement {
   static override css = new URL('./sherpa-stack.css', import.meta.url);
@@ -13,6 +13,7 @@ export class SherpaStack extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
+    'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-align': { type: 'enum', kind: 'style', values: ['between', 'center', 'end', 'start', 'stretch'] },
     'data-direction': { type: 'enum', kind: 'style', values: ['block', 'inline'] },
     'data-fill': { type: 'boolean', kind: 'style' },

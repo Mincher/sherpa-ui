@@ -82,7 +82,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
-| ⬜ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
+| ✅ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
 | ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
 | ✅ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
@@ -111,6 +111,12 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ✅ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| ⬜ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
+| ⬜ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
+| ⬜ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
+| ⬜ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
+| ⬜ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
+| ⬜ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1877,6 +1883,47 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 435 — LOOK: the panel's View scope and component scopes, a container each
+
+Will, 2026-10-23: *"In panel mode for the filter toolbar put the view scope
+content in a container and the component scopes in another container."* And: *"Stack those containers vertically and have 16px gutter
+between them."* And: *"Change the label 'View filters' to be 'View
+Context'. This section, once in the new split containers, will not need to be
+an accordion. Just put the content into the container body."*
+Today the column is ONE `sherpa-container`: its header (Filters, search), then
+each scope an accordion, the View's set apart by a divider (425 G13). Check how
+the two cards share the column's height and its scroll (each scrolls, or the
+column), and where the header and search go.
+
+### `[ ]` ⬜ 434 — LOOK: the App Header's title joins its actions' row
+
+Will, 2026-10-23: *"In the App Header, move the icon and title label to be on
+the same row as the Save, Ask N-zo etc. actions."* Today the top row holds the
+actions (★ Save ▾, Ask N-zo and the rest, TODO 428) and the icon and title sit
+on the row under it, above the filter toolbar.
+
+### `[ ]` ⬜ 433 — LOOK: a divider after the View chip
+
+Will, 2026-10-23: *"Also add a divider after the View chip in the toolbar."*
+
+### `[ ]` ⬜ 432 — LOOK: the View chip never looks active
+
+Will, 2026-10-23: *"The 'Views' filter chip is a unique case and doesn't need
+any active/success green styling."* Today it takes the active look (magenta),
+and Settings › "Show active filters in green" makes it green.
+
+### `[ ]` ⬜ 431 — LOOK: Discard says "Discard"
+
+Will, 2026-10-23: *"Add a 'Discard' label to the discard button in the filter
+toolbar."* Today it is icon-only (×). See 417: Discard is to wear a trash-can
+icon too.
+
+### `[ ]` ⬜ 430 — LOOK: Reset and Save go into the toolbar's ⋮
+
+Will, 2026-10-23: *"Move the Reset, and Save, actions into the overflow menu of
+the filter toolbar."* Today they lead the Filters menu (TODO 383: every filter
+action is that one menu's), and "Save <name>" also sits beside it.
+
 ### `[x]` ✅ 429 — DEMOS: a shareable build that opens from index.html
 
 Will, 2026-10-23: *"Once finished with these filter-toolbar, and sherpa demo,
@@ -2638,7 +2685,7 @@ deleted.
   group's marker drives the first one's half height too (`timeline-scope`).
 
 
-### `[ ]` ⬜ 401 — LOOK: a scroll shadow for any scroll box (investigate)
+### `[x]` ✅ 401 — LOOK: a scroll shadow for any scroll box (investigate)
 
 Will, 2026-10-22: *"We show a drop shadow under the app header when it's scrolled
 under but instead this should be an inner shadow at the top of the content area
@@ -2703,6 +2750,17 @@ each component marks its scroll box with one shared class
 attribute. First users: the layout grid (in place of the app header's drop
 shadow), the data grid's body, a menu's list, the nav list, a form's scroll
 area — each checked for a `::before`/`::after` it already uses.
+
+✅ 2026-10-23: built. `data-scroll-shadow` (a shared prop, off by default) on
+the app shell, menu, stack (`data-scroll`), data grid, container, dialog (an
+overlay's body), transfer list and the filter toolbar (its column, passed down
+by a swap). The rule is `sherpa-base.css`'s. The content area's scroll box is
+the SHELL's frame — the layout grid never scrolls — so the shell's replaces the
+header's drop shadow. Demos turns it on for the shell, the filter column,
+Settings and the Records grid. Not yet: the nav list (its `::after` says "No
+matches"), the overlay panel, and the chat composer (a textarea has no
+`::before`). A sticky header covers the top edge: that is 421.
+TRAP T-a-scroll-shadow-is-drawn-over-the-content
 
 ### `[x]` ✅ 400 — BUG: a View scope pick does not limit the other View filters
 

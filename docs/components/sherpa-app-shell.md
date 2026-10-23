@@ -55,6 +55,7 @@ The frame for an app: the nav, the app header, the Context, and a panel area on 
 | `data-panel-end-width` | text |  | a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. |
 | `data-panel-start-open` | boolean |  |  |
 | `data-panel-start-width` | text |  | a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. |
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge the Context is scrolled past |
 
 ## Events
 
@@ -107,6 +108,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ navState?, noHeader?, noNav?, noRoom?, panelEndOpen?, panelEndWidth?, panelStartOpen?, panelStartWidth? }`
+`{ navState?, noHeader?, noNav?, noRoom?, panelEndOpen?, panelEndWidth?, panelStartOpen?, panelStartWidth?, scrollShadow? }`
 
 Its declared props by name: `label` sets data-label.

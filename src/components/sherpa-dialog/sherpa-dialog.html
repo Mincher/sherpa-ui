@@ -3,6 +3,7 @@
   focus trap, ESC and top-layer come from showModal().
 
   Public API:
+    data-scroll-shadow  an overlay's body: an inner shadow on each edge it is scrolled past (boolean)
     data-heading  — the title of a composed sherpa-container-header; a slotted [slot=header] replaces it
     data-type     — modal (default) | overlay — overlay fills its container and
                     opens NON-modal, so the page beside it stays live
@@ -26,7 +27,7 @@
       <sherpa-container-header class="heading" part="heading"></sherpa-container-header>
       <slot name="header" data-accepts="header"></slot>
     </div>
-    <div class="body" part="body">
+    <div class="body sherpa-scroll-shadow" part="body">
       <slot data-accepts="content"></slot>
     </div>
     <div class="footer" part="footer">

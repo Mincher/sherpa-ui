@@ -34,7 +34,7 @@
               },
               {
                 "el": "ul",
-                "class": "pane-list",
+                "class": "pane-list sherpa-scroll-shadow",
                 "part": "list",
                 "attrs": {
                   "aria-labelledby": "source-heading"
@@ -113,7 +113,7 @@
               },
               {
                 "el": "ul",
-                "class": "pane-list",
+                "class": "pane-list sherpa-scroll-shadow",
                 "part": "list",
                 "attrs": {
                   "aria-labelledby": "target-heading"
@@ -154,6 +154,16 @@
     ]
   },
   "props": [
+    {
+      "$type": "prop",
+      "name": "data-scroll-shadow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "an inner shadow on each edge each list is scrolled past"
+    },
     {
       "$type": "prop",
       "name": "data-source-heading",

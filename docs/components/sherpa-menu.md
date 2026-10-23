@@ -58,6 +58,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-range` | boolean |  |  |
 | `data-readonly` | boolean |  | SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no Advanced button |
 | `data-removable` | boolean |  | show a "Remove" button in the footer (after Today); it emits menu-select with value="remove" |
+| `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its list is scrolled past |
 | `data-search` | boolean |  | show a search input under the heading that filters the rows |
 | `data-select` | `single` `multiple` | `multiple` | multiple \| single (radio rows) |
 | `data-step` | text |  |  |
@@ -158,6 +159,7 @@ What each class's base rule reads:
 | `--sherpa-theme-border-critical-2` | `.remove` | `--_status-border` |
 | `--sherpa-theme-content-critical-1` | `.remove` | `--_status-icon` |
 | `--sherpa-display-mode-space-2xs` | `.rows` | `gap` |
+| `--sherpa-display-mode-space-2xs` | `.rows` | `--_scroll-shadow-gap` |
 | `--sherpa-theme-content-body-1` | `.body-range-label` | `color` |
 | `--sherpa-theme-content-size-base` | `.body-range-label` | `font-size` |
 
