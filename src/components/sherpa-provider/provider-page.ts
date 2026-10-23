@@ -18,6 +18,7 @@
  * - .applyFilters — Take a saved set: the screen then matches it.
  * - .dismissFilters — Take a saved set off: the scopes it names lose their filters.
  * - .deleteFilters — Delete a saved set; its filters stay.
+ * - .renameFilters — Rename a reader's saved set; its id follows its name.
  * - .savedFilterSets — The page's saved sets, and the one taken.
  * - .customView — Is the View on screen the reader's own?
  * - .resetView — Put the filters back as the View on screen defines them.
@@ -35,7 +36,7 @@ import {
 import { labelId } from '../../core/browser/web-storage.js';
 import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
 import {
-  deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, saveFilterAs,
+  deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, renameSavedFilter, saveFilterAs,
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
@@ -254,6 +255,21 @@ export class ProviderPage {
     if (this.#applied === id) this.#take(null);
     else this.#saySaved();
     return true;
+  }
+
+  /** RENAME a reader's saved set — never a page's own. Its id follows its name,
+   *  and a name another set has gains a copy's. Its new id. Will, TODO 427 */
+  renameFilters(id: string, label: string): string | undefined {
+    const opened = this.#opened;
+    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
+    if (!opened || !set || !label.trim()) return undefined;
+    if (label.trim() === set.label) return id;
+    const name = uniqueViewLabel(label, Object.entries(this.#library()).filter(([key]) => key !== id).map(([, s]) => s.label));
+    renameSavedFilter(opened.id, id, name);
+    const next = labelId(name);
+    if (this.#applied === id) this.#take(next);
+    else this.#saySaved();
+    return next;
   }
 
   /** The page's saved sets — its own, then the reader's (`own`) — and the ONE

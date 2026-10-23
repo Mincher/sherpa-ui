@@ -148,6 +148,7 @@ Each one bubbles.
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
 | `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set last taken. |
+| `filters-manage` |  | Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | A column shut, and why: the reader, the width or the page. |

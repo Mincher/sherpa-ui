@@ -108,7 +108,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
 | 🚧 | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
 | ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
-| ⬜ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
+| ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | | | | **B — The foundation: what is left** | |
@@ -1897,7 +1897,7 @@ button."* (425 G9 put ★ Save ▾ ⟳ at the end of the header's filter row.)
 N-zo (`data-view-actions`); Refresh is the toolbar's again, left of its ⋮, and
 folds into the ⋮ as "Refresh data".
 
-### `[ ]` ⬜ 427 — UX: Manage Saved Filters
+### `[x]` ✅ 427 — UX: Manage Saved Filters
 
 Will, 2026-10-23: *"At the top of the Saved Filters section of the Filters menu
 add a menu item labelled 'Manage Saved Filters'. Clicking this should open a
@@ -1907,6 +1907,16 @@ changes. Clicking Cancel in the Footer will discard the changes. Closing the
 Dialog without clicking Apply will discard the changes. Removed definitions
 will need to be inactive (greyed out) until Apply is clicked and the removal
 commited."*
+
+✅ 2026-10-23: the Saved section leads with Manage Saved Filters — a menu
+ACTION row (`MenuItem.action`, a button with no tick box) — on the toolbar and
+its column where the bar saves and the reader has sets of their own. It asks
+`filters-manage`. Demos' `#manage-filters` dialog lists the reader's sets: a
+name field each, and Remove, which greys the row (Restore takes it back).
+Apply deletes, then renames (`provider.renameFilters(id, label)`: in place, its
+id follows its name, the set taken stays taken). Cancel, the close button and
+Escape keep nothing. The page's own sets are not listed: they are never
+renamed or deleted. TRAP T-saved-filters-are-every-scope
 
 ### `[x]` ✅ 426 — DEMOS: Records uses the toolbar column, not the filter panel
 

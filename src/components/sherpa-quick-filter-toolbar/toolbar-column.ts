@@ -18,12 +18,12 @@ import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
-import { SavedSets, drawFiltersButton, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
+import { MANAGE_SETS, SavedSets, drawFiltersButton, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
 import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore } from '../../core/ui/more-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 /** What a column says: its toolbar's own events. */
-export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-delete' | 'filters-apply' | 'filters-dismiss'
+export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-delete' | 'filters-apply' | 'filters-dismiss' | 'filters-manage'
   | 'filter-add' | 'filter-remove' | 'quick-filter-change' | 'view-reset' | 'limit-options-change' | 'hide-unmatched-change';
 
 /** What the column asks of its toolbar. */
@@ -166,7 +166,7 @@ export class ToolbarColumn {
       }
     }
     this.#spentFor = this.#spentKey();
-    const { menu, items } = menuFor(this.#host.root(), drawFiltersButton(btn, 0, added, offer, this.#saved.listed));
+    const { menu, items } = menuFor(this.#host.root(), drawFiltersButton(btn, 0, added, offer, this.#saved.listed, this.#host.el.hasAttribute('data-saveable')));
     menu.setAttribute('data-align', 'end');
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this.#host.el));
     btn.append(menu);
@@ -200,10 +200,10 @@ export class ToolbarColumn {
     for (const [scope, ids] of adds) this.#host.emit('filter-add', { scope, ids });
   };
 
-  /** The Filters menu's own actions: Reset, Reset all on view, and the save rows. TODO 383 */
+  /** The Filters menu's own actions: Reset, Reset all on view, the save rows and Manage. TODO 383, 427 */
   #onFilterAction = (event: Event): void => {
     const act = String((event as CustomEvent).detail?.value ?? '');
-    if (!FILTER_ACTIONS.has(act)) return;
+    if (!FILTER_ACTIONS.has(act) && act !== MANAGE_SETS) return;
     event.stopPropagation();
     this.#$<SherpaMenu>('.column-filters sherpa-menu')?.hide?.();
     if (act === 'reset') {
@@ -214,6 +214,7 @@ export class ToolbarColumn {
     else if (act === 'reset-default') this.#host.emit('view-reset', {}, { cancelable: true });
     else if (act === 'filters-delete') this.#host.emit('filters-delete', { id: this.#saved.applied?.id });
     else if (act === 'filters-save-as') this.#host.emit('filters-save-as');
+    else if (act === MANAGE_SETS) this.#host.emit(MANAGE_SETS);
     else this.#host.emit('filters-save');
   };
 

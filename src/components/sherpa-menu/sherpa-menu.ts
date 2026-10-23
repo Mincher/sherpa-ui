@@ -72,6 +72,8 @@ export interface MenuItem {
   remove?: boolean;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
+  /** A row that DOES something — no tick box: a button, reported as `menu-select`. TODO 427 */
+  action?: boolean;
 }
 
 /** How long a pointer RESTS on a row before its child menu opens. */
@@ -1536,6 +1538,13 @@ export class SherpaMenu extends SherpaElement {
 
   /** One item's row: its box, label, note and ends. */
   #stampRow(item: MenuItem, tpl: HTMLTemplateElement, held: { has: (v: unknown) => boolean } | null): HTMLElement | null {
+    if (item.action) {
+      const act = this.clone<HTMLButtonElement>('template.menu-action-tpl');
+      if (!act) return null;
+      act.value = item.value;
+      act.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
+      return act;
+    }
     const row = (item.pickable === false ? this.clone('template.menu-bare-tpl') : null) ?? this.clone(tpl);
     if (!row) return null;
     const box = row.querySelector('input');

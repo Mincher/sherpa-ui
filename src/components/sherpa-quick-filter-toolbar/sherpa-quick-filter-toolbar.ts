@@ -14,7 +14,7 @@ import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
+  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore, syncHide,
@@ -1358,8 +1358,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       } else this.#move(owner);
       return;
     }
-    // The Filters menu's own actions. TODO 383
-    if (FILTER_ACTIONS.has(value) && this.pathFind(event, '.add-btn')) {
+    // The Filters menu's own actions, and Manage Saved Filters. TODO 383, 427
+    if ((FILTER_ACTIONS.has(value) || value === MANAGE_SETS) && this.pathFind(event, '.add-btn')) {
       event.stopImmediatePropagation();
       this.$<SherpaMenu>('.add-btn sherpa-menu')?.hide?.();
       this.#act(value);
@@ -1825,7 +1825,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
     ];
     this.#oneRows.tell(added);
-    const def = drawFiltersButton(add, folded.length, added, offer, this.#saved.listed);
+    const def = drawFiltersButton(add, folded.length, added, offer, this.#saved.listed, this.hasAttribute('data-saveable'));
     if (!def) return;
     this.#addMenu(add, def);
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
@@ -1957,6 +1957,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         break;
       case 'filters-save':
       case 'filters-save-as':
+      case MANAGE_SETS:
         this.emit(act);
         break;
       case 'filters-delete':

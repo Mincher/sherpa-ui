@@ -97,7 +97,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, resetView, export, import). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, renameFilters, resetView, export, import). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -202,6 +202,12 @@
           "name": "deleteFilters",
           "args": "id?: string",
           "description": "DELETE a reader's saved set — the one last taken unless named; never a page's own. Its filters stay on screen."
+        },
+        {
+          "$type": "method",
+          "name": "renameFilters",
+          "args": "id: string, label: string",
+          "description": "RENAME a reader's saved set — never a page's own. Its id follows its name, and a name another set has gains a copy's. Its new id. Will, TODO 427"
         },
         {
           "$type": "method",

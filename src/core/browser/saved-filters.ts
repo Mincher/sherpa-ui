@@ -8,6 +8,7 @@
  * - loadSavedFilters — Read a page's saved sets. A broken entry is dropped.
  * - saveFilterAs — Keep filters under a name — over a set of that name — and hand back the whole store.
  * - deleteSavedFilter — Forget one set, and hand back what is left.
+ * - renameSavedFilter — Rename one set in its place — its id follows its name — and hand back the whole store.
  * - filtersOf — The filter half of a View's JSON: each scope's filters, and no arrangement.
  * - loadApplied — The set last taken in this tab: what "Save <name>" saves over.
  * - keepApplied — Remember the set last taken in this tab, or that none is.
@@ -54,6 +55,20 @@ export function deleteSavedFilter(page: string, id: string, options: SavedFilter
   const kept = Object.fromEntries(Object.entries(loadSavedFilters(page, options)).filter(([key]) => key !== id));
   writeJson(storageKind(options.shared ?? true), PREFIX + page, kept);
   return kept;
+}
+
+/** Rename one set in its place — its id follows its name — and hand back the
+ *  whole store. TRAP T-derived-id-makes-resave-an-update */
+export function renameSavedFilter(
+  page: string, id: string, label: string, options: SavedFilterOptions = {},
+): SavedFilterSet {
+  const trimmed = label.trim();
+  const sets = loadSavedFilters(page, options);
+  if (!trimmed || !sets[id]) return sets;
+  const renamed = Object.fromEntries(Object.entries(sets)
+    .map(([key, set]) => (key === id ? [labelId(trimmed), { ...set, label: trimmed }] : [key, set])));
+  writeJson(storageKind(options.shared ?? true), PREFIX + page, renamed);
+  return renamed;
 }
 
 /** The filter half of a View's JSON: each scope's filters, and no arrangement. */

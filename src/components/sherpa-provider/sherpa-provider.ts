@@ -466,6 +466,12 @@ export class SherpaProvider extends SherpaElement {
     return this.#pages.deleteFilters(id);
   }
 
+  /** RENAME a reader's saved set — never a page's own. Its id follows its name,
+   *  and a name another set has gains a copy's. Its new id. Will, TODO 427 */
+  renameFilters(id: string, label: string): string | undefined {
+    return this.#pages.renameFilters(id, label);
+  }
+
   /** The page's saved sets — its own, then the reader's (`own`) — and the ONE
    *  taken: what a host asks before it saves over a name, or deletes one. */
   get savedFilterSets(): { id: string; label: string; applied: boolean; own: boolean }[] {

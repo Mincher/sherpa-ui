@@ -15300,6 +15300,13 @@ the query definition."*
 - **Saving**: each control asks with `filters-save`, `filters-save-as` or
   `filters-delete`; the HOST names it, confirms an overwrite by name, and calls
   `saveFilters(label?)` or `deleteFilters(id?)`.
+- **Managing** (Will, TODO 427): where the host saves and the reader has sets
+  of their own, the Saved section leads with Manage Saved Filters — a menu
+  ACTION row (`MenuItem.action`), no tick box — which asks `filters-manage`.
+  The HOST's dialog renames and removes, and keeps nothing until its Apply:
+  `deleteFilters(id)`, then `renameFilters(id, label)`. A rename keeps the
+  set's place and its id follows its name (`renameSavedFilter`), so the set
+  taken stays taken. A page's own is never renamed.
 - **Old saved filters** — one scope's, kept per DATA before TODO 105 — are
   not read: Sherpa keeps no shim for an app's old stored data (Will, D4,
   2026-10-14). The per-scope card's Edit filter, Save and Delete went with

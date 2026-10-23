@@ -8,6 +8,7 @@
  * tick is its on/off instead. TRAP T-one-filters-button
  *
  * Map:
+ * - MANAGE_SETS — The Saved section's lead row: Manage Saved Filters, the host's dialog.
  * - ListedFilter — One filter the menu lists.
  * - SavedSet — One saved set of filters, as the Filters menu lists it.
  * - AddedFilter — One filter the view holds.
@@ -39,6 +40,11 @@ const FILTERS_LABEL = 'Filters';
 const ADDED_SECTION = 'Added filters';
 const AVAILABLE_SECTION = 'Available filters';
 const SAVED_SECTION = 'Saved filters';
+const MANAGE_LABEL = 'Manage Saved Filters';
+
+/** The Saved section's lead row: Manage Saved Filters — rename and remove the
+ *  reader's sets, in the host's dialog. Will, TODO 427 */
+export const MANAGE_SETS = 'filters-manage';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
 const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
@@ -90,7 +96,7 @@ export interface AddedFilter extends ListedFilter {
  * TRAP T-saved-filters-are-the-last-section
  */
 function filtersMenuItems(
-  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [],
+  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [], manage = false,
 ): Array<FilterMenuItem & { label: string }> {
   return [
     // A held filter the reader cannot take off is listed only while hidden.
@@ -107,6 +113,8 @@ function filtersMenuItems(
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
       ...(f.spent ? { available: false } : {}),
     })),
+    // Led by Manage Saved Filters, where the reader has sets of their own. Will, TODO 427
+    ...(manage && sets.some((s) => s.own) ? [{ value: MANAGE_SETS, label: MANAGE_LABEL, section: SAVED_SECTION, action: true }] : []),
     // A reader's saved SETS: a tick takes one, and the ONE taken is ticked. TODO 105 · Will, 366
     ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.applied })),
   ];
@@ -117,9 +125,9 @@ function filtersMenuItems(
  *  TRAP T-one-filters-button · TRAP T-add-menu-batches */
 export function drawFiltersButton(
   btn: HTMLElement, hidden: number,
-  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[],
+  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[], manage = false,
 ): FilterDef {
-  const options = filtersMenuItems(added, offer, sets);
+  const options = filtersMenuItems(added, offer, sets, manage);
   if (hidden) btn.dataset['badge'] = String(hidden);
   else btn.removeAttribute('data-badge');
   btn.querySelector('sherpa-menu')?.remove();

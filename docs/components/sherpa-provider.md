@@ -51,6 +51,7 @@ Put it round the part of a page whose components need data: each component insid
 | `applyFilters(id: string)` | TAKE a saved set: every scope matches it; one it does not name has no filters. |
 | `dismissFilters(id: string)` | TAKE a saved set OFF: the scopes it names lose their filters. |
 | `deleteFilters(id?: string)` | DELETE a reader's saved set — the one last taken unless named; never a page's own. Its filters stay on screen. |
+| `renameFilters(id: string, label: string)` | RENAME a reader's saved set — never a page's own. Its id follows its name, and a name another set has gains a copy's. Its new id. Will, TODO 427 |
 | `resetView()` | Put the filters back as the View on screen DEFINES them: the page's first Query, then the View's, as a pick puts it on. A filter the reader added since goes. What "Reset all on view" does. |
 | `export()` | This subtree's whole state as JSON — each source's question, and the View on screen — for a link, another service or an agent. |
 | `import(state: ProviderState)` | Take a state back in, exactly: each named source's question, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard. A source it does not name is left as it is. |

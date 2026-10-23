@@ -281,3 +281,35 @@ test('a spent field is greyed in the Filters list, and hidden with Hide unmatchi
   });
   expect((await tier())?.shown).toBe(false);
 });
+
+test('Manage Saved Filters leads the Saved section of a saveable bar with sets of the reader\'s, and asks its host', async ({ page }) => {
+  await mount(page, 1400);
+  const saved = (own: boolean, saveable: boolean) => page.evaluate(async ({ own, saveable }) => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar') as unknown as Bar & { savedSets: unknown };
+    el.toggleAttribute('data-saveable', saveable);
+    el.savedSets = [{ id: 'page', label: 'Page set' }, ...own ? [{ id: 'mine', label: 'Mine', own: true }] : []];
+    await window.__settled();
+    const menu = el.shadowRoot!.querySelector('.add-btn sherpa-menu')!;
+    const head = [...menu.querySelectorAll(':scope > .menu-section')].find((h) => h.textContent === 'Saved filters');
+    const rows: string[] = [];
+    for (let n = head?.nextElementSibling; n && !n.classList.contains('menu-section'); n = n.nextElementSibling) {
+      rows.push(n.querySelector('input')?.value ?? `${(n as HTMLButtonElement).value}: ${n.textContent?.trim()}`);
+    }
+    return rows;
+  }, { own, saveable });
+  expect(await saved(true, true)).toEqual(['filters-manage: Manage Saved Filters', 'set:page', 'set:mine']);
+  // None of the reader's to manage, or a bar that saves nothing (it lists none of theirs): no row.
+  expect(await saved(false, true)).toEqual(['set:page']);
+  expect(await saved(true, false)).toEqual(['set:page']);
+
+  await saved(true, true);
+  const asked = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const heard: string[] = [];
+    el.addEventListener('filters-manage', (e) => heard.push(e.type));
+    el.shadowRoot!.querySelector<HTMLElement>('.add-btn sherpa-menu > [value="filters-manage"]')!.click();
+    await window.__settled();
+    return heard;
+  });
+  expect(asked).toEqual(['filters-manage']);
+});

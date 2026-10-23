@@ -267,6 +267,25 @@
             },
             {
               "el": "template",
+              "class": "menu-action-tpl",
+              "children": [
+                {
+                  "el": "button",
+                  "class": "menu-row menu-row-action",
+                  "attrs": {
+                    "type": "button"
+                  },
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
               "class": "menu-bare-tpl",
               "children": [
                 {
@@ -833,6 +852,25 @@
                 {
                   "el": "p",
                   "class": "menu-row menu-section"
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-action-tpl",
+              "children": [
+                {
+                  "el": "button",
+                  "class": "menu-row menu-row-action",
+                  "attrs": {
+                    "type": "button"
+                  },
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "menu-row-label"
+                    }
+                  ]
                 }
               ]
             },

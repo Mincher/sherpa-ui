@@ -1124,6 +1124,13 @@
     },
     {
       "$type": "event",
+      "name": "filters-manage",
+      "description": "Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets.",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
       "name": "limit-options-change",
       "description": "The ⋮ menu's \"Limit to matching filters\".",
       "bubbles": true,
