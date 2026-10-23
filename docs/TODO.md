@@ -117,7 +117,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ✅ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
 | ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
-| 🚧 | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
+| ✅ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ✅ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
 | ✅ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
@@ -1899,6 +1899,35 @@ A data-layer concept first: a HIGHLIGHT that marks rows without filtering
 them, one driver at a time; then who draws it (grid rows, chart segments,
 legend items) and how a chip says it drives. Plan, with ❓, before building.
 
+**Plan, 2026-10-23.** What is there: `matchesFilter(row, filter)` and
+`readingClause(facts, reading)` already test one row against one chip; the
+grid marks matched TEXT (`needles` → `<mark class="match">`), never a row;
+a chart segment knows its group key and value, not its rows (`summarise`);
+nothing else in the data layer marks without filtering.
+
+| # | Step | Where |
+|---|---|---|
+| 1 | The Query holds ONE driver: `highlight: { scope, field }`. `compile()` leaves the driver's reading out of the filter and compiles it on its own, as `highlight`. A saved filter and a draft keep it, as they keep the rest | `query.ts`, `query-context.ts` |
+| 2 | A request: `{ highlight: field }` / `{ highlight: null }`, through `quick-filter-change` and `bindSource`'s `ask()` | `query.ts`, `bind-source.ts` |
+| 3 | The chip's menu gets a "Highlight matches" row (ticked while it drives) while its bar has `data-highlight-matches`, written by `provider.highlight` from the app's switch, as 436's are | toolbar, `filter-menu.ts`, provider |
+| 4 | The driver chip wears a highlighter icon and its own look, so a reader sees it marks, not filters | `sherpa-quick-filter` |
+| 5 | The grid: a matched row gets `data-highlight`; CSS gives it a tint through `--_row-fill` (a pin in `state-pins.yaml`) | `sherpa-data-grid` |
+| 6 | The charts: by ❓B below | the provider's `summarise` pass, then each chart |
+| 7 | Demos: "Highlight matches" on Settings › Filtering (Look) | Demos |
+
+❓ **A — what the driver does to the rows.** My reading: it STOPS
+filtering — every row the other chips leave stays, and those it matches light
+up. (Filter AND highlight would light every row, since each shown row
+already matches.)
+
+❓ **B — how a chart shows it.** A chart segment is a group (Status = Open),
+not a row. (1) Each segment draws the MATCHED part inside it: a bar of 40
+with 12 matches draws 12 strong over 40 pale, as Tableau and Power BI do.
+True, more work: the provider sums the rows twice, and each chart draws a
+second mark. (2) A segment lights if ANY of its rows match, the rest dim.
+Cheap, but a Customer driver over a Status chart lights almost every bar.
+My pick: (1), bar and radial first, line and gauge after.
+
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 
 Will, 2026-10-23: *"It would be good to show the 'View context' label in
@@ -1981,7 +2010,7 @@ a section holds the value chips. A section swaps it to `.body`, its header
 (`data-swap-on="data-layout=section"`), and `sherpa-tooltip` now moves its
 listeners when `data-anchor` changes — it read the anchor once, at connect.
 
-### `[ ]` 🚧 436 — DEMOS: a Filtering page in Settings, and a switch for each part
+### `[x]` ✅ 436 — DEMOS: a Filtering page in Settings, and a switch for each part
 
 Will, 2026-10-23: *"Create a 'Filtering' space in the navigation for the
 Sherpa Demo Settings and move all filtering related settings there.*
@@ -2067,6 +2096,11 @@ only filters. **h** — its own item, after: 441.
   "Show section headings" (Look) — `provider.contextLabel` / `provider.sections`
   → `data-no-context-label` / `data-no-sections`, CSS only. The scroll shadows
   are left out: they are app-wide, not a filter setting.
+
+✅ 2026-10-23: a–g and i built; h is 441. Full run, three engines: sherpa-ui
+3288 passed and Demos 555 passed, every failure load (each passes alone).
+WebKit closes no Settings opened from the URL on Escape, so the two new
+Demos tests close it by the back arrow.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 
