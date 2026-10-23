@@ -172,16 +172,20 @@
   display: none;
 }
 
-/* Step 3 — all but Add (still needed when collapsed) and the ⋮ itself. */
+/* Step 3 — all but Add and Saved (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {
   .act-divider,
-  .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"], [data-act="discard"]) { display: none; }
+  .act:not([data-act="add"], [data-act="saved"], [data-act="overflow"], [data-act="apply"], [data-act="discard"]) { display: none; }
 }
-:host(:state(collapse-3)) :is(.act-divider, .act:not([data-act="add"], [data-act="overflow"], [data-act="apply"], [data-act="discard"])) {
+:host(:state(collapse-3)) :is(.act-divider, .act:not([data-act="add"], [data-act="saved"], [data-act="overflow"], [data-act="apply"], [data-act="discard"])) {
   display: none;
 }
 
 /* The ⋮ always shows: it holds Reset and Save filters. Will, TODO 430 */
+
+/* SAVED, split from Filters where the app asks: while there is a set, or one to save. TODO 436 */
+:is(.saved-btn, .column-saved) { display: none; }
+:host([data-saved-menu]:is([data-saveable], :state(has-sets))) :is(.saved-btn, .column-saved) { display: inline-flex; }
 
 /* The Saved chip, while a set is on. TODO 105 */
 :host([data-no-actions]) .actions-zone { display: none; }

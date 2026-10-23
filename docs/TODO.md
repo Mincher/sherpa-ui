@@ -2052,6 +2052,11 @@ only filters. **h** — its own item, after: 441.
   `source.appliedCount(scopes, parts)` counts the fields that filter by their
   applied readings; the provider writes each control's `data-applied`. The
   Filters badge says it; in panel mode, a badge beside the column's "Filters".
+- ✅ **g**, 2026-10-23: "Separate Add Filter and Saved Filter menus" (Layout).
+  `provider.savedMenu` → `data-saved-menu`: a "Saved ▾" button right of
+  Filters, in the bar and the column — the sets (a tick takes one at once),
+  the save rows, Manage Saved Filters (`savedMenuDef`, `drawSaveActions`). The
+  Filters menu and the ⋮ then hold none of them.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 

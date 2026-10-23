@@ -15323,6 +15323,11 @@ the query definition."*
 - **Saving**: each control asks with `filters-save`, `filters-save-as` or
   `filters-delete`; the HOST names it, confirms an overwrite by name, and calls
   `saveFilters(label?)` or `deleteFilters(id?)`.
+- **A Saved menu of its own** (Will, TODO 436, where the app asks:
+  `provider.savedMenu`, `data-saved-menu`): a "Saved" button beside Filters —
+  the sets, a tick taking one AT ONCE (no Apply), then the save rows, then
+  Manage — and the Filters menu and the ⋮ hold none of them. It stays when the
+  bar folds its actions, as Filters does.
 - **Managing** (Will, TODO 427): where the host saves and the reader has sets
   of their own, the Saved section leads with Manage Saved Filters — a menu
   ACTION row (`MenuItem.action`), no tick box — which asks `filters-manage`.

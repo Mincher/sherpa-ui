@@ -14,10 +14,10 @@ import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
+  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, savedMenuDef, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  MORE_MENU, askSwitches, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide,
+  MORE_MENU, askSwitches, drawSaveActions, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
@@ -90,6 +90,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-applied': { type: 'number', kind: 'behaviour' },
     // Its Filters badge — a column's title — counts them, not the chips folded away. TODO 436
     'data-count-applied': { type: 'boolean', kind: 'behaviour' },
+    // The saved sets, the save rows and Manage: a Saved menu of their own. Will, TODO 436
+    'data-saved-menu': { type: 'boolean', kind: 'behaviour' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -457,6 +459,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // `change` reaches here, being in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
+    this.addEventListener('menu-change', this.#onSavedPick);
     this.addEventListener('button-click', this.#onMove);
     this.addEventListener('menu-open', this.#onFieldMoreOpen);
     // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-reads-as-a-warning
@@ -1410,8 +1413,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       } else this.#move(owner);
       return;
     }
-    // Manage Saved Filters, the Filters menu's one action. TODO 427
-    if (value === MANAGE_SETS && this.pathFind(event, '.add-btn')) {
+    // Manage Saved Filters, the Filters menu's one action — or, split, the Saved menu's rows. TODO 427, 436
+    if ((value === MANAGE_SETS && this.pathFind(event, '.add-btn'))
+      || (String(value).startsWith('filters-') && this.pathFind(event, '.saved-btn'))) {
       event.stopImmediatePropagation();
       this.$<SherpaMenu>('.add-btn sherpa-menu')?.hide?.();
       this.#act(value);
@@ -1526,6 +1530,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameContext(chip);
+    if (name === 'data-saved-menu') {
+      if (this.#columned) this.#column.saved(this.#saved.all);
+      else this.#renderAvailable();
+    }
     if (name === 'data-applied' || name === 'data-count-applied') {
       if (name === 'data-count-applied' && !this.hasAttribute(name)) this.#renderAvailable();
       this.#drawApplied();
@@ -1886,9 +1894,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
     ];
     this.#oneRows.tell(added);
-    const def = drawFiltersButton(add, folded.length, added, offer, this.#saved.listed, this.hasAttribute('data-saveable'));
+    // Split, the sets are the Saved menu's. TODO 436
+    const split = this.hasAttribute('data-saved-menu');
+    const def = drawFiltersButton(add, folded.length, added, offer, split ? [] : this.#saved.listed, !split && this.hasAttribute('data-saveable'));
     if (!def) return;
     this.#drawApplied();
+    this.#drawSaved();
     this.#addMenu(add, def);
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     this.#syncSave();
@@ -1912,6 +1923,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       else badge.dataset['count'] = said;
     }
   }
+
+  /** THE SAVED MENU, where the app splits it from Filters: the sets — a tick
+   *  takes one — then the save rows, then Manage. Will, TODO 436 */
+  #drawSaved(): void {
+    this.toggleState('has-sets', this.#saved.listed.length > 0);
+    const btn = this.$('.saved-btn');
+    btn?.querySelector('sherpa-menu')?.remove();
+    if (!btn || !this.hasAttribute('data-saved-menu')) return;
+    const { menu, items } = menuFor(this.root, savedMenuDef(this.#saved.listed));
+    menu.setAttribute('data-align', 'end');
+    btn.append(menu);
+    menu.items?.(items);
+    const manage = this.hasAttribute('data-saveable') && this.#saved.listed.some((s) => s.own);
+    drawSaveActions(this, this.root, menu, this.#saved.applied, manage);
+  }
+
+  /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
+  #onSavedPick = (event: Event): void => {
+    if (!this.pathFind(event, '.saved-btn')) return;
+    const set = this.#saved.pick(new Set(((event as CustomEvent).detail?.values ?? []) as string[]));
+    if (set.apply) this.emit('filters-apply', { id: set.apply });
+    else if (set.dismiss) this.emit('filters-dismiss', { id: set.dismiss });
+  };
 
   /** "Save <name>" beside the Filters button while a set is taken. Will, 366 */
   #syncSave(): void {
@@ -2071,7 +2105,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #openMore(trigger: HTMLElement): void {
     const refresh: MoreRow[] = folded(this.$('.act[data-act="refresh"]')) ? [['refresh']] : [];
-    openMore(this, this.root, trigger, [resetRows(this), saveRows(this, this.#saved.applied), extraRows(this), refresh]);
+    const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this, this.#saved.applied);
+    openMore(this, this.root, trigger, [resetRows(this), saves, extraRows(this), refresh]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

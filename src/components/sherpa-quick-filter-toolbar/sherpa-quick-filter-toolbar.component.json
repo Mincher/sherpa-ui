@@ -136,6 +136,17 @@
                 },
                 {
                   "el": "sherpa-button",
+                  "class": "act saved-btn",
+                  "attrs": {
+                    "data-act": "saved",
+                    "data-size": "sm",
+                    "data-icon-start": "star",
+                    "data-icon-end": "triangle-down",
+                    "aria-haspopup": "dialog"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
                   "class": "act",
                   "attrs": {
                     "data-size": "sm",
@@ -414,6 +425,18 @@
                     "slot": "actions",
                     "data-size": "sm",
                     "data-icon-start": "plus",
+                    "data-icon-end": "triangle-down",
+                    "aria-haspopup": "dialog"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "column-saved",
+                  "part": "saved",
+                  "attrs": {
+                    "slot": "actions",
+                    "data-size": "sm",
+                    "data-icon-start": "star",
                     "data-icon-end": "triangle-down",
                     "aria-haspopup": "dialog"
                   }
@@ -734,6 +757,16 @@
       "declared": true,
       "kind": "style",
       "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope"
+    },
+    {
+      "$type": "prop",
+      "name": "data-saved-menu",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "default": false,
+      "description": "the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's"
     },
     {
       "$type": "prop",

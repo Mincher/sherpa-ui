@@ -14,6 +14,7 @@
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
  * - FILTER_ACTIONS — The rows the Filters menu ends with: its filter actions.
  * - drawFilterActions — Lead a Filters menu with its filter actions: Reset, Reset all on view, then the save rows.
+ * - drawSaveActions — End a Saved menu with its save rows, then Manage Saved Filters.
  * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
  * - askSwitches — The ⋮ menu's two switches: each that MOVED is asked for, Limit first.
@@ -105,6 +106,19 @@ export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Ele
   // `data-lead`: above the values, whenever the menu stamps them.
   for (const one of rows) { one.classList.add('filter-action'); one.setAttribute('data-lead', ''); }
   menu.prepend(...rows);
+}
+
+/** End a Saved menu — split from Filters — with its save rows, then Manage
+ *  Saved Filters, each after a divider: below its sets. Will, TODO 436 */
+export function drawSaveActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined,
+  applied?: { label: string }, manage = false): void {
+  if (!menu) return;
+  for (const old of menu.querySelectorAll(':scope > .save-action')) old.remove();
+  const groups = [drawRows(host, root, saveRows(host, applied)), manage ? drawRows(host, root, [['filters-manage']]) : []];
+  const rows = groups.filter((g) => g.length).flatMap((g) => [cloneFirst(root, 'template.more-divider-tpl'), ...g])
+    .filter((n): n is HTMLElement => !!n);
+  for (const one of rows) one.classList.add('save-action');
+  menu.append(...rows);
 }
 
 /** Hide invalid filters is inactive — not hidden — while Limit is off. Will, TODO 376 */

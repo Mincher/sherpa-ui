@@ -7982,6 +7982,13 @@
             },
             {
               "kind": "field",
+              "name": "savedMenu",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8446,6 +8453,14 @@
               "type": {
                 "text": "boolean"
               }
+            },
+            {
+              "name": "data-saved-menu",
+              "description": "the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             },
             {
               "name": "data-scope",
@@ -9126,6 +9141,9 @@
             },
             {
               "name": "save"
+            },
+            {
+              "name": "saved"
             },
             {
               "name": "scope"

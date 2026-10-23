@@ -79,6 +79,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
 | `data-reset-on-populate` | boolean |  |  |
 | `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
+| `data-saved-menu` | boolean | `false` | the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's |
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
@@ -171,7 +172,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `saved`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 

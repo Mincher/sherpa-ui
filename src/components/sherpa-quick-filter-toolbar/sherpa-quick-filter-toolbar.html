@@ -21,6 +21,7 @@
     data-flat       portrait: its scope is a HEADING, not an accordion — the column's View (boolean)
     data-column     portrait: a column, header and all, even over one scope and its parts (boolean)
     data-no-results its chips say no match counts — the app's choice, written by its provider (boolean)
+    data-saved-menu the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's (boolean)
     data-type      data (default) | view
     data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
                     column. Over ONE scope, the scope is an accordion — its
@@ -159,6 +160,11 @@
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
                      data-icon-start="plus" data-icon-end="triangle-down"
                      aria-haspopup="dialog">Filters</sherpa-button>
+      <!-- SAVED, where the app splits it from Filters: the sets, the save rows,
+           Manage. Will, TODO 436 -->
+      <sherpa-button class="act saved-btn" data-act="saved" data-size="sm"
+                     data-icon-start="star" data-icon-end="triangle-down"
+                     aria-haspopup="dialog">Saved</sherpa-button>
 
       <!-- REFRESH, left of the ⋮. Will, TODO 428 -->
       <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"
@@ -232,6 +238,9 @@
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
                      data-icon-start="plus" data-icon-end="triangle-down"
                      aria-haspopup="dialog">Filters</sherpa-button>
+      <sherpa-button slot="actions" class="column-saved" part="saved" data-size="sm"
+                     data-icon-start="star" data-icon-end="triangle-down"
+                     aria-haspopup="dialog">Saved</sherpa-button>
       <slot name="actions" slot="actions" data-accepts="control"></slot>
       <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
                      data-icon-start="ellipses-vertical"

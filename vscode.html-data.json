@@ -2890,6 +2890,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-saved-menu",
+          "description": "the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's",
+          "valueSet": "v"
+        },
+        {
           "name": "data-scope",
           "description": "ASKED of its provider: the Query scope it draws and answers"
         },

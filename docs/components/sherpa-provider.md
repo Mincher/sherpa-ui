@@ -33,6 +33,7 @@ Put it round the part of a page whose components need data: each component insid
 | `hideUnmatched` | `boolean` | read and write |  |
 | `results` | `boolean` | read and write |  |
 | `countApplied` | `boolean` | read and write |  |
+| `savedMenu` | `boolean` | read and write |  |
 | `applyEvery` | `boolean` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
 | `savedFilterSets` | `{ id: string; label: string; applied: boolean; own: boolean }[]` | read only |  |

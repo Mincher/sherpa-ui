@@ -14,6 +14,7 @@
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: its badge the filters it hides, the old menu gone; never off.
  * - reopenFilters — The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn.
+ * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
  * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
  * - .set — Keep a copy of the host's sets.
  * - .all — A copy of each set, as kept.
@@ -138,6 +139,17 @@ export function drawFiltersButton(
     // The one menu that KEEPS Apply: each tick stamps a chip.
     commit: true,
     options,
+  };
+}
+
+/** The SAVED button's menu, where the app splits it from Filters: the saved
+ *  sets, a tick taking one — its save rows and Manage are the host's to draw
+ *  below them (`drawSaveActions`). Will, TODO 436 */
+export function savedMenuDef(sets: readonly SavedSet[]): FilterDef {
+  return {
+    // A tick takes a set at once: no Apply. TODO 436
+    id: 'saved', label: SAVED_SECTION, select: 'multiple', selectAll: false, commit: false,
+    options: sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, selected: !!s.applied })),
   };
 }
 
