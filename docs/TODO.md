@@ -117,11 +117,12 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ✅ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
 | ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
-| ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
+| 🚧 | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ✅ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
 | ✅ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
+| ⬜ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1888,6 +1889,16 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 441 — FEATURE: Highlight matches
+
+Will, 2026-10-23, in 436: *"Highlight matches (Highlights grid rows, chart
+segments etc. that match the target filter. With this on, every filter chip
+will have to have a menu with a 'Highlight matches' option to set it as the
+driver for highlighting)"*. Its own item, after 436's other switches (Will).
+A data-layer concept first: a HIGHLIGHT that marks rows without filtering
+them, one driver at a time; then who draws it (grid rows, chart segments,
+legend items) and how a chip says it drives. Plan, with ❓, before building.
+
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 
 Will, 2026-10-23: *"It would be good to show the 'View context' label in
@@ -1970,7 +1981,7 @@ a section holds the value chips. A section swaps it to `.body`, its header
 (`data-swap-on="data-layout=section"`), and `sherpa-tooltip` now moves its
 listeners when `data-anchor` changes — it read the anchor once, at connect.
 
-### `[ ]` ⬜ 436 — DEMOS: a Filtering page in Settings, and a switch for each part
+### `[ ]` 🚧 436 — DEMOS: a Filtering page in Settings, and a switch for each part
 
 Will, 2026-10-23: *"Create a 'Filtering' space in the navigation for the
 Sherpa Demo Settings and move all filtering related settings there.*
@@ -1998,6 +2009,34 @@ library offers — Sherpa itself stays app agnostic. Some are new library work
 (the applied-filters badge's place in each mode, the split menu, Highlight
 matches); plan those first, with a ❓ for each place to pick. Today's filter
 settings live on Settings › Application (Filtering section).
+
+**Plan, 2026-10-23.** Each switch is a session key in Demos, set on a
+component or the provider through an option the library offers.
+
+| # | Switch | Library | Demos |
+|---|---|---|---|
+| a | The page itself: Settings › **Filtering**, a nav row; the Application page's Filtering switches move to it (filter mode, Keep each view's filters, Limit to matching filters, Hide invalid filters, Show active filters in green) | — | `app.json`, `templates/filtering.html` |
+| b | **Include View Context in panel mode** — off: the View stays a toolbar in the header | panel mode steps back only the bars a column COVERS (today every landscape bar) | the column's `data-scope`: `view data` or `data` |
+| c | **Include Customer Sites** | a way for an app to leave a field's `child` out of its definition as it opens (a definition hook, or a source option) | the Customer field's Sites |
+| d | **Badge: number of applied filters** — ❓ where, per mode | a count badge the bar and the column draw | — |
+| e | **Badge: matching counts** — off: no chip says its matches | a provider switch: no results drawn | — |
+| f | **Require Apply on every change** | a source/provider option: every scope waits for Apply, as a remote store's does | — |
+| g | **Separate Add Filter and Saved Filter menus** — ❓ the Saved menu's place and rows | a second menu button; the save rows move to it from the ⋮ (430) | — |
+| h | **Highlight matches** — ❓ its own item | a data-layer HIGHLIGHT (a reading that marks, not filters), drawn by the grid's rows and the charts' segments; every chip's menu gets "Highlight matches" to make it the driver | — |
+| i | Others already built, as switches: the filter Switch (hidden since 425 G7), the "View Context" label in toolbar mode (440), the section headings in panel mode (438), the scroll shadows (401) | an attribute each, where none yet | — |
+
+Will, 2026-10-23: **d** — on the Filters button: in toolbar mode its badge
+counts the APPLIED filters (not the chips folded away), and in panel mode the
+same badge sits beside the panel's "Filters" title. **g** — a "Saved ▾" button
+right of Filters: the saved sets (a tick takes one), then Save / Save as /
+Delete, then Manage Saved Filters; the ⋮ keeps Reset, and the Filters menu
+only filters. **h** — its own item, after: 441.
+
+- ✅ **a**, 2026-10-23: Settings › Filtering (`templates/filtering.html`, a row
+  in `app.json`): Layout (filter mode, toolbars or a panel, which the provider
+  now follows from the session), Behaviour (Keep each view's filters, Limit,
+  Hide invalid filters) and Look (Show active filters in green). Application
+  keeps Notifications, Navigation, Layout and Experiments.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 
