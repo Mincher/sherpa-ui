@@ -490,6 +490,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   protected override renderData(data: unknown): void {
     this.#filters = Array.isArray(data) ? (data as FilterDef[]) : [];
     this.#render();
+    // Drawn from its filters: a column shows what is under it now. TODO 439
+    this.toggleState('populated', true);
   }
 
   /** The active TOGGLE chips. TRAP T-toggle-chips-have-no-field — menu chips are in `values`. */

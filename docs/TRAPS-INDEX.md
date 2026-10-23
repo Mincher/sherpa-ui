@@ -238,7 +238,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (74)
+## The join and the app layer (75)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
@@ -307,6 +307,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-steering-events-are-a-closed-list](TRAPS.md#t-steering-events-are-a-closed-list) — bind-source
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — app
 - [T-the-filter-mode-is-set-before-the-page-paints](TRAPS.md#t-the-filter-mode-is-set-before-the-page-paints) — outlet, provider
+- [T-the-local-context-waits-for-the-view](TRAPS.md#t-the-local-context-waits-for-the-view) — provider
 - [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — provider
 - [T-the-outlet-keeps-the-nav](TRAPS.md#t-the-outlet-keeps-the-nav) — outlet
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — provider
@@ -315,7 +316,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (170)
+## Filters (171)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -473,6 +474,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-filters-button-is-a-door-not-a-filter](TRAPS.md#t-the-filters-button-is-a-door-not-a-filter) — filter-panel, quick-filter-toolbar
 - [T-the-fold-measures-a-chip-that-has-not-drawn-itself](TRAPS.md#t-the-fold-measures-a-chip-that-has-not-drawn-itself) — quick-filter-toolbar
 - [T-the-header-chips-must-reach-the-query](TRAPS.md#t-the-header-chips-must-reach-the-query) — quick-filter-toolbar
+- [T-the-local-context-waits-for-the-view](TRAPS.md#t-the-local-context-waits-for-the-view) — quick-filter-toolbar
 - [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — filter-panel
 - [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — filter-panel, more-menu, quick-filter-toolbar, sherpa-filter-more
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — filter-panel

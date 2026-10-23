@@ -16213,6 +16213,26 @@ specific rule: it skips a chip the search hides, or the search shows it.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 
+### T-the-local-context-waits-for-the-view
+
+**The column's Local Context stays unseen until its View has drawn** (TODO
+439). A section draws its chips ~650ms after it is drawn at 4x CPU — one long
+task for every chip and menu — so the View, at the top, grew 24 → 296px over
+the scopes already showing under it: CLS 0.054 in panel mode. Each bar now
+says `:state(populated)` once `populate()` draws, and the column hides the
+rule, the "Local Context" label and its scopes (`visibility: hidden`, so
+nothing is laid out again) while the View's bar has not: they appear at once,
+drawn, and nothing moves. A page with no View scope has no View bar, so
+nothing waits.
+
+**A late bar is told alone.** The column's sections join one by one, and each
+`joined()` drew that bar and then told EVERY bar its Add list and the saved
+sets: ~6 times each as the column opened. `#offer(only)` tells only the bars
+just drawn.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/components/sherpa-provider/provider-page.ts`
+
 ### T-a-hairline-resolves-by-density
 
 The border token is `0.5px`, and what a browser resolves that to depends on the

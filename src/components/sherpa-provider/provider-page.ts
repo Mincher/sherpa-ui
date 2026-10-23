@@ -319,12 +319,22 @@ export class ProviderPage {
   /** Each saving control is told the page's sets, and the one taken. TODO 105 */
   #saySaved(): void {
     if (!this.#opened) return;
-    const sets: SavedSet[] = this.savedFilterSets
-      .map(({ id, label, applied, own }) => ({ id, label, ...(applied ? { applied } : {}), ...(own ? { own } : {}) }));
+    const sets = this.#sets();
     const sent = JSON.stringify(sets);
     if (sent === this.#sentSets) return;
     this.#sentSets = sent;
-    for (const el of [...this.#host.bars(), ...this.#host.panels()] as Array<Element & { savedSets?: SavedSet[] }>) {
+    this.#tellSets([...this.#host.bars(), ...this.#host.panels()], sets);
+  }
+
+  /** The page's sets, as a saving control is told them. */
+  #sets(): SavedSet[] {
+    return this.savedFilterSets
+      .map(({ id, label, applied, own }) => ({ id, label, ...(applied ? { applied } : {}), ...(own ? { own } : {}) }));
+  }
+
+  /** These controls are told the sets. */
+  #tellSets(els: readonly Element[], sets: SavedSet[]): void {
+    for (const el of els as Array<Element & { savedSets?: SavedSet[] }>) {
       if ('savedSets' in el) el.savedSets = sets;
     }
   }
@@ -404,9 +414,7 @@ export class ProviderPage {
       if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
     }));
     if (!only) this.#barsDrawn = true;
-    // A late bar is told the saved sets the others already have.
-    else this.#sentSets = '';
-    this.#offer();
+    this.#offer(only);
   }
   /** The page's bars have been drawn. */
   #barsDrawn = false;
@@ -419,18 +427,21 @@ export class ProviderPage {
     if (this.#barsDrawn && !this.#drawn.has(bar)) void this.drawBars(this.#view, [bar]);
   }
 
-  /** Each bar's Add list: what its scope may still add — by the chips it HAS,
-   *  so a restore can draw a held field's chip — each noting where it lives.
-   *  And the page's saved sets. TRAP T-saved-filters-are-every-scope */
-  #offer(): void {
+  /** Each bar's Add list — or only these bars': a late one joining tells no
+   *  other again (TRAP T-the-local-context-waits-for-the-view) — what its scope may still add, by the chips it
+   *  HAS, so a restore can draw a held field's chip, each noting where it
+   *  lives. And the page's saved sets. TRAP T-saved-filters-are-every-scope */
+  #offer(only?: readonly Bar[]): void {
     const opened = this.#opened;
     if (!opened) return;
-    for (const bar of this.#host.bars()) {
+    for (const bar of only ?? this.#host.bars()) {
       const scope = this.#host.scopeOf(bar);
       if (!scope) continue;
       bar.available?.(opened.source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })));
     }
-    this.#saySaved();
+    // A late bar is told the sets the others already have.
+    if (only) this.#tellSets(only, this.#sets());
+    else this.#saySaved();
   }
 
   /** The View on screen. */
