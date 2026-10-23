@@ -140,6 +140,11 @@
         },
         {
           "el": "span",
+          "class": "moved sherpa-text-small",
+          "part": "moved"
+        },
+        {
+          "el": "span",
           "class": "menu-slot",
           "children": [
             {

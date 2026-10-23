@@ -1220,7 +1220,7 @@
         {
           "$type": "method",
           "name": "drawReading",
-          "args": "field: string, reading: FieldReading",
+          "args": "field: string, reading: FieldReading, scope?: string",
           "description": "drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go."
         },
         {

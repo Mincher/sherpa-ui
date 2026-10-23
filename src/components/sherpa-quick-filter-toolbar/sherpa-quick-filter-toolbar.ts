@@ -366,7 +366,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const chip of this.#chips()) {
       const def = this.#filters.find((f) => f.id === chip.dataset['id']);
       const menu = chip.querySelector<SherpaMenu>(':scope > sherpa-menu');
+      // A field answered by conditions alone has no values to lay out: it stays a chip. TODO 426
       const list = !!def && menu?.getAttribute('data-type') === 'filter' && !menu.dataset['body']
+        && !menu.hasAttribute('data-advanced-only')
         && !chip.hasAttribute('data-persistent') && !arranges(kindOf(def)) && !oneChipList(def);
       if (portrait && list) {
         chip.setAttribute('data-layout', 'section');
@@ -849,9 +851,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * the reader's own picks for when the view lets go.
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
-  drawReading(field: string, reading: FieldReading): void {
-    // A column's sections are told their own. TODO 425
-    if (this.#columned) return;
+  drawReading(field: string, reading: FieldReading, scope?: string): void {
+    // A column's sections are told their own; a chart's, through it. TODO 425, 426
+    if (this.#columned) return void (scope && this.#column.drawReading(field, reading, scope));
     const id = this.#idOf(field);
     if (this.superseded.includes(id)) return;
     /* A chip just ADDED — a raised field's — stamps its menu a moment later,
@@ -1261,9 +1263,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** What Move says for a field, or nothing where it cannot move: Group and
-   *  Sort, a selector, a chart's own. */
+   *  Sort, a selector. */
   #moveLabel(def: FilterDef): string {
-    if (!this.#scope || def.persistent || arranges(kindOf(def)) || this.hasAttribute('data-no-actions')) return '';
+    // A chart's own field moves up too: elevated, it narrows every component. Will, TODO 52
+    if (!this.#scope || def.persistent || arranges(kindOf(def))) return '';
     if (this.#scope !== VIEW) return this.word('raise');
     const to = def.sendTo;
     return to ? `${this.word(to.origin ? 'return' : 'lower')} ${to.label}` : '';
@@ -1716,9 +1719,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const def of [...this.#filters]) {
       if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
+    /* A field the scope holds that this bar does not offer — a chart's own,
+       sent up to the View — is drawn from the scope's own description. TODO 426 */
+    for (const id of want) {
+      if (this.#heldIds.includes(id) || this.#available.some((f) => f.id === id)) continue;
+      const told = fields.find((f) => this.#idOf(f.id) === id);
+      if (!told) continue;
+      const { state: _state, ...def } = told;
+      this.#available.push({ ...(def as FilterDef), id });
+    }
     const add = [...want].filter((id) => !this.#heldIds.includes(id)
       && this.#available.some((f) => f.id === id));
-    if (add.length) this.#addFilters(add, { silent: true });
+    /* An add rebuilds every chip: not while the reader drafts in an open menu —
+       the draw after their Apply adds it. TRAP T-a-stale-draw-keeps-the-bars-own-change */
+    const drafting = this.#chips().some((c) => this.#drafting(c.dataset['id'] ?? ''));
+    if (add.length && !drafting) this.#addFilters(add, { silent: true });
     this.#orderAs(fields.map((f) => this.#idOf(f.id)));
     this.#takeWays(fields);
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp

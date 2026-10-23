@@ -211,6 +211,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it. TRAP T-an-inactive-chip-says-where-its-filter-went */
     else if (name === 'data-superseded' || name === 'data-applied-at') {
       this.#syncCountTip(this.menu?.values ?? []);
+      // A section held above says where its filter went, in its values' place. TODO 426
+      const moved = this.$('.moved');
+      if (moved) moved.textContent = this.hasAttribute('data-superseded') ? movedTo(this.dataset['appliedAt']) : '';
     } else this.#syncText();
   }
 

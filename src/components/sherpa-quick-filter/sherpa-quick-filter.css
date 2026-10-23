@@ -130,6 +130,14 @@
   justify-self: start;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
+.moved { display: none; }
+/* HELD ABOVE: the View answers it, so its values give way to where it went. TODO 426 */
+:host([data-layout="section"][data-superseded]) .values { display: none; }
+:host([data-layout="section"][data-superseded]) .moved {
+  display: block;
+  grid-column: 1 / -1;
+  color: var(--sherpa-style-content-secondary, #35353d);
+}
 :host([data-layout="section"]) .values {
   grid-column: 1 / -1;
   display: flex;

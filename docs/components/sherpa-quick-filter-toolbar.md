@@ -117,7 +117,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `search(text: string)` | search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425 |
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>, scope?: string)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |
-| `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
+| `drawReading(field: string, reading: FieldReading, scope?: string)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
 | `supersede(ids: readonly string[], appliedAt?: string)` | supersede([...ids]) — the VIEW now owns these fields. |
 | `report()` | report() — announce the bar with no request: its `values` and `active`, for a host that follows the View chip. Bound, each door already asked. |
 | `available(defs: FilterDef[])` | available([...]) — the filters the Add chip offers, over the populate() set. |

@@ -107,7 +107,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
 | 🚧 | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
-| 🚧 | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
+| ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ⬜ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ⬜ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
@@ -1904,7 +1904,7 @@ Dialog without clicking Apply will discard the changes. Removed definitions
 will need to be inactive (greyed out) until Apply is clicked and the removal
 commited."*
 
-### `[ ]` 🚧 426 — DEMOS: Records uses the toolbar column, not the filter panel
+### `[x]` ✅ 426 — DEMOS: Records uses the toolbar column, not the filter panel
 
 Will, 2026-10-23: *"Let's update the Records pages in Sherpa Demos to use the new
 filter-toolbar implementation of the panel instead of the filter-panel
@@ -1914,10 +1914,21 @@ has no Classic switch. The compare page (Customers › Filter layouts) keeps the
 classic panel. 35 Demos tests drove the classic panel on Records: each moves to
 the column, and a behaviour the column lacks is fixed here or queued below.
 
-- ⬜ **BUG, Will 2026-10-23:** *"Toggling legend items doesn't make the relevant
+- ✅ **BUG, Will 2026-10-23:** *"Toggling legend items doesn't make the relevant
   filter chips active. E.g if I deactivate the 'Trial' legend item then the
   Active, Suspended, and Churned filter chips should be active in the panel
-  mode."* — the chart's section in the column.
+  mode."* A chart's own answer is told a panel (a control over several
+  scopes), and the column dropped it; it hands it to the chart's section now.
+- ✅ **All 35 tests moved (2026-10-23).** What the port found and fixed: two
+  bars over one scope (`drawBarsBehind`, TRAP T-two-bars-over-one-scope); a
+  field sent up learns its way back, on a strip and a section (`#takeWays`); a
+  held field the bar does not offer — a chart's, sent up — is drawn from the
+  scope's description; a section's ⋮ is said on each layout; a held draw lands
+  only if latest, and the ⋮'s Advanced draws it first; a conditions-only field
+  stays a chip (Name); a chart's field moves up from its section; a section
+  held above shows where its filter went in its values' place; its count sits
+  right of its title (TODO 133); an add waits while a menu drafts.
+  Chromium: sherpa-ui 1149, Demos 186.
 
 ### `[ ]` 🚧 425 — REWORK: the panel is the bar, in portrait
 

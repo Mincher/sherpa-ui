@@ -11,10 +11,12 @@
  * - .draw — One portrait toolbar per scope, in order, and the Filters menu for them all — once it is open.
  * - .opened — It opened: what it was told while shut is drawn now.
  * - .present — What the filters before a scope's fields leave: an offer with nothing left is spent.
+ * - .drawReading — A chart's own answer, told the column as a panel: its section draws it.
  * - .saved — The reader's saved sets: the Filters menu's Saved section, and Save <name>.
  */
 import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
+import type { FieldReading } from '../../core/data/filter-state.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import { SavedSets, drawFiltersButton, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
 import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore } from '../../core/ui/more-menu.js';
@@ -109,6 +111,15 @@ export class ToolbarColumn {
   present(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
     this.#present.set(scope, present);
     if (this.#spentKey() !== this.#spentFor) this.#drawFilters();
+  }
+
+  /** A chart's own answer — a PART's — is told a panel, not a bar: the column
+   *  hands it to that chart's section. A legend's press shows there. Will,
+   *  TODO 426. TRAP T-a-chart-scope-is-its-legend-field */
+  drawReading(field: string, reading: FieldReading, scope: string): void {
+    if (!this.#scopes.find((s) => s.scope === scope)?.part) return;
+    const bar = this.#$(`.sections > [data-scope="${CSS.escape(scope)}"]`) as (Section & { drawReading?: (f: string, r: FieldReading) => void }) | null;
+    bar?.drawReading?.(field, reading);
   }
 
   /** The reader's saved sets: the Filters menu's Saved section, and Save <name>. TRAP T-saved-filters-are-every-scope */

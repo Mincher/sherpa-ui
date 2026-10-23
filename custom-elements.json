@@ -8684,6 +8684,13 @@
                   "type": {
                     "text": "FieldReading"
                   }
+                },
+                {
+                  "name": "scope",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
                 }
               ],
               "description": "drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go."
@@ -9481,6 +9488,9 @@
             },
             {
               "name": "more"
+            },
+            {
+              "name": "moved"
             },
             {
               "name": "swatch"
