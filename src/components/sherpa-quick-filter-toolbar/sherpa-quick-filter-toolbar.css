@@ -89,7 +89,7 @@
 :host([data-type="view"]:not([data-panel-mode])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away])) {
   position: relative;
 }
-:host([data-type="view"]:not([data-panel-mode])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away]))::before {
+:host([data-type="view"]:not([data-panel-mode], [data-no-context-label])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away]))::before {
   content: attr(data-context);
   position: absolute;
   inset-block-end: calc(100% + var(--sherpa-display-mode-space-2xs, 4px));
@@ -294,23 +294,23 @@ sherpa-accordion.scope::part(actions) {
    lone chip's own field's — and "Organise" over Group and Sort: a list field's
    heading, as the chip draws it. Will, TODO 438 · TRAP T-a-section-is-headed-once */
 /* …never over a chip the search hides. */
-:host([data-orientation="portrait"]) .chips > .chip[data-section-start]:not([data-no-matches]) {
+:host([data-orientation="portrait"]:not([data-no-sections])) .chips > .chip[data-section-start]:not([data-no-matches]) {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 :host([data-orientation="portrait"]:state(has-organise)) .organise-zone { flex-wrap: wrap; }
-:host([data-orientation="portrait"]) .chips > .chip[data-section-start]::before,
-:host([data-orientation="portrait"]:state(has-organise)) .organise-zone::before {
+:host([data-orientation="portrait"]:not([data-no-sections])) .chips > .chip[data-section-start]::before,
+:host([data-orientation="portrait"]:state(has-organise):not([data-no-sections])) .organise-zone::before {
   color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-display-mode-fonts-scale-sm, 12px);
   line-height: var(--sherpa-display-mode-fonts-scale-lg, 16px);
   font-weight: var(--sherpa-font-weight-light, 300);
   text-transform: uppercase;
 }
-:host([data-orientation="portrait"]) .chips > .chip[data-section-start]::before { content: attr(data-section-start); }
-:host([data-orientation="portrait"]:state(has-organise)) .organise-zone::before {
+:host([data-orientation="portrait"]:not([data-no-sections])) .chips > .chip[data-section-start]::before { content: attr(data-section-start); }
+:host([data-orientation="portrait"]:state(has-organise):not([data-no-sections])) .organise-zone::before {
   content: attr(data-section);
   flex-basis: 100%;
 }

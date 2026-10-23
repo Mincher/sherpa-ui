@@ -683,6 +683,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-context-label",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
       "name": "data-no-results",
       "type": "boolean",
       "observed": true,
@@ -690,6 +698,14 @@
       "kind": "behaviour",
       "default": false,
       "description": "its chips say no match counts — the app's choice, written by its provider"
+    },
+    {
+      "$type": "prop",
+      "name": "data-no-sections",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
     },
     {
       "$type": "prop",

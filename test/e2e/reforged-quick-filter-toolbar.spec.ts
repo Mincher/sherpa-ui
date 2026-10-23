@@ -2546,13 +2546,18 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
       label: ['customer', 'region'].map((id) => getComputedStyle(chip(id), '::before').content),
     });
     const toolbar = read();
+    // The app's "off", from its provider. TODO 436
+    el.setAttribute('data-no-context-label', '');
+    const off = read().label[0];
+    el.removeAttribute('data-no-context-label');
     // Panel mode: the View chip alone, so neither.
     el.setAttribute('data-panel-mode', '');
     await window.__settled();
-    return { toolbar, panel: read() };
+    return { toolbar, off, panel: read() };
   });
   // Will, TODOs 433 and 440
   expect(r.toolbar).toEqual({ divider: '""', label: ['"View Context"', 'none'] });
+  expect(r.off).toBe('none');
   expect(r.panel).toEqual({ divider: 'none', label: ['none', 'none'] });
 });
 
@@ -2586,10 +2591,14 @@ test('in portrait, each SECTION is headed once: a named run of chips, a lone chi
       heads: [...sr.querySelectorAll<HTMLElement>('.chips > .chip')].map((c) => [c.dataset['id'], c.getAttribute('data-section-start')]),
       drawn: getComputedStyle(sr.querySelector('.chip[data-id="from"]')!, '::before').content,
       organise: getComputedStyle(sr.querySelector('.organise-zone')!, '::before').content,
+      // The app's "off", from its provider. TODO 436
+      off: (el.setAttribute('data-no-sections', ''), [sr.querySelector('.chip[data-id="from"]')!, sr.querySelector('.organise-zone')!]
+        .map((n) => getComputedStyle(n, '::before').content)),
     };
   });
   // Will, TODO 438: one heading per run; a list field heads itself.
   expect(r.heads).toEqual([['from', 'When'], ['to', null], ['seats', 'Seats'], ['plan', null]]);
   expect(r.drawn).toBe('"When"');
   expect(r.organise).toBe('"Organise"');
+  expect(r.off).toEqual(['none', 'none']);
 });

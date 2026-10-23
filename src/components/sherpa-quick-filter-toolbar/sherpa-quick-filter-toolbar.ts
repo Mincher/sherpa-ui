@@ -92,6 +92,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-count-applied': { type: 'boolean', kind: 'behaviour' },
     // The saved sets, the save rows and Manage: a Saved menu of their own. Will, TODO 436
     'data-saved-menu': { type: 'boolean', kind: 'behaviour' },
+    // No "View Context" over the View's first filter, in toolbar mode. Will, TODO 436
+    'data-no-context-label': { type: 'boolean', kind: 'visibility' },
+    // No section names over its filters, in portrait. Will, TODO 436
+    'data-no-sections': { type: 'boolean', kind: 'visibility' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.

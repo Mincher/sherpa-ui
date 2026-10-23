@@ -247,6 +247,42 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: a Saved menu of its own. */
   #savedMenu = false;
 
+  /** Each bar shows its filter Switch. The app sets it, from its session;
+   *  until then a bar keeps its own `data-switchable`. Will, TODO 436 */
+  get switchable(): boolean {
+    return this.#switchable === true;
+  }
+  set switchable(on: boolean) {
+    this.#switchable = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: the Switch — or null, each bar's own. */
+  #switchable: boolean | null = null;
+
+  /** The View's name over its first filter, in toolbar mode. The app sets it,
+   *  from its session. Will, TODO 436 */
+  get contextLabel(): boolean {
+    return this.#contextLabel;
+  }
+  set contextLabel(on: boolean) {
+    this.#contextLabel = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: the View Context label. */
+  #contextLabel = true;
+
+  /** Each section's name over its filters, in panel mode. The app sets it,
+   *  from its session. Will, TODO 436 */
+  get sections(): boolean {
+    return this.#sections;
+  }
+  set sections(on: boolean) {
+    this.#sections = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: the section headings. */
+  #sections = true;
+
   /** Every scope the page declares waits for its bar's Apply — not only the
    *  View's. The app sets it, from its session. Will, TODO 436.
    *  TRAP T-apply-and-discard-wait-for-a-change */
@@ -276,6 +312,9 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-no-results', !this.#results);
     el.toggleAttribute('data-count-applied', this.#countApplied);
     el.toggleAttribute('data-saved-menu', this.#savedMenu);
+    if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
+    el.toggleAttribute('data-no-context-label', !this.#contextLabel);
+    el.toggleAttribute('data-no-sections', !this.#sections);
   }
   /** The app's choice, for every source. */
   #limit = false;

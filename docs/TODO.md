@@ -2061,6 +2061,12 @@ only filters. **h** — its own item, after: 441.
   `definition(context, def)` option is the app's last word on a definition as
   its Context opens (a copy); `outlet.reload()` opens the Context again, and
   waits while Settings is open. Off, Demos drops each field's `child`.
+- ✅ **i**, 2026-10-23: three more switches. "Show the filter Switch"
+  (Behaviour) — `provider.switchable` writes each bar's `data-switchable`, and
+  until the app sets it a bar keeps its own. "Show the View Context label" and
+  "Show section headings" (Look) — `provider.contextLabel` / `provider.sections`
+  → `data-no-context-label` / `data-no-sections`, CSS only. The scroll shadows
+  are left out: they are app-wide, not a filter setting.
 
 ### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
 

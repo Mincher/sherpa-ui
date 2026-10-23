@@ -7995,6 +7995,27 @@
             },
             {
               "kind": "field",
+              "name": "switchable",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "contextLabel",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "sections",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8404,12 +8425,24 @@
               }
             },
             {
+              "name": "data-no-context-label",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-no-results",
               "description": "its chips say no match counts — the app's choice, written by its provider",
               "type": {
                 "text": "boolean"
               },
               "default": "false"
+            },
+            {
+              "name": "data-no-sections",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "name": "data-nothing-to-reset",
