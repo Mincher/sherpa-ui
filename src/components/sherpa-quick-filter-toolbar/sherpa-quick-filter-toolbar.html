@@ -18,7 +18,7 @@
 
   Public API:
     data-scroll-shadow  an inner shadow on each edge its column is scrolled past (boolean)
-    data-card       portrait: its scope is a CARD, not an accordion — the column's View (boolean)
+    data-flat       portrait: its scope is a HEADING, not an accordion — the column's View (boolean)
     data-type      data (default) | view
     data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
                     column. Over ONE scope, the scope is an accordion — its
@@ -192,37 +192,36 @@
   </sherpa-accordion>
 </template>
 
-<!-- CARD — a portrait toolbar whose scope is a CARD, not an accordion: the
-     column's View Context. Its header holds the name and Apply / Discard; its
-     chips are the card's body. Will, TODO 435 -->
-<template id="card">
-  <sherpa-container class="card" part="card">
-    <sherpa-container-header slot="header" class="scope" part="scope">
-      <span slot="actions" class="actions-zone" part="actions">
-        <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
-                       data-look="saturated" disabled>Apply</sherpa-button>
-        <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
-                       data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
-        <slot name="actions" data-accepts="control"></slot>
-      </span>
-    </sherpa-container-header>
-    <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
-      <div class="switch-zone" part="switch">
-        <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
-      </div>
-      <div class="organise-zone" part="organise"></div>
-      <div class="chips" part="chips"></div>
+<!-- FLAT — a portrait toolbar whose scope is a HEADING, not an accordion: the
+     column's View Context. The heading row holds Apply and Discard; its fields
+     follow. Will, TODO 435 -->
+<template id="flat">
+  <sherpa-section-header class="scope" part="scope" data-size="sm" data-divider="none">
+    <span slot="actions" class="actions-zone" part="actions">
+      <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
+                     data-look="saturated" disabled>Apply</sherpa-button>
+      <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
+                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+      <slot name="actions" data-accepts="control"></slot>
+    </span>
+  </sherpa-section-header>
+  <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
+    <div class="switch-zone" part="switch">
+      <sherpa-switch class="filters-switch" data-type="simple" checked aria-label="Apply filters"></sherpa-switch>
     </div>
-  </sherpa-container>
+    <div class="organise-zone" part="organise"></div>
+    <div class="chips" part="chips"></div>
+  </div>
 </template>
 
 <!-- COLUMN — portrait over SEVERAL scopes: the panel area's. ONE header — Save
      <name>, the Filters menu for every scope, the page's buttons, ⋮, and the
-     one search above every scope — over two cards: the View Context, and a
-     portrait toolbar per component scope. TODO 425 · Will, TODO 435 -->
+     one search above every scope — over the View Context, a rule, then the
+     Local Context: a portrait toolbar per component scope. TODO 425 · Will, TODO 435 -->
 <template id="column">
-  <div class="column" part="column">
-    <sherpa-container-header class="head" part="head" data-icon="filter" data-heading="Filters">
+  <sherpa-container class="column" part="column" data-padding="none"
+                    data-swap-on="data-scroll-shadow" data-swap-data-scroll-shadow="">
+    <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
       <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
@@ -237,13 +236,14 @@
                          placeholder="Search filters" autocomplete="off"
                          aria-label="Search every filter"></sherpa-input-text>
     </sherpa-container-header>
-    <div class="cards sherpa-scroll-shadow" part="cards">
-      <div class="view-section" part="view-section"></div>
-      <sherpa-container class="scopes" part="scopes" data-padding="none">
-        <div class="sections" part="sections"></div>
-      </sherpa-container>
+    <div class="sections" part="sections">
+      <div class="view-scope" part="view-scope"></div>
+      <hr class="scope-rule" part="scope-rule" />
+      <sherpa-section-header class="local-heading" part="local-heading" data-heading="Local Context"
+                             data-size="sm" data-divider="none"></sherpa-section-header>
+      <div class="local-scopes" part="local-scopes"></div>
     </div>
-  </div>
+  </sherpa-container>
 
   <!-- One scope's toolbar, in portrait. -->
   <template class="section-tpl"><sherpa-quick-filter-toolbar data-orientation="portrait"></sherpa-quick-filter-toolbar></template>

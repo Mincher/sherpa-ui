@@ -120,7 +120,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
 | ⬜ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
 | ⬜ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
-| ⬜ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after its cards show, so the View Context card grows and pushes the card under it (CLS 0.056, test bound raised to Good, 0.1); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
+| ⬜ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1892,11 +1892,11 @@ held by Will).
 Found in 435, 2026-10-23, Records in panel mode at 4x CPU: the column's cards
 show at ~720ms with headers only; each section is told its filters
 (`available()`) ~6 times between 768 and 795ms; the chips draw at ~1620ms. The
-View Context card, at the top, grows 51 → 299px and pushes the card under it:
-CLS 0.056. Demos' `reforged-panel-mode-does-not-shift` bound for panel mode is
-Good (0.1) until this is fixed; put it back to 0.05 after. Draw the chips with
-the cards, or hold the cards back until the View's are drawn (a View with no
-filters must still show).
+View scope, at the top, grows ~250px and pushes the scopes under it: CLS
+0.053 with 435's flat View heading (0.047 as an accordion, 0.056 as two
+cards). Demos' `reforged-panel-mode-does-not-shift` bounds panel mode at Good
+(0.1) until this is fixed; put it back to 0.05 after. Draw the chips with the column, or hold the column's
+body back until the View's are drawn (a View with no filters must still show).
 
 ### `[ ]` ⬜ 438 — BUG: the column has no "Date" or "Organise" section labels
 
@@ -1976,15 +1976,23 @@ the two cards share the column's height and its scroll (each scrolls, or the
 column), and where the header and search go.
 
 Will picked A: the header (Filters, Save, the Filters menu, ⋮, search) stays
-ABOVE both cards.
+ABOVE both cards. Built as two cards (3309cc68), then Will: *"I'm not a fan of
+the 2 containers for filter scopes. I think we just need better visual
+separation of the scopes in 1 container."* Banded headers, tried next: *"The
+banded headers arent great. I was thinking more like: View Context — Filter
+sections; White space; Divider (light grey); White space; Local Context —
+Filter sections."* He picked small sub-headings for the component scopes.
 
-✅ 2026-10-23: the column is the header over a scrolling box of two cards,
-16px apart: "View Context" (a portrait toolbar with `data-card`: a card, not an
-accordion — its name and Apply / Discard in the card's header, its chips the
-body), then the component scopes, each an accordion. Demos' page definitions
-name the View "View Context"; the Move row says "Move to View Context". The
-templates every variant clones moved to one family file, `toolbar-rows.html`.
-Panel mode's CLS at 4x is 0.056 (TODO 439).
+Then: *"Context labels are far too large."* — 16px down to the section
+header's small size, 12px.
+
+✅ 2026-10-23: ONE container. "View Context" is a plain label (12px, a
+portrait toolbar with `data-flat`: a section header with Apply and Discard,
+then its fields — no accordion, no icon); white space, a light grey rule,
+white space; then the "Local Context" label, over each component scope as an accordion
+(14px), as before. Demos' page definitions name the View "View Context"; the
+Move row says "Move to View Context". The templates every toolbar variant
+clones moved to one family file, `toolbar-rows.html`.
 
 ### `[ ]` ⬜ 434 — LOOK: the App Header's title joins its actions' row
 

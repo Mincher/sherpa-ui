@@ -193,21 +193,21 @@
 /* ── PORTRAIT — the panel's column. One scope is an accordion, as a panel's
    scope is: Group and Sort, then each field; nothing folds. TODO 425 */
 /* No card in a card: the column draws the rule between scopes. */
-sherpa-accordion.scope { border-width: 0; }
+.scope { border-width: 0; }
 /* The chevron LEADS the heading; the badge and actions end the row. It stays
    at the top while its fields scroll under it. */
-sherpa-accordion.scope::part(header) {
+.scope::part(header) {
   align-items: center;
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
   background: var(--sherpa-style-surface-base, #fff);
 }
-sherpa-accordion.scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
-sherpa-accordion.scope::part(icon),
-sherpa-accordion.scope::part(titles) { order: 1; }
-sherpa-accordion.scope::part(badge) { order: 2; }
-sherpa-accordion.scope::part(actions) {
+.scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+.scope::part(icon),
+.scope::part(titles) { order: 1; }
+.scope::part(badge) { order: 2; }
+.scope::part(actions) {
   position: sticky;
   inset-block-start: var(--sherpa-display-mode-space-sm, 12px);
   z-index: 2;
@@ -257,24 +257,14 @@ sherpa-accordion.scope::part(actions) {
 }
 :host(:state(column)[open]) { display: block; }
 .column {
-  display: flex;
-  flex-direction: column;
   block-size: 100%;
+  box-shadow: none;
 }
-/* The View Context's card, then the component scopes', 16px apart: they
-   scroll, the header stays. Will, TODO 435 */
-.cards {
-  flex: 1 1 auto;
-  min-block-size: 0;
+.column::part(body) {
   overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-display-mode-space-base, 16px);
-  --_scroll-shadow-gap: var(--sherpa-display-mode-space-base, 16px);
+  min-block-size: 0;
+  padding: 0;
 }
-.cards > * { flex: none; }
-.view-section:empty,
-.scopes:has(.sections:empty) { display: none; }
 /* ONE SIZE UP: the panel area's own chrome. */
 .head::part(icon) {
   inline-size: var(--sherpa-theme-content-size-large, 16px);
@@ -302,10 +292,23 @@ sherpa-accordion.scope::part(actions) {
   display: flex;
   flex-direction: column;
 }
-/* A RULE between component scopes. Will, G13 */
-.sections > * + * {
-  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base-1, #b3b3c3);
+/* The View Context, white space, a light rule, white space, then the Local
+   Context. Each part only while there is a scope on both sides. Will, TODO 435 */
+.scope-rule {
+  /* Inline margins set: a flex column's `hr` keeps the UA's auto ones, and shrinks to nothing. */
+  margin: var(--sherpa-display-mode-space-base, 16px) var(--sherpa-theme-padding-lg, 16px);
+  border: 0;
+  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
+/* The two contexts' labels, small, in the scopes' inset. */
+.local-heading,
+:host([data-flat]) .scope { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
+:host([data-flat]) .scope { padding-block-start: var(--sherpa-display-mode-space-sm, 12px); }
+/* The View's fields, in the inset an accordion's body gives the rest. */
+:host([data-flat]) .bar { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
+.view-scope:empty ~ :is(.scope-rule, .local-heading),
+.local-scopes:empty,
+.sections:has(.local-scopes:empty) :is(.scope-rule, .local-heading) { display: none; }
 
 /* A section's ⋮ offers only what applies to its field, said by the bar. */
 .field-more:not([data-move="raise"]) .more-item[value="raise"],

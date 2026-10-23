@@ -1,8 +1,8 @@
 /**
  * toolbar-column.ts — a portrait toolbar over SEVERAL scopes: the panel area's
  * column. Under ONE header — Save <name>, ONE Filters menu for every scope, ⋮
- * and the search — the View Context's card, then a card of a portrait toolbar
- * per component scope. TODO 425, 435 · TRAP T-the-panel-is-the-bar-in-portrait
+ * and the search — the View Context, a rule, then the Local Context: a
+ * portrait toolbar per component scope. TODO 425, 435 · TRAP T-the-panel-is-the-bar-in-portrait
  *
  * Map:
  * - ColumnEvent — What a column says: its toolbar's own events.
@@ -67,7 +67,7 @@ export class ToolbarColumn {
 
   /** Each scope's portrait toolbar, the View's first. */
   #bars(): Section[] {
-    return [...this.#$('.view-section')?.children ?? [], ...this.#$('.sections')?.children ?? []] as Section[];
+    return [...this.#$('.view-scope')?.children ?? [], ...this.#$('.local-scopes')?.children ?? []] as Section[];
   }
 
   /** Hear the header's controls, once per stamp. */
@@ -92,8 +92,8 @@ export class ToolbarColumn {
   draw(scopes: readonly ScopeDescription[]): void {
     this.#scopes = [...scopes];
     if (!this.#host.el.hasAttribute('open')) return;
-    const view = this.#$('.view-section');
-    const list = this.#$('.sections');
+    const view = this.#$('.view-scope');
+    const list = this.#$('.local-scopes');
     if (!view || !list) return;
     const had = new Map(this.#bars().map((bar) => [bar.dataset['scope'] ?? '', bar]));
     let i = 0;
@@ -103,9 +103,9 @@ export class ToolbarColumn {
       had.delete(scope.scope);
       bar.dataset['scope'] = scope.scope;
       bar.toggleAttribute('data-no-actions', !!scope.part);
-      // The View's is a card of its own, not an accordion. Will, TODO 435
+      // The View's is a heading, not an accordion; the rest are the Local Context. Will, TODO 435
       if (scope.scope === VIEW) {
-        bar.toggleAttribute('data-card', true);
+        bar.toggleAttribute('data-flat', true);
         if (view.firstElementChild !== bar) view.prepend(bar);
         continue;
       }

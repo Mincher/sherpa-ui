@@ -16,7 +16,7 @@
   "templates": [
     "default",
     "portrait",
-    "card",
+    "flat",
     "column"
   ],
   "anatomy": {
@@ -267,111 +267,111 @@
           ]
         }
       ],
-      "card": [
+      "flat": [
         {
-          "el": "sherpa-container",
-          "class": "card",
-          "part": "card",
+          "el": "sherpa-section-header",
+          "class": "scope",
+          "part": "scope",
+          "attrs": {
+            "data-size": "sm",
+            "data-divider": "none"
+          },
           "children": [
             {
-              "el": "sherpa-container-header",
-              "class": "scope",
-              "part": "scope",
+              "el": "span",
+              "class": "actions-zone",
+              "part": "actions",
               "attrs": {
-                "slot": "header"
+                "slot": "actions"
               },
               "children": [
                 {
-                  "el": "span",
-                  "class": "actions-zone",
-                  "part": "actions",
+                  "el": "sherpa-button",
+                  "class": "act apply-all",
                   "attrs": {
-                    "slot": "actions"
-                  },
-                  "children": [
-                    {
-                      "el": "sherpa-button",
-                      "class": "act apply-all",
-                      "attrs": {
-                        "data-act": "apply",
-                        "data-size": "sm",
-                        "data-look": "saturated",
-                        "disabled": ""
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "act discard-all",
-                      "attrs": {
-                        "data-act": "discard",
-                        "data-size": "sm",
-                        "data-type": "icon",
-                        "data-icon-start": "cross",
-                        "aria-label": "Discard changes",
-                        "disabled": ""
-                      }
-                    },
-                    {
-                      "slot": "actions",
-                      "attrs": {
-                        "data-accepts": "control"
-                      }
-                    }
-                  ]
+                    "data-act": "apply",
+                    "data-size": "sm",
+                    "data-look": "saturated",
+                    "disabled": ""
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act discard-all",
+                  "attrs": {
+                    "data-act": "discard",
+                    "data-size": "sm",
+                    "data-type": "icon",
+                    "data-icon-start": "cross",
+                    "aria-label": "Discard changes",
+                    "disabled": ""
+                  }
+                },
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "bar",
+          "part": "bar",
+          "attrs": {
+            "role": "toolbar",
+            "aria-label": "Quick filters"
+          },
+          "children": [
+            {
+              "el": "div",
+              "class": "switch-zone",
+              "part": "switch",
+              "children": [
+                {
+                  "el": "sherpa-switch",
+                  "class": "filters-switch",
+                  "attrs": {
+                    "data-type": "simple",
+                    "checked": "",
+                    "aria-label": "Apply filters"
+                  }
                 }
               ]
             },
             {
               "el": "div",
-              "class": "bar",
-              "part": "bar",
-              "attrs": {
-                "role": "toolbar",
-                "aria-label": "Quick filters"
-              },
-              "children": [
-                {
-                  "el": "div",
-                  "class": "switch-zone",
-                  "part": "switch",
-                  "children": [
-                    {
-                      "el": "sherpa-switch",
-                      "class": "filters-switch",
-                      "attrs": {
-                        "data-type": "simple",
-                        "checked": "",
-                        "aria-label": "Apply filters"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "el": "div",
-                  "class": "organise-zone",
-                  "part": "organise"
-                },
-                {
-                  "el": "div",
-                  "class": "chips",
-                  "part": "chips"
-                }
-              ]
+              "class": "organise-zone",
+              "part": "organise"
+            },
+            {
+              "el": "div",
+              "class": "chips",
+              "part": "chips"
             }
           ]
         }
       ],
       "column": [
         {
-          "el": "div",
+          "el": "sherpa-container",
           "class": "column",
           "part": "column",
+          "attrs": {
+            "data-padding": "none",
+            "data-swap-on": "data-scroll-shadow",
+            "data-swap-data-scroll-shadow": ""
+          },
           "children": [
             {
               "el": "sherpa-container-header",
               "class": "head",
               "part": "head",
               "attrs": {
+                "slot": "header",
                 "data-icon": "filter",
                 "data-heading": "Filters"
               },
@@ -441,28 +441,33 @@
             },
             {
               "el": "div",
-              "class": "cards sherpa-scroll-shadow",
-              "part": "cards",
+              "class": "sections",
+              "part": "sections",
               "children": [
                 {
                   "el": "div",
-                  "class": "view-section",
-                  "part": "view-section"
+                  "class": "view-scope",
+                  "part": "view-scope"
                 },
                 {
-                  "el": "sherpa-container",
-                  "class": "scopes",
-                  "part": "scopes",
+                  "el": "hr",
+                  "class": "scope-rule",
+                  "part": "scope-rule"
+                },
+                {
+                  "el": "sherpa-section-header",
+                  "class": "local-heading",
+                  "part": "local-heading",
                   "attrs": {
-                    "data-padding": "none"
-                  },
-                  "children": [
-                    {
-                      "el": "div",
-                      "class": "sections",
-                      "part": "sections"
-                    }
-                  ]
+                    "data-heading": "Local Context",
+                    "data-size": "sm",
+                    "data-divider": "none"
+                  }
+                },
+                {
+                  "el": "div",
+                  "class": "local-scopes",
+                  "part": "local-scopes"
                 }
               ]
             }
@@ -516,16 +521,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-card",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "template",
-      "default": false,
-      "description": "portrait: its scope is a CARD, not an accordion — the column's View"
-    },
-    {
-      "$type": "prop",
       "name": "data-dirty",
       "type": "boolean",
       "observed": true,
@@ -550,6 +545,16 @@
       "declared": true,
       "kind": "behaviour",
       "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
+    },
+    {
+      "$type": "prop",
+      "name": "data-flat",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
+      "default": false,
+      "description": "portrait: its scope is a HEADING, not an accordion — the column's View"
     },
     {
       "$type": "prop",
@@ -814,6 +819,11 @@
     },
     {
       "$type": "state",
+      "name": "flat",
+      "selector": ":host([data-flat])"
+    },
+    {
+      "$type": "state",
       "name": "panel-mode",
       "selector": ":host([data-panel-mode])"
     }
@@ -1012,8 +1022,9 @@
     "act-divider.background": "{sherpa.theme-border-default-2}",
     "chips.gap": "{sherpa.display-mode-space-xs}",
     "actions-zone.gap": "{sherpa.display-mode-space-xs}",
-    "cards.gap": "{sherpa.display-mode-space-base}",
-    "cards.--_scroll-shadow-gap": "{sherpa.display-mode-space-base}"
+    "scope-rule.margin": "{sherpa.display-mode-space-base}",
+    "scope-rule.border-block-start": "{sherpa.display-mode-border-width-base}",
+    "local-heading.padding-inline": "{sherpa.theme-padding-lg}"
   },
   "$extensions": {
     "sherpa": {

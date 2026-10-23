@@ -14859,13 +14859,13 @@ carries its own Sites menu; the field chip catches its change in CAPTURE.
 
 Over SEVERAL scopes (`data-scope="view data"`) it stamps the `column`
 template: ONE header — Save <name>, one Filters menu for every scope, the
-page's buttons, ⋮, the search above every scope — over two cards, 16px apart
-(Will, TODO 435): the View Context, then a portrait toolbar per component
-scope (`toolbar-column.ts`). The View's section is no accordion: `data-card`
-stamps the `card` template, its name and Apply / Discard in a card header and
-its chips the card's body. The templates every variant clones — a chip, Group
-and Sort, Move, a section's ⋮, the words — are one family file,
-`toolbar-rows.html`, so a variant costs only its own markup. It asks for its scopes and is drawn
+page's buttons, ⋮, the search above every scope — over the View Context, a
+rule, then the Local Context: a portrait toolbar per component scope
+(`toolbar-column.ts`; Will, TODO 435). The View's is no accordion: `data-flat`
+stamps the `flat` template, a section header with Apply and Discard over its
+fields. The templates every variant clones — a chip, Group and Sort, Move, a
+section's ⋮, the words — are one family file, `toolbar-rows.html`, so a
+variant costs only its own markup. It asks for its scopes and is drawn
 (`drawScopes`), opens and shuts, as a panel does. The provider tells a column
 from a bar by what it ASKED — several scopes — not by the methods it has
 (`isColumn`), since a toolbar has both `drawScope` and `drawScopes`. A column

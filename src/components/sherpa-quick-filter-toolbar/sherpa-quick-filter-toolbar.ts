@@ -80,8 +80,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* LANDSCAPE, a strip; PORTRAIT, the panel's column: the scope an accordion,
        each list field a SECTION of value chips. Nothing folds. TODO 425 */
     'data-orientation': { type: 'enum', kind: 'template', values: ['landscape', 'portrait'] },
-    // Portrait: its scope a CARD, not an accordion — the column's View Context. Will, TODO 435
-    'data-card': { type: 'boolean', kind: 'template' },
+    // Portrait: its scope a HEADING, not an accordion — the column's View Context. Will, TODO 435
+    'data-flat': { type: 'boolean', kind: 'template' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -129,15 +129,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
 
-  static override variantAttrs = ['data-orientation', 'data-scope', 'data-card'];
+  static override variantAttrs = ['data-orientation', 'data-scope', 'data-flat'];
 
   static override observed = ['open'];
 
-  /** Portrait over one scope, an accordion — or a card; over several, the column. TODO 425, 435 */
+  /** Portrait over one scope, an accordion — or flat; over several, the column. TODO 425, 435 */
   protected override get templateId(): string {
     if (this.dataset['orientation'] !== 'portrait') return 'default';
     if ((this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1) return 'column';
-    return this.hasAttribute('data-card') ? 'card' : 'portrait';
+    return this.hasAttribute('data-flat') ? 'flat' : 'portrait';
   }
 
   /** The column it is, over several scopes. */
@@ -751,9 +751,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #scope = '';
   /** What its scope narrows. */
   #shows: ScopeShows | undefined;
-  /** …as the portrait accordion's icon. */
+  /** …as the portrait accordion's icon. A flat scope's heading wears none. */
   #drawIcon(): void {
-    const icon = this.#shows ? SHOWS_ICON[this.#shows] : undefined;
+    const icon = this.#shows && this.templateId === 'portrait' ? SHOWS_ICON[this.#shows] : undefined;
     const box = this.$('.scope');
     if (icon) box?.setAttribute('data-icon', icon);
     else box?.removeAttribute('data-icon');

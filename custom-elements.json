@@ -8279,14 +8279,6 @@
               }
             },
             {
-              "name": "data-card",
-              "description": "portrait: its scope is a CARD, not an accordion — the column's View",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
               "name": "data-dirty",
               "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
               "type": {
@@ -8306,6 +8298,14 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "data-flat",
+              "description": "portrait: its scope is a HEADING, not an accordion — the column's View",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             },
             {
               "name": "data-group-field",
@@ -9046,12 +9046,6 @@
               "name": "bar"
             },
             {
-              "name": "card"
-            },
-            {
-              "name": "cards"
-            },
-            {
               "name": "chips"
             },
             {
@@ -9067,6 +9061,12 @@
               "name": "head"
             },
             {
+              "name": "local-heading"
+            },
+            {
+              "name": "local-scopes"
+            },
+            {
               "name": "more"
             },
             {
@@ -9079,7 +9079,7 @@
               "name": "scope"
             },
             {
-              "name": "scopes"
+              "name": "scope-rule"
             },
             {
               "name": "sections"
@@ -9088,7 +9088,7 @@
               "name": "switch"
             },
             {
-              "name": "view-section"
+              "name": "view-scope"
             },
             {
               "name": "view-zone"

@@ -2773,11 +2773,6 @@
           "name": "data-bounds"
         },
         {
-          "name": "data-card",
-          "description": "portrait: its scope is a CARD, not an accordion — the column's View",
-          "valueSet": "v"
-        },
-        {
           "name": "data-dirty",
           "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
           "valueSet": "v"
@@ -2789,6 +2784,11 @@
         {
           "name": "data-fetch-fields",
           "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
+        },
+        {
+          "name": "data-flat",
+          "description": "portrait: its scope is a HEADING, not an accordion — the column's View",
+          "valueSet": "v"
         },
         {
           "name": "data-group-field",
