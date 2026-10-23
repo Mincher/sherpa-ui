@@ -1495,7 +1495,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (addCondition, takeBaseline, setCount, show, hide, close, toggle, apply, items). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (switchMode, addCondition, takeBaseline, setCount, show, hide, close, toggle, apply, items). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1659,6 +1659,12 @@
     "sherpa": {
       "figmaName": "Menu",
       "methods": [
+        {
+          "$type": "method",
+          "name": "switchMode",
+          "args": "next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced'",
+          "description": "switchMode(next?) — what the menu's own Advanced button does: the other mode, or `next`, carrying the picks into the rows, and reported. A host's door to it — a section's ⋮. TODO 425"
+        },
         {
           "$type": "method",
           "name": "addCondition",

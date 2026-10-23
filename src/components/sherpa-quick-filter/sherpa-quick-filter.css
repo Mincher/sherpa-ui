@@ -74,7 +74,7 @@
 }
 /* A section's value chip: its Sites menu says it is open. Will, TODO 425 G5 */
 :host([data-open][slot="values"]) :is(.body, .caret):not(:focus-visible) { outline: none; }
-/* …and a section's heading: its ⋮'s menu says so. */
+/* …and a section's heading: its menu opens from its ⋮ or its caret, not from it. */
 :host([data-open][data-layout="section"]) .body:not(:focus-visible) { outline: none; }
 
 /* ── A SECTION — a field's whole answer in the flow, as a portrait bar draws
@@ -118,6 +118,16 @@
   grid-column: 2;
 }
 :host([data-layout="section"][data-menu]) .caret { display: none; }
+/* ADVANCED: its rows answer it, not its values — the caret, under the heading,
+   says them and opens them. Will, TODO 425 G14 */
+:host([data-layout="section"][data-condition="advanced"]) .values { display: none; }
+:host([data-layout="section"][data-menu][data-condition="advanced"]) .caret {
+  display: inline-flex;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  justify-self: start;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
 :host([data-layout="section"]) .values {
   grid-column: 1 / -1;
   display: flex;

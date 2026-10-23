@@ -422,6 +422,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
     this.addEventListener('button-click', this.#onMove);
+    this.addEventListener('menu-open', this.#onFieldMoreOpen);
     // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-reads-as-a-warning
     for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
       this.addEventListener(type, this.#queuePending);
@@ -1256,9 +1257,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!move) moving?.remove();
     else if (moving) moving.querySelector('.more-label')!.textContent = move;
     if (!def.removable) row('remove')?.remove();
+    // Advanced only where the field offers it. Will, TODO 425 G14
+    if (!chip.querySelector(':scope > sherpa-menu')?.hasAttribute('data-advanced')) row('advanced')?.remove();
     more.setAttribute('aria-label', `${def.label} options`);
     chip.append(more);
+    this.#labelMode(chip);
   }
+
+  /** A section's ⋮ offers the OTHER mode: Advanced, or back to Simple. */
+  #labelMode(chip: Element): void {
+    const label = chip.querySelector(':scope > .field-more .more-item[value="advanced"] .more-label');
+    const mode = chip.querySelector<SherpaMenu>(':scope > sherpa-menu')?.mode;
+    if (label) label.textContent = this.word(mode === 'advanced' ? 'simple' : 'advanced');
+  }
+
+  /** A section's ⋮ opened: its mode row says the other mode, as it is now. */
+  #onFieldMoreOpen = (event: Event): void => {
+    const more = this.pathFind(event, '.field-more');
+    const chip = more?.closest('sherpa-quick-filter');
+    if (chip) this.#labelMode(chip);
+  };
 
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
   #onMenuSelect = (event: Event): void => {
@@ -1266,10 +1284,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A section's ⋮: Move, or Reset. Will, TODO 425 G1
     const more = this.pathFind(event, '.field-more');
     const owner = more?.closest<SherpaQuickFilter>('sherpa-quick-filter');
-    if (owner && (value === 'raise' || value === 'lower' || value === 'clear')) {
+    if (owner && (value === 'raise' || value === 'lower' || value === 'clear' || value === 'advanced')) {
       event.stopImmediatePropagation();
       more?.querySelector<SherpaMenu>('sherpa-menu')?.hide?.();
-      if (value === 'clear') {
+      /* ADVANCED: the field's menu goes to its rows, as its own button does,
+         and opens to them; Simple goes back. Will, TODO 425 G14 */
+      if (value === 'advanced') {
+        const menu = owner.querySelector<SherpaMenu>(':scope > sherpa-menu');
+        menu?.switchMode?.();
+        if (menu?.mode === 'advanced') owner.toggleMenu();
+      } else if (value === 'clear') {
         this.#emptyChip(owner);
         this.#emitChange(this.#answerRequest(owner));
       } else this.#move(owner);

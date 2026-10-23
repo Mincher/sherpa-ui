@@ -225,6 +225,18 @@
               "attrs": {
                 "data-word": "return"
               }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "advanced"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "simple"
+              }
             }
           ]
         }
@@ -405,6 +417,18 @@
               "attrs": {
                 "data-word": "return"
               }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "advanced"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "simple"
+              }
             }
           ]
         },
@@ -431,6 +455,20 @@
                     "data-align": "end"
                   },
                   "children": [
+                    {
+                      "el": "button",
+                      "class": "more-item",
+                      "attrs": {
+                        "type": "button",
+                        "value": "advanced"
+                      },
+                      "children": [
+                        {
+                          "el": "span",
+                          "class": "more-label"
+                        }
+                      ]
+                    },
                     {
                       "el": "button",
                       "class": "more-item",

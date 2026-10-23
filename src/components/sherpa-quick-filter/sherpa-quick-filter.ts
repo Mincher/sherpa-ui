@@ -297,7 +297,8 @@ export class SherpaQuickFilter extends SherpaElement {
    *  remembered when it is first seen, so a borrowed one is still the chip's.
    *  TRAP T-a-borrowed-menu-is-still-its-chips */
   get menu(): SherpaMenu | null {
-    const slotted = this.querySelector<SherpaMenu>('[slot="menu"]');
+    // Its OWN: a section's ⋮ holds a menu too. TODO 425
+    const slotted = this.querySelector<SherpaMenu>(':scope > [slot="menu"]');
     if (slotted) {
       this.#menu = slotted;
       return slotted;
@@ -765,8 +766,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Mirror the menu's open state onto the caret for assistive tech. */
   #onMenuToggle = (event: Event): void => {
-    // A value chip's own menu — a section's Sites — is the value chip's. TODO 425
-    if ((event.target as HTMLElement).closest?.('sherpa-quick-filter') !== this) return;
+    // Its OWN menu: not a value chip's Sites, nor its section's ⋮. TODO 425
+    if (event.target !== this.menu) return;
     const open = event.type === 'menu-open';
     this.$('.caret')?.setAttribute('aria-expanded', String(open));
     // Focus is inside the menu, so `:focus-visible` is false — CSS rings on this.

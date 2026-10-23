@@ -378,8 +378,16 @@ export class SherpaMenu extends SherpaElement {
   #onModeSwitch = (event: Event): void => {
     // The menu's own control, not a value change. As Range.
     event.stopPropagation();
-    if (!this.#offersAdvanced() || this.#advancedOnly()) return this.#syncModeButton();
-    const next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced';
+    this.switchMode();
+  };
+
+  /**
+   * switchMode(next?) — what the menu's own Advanced button does: the other
+   * mode, or `next`, carrying the picks into the rows, and reported. A host's
+   * door to it — a section's ⋮. TODO 425
+   */
+  switchMode(next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced'): void {
+    if (!this.#offersAdvanced() || this.#advancedOnly() || next === this.mode) return this.#syncModeButton();
     this.mode = next;
     // An Advanced mode with no rows has nothing to answer with.
     if (next === 'advanced' && !this.#rowEls().length) this.#addRow();

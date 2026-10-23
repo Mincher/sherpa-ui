@@ -87,6 +87,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 
 | Method | What it does |
 |---|---|
+| `switchMode(next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced')` | switchMode(next?) — what the menu's own Advanced button does: the other mode, or `next`, carrying the picks into the rows, and reported. A host's door to it — a section's ⋮. TODO 425 |
 | `addCondition()` | addCondition() — a new row, as the menu's own Add condition does: for a host that draws that button itself, as the panel's action row does. TODO 98 |
 | `takeBaseline()` | What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open. |
 | `setCount(value: string, count: number)` | Write a child menu's pick count on its row. An empty badge draws nothing. |
