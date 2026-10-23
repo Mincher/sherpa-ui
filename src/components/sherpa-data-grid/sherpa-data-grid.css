@@ -81,6 +81,31 @@
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 /* NO per-row offset — both rows pin at the <thead>'s own sticky position. */
+
+/* STUCK, the header casts a shadow over the rows scrolled under it: a strip
+   under each cell of its LAST row, so the cells draw one edge. Will, TODO 421.
+   TRAP T-a-stuck-header-casts-a-shadow */
+@supports (animation-timeline: scroll()) {
+  :host(:not([data-filterable])) .head-row > *::after,
+  :host([data-filterable]) .filter-row > *::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0;
+    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    opacity: 0;
+    animation: sherpa-scroll-shadow linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
+  }
+  /* Over the last pinned cell's see-through edge too, or it splits the shadow. */
+  :host(:not([data-filterable])) .head-row > [data-pin-last]::after,
+  :host([data-filterable]) .filter-row > [data-pin-last]::after {
+    inset-inline-end: calc(-1 * var(--sherpa-border-right, 0.5px));
+  }
+}
 :host(:state(empty)) .grid { display: none; }
 
 /* Neutralise the UA's bold, centred <th> defaults once at the source: it leaked

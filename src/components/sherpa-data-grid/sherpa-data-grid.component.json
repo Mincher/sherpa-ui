@@ -700,6 +700,11 @@
   "states": [
     {
       "$type": "state",
+      "name": "filterable",
+      "selector": ":host([data-filterable])"
+    },
+    {
+      "$type": "state",
       "name": "selectable",
       "selector": ":host([data-selectable])"
     },
@@ -710,13 +715,13 @@
     },
     {
       "$type": "state",
-      "name": "filterable",
-      "selector": ":host([data-filterable])"
+      "name": "column-filters",
+      "selector": ":host([data-column-filters])"
     },
     {
       "$type": "state",
-      "name": "column-filters",
-      "selector": ":host([data-column-filters])"
+      "name": "not-filterable",
+      "selector": ":host(:not([data-filterable]))"
     },
     {
       "$type": "state",

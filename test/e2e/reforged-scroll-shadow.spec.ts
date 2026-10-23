@@ -53,3 +53,25 @@ test('an outer box\'s gap never reaches an inner box\'s edges', async ({ page })
   test.skip(margin === 'none', 'no scroll timeline: no shadow');
   expect(margin).toBe('-12px');
 });
+
+// TODO 421. TRAP T-a-stuck-header-casts-a-shadow
+test('a grid\'s header casts a shadow only once rows scroll under it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.style.blockSize = '200px';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!({ columns: [{ field: 'name', header: 'Name' }], rows: Array.from({ length: 30 }, (_, i) => ({ name: `Row ${i}` })) });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const scroller = sr.querySelector<HTMLElement>('.scroller')!;
+    const edge = (): string => getComputedStyle(sr.querySelector('.head-row > .head-cell')!, '::after').opacity;
+    const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    const at = edge();
+    scroller.scrollTop = 100;
+    await frames();
+    return { at, scrolled: edge(), driven: CSS.supports('animation-timeline: scroll()') };
+  });
+  test.skip(!r.driven, 'no scroll timeline: no shadow');
+  expect(r).toEqual({ at: '0', scrolled: '1', driven: true });
+});

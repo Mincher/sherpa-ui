@@ -16157,6 +16157,25 @@ list has none yet: its `::after` says "No matches".
 - Site: `src/core/sherpa-base.css`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 
+### T-a-stuck-header-casts-a-shadow
+
+**A sticky header, stuck with content scrolled under it, casts a shadow**
+(Will, TODO 421: *"All possible with CSS."*). The data grid's: a 12px strip of
+the shadow colour under each cell of the header's LAST row (the filter row
+while `data-filterable`, else the heading row), absolutely placed at the cell's
+foot, so the cells draw one even edge. A `box-shadow` per cell cannot: each
+fades at its own sides, and a pinned cell's paints over its neighbour. The
+strip fades in over the first 16px of the grid's scroll, with 401's keyframes
+(`T-a-scroll-shadow-is-drawn-over-the-content`); Firefox has no scroll timeline
+and shows none. The last pinned cell's strip runs over its see-through edge,
+or a 1px gap splits the shadow.
+
+A hidden cell never animates: `getComputedStyle` reads its strip at 0. Read a
+SHOWN cell — the select column is hidden on a grid that does not select.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `test/e2e/reforged-scroll-shadow.spec.ts`
+
 ### T-a-hairline-resolves-by-density
 
 The border token is `0.5px`, and what a browser resolves that to depends on the

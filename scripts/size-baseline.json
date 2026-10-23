@@ -387,7 +387,7 @@
   "src/components/sherpa-container-footer/sherpa-container-footer.css": 43,
   "src/components/sherpa-container-header/sherpa-container-header.css": 155,
   "src/components/sherpa-container/sherpa-container.css": 183,
-  "src/components/sherpa-data-grid/sherpa-data-grid.css": 810,
+  "src/components/sherpa-data-grid/sherpa-data-grid.css": 835,
   "src/components/sherpa-data-viz-header/sherpa-data-viz-header.css": 69,
   "src/components/sherpa-dialog/sherpa-dialog.css": 101,
   "src/components/sherpa-empty-state/sherpa-empty-state.css": 150,

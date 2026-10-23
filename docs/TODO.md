@@ -102,7 +102,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
 | ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
 | ✅ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
-| ⬜ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
+| 🚧 | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
 | ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
@@ -117,6 +117,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ⬜ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
 | ⬜ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
+| ⬜ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
+| ⬜ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1883,6 +1885,43 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 437 — BUG: a chip in a section shows its section's tooltip too
+
+Will, 2026-10-23: *"In panel mode, hovering over a chip shows both the chip and
+section tooltip. The section tooltip should only show when hovering over the
+section header."* A section is a `sherpa-quick-filter` (`data-layout=
+"section"`): its tooltip is the host's, so a value chip inside it, hovered,
+counts as hovering the section too.
+
+### `[ ]` ⬜ 436 — DEMOS: a Filtering page in Settings, and a switch for each part
+
+Will, 2026-10-23: *"Create a 'Filtering' space in the navigation for the
+Sherpa Demo Settings and move all filtering related settings there.*
+
+*Add toggleable settings for various aspects of the filtering. Things like:*
+
+- *Include View Context filters in panel mode (Keep as toolbar if off and in
+  panel mode)*
+- *Include Customer Sites*
+- *Show Badge for number of applied filters (Need to pick a place to put this
+  in the toolbar in each presentation mode)*
+- *Show Badge for matching counts*
+- *Require Apply on all filter changes*
+- *Separate Add Filter and Saved Filter menus (splits Filters button and menu
+  into 2. When split, save actions are put in the Save menu.)*
+- *Highlight matches (Highlights grid rows, chart segments etc. that match the
+  target filter. With this on, every filter chip will have to have a menu with
+  a 'Highlight matches' option to set it as the driver for highlighting)*
+
+*There may be other things that make sense to add as configurable options,
+from things we've already implemented, too."*
+
+Each switch is the app's choice, set on a component by an attribute the
+library offers — Sherpa itself stays app agnostic. Some are new library work
+(the applied-filters badge's place in each mode, the split menu, Highlight
+matches); plan those first, with a ❓ for each place to pick. Today's filter
+settings live on Settings › Application (Filtering section).
+
 ### `[ ]` ⬜ 435 — LOOK: the panel's View scope and component scopes, a container each
 
 Will, 2026-10-23: *"In panel mode for the filter toolbar put the view scope
@@ -2209,7 +2248,7 @@ face and tip; only the Query still held it. The chip reads picks by
 `valueKey` now, and so do two panel spots that had the same fault. Test: Demos
 `reforged-a-site-pick-keeps-its-label`.
 
-### `[ ]` ⬜ 421 — LOOK: a stuck element casts a shadow
+### `[ ]` 🚧 421 — LOOK: a stuck element casts a shadow
 
 Will, 2026-10-22: *"Sticky elements should show a drop shadow from the sherpa
 shadow definitions when stuck and scrolled under. All possible with CSS."* With
@@ -2217,6 +2256,13 @@ shadow definitions when stuck and scrolled under. All possible with CSS."* With
 animation (Chromium and WebKit) can show it once its scroller has moved, and a
 view timeline for one stuck part-way down (a panel's scope header). The shadow
 is the elevation tokens' (`--sherpa-shadow-*`). Settle with 401's A or B.
+
+🚧 2026-10-23: the data grid's header, done — a 12px strip in the shadow
+colour under its last header row, faded in by the grid's scroll (401's way, A).
+Next, after 435 splits the panel into two containers: each component scope's
+sticky header in the column, by a VIEW timeline on its scope
+(`exit-crossing`), so a header lower down shows none until it reaches the top.
+TRAP T-a-stuck-header-casts-a-shadow
 
 ### `[x]` ✅ 420 — UX: one ⋮ per panel field section
 
