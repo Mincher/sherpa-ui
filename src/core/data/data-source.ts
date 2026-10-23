@@ -375,6 +375,8 @@ export class DataSource extends EventTarget {
   #only: Record<string, Filter> = {};
   /** What the highlight's driver matches. TODO 441 */
   #highlight: Filter | undefined;
+  /** The driver and its mark, as last pushed. */
+  #marked = '';
 
   /** Does a row match the highlight's driver? Null while no chip drives it. Will, TODO 441 */
   get highlight(): ((row: Row) => boolean) | null {
@@ -897,10 +899,11 @@ export class DataSource extends EventTarget {
     this.#filter = next;
     this.#viewFilter = viewed;
     this.#scoped = scoped;
-    // A new mark moves no row, so nothing loads: each component is pushed it. TODO 441
-    const marked = filterKey(highlight) !== filterKey(this.#highlight);
+    // A new mark — or driver — moves no row, so nothing loads: each component is pushed it. TODO 441
+    const marked = JSON.stringify([this.#context.highlighted, filterKey(highlight)]);
     this.#highlight = highlight;
-    if (marked) this.#binding.publish();
+    if (marked !== this.#marked) this.#binding.publish();
+    this.#marked = marked;
     return { still, same };
   }
 

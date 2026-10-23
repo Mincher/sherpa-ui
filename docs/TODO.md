@@ -1939,6 +1939,13 @@ chip shows that chip's share). **B** — (1), the matched part.
   again (the push guard keys on it), and a component's `drawHighlight(test)`
   gets it. A bar over the driver's scope gets `data-highlight-field`. A chip
   asks `{ field, highlight: true }`.
+- ✅ **3–5, 7**, 2026-10-23: a filter menu has its own "Highlight matches"
+  switch above its footer (`data-highlightable`, on while `data-highlight`;
+  `menu-highlight-change`), which a bar offers on every chip but a picker's
+  while `data-highlight-matches` (`provider.highlight`). The driving chip wears
+  the highlighter — Style `saturated/warning` (#FFC44C) — and the grid tints
+  each row the test matches, pale (`drawHighlight`). Demos: "Highlight
+  matches" on Settings › Filtering (Look).
 
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 

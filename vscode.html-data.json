@@ -2185,6 +2185,16 @@
           "valueSet": "v"
         },
         {
+          "name": "data-highlight",
+          "description": "this field drives the highlight: the switch is on",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-highlightable",
+          "description": "a \"Highlight matches\" switch above the footer (TODO 441)",
+          "valueSet": "v"
+        },
+        {
           "name": "data-inline",
           "description": "draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu",
           "valueSet": "v"
@@ -2823,6 +2833,13 @@
           ]
         },
         {
+          "name": "data-highlight-field"
+        },
+        {
+          "name": "data-highlight-matches",
+          "valueSet": "v"
+        },
+        {
           "name": "data-limit-options",
           "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178.",
           "values": [
@@ -3013,6 +3030,10 @@
         },
         {
           "name": "data-full-value",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-highlight",
           "valueSet": "v"
         },
         {

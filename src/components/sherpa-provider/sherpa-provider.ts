@@ -283,6 +283,18 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: the section headings. */
   #sections = true;
 
+  /** Each chip's menu offers "Highlight matches", to drive the highlight. The
+   *  app sets it, from its session. Will, TODO 441 */
+  get highlight(): boolean {
+    return this.#highlight;
+  }
+  set highlight(on: boolean) {
+    this.#highlight = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: Highlight matches. */
+  #highlight = false;
+
   /** Every scope the page declares waits for its bar's Apply — not only the
    *  View's. The app sets it, from its session. Will, TODO 436.
    *  TRAP T-apply-and-discard-wait-for-a-change */
@@ -315,6 +327,7 @@ export class SherpaProvider extends SherpaElement {
     if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
     el.toggleAttribute('data-no-context-label', !this.#contextLabel);
     el.toggleAttribute('data-no-sections', !this.#sections);
+    el.toggleAttribute('data-highlight-matches', this.#highlight);
   }
   /** The app's choice, for every source. */
   #limit = false;

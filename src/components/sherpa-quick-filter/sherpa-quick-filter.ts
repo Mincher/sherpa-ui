@@ -104,6 +104,8 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-label': { type: 'string', kind: 'content' },
     'data-icon-start': { type: 'string', kind: 'content' },
     'data-current': { type: 'boolean', kind: 'style' },
+    // It DRIVES the highlight: it wears the highlighter. Its bar writes it. TODO 441
+    'data-highlight': { type: 'boolean', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's

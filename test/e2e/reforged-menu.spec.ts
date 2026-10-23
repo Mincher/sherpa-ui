@@ -912,3 +912,35 @@ test('hand-written rows, with no class, still give an Equals row its values', as
   });
   expect(r).toEqual(['', 'a', 'b']);
 });
+
+/** "Highlight matches": shown where the host offers it, on while its field
+ *  drives, and a press is a request the host answers. Will, TODO 441 */
+test('a filter menu offers Highlight matches where its host asks, and reports a press', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; show(): void };
+    menu.setAttribute('data-type', 'filter');
+    menu.innerHTML = '<label><input type="checkbox" value="a" /><span>A</span></label>';
+    document.getElementById('root')!.replaceChildren(menu);
+    await menu.rendered;
+    menu.show();
+    await window.__settled();
+    const row = menu.shadowRoot!.querySelector<HTMLElement>('.body-highlight')!;
+    const sw = row.querySelector<HTMLElement & { checked: boolean }>('.body-highlight-switch')!;
+    const hidden = getComputedStyle(row).display;
+    menu.setAttribute('data-highlightable', '');
+    const shown = getComputedStyle(row).display;
+    const heard: unknown[] = [];
+    menu.addEventListener('menu-highlight-change', (e) => heard.push((e as CustomEvent).detail));
+    let changed = false;
+    menu.addEventListener('change', () => { changed = true; });
+    sw.shadowRoot!.querySelector<HTMLElement>('input')!.click();
+    await window.__settled();
+    menu.setAttribute('data-highlight', '');
+    await window.__settled();
+    const on = sw.checked;
+    menu.removeAttribute('data-highlight');
+    await window.__settled();
+    return { hidden, shown, heard, changed, on, off: sw.checked };
+  });
+  expect(r).toEqual({ hidden: 'none', shown: 'flex', heard: [{ on: true }], changed: false, on: true, off: false });
+});

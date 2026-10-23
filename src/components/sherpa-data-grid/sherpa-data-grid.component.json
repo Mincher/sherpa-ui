@@ -738,7 +738,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (drawPresent, drawOffered, setColumnFilter, supersedeColumns, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (drawPresent, drawHighlight, drawOffered, setColumnFilter, supersedeColumns, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -954,6 +954,12 @@
           "name": "drawPresent",
           "args": "present: Readonly<Record<string, readonly string[]>>",
           "description": "drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited."
+        },
+        {
+          "$type": "method",
+          "name": "drawHighlight",
+          "args": "matches: ((row: GridRow) => boolean) | null",
+          "description": "drawHighlight(test) — a bound source says which rows the highlight's driver matches; `null`, none. Each row CSS tints. Will, TODO 441"
         },
         {
           "$type": "method",

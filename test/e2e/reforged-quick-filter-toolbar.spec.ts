@@ -2602,3 +2602,33 @@ test('in portrait, each SECTION is headed once: a named run of chips, a lone chi
   expect(r.organise).toBe('"Organise"');
   expect(r.off).toEqual(['none', 'none']);
 });
+
+test('Highlight matches: each chip menu offers it but a picker\'s, the driver wears it, and a press asks its field', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-highlight-matches': '' });
+    el.style.inlineSize = '900px';
+    el.populate!([
+      { id: 'view', label: 'View', persistent: true, options: [{ value: 'all', label: 'All' }] },
+      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }] },
+    ]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const chip = (id: string) => sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
+    const menu = (id: string) => chip(id).querySelector<HTMLElement>(':scope > sherpa-menu')!;
+    const offered = ['view', 'plan', 'tier'].map((id) => menu(id).hasAttribute('data-highlightable'));
+    const asked: unknown[] = [];
+    el.addEventListener('quick-filter-change', (e) => asked.push((e as CustomEvent).detail.request));
+    menu('tier').dispatchEvent(new CustomEvent('menu-highlight-change', { detail: { on: true }, bubbles: true, composed: true }));
+    // Its source answers: the bar is told which chip drives.
+    el.setAttribute('data-highlight-field', 'tier');
+    await window.__settled();
+    return {
+      offered, asked,
+      driver: ['plan', 'tier'].map((id) => [chip(id).hasAttribute('data-highlight'), menu(id).hasAttribute('data-highlight')]),
+    };
+  });
+  expect(r.offered).toEqual([false, true, true]);
+  expect(r.asked).toEqual([{ field: 'tier', highlight: true }]);
+  expect(r.driver).toEqual([[false, false], [true, true]]);
+});

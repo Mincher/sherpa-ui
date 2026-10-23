@@ -652,6 +652,22 @@
     },
     {
       "$type": "prop",
+      "name": "data-highlight-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
+      "name": "data-highlight-matches",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-limit-options",
       "type": "enum",
       "observed": true,
@@ -943,7 +959,7 @@
       "composed": true,
       "detail": {
         "active": "string[]",
-        "request": "QueryRequest | undefined",
+        "request": "QueryRequest | undefined | { field: string; highlight: boolean; }",
         "scope": "'bar'",
         "values": "Record<string, string[]>"
       }

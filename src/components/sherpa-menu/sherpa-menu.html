@@ -28,6 +28,8 @@
                     footer, no Add condition, no Advanced button
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
+    data-highlightable  a "Highlight matches" switch above the footer (TODO 441)
+    data-highlight  this field drives the highlight: the switch is on
     data-removable  show a "Remove" button in the footer (after Today);
                     it emits menu-select with value="remove"
     data-no-select-all  a multi-select list with no Select all row — the Filters
@@ -115,6 +117,7 @@
     condition-mode-change — the mode button was pressed. detail: { mode } — simple | advanced
     menu-row-remove — a row's × was pressed. detail: { value }
     menu-range-change — a number or date body's Range switch flipped. detail: { range }
+    menu-highlight-change — its Highlight matches switch flipped: a request, which the host answers. detail: { on }
     menu-items — its items were stamped, so a host can read its face. detail: { values }
     menu-back — a drilled menu's back arrow or crumb. detail: {}
 -->
@@ -247,6 +250,13 @@
       A committing menu holds row changes as DRAFT until Apply, so what is behind
       the card does not re-query on every tick; Discard restores the opening values.
     -->
+    <!-- HIGHLIGHT MATCHES: this field's answer drives the highlight, where the
+         host offers it. Will, TODO 441 -->
+    <div class="body-highlight" part="body-highlight">
+      <sherpa-switch class="body-highlight-switch" data-type="simple" aria-label="Highlight matches"></sherpa-switch>
+      <span class="body-highlight-label">Highlight matches</span>
+    </div>
+
     <sherpa-container-footer class="footer" part="footer" data-align="end">
       <!-- The HOST's own buttons, leading the row. The footer shows when it is filled. -->
       <slot name="footer" data-accepts="control"></slot>
@@ -448,6 +458,13 @@
       A committing menu holds row changes as DRAFT until Apply, so what is behind
       the card does not re-query on every tick; Discard restores the opening values.
     -->
+    <!-- HIGHLIGHT MATCHES: this field's answer drives the highlight, where the
+         host offers it. Will, TODO 441 -->
+    <div class="body-highlight" part="body-highlight">
+      <sherpa-switch class="body-highlight-switch" data-type="simple" aria-label="Highlight matches"></sherpa-switch>
+      <span class="body-highlight-label">Highlight matches</span>
+    </div>
+
     <sherpa-container-footer class="footer" part="footer" data-align="end">
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>

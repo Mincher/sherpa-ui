@@ -771,6 +771,15 @@ export class SherpaDataGrid extends SherpaElement {
     for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
   }
 
+  /** drawHighlight(test) — a bound source says which rows the highlight's
+   *  driver matches; `null`, none. Each row CSS tints. Will, TODO 441 */
+  drawHighlight(matches: ((row: GridRow) => boolean) | null): void {
+    this.#highlight = matches;
+    for (const tr of this.$$<HTMLElement>('.row')) tr.toggleAttribute('data-highlight', !!matches?.(this.#rowOf.get(tr) ?? {}));
+  }
+  /** The highlight's test, as last drawn. */
+  #highlight: ((row: GridRow) => boolean) | null = null;
+
   /** drawOffered(offered) — what each serial-set field OFFERS: a heading's menu
    *  removes the rest, but keeps a pick. TRAP T-a-filter-set-groups-or-chains */
   drawOffered(offered: Readonly<Record<string, readonly string[]>>): void {
@@ -1325,6 +1334,7 @@ export class SherpaDataGrid extends SherpaElement {
       const ticked = this.#selected.has(record);
       for (const box of tr.querySelectorAll<SelectBox>('.row-select')) box.checked = ticked;
       tr.toggleAttribute('data-selected', ticked);
+      tr.toggleAttribute('data-highlight', !!this.#highlight?.(record));
       const select = tr.querySelector<HTMLElement>('.select-cell');
       if (selectable && select) this.#markPinned(select, false);
       // Its group, so CSS hides it when that group is shut — no `display` write.

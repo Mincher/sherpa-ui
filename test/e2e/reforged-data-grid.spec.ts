@@ -3218,3 +3218,30 @@ test.describe('a cell filter chip', () => {
     await expect(page.locator('sherpa-data-grid .cell-filter')).toBeHidden();
   });
 });
+
+/** A bound source says which rows the highlight's driver matches; each takes
+ *  the highlighter's tint, and a redraw keeps it. Will, TODO 441 */
+test('drawHighlight tints the rows its test matches, through a redraw, and null clears them', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    type Row = { name: string; score: number };
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; drawHighlight(t: ((row: Row) => boolean) | null): void;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(config);
+    await window.__settled();
+    const lit = () => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.body .row')]
+      .filter((tr) => tr.hasAttribute('data-highlight')).map((tr) => tr.querySelector('.cell')!.textContent);
+    el.drawHighlight((row) => row.score >= 60);
+    const first = lit();
+    const plain = getComputedStyle(el.shadowRoot!.querySelector('.body .row:not([data-highlight])')!).backgroundColor;
+    const tinted = getComputedStyle(el.shadowRoot!.querySelector('.body .row[data-highlight]')!).backgroundColor;
+    el.populate!(config);
+    await window.__settled();
+    const redrawn = lit();
+    el.drawHighlight(null);
+    return { first, redrawn, cleared: lit(), differs: plain !== tinted };
+  }, CONFIG);
+  expect(r).toEqual({ first: ['Alice', 'Bob'], redrawn: ['Alice', 'Bob'], cleared: [], differs: true });
+});

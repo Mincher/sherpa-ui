@@ -688,6 +688,11 @@
   }
 }
 
+/* HIGHLIGHTED: the driving chip's highlighter, pale. Selected wins. Will, TODO 441 */
+.row[data-highlight] {
+  --_row-base: color-mix(in srgb, var(--sherpa-style-saturated-warning-surface-base, #ffc44c) 30%, var(--sherpa-style-surface-base, #ffffff));
+}
+
 /* SELECTED: the active mode's base. The grid marks the row.
    TRAP T-firefox-never-rereads-a-has-after-host */
 .row[data-selected] {

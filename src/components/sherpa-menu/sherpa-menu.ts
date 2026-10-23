@@ -153,6 +153,9 @@ export class SherpaMenu extends SherpaElement {
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
     /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
+    // A "Highlight matches" switch, where the host offers it; on while its field drives. TODO 441
+    'data-highlightable': { type: 'boolean', kind: 'visibility' },
+    'data-highlight': { type: 'boolean', kind: 'behaviour' },
     'data-commit': { type: 'boolean', kind: 'style' },
     // Discard without Apply: the scope waits for its bar's ONE Apply. TODO 406
     'data-discard': { type: 'boolean', kind: 'style' },
@@ -231,6 +234,7 @@ export class SherpaMenu extends SherpaElement {
     /* THE MENU OWNS ITS RANGE SWITCH. Both hosts had one, spelled differently,
        listened for separately. TRAP T-a-menu-owns-its-own-bodies */
     this.$('.body-range-switch')?.addEventListener('change', this.#onRangeSwitch);
+    this.$('.body-highlight-switch')?.addEventListener('change', this.#onHighlightSwitch);
     this.$('.body-op')?.addEventListener('change', this.#onBodyOp);
     this.$('.body-number')?.addEventListener('change', this.#onBodyChange);
     this.$('.body-number')?.addEventListener('input', this.#onBodyChange);
@@ -351,6 +355,12 @@ export class SherpaMenu extends SherpaElement {
     if (!value) return;
     this.set('data-op', value);
     this.#emitConditions(true);
+  };
+
+  /** "Highlight matches": a REQUEST — the host says which field drives. TODO 441 */
+  #onHighlightSwitch = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('menu-highlight-change', { on: !!(event.target as SherpaSwitch).checked });
   };
 
   /** Range ON is two ends, OFF is one value; both shapes keep what they hold.
@@ -1770,6 +1780,9 @@ export class SherpaMenu extends SherpaElement {
 
   /** Bring the body, the inline state, the mode and the drill trail into line. */
   #sync(): void {
+    // On while its field drives the highlight: the host says. TODO 441
+    const highlight = this.$<SherpaSwitch>('.body-highlight-switch');
+    if (highlight) highlight.checked = this.hasAttribute('data-highlight');
     this.#syncReadonly();
     this.#syncBody();
     this.#syncInline();

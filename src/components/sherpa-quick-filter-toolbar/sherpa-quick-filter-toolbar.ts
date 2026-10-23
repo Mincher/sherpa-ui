@@ -96,6 +96,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-no-context-label': { type: 'boolean', kind: 'visibility' },
     // No section names over its filters, in portrait. Will, TODO 436
     'data-no-sections': { type: 'boolean', kind: 'visibility' },
+    // Each chip's menu offers "Highlight matches": the app's choice. Will, TODO 441
+    'data-highlight-matches': { type: 'boolean', kind: 'behaviour' },
+    // The chip that drives the highlight, as its source says. TODO 441
+    'data-highlight-field': { type: 'string', kind: 'behaviour' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -401,7 +405,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
     }
     this.#markSections();
+    this.#markHighlight();
   }
+
+  /** Each chip's menu offers "Highlight matches", and the chip that drives
+   *  wears it. Never a picker's. Will, TODO 441 */
+  #markHighlight(): void {
+    const offer = this.hasAttribute('data-highlight-matches');
+    const driver = this.dataset['highlightField'];
+    for (const chip of this.#chips()) {
+      const drives = !!driver && chip.dataset['id'] === driver;
+      chip.toggleAttribute('data-highlight', drives);
+      const menu = chip.querySelector(':scope > sherpa-menu');
+      menu?.toggleAttribute('data-highlightable', offer && !chip.hasAttribute('data-persistent'));
+      menu?.toggleAttribute('data-highlight', drives);
+    }
+  }
+
+  /** A chip's "Highlight matches": a REQUEST, which waits for no Apply. TODO 441 */
+  #onHighlight = (event: Event): void => {
+    const id = this.pathFind(event, 'sherpa-quick-filter')?.dataset['id'];
+    const on = (event as CustomEvent<{ on: boolean }>).detail.on;
+    if (id) this.emit('quick-filter-change', { scope: 'bar', request: { field: id, highlight: on }, active: this.active, values: this.values });
+  };
 
   /** Each SECTION's name over the first chip of its run, in portrait: a named
    *  section's, or a lone chip's own field's — a list field heads itself, and
@@ -479,6 +505,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The Add menu hangs off a sherpa-BUTTON, which never relays quick-filter-change.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     this.addEventListener('menu-row-remove', this.#onRowRemove);
+    this.addEventListener('menu-highlight-change', this.#onHighlight);
     this.addEventListener('menu-discard', this.#onMenuDiscard);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
@@ -1534,6 +1561,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameContext(chip);
+    if (name === 'data-highlight-matches' || name === 'data-highlight-field') this.#markHighlight();
     if (name === 'data-saved-menu') {
       if (this.#columned) this.#column.saved(this.#saved.all);
       else this.#renderAvailable();

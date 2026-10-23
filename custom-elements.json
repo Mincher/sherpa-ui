@@ -2604,6 +2604,20 @@
             },
             {
               "kind": "method",
+              "name": "drawHighlight",
+              "parameters": [
+                {
+                  "name": "matches",
+                  "type": {
+                    "text": "((row: GridRow)"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "drawHighlight(test) — a bound source says which rows the highlight's driver matches; `null`, none. Each row CSS tints. Will, TODO 441"
+            },
+            {
+              "kind": "method",
               "name": "drawOffered",
               "parameters": [
                 {
@@ -5721,6 +5735,20 @@
               }
             },
             {
+              "name": "data-highlight",
+              "description": "this field drives the highlight: the switch is on",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-highlightable",
+              "description": "a \"Highlight matches\" switch above the footer (TODO 441)",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-inline",
               "description": "draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu",
               "type": {
@@ -6147,6 +6175,13 @@
               }
             },
             {
+              "name": "menu-highlight-change",
+              "description": "Its Highlight matches switch flipped: a request, which the host answers.",
+              "type": {
+                "text": "CustomEvent<{ on: boolean }>"
+              }
+            },
+            {
               "name": "menu-items",
               "description": "Its items were stamped, so a host can read its face.",
               "type": {
@@ -6181,6 +6216,9 @@
             },
             {
               "name": "apply"
+            },
+            {
+              "name": "body-highlight"
             },
             {
               "name": "body-number"
@@ -8016,6 +8054,13 @@
             },
             {
               "kind": "field",
+              "name": "highlight",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8401,6 +8446,18 @@
               "description": "on | off — the host hides what Limit rules out, when it is on",
               "type": {
                 "text": "'on' | 'off'"
+              }
+            },
+            {
+              "name": "data-highlight-field",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-highlight-matches",
+              "type": {
+                "text": "boolean"
               }
             },
             {
@@ -9010,7 +9067,7 @@
               "name": "quick-filter-change",
               "description": "One reader act, as a request: a field's answer, an on or off, the Switch, Clear all.",
               "type": {
-                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined; scope: 'bar'; values: Record<string, string[]> }>"
+                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; }; scope: 'bar'; values: Record<string, string[]> }>"
               }
             },
             {
@@ -9293,6 +9350,12 @@
             },
             {
               "name": "data-full-value",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-highlight",
               "type": {
                 "text": "boolean"
               }
