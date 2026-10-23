@@ -112,7 +112,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | ⬜ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
-| ⬜ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
+| ✅ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
 | ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
 | ✅ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
 | ✅ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
@@ -2042,11 +2042,14 @@ and Settings › "Show active filters in green" makes it green.
 persistent chip — only the View chip — is a picker, always on, so on says
 nothing: it wears the plain look, never active or green.
 
-### `[ ]` ⬜ 431 — LOOK: Discard says "Discard"
+### `[x]` ✅ 431 — LOOK: Discard says "Discard"
 
 Will, 2026-10-23: *"Add a 'Discard' label to the discard button in the filter
 toolbar."* Today it is icon-only (×). See 417: Discard is to wear a trash-can
 icon too.
+
+✅ 2026-10-23: "Discard", with its ×, in the bar, a portrait scope's header and
+the View Context row. 417's trash can is still to come.
 
 ### `[ ]` ⬜ 430 — LOOK: Reset and Save go into the toolbar's ⋮
 

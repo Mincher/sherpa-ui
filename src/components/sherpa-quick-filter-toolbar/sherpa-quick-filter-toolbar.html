@@ -134,9 +134,9 @@
            between. Will, TODO 406 -->
       <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
                      data-look="saturated" disabled>Apply</sherpa-button>
-      <!-- …and Discard, icon only, at its right: every change held goes. Will, 406 -->
-      <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
-                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+      <!-- …and Discard at its right: every change held goes. Will, 406; its word, TODO 431 -->
+      <sherpa-button class="act discard-all" data-act="discard" data-size="sm"
+                     data-icon-start="cross" disabled>Discard</sherpa-button>
       <span class="act-divider apply-divider" aria-hidden="true"></span>
       <!-- Host extras first, before the standard cluster. -->
       <slot name="actions" data-accepts="control"></slot>
@@ -178,8 +178,8 @@
     <span slot="actions" class="actions-zone" part="actions">
       <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
                      data-look="saturated" disabled>Apply</sherpa-button>
-      <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
-                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+      <sherpa-button class="act discard-all" data-act="discard" data-size="sm"
+                     data-icon-start="cross" disabled>Discard</sherpa-button>
       <slot name="actions" data-accepts="control"></slot>
     </span>
     <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
@@ -200,8 +200,8 @@
     <span slot="actions" class="actions-zone" part="actions">
       <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
                      data-look="saturated" disabled>Apply</sherpa-button>
-      <sherpa-button class="act discard-all" data-act="discard" data-size="sm" data-type="icon"
-                     data-icon-start="cross" aria-label="Discard changes" disabled></sherpa-button>
+      <sherpa-button class="act discard-all" data-act="discard" data-size="sm"
+                     data-icon-start="cross" disabled>Discard</sherpa-button>
       <slot name="actions" data-accepts="control"></slot>
     </span>
   </sherpa-section-header>

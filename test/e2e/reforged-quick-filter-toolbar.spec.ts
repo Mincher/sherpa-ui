@@ -2564,3 +2564,17 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
   expect(r.toolbar).toEqual({ divider: '""', label: ['"View Context"', 'none'] });
   expect(r.panel).toEqual({ divider: 'none', label: ['none', 'none'] });
 });
+
+test('Discard says its word, in every layout', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const words: string[] = [];
+    for (const attrs of [{}, { 'data-orientation': 'portrait' }, { 'data-orientation': 'portrait', 'data-flat': '' }]) {
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, attrs);
+      await window.__settled();
+      words.push(el.shadowRoot!.querySelector('.discard-all')!.textContent!.trim());
+    }
+    return words;
+  });
+  // Will, TODO 431
+  expect(r).toEqual(['Discard', 'Discard', 'Discard']);
+});
