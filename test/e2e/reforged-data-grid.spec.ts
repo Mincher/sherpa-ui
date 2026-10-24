@@ -3235,6 +3235,8 @@ test('drawHighlight tints the rows its test matches, through a redraw, and null 
       .filter((tr) => tr.hasAttribute('data-highlight')).map((tr) => tr.querySelector('.cell')!.textContent);
     el.drawHighlight((row) => row.score >= 60);
     const first = lit();
+    // The row fades in its fill: read the colour it comes to rest on.
+    await Promise.all([...el.shadowRoot!.querySelectorAll('.body .row')].flatMap((tr) => tr.getAnimations()).map((a) => a.finished));
     const plain = getComputedStyle(el.shadowRoot!.querySelector('.body .row:not([data-highlight])')!).backgroundColor;
     const tinted = getComputedStyle(el.shadowRoot!.querySelector('.body .row[data-highlight]')!).backgroundColor;
     el.populate!(config);

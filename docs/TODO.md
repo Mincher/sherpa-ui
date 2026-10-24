@@ -122,7 +122,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
 | ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
-| 🚧 | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
+| ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1889,7 +1889,7 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` 🚧 441 — FEATURE: Highlight matches
+### `[x]` ✅ 441 — FEATURE: Highlight matches
 
 Will, 2026-10-23, in 436: *"Highlight matches (Highlights grid rows, chart
 segments etc. that match the target filter. With this on, every filter chip
@@ -1958,6 +1958,13 @@ chip shows that chip's share). **B** — (1), the matched part.
   (`.needle-match`). A plain number has nowhere to say it, so a KPI is unmarked.
 - ✅ A section in portrait shows its values as chips and keeps its menu shut, so
   its ⋮ offers "Highlight matches" too — "Stop highlighting" while it drives.
+
+✅ 2026-10-24. Full run, three engines: sherpa-ui 3311 passed, the node tests
+695, the a11y gate 67; Demos 554. Its failures were the Mac's sleep — each
+passes alone, awake (`caffeinate -dis`) — and one test of mine, which read a
+row's fill mid-fade in Firefox: it waits for the row's transition now.
+Not done: a boolean chip with no menu cannot drive; a tip does not say its
+matched part.
 
 ### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
 
