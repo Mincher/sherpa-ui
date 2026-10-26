@@ -5643,6 +5643,12 @@
               "default": "\"start\""
             },
             {
+              "name": "data-apply",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-apply-on",
               "type": {
                 "text": "'change' | 'input'"
@@ -8127,6 +8133,13 @@
             },
             {
               "kind": "field",
+              "name": "singleApply",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8483,6 +8496,12 @@
               "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider.",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-field-apply",
+              "type": {
+                "text": "boolean"
               }
             },
             {

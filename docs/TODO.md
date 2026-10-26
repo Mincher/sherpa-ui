@@ -132,7 +132,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
 | ✅ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
 | ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
-| ⬜ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
+| ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
 | ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ⬜ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
@@ -140,6 +140,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ⬜ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
 | ⬜ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
+| ⬜ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
+| ⬜ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
+| ⬜ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1978,12 +1981,21 @@ drawn; its test read the text alone. Now it is a ROW above the footer, in a new
 chip. Portrait sections keep theirs in the ⋮. Test: Demos
 `reforged-filter-layouts` (it opens the menu and presses the row).
 
-### `[ ]` ⬜ 451 — FEATURE: Single Apply & Discard, a setting
+### `[x]` ✅ 451 — FEATURE: Single Apply & Discard, a setting
 
 Will, 2026-10-26: *"Add 'Single Apply & Discard' as a filtering setting. If
 on, then there's a single Apply and Discard button like we have now. If off
 then there's an Apply and Discard per filter field in their menu/panel
 section."*
+
+**✅ Done 2026-10-26.** `provider.singleApply` (on by default) — off, each bar
+is `data-field-apply`: the scope still waits, but the bar's (and a portrait
+scope's) one Apply and Discard go. A chip's menu shows Apply beside Discard; in
+a panel section, Apply and Discard sit on its heading row while a value of it
+is pending. Apply commits that field alone; Discard puts it back. Demos:
+Settings › Filtering › Behaviour › "Single Apply & Discard". Test: Demos
+`reforged-view-chips` (a menu's Apply, a section's Discard and Apply; 3
+engines). TRAP T-each-field-can-apply-on-its-own.
 
 ### `[ ]` ⬜ 452 — FEATURE: drag to reorder the query
 
@@ -2031,6 +2043,29 @@ across all of the view data without having to actually move the filter to the
 view scope."* To check first: one source already pushes its test to every
 component it binds; a page with several sources compiles only its OWN scopes
 (`facts.mine`), so another source skips a local driver.
+
+### `[ ]` ⬜ 459 — FILTERS: Highlight on hover, a field or one value
+
+Will, 2026-10-26: *"Highlight on Hover should work for a Field (highlights all
+values) or a single Value. The single Value may be in a menu (toolbar mode) or
+panel section (panel mode)."* 449 previews a whole applied chip.
+
+### `[ ]` ⬜ 460 — LOOK: a panel section's heading in a column on its left
+
+Will, 2026-10-26: *"In panel mode, instead of using a row per section for the
+icon, label, and match count, I'd like to reserve a column on the left. This
+should hopefully help make the panel more scannable and also reduce the amount
+of vertical height used. This could also be a configurable filtering setting
+(on by default for now)."*
+
+### `[ ]` ⬜ 461 — LOOK: a shorter App Header
+
+Will, 2026-10-26: *"With moving the app header icon and heading label up to the
+first row, we can reduce the gap between that row and the View & Context
+controls. This should overall reduce the height of the App Header
+considerably. A gap of 16 or 24px between the rows would probably be best."*
+And: *"if the view & context row could vertically line up with the Search
+icon/input in the nav that would be ideal."*
 
 ### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
 

@@ -64,6 +64,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
+| `data-field-apply` | boolean |  |  |
 | `data-flat` | boolean | `false` | portrait: its scope is a HEADING, not an accordion — the column's View |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |

@@ -30,6 +30,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-advanced` | boolean |  | FILTER type only: this field offers Advanced conditions, so the mode button shows. OPT-IN: most fields are answered by ticking values, and a `Contains` box over a closed set of three is noise. TRAP T-conditions-are-opt-in-per-field |
 | `data-advanced-only` | boolean |  | FILTER type only: Advanced conditions and NOTHING else. Implies data-advanced, opens in advanced mode and cannot leave it, and hides the switch — there is no list behind it. For a field whose values are a wall nobody ticks: 240 emails. TRAP T-a-filter-answers-by-values-conditions-or-both |
 | `data-align` | `start` `end` | `start` | start \| end which trigger edge the card lines up with |
+| `data-apply` | boolean |  |  |
 | `data-apply-on` | `change` `input` |  |  |
 | `data-available` | text |  |  |
 | `data-body` | `number` `date` |  |  |

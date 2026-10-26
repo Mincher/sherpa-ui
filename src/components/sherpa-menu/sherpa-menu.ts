@@ -159,6 +159,8 @@ export class SherpaMenu extends SherpaElement {
     'data-commit': { type: 'boolean', kind: 'style' },
     // Discard without Apply: the scope waits for its bar's ONE Apply. TODO 406
     'data-discard': { type: 'boolean', kind: 'style' },
+    // …with an Apply of its own: each field applies on its own. TODO 451
+    'data-apply': { type: 'boolean', kind: 'style' },
     'data-pending': { type: 'boolean', kind: 'behaviour' },
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
     'data-readonly': { type: 'boolean', kind: 'style' },

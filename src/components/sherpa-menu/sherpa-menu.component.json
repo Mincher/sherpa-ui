@@ -1125,6 +1125,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-apply",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-apply-on",
       "type": "enum",
       "observed": true,

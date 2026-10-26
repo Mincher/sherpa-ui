@@ -36,6 +36,15 @@
     <span data-word="highlight">Highlight matches</span>
     <span data-word="unhighlight">Stop highlighting</span>
   </template>
+  <!-- A SECTION's own Apply and Discard, before its ⋮, where each field applies
+       on its own: shown while the field is pending. Will, TODO 451 -->
+  <template class="field-apply-tpl">
+    <!-- `default`: the pair is the bar's look, never its field chip's active one. -->
+    <span slot="more" class="field-apply" data-status="default">
+      <sherpa-button class="field-commit" data-size="sm" data-look="saturated">Apply</sherpa-button>
+      <sherpa-button class="field-discard" data-size="sm" data-icon-start="cross">Discard</sherpa-button>
+    </span>
+  </template>
   <!-- A SECTION's ⋮, in its chip's `more` slot: the field's own actions, each
        only where it applies. Will, TODO 425 G1 -->
   <template class="field-more-tpl">

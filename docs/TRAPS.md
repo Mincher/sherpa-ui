@@ -19307,3 +19307,28 @@ between chips; only a `pointerout` to outside the bar ends it there.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-chip-drives-the-highlight.test.mjs`
+
+### T-each-field-can-apply-on-its-own
+
+**With Single Apply & Discard off, each field applies on its own** (Will, TODO
+451; `provider.singleApply = false` → `data-field-apply` on each bar). The
+scope still WAITS — every pick is a draft in the Query, as with one Apply —
+but the bar's one Apply and Discard go. A chip's menu shows Apply beside its
+Discard (`data-apply` on a waiting menu); in a panel section, Apply and Discard
+sit on its heading row, before its ⋮, while a value of it is pending. Apply
+sends that field's answer with `commit` (`query.commit({ field })`): the rest
+of the scope still waits. Discard is 406's `filter-discard { field }`.
+
+**Only an OPEN menu's Apply commits.** A section's value press picks through
+its field's SHUT menu and calls `apply()`, which says `menu-apply` too; that
+pick must wait for the section's own Apply.
+
+**A section says it with a custom state**, `:state(values-pending)`: its
+heading is never pending, only its values. `.chip:has(> .value[data-pending])
+> .field-apply` matched in Firefox 155, yet Firefox did not restyle the
+sibling when a value's `data-pending` changed — not even on a restyle of the
+chip — so the pair stayed hidden until a full restyle.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`

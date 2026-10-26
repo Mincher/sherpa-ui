@@ -144,6 +144,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-pending': { type: 'string', kind: 'behaviour' },
     // Its scope waits for ONE Apply, this bar's; something in it is not applied yet. TODO 406
     'data-waits': { type: 'boolean', kind: 'style' },
+    // …or each field applies on its own: its menu's, or its section's, Apply. Will, TODO 451
+    'data-field-apply': { type: 'boolean', kind: 'style' },
     'data-dirty': { type: 'boolean', kind: 'behaviour' },
     // The FIELDS whose own read failed: a system error, not 0 matches. TODO 411
     'data-failed': { type: 'string', kind: 'behaviour' },
@@ -564,6 +566,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('pointerover', this.#onHoverChip);
     this.addEventListener('pointerout', this.#onLeaveBar);
     this.addEventListener('menu-discard', this.#onMenuDiscard);
+    this.addEventListener('menu-apply', this.#onMenuApply);
+    this.addEventListener('button-click', this.#onFieldApply);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
@@ -1262,6 +1266,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const { menu, items } = menuFor(this.root, def, {
       bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
       live: this.dataset['applyOn'] === 'input', waits: this.hasAttribute('data-waits'),
+      // Each field applies on its own: its menu has Apply. TODO 451
+      applies: this.hasAttribute('data-field-apply'),
       fetches: this.hasAttribute('data-waits') || this.hasAttribute('data-remote'),
     });
 
@@ -1438,6 +1444,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       more = this.clone('template.field-more-tpl');
       if (!more) return;
       chip.append(more);
+    }
+    // Its own Apply and Discard, before the ⋮; CSS shows them. TODO 451
+    if (!chip.querySelector(':scope > .field-apply')) {
+      const own = this.clone('template.field-apply-tpl');
+      if (own) chip.insertBefore(own, more);
     }
     const move = this.#moveLabel(def);
     const way = this.#scope === VIEW ? 'lower' : 'raise';
@@ -1647,7 +1658,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#emitChange({ suspended: false });
     }
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
-    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits') && this.#filters.length) this.#render();
+    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits' || name === 'data-field-apply') && this.#filters.length) this.#render();
     if (name === 'data-pending' || name === 'data-failed') this.#syncPending();
     // Apply is on while something in the scope waits for it. TODO 406
     if (name === 'data-dirty' || name === 'data-waits') {
@@ -2174,6 +2185,33 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // sherpa-button opens its own slotted menu; nothing to do here.
         break;
     }
+  }
+
+  /** A chip menu's Apply, where each field applies on its own: that field goes,
+   *  alone. Only an OPEN menu's: a section's value press applies its shut menu,
+   *  and that pick waits for the section's own Apply. TRAP T-each-field-can-apply-on-its-own */
+  #onMenuApply = (event: Event): void => {
+    if (!this.hasAttribute('data-waits') || !this.hasAttribute('data-field-apply')) return;
+    if (!this.pathFind<SherpaMenu>(event, 'sherpa-menu')?.open) return;
+    const chip = this.pathFind(event, 'sherpa-quick-filter');
+    if (chip) this.#commitField(chip);
+  };
+
+  /** A section's own Apply or Discard, where each field applies on its own. TODO 451 */
+  #onFieldApply = (event: Event): void => {
+    const commit = this.pathFind(event, '.field-commit');
+    const discard = commit ? null : this.pathFind(event, '.field-discard');
+    const chip = commit || discard ? this.pathFind(event, 'sherpa-quick-filter') : null;
+    if (!chip) return;
+    event.stopPropagation();
+    if (commit) this.#commitField(chip);
+    else this.#onMenuDiscard(event);
+  };
+
+  /** Send ONE field's answer, applied: the rest of the scope still waits. TODO 451 */
+  #commitField(chip: HTMLElement): void {
+    const request = this.#answerRequest(chip);
+    if (request) this.emit('quick-filter-change', { scope: 'bar', request: applied(request), active: this.active, values: this.values });
   }
 
   /** A menu's Discard, where the scope waits: its field's applied answer comes back. TODO 406 */

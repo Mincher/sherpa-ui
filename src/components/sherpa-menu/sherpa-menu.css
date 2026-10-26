@@ -577,6 +577,8 @@
 :host([data-commit]) :is(.discard, .apply) { display: inline-flex; }
 /* The bar holds ONE Apply for a scope that waits; its menus keep Discard. TODO 406 */
 :host([data-discard]) .discard { display: inline-flex; }
+/* …unless each field applies on its own: then its menu has Apply too. TODO 451 */
+:host([data-discard][data-apply]) .apply { display: inline-flex; }
 
 /* A separator row between groups. */
 ::slotted(hr) {

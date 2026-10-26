@@ -317,7 +317,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (172)
+## Filters (173)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -421,6 +421,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-custom-element-upgrade](TRAPS.md#t-custom-element-upgrade) — filter-menu, filter-panel, quick-filter, quick-filter-toolbar
 - [T-drill-flags-travel-and-replace](TRAPS.md#t-drill-flags-travel-and-replace) — filters-button
 - [T-drill-moves-not-clones](TRAPS.md#t-drill-moves-not-clones) — filter-panel, filters-button, quick-filter-toolbar
+- [T-each-field-can-apply-on-its-own](TRAPS.md#t-each-field-can-apply-on-its-own) — quick-filter, quick-filter-toolbar
 - [T-empty-flag-needs-rows-to-count](TRAPS.md#t-empty-flag-needs-rows-to-count) — quick-filter
 - [T-empty-is-every-kind-of-answer](TRAPS.md#t-empty-is-every-kind-of-answer) — quick-filter, quick-filter-toolbar
 - [T-every-chip-menu-gets-clear-and-search](TRAPS.md#t-every-chip-menu-gets-clear-and-search) — filter-menu

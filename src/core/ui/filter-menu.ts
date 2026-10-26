@@ -69,6 +69,8 @@ export interface FilterMenuOptions {
   /** Its scope WAITS for one Apply, its bar's: a pick goes to the draft at once,
    *  and the footer keeps Discard alone. Will, TODO 406 */
   waits?: boolean | undefined;
+  /** …and each field applies on its own: its menu has Apply too. Will, TODO 451 */
+  applies?: boolean | undefined;
   /** Its picks FETCH — its scope waits, or its source is remote: a list with
    *  nothing ticked, on, answers no rows. Will, TODO 403 · TRAP T-none-is-an-answer */
   fetches?: boolean | undefined;
@@ -108,6 +110,7 @@ export function menuFor(
   const defers = !opts.waits && (def.commit ?? (typed || dated || (!local && !one && !hasOwnBody(kind))));
   if (defers) menu.setAttribute('data-commit', '');
   if (opts.waits) menu.setAttribute('data-discard', '');
+  if (opts.waits && opts.applies) menu.setAttribute('data-apply', '');
   if (opts.live) menu.setAttribute('data-apply-on', 'input');
   // A def that NAMED `commit` outranks the Range switch's own rule; so does a number.
   if (def.commit != null || local || typed || dated || opts.waits) menu.setAttribute('data-commit-fixed', '');

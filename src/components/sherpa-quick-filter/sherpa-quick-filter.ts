@@ -997,6 +997,8 @@ export class SherpaQuickFilter extends SherpaElement {
       this.append(one);
     }
     for (const gone of mine.values()) gone.remove();
+    // A value of it waits: said on the section itself. TRAP T-each-field-can-apply-on-its-own
+    this.toggleState('values-pending', !!this.querySelector(':scope > .value[data-pending]'));
   }
 
   /** A SECTION's applied answer while its field waits, null while it does not:

@@ -656,6 +656,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-field-apply",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-flat",
       "type": "boolean",
       "observed": true,

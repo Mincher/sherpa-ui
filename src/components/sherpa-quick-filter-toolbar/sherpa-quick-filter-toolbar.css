@@ -107,8 +107,17 @@
 .apply-all,
 .discard-all,
 .apply-divider { display: none; }
-:host([data-waits]:not([data-panel-mode])) :is(.apply-all, .discard-all) { display: inline-flex; }
-:host([data-waits]:not([data-panel-mode])) .apply-divider { display: block; }
+:host([data-waits]:not([data-panel-mode], [data-field-apply])) :is(.apply-all, .discard-all) { display: inline-flex; }
+:host([data-waits]:not([data-panel-mode], [data-field-apply])) .apply-divider { display: block; }
+/* …or each field applies on its own: a section's pair, while a value of it is
+   pending — said by its state, as a section's heading is never pending.
+   TRAP T-each-field-can-apply-on-its-own */
+.chips > .chip > .field-apply { display: none; }
+:host([data-waits][data-field-apply]) .chips > .chip:state(values-pending) > .field-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
 
 /* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
    as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */

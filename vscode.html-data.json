@@ -2109,6 +2109,10 @@
           ]
         },
         {
+          "name": "data-apply",
+          "valueSet": "v"
+        },
+        {
           "name": "data-apply-on",
           "values": [
             {
@@ -2817,6 +2821,10 @@
         {
           "name": "data-fetch-fields",
           "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
+        },
+        {
+          "name": "data-field-apply",
+          "valueSet": "v"
         },
         {
           "name": "data-flat",
