@@ -59,6 +59,12 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: nowrap;
 }
+/* NO ICON: the label alone, with the room an icon would take, so it reads the
+   same size as a chip with one. Before the section and key rules, which win.
+   Will, TODO 473 */
+:host(:not([data-icon-start], [data-swatch], [data-indicator])) .body {
+  padding-inline: var(--sherpa-display-mode-space-xs, 8px);
+}
 
 /* ── The focus ring ──────────────────────────────────────────────────
  * Raise the focused half above its snapped neighbour so the ring is whole.

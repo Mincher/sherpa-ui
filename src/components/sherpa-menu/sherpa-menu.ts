@@ -691,6 +691,8 @@ export class SherpaMenu extends SherpaElement {
     const box = (name: string): SherpaInputText | null => row.querySelector<SherpaInputText>(`.condition-${name}`);
     const set = (name: string, value: string): void => { const el = box(name); if (el) el.value = value; };
     const unit = box('unit');
+    // The row REMEMBERS its unit, as its op: the select has no options yet. TODO 464
+    row.dataset['unit'] = seed?.unit ?? 'day';
     // Its value written AFTER its options exist. TRAP T-custom-element-upgrade
     void Promise.resolve(unit?.populate?.(DATE_UNITS.map((u) => ({ value: u, label: `${u}s` }))))
       .then(() => { if (unit) unit.value = seed?.unit ?? 'day'; });
@@ -708,7 +710,7 @@ export class SherpaMenu extends SherpaElement {
     const value = (name: string): string => (row.querySelector<SherpaInputText>(`.condition-${name}`)?.value ?? '').trim();
     const at = (day: string, time: string): string => (value(day) && value(time) && this.hasAttribute('data-time')
       ? `${value(day)}T${value(time)}` : value(day));
-    if (op === 'last' || op === 'next') return { text: value('count'), unit: (value('unit') || 'day') as DateUnit };
+    if (op === 'last' || op === 'next') return { text: value('count'), unit: (row.dataset['unit'] || value('unit') || 'day') as DateUnit };
     if (op === 'between') {
       const ends = [at('date', 'time'), at('date-to', 'time-to')];
       return ends.every(Boolean) ? { picked: ends } : {};
@@ -967,6 +969,9 @@ export class SherpaMenu extends SherpaElement {
       if (live) row.dataset['op'] = live;
       const joined = row.querySelector<SherpaInputText>('.join')?.value;
       if (joined) row.dataset['join'] = joined;
+      // …and its unit, from the unit's own select only.
+      const unit = (event?.target as HTMLElement | null)?.closest?.<SherpaInputText>('.condition-unit')?.value;
+      if (unit) row.dataset['unit'] = unit;
       const op = this.#opOf(row);
       row.dataset['takes'] = this.#takes(op);
       const picked = row.querySelector<SherpaInputText>('.condition-pick')?.value ?? '';

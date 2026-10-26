@@ -809,3 +809,16 @@ test('a PERSISTENT chip — the View chip, always on — wears no on look; any o
   expect(r.view).toEqual(r.plain);
   expect(r.on.fill).not.toBe(r.plain.fill);
 });
+
+// Will, TODO 473
+test('a chip with no icon pads its label as wide as an icon chip reads; a section heading keeps none', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const pad = async (attrs: Record<string, string>): Promise<string> => {
+      const el = await window.__mount('sherpa-quick-filter', undefined, { 'data-label': 'Status', ...attrs });
+      await window.__settled();
+      return getComputedStyle(el.shadowRoot!.querySelector('.body')!).paddingInlineStart;
+    };
+    return { plain: await pad({}), icon: await pad({ 'data-icon-start': 'globe' }), section: await pad({ 'data-layout': 'section' }) };
+  });
+  expect(r).toEqual({ plain: '8px', icon: '4px', section: '0px' });
+});

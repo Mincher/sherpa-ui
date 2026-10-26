@@ -154,7 +154,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
 | ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
 | ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
-| ⬜ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
+| ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2249,6 +2249,10 @@ starting answers outlive a View that does not name their scope (`declareStart`,
 TRAP `T-a-page-scope-starts-with-its-answers`): Records' first View had wiped
 the Date, so Reset to default took it off and the page never read as at default.
 
+**Part 3.** The Date chip read "last(12 days)" over a 12-month filter: the
+row's unit select had no options yet when the chip read it. The row remembers
+its unit now, as it does its op.
+
 ❓ **D2 — repro for the rest.** "Erratic" active state, the toggle glitch that
 clears the value, and "range defaults to a range" did not show in the paths
 above. Which page, chip and clicks?
@@ -2291,11 +2295,16 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 473 — LOOK: a chip without an icon is as big as one with
+### `[x]` ✅ 473 — LOOK: a chip without an icon is as big as one with
 
 Will, 2026-10-26: *"Filter chips with no icon are visually smaller than those
 with icons. We need to increase their size to meet those with icons. Ideally do
 this using padding value changes."*
+
+**Done.** Both were 24px tall; the label had 4px each side, while an icon
+chip's label sits 23px in. A chip with no icon, swatch or dot now pads 8px
+(`space-xs`) each side; a section heading and a legend key keep their own.
+`reforged-quick-filter`.
 
 ### `[x]` ✅ 472 — LOOK: no icon on a panel section's header
 
