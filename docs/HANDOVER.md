@@ -1,7 +1,63 @@
-# Handover — 2026-10-22
+# Handover — 2026-10-26
 
-For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
-`docs/PRINCIPLES.md` first, as always; this says where the work stands.
+For the next Claude session on sherpa-ui, now on ANOTHER Claude account. Read
+`CLAUDE.md` and `docs/PRINCIPLES.md` first, as always; this says where the work
+stands.
+
+## Moving to another Claude account
+
+The repo holds the rules, the TODO and the traps. These live OUTSIDE it:
+
+| What | Where | Carries over? |
+|---|---|---|
+| Memory: ~300 notes on how Will works and the traps found | `~/.claude/projects/-Users-williammincher-Documents-My-synced-vault-Projects-sherpa-ui/memory/` (index: `MEMORY.md`) | Yes on this Mac: a new login keeps `~/.claude`. On another Mac, copy the folder to the same path |
+| The ELI5 output style (ASD-STE100 replies) | `~/.claude/output-styles/eli5.md` | As memory |
+| Settings, permissions, hooks | `~/.claude/settings.json` | As memory |
+| User skills | `~/.claude/skills/` | As memory |
+| claude.ai connectors (Figma, Claude Docs) | the claude.ai account | **No.** Connect them again in the new account |
+| figma-console MCP | `.mcp.json` (not tracked) | Yes. Never read, edit or stage it: it holds a plaintext token |
+
+## Where the code stands (2026-10-26)
+
+- All four repos are clean: nothing uncommitted.
+- `sherpa-data-layer` is 124 commits ahead of `origin` (last push 2026-10-21);
+  `../Sherpa Demos` `main` is 65 ahead. Push is Will's call.
+- `../Sherpa Starter` and `../Sherpa Gallery` have no git remote.
+- Demos links sherpa-ui by `file:`: **run `npm run build` after each change**.
+  Will runs Demos' server on :4200; never stop it.
+- A peer session, `sherpa-demos-5a` (in Demos), was live on 2026-10-26. Never
+  stash. Stage only your own files, and only when `git diff --cached` is empty.
+
+## Where the work stands (2026-10-26)
+
+**Done since 2026-10-22: TODO 396–441**, but for the rows below. Each item's
+note is in its section of `docs/TODO.md`. The large ones:
+
+| Item | What it gave | Plan / TRAP |
+|---|---|---|
+| 350 D1 | `dist/bundle/` (esbuild, split): Records 221 → 33 requests; Demos, Gallery and the Starter map to it | `T-a-page-loads-the-bundle` |
+| 424 | ONE chip logic: the bar and the panel mark, draft and grey a field's chips through `filter-host.ts` (`markField`, `limitField`) | `docs/history/plan-424-one-chip-logic.md`, `T-a-field-is-one-object` |
+| 425 | The toolbar in PORTRAIT (`toolbar-column.ts`) IS the filter panel, and the default; the classic panel is behind Settings › Application › Classic filter panel | `docs/history/plan-425-portrait-toolbar.md`, `T-the-panel-is-the-bar-in-portrait`, `T-a-shut-column-draws-nothing` |
+| 426–428, 430–440 | Demos' Records on the column; Manage Saved Filters; Favorite, Save, Refresh and Suggest filters in the App Header; View Context label and container | — |
+| 436 | Demos' Settings › Filtering: every filter switch on one page; `provider.switchable`, `contextLabel`, `sections`; `outlet.definition`, `outlet.reload` | — |
+| 441 | Highlight matches: one chip drives it (`query.highlight`); grid rows tint; bar, slice, line and gauge draw the matched part | — |
+
+**Open, in TODO order:**
+
+- 🚧 425 — rounds 1 and 2 are done. **Waits on Will's look.**
+- ⬜ 402 — `sherpa-metric-group`, and sticky metrics that work. The next item
+  to build.
+- ⬜ 415 — simplify the toolbar's and the panel's filter code. PLAN first, with
+  Will.
+- ⬜ 429 — a shareable Demos build. Built, then reverted at Will's word. To bring
+  it back, revert the reverts of sherpa-ui `471b50a8` and Demos `d7d3914` — only
+  when Will says.
+- ⬜ 379–384 and 417 are "for later" (Will); 364 is deferred; 390 is a WebKit
+  flake (~1 in 40).
+- ❓ 350 (Will's look at the load), 388, 413 (not reproduced: needs Will's
+  screenshot). 392 waits (Will: A).
+- 🚧 older: 287 5b, 288 8b–10, 291 8 — plan again first, their plans predate
+  366. Also 293, 321, 323.
 
 ## How Will works
 
@@ -19,7 +75,7 @@ For the next Claude session on sherpa-ui. Read `CLAUDE.md` and
 - Bugs found mid-work are QUEUED in the TODO, not fixed in passing.
 - A done item keeps its row and its section, marked ✅. Nothing is deleted.
 
-## Where the code stands
+## Where the code stood (2026-10-22)
 
 - Branch `sherpa-data-layer`, pushed to `origin` on 2026-10-19.
 - `../Sherpa Demos` (branch `main`) is pushed too. It links sherpa-ui by
