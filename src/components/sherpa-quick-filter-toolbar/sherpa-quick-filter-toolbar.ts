@@ -14,10 +14,10 @@ import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, savedMenuDef, type AddedFilter, type SavedSet,
+  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, drawSaveActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
+  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
@@ -35,6 +35,7 @@ import type { FilterSet, OrganiseColumn, ScopeDescription, ScopeShows } from '..
 import type { DataAsk } from '../../core/ui/context.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { dragToOrder } from '../../core/ui/drag-order.js';
+import { ToolbarHeader } from './toolbar-header.js';
 import { ToolbarColumn } from './toolbar-column.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -1011,6 +1012,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   /** The reader's saved sets. */
   #saved = new SavedSets(this);
+  /** Its header's Saved menu, Save <name> and filter acts — its column's too. TODO 415 */
+  readonly #header = new ToolbarHeader({
+    el: this,
+    root: () => this.root,
+    emit: (name, detail, options) => { this.emit(name, detail, options); },
+    toggleState: (name, on) => this.toggleState(name, on),
+  }, this.#saved, { saved: '.saved-btn', save: '.save-set' });
 
   /** Steers given before `populate()` drew a chip, for `#render()` to replay in
    *  order. TRAP T-a-value-before-the-first-render-is-held */
@@ -1764,7 +1772,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       syncHide(this, this.root);
     }
     this.#syncArrangement();
-    if (name === 'data-saveable') this.#syncSave();
+    if (name === 'data-saveable') this.#header.drawSave();
   }
 
   /** ONE reader act, as a request — none for an act no field hears. `values`
@@ -2106,12 +2114,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const def = drawFiltersButton(add, added, offer, split ? [] : this.#saved.listed, !split && this.hasAttribute('data-saveable'));
     if (!def) return;
     this.#drawApplied();
-    this.#drawSaved();
+    this.#header.drawSaved();
     this.#addMenu(add, def);
     // The Edit menu leads with Reset. Will, TODO 454
     drawFilterActions(this, this.root, add.querySelector('sherpa-menu'), undefined, false);
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
-    this.#syncSave();
+    this.#header.drawSave();
     this.#syncOverflowActive();
   }
 
@@ -2129,38 +2137,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   }
 
-  /** THE SAVED MENU, where the app splits it from Filters: the sets — a tick
-   *  takes one — then the save rows, then Manage. Will, TODO 436 */
-  #drawSaved(): void {
-    this.toggleState('has-sets', this.#saved.listed.length > 0);
-    const btn = this.$('.saved-btn');
-    btn?.querySelector('sherpa-menu')?.remove();
-    if (!btn || !this.hasAttribute('data-saved-menu')) return;
-    const { menu, items } = menuFor(this.root, savedMenuDef(this.#saved.listed));
-    menu.setAttribute('data-align', 'end');
-    btn.append(menu);
-    menu.items?.(items);
-    const manage = this.hasAttribute('data-saveable') && this.#saved.listed.some((s) => s.own);
-    drawSaveActions(this, this.root, menu, this.#saved.applied, manage);
-  }
-
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
   #onSavedPick = (event: Event): void => {
-    if (!this.pathFind(event, '.saved-btn')) return;
-    const set = this.#saved.pick(new Set(((event as CustomEvent).detail?.values ?? []) as string[]));
-    if (set.apply) this.emit('filters-apply', { id: set.apply });
-    else if (set.dismiss) this.emit('filters-dismiss', { id: set.dismiss });
+    if (this.pathFind(event, '.saved-btn')) this.#header.pick((event as CustomEvent).detail?.values ?? []);
   };
-
-  /** "Save <name>" beside the Filters button while a set is taken. Will, 366 */
-  #syncSave(): void {
-    const applied = this.#saved.applied;
-    this.toggleState('set-taken', !!applied);
-    const name = this.$('.save-set .save-name');
-    if (name) name.textContent = applied?.label ?? '';
-    this.$('.save-set')?.toggleAttribute('data-status', false);
-    if (applied) this.$('.save-set')?.setAttribute('data-status', 'active');
-  }
 
   /** Is an offered field spent — the source tallied it, and found no value left? */
   #spent(def: FilterDef): boolean {
@@ -2266,20 +2246,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'refresh':
         this.emit('data-refresh');
         break;
-      case 'reset-default':
-        /* The View's OWN filters — only its provider knows them. CANCELABLE: a
-           host that asks the reader first takes it over.
-           TRAP T-reset-to-default-is-the-views-own */
-        this.emit('view-reset', {}, { cancelable: true });
-        break;
-      case 'filters-save':
-      case 'filters-save-as':
-      case MANAGE_SETS:
-        this.emit(act);
-        break;
-      case 'filters-delete':
-        this.emit('filters-delete', { id: this.#saved.applied?.id });
-        break;
       case 'apply':
         // Every change its scope holds — or, Discard, none of them. TODO 406
         this.emit('filter-apply', {});
@@ -2290,6 +2256,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'add':
         // sherpa-button opens its own slotted menu; nothing to do here.
         break;
+      default:
+        // Reset all on view, and the save rows: the header's, as its column's. TODO 415
+        this.#header.act(act);
     }
   }
 
@@ -2364,9 +2333,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-the-add-menu-is-the-whole-list */
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
     // A saved set's row takes it, or — unticked — takes it off. TODO 105, 366
-    const set = this.#saved.pick(want);
-    if (set.apply) this.emit('filters-apply', { id: set.apply });
-    else if (set.dismiss) this.emit('filters-dismiss', { id: set.dismiss });
+    this.#header.pick([...want]);
     // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
     const flips: QueryRequest[] = [];
     let flipped = false;

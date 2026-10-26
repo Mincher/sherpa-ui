@@ -5,8 +5,8 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 933041,
-    "files": 112,
+    "js": 932540,
+    "files": 113,
     "fetched": 206276
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
@@ -250,8 +250,8 @@
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 534644,
-    "files": 49,
+    "js": 534143,
+    "files": 50,
     "fetched": 0
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
@@ -350,8 +350,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1113226,
-    "files": 155,
+    "js": 1112725,
+    "files": 156,
     "fetched": 206276
   }
 }

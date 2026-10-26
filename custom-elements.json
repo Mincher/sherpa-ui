@@ -9271,14 +9271,14 @@
               "name": "filters-apply",
               "description": "A saved set's row was ticked: take it, so the filters match it.",
               "type": {
-                "text": "CustomEvent<{ id: string }>"
+                "text": "CustomEvent"
               }
             },
             {
               "name": "filters-dismiss",
               "description": "A saved set's row was unticked: the scopes it names lose their filters.",
               "type": {
-                "text": "CustomEvent<{ id: string }>"
+                "text": "CustomEvent"
               }
             },
             {
@@ -9299,7 +9299,7 @@
               "name": "filters-delete",
               "description": "Delete filters: forget the set last taken.",
               "type": {
-                "text": "CustomEvent<{ id: string | undefined }>"
+                "text": "CustomEvent"
               }
             },
             {

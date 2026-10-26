@@ -1104,7 +1104,6 @@
       "name": "view-reset",
       "description": "Reset all on view: put back the View's own filters, in every scope.",
       "bubbles": true,
-      "cancelable": true,
       "composed": true
     },
     {
@@ -1129,20 +1128,14 @@
       "name": "filters-apply",
       "description": "A saved set's row was ticked: take it, so the filters match it.",
       "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string"
-      }
+      "composed": true
     },
     {
       "$type": "event",
       "name": "filters-dismiss",
       "description": "A saved set's row was unticked: the scopes it names lose their filters.",
       "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string"
-      }
+      "composed": true
     },
     {
       "$type": "event",
@@ -1163,10 +1156,7 @@
       "name": "filters-delete",
       "description": "Delete filters: forget the set last taken.",
       "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string | undefined"
-      }
+      "composed": true
     },
     {
       "$type": "event",

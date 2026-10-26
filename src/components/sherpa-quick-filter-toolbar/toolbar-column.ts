@@ -19,9 +19,10 @@ import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
-import { MANAGE_SETS, SavedSets, drawFiltersButton, savedMenuDef, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
-import { FILTER_ACTIONS, askSwitches, drawFilterActions, drawSaveActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows } from '../../core/ui/more-menu.js';
+import { MANAGE_SETS, SavedSets, drawFiltersButton, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
+import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows } from '../../core/ui/more-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
+import { ToolbarHeader } from './toolbar-header.js';
 
 /** What a column says: its toolbar's own events. */
 export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-delete' | 'filters-apply' | 'filters-dismiss' | 'filters-manage'
@@ -58,7 +59,10 @@ export class ToolbarColumn {
   constructor(host: ColumnHost) {
     this.#host = host;
     this.#saved = new SavedSets(host.el);
+    this.#header = new ToolbarHeader(host, this.#saved, { saved: '.column-saved', save: '.column-save' });
   }
+  /** Its header's Saved menu, Save <name> and filter acts — the bar's too. TODO 415 */
+  readonly #header: ToolbarHeader;
 
   /** One element of the column's own tree. */
   #$<T extends Element = HTMLElement>(selector: string): T | null {
@@ -87,7 +91,7 @@ export class ToolbarColumn {
     this.#$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
     for (const type of ['input', 'change']) this.#$('.find')?.addEventListener(type, this.#onFind);
     this.draw(this.#scopes);
-    this.#drawSave();
+    this.#header.drawSave();
   }
 
   /** One portrait toolbar per scope, in order; each asks for its own scope, as
@@ -146,7 +150,7 @@ export class ToolbarColumn {
   /** The reader's saved sets: the Filters menu's Saved section, and Save <name>. TRAP T-saved-filters-are-every-scope */
   saved(sets: readonly SavedSet[]): void {
     this.#saved.set(sets);
-    this.#drawSave();
+    this.#header.drawSave();
     this.#drawFilters();
   }
 
@@ -196,7 +200,7 @@ export class ToolbarColumn {
     btn.append(menu);
     menu.items?.(items);
     this.#drawResets();
-    this.#drawSaved();
+    this.#header.drawSaved();
   }
 
   /** The Edit menu leads with Reset. Will, TODO 454 */
@@ -204,26 +208,9 @@ export class ToolbarColumn {
     drawFilterActions(this.#host.el, this.#host.root(), this.#$('.column-filters sherpa-menu'), undefined, false);
   }
 
-  /** THE SAVED MENU, where the app splits it from Filters: the sets — a tick
-   *  takes one — then the save rows, then Manage. Will, TODO 436 */
-  #drawSaved(): void {
-    this.#host.toggleState('has-sets', this.#saved.listed.length > 0);
-    const btn = this.#$('.column-saved');
-    btn?.querySelector('sherpa-menu')?.remove();
-    if (!btn || !this.#host.el.hasAttribute('data-saved-menu')) return;
-    const { menu, items } = menuFor(this.#host.root(), savedMenuDef(this.#saved.listed));
-    menu.setAttribute('data-align', 'end');
-    btn.append(menu);
-    menu.items?.(items);
-    const manage = this.#host.el.hasAttribute('data-saveable') && this.#saved.listed.some((s) => s.own);
-    drawSaveActions(this.#host.el, this.#host.root(), menu, this.#saved.applied, manage);
-  }
-
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
   #onSavedPick = (event: Event): void => {
-    const set = this.#saved.pick(new Set(((event as CustomEvent).detail?.values ?? []) as string[]));
-    if (set.apply) this.#host.emit('filters-apply', { id: set.apply });
-    else if (set.dismiss) this.#host.emit('filters-dismiss', { id: set.dismiss });
+    this.#header.pick((event as CustomEvent).detail?.values ?? []);
   };
 
   /** A Saved menu row: a save row, or Manage. TODO 436 */
@@ -231,27 +218,14 @@ export class ToolbarColumn {
     const act = String((event as CustomEvent).detail?.value ?? '');
     if (!act.startsWith('filters-')) return;
     event.stopPropagation();
-    if (act === MANAGE_SETS) this.#host.emit(MANAGE_SETS);
-    else this.#act(act);
+    this.#act(act);
   };
-
-  /** "Save <name>" while a saved set is taken. Will, 366 */
-  #drawSave(): void {
-    const applied = this.#saved.applied;
-    this.#host.toggleState('set-taken', !!applied);
-    const name = this.#$('.column-save .save-name');
-    if (name) name.textContent = applied?.label ?? '';
-    this.#$('.column-save')?.toggleAttribute('data-status', false);
-    if (applied) this.#$('.column-save')?.setAttribute('data-status', 'active');
-  }
 
   /** TICKED IS HELD: a row unticked is a remove, one ticked an add — each
    *  asked of the scope its row names. A saved set's row takes it. TODO 105, 366 */
   #onFiltersCommit = (event: Event): void => {
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
-    const set = this.#saved.pick(want);
-    if (set.apply) this.#host.emit('filters-apply', { id: set.apply });
-    else if (set.dismiss) this.#host.emit('filters-dismiss', { id: set.dismiss });
+    this.#header.pick([...want]);
     const adds = new Map<string, string[]>();
     for (const [value, { scope, id }] of this.#rows) {
       const held = this.#scopes.find((s) => s.scope === scope)?.filters.some((f) => f.id === id && f.removable) ?? false;
@@ -267,8 +241,7 @@ export class ToolbarColumn {
     if (value !== MANAGE_SETS && !FILTER_ACTIONS.has(value)) return;
     event.stopPropagation();
     this.#$<SherpaMenu>('.column-filters sherpa-menu')?.hide?.();
-    if (value === MANAGE_SETS) this.#host.emit(MANAGE_SETS);
-    else this.#act(value);
+    this.#act(value);
   };
 
   /** A filter action: Reset and Reset all on view, from the Edit menu (TODO 454); the save rows, from the ⋮ (TODO 430). */
@@ -277,11 +250,8 @@ export class ToolbarColumn {
       const request = this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } }));
       this.#host.emit('quick-filter-change', { scope: 'column', request, active: [], values: {} });
     }
-    // Only the provider knows the View's own filters; CANCELABLE. TRAP T-reset-to-default-is-the-views-own
-    else if (act === 'reset-default') this.#host.emit('view-reset', {}, { cancelable: true });
-    else if (act === 'filters-delete') this.#host.emit('filters-delete', { id: this.#saved.applied?.id });
-    else if (act === 'filters-save-as') this.#host.emit('filters-save-as');
-    else if (act === 'filters-save') this.#host.emit('filters-save');
+    // Reset all on view, and the save rows: the header's, as the bar's. TODO 415
+    else this.#header.act(act);
   }
 
   /** ⋮ — Save filters (Will, TODO 430; Reset is the Edit menu's, 454), the page's buttons folded

@@ -155,14 +155,14 @@ Each one bubbles.
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |
 | `filter-add` | `{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }` | Chips were added, ; or a REQUEST to move a field to another scope — Move to View filters, or back. |
-| `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. A host may call `preventDefault()` to take it over. |
+| `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
 | `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |
-| `filters-apply` | `{ id: string }` | A saved set's row was ticked: take it, so the filters match it. |
-| `filters-dismiss` | `{ id: string }` | A saved set's row was unticked: the scopes it names lose their filters. |
+| `filters-apply` |  | A saved set's row was ticked: take it, so the filters match it. |
+| `filters-dismiss` |  | A saved set's row was unticked: the scopes it names lose their filters. |
 | `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
-| `filters-delete` | `{ id: string \| undefined }` | Delete filters: forget the set last taken. |
+| `filters-delete` |  | Delete filters: forget the set last taken. |
 | `filters-manage` |  | Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |

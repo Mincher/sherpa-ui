@@ -2017,7 +2017,7 @@ as it goes — `setQuery` applies what it returns.
 - Site: `test/e2e/reforged-reset-at-default.spec.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/provider-page.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-header.ts`
 
 ### T-a-value-before-the-first-render-is-held
 
