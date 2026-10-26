@@ -331,7 +331,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     event.stopPropagation();
     // Back stays one level deep, never a chain.
     if (this.#drill.home) this.#drillOut();
-    const label = this.#filters.find((f) => f.id === id)?.label ?? chip.dataset['label'] ?? id;
+    const label = this.#defById(id)?.label ?? chip.dataset['label'] ?? id;
 
     // An on/off chip has no menu: its row's tick answers it. TODO 54
     const from = chip.querySelector<SherpaMenu>('sherpa-menu');
@@ -399,7 +399,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #syncLayout(): void {
     const portrait = this.dataset['orientation'] === 'portrait';
     for (const chip of this.#chips()) {
-      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const def = this.#defOf(chip);
       const menu = chip.querySelector<SherpaMenu>(':scope > sherpa-menu');
       // A field answered by conditions alone has no values to lay out: it stays a chip. TODO 426
       const list = !!def && menu?.getAttribute('data-type') === 'filter' && !menu.dataset['body']
@@ -530,7 +530,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const portrait = this.dataset['orientation'] === 'portrait';
     let run = '';
     for (const chip of this.#chips()) {
-      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const def = this.#defOf(chip);
       const own = chip.hasAttribute('data-layout') || chip.hasAttribute('data-persistent') ? '' : def?.label ?? '';
       const name = def?.section ?? own;
       const key = def?.section ? `section:${def.section}` : `chip:${chip.dataset['id']}`;
@@ -626,7 +626,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // A preset — the page's own field — keeps its place. Will, TODO 452
       items: () => this.#chips().filter((c) => !c.hasAttribute('data-persistent')
         && !c.hasAttribute('data-folded-away') && !c.hasAttribute('data-superseded')
-        && !this.#filters.find((f) => f.id === c.dataset['id'])?.preset),
+        && !this.#defOf(c)?.preset),
       moved: (order) => this.#askOrder(order),
       signal: this.signal,
     });
@@ -827,7 +827,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  marks and its limits. TODO 424 · TRAP T-a-field-is-one-object */
   #field(chip: SherpaQuickFilter): FilterField {
     const id = chip.dataset['id'] ?? '';
-    const def = this.#filters.find((f) => f.id === id) ?? { id, label: chip.dataset['label'] ?? id };
+    const def = this.#defById(id) ?? { id, label: chip.dataset['label'] ?? id };
     return new FilterField(def, '', chip, chip.parentElement ?? chip, { single: true, chip: '.chip' });
   }
 
@@ -856,7 +856,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   drawApplied(applied: Readonly<Record<string, FieldReading>>): void {
     for (const chip of this.#chips()) {
-      const field = this.#filters.find((f) => f.id === chip.dataset['id'])?.field ?? chip.dataset['id'] ?? '';
+      const field = this.#fieldOf(chip.dataset['id'] ?? '');
       if (chip.dataset['layout'] === 'section') chip.applied = applied[field] ?? null;
     }
   }
@@ -876,7 +876,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #drawValueResults(): void {
     const results = this.hasAttribute('data-no-results') ? {} : this.#valueResults;
     for (const chip of this.#chips()) {
-      const field = this.#filters.find((f) => f.id === chip.dataset['id'])?.field ?? chip.dataset['id'] ?? '';
+      const field = this.#fieldOf(chip.dataset['id'] ?? '');
       const shown = chip.dataset['layout'] === 'section' || this.hasAttribute('data-every-count');
       chip.valueResults = shown ? results[field] ?? null : null;
     }
@@ -897,7 +897,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const shown = this.#shownResults;
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'] ?? '';
-      const field = this.#filters.find((f) => f.id === id)?.field ?? id;
+      const field = this.#fieldOf(id);
       chip.results = shown[field] ?? shown[id] ?? null;
     }
     this.#syncScopeBadge();
@@ -916,7 +916,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const badge = this.$<HTMLElement>('.scope-results');
     if (!tip || !badge) return;
     const answered = this.#chips().flatMap((chip) => {
-      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const def = this.#defOf(chip);
       const n = def ? this.#shownResults[def.field ?? def.id] ?? this.#shownResults[def.id] : undefined;
       return def && n != null && !chip.hasAttribute('data-persistent') ? [{ label: def.label, n }] : [];
     });
@@ -966,7 +966,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   search(text: string): void {
     const q = text.trim().toLowerCase();
     for (const chip of this.#chips()) {
-      const name = (this.#filters.find((f) => f.id === chip.dataset['id'])?.label ?? chip.dataset['label'] ?? '').toLowerCase();
+      const name = (this.#defOf(chip)?.label ?? chip.dataset['label'] ?? '').toLowerCase();
       const named = !q || name.includes(q);
       let any = named;
       for (const one of chip.querySelectorAll<HTMLElement>(':scope > .value')) {
@@ -1045,8 +1045,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  in force and wears 0 (Will, 2026-10-20). TRAP T-a-ruled-out-value-is-greyed */
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';
-    const field = this.#filters.find((f) => f.id === id)?.field ?? id;
-    if (!chip.querySelector('sherpa-menu') || this.superseded.includes(id)) return;
+    const field = this.#fieldOf(id);
+    if (!chip.querySelector('sherpa-menu') || chip.hasAttribute('data-superseded')) return;
     // A section's value chips are greyed too. TODO 425
     limitField(chip.querySelectorAll<HTMLElement>(':scope > .value'), this.#field(chip as SherpaQuickFilter).menus(),
       { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
@@ -1062,7 +1062,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A column's sections are told their own; a chart's, through it. TODO 425, 426
     if (this.#columned) return void (scope && this.#column.drawReading(field, reading, scope));
     const id = this.#idOf(field);
-    if (this.superseded.includes(id)) return;
+    if (this.#supersededId(id)) return;
     /* A chip just ADDED — a raised field's — stamps its menu a moment later,
        and an answer drawn before that is lost. It waits for the SAME settle
        the add's own report waits for, and is queued first — so that report
@@ -1078,7 +1078,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       void this.#settled().then(() => {
         if (this.#heldDraws.get(id) !== held) return;
         this.#heldDraws.delete(id);
-        if (!this.superseded.includes(id) && !this.#drafting(id)) this.#drawChip(id, reading);
+        if (!this.#supersededId(id) && !this.#drafting(id)) this.#drawChip(id, reading);
       });
       return;
     }
@@ -1093,7 +1093,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const held = this.#heldDraws.get(id);
     if (!held) return;
     this.#heldDraws.delete(id);
-    if (!this.superseded.includes(id)) this.#drawChip(id, held.reading);
+    if (!this.#supersededId(id)) this.#drawChip(id, held.reading);
   }
 
   /** One chip's answer, and whether it is ON. OFF keeps the answer and applies
@@ -1206,6 +1206,32 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The filter chips in the run — not Group, Sort or More — a set's among them. */
   #chips(): SherpaQuickFilter[] {
     return this.$$<SherpaQuickFilter>(CHIP);
+  }
+
+  /** A def, by its chip id. */
+  #defById(id: string | undefined): FilterDef | undefined {
+    return id ? this.#filters.find((f) => f.id === id) : undefined;
+  }
+
+  /** A chip's def. */
+  #defOf(chip: HTMLElement): FilterDef | undefined {
+    return this.#defById(chip.dataset['id']);
+  }
+
+  /** Does a chip answer here: no selector, and not held by a scope above? */
+  #answering(chip: HTMLElement): boolean {
+    return !chip.hasAttribute('data-persistent') && !chip.hasAttribute('data-superseded');
+  }
+
+  /** Is this chip id held by a scope above — as the bar drew it, or was told before it drew? */
+  #supersededId(id: string): boolean {
+    if (!this.#chips().length) return this.#held.supersede?.ids.includes(id) ?? false;
+    return !!this.$(`${CHIP}[data-id="${CSS.escape(id)}"][data-superseded]`);
+  }
+
+  /** The field a chip id answers: its def's, else the id itself. */
+  #fieldOf(id: string): string {
+    return this.#defById(id)?.field ?? id;
   }
 
   /** The FIELD chip an event came from: by CHIP, so never the chip's own inner
@@ -1471,7 +1497,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     });
     if (!moved) return;
     for (const chip of this.#chips()) {
-      const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+      const def = this.#defOf(chip);
       const menu = chip.querySelector<HTMLElement>(':scope > sherpa-menu');
       if (!def || !menu) continue;
       menu.querySelector(':scope > .move')?.remove();
@@ -1504,7 +1530,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Ask for a field to move: up to the View, or down where its source sends it. */
   #move(chip: HTMLElement): void {
-    const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+    const def = this.#defOf(chip);
     const to = this.#scope === VIEW ? def?.sendTo?.scope : VIEW;
     if (!def || !to) return;
     chip.querySelector<SherpaMenu>(':scope > sherpa-menu')?.hide?.();
@@ -1515,7 +1541,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  its chip's `more` slot, in the caret's place; said again on each layout,
    *  as what applies moves (a field sent up learns its way back). Will, TODO 425 G1 */
   #syncFieldMore(chip: SherpaQuickFilter): void {
-    const def = this.#filters.find((f) => f.id === chip.dataset['id']);
+    const def = this.#defOf(chip);
     if (!def) return;
     let more = chip.querySelector<HTMLElement>(':scope > .field-more');
     if (!more) {
@@ -1686,7 +1712,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** With no source: turn the filter chips that are on off, listing them, or the listed ones back on. */
   #switchChips(off: boolean): void {
     if (off && !this.#switchedOff) {
-      const on = this.#chips().filter((c) => c.current && !c.hasAttribute('data-persistent') && !c.hasAttribute('data-superseded'));
+      const on = this.#chips().filter((c) => c.current && this.#answering(c));
       this.#switchedOff = on.map((c) => c.dataset['id'] ?? '');
       for (const chip of on) chip.current = false;
     } else if (!off && this.#switchedOff) {
@@ -1704,7 +1730,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #keepOffChips(): void {
     if (this.#sourced || !this.#switchedOff) return;
     for (const chip of this.#chips()) {
-      if (!chip.current || chip.hasAttribute('data-persistent') || chip.hasAttribute('data-superseded')) continue;
+      if (!chip.current || !this.#answering(chip)) continue;
       chip.current = false;
       const id = chip.dataset['id'] ?? '';
       if (!this.#switchedOff.includes(id)) this.#switchedOff.push(id);
@@ -1814,7 +1840,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   get readings(): Record<string, FieldReading & { label: string; values: string[] }> {
     const out: Record<string, FieldReading & { label: string; values: string[] }> = {};
     for (const [id, reading] of Object.entries(this.#answers())) {
-      const def = this.#filters.find((f) => f.id === id);
+      const def = this.#defById(id);
       if (!def?.persistent && def?.field !== null) out[def?.field ?? id] = reading;
     }
     return out;
@@ -2086,7 +2112,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       ...run.filter((c) => heldIds.has(c.dataset['id'] ?? '') || hidden.has(c)).map((c) => {
         const id = c.dataset['id'] ?? '';
         return {
-          id, label: this.#filters.find((f) => f.id === id)?.label ?? c.dataset['label'] ?? id,
+          id, label: this.#defById(id)?.label ?? c.dataset['label'] ?? id,
           removable: heldIds.has(id), hidden: hidden.has(c),
           // ONE value: the tick is the chip's on/off. TODO 54
           ...(c.hasAttribute('data-menu') ? {} : { on: c.current }),
@@ -2427,7 +2453,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (chip.hasAttribute('data-persistent')) continue;
       const id = chip.dataset['id'] ?? '';
       // A View change leaves a carry-over chip; Reset does not. TRAP T-a-field-can-carry-over-views
-      if (options.carry && this.#filters.find((f) => f.id === id)?.carryOver) continue;
+      if (options.carry && this.#defById(id)?.carryOver) continue;
       /* A chip the VIEW holds is not this bar's to reset: it keeps what it
          shows, and its own picks for when the View lets go.
          TRAP T-a-superseded-chip-suspends-it-is-never-removed */
