@@ -68,7 +68,8 @@ export function limitField(
   const out = ruleOut(limits.present, limits.offered);
   for (const chip of values) {
     const why = out(chip.dataset['value'] ?? '');
-    chip.toggleAttribute('data-removed', why === 'unoffered' && !chip.hasAttribute('data-current'));
+    // Hiding unmatched, one it rules out goes too, as a menu row does. TODO 448
+    chip.toggleAttribute('data-removed', (why === 'unoffered' || (limits.hide && why !== null)) && !chip.hasAttribute('data-current'));
     chip.toggleAttribute('data-unavailable', why !== null);
   }
   for (const menu of menus) {

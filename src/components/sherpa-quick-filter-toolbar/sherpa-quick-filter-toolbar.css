@@ -414,9 +414,10 @@ sherpa-accordion.scope::part(actions) {
 /* A section's ⋮ offers Reset only once there is something to clear. */
 .chips > .chip:not([data-current]) > .field-more .more-item[value="clear"] { display: none; }
 
-/* Found by the column's search: what holds no match goes. */
+/* Found by the column's search: what holds no match goes. So does a value the
+   chain does not offer, or, hiding unmatched, one it rules out. TODO 448 */
 .chips > .chip[data-no-matches],
-.chips > .chip > .value[data-filtered-out] { display: none; }
+.chips > .chip > .value:is([data-filtered-out], [data-removed]) { display: none; }
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
    also carries are hidden here: Filters, with its actions. Two of each

@@ -129,7 +129,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
 | ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
 | ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
-| ⬜ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
+| ✅ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
 | ⬜ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
 | ⬜ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ⬜ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
@@ -137,6 +137,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ⬜ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
 | ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
+| ⬜ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
+| ⬜ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1932,10 +1934,18 @@ applied. `drawFiltersButton` writes none; the classic panel keeps its own, at
 its call site. The column's title still counts the filters applied. The badge
 had widened the button, so three tests that fold chips at 300px fold at 220.
 
-### `[ ]` ⬜ 448 — BUG: Hide invalid does not hide
+### `[x]` ✅ 448 — BUG: Hide invalid does not hide
 
 Will, 2026-10-26: *"Bug: The 'Hide invalid filters' option doesn't hide
 invalid options."* The switch is 376's.
+
+**✅ Done 2026-10-26.** Measured on Records with Limit and Hide on: menu rows
+hid, but in PANEL mode a section's ruled-out value chips (Tier's Gold, under
+churned, Enterprise, Platinum) were only greyed. `limitField` marked a value
+chip removed only when the chain did not offer it, and the toolbar had no
+rule that hid even that one. Now both. With Limit off, data-scope fields do
+not limit each other, so nothing is greyed and nothing hides — as the setting
+says. Test: Demos `reforged-limit-options` (3 engines).
 
 ### `[ ]` ⬜ 449 — FEATURE: Highlight matches on hover
 
@@ -1979,6 +1989,19 @@ Advanced filters, that spawns a menu to edit the conditions, the condition
 input rows (menu content) should be shown directly in the filter section in
 the panel. I swear we had this before."* The classic panel draws them inline;
 the portrait column (425) shows a chip (G14).
+
+### `[ ]` ⬜ 456 — LOOK: no Remove filter on a cell the View filters
+
+Will, 2026-10-26: *"Data Grid cells that are filtered, but in the view/app
+scope, shouldn't show the 'Remove filter' icon button on hover."* The cell
+chip is 373 and 416's; 374 made it inactive for a View field before a pick.
+
+### `[ ]` ⬜ 457 — LOOK: a panel accordion header says what it targets
+
+Will, 2026-10-26: *"In the filter panel, add a description label to the
+accordion headers that say the type of content/component targeted (e.g. Bar
+Chart, Data Grid). I think we already have logic for this to set the
+appropriate icon in the accordion header that we can reuse."*
 
 ### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
 

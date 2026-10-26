@@ -8060,7 +8060,8 @@ the ⋮ also offers "Hide unmatching filters" (`hideUnmatched` on the provider,
 The menu then removes a ruled-out
 row (`data-hide-unavailable` → `data-removed`) and the panel hides a
 ruled-out value chip. A value still PICKED is never hidden, so it can be let
-go.
+go. A portrait section's value chips are marked by `limitField` too — it once
+marked only an unoffered one, and no rule hid even that (TODO 448).
 
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/core/data/data-source.ts`
