@@ -15465,6 +15465,11 @@ While its box is not drawn, such a row reads the pick it was given (`want`).
 **A rebuild of the bar must carry each chip's WHOLE answer — its op, what was
 typed, and its condition rows — not only on/off and ticks.**
 
+**Since TODO 415 most of a rebuild rebuilds nothing:** a chip built from the
+same def (less its told answer), under the same menu flags, is MOVED into place
+— its menu, answer and draft with it (`#chipKey`, `#built`). What follows is
+for a chip that IS remade: a new field, or one whose def changed.
+
 `#render` rebuilds the chip run whenever a filter is added or taken away, and
 a new menu starts from its def. `T-render-captures-live-state` carried on/off
 and the ticks across; nothing carried the rest. Measured: a chip answering
@@ -15489,6 +15494,7 @@ taken every OTHER chip's Advanced condition with it.
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-a-rebuild-keeps-every-answer.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-a-held-clause-op-is-not-a-reading-op
 

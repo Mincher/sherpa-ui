@@ -1261,6 +1261,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
     }
 
+    /* A chip built from the same def, under the same flags, is MOVED, not
+       remade: its menu, its answer and its draft go with it. Only a new or
+       changed one is built, and only it takes back a kept answer. TODO 415 */
+    const fresh = !this.hasAttribute('data-reset-on-populate');
+    const was = new Map(fresh ? this.#chips().map((c) => [c.dataset['id'] ?? '', c] as const) : []);
+    const moved = new Set<string>();
     list.replaceChildren();
     // A chip that stays shows what it was drawn; a new one has been drawn nothing.
     for (const id of this.#painted.keys()) if (!live.has(id)) this.#painted.delete(id);
@@ -1268,8 +1274,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */
     for (const f of this.#inSets(allow(this.#filters, this.#allowedFields))) {
+      const key = this.#chipKey(f);
+      const old = was.get(f.id);
+      if (old && this.#built.get(old) === key) {
+        list.appendChild(old);
+        this.#nameContext(old);
+        moved.add(f.id);
+        continue;
+      }
       // Not upgraded until it is appended. TRAP T-custom-element-upgrade
       const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      this.#built.set(chip, key);
       const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
@@ -1310,7 +1325,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
     }
 
-    for (const [id, reading] of Object.entries(kept)) this.#keepAnswer(id, reading);
+    for (const [id, reading] of Object.entries(kept)) if (!moved.has(id)) this.#keepAnswer(id, reading);
     // Then what was steered before there were chips, and the results last drawn.
     const held = this.#held;
     this.#held = { chips: new Map() };
@@ -1351,6 +1366,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       requestAnimationFrame(() => requestAnimationFrame(() => done()));
     })).then(() => { if (this.isConnected) this.#reflow(); });
   }
+
+  /** What a chip is BUILT from: its def, less the answer it is told and where it
+   *  is held, and the flags its menu is made under. The same key, the same chip. */
+  #chipKey(f: FilterDef): string {
+    const { state: _state, appliedAt: _at, sendTo: _to, active: _active, ...made } = f as FilterDef & Record<string, unknown>;
+    return JSON.stringify([made, this.dataset['bounds'] ?? '', this.hasAttribute('data-remote'), this.dataset['applyOn'] ?? '',
+      this.hasAttribute('data-waits'), this.hasAttribute('data-field-apply')]);
+  }
+  /** Each chip's key, as it was built. */
+  #built = new WeakMap<Element, string>();
 
   /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
   #addMenu(chip: HTMLElement, def: FilterDef, picked?: Set<string>): void {

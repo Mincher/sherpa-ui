@@ -3193,6 +3193,10 @@ panel passes them), ✅ 4 (`toolbar-header.ts`), ✅ 5's DRAFT half (the chip
 shows `:state(drafting)` itself; the bar's six-event sweep is gone). 5's on/off
 half is left: it only touches a bar with no source, which D1 keeps on its own
 path.
+✅ 6, the move: a chip built from the same def and flags is moved, not remade
+(adding Seats on Records kept all four chips). The keep-what-the-reader-did
+helpers still serve a chip that IS remade; retiring them is a follow-up, once
+this has run a while.
 Not touched: the legacy `sherpa-filter-panel` (Demos' compare page still uses
 it — delete it and `filter-field.ts` once that page drops it), the data layer,
 fold/hover/drag/Switch, the cached counts, `values`/`active` on the event.

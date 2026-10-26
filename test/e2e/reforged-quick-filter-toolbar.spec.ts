@@ -2653,3 +2653,24 @@ test('in portrait, a section\'s ⋮ offers Highlight matches, asks it, and says 
   expect(r.asked).toEqual([{ field: 'plan', highlight: true }]);
   expect(r.after).toBe('Stop highlighting');
 });
+
+// TODO 415 (6). TRAP T-a-rebuild-keeps-every-answer
+test('a rebuild MOVES a chip built from the same def, and remakes only one whose def changed', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
+    const defs = [
+      { id: 'plan', label: 'Plan', select: 'multiple', options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }] },
+      { id: 'tier', label: 'Tier', select: 'multiple', options: [{ value: 'Gold', label: 'Gold' }] },
+    ];
+    el.populate(defs);
+    await window.__settled();
+    const chip = (id: string) => el.shadowRoot!.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
+    const plan = chip('plan'), tier = chip('tier');
+    // Tier's def changes; a field is added.
+    el.populate([defs[0], { ...defs[1], options: [{ value: 'Gold', label: 'Gold' }, { value: 'Silver', label: 'Silver' }] },
+      { id: 'owner', label: 'Owner', select: 'multiple', options: [{ value: 'Ana', label: 'Ana' }] }]);
+    await window.__settled();
+    return { planKept: chip('plan') === plan, tierKept: chip('tier') === tier, order: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.chips > .chip')].map((c) => c.dataset['id']) };
+  });
+  expect(r).toEqual({ planKept: true, tierKept: false, order: ['plan', 'tier', 'owner'] });
+});
