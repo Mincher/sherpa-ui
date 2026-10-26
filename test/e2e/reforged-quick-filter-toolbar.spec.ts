@@ -2075,8 +2075,8 @@ test('allowFields limits the chips AND the Add menu, and null restores both', as
  */
 test('the Filters button is active only when a folded filter is', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    // Narrow, so everything but the first chip folds.
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
+    // Narrow, so everything but the first chip folds — beside "Edit", 220. TODO 445
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 220px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -2543,6 +2543,8 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
     const chip = (id: string) => sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
     const read = () => ({
       divider: getComputedStyle(chip('view'), '::after').content,
+      // Centred in the chip, which does not centre its items. TODO 442
+      centred: getComputedStyle(chip('view'), '::after').alignSelf,
       label: ['customer', 'region'].map((id) => getComputedStyle(chip(id), '::before').content),
     });
     const toolbar = read();
@@ -2556,9 +2558,9 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
     return { toolbar, off, panel: read() };
   });
   // Will, TODOs 433 and 440
-  expect(r.toolbar).toEqual({ divider: '""', label: ['"View Context"', 'none'] });
+  expect(r.toolbar).toEqual({ divider: '""', centred: 'center', label: ['"View Context"', 'none'] });
   expect(r.off).toBe('none');
-  expect(r.panel).toEqual({ divider: 'none', label: ['none', 'none'] });
+  expect(r.panel).toMatchObject({ divider: 'none', label: ['none', 'none'] });
 });
 
 test('Discard says its word, in every layout', async ({ page }) => {

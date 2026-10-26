@@ -10291,7 +10291,8 @@ exists to prevent.
 **ONE "Filters" button holds every filter: the chips folded off the run for want
 of room, every filter a reader may add, and the saved ones.** Will, 2026-09-25:
 *"We should merge the overflow 'More' button and the 'Add filter' button … into
-1 button"* — in the action group, labelled "Filters", with a plus on the left.
+1 button"* — in the action group. It reads "Edit", with a pencil (Will, TODO
+445); the menu it opens is still headed "Filters".
 
 Its menu, top to bottom:
 
@@ -15332,10 +15333,12 @@ the query definition."*
   `filters-delete`; the HOST names it, confirms an overwrite by name, and calls
   `saveFilters(label?)` or `deleteFilters(id?)`.
 - **A Saved menu of its own** (Will, TODO 436, where the app asks:
-  `provider.savedMenu`, `data-saved-menu`): a "Saved" button beside Filters —
-  the sets, a tick taking one AT ONCE (no Apply), then the save rows, then
-  Manage — and the Filters menu and the ⋮ hold none of them. It stays when the
-  bar folds its actions, as Filters does.
+  `provider.savedMenu`, `data-saved-menu`): a split beside Edit, as the App
+  Header's Save (TODO 446). "Save", a filter icon, asks `filters-save-as`,
+  where the filters may be saved; the icon-only ▾ holds the sets, a tick
+  taking one AT ONCE (no Apply), then the save rows, then Manage. Alone, the ▾
+  is solo (`data-swap-on="data-saveable"`). The Edit menu and the ⋮ hold none
+  of them. It stays when the bar folds its actions, as Edit does.
 - **Managing** (Will, TODO 427): where the host saves and the reader has sets
   of their own, the Saved section leads with Manage Saved Filters — a menu
   ACTION row (`MenuItem.action`), no tick box — which asks `filters-manage`.

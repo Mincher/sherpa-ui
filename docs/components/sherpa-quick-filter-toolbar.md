@@ -176,7 +176,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `saved`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 

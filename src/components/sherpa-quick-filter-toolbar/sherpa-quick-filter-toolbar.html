@@ -157,14 +157,21 @@
            in the Filters menu. Will, TODO 383 -->
       <sherpa-button class="act save-set" data-act="filters-save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
+      <!-- EDIT opens the Filters menu. Will, TODO 445 -->
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
-                     data-icon-start="plus" data-icon-end="triangle-down"
-                     aria-haspopup="dialog">Filters</sherpa-button>
-      <!-- SAVED, where the app splits it from Filters: the sets, the save rows,
-           Manage. Will, TODO 436 -->
-      <sherpa-button class="act saved-btn" data-act="saved" data-size="sm"
-                     data-icon-start="star" data-icon-end="triangle-down"
-                     aria-haspopup="dialog">Saved</sherpa-button>
+                     data-icon-start="pencil" data-icon-end="triangle-down"
+                     aria-haspopup="dialog">Edit</sherpa-button>
+      <!-- SAVED, where the app splits it from Edit, as the App Header's Save:
+           Save names the filters; ▾ holds the sets, the save rows, Manage. Alone,
+           it is a solo filter icon. Will, TODOs 436, 443, 446 -->
+      <span class="saved-group" part="saved-group">
+        <sherpa-button class="act save-as-btn" data-act="filters-save-as" data-size="sm"
+                       data-group="start" data-icon-start="filter">Save</sherpa-button>
+        <sherpa-button class="act saved-btn" data-act="saved" data-size="sm" data-type="icon"
+                       data-group="solo" data-icon-start="filter"
+                       data-swap-on="data-saveable" data-swap-data-group="end" data-swap-data-icon-start="triangle-down"
+                       aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
+      </span>
 
       <!-- REFRESH, left of the ⋮. Will, TODO 428 -->
       <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"
@@ -236,11 +243,16 @@
       <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
-                     data-icon-start="plus" data-icon-end="triangle-down"
-                     aria-haspopup="dialog">Filters</sherpa-button>
-      <sherpa-button slot="actions" class="column-saved" part="saved" data-size="sm"
-                     data-icon-start="star" data-icon-end="triangle-down"
-                     aria-haspopup="dialog">Saved</sherpa-button>
+                     data-icon-start="pencil" data-icon-end="triangle-down"
+                     aria-haspopup="dialog">Edit</sherpa-button>
+      <span slot="actions" class="saved-group" part="saved-group">
+        <sherpa-button class="column-save-as" data-size="sm"
+                       data-group="start" data-icon-start="filter">Save</sherpa-button>
+        <sherpa-button class="column-saved" part="saved" data-size="sm" data-type="icon"
+                       data-group="solo" data-icon-start="filter"
+                       data-swap-on="data-saveable" data-swap-data-group="end" data-swap-data-icon-start="triangle-down"
+                       aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
+      </span>
       <slot name="actions" slot="actions" data-accepts="control"></slot>
       <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
                      data-icon-start="ellipses-vertical"

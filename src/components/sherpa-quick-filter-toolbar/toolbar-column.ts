@@ -79,6 +79,7 @@ export class ToolbarColumn {
     saved?.addEventListener('menu-change', this.#onSavedPick);
     saved?.addEventListener('menu-select', this.#onSavedAction);
     this.#$('.column-save')?.addEventListener('button-click', () => this.#host.emit('filters-save'));
+    this.#$('.column-save-as')?.addEventListener('button-click', () => this.#host.emit('filters-save-as'));
     this.#$('.column-more')?.addEventListener('button-click', this.#onMore);
     this.#$('.more-menu')?.addEventListener('menu-select', this.#onMoreRow);
     this.#$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);

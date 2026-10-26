@@ -123,9 +123,11 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
 | ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
-| ⬜ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
-| ⬜ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
+| ✅ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
+| ✅ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
 | ⬜ | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402) | bug |
+| ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
+| ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1892,16 +1894,47 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
-### `[ ]` ⬜ 442 — LOOK: the divider after the View chip is not centred
+### `[x]` ✅ 442 — LOOK: the divider after the View chip is not centred
 
 Will, 2026-10-26: *"The divider between the view selection and view scope
 filters, in the filter toolbar mode, is not aligned to the centre
 vertically."* The divider is 433's.
 
-### `[ ]` ⬜ 443 — LOOK: the Saved filters button wears a filter icon
+**✅ Done 2026-10-26.** The View chip does not centre its items, so its 16px
+`::after` sat at the top of the 24px chip, 4px high: `align-self: center`.
+
+### `[x]` ✅ 443 — LOOK: the Saved filters button wears a filter icon
 
 Will, 2026-10-26: *"The 'Saved' Filters button doesn't need a star icon. Use a
 filter icon instead."*
+
+**✅ Done 2026-10-26, with 446:** the split's "Save" wears it, and the ▾ alone
+(where the filters may not be saved) is a filter icon.
+
+### `[x]` ✅ 446 — LOOK: the Saved filters button is a split
+
+Will, 2026-10-26: *"The 'Saved' filters menu button should be a split button
+group. The left button is 'Save' and triggers the save dialog that lets the
+user name and save the filter configuration. The right button is an icon only,
+menu button that shows the existing menu options (saved definitions, save as,
+manage saved filters)."* Built as the App Header's ★ · Save · ▾: "Save" wears
+443's filter icon, which also sets it apart from the View's ⇪ Save.
+
+**✅ Done 2026-10-26,** in the bar and the column. "Save" asks
+`filters-save-as` (the host's name dialog) and shows only where the filters may
+be saved (`data-saveable`); it stays when the bar folds its actions. The ▾ is
+`.saved-btn` / `.column-saved` as before, so the menu code is unchanged; alone,
+it is a solo filter icon (`data-swap-on="data-saveable"`). Test: Demos
+`reforged-saved-filter` (the split, in the bar and the column).
+
+### `[x]` ✅ 445 — LOOK: the Filters menu button reads Edit, with a pencil
+
+Will, 2026-10-26: *"The 'Filters' menu button label should be changed to
+'Edit'. Change the icon to a pencil, too."* The button only: the menu it opens
+keeps its heading, "Filters". The classic panel is legacy and keeps its own.
+
+**✅ Done 2026-10-26,** in the bar and the column. "Edit" is narrower, so a
+test that folds chips at 300px now folds them at 220.
 
 ### `[ ]` ⬜ 444 — BUG: a metric is taller than its grid row
 
