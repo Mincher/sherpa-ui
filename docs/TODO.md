@@ -134,14 +134,14 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ✅ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
-| ❓ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
+| 🚧 | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ✅ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
 | ✅ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | ✅ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ✅ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
 | ✅ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
 | ✅ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
-| ⬜ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
+| ✅ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
 | ✅ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
 | ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
@@ -151,6 +151,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
 | ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
+| ⬜ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2030,7 +2031,7 @@ PRESET (`source.declarePresets`, `HeldFilter.preset`) and keeps its place; only
 an added filter drags, among the added ones, picked or not. Group and Sort never
 did. Tests drag added Seats and Spend.
 
-### `[ ]` ❓ 453 — FEATURE: the App Context, a setting
+### `[ ]` 🚧 453 — FEATURE: the App Context, a setting
 
 Will, 2026-10-26: *"Add a filtering setting to persist the 'View Context'
 filters across all app views (if we don't have it already). When this setting
@@ -2055,12 +2056,14 @@ Query per `provider.open()`), then per View, per tab; nothing crosses Contexts.
 - **Relabel:** the provider re-declares the View scope's label as "App Context"
   while on; "Move to View Context" becomes "Move to" + the label.
 
-❓ **D1 — a saved View that sets View Context filters, while this is on**
+**Will, 2026-10-26: "go" — the picks: D1 A, D2 A.**
+
+✅ **D1 — a saved View that sets View Context filters, while this is on**
 (Dashboard's "EMEA operations", Records' "Renewals"). **A (pick):** the App
 answer wins; the View sets only its local filters and sort. **B:** the View's
 filter wins and changes the App answer for every Context.
 
-❓ **D2 — turning it off.** **A (pick):** each Context gets back the answer it
+✅ **D2 — turning it off.** **A (pick):** each Context gets back the answer it
 had before. **B:** each Context starts from the App answer.
 
 ### `[x]` ✅ 455 — FILTERS: an Advanced filter's rows, in its panel section
@@ -2133,13 +2136,20 @@ in the panel's column heard no `pointerout`, and a value stayed lit. Tests:
 `a-chip-drives-the-highlight` (node), Demos `reforged-highlight-matches` (a
 menu row, two value chips; 3 engines).
 
-### `[ ]` ⬜ 460 — LOOK: a panel section's heading in a column on its left
+### `[x]` ✅ 460 — LOOK: a panel section's heading in a column on its left
 
 Will, 2026-10-26: *"In panel mode, instead of using a row per section for the
 icon, label, and match count, I'd like to reserve a column on the left. This
 should hopefully help make the panel more scannable and also reduce the amount
 of vertical height used. This could also be a configurable filtering setting
 (on by default for now)."*
+
+**Done.** `labelColumn` on the provider (on by default) sets the bars'
+`data-label-column`; each section chip then takes `data-label-start`: its
+heading in a 120px start column, its values beside it. A lone chip's heading
+(Date) and Organise's line up in the same column. Advanced rows keep the whole
+row under the heading. Demos: Settings › Filtering › "Headings in a column";
+`reforged-filter-column`.
 
 ### `[x]` ✅ 461 — LOOK: a shorter App Header
 
@@ -2225,6 +2235,12 @@ Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
 save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[ ]` ⬜ 470 — TEST: a WebKit flake leaving Settings
+
+Seen 2026-10-26 in two full Demos runs: `reforged-settings-overlay:55`
+(leaving Settings by Back, or by Esc, restores the Context and its View) times
+out in WebKit and passes on retry. Find what it waits on.
 
 ### `[x]` ✅ 469 — BUG: Advanced rows rule out no value
 

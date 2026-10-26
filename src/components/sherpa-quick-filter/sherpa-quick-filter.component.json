@@ -387,6 +387,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-label-start",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a SECTION's heading in a column at its start, its answer beside it, not under it. Will, TODO 460"
+    },
+    {
+      "$type": "prop",
       "name": "data-layout",
       "type": "enum",
       "observed": true,

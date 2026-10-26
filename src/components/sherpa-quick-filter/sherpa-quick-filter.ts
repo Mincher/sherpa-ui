@@ -81,6 +81,7 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-count': { type: 'string', kind: 'content', to: '.count' },
     // A field's whole answer in the flow: its menu's rows as value chips. TODO 425
     'data-layout': { type: 'enum', kind: 'behaviour', values: ['chip', 'section'] },
+    'data-label-start': { type: 'boolean', kind: 'style' },
     /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
        selects on it; the chip reads it to name its own state. */
     'data-id': { type: 'string', kind: 'style' },

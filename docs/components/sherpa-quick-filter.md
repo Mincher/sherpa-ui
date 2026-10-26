@@ -42,6 +42,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-indicator` | boolean |  | show the leading status dot (Figma "Indicator (atom)", opt-in) |
 | `data-kind` | `boolean` `single` `multi` `advanced` `number` `date` `group` `sort` |  | WHAT THIS CHIP IS: group \| sort \| advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. "Organise" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is |
 | `data-label` | text |  | chip text (or use the default slot). Rewritten to "Field: Value" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge. |
+| `data-label-start` | boolean |  | a SECTION's heading in a column at its start, its answer beside it, not under it. Will, TODO 460 |
 | `data-layout` | `chip` `section` |  | chip \| section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425 |
 | `data-locked` | boolean |  |  |
 | `data-menu` | boolean | `false` | Figma State=menu — snap on the caret button |

@@ -137,6 +137,24 @@
   flex-wrap: wrap;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
+/* LABEL START: its heading in a column at its start, its answer beside it — a
+   panel scans down one edge and spends no row on a heading. Advanced rows keep
+   the whole row under it. Will, TODO 460 */
+:host([data-layout="section"][data-label-start]) .chip {
+  grid-template-columns: var(--sherpa-quick-filter-label-size, 120px) minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-layout="section"][data-label-start]) .body {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+:host([data-layout="section"][data-label-start]) .label { overflow: hidden; text-overflow: ellipsis; }
+:host([data-layout="section"][data-label-start]) :is(.values, .moved) {
+  grid-row: 1;
+  grid-column: 2;
+}
+:host([data-layout="section"][data-label-start]) .more-slot { grid-column: 3; }
 
 /* Snapped: flat right corners on the body (Structure ext `snap-right-edge`). */
 :host([data-menu]) .body {

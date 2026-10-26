@@ -8154,6 +8154,13 @@
             },
             {
               "kind": "field",
+              "name": "labelColumn",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8561,6 +8568,12 @@
             },
             {
               "name": "data-highlight-matches",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-label-column",
               "type": {
                 "text": "boolean"
               }
@@ -9520,6 +9533,13 @@
               "description": "chip text (or use the default slot). Rewritten to \"Field: Value\" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge.",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-label-start",
+              "description": "a SECTION's heading in a column at its start, its answer beside it, not under it. Will, TODO 460",
+              "type": {
+                "text": "boolean"
               }
             },
             {

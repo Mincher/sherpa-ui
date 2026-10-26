@@ -109,6 +109,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
     // A chip, or a section, is dragged into its place in the query: the app's choice. Will, TODO 452
     'data-reorder': { type: 'boolean', kind: 'style' },
+    // In portrait, each field's heading in a column at its start: the app's choice. Will, TODO 460
+    'data-label-column': { type: 'boolean', kind: 'behaviour' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -409,9 +411,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         && !chip.hasAttribute('data-persistent') && !arranges(kindOf(def)) && !oneChipList(def);
       if (portrait && list) {
         chip.setAttribute('data-layout', 'section');
+        chip.toggleAttribute('data-label-start', this.hasAttribute('data-label-column'));
         this.#syncFieldMore(chip);
       } else {
         chip.removeAttribute('data-layout');
+        chip.removeAttribute('data-label-start');
         chip.querySelector(':scope > .field-more')?.remove();
       }
     }
@@ -1732,6 +1736,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
+    if (name === 'data-label-column') this.#syncLayout();
     if (name === 'data-orientation') {
       this.#syncLayout();
       this.#drawValueResults();

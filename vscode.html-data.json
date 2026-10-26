@@ -2863,6 +2863,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-label-column",
+          "valueSet": "v"
+        },
+        {
           "name": "data-limit-options",
           "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178.",
           "values": [
@@ -3117,6 +3121,11 @@
         {
           "name": "data-label",
           "description": "chip text (or use the default slot). Rewritten to \"Field: Value\" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge."
+        },
+        {
+          "name": "data-label-start",
+          "description": "a SECTION's heading in a column at its start, its answer beside it, not under it. Will, TODO 460",
+          "valueSet": "v"
         },
         {
           "name": "data-layout",

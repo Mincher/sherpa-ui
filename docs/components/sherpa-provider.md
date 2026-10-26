@@ -42,6 +42,7 @@ Put it round the part of a page whose components need data: each component insid
 | `highlightAcross` | `boolean` | read and write |  |
 | `singleApply` | `boolean` | read and write |  |
 | `reorderFilters` | `boolean` | read and write |  |
+| `labelColumn` | `boolean` | read and write |  |
 | `applyEvery` | `boolean` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
 | `savedFilterSets` | `{ id: string; label: string; applied: boolean; own: boolean }[]` | read only |  |

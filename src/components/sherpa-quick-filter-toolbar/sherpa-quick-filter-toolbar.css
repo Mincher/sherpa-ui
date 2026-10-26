@@ -333,6 +333,21 @@ sherpa-accordion.scope::part(actions) {
   content: attr(data-section);
   flex-basis: 100%;
 }
+/* LABEL COLUMN: a lone chip's heading, and Organise's, in the same start column
+   as a section's, the chip beside it. Will, TODO 460 */
+:host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .chips > .chip[data-section-start]:not([data-no-matches]) {
+  flex-direction: row;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .chips > .chip[data-section-start]::before,
+:host([data-orientation="portrait"][data-label-column]:state(has-organise):not([data-no-sections])) .organise-zone::before {
+  flex: 0 0 var(--sherpa-quick-filter-label-size, 120px);
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: var(--sherpa-display-mode-size-lg, 24px);
+}
 
 /* ── COLUMN — portrait over several scopes: the panel area's. It opens and
    shuts as a panel does; its BODY scrolls, the header stays. TODO 425 */

@@ -729,6 +729,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-label-column",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-limit-options",
       "type": "enum",
       "observed": true,

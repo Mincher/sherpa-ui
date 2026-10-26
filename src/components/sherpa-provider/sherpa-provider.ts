@@ -343,6 +343,18 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: drag filters into a new order. */
   #reorder = false;
 
+  /** In the panel, each filter's heading in a column at its start, its values
+   *  beside it. The app sets it, from its session. Will, TODO 460 */
+  get labelColumn(): boolean {
+    return this.#labelColumn;
+  }
+  set labelColumn(on: boolean) {
+    this.#labelColumn = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: headings in a column. */
+  #labelColumn = true;
+
   /** Every scope the page declares waits for its bar's Apply — not only the
    *  View's. The app sets it, from its session. Will, TODO 436.
    *  TRAP T-apply-and-discard-wait-for-a-change */
@@ -379,6 +391,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     el.toggleAttribute('data-field-apply', !this.#singleApply);
     el.toggleAttribute('data-reorder', this.#reorder);
+    el.toggleAttribute('data-label-column', this.#labelColumn);
   }
   /** The app's choice, for every source. */
   #limit = false;
