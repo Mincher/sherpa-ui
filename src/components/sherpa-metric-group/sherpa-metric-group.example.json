@@ -1,0 +1,9 @@
+{
+  "html": [
+    "<sherpa-metric-group data-sticky>",
+    "<sherpa-metric data-label=\"Revenue\" data-value=\"$1.2M\" data-delta=\"+12.5%\" data-trend=\"up\"></sherpa-metric>",
+    "<sherpa-metric data-label=\"Orders\" data-value=\"8,204\" data-delta=\"-3%\" data-trend=\"down\"></sherpa-metric>",
+    "</sherpa-metric-group>"
+  ],
+  "use": "For a page's metrics: one row of 1 to 4 `sherpa-metric`, across every column of `sherpa-layout-grid`. Add `data-sticky` to keep them at the top while the page scrolls; a later sticky group stacks under the one before."
+}

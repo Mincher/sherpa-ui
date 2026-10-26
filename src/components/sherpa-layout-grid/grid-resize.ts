@@ -223,6 +223,9 @@ export function gridHandles(m: GridModel): GridHandle[] {
       const locked = (s: Segment): boolean => s.floor === s.ceil;
       // A band and the page: only a band that can move has a handle under it.
       if (below.span === Infinity ? locked(segs[b]!) : locked(segs[b]!) && locked(below)) continue;
+      // Nor a line that cannot move: under a metric group, a locked band at the top.
+      const far = reach(segs, b);
+      if (!far.min && !far.max) continue;
       out.push({
         key: below.span === Infinity ? 'r:end' : `r:${band.kids[0]!.id}`, orientation: 'horizontal',
         label: `Height of row ${b + 1}`, x: m.left, y: band.bottom, w: m.width, h: m.rowGap,

@@ -5,8 +5,8 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 914064,
-    "files": 110,
+    "js": 917660,
+    "files": 111,
     "fetched": 206276
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
@@ -150,7 +150,7 @@
     "fetched": 0
   },
   "components/sherpa-layout-grid/sherpa-layout-grid.js": {
-    "js": 243268,
+    "js": 243308,
     "files": 15,
     "fetched": 0
   },
@@ -177,6 +177,11 @@
   "components/sherpa-menu/sherpa-menu.js": {
     "js": 355007,
     "files": 25,
+    "fetched": 0
+  },
+  "components/sherpa-metric-group/sherpa-metric-group.js": {
+    "js": 231428,
+    "files": 11,
     "fetched": 0
   },
   "components/sherpa-metric/sherpa-metric.js": {
@@ -345,8 +350,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1087287,
-    "files": 153,
+    "js": 1090883,
+    "files": 154,
     "fetched": 206276
   }
 }

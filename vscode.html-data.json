@@ -2327,6 +2327,17 @@
       ]
     },
     {
+      "name": "sherpa-metric-group",
+      "description": "one row of 1 to 4 metrics, across every column of the layout grid.",
+      "attributes": [
+        {
+          "name": "data-sticky",
+          "description": "it sticks to the top of its scroll box while its grid shows; stuck, its metrics join",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
       "name": "sherpa-metric",
       "description": "a KPI tile with an optional embedded sparkline.",
       "attributes": [

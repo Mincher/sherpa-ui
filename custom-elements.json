@@ -6307,6 +6307,52 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-metric-group/sherpa-metric-group.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaMetricGroup",
+          "tagName": "sherpa-metric-group",
+          "customElement": true,
+          "description": "one row of 1 to 4 metrics, across every column of the layout grid.",
+          "attributes": [
+            {
+              "name": "data-sticky",
+              "description": "it sticks to the top of its scroll box while its grid shows; stuck, its metrics join",
+              "type": {
+                "text": "boolean"
+              }
+            }
+          ],
+          "slots": [
+            {
+              "name": "",
+              "description": "1 to 4 sherpa-metric (accepts: item)"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaMetricGroup",
+          "declaration": {
+            "name": "SherpaMetricGroup",
+            "module": "dist/components/sherpa-metric-group/sherpa-metric-group.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-metric-group",
+          "declaration": {
+            "name": "SherpaMetricGroup",
+            "module": "dist/components/sherpa-metric-group/sherpa-metric-group.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-metric/sherpa-metric.js",
       "declarations": [
         {

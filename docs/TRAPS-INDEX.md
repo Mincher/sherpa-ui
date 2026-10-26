@@ -884,7 +884,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (108)
+## Other components (109)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -911,6 +911,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-handle-is-never-restamped-mid-drag](TRAPS.md#t-a-handle-is-never-restamped-mid-drag) — layout-grid
 - [T-a-host-cannot-hold-aria-expanded](TRAPS.md#t-a-host-cannot-hold-aria-expanded) — button
 - [T-a-host-label-must-reach-its-control](TRAPS.md#t-a-host-label-must-reach-its-control) — button, input-text, select-checkbox, select-radio, switch
+- [T-a-metric-group-knows-it-is-stuck](TRAPS.md#t-a-metric-group-knows-it-is-stuck) — metric-group
 - [T-a-native-name-where-a-native-element-does-the-job](TRAPS.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — button
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
@@ -919,7 +920,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — app-header
 - [T-a-second-container-type-drops-the-first](TRAPS.md#t-a-second-container-type-drops-the-first) — app-header
 - [T-a-shadow-reach-is-a-missing-door](TRAPS.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
-- [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group
+- [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group, metric-group
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — button
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — layout-canvas, toolbar

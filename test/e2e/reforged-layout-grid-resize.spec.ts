@@ -74,6 +74,13 @@ test('a handle in each gutter: between cards in a row, and under each row', asyn
   expect(rows.map((h) => h.label)).toEqual(['Height of row 1', 'Height of row 2', 'Height of row 3']);
 });
 
+test('a metric group\'s row is one row, always: no handle moves it (TODO 402)', async ({ page }) => {
+  const group = '<sherpa-metric-group id="g">' + ['m1', 'm2', 'm3', 'm4']
+    .map((id) => `<sherpa-metric id="${id}" data-label="Metric ${id}"></sherpa-metric>`).join('') + '</sherpa-metric-group>';
+  const handles = await mount(page, 'data-resizable', DASHBOARD.replace(/^(<div id="m\d"[^>]*>m\d<\/div>){4}/, group));
+  expect(handles.map((h) => h.key)).toEqual(['c:c1', 'c:c2', 'r:c1', 'r:end']);
+});
+
 test('a resize that keeps the same handles moves the same nodes', async ({ page }) => {
   await mount(page, 'data-resizable');
   const r = await page.evaluate(async () => {

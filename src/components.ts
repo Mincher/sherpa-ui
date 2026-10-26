@@ -81,6 +81,7 @@ export { SherpaListItem } from './components/sherpa-list-item/sherpa-list-item.j
 export { SherpaTabs, type TabDef } from './components/sherpa-tabs/sherpa-tabs.js';
 export { SherpaPagination } from './components/sherpa-pagination/sherpa-pagination.js';
 export { SherpaMetric } from './components/sherpa-metric/sherpa-metric.js';
+export { SherpaMetricGroup } from './components/sherpa-metric-group/sherpa-metric-group.js';
 export { SherpaSparkline } from './components/sherpa-sparkline/sherpa-sparkline.js';
 export { SherpaSlider } from './components/sherpa-slider/sherpa-slider.js';
 export { SherpaToast, type ToastOptions } from './components/sherpa-toast/sherpa-toast.js';

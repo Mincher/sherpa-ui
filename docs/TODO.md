@@ -83,7 +83,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ✅ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
-| ⬜ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22) | component |
+| ❓ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22). 10-26: built but for the half height — ❓ A or B | component |
 | ✅ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
@@ -2947,7 +2947,7 @@ the Demos on the whole set, and show the start on one page made for it. **B:**
 turn it on in the Demos (Customer and Region), and I move the 58 tests.
 **Will, 2026-10-22: deferred for now.**
 
-### `[ ]` ⬜ 402 — COMPONENT: a metric group, and sticky metrics that work
+### `[~]` ❓ 402 — COMPONENT: a metric group, and sticky metrics that work
 
 Will, 2026-10-22: *"Sticky metric items eventually scroll off screen (out of the
 content area). They also don't activate on all views with metrics in the content
@@ -3002,6 +3002,30 @@ deleted.
 - Stacking: each group sticks below the ones before it (`--_stack`, its index
   among the groups); from two stuck, each is half height — with A, the second
   group's marker drives the first one's half height too (`timeline-scope`).
+
+- ✅ **Step 1 (2026-10-26): the group, sticky, joined, stacked.**
+  `sherpa-metric-group`: every column, one row; 1–4 slotted metrics, the
+  grid's own gap between them, each solo. `data-sticky`: it sticks for its
+  whole grid (a sticky grid item does, in all three engines), so it never
+  scrolls off. STUCK needs no marker: the group's OWN view timeline, its view
+  cut to the line it sticks at (`view-timeline-inset`), starts the moment it
+  sticks — to the pixel in Chromium and WebKit. Stuck, the metrics join and a
+  shadow falls under the row (421's). At the grid's four-column band they join
+  too, by `@container style(--sherpa-layout-grid-columns: 4)`, in all three
+  engines. A later sticky group sticks one row under the one before. The layout
+  grid draws no handle that cannot move, so none under a group. Demos:
+  Dashboard and Records hold their metrics in a sticky group; the
+  "Compact metrics header" experiment, its switch and its test are deleted.
+  TRAP T-a-metric-group-knows-it-is-stuck. Tests: `reforged-metric-group`
+  (3 engines), `reforged-layout-grid-resize`.
+- ❓ **Half height from two stuck groups.** For it, group 1 must see group 2
+  stick. Measured: Chromium reads another group's timeline across shadow
+  roots; WebKit only when every timeline name is in the page's own tree.
+  **A (my pick):** the group's timelines go in a page sheet (`static
+  pageCss`, a new use of it), so both engines can. A half-height metric shows
+  its name and value on one line; its trend and sparkline hide. **B:** no
+  half height: stuck groups stack at full height. Nothing more to build. No
+  Demos View has two groups today.
 
 
 ### `[x]` ✅ 401 — LOOK: a scroll shadow for any scroll box (investigate)

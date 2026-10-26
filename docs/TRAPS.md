@@ -14354,6 +14354,7 @@ from Figma, are what caught it.
 
 - Site: `src/core/sherpa-grouping.css`
 - Site: `src/components/sherpa-group/sherpa-group.css`
+- Site: `src/components/sherpa-metric-group/sherpa-metric-group.css`
 - Site: `test/e2e/reforged-group.spec.ts`
 
 ### T-a-summary-binds-to-all-the-rows
@@ -16212,6 +16213,37 @@ has no view timeline and shows none.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+
+### T-a-metric-group-knows-it-is-stuck
+
+**A sticky metric group knows it is stuck from its OWN view timeline, its
+view cut to the line it sticks at** (TODO 402; Will: A, a scroll-driven
+animation, not `scroll-state()`). `view-timeline-inset: 0
+calc(100% - <its top>)` leaves a view of zero height at that line, so `cover
+0` is the scroll at which its top reaches it: the moment it sticks. Measured
+to the pixel in Chromium and WebKit, for a second group under the first too.
+Its animation sets `--_joined: 1`, and `@container style(--_joined: 1)` joins
+the slotted metrics. At the grid's mobile band,
+`style(--sherpa-layout-grid-columns: 4)` sets the same flag; style queries
+work in all three engines.
+
+Three things that do NOT work, each measured:
+
+- A view timeline on a sticky box with no inset never reaches `exit`: the
+  range takes the stuck distance in, so its exit is at the grid's end.
+- The GRID's timeline (`exit-crossing <px>`) does, but needs the group's
+  offset in the grid, which CSS cannot know.
+- One group reading ANOTHER's named timeline (`timeline-scope`): Chromium
+  does it across shadow roots; WebKit only when every name is in the page's
+  own tree. So half height at two stuck groups waits (TODO 402).
+
+A sticky GRID item sticks for the whole grid, not just its row, in all three
+engines. Firefox 155 has no view timeline: it sticks, with a plain row, and
+`@supports` keeps a 0s animation from leaving it joined.
+
+- Site: `src/components/sherpa-metric-group/sherpa-metric-group.css`
+- Site: `src/components/sherpa-metric-group/sherpa-metric-group.ts`
+- Site: `test/e2e/reforged-metric-group.spec.ts`
 
 ### T-a-section-is-headed-once
 
