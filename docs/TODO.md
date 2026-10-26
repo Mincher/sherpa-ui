@@ -125,7 +125,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
 | ✅ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
 | ✅ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
-| ⬜ | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402) | bug |
+| ❓ | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Cause found — ❓ A or B | bug |
 | ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
 | ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
@@ -1936,7 +1936,7 @@ keeps its heading, "Filters". The classic panel is legacy and keeps its own.
 **✅ Done 2026-10-26,** in the bar and the column. "Edit" is narrower, so a
 test that folds chips at 300px now folds them at 220.
 
-### `[ ]` ⬜ 444 — BUG: a metric is taller than its grid row
+### `[ ]` ❓ 444 — BUG: a metric is taller than its grid row
 
 Found in 402 (2026-10-26). `sherpa-metric.css` says the tile is exactly one
 grid row. Measured alone in the harness, at 1x and 2x: 89 for an 88 row, 79
@@ -1945,6 +1945,15 @@ the default (padding 3.5 + border 0.5 each side, header 20, gap 4, line 56),
 so 1px comes from somewhere not yet found; compact and comfortable miss by
 more. A fixed or fit row, and a metric group, hold it to the row, so its foot
 runs into its padding.
+
+**Found, 2026-10-26:** Chromium draws the 0.5px border as 1px, at 1x AND 2x
+(its computed `border-top-width` is 1px), so the padding's 0.5 allowance is
+1px short. Compact and comfortable miss by more because the header (20) and
+the value line (52 / 60) do not follow the row (76 / 104).
+❓ **A (my pick):** draw the edge INSIDE, as Figma's inside stroke (it takes
+no room), so the default is exactly 88; for compact and comfortable, take
+Figma's Metric at those densities. **B:** leave it: a held row clips 1–5px
+of padding.
 
 ### `[x]` ✅ 441 — FEATURE: Highlight matches
 
