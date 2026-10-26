@@ -826,7 +826,10 @@ month stepper, full grid, its own Apply — measured 2026-09-25 in the panel.
 
 ### T-path-not-target-finds-chip-host
 
-Match the **tag** `sherpa-quick-filter` on the composed path, never `.chip`.
+Match the FIELD chip on the composed path — the toolbar's `CHIP`
+(`.chips > .chip`, through `#chipOf`) — never a bare `.chip`. (It was the tag
+`sherpa-quick-filter` until TODO 415; that also matched a section's value
+chip, which is a `sherpa-quick-filter` too.)
 
 A `sherpa-quick-filter` wraps its own inner `<div class="chip">`, which sits
 LOWER in the path and therefore matches FIRST. That inner div carries no
@@ -8269,7 +8272,7 @@ SLOTTED INTO the chip:
 sherpa-menu › slot › span › div.chip › #shadow › sherpa-quick-filter.chip › …
 ```
 
-**Matched on the TAG, not on `.chip`.** The quick-filter's OWN shadow root
+**Matched as the field chip (`CHIP`, `.chips > .chip`), not on a bare `.chip`.** The quick-filter's OWN shadow root
 contains a `<div class="chip">` too, and it comes FIRST on the path — so matching
 the class found that inner div, which carries no `data-id`, and **every remove
 silently bailed.**

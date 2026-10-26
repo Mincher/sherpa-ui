@@ -353,8 +353,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A calendar picked a day or range. The chip relabels itself. */
   #onDatePicked = (event: Event): void => {
-    // TRAP T-path-not-target-finds-chip-host — match the TAG, not `.chip`.
-    const chip = this.pathFind(event, 'sherpa-quick-filter');
+    const chip = this.#chipOf(event);
     // A committing menu's pick is a draft: its Apply asks. TRAP T-commit-follows-select-mode
     if (!chip || chip.querySelector('sherpa-menu')?.hasAttribute('data-commit')) return;
     // A date chip turns itself ON by picking — it has no body toggle. Locked, it is drawn.
@@ -441,13 +440,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A chip's "Highlight matches": a REQUEST, which waits for no Apply. TODO 441 */
   #onHighlight = (event: Event): void => {
-    const id = this.pathFind(event, 'sherpa-quick-filter')?.dataset['id'];
+    const id = this.#chipOf(event)?.dataset['id'];
     if (id) this.#askHighlight(id, (event as CustomEvent<{ on: boolean }>).detail.on);
   };
 
   /** Ask that a field drive the highlight, or let it go. */
   #askHighlight(field: string, on: boolean): void {
-    this.emit('quick-filter-change', { scope: 'bar', request: { field, highlight: on }, active: this.active, values: this.values });
+    this.#ask({ field, highlight: on }, 'free');
   }
 
   /** The chip hovered. TODO 449 */
@@ -488,7 +487,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  of a chip's open menu, picked or not — or an applied chip whose matches are
    *  counted, for its whole answer. Will, TODO 459 */
   #hoverTarget(event: Event): { chip: HTMLElement; value?: string } | null {
-    const chip = this.pathFind(event, CHIP);
+    const chip = this.#chipOf(event);
     if (!chip || chip.hasAttribute('data-persistent')) return null;
     const one = this.pathFind(event, '.value');
     if (one?.parentElement === chip && one.dataset['value']) return { chip, value: one.dataset['value'] };
@@ -521,8 +520,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #askPreview(chip: HTMLElement, on: boolean, value?: string): void {
     const field = this.#fieldFor(chip.dataset['id'] ?? '');
     if (field == null) return;
-    const request = { field, preview: on, ...(value != null ? { value } : {}) };
-    this.emit('quick-filter-change', { scope: 'bar', request, active: this.active, values: this.values });
+    this.#ask({ field, preview: on, ...(value != null ? { value } : {}) }, 'free');
   }
 
   /** Each SECTION's name over the first chip of its run, in portrait: a named
@@ -577,8 +575,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
     this.$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
     this.$('.filters-switch')?.addEventListener('change', this.#onSwitch);
-    // CAPTURE — see #onOrganiseChange.
-    this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
+    // CAPTURE — see #onChipChange.
+    this.addEventListener('quick-filter-change', this.#onChipChange, true);
     this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-change', this.#onFoldedCountsChanged);
     // A committing menu fires nothing while rows are ticked; their native
@@ -636,8 +634,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Ask for the bar's fields in this order: the query's order, each count's. */
   #askOrder(order: readonly HTMLElement[]): void {
-    const fields = order.map((c) => this.#fieldFor(c.dataset['id'] ?? '')).filter((f): f is string => f != null);
-    this.emit('quick-filter-change', { scope: 'bar', request: { order: fields }, active: this.active, values: this.values });
+    this.#ask({ order: order.map((c) => this.#fieldFor(c.dataset['id'] ?? '')).filter((f): f is string => f != null) }, 'free');
   }
 
   override onDisconnect(): void {
@@ -1137,9 +1134,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A chip's answer, as the request for its field. */
   #answerRequest(chip: HTMLElement): { field: string; reading: FieldReading } | undefined {
-    const id = chip.dataset['id'] ?? '';
-    const field = this.#fieldFor(id);
-    const answer = field == null ? undefined : this.#answers()[id];
+    const field = this.#fieldFor(chip.dataset['id'] ?? '');
+    const answer = field == null ? undefined : this.#answerOf(chip as SherpaQuickFilter);
     if (field == null || !answer) return undefined;
     const { label: _label, values: _values, suspended: _suspended, ...reading } = answer;
     return { field, reading };
@@ -1210,6 +1206,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The filter chips in the run — not Group, Sort or More — a set's among them. */
   #chips(): SherpaQuickFilter[] {
     return this.$$<SherpaQuickFilter>(CHIP);
+  }
+
+  /** The FIELD chip an event came from: by CHIP, so never the chip's own inner
+   *  `div.chip`, which comes first on the path, nor a section's value chip.
+   *  TRAP T-path-not-target-finds-chip-host */
+  #chipOf(event: Event): SherpaQuickFilter | null {
+    return this.pathFind<SherpaQuickFilter>(event, CHIP);
   }
 
   /** The scope's name, on a chip, for CSS to put over the first: "View Context". Will, TODO 440 */
@@ -1377,7 +1380,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A chip's condition or typed value changed — its field's answer did too. */
   #onConditionChanged = (event: Event): void => {
     // A drilled chip's rows are in the Filters menu.
-    const chip = this.pathFind(event, 'sherpa-quick-filter') ?? this.#drill.home?.closest<HTMLElement>('sherpa-quick-filter');
+    const chip = this.#chipOf(event) ?? this.#drill.home?.closest<HTMLElement>(CHIP);
     if (!chip) return;
     /* ONE request, next frame: a rebuilt condition row's value select fills
        ASYNCHRONOUSLY, and read now it says no clause. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
@@ -1587,7 +1590,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
     // A chip menu's Move row: the menu says it, so its path holds no `.move`. TODO 450
-    const mover = value === 'move' ? this.pathFind(event, 'sherpa-quick-filter') : null;
+    const mover = value === 'move' ? this.#chipOf(event) : null;
     if (mover) {
       event.stopImmediatePropagation();
       this.#move(mover);
@@ -1602,8 +1605,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
     if (value !== 'remove') return;
-    // TRAP T-remove-matches-the-tag-not-the-class — the PATH, and the TAG.
-    const chip = this.pathFind(event, 'sherpa-quick-filter');
+    // TRAP T-remove-matches-the-tag-not-the-class — the PATH, and the field chip.
+    const chip = this.#chipOf(event);
     const id = chip?.dataset['id'];
     if (!id) return;
     event.stopImmediatePropagation();
@@ -1615,9 +1618,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A chip was toggled: report the whole bar. */
   #onChipClick = (event: Event): void => {
     // Composed → find the originating chip on the path. Group and Sort report their own (TODO 424).
-    const chip = event.composedPath().find(
-      (n): n is SherpaQuickFilter => n instanceof HTMLElement && n.classList.contains('chip'),
-    );
+    const chip = this.#chipOf(event);
     if (!chip) return;
 
     // A selector is locked, and no filter: its body asks for nothing.
@@ -1767,16 +1768,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  among them. TRAP T-a-control-sends-one-request */
   #emitChange(request?: QueryRequest): void {
     this.#keepOffChips();
+    this.#ask(request);
+    this.#syncOneRows();
+  }
+
+  /** SEND one request, every way this bar sends one: `auto`, held for this bar's
+   *  Apply where its scope waits (TODO 406); `commit`, applied now (a field's own
+   *  Apply, 451); `free`, as it is — a highlight, a preview, an order. */
+  #ask(request: QueryRequest | undefined, how: 'auto' | 'commit' | 'free' = 'auto'): void {
+    const held = how === 'free' || (how === 'auto' && this.hasAttribute('data-waits'));
     this.emit('quick-filter-change', {
       // TRAP T-values-carries-two-shapes — `scope` says WHICH shape this is.
       scope: 'bar',
-      // A scope that waits holds it for this bar's Apply. TODO 406
-      request: request && (this.hasAttribute('data-waits') ? request : applied(request)),
+      request: request && (held ? request : applied(request)),
       active: this.active,
       // APPLIED: only ON chips.
       values: this.values,
     });
-    this.#syncOneRows();
   }
 
   /**
@@ -1816,32 +1824,37 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #answers(): Record<string, FieldReading & { label: string; values: string[] }> {
     const out: Record<string, FieldReading & { label: string; values: string[] }> = {};
     for (const chip of this.#chips()) {
-      const field = chip.dataset['id'];
-      // A SUPERSEDED chip is the view's now; it narrows nothing here.
-      if (!field || chip.hasAttribute('data-superseded')) continue;
-
-      /* The CHIP says its own answer, and whether it is OFF: off keeps the
-         answer and applies none of it. Null: a toggle or a selector.
-         TRAP T-a-chip-says-its-own-answer · TRAP T-grid-suspend-is-not-clear */
-      const reading = chip.reading;
-      if (!reading) continue;
-      const listed = !chip.menu?.dataset['body'];
-      /* A LIST: a menu a rebuild has not drawn yet answers from what the
-         rebuild kept, and a drilled chip's rows are in the Filters menu.
-         TRAP T-a-rebuild-keeps-every-answer */
-      const all = listed
-        ? [...chip.menu!.querySelectorAll<HTMLInputElement>('input')]
-          .filter((i) => !i.closest(NON_VALUE_ROWS)).map((i) => i.value)
-        : [];
-      out[field] = {
-        label: chip.dataset['label'] ?? field,
-        values: all,
-        ...((listed ? this.#pendingAnswers.get(field) : undefined) ?? reading),
-        ...(listed ? { picked: this.#chipPicks(chip) } : {}),
-        suspended: !!reading.suspended,
-      };
+      const answer = this.#answerOf(chip);
+      if (answer) out[chip.dataset['id']!] = answer;
     }
     return out;
+  }
+
+  /** ONE chip's answer: none for a superseded chip, a toggle or a selector. */
+  #answerOf(chip: SherpaQuickFilter): (FieldReading & { label: string; values: string[] }) | undefined {
+    const field = chip.dataset['id'];
+    // A SUPERSEDED chip is the view's now; it narrows nothing here.
+    if (!field || chip.hasAttribute('data-superseded')) return undefined;
+    /* The CHIP says its own answer, and whether it is OFF: off keeps the
+       answer and applies none of it. Null: a toggle or a selector.
+       TRAP T-a-chip-says-its-own-answer · TRAP T-grid-suspend-is-not-clear */
+    const reading = chip.reading;
+    if (!reading) return undefined;
+    const listed = !chip.menu?.dataset['body'];
+    /* A LIST: a menu a rebuild has not drawn yet answers from what the
+       rebuild kept, and a drilled chip's rows are in the Filters menu.
+       TRAP T-a-rebuild-keeps-every-answer */
+    const all = listed
+      ? [...chip.menu!.querySelectorAll<HTMLInputElement>('input')]
+        .filter((i) => !i.closest(NON_VALUE_ROWS)).map((i) => i.value)
+      : [];
+    return {
+      label: chip.dataset['label'] ?? field,
+      values: all,
+      ...((listed ? this.#pendingAnswers.get(field) : undefined) ?? reading),
+      ...(listed ? { picked: this.#chipPicks(chip) } : {}),
+      suspended: !!reading.suspended,
+    };
   }
 
   /**
@@ -2283,7 +2296,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #onMenuApply = (event: Event): void => {
     if (!this.hasAttribute('data-waits') || !this.hasAttribute('data-field-apply')) return;
     if (!this.pathFind<SherpaMenu>(event, 'sherpa-menu')?.open) return;
-    const chip = this.pathFind(event, 'sherpa-quick-filter');
+    const chip = this.#chipOf(event);
     if (chip) this.#commitField(chip);
   };
 
@@ -2291,7 +2304,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #onFieldApply = (event: Event): void => {
     const commit = this.pathFind(event, '.field-commit');
     const discard = commit ? null : this.pathFind(event, '.field-discard');
-    const chip = commit || discard ? this.pathFind(event, 'sherpa-quick-filter') : null;
+    const chip = commit || discard ? this.#chipOf(event) : null;
     if (!chip) return;
     event.stopPropagation();
     if (commit) this.#commitField(chip);
@@ -2301,13 +2314,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Send ONE field's answer, applied: the rest of the scope still waits. TODO 451 */
   #commitField(chip: HTMLElement): void {
     const request = this.#answerRequest(chip);
-    if (request) this.emit('quick-filter-change', { scope: 'bar', request: applied(request), active: this.active, values: this.values });
+    if (request) this.#ask(request, 'commit');
   }
 
   /** A menu's Discard, where the scope waits: its field's applied answer comes back. TODO 406 */
   #onMenuDiscard = (event: Event): void => {
     if (!this.hasAttribute('data-waits')) return;
-    const chip = this.pathFind(event, 'sherpa-quick-filter');
+    const chip = this.#chipOf(event);
     const field = chip ? this.#fieldFor(chip.dataset['id'] ?? '') : null;
     if (field != null) this.emit('filter-discard', { field });
   };
@@ -2571,13 +2584,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A filter chip committed: its event reports one chip; it is swapped for the
    *  bar's own. Group and Sort report their own, and never send it (TODO 424). */
-  #onOrganiseChange = (event: Event): void => {
+  #onChipChange = (event: Event): void => {
     /* This hears the chips' quick-filter-change AND the toolbar's own, emit()
        being composed. Registered in CAPTURE so it stops a chip's before a host
        reads it. TRAP T-capture-beats-registration-order */
-    const chip = event.composedPath().find(
-      (n): n is SherpaQuickFilter => n instanceof HTMLElement && n.classList.contains('chip'),
-    );
+    const chip = this.#chipOf(event);
     if (!chip) return;
     event.stopImmediatePropagation();
     /* The chip's OWN answer: `values` reports only chips already ON, so an off

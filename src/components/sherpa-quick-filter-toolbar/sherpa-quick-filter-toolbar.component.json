@@ -1049,7 +1049,7 @@
       "composed": true,
       "detail": {
         "active": "string[]",
-        "request": "QueryRequest | undefined | { field: string; highlight: boolean; } | { order: string[]; } | { value?: string; field: string; preview: boolean; }",
+        "request": "QueryRequest | undefined",
         "scope": "'bar'",
         "values": "Record<string, string[]>"
       }
