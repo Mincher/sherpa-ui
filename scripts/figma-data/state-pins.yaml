@@ -57,6 +57,9 @@ sherpa-menu:
   # Every Menu variant pins Style=default, so a menu slotted into an ON chip
   # does not inherit its mode.
   '&': default
+  # The Advanced (f(x)) button, ON, wears the filters' on colour, as the chip
+  # does — re-pointed with it by --sherpa-filter-on-*. Will, TODO 468
+  '& .use-advanced[aria-pressed="true"]': active @filter-on
 
 # A MENU ROW — a Menu List Item, slotted light DOM, so a class key: it lives in
 # its menu's tree, not the menu's shadow root. One the filters before it rule out

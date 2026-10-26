@@ -886,44 +886,12 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
 });
 
 /**
- * AN AND ROW OFFERS WHAT THE ROWS BEFORE IT LEAVE — Will, TODO 110 (B): the
- * rest are listed, greyed and refused, and say why. An OR row offers all.
- * TRAP T-an-and-row-offers-what-the-rows-before-it-leave
+ * AN ADVANCED ROW RULES OUT NOTHING — Will, TODO 469: "Equals A And Equals B"
+ * greyed every value but A in its second row. No row greys a value: not after
+ * an AND row, not where the filters before its field rule it out.
+ * TRAP T-an-advanced-row-rules-out-nothing
  */
-test('an AND row greys the values the rows before it rule out; an OR row offers them all', async ({ page }) => {
-  await bar(page);
-  const r = await page.evaluate(async () => {
-    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
-    const sr = (el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement).shadowRoot!;
-    const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
-    const set = (field: Element, value: string): void => {
-      (field as HTMLElement & { value: string }).value = value;
-      field.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-    };
-    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
-    await wait();
-    set(sr.querySelector('.condition-row .condition-pick')!, 'silver');
-    await wait();
-    sr.querySelector<HTMLElement>('.add-condition')!.click();
-    await wait();
-    const second = (): Element => sr.querySelectorAll('.condition-row')[1]!;
-    const offer = () => [...(second().querySelector('.condition-pick') as HTMLElement).shadowRoot!.querySelectorAll('option')]
-      .filter((o) => o.value).map((o) => `${o.value}${o.disabled ? ` [off: ${o.title}]` : ''}`);
-    set(second().querySelector('.join')!, 'or');
-    await wait();
-    const or = offer();
-    set(second().querySelector('.join')!, 'and');
-    await wait();
-    return { or, and: offer() };
-  });
-  expect(r.or).toEqual(['gold', 'silver']);
-  expect(r.and).toEqual(['gold [off: No matches with the rows above.]', 'silver']);
-});
-
-/* 349: an Advanced row's values follow the source too — a value the filters
-   before the field rule out is greyed, never the row's own pick.
-   TRAP T-a-ruled-out-value-is-greyed */
-test('an Advanced row greys a value the filters before its field rule out, never its own pick', async ({ page }) => {
+test('an Advanced row greys no value: after an AND row, or where the filters before its field rule it out', async ({ page }) => {
   await bar(page);
   const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
@@ -934,22 +902,22 @@ test('an Advanced row greys a value the filters before its field rule out, never
       (field as HTMLElement & { value: string }).value = value;
       field.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     };
+    const offer = (i: number) => [...(sr.querySelectorAll('.condition-row')[i]!.querySelector('.condition-pick') as HTMLElement)
+      .shadowRoot!.querySelectorAll('option')].filter((o) => o.value).map((o) => `${o.value}${o.disabled ? ' [off]' : ''}`);
     sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
-    set(sr.querySelector('.condition-row .condition-pick')!, 'gold');
+    set(sr.querySelector('.condition-row .condition-pick')!, 'silver');
     await wait();
     sr.querySelector<HTMLElement>('.add-condition')!.click();
     await wait();
-    set(sr.querySelectorAll('.condition-row')[1]!.querySelector('.join')!, 'or');
+    set(sr.querySelectorAll('.condition-row')[1]!.querySelector('.join')!, 'and');
     await wait();
+    const and = offer(1);
     // The source: the filters before Tier leave only silver.
     menu.present = ['silver'];
     await wait();
-    const offer = (i: number) => [...(sr.querySelectorAll('.condition-row')[i]!.querySelector('.condition-pick') as HTMLElement)
-      .shadowRoot!.querySelectorAll('option')].filter((o) => o.value).map((o) => `${o.value}${o.disabled ? ` [off: ${o.title}]` : ''}`);
-    return { first: offer(0), second: offer(1) };
+    return { and, limited: [offer(0), offer(1)] };
   });
-  // Row one picked gold: its own pick is never greyed.
-  expect(r.first).toEqual(['gold', 'silver']);
-  expect(r.second).toEqual(['gold [off: Limited by the filters before it: no matches.]', 'silver']);
+  expect(r.and).toEqual(['gold', 'silver']);
+  expect(r.limited).toEqual([['gold', 'silver'], ['gold', 'silver']]);
 });

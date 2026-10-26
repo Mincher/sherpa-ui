@@ -24,7 +24,6 @@
  * - FieldFacts — What a caller knows about a field before anything is chosen.
  * - FieldReading — What is true right now, which decides the STATES.
  * - FieldCondition — One row of a multi-condition filter.
- * - rowOffer — What row `index` may offer: the values the rows before it in its AND chain leave.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
@@ -39,7 +38,7 @@
  */
 import {
   DEFAULT_OP, END_OF_DAY, OP_TAKES,
-  matchesFilter, picksClause, valueSet, valueKey,
+  picksClause, valueSet, valueKey,
   type Duration, type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 import type { Threshold } from './threshold.js';
@@ -215,21 +214,6 @@ export interface FieldCondition {
   picked?: readonly unknown[];
   /** `last` and `next`: what the typed count counts. Default `day`. TODO 21d */
   unit?: Duration['unit'];
-}
-
-/**
- * What row `index` may offer: the values the rows before it in its AND chain
- * leave. AND is serial and OR starts again, and AND binds tighter, so a row
- * looks back only as far as the last OR. Will, TODO 110 (B).
- * TRAP T-an-and-row-offers-what-the-rows-before-it-leave
- */
-export function rowOffer(rows: readonly FieldCondition[], index: number, values: readonly string[]): Set<string> {
-  let start = index;
-  while (start > 0 && rows[start]?.join === 'and') start--;
-  const before = rows.slice(start, index).filter(rowAnswered)
-    .map(({ join: _join, ...row }, i): FieldCondition => (i ? { ...row, join: 'and' } : row));
-  const clause = before.length ? readingClause({ field: 'v' }, { conditions: before, mode: 'advanced' }) : undefined;
-  return new Set(clause ? values.filter((v) => matchesFilter({ v }, clause)) : values);
 }
 
 /** Does this condition row have what its op needs to narrow anything? An

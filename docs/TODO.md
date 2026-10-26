@@ -149,7 +149,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | ⬜ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
 | ⬜ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
-| ⬜ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
+| ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
+| ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2191,11 +2192,30 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 468 — LOOK: Advanced buttons and condition strings follow the active colour
+### `[x]` ✅ 469 — BUG: Advanced rows rule out no value
+
+Will, 2026-10-26: *"In advanced filters EQUALS And EQUALS compound conditions
+don't work as the second EQUALS condition has all other values invalidated. I
+think we need to ignore invalidating values completely when in advanced filter
+mode."*
+
+**Done.** An Advanced row offers every value, always. Two rules are undone in
+the rows: an AND row offering only what the rows above leave (110 B —
+`rowOffer()` deleted), and greying what the filters before the field rule out
+(349). The Simple list still greys. TRAP `T-an-advanced-row-rules-out-nothing`;
+sherpa-ui `reforged-filter-conditions`.
+
+### `[x]` ✅ 468 — LOOK: Advanced buttons and condition strings follow the active colour
 
 Will, 2026-10-26: *"Filter menu Advance Filter buttons, and advanced filter
 condition string highlighting, should use the same colour scheme that the
 active filters use. Currently they always use the default active purple."*
+
+**Done.** The "condition string highlight" is the grid's match mark — the part
+of a cell a text condition found. It and the pressed f(x) button now take the
+on chip's colour: the button by a pin, `active @filter-on`, and the mark by
+`--sherpa-filter-on-border-base-1`. So "Show active filters in green" turns
+them green with the chips. Demos `reforged-filter-chips-green`.
 
 ### `[ ]` ⬜ 467 — FEATURE: highlight across every scope, or one
 

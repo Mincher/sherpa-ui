@@ -8010,7 +8010,7 @@ go and it is back. (Until 349 a LATER answer set an earlier pick aside —
 TODO 180, newest first; the one order replaced it.)
 
 **What rules a field** (`T-one-walk-counts-and-limits-in-order`) — a
-grid heading and an Advanced row's values too: with `limitOptions` on (Settings › Application, off by default), the rows at its
+grid heading too, but never an Advanced row (`T-an-advanced-row-rules-out-nothing`): with `limitOptions` on (Settings › Application, off by default), the rows at its
 place. Off, a component scope's field is ruled by the View's subset (347) and
 the View's by nothing — the View always limits a component scope. A chart part
 is greyed by its host the same way, and its pick is never set aside (Q1 A).
@@ -8101,30 +8101,23 @@ in the Query that could only come back matching nothing (TODO 465).
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/data/query.ts`
-- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/core/data/walk.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 
-### T-an-and-row-offers-what-the-rows-before-it-leave
+### T-an-advanced-row-rules-out-nothing
 
-**In Advanced rows, AND is serial and OR is parallel** — Will, TODO 110:
-*"AND row options should be restricted by preceding conditional row
-conditions."* He chose B: a value the rows before it rule out is listed,
-greyed and refused (a disabled `<option>`), saying "No matches with the rows
-above." — never the row's own pick. AND binds tighter than OR, so a row looks
-back only as far as the last OR; an OR row offers every value.
+**An Advanced row offers every value of its field, always** — Will, TODO 469:
+*"I think we need to ignore invalidating values completely when in advanced
+filter mode."* "Equals A And Equals B" had its second row greyed but for A.
 
-**No data is asked for.** Every row is on the SAME field, so what the rows
-before leave is the field's own values that pass them — `rowOffer()`, DOM-free
-in `filter-state.ts`, run against a one-field row with the store's own
-`matchesFilter`. The menu re-offers on every row change.
+So two old rules are undone, in the rows only: an AND row no longer offers
+just what the rows above it leave (TODO 110 B, `rowOffer()`, deleted), and a
+value the filters before the field rule out is no longer greyed there (349).
+The Simple list still greys and refuses (`T-a-ruled-out-value-is-greyed`).
 
-- Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
-- Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
@@ -12886,9 +12879,9 @@ because three things still read it:
 `#syncCondition`.
 
 The same colour runs through to the cells: a `mark.match` in the grid is
-`--sherpa-style-active-border-base-1`, so a reader follows ONE colour from the
-chip that found the match to the text it matched. Change one, change the
-other.
+the on chip's `--sherpa-filter-on-border-base-1`, else the active mode's, so a
+reader follows ONE colour from the chip that found the match to the text it
+matched — green too, where a page re-points the chips (TODO 468).
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
@@ -17100,6 +17093,10 @@ properties, they inherit into every shadow root, where only the chip's pin reads
 them: every filter chip follows — bar, panel, grid heading — and nothing else.
 Unset, the pin is exactly the mode, as before. The chip's pending edge reads the
 same hook. A chip's fill FADES (100 ms), so a test reads it once it settles.
+
+Two more read it, so the on colour is one colour (TODO 468): a filter menu's
+pressed f(x) button (`sherpa-menu`'s `.use-advanced` pin) and the grid's
+`mark.match`.
 
 - Site: `scripts/project-tokens.mjs`
 

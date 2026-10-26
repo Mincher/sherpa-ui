@@ -285,7 +285,7 @@ export class SherpaInputText extends SherpaElement {
         if (!el) return [];
         el.value = option.value;
         el.textContent = option.label ?? option.value;
-        // Listed, greyed and refused — with why, on hover. TRAP T-an-and-row-offers-what-the-rows-before-it-leave
+        // Listed, greyed and refused — with why, on hover.
         el.disabled = !!option.disabled;
         if (option.title) el.title = option.title;
         return [el];
