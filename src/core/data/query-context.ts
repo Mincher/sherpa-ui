@@ -864,22 +864,22 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'drawn', fields: [...new Set([field, ...(was ? [was.field] : [])])] });
   }
 
-  /** The chip hovered, while it previews the highlight. TODO 449 */
-  get previewed(): { scope: string; field: string } | null {
+  /** The chip hovered — or one value of it — while it previews the highlight. TODOs 449, 459 */
+  get previewed(): { scope: string; field: string; value?: string } | null {
     return this.#preview;
   }
 
   /** Preview a field's chip as the highlight's driver, or stop. Never in the
    *  Query, so never saved, and it moves no row: no load. Will, TODO 449.
    *  TRAP T-a-hovered-chip-previews-the-highlight */
-  preview(scope: string, field: string, on: boolean): void {
+  preview(scope: string, field: string, on: boolean, value?: string): void {
     const was = this.#preview;
-    if (on ? was?.scope === scope && was.field === field : !was || was.scope !== scope || was.field !== field) return;
-    this.#preview = on ? { scope, field } : null;
+    if (on ? was?.scope === scope && was.field === field && was.value === value : !was || was.scope !== scope || was.field !== field) return;
+    this.#preview = on ? { scope, field, ...(value != null ? { value } : {}) } : null;
     this.#tell({ kind: 'mark' });
   }
   /** The chip hovered, or null. */
-  #preview: { scope: string; field: string } | null = null;
+  #preview: { scope: string; field: string; value?: string } | null = null;
 
   /**
    * Order by one field, or stop. Every re-ordering returns to page 1.

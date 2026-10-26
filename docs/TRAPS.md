@@ -19312,8 +19312,17 @@ loads.
 Chromium sent ONE `pointerover` — the first element entered — and none after,
 setting on or off, with no pointer capture anywhere, while `pointermove` kept
 naming each element under the pointer. Hovered by `pointerover`, a preview came
-once, late or never. A `pointerout` to outside the bar still fires, and ends
-it; a host listener's `relatedTarget` inside the bar is the HOST itself.
+once, late or never. Nor is LEAVING a boundary event: a bar inside the panel's
+column heard no `pointerout` either, and a value stayed lit. While something is
+hovered the bar watches the PAGE's `pointermove`, and ends the preview once the
+pointer's path no longer holds the bar; `pointerout` stays for a pointer that
+leaves the window, where no `pointermove` comes.
+
+**One value, or the whole chip** (TODO 459). A section's value chip, or a value
+row of a chip's open menu — picked or not — previews that value alone:
+`{ field, preview: true, value }`, and `compile()` marks by `{ picked: [value] }`.
+The chip itself previews its whole answer, and only while it is applied and
+counted.
 
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/data-source.ts`

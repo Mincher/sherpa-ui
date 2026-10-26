@@ -450,27 +450,53 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The chip hovered. TODO 449 */
   #hovered: HTMLElement | null = null;
+  /** …and what of it: the chip alone, or one value of it. TODO 459 */
+  #hoverKey = '';
   /** The beat before it previews. */
   #hoverWait: ReturnType<typeof setTimeout> | undefined;
   /** It previews now. */
   #previewing = false;
+  /** The page's pointermove, watched while something here is hovered. */
+  #leaving: AbortController | null = null;
 
   /** Over an applied chip whose matches are counted, it previews them after a
    *  beat, so a pointer passing by previews nothing. Will, TODO 449.
    *  TRAP T-a-hovered-chip-previews-the-highlight */
   #onHoverChip = (event: Event): void => {
-    const chip = this.pathFind(event, CHIP);
-    if (chip === this.#hovered) return;
+    const at = this.hasAttribute('data-highlight-hover') ? this.#hoverTarget(event) : null;
+    const key = at ? `${at.chip.dataset['id'] ?? ''}\u0000${at.value ?? ''}` : '';
+    if (key === this.#hoverKey) return;
     this.#leaveChip();
-    const counted = chip && chip.hasAttribute('data-current') && !chip.hasAttribute('data-persistent')
-      && (chip as SherpaQuickFilter).results != null;
-    if (!chip || !counted || !this.hasAttribute('data-highlight-hover')) return;
-    this.#hovered = chip;
+    if (!at) return;
+    this.#hovered = at.chip;
+    this.#hoverKey = key;
+    /* LEFT is the page's pointermove off this bar: a bar in the panel's column
+       heard no pointerout either. TRAP T-a-hovered-chip-previews-the-highlight */
+    this.#leaving = new AbortController();
+    document.addEventListener('pointermove', (e) => {
+      if (!e.composedPath().includes(this)) this.#leaveChip();
+    }, { signal: this.#leaving.signal });
     this.#hoverWait = setTimeout(() => {
       this.#previewing = true;
-      this.#askPreview(chip.dataset['id'] ?? '', true);
+      this.#askPreview(at.chip, true, at.value);
     }, HOVER_WAIT);
   };
+
+  /** What a pointer rests on: ONE value — a section's value chip, or a value row
+   *  of a chip's open menu, picked or not — or an applied chip whose matches are
+   *  counted, for its whole answer. Will, TODO 459 */
+  #hoverTarget(event: Event): { chip: HTMLElement; value?: string } | null {
+    const chip = this.pathFind(event, CHIP);
+    if (!chip || chip.hasAttribute('data-persistent')) return null;
+    const one = this.pathFind(event, '.value');
+    if (one?.parentElement === chip && one.dataset['value']) return { chip, value: one.dataset['value'] };
+    const row = this.pathFind(event, '.menu-row');
+    if (row) {
+      const box = row.querySelector<HTMLInputElement>(':scope > input');
+      return box?.value && !row.matches('.qf-all, .qf-none') ? { chip, value: box.value } : null;
+    }
+    return chip.hasAttribute('data-current') && (chip as SherpaQuickFilter).results != null ? { chip } : null;
+  }
 
   /** Out of the bar: the preview goes. Within it, the next pointermove decides. */
   #onLeaveBar = (event: Event): void => {
@@ -480,15 +506,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The chip is left: its preview, or its wait, goes. */
   #leaveChip(): void {
+    this.#leaving?.abort();
+    this.#leaving = null;
     clearTimeout(this.#hoverWait);
-    if (this.#previewing) this.#askPreview(this.#hovered?.dataset['id'] ?? '', false);
+    if (this.#previewing && this.#hovered) this.#askPreview(this.#hovered, false);
     this.#previewing = false;
     this.#hovered = null;
+    this.#hoverKey = '';
   }
 
-  /** Ask that a field PREVIEW the highlight, or stop: never kept. */
-  #askPreview(field: string, on: boolean): void {
-    this.emit('quick-filter-change', { scope: 'bar', request: { field, preview: on }, active: this.active, values: this.values });
+  /** Ask that a field — or one value of it — PREVIEW the highlight, or stop: never kept. */
+  #askPreview(chip: HTMLElement, on: boolean, value?: string): void {
+    const field = this.#fieldFor(chip.dataset['id'] ?? '');
+    if (field == null) return;
+    const request = { field, preview: on, ...(value != null ? { value } : {}) };
+    this.emit('quick-filter-change', { scope: 'bar', request, active: this.active, values: this.values });
   }
 
   /** Each SECTION's name over the first chip of its run, in portrait: a named

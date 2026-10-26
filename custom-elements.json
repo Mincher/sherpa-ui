@@ -9171,7 +9171,7 @@
               "name": "quick-filter-change",
               "description": "One reader act, as a request: a field's answer, an on or off, the Switch, Clear all.",
               "type": {
-                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; } | { order: string[]; }; scope: 'bar'; values: Record<string, string[]> }>"
+                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; } | { order: string[]; } | { value?: string; field: string; preview: boolean; }; scope: 'bar'; values: Record<string, string[]> }>"
               }
             },
             {

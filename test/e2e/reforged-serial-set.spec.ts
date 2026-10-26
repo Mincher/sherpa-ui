@@ -90,7 +90,7 @@ test('the grid tells a heading\'s menu what its chain offers; its chip stays act
   expect(r.greyed).toBe(false);
 });
 
-test('the panel removes a value chip its chain does not offer, and keeps one that is on', async ({ page }) => {
+test('the panel removes a value chip its chain does not offer, and keeps one that is on — which a press lets go', async ({ page }) => {
   const r = await page.evaluate(async (options) => {
     const panel = await window.__mount<HTMLElement & {
       populate(s: unknown): Promise<void>; show(): void; drawOffered(o: Offered, scope: string): void;
@@ -104,13 +104,13 @@ test('the panel removes a value chip its chain does not offer, and keeps one tha
     const shown = [...panel.shadowRoot!.querySelectorAll<HTMLElement>('.field[data-field="region"] .value')]
       .filter((chip) => getComputedStyle(chip).display !== 'none')
       .map((chip) => `${chip.dataset['value']}${chip.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
-    // Pressed, it stays on: inactive is not interactive.
+    // Pressed, it goes off: ruled out and on, it may be let go (TODO 462).
     const emea = panel.shadowRoot!.querySelector<HTMLElement & { current: boolean }>('.field[data-field="region"] .value[data-value="EMEA"]')!;
     emea.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await window.__settled();
     return { shown, on: emea.current };
   }, REGIONS);
   // EMEA is on, and the chain leaves it nothing: a VALUE the context rules out reads
-  // inactive, and refuses a press, on or off (Will, 2026-10-20).
-  expect(r).toEqual({ shown: ['AMER', 'EMEA [dim]'], on: true });
+  // inactive (Will, 2026-10-20) — and, still on, a press lets it go (TODO 462).
+  expect(r).toEqual({ shown: ['AMER', 'EMEA [dim]'], on: false });
 });

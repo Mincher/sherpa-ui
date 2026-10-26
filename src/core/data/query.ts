@@ -146,7 +146,7 @@ export type QueryRequest =
   | { scope?: string; suspended: boolean; commit?: true }
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
   | { scope?: string; field: string; highlight: boolean }
-  | { scope?: string; field: string; preview: boolean }
+  | { scope?: string; field: string; preview: boolean; value?: string }
   | { scope?: string; order: readonly string[] }
   | readonly QueryRequest[];
 
@@ -194,8 +194,9 @@ export interface CompileFacts {
   has?: (field: string) => boolean;
   /** A field the STORE answers: its answer as the keys it matched, once fetched. */
   fetched?: (field: string, reading: FieldReading) => Filter | undefined;
-  /** The highlight's driver for now — a chip hovered — in place of the Query's. TODO 449 */
-  highlight?: { scope: string; field: string };
+  /** The highlight's driver for now — a chip hovered — in place of the Query's;
+   *  with `value`, that one value of it. TODOs 449, 459 */
+  highlight?: { scope: string; field: string; value?: string };
 }
 
 /** A reading without the picks set aside. */
@@ -380,7 +381,8 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     if (facts.has) for (const field of Object.keys(scope.readings)) if (!facts.has(field)) skipped.push(`${id}.${field}`);
     const clauses = scopeClauses(id, scope, viewHolds, facts);
     const drives = facts.highlight ? (facts.highlight.scope === id ? facts.highlight.field : undefined) : scope.highlight;
-    const driver = drives && scope.readings[drives];
+    const one = drives ? facts.highlight?.value : undefined;
+    const driver = one !== undefined ? { picked: [one] } : drives && scope.readings[drives];
     if (driver && !highlight) {
       highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
     }

@@ -112,6 +112,31 @@ test('a chip HOVERED previews the highlight: never in the Query, no query-change
   assert.deepEqual({ changes, loads }, { changes: 0, loads: 0 });
 });
 
+// TRAP T-a-hovered-chip-previews-the-highlight
+test('ONE value hovered previews only that value — picked or not (TODO 459)', async () => {
+  const query = new QueryContext();
+  const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), query });
+  const bar = marker('bar');
+  const grid = marker('grid');
+  bindSource(source, bar, { scope: 'data' });
+  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
+  query.hold('data', ['plan', 'region']);
+  query.setReading('data', 'region', { picked: ['EMEA', 'AMER'] });
+  await source.load();
+  const ask = (request) => bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request } }));
+  ask({ field: 'region', preview: true, value: 'AMER' });
+  assert.deepEqual(query.previewed, { scope: 'data', field: 'region', value: 'AMER' });
+  assert.deepEqual(ROWS.map((r) => grid.test(r)), [false, false, true], 'AMER alone, not every pick');
+  // A value of a field with no answer: Pro.
+  ask({ field: 'plan', preview: true, value: 'Pro' });
+  assert.deepEqual(ROWS.map((r) => grid.test(r)), [true, false, true]);
+  // The whole field again: its answer.
+  ask({ field: 'region', preview: true });
+  assert.deepEqual(ROWS.map((r) => grid.test(r)), [true, true, true]);
+  ask({ field: 'region', preview: false });
+  assert.equal(grid.test, null);
+});
+
 test('a chart\'s segments say the part the driver matches; with none, they say nothing', () => {
   const spec = { shape: 'segments', segment: 'region' };
   const pro = (row) => row.plan === 'Pro';

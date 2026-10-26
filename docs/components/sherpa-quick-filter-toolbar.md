@@ -149,7 +149,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined \| { field: string; highlight: boolean; } \| { field: string; preview: boolean; } \| { order: string[]; }; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
+| `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined \| { field: string; highlight: boolean; } \| { order: string[]; } \| { value?: string; field: string; preview: boolean; }; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |

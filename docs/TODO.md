@@ -140,7 +140,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ⬜ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
 | ⬜ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
-| ⬜ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
+| ✅ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
 | ⬜ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
 | ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
@@ -2059,7 +2059,7 @@ view scope."* To check first: one source already pushes its test to every
 component it binds; a page with several sources compiles only its OWN scopes
 (`facts.mine`), so another source skips a local driver.
 
-### `[ ]` ⬜ 459 — FILTERS: Highlight on hover, a field or one value
+### `[x]` ✅ 459 — FILTERS: Highlight on hover, a field or one value
 
 Will, 2026-10-26: *"Highlight on Hover should work for a Field (highlights all
 values) or a single Value. The single Value may be in a menu (toolbar mode) or
@@ -2067,6 +2067,14 @@ panel section (panel mode)."* 449 previews a whole applied chip.
 Will, 2026-10-26, as a bug: *"Hovering on any value in a panel section is
 highlighting matches for all active values in that section. It should only
 highlight that value's matches."*
+
+**✅ Done 2026-10-26.** Resting on a section's value chip, or on a value row
+of a chip's open menu, previews that value alone — picked or not; the chip
+itself previews its whole answer. The preview carries `value`, and `compile()`
+marks by that one pick. Leaving is the page's `pointermove` off the bar: a bar
+in the panel's column heard no `pointerout`, and a value stayed lit. Tests:
+`a-chip-drives-the-highlight` (node), Demos `reforged-highlight-matches` (a
+menu row, two value chips; 3 engines).
 
 ### `[ ]` ⬜ 460 — LOOK: a panel section's heading in a column on its left
 
