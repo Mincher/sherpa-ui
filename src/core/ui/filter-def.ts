@@ -64,6 +64,9 @@ export interface FilterDef extends OffersAdvanced {
   active?: boolean;
   /** Offer Remove. OPT-IN: a host-placed chip must not delete itself. */
   removable?: boolean;
+  /** The page's own: its definition holds it here, so it keeps its place — a
+   *  reader drags only what was added. Will, TODO 452 */
+  preset?: boolean;
   /** Which condition it is on. Defaults to `eq`. */
   op?: FilterOp;
   /** What the reader TYPED, for a condition that takes text rather than a pick. */

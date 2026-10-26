@@ -17,7 +17,8 @@ import {
   MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, savedMenuDef, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  MORE_MENU, askSwitches, drawSaveActions, extraRows, folded, hidesUnmatched, openMore, pickMore, resetRows, saveRows, syncHide,
+  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, drawSaveActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
+  saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
@@ -623,8 +624,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     dragToOrder(this, {
       axis: this.dataset['orientation'] === 'portrait' ? 'y' : 'x',
       enabled: () => this.hasAttribute('data-reorder'),
+      // A preset — the page's own field — keeps its place. Will, TODO 452
       items: () => this.#chips().filter((c) => !c.hasAttribute('data-persistent')
-        && !c.hasAttribute('data-folded-away') && !c.hasAttribute('data-superseded')),
+        && !c.hasAttribute('data-folded-away') && !c.hasAttribute('data-superseded')
+        && !this.#filters.find((f) => f.id === c.dataset['id'])?.preset),
       moved: (order) => this.#askOrder(order),
       signal: this.signal,
     });
@@ -1525,8 +1528,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (label) label.textContent = this.word(mode === 'advanced' ? 'simple' : 'advanced');
   }
 
-  /** A section's ⋮ opened: its mode row says the other mode, as it is now. */
+  /** A section's ⋮ opened: its mode row says the other mode, as it is now. The
+   *  Edit menu opened: its Reset rows say whether there is anything to reset. */
   #onFieldMoreOpen = (event: Event): void => {
+    const edit = this.pathFind(event, '.add-btn');
+    if (edit) drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'), undefined, false);
     const more = this.pathFind(event, '.field-more');
     const chip = more?.closest('sherpa-quick-filter');
     if (chip) this.#labelMode(chip);
@@ -1572,8 +1578,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#move(mover);
       return;
     }
-    // Manage Saved Filters, the Filters menu's one action — or, split, the Saved menu's rows. TODO 427, 436
-    if ((value === MANAGE_SETS && this.pathFind(event, '.add-btn'))
+    // Manage Saved Filters and Reset, the Edit menu's actions — or, split, the Saved menu's rows. TODO 427, 436, 454
+    if (((value === MANAGE_SETS || FILTER_ACTIONS.has(value)) && this.pathFind(event, '.add-btn'))
       || (String(value).startsWith('filters-') && this.pathFind(event, '.saved-btn'))) {
       event.stopImmediatePropagation();
       this.$<SherpaMenu>('.add-btn sherpa-menu')?.hide?.();
@@ -2068,6 +2074,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#drawApplied();
     this.#drawSaved();
     this.#addMenu(add, def);
+    // The Edit menu leads with Reset. Will, TODO 454
+    drawFilterActions(this, this.root, add.querySelector('sherpa-menu'), undefined, false);
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     this.#syncSave();
     this.#syncOverflowActive();
@@ -2288,7 +2296,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
-   * THE ⋮ MENU: Reset and Save filters (Will, TODO 430), then what has FOLDED
+   * THE ⋮ MENU: Save filters (Will, TODO 430; Reset is the Edit menu's, 454), then what has FOLDED
    * away at this width — the page's own buttons, then Refresh. A row does what
    * its button does. Suggest filters and the View's ★ and Save are the App
    * Header's (TODO 425). TRAP T-the-more-menu-holds-what-folded
@@ -2296,7 +2304,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #openMore(trigger: HTMLElement): void {
     const refresh: MoreRow[] = folded(this.$('.act[data-act="refresh"]')) ? [['refresh']] : [];
     const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this, this.#saved.applied);
-    openMore(this, this.root, trigger, [resetRows(this), saves, extraRows(this), refresh]);
+    // Reset is the Edit menu's. Will, TODO 454
+    openMore(this, this.root, trigger, [saves, extraRows(this), refresh]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

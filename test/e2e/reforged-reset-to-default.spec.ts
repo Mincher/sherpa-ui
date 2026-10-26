@@ -7,7 +7,7 @@ import { test, expect, type Bar } from './harness';
  * an app can ask the reader first — and keep what is on screen under a name.
  * TRAP T-reset-to-default-is-the-views-own
  */
-test('the bar\'s ⋮ and the panel\'s Filters menu lead with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
+test('the bar\'s Edit menu and the panel\'s Filters menu lead with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const heard: string[] = [];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
@@ -16,13 +16,13 @@ test('the bar\'s ⋮ and the panel\'s Filters menu lead with Reset, and Reset al
     for (const el of [bar, panel]) {
       el.addEventListener('view-reset', (e) => heard.push(`${el.localName}${e.cancelable ? ', cancelable' : ''}`));
     }
-    // The bar's are its ⋮'s rows (Will, TODO 430); the panel's, its Filters menu's (TODO 383).
+    // The bar's are its Edit menu's rows (Will, TODO 454); the panel's, its Filters menu's (TODO 383).
     const pick = async (host: HTMLElement): Promise<{ lead: string[][]; old: number; open: boolean }> => {
       const bar = host.localName === 'sherpa-quick-filter-toolbar';
-      const btn = host.shadowRoot!.querySelector<HTMLElement>(bar ? '[data-act="overflow"]' : '.filters-btn')!;
+      const btn = host.shadowRoot!.querySelector<HTMLElement>(bar ? '.add-btn' : '.filters-btn')!;
       btn.shadowRoot!.querySelector<HTMLElement>('button')!.click();
       await window.__settled();
-      const menu = (bar ? host.shadowRoot!.querySelector('.more-menu') : btn.querySelector('sherpa-menu')) as HTMLElement & { open: boolean };
+      const menu = btn.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
       const lead = [...menu.children].slice(0, 2)
         .map((n) => [(n as HTMLButtonElement).value, (n.textContent ?? '').trim()]);
       menu.querySelector<HTMLElement>(':scope > [value="reset-default"]')!.click();

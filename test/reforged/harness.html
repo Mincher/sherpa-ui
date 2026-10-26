@@ -188,6 +188,21 @@
       await window.__settled();
       return sr.querySelector(`.more-menu > [value="${value}"]`);
     };
+
+    /**
+     * A filter toolbar's Edit menu row, by value: the menu opened, as a reader
+     * would, since its Reset rows are drawn as it opens (Will, TODO 454).
+     *
+     * Usage:  (await window.__editRow(bar, 'reset')).click();
+     */
+    window.__editRow = async function editRow(host, value) {
+      const btn = host.shadowRoot.querySelector('.add-btn, .column-filters');
+      const menu = btn.querySelector('sherpa-menu');
+      if (menu?.open) { menu.hide(); await window.__settled(); }
+      btn.shadowRoot.querySelector('button').click();
+      await window.__settled();
+      return btn.querySelector(`sherpa-menu > .filter-action[value="${value}"]`);
+    };
   </script>
 </body>
 </html>

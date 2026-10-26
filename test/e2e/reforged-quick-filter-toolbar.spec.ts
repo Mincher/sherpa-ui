@@ -262,7 +262,7 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
         // Suggest filters is the App Header's. Will, TODO 425
         ai: !!sr.querySelector('[data-act="ai"]'),
         clear: !!sr.querySelector('[data-act="clear"], .reset-group'),
-        // Reset and Save are the ⋮'s, not the Filters menu's. Will, TODO 430
+        // Reset leads the Edit menu (Will, TODO 454); Save is the ⋮'s (TODO 430).
         actions: [...sr.querySelectorAll<HTMLButtonElement>('.add-btn sherpa-menu > .filter-action')].map((b) => b.value),
         // "Save <name>" only while a saved set is taken.
         saveSet: shown('.save-set'),
@@ -277,17 +277,17 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
     return { data: await probe(), view: await probe('view') };
   });
 
-  // Both types carry Filters; Reset is the ⋮'s now. Will, TODO 430
+  // Both types carry Edit, led by Reset. Will, TODO 454
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
     expect(t.ai).toBe(false);
     expect(t.clear).toBe(false);
-    expect(t.actions).toEqual([]);
+    expect(t.actions).toEqual(['reset', 'reset-default']);
     expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);
     expect(t.viewActions).toBe(false);
-    // The ⋮ always shows: it holds Reset and Save. Will, TODO 430
+    // The ⋮ always shows: it holds Save. Will, TODO 430
     expect(t.overflow).toBe(true);
   }
 });
@@ -358,13 +358,14 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
     (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
-    // Reset and Save are the ⋮'s rows, first. Will, TODO 430
-    await pick('Reset filters');
+    // Reset is the Edit menu's row. Will, TODO 454
+    (await window.__editRow(el, 'reset'))!.click();
+    await settle();
     return { collapse: [1, 2, 3].filter((s) => el.matches(`:state(collapse-${s})`)).length, rows, heard };
   });
 
   expect(r.collapse).toBe(3);
-  expect(r.rows).toEqual(['Reset filters', 'Reset all on view', '---', 'View as filter panel', '---', 'Refresh data']);
+  expect(r.rows).toEqual(['View as filter panel', '---', 'Refresh data']);
   expect(r.heard).toEqual(['data-refresh', 'extra', 'clear']);
 });
 
@@ -420,8 +421,8 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
   // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
   // Suggest filters is the App Header's. Will, TODO 425
   await expect(page.getByRole('button', { name: 'Suggest filters', exact: true })).toHaveCount(0);
-  // Reset and Save are the ⋮'s rows, named once it opens. Will, TODO 430
-  await page.getByRole('button', { name: 'More actions', exact: true }).click();
+  // Reset leads the Edit menu, named once it opens. Will, TODO 454
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
   for (const name of ['Reset filters', 'Reset all on view']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
@@ -450,7 +451,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
       el.addEventListener(ev, () => seen.push(ev));
 
     // Reset is the ⋮'s row. Will, TODO 430
-    (await window.__moreRow(el, 'reset'))!.click();
+    (await window.__editRow(el, 'reset'))!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
@@ -506,7 +507,7 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
 
     // A full reset must not leave the page with no view.
     // Reset is the ⋮'s row. Will, TODO 430
-    (await window.__moreRow(el, 'reset'))!.click();
+    (await window.__editRow(el, 'reset'))!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };

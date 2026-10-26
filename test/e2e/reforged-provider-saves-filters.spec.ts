@@ -213,12 +213,12 @@ test('the bar\'s ⋮ rows, the panel\'s Filters menu rows, each Save <name>, and
     await bar.populate([{ id: 'plan', label: 'Plan', removable: true, options: [{ value: 'Pro', label: 'Pro' }] }]);
     await panel.populate([{ scope: 'data', label: 'Rows', filters: [{ id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] }] }]);
     const sr = bar.shadowRoot!;
-    // The bar's are its ⋮'s rows (Will, TODO 430); the panel's, its Filters menu's (TODO 383).
+    // The bar's save rows are its ⋮'s (Will, TODO 430; Reset is its Edit menu's, 454); the panel's, its Filters menu's (TODO 383).
     const action = async (host: HTMLElement, value: string): Promise<HTMLElement> => (host === bar
       ? (await window.__moreRow(bar, value))!
       : host.shadowRoot!.querySelector<HTMLElement>(`.filters-btn sherpa-menu > .filter-action[value="${value}"]`)!);
     const actions = async (): Promise<(string | null)[]> => {
-      await window.__moreRow(bar, 'reset');
+      await window.__moreRow(bar, 'filters-save');
       return [...sr.querySelectorAll('.more-menu > .more-item .more-label')].map((l) => (l.textContent ?? '').trim());
     };
     // The bar's "Save <name>": what it says while it shows, and its look.
@@ -258,7 +258,7 @@ test('the bar\'s ⋮ rows, the panel\'s Filters menu rows, each Save <name>, and
   });
   expect(r.none.filter((l) => l?.startsWith('Save') || l?.startsWith('Delete'))).toEqual(['Save filters…']);
   expect(r.noneSet).toEqual({ says: null, active: false });
-  expect(r.taken).toEqual(['Reset filters', 'Reset all on view', 'Save A', 'Save filters as…', 'Delete filters']);
+  expect(r.taken).toEqual(['Save A', 'Save filters as…', 'Delete filters']);
   expect(r.takenSet).toEqual({ says: 'Save A', active: true });
   expect(r.ticked).toEqual(['set:a']);
   expect(r.heard).toEqual([

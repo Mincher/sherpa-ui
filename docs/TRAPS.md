@@ -2141,6 +2141,11 @@ then Favorite, Save view, Save view as, Refresh view.
 — the container queries and `data-collapse` both fold, and one test covers
 both. The menu is built on each open, like the grid's actions menu.
 
+**Reset is not a ⋮ row.** TODO 430 put Reset filters and Reset all on view at
+the head of a TOOLBAR's ⋮; TODO 454 moved them back to the head of its Edit
+menu (`drawFilterActions(…, false)`: no save rows), drawn again as it opens so
+each says whether there is anything to reset. The ⋮ keeps the save rows.
+
 Building it found a CSS bug: the view type's own `display: inline-flex` for
 ★ · Save · ▾ came AFTER the fold steps with the same weight, so on a view bar
 the group NEVER folded. Its block sits before the steps now, and the width
@@ -19363,7 +19368,10 @@ moves 4px is a drag, the item follows by `--_drag-x` / `--_drag-y`, the item it
 would land beside is `data-drop="before|after"`, and the click the release
 makes is eaten, so a drag never toggles the chip. Alt and an arrow move a
 focused item one place: no pointer needed. The View chip, a folded chip and one
-superseded stay where they are.
+superseded stay where they are — and so does a PRESET (Will): a field the page
+definition holds in that scope (`source.declarePresets`, `HeldFilter.preset`).
+Only what a reader ADDED moves, among its own kind; a preset is never a drop
+target, so an added filter never lands among them.
 
 The bar asks `{ order: [...fields] }`; the QueryContext's `order()` puts those
 fields in that order in the places they hold, in BOTH copies (an order is no

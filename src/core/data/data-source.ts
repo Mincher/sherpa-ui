@@ -22,6 +22,7 @@
  * - .highlight — Does a row match the highlight's driver?
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
+ * - .declarePresets — A scope's own fields, as its page definition holds them: presets, never dragged.
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
  * - .openOnFirst — Each FETCHING list opens on its first value, never on every row.
@@ -420,6 +421,7 @@ export class DataSource extends EventTarget {
       const from = cameFrom(this.#draft, f);
       return {
         ...this.filterDef(f), removable: true,
+        ...(this.#presets.get(scope)?.has(f) ? { preset: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.#context.scopeLabel(VIEW) } : {}),
         ...(down ? { sendTo: {
@@ -477,6 +479,14 @@ export class DataSource extends EventTarget {
     this.#catalogue.declareValues(field, values);
     this.#recomposeFor([field]);
   }
+
+  /** A scope's own fields, as its page definition holds them: presets, which
+   *  keep their place — a reader drags only what was added. Will, TODO 452 */
+  declarePresets(scope: string, fields: readonly string[]): void {
+    this.#presets.set(scope, new Set(fields));
+  }
+  /** Each scope's presets. */
+  #presets = new Map<string, ReadonlySet<string>>();
 
   /**
    * Declare a field's KIND and its reader-facing name.

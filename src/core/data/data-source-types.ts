@@ -99,6 +99,8 @@ export interface HeldFilter extends FieldFilter {
   /** Its answer in the Query, where it has one. */
   state?: FieldReading;
   removable?: boolean;
+  /** The page's own: its definition holds it here. TODO 452 */
+  preset?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here,
    *  and its `state` is this scope's own answer: kept, not in force.
    *  TRAP T-a-superseded-chip-suspends-it-is-never-removed */

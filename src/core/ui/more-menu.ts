@@ -13,7 +13,7 @@
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
  * - FILTER_ACTIONS — The rows the Filters menu ends with: its filter actions.
- * - drawFilterActions — Lead a Filters menu with its filter actions: Reset, Reset all on view, then the save rows.
+ * - drawFilterActions — Lead a Filters menu with Reset, Reset all on view, then — unless told not — the save rows.
  * - drawSaveActions — End a Saved menu with its save rows, then Manage Saved Filters.
  * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
@@ -99,10 +99,12 @@ export const FILTER_ACTIONS = new Set(['reset', 'reset-default', 'filters-save',
  *  Save filters or "Save <name>", Save as and Delete — in place of the ones it
  *  had; the first section's own rule divides them. ONE button for every filter
  *  action. Will, TODO 383 */
-export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined, applied?: { label: string }): void {
+export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined,
+  applied?: { label: string }, saves = true): void {
   if (!menu) return;
   for (const old of menu.querySelectorAll(':scope > .filter-action')) old.remove();
-  const rows = drawRows(host, root, [...resetRows(host), ...saveRows(host, applied)]);
+  // A toolbar's Edit menu leads with Reset alone; its save rows are the ⋮'s, or the Saved menu's. TODO 454
+  const rows = drawRows(host, root, [...resetRows(host), ...(saves ? saveRows(host, applied) : [])]);
   // `data-lead`: above the values, whenever the menu stamps them.
   for (const one of rows) { one.classList.add('filter-action'); one.setAttribute('data-lead', ''); }
   menu.prepend(...rows);

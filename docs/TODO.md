@@ -135,7 +135,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ✅ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
 | ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
-| ⬜ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
+| ✅ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
 | ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | ⬜ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ⬜ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
@@ -148,6 +148,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | ⬜ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
+| ⬜ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2019,6 +2020,14 @@ Demos `reforged-filter-layouts` (a chip, Alt+Arrow, a section; 3 engines).
 TRAP T-a-filter-is-dragged-into-its-place. The look is basic: the landing line
 is cut off before the bar's first chip.
 
+**Will, 2026-10-26:** *"I should be able to drag reorder filter chips/sections
+with no selected values. Preset filter chips in both scopes should not be
+draggable — View/App Scope: Customer, Region, Date Range; Local Scope: Group,
+Sort, Specified Presets."* ✅ A field the page definition holds in a scope is a
+PRESET (`source.declarePresets`, `HeldFilter.preset`) and keeps its place; only
+an added filter drags, among the added ones, picked or not. Group and Sort never
+did. Tests drag added Seats and Spend.
+
 ### `[ ]` ⬜ 453 — FEATURE: the App Context, a setting
 
 Will, 2026-10-26: *"Add a filtering setting to persist the 'View Context'
@@ -2153,10 +2162,21 @@ Will, 2026-10-26: *"Add a filtering setting to 'Always show client side match
 counts' even if the filter chip value hasn't been selected and/or the filter
 chip isn't active."*
 
-### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
+### `[x]` ✅ 454 — LOOK: Reset goes back to the Edit menu
 
 Will, 2026-10-26: *"Move the Reset filter options back to the 'Edit' fitlers
 menu."* 430 moved them to the ⋮.
+
+**✅ Done 2026-10-26.** In the bar and the panel column, the Edit menu leads with
+Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
+save rows. Tests: sherpa-ui `reforged-reset-at-default`,
+`reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
+`reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[ ]` ⬜ 467 — FEATURE: highlight across every scope, or one
+
+Will, 2026-10-26: *"Add a setting to toggle highlighting across all scopes (on
+by default) or to limit highlighting to the filter's current scope."* With 458.
 
 ### `[x]` ✅ 446 — LOOK: the Saved filters button is a split
 

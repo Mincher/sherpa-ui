@@ -20,7 +20,7 @@ import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import { MANAGE_SETS, SavedSets, drawFiltersButton, savedMenuDef, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
-import { askSwitches, drawSaveActions, extraRows, hidesUnmatched, openMore, pickMore, resetRows, saveRows } from '../../core/ui/more-menu.js';
+import { FILTER_ACTIONS, askSwitches, drawFilterActions, drawSaveActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows } from '../../core/ui/more-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 /** What a column says: its toolbar's own events. */
@@ -75,6 +75,8 @@ export class ToolbarColumn {
     const filters = this.#$('.column-filters');
     filters?.addEventListener('menu-change', this.#onFiltersCommit);
     filters?.addEventListener('menu-select', this.#onFilterAction);
+    // Its Reset rows say, as it opens, whether there is anything to reset. TODO 454
+    filters?.addEventListener('menu-open', () => this.#drawResets());
     const saved = this.#$('.column-saved');
     saved?.addEventListener('menu-change', this.#onSavedPick);
     saved?.addEventListener('menu-select', this.#onSavedAction);
@@ -193,7 +195,13 @@ export class ToolbarColumn {
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this.#host.el));
     btn.append(menu);
     menu.items?.(items);
+    this.#drawResets();
     this.#drawSaved();
+  }
+
+  /** The Edit menu leads with Reset. Will, TODO 454 */
+  #drawResets(): void {
+    drawFilterActions(this.#host.el, this.#host.root(), this.#$('.column-filters sherpa-menu'), undefined, false);
   }
 
   /** THE SAVED MENU, where the app splits it from Filters: the sets — a tick
@@ -255,13 +263,15 @@ export class ToolbarColumn {
 
   /** Manage Saved Filters, the Filters menu's one action. TODO 427 */
   #onFilterAction = (event: Event): void => {
-    if ((event as CustomEvent).detail?.value !== MANAGE_SETS) return;
+    const value = (event as CustomEvent).detail?.value;
+    if (value !== MANAGE_SETS && !FILTER_ACTIONS.has(value)) return;
     event.stopPropagation();
     this.#$<SherpaMenu>('.column-filters sherpa-menu')?.hide?.();
-    this.#host.emit(MANAGE_SETS);
+    if (value === MANAGE_SETS) this.#host.emit(MANAGE_SETS);
+    else this.#act(value);
   };
 
-  /** A filter action from the ⋮: Reset, Reset all on view, and the save rows. Will, TODO 430 */
+  /** A filter action: Reset and Reset all on view, from the Edit menu (TODO 454); the save rows, from the ⋮ (TODO 430). */
   #act(act: string): void {
     if (act === 'reset') {
       const request = this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } }));
@@ -274,13 +284,14 @@ export class ToolbarColumn {
     else if (act === 'filters-save') this.#host.emit('filters-save');
   }
 
-  /** ⋮ — Reset and Save filters (Will, TODO 430), the page's buttons folded
+  /** ⋮ — Save filters (Will, TODO 430; Reset is the Edit menu's, 454), the page's buttons folded
    *  away, then Limit. No Suggest filters or Refresh: those are the App
    *  Header's. Will, TODO 425 G11 */
   #onMore = (event: Event): void => {
     const el = this.#host.el;
     const saves = el.hasAttribute('data-saved-menu') ? [] : saveRows(el, this.#saved.applied);
-    openMore(el, this.#host.root(), event.currentTarget as HTMLElement, [resetRows(el), saves, extraRows(el)]);
+    // Reset is the Edit menu's. Will, TODO 454
+    openMore(el, this.#host.root(), event.currentTarget as HTMLElement, [saves, extraRows(el)]);
   };
 
   /** A ⋮ row: a filter action, or a page button folded away. */

@@ -18,9 +18,9 @@ for (const tag of ['sherpa-quick-filter-toolbar', 'sherpa-filter-panel']) {
       await (el as HTMLElement & { rendered: Promise<void> }).rendered;
       await (el as HTMLElement & { populate(d: unknown): unknown }).populate([]);
       await window.__settled();
-      // The bar's are its ⋮'s rows (Will, TODO 430); the panel's, its Filters menu's (TODO 383).
+      // The bar's are its Edit menu's rows (Will, TODO 454); the panel's, its Filters menu's (TODO 383).
       const row = async (): Promise<Element> => (name === 'sherpa-quick-filter-toolbar'
-        ? (await window.__moreRow(el, 'reset-default'))!
+        ? (await window.__editRow(el, 'reset-default'))!
         : el.shadowRoot!.querySelector('.filters-btn sherpa-menu')!.querySelector(':scope > .filter-action[value="reset-default"]')!);
       const atFirst = (await row()).hasAttribute('disabled');
       el.removeAttribute('data-at-default');
@@ -40,9 +40,9 @@ for (const tag of ['sherpa-quick-filter-toolbar', 'sherpa-filter-panel']) {
       await (el as HTMLElement & { rendered: Promise<void> }).rendered;
       await (el as HTMLElement & { populate(d: unknown): unknown }).populate([]);
       await window.__settled();
-      // The bar's are its ⋮'s rows (Will, TODO 430); the panel's, its Filters menu's (TODO 383).
+      // The bar's are its Edit menu's rows (Will, TODO 454); the panel's, its Filters menu's (TODO 383).
       const reset = async (): Promise<Element> => (name === 'sherpa-quick-filter-toolbar'
-        ? (await window.__moreRow(el, 'reset'))!
+        ? (await window.__editRow(el, 'reset'))!
         : el.shadowRoot!.querySelector('.filters-btn sherpa-menu')!.querySelector(':scope > .filter-action[value="reset"]')!);
       const off = (await reset()).hasAttribute('disabled');
       el.removeAttribute('data-nothing-to-reset');
