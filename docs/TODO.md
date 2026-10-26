@@ -159,7 +159,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3a | 475 | LOOK — in the panel, a section's field labels line up with its accordion header's label, on their left (Will, 2026-10-26) | look |
 | ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
 | ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
-| ⬜ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
+| ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2303,11 +2303,27 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 478 — LOOK: the scroll shadow works sideways too
+### `[x]` ✅ 478 — LOOK: the scroll shadow works sideways too
 
 Will, 2026-10-26: *"The scroll under inner shadow needs to work for horizontal
 scrolling content, too. The inner shadow needs to be applied to the relevant
 side of the scrolling container when needed."*
+
+The plan: a box's `::before` and `::after` already draw its top and bottom
+edges, so the side edges are a FRAME's — `.sherpa-scroll-frame`, a wrapper
+round the scroll box, whose two pseudo-elements sit over the box's sides and
+follow its sideways scroll (a named scroll timeline the frame scopes). A box
+that pins columns names how far in its edges sit: the grid's start edge is past
+its pinned first column, its end edge before the Actions column. Frames round
+the grid's scroller, the app shell's Context and the dialog's body — the three
+Demos shades.
+
+**Done.** The side edges are two empty spans in the frame, not its
+pseudo-elements: WebKit gives a scoped timeline only to an element, and its
+`::before` ran on no timeline and showed for good. The Records grid scrolled
+sideways shades past its pinned Name column and before Actions; a grid that
+fits shows none. Chromium and WebKit; Firefox has no scroll timeline.
+TRAP `T-a-sideways-scroll-shadow-is-its-frames`. Test: `reforged-scroll-shadow`.
 
 ### `[x]` ✅ 477 — FILTER: the gauge's legend takes no part in filtering
 

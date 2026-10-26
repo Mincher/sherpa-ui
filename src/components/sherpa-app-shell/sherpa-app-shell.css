@@ -183,6 +183,15 @@
   inline-size: 100%;
 }
 
+/* Its frame takes the scroller's place between the panel areas. TODO 478 */
+.context-edges {
+  min-inline-size: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
 /* THE SCROLLER. A Context taller than its frame scrolls HERE, between the
    panel areas and under the header. TRAP T-only-the-context-scrolls */
 .context-frame {

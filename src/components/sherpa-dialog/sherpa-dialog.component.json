@@ -52,14 +52,34 @@
         },
         {
           "el": "div",
-          "class": "body sherpa-scroll-shadow",
-          "part": "body",
+          "class": "body-edges sherpa-scroll-frame",
           "children": [
             {
-              "slot": "",
+              "el": "span",
+              "class": "sherpa-scroll-edge-start",
               "attrs": {
-                "data-accepts": "content"
+                "aria-hidden": "true"
               }
+            },
+            {
+              "el": "span",
+              "class": "sherpa-scroll-edge-end",
+              "attrs": {
+                "aria-hidden": "true"
+              }
+            },
+            {
+              "el": "div",
+              "class": "body sherpa-scroll-shadow",
+              "part": "body",
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "content"
+                  }
+                }
+              ]
             }
           ]
         },

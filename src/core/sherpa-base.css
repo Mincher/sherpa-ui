@@ -130,6 +130,51 @@
     animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%;
   }
 }
+/* SIDEWAYS, a FRAME round the scroll box draws its side edges, two empty
+   spans: the box's own two pseudo-elements are its top and bottom, and WebKit
+   gives a frame's pseudo-elements no scoped timeline. A box with pinned columns
+   names how far in each edge sits, in `--_scroll-inset-start` and `-end`.
+   Will, TODO 478. TRAP T-a-sideways-scroll-shadow-is-its-frames */
+.sherpa-scroll-frame {
+  position: relative;
+  timeline-scope: --sherpa-scroll-inline;
+}
+.sherpa-scroll-frame > .sherpa-scroll-shadow { scroll-timeline: --sherpa-scroll-inline inline; }
+.sherpa-scroll-edge-start,
+.sherpa-scroll-edge-end { display: none; }
+@supports (animation-timeline: scroll()) {
+  :host([data-scroll-shadow]) .sherpa-scroll-edge-start,
+  :host([data-scroll-shadow]) .sherpa-scroll-edge-end {
+    display: block;
+    position: absolute;
+    inset-block: 0;
+    /* Over a pinned header corner, which is 4. */
+    z-index: 5;
+    inline-size: var(--sherpa-display-mode-space-sm, 12px);
+    pointer-events: none;
+    opacity: 0;
+    animation: sherpa-scroll-shadow linear both;
+    animation-timeline: --sherpa-scroll-inline;
+  }
+  :host([data-scroll-shadow]) .sherpa-scroll-edge-start {
+    inset-inline-start: var(--_scroll-inset-start, 0px);
+    background: linear-gradient(to right, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
+  }
+  :host([data-scroll-shadow]) .sherpa-scroll-edge-end {
+    inset-inline-end: var(--_scroll-inset-end, 0px);
+    background: linear-gradient(to left, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    animation-direction: reverse;
+    animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%;
+  }
+  /* Right to left, the start is the right. */
+  :host([data-scroll-shadow]) .sherpa-scroll-edge-start:dir(rtl) {
+    background: linear-gradient(to left, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+  }
+  :host([data-scroll-shadow]) .sherpa-scroll-edge-end:dir(rtl) {
+    background: linear-gradient(to right, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+  }
+}
 @keyframes sherpa-scroll-shadow {
   to { opacity: 1; }
 }

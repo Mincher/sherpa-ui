@@ -103,6 +103,9 @@
 <template id="default">
   <!-- The wrapper owns the overflow: `display: block` on a <table> drops it out
        of table layout. Sticky <thead> also needs a real scrolling ancestor. -->
+  <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
+  <div class="scroll-frame sherpa-scroll-frame">
+  <span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span>
   <div class="scroller sherpa-scroll-shadow" part="scroller">
   <table class="grid" part="grid">
     <!-- With `table-layout: fixed` a column's width comes from its <col>, so a
@@ -142,6 +145,7 @@
          or takes off that cell's value. Will, TODO 373. TRAP T-a-cell-chip-is-one-and-moves -->
     <span class="cell-filter-home"><sherpa-quick-filter class="cell-filter" data-icon-only
       data-no-value data-locked></sherpa-quick-filter></span>
+  </div>
   </div>
   <div class="empty" part="empty" role="status">
     <slot name="empty" data-accepts="content">No rows to display.</slot>

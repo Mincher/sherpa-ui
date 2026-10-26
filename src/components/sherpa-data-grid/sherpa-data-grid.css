@@ -25,6 +25,16 @@
   overflow: hidden;
 }
 
+/* Its frame takes the scroll box's place, and draws a sideways scroll's edges
+   past the pinned first column and before the Actions. TODO 478 */
+.scroll-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+:host(:state(actions)) .scroll-frame { --_scroll-inset-end: 76px; /* off-grid-ok: the Actions column's width */ }
+
 /* The scroll box is a wrapper DIV, not the <table>: `display: block` on a table
    takes it out of table layout and its columns stop lining up. */
 .scroller {

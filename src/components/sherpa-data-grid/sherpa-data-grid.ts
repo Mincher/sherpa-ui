@@ -451,11 +451,14 @@ export class SherpaDataGrid extends SherpaElement {
     const free = shown.map((col) => !this.#widths.has(col.field));
     const share = base.reduce((sum, w, i) => sum + (free[i] ? w : 0), 0);
     const slack = room - edges - base.reduce((sum, w) => sum + w, 0);
-    shown.forEach((col, i) => {
+    const widths = shown.map((col, i) => {
       const el = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(col.field)}"]`);
       const grow = slack > 0 && free[i] && share > 0 ? Math.floor((slack * base[i]!) / share) : 0;
       if (el) el.style.width = `${base[i]! + grow}px`;
+      return base[i]! + grow;
     });
+    // A sideways scroll's start edge sits past the pinned columns. TRAP T-a-sideways-scroll-shadow-is-its-frames
+    this.style.setProperty('--_scroll-inset-start', `${offset + (widths[0] ?? 0)}px`);
     // Drawn while hidden, it measured nothing: it measures again when shown.
     this.#measuredFor = !room || (selectable && !offset) ? '' : key;
   }

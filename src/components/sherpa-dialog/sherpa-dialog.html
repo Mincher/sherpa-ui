@@ -27,8 +27,12 @@
       <sherpa-container-header class="heading" part="heading"></sherpa-container-header>
       <slot name="header" data-accepts="header"></slot>
     </div>
-    <div class="body sherpa-scroll-shadow" part="body">
-      <slot data-accepts="content"></slot>
+    <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
+    <div class="body-edges sherpa-scroll-frame">
+      <span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span>
+      <div class="body sherpa-scroll-shadow" part="body">
+        <slot data-accepts="content"></slot>
+      </div>
     </div>
     <div class="footer" part="footer">
       <slot name="footer" data-accepts="footer"></slot>

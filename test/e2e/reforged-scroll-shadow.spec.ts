@@ -75,3 +75,61 @@ test('a grid\'s header casts a shadow only once rows scroll under it', async ({ 
   test.skip(!r.driven, 'no scroll timeline: no shadow');
   expect(r).toEqual({ at: '0', scrolled: '1', driven: true });
 });
+
+// TODO 478. TRAP T-a-sideways-scroll-shadow-is-its-frames
+test('a grid scrolled sideways shows each side edge only while content is hidden past it, past its pinned columns', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.style.cssText = 'block-size: 200px; inline-size: 400px';
+    el.toggleAttribute('data-scroll-shadow', true);
+    el.toggleAttribute('data-selectable', true);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const columns = Array.from({ length: 8 }, (_, i) => ({ field: `c${i}`, header: `Column ${i}`, width: 120 }));
+    el.populate!({ columns, rows: Array.from({ length: 5 }, (_, r) => Object.fromEntries(columns.map((c) => [c.field, `${c.field}-${r}`]))) });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const frame = sr.querySelector<HTMLElement>('.scroll-frame')!;
+    const scroller = sr.querySelector<HTMLElement>('.scroller')!;
+    const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    const edge = (side: string): HTMLElement => frame.querySelector<HTMLElement>(`:scope > .sherpa-scroll-edge-${side}`)!;
+    const edges = (): { start: string; end: string } => ({
+      start: getComputedStyle(edge('start')).opacity, end: getComputedStyle(edge('end')).opacity,
+    });
+    await frames();
+    const at = edges();
+    scroller.scrollLeft = 100;
+    await frames();
+    const mid = edges();
+    scroller.scrollLeft = scroller.scrollWidth;
+    await frames();
+    const end = edges();
+    // The start edge stands at the pinned first column's trailing edge.
+    const pinned = sr.querySelector('.head-row > [data-pin-last]')!.getBoundingClientRect().right;
+    const start = edge('start').getBoundingClientRect().left;
+    return { at, mid, end, gap: Math.round(start - pinned), driven: CSS.supports('animation-timeline: scroll()') };
+  });
+  test.skip(!r.driven, 'no scroll timeline: no shadow');
+  expect(r.at).toEqual({ start: '0', end: '1' });
+  expect(r.mid).toEqual({ start: '1', end: '1' });
+  expect(r.end).toEqual({ start: '1', end: '0' });
+  expect(Math.abs(r.gap)).toBeLessThanOrEqual(1);
+});
+
+test('a grid that fits across shows no side edge', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.style.cssText = 'block-size: 200px; inline-size: 600px';
+    el.toggleAttribute('data-scroll-shadow', true);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'Ada' }] });
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const frame = el.shadowRoot!.querySelector('.scroll-frame')!;
+    return { edges: ['start', 'end'].map((s) => getComputedStyle(frame.querySelector(`:scope > .sherpa-scroll-edge-${s}`)!).opacity),
+      driven: CSS.supports('animation-timeline: scroll()') };
+  });
+  test.skip(!r.driven, 'no scroll timeline: no shadow');
+  expect(r.edges).toEqual(['0', '0']);
+});

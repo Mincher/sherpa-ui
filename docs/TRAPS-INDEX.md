@@ -590,7 +590,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (94)
+## The data grid (95)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -619,6 +619,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-restored-filter-still-needs-its-chip](TRAPS.md#t-a-restored-filter-still-needs-its-chip) — data-grid
 - [T-a-row-holds-two-selection-boxes](TRAPS.md#t-a-row-holds-two-selection-boxes) — data-grid
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-grid
+- [T-a-sideways-scroll-shadow-is-its-frames](TRAPS.md#t-a-sideways-scroll-shadow-is-its-frames) — data-grid
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — data-grid
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — data-grid
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — data-grid
@@ -751,7 +752,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (107)
+## SherpaElement and the shared sheets (108)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -783,6 +784,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-scroll-shadow-is-drawn-over-the-content](TRAPS.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — sherpa-element
+- [T-a-sideways-scroll-shadow-is-its-frames](TRAPS.md#t-a-sideways-scroll-shadow-is-its-frames) — sherpa-base
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — sherpa-button-look
 - [T-a-sub-pixel-border-reads-back-as-1px](TRAPS.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — sherpa-element

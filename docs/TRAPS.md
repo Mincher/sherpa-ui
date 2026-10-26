@@ -15807,7 +15807,8 @@ scrolled. Both are pinned across too: a wide grid scrolls sideways under them.
 
 A sticky header with its own z-index — the grid's head, a column's scope —
 covers the top edge: a stuck header casts its own shadow (TODO 421). The nav
-list has none yet: its `::after` says "No matches".
+list has none yet: its `::after` says "No matches". A SIDEWAYS scroll's edges
+are its frame's (`T-a-sideways-scroll-shadow-is-its-frames`).
 
 - Site: `src/core/sherpa-base.css`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
@@ -19096,3 +19097,37 @@ per act on a store not held (the bench, recorded on purpose).
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-band-is-a-value-of-its-field.test.mjs`
 - Site: `test/e2e/reforged-advanced-rows.spec.ts`
+
+### T-a-sideways-scroll-shadow-is-its-frames
+
+**A sideways scroll's two edges are drawn by a FRAME round the box** (Will,
+TODO 478). The box's own `::before` and `::after` are its top and bottom edges
+(`T-a-scroll-shadow-is-drawn-over-the-content`), and an element has no third
+pseudo-element. Nor can a sticky edge stand down the box's side: a sticky
+child cannot take the scrollport's height, and an absolute one scrolls away.
+
+So `.sherpa-scroll-frame` wraps the box: `position: relative`, and two EMPTY
+SPANS in it, `.sherpa-scroll-edge-start` and `-end`, absolute over the box's
+sides, `inset-block: 0`, 12px of gradient, `z-index: 5`. Spans, not the frame's
+own `::before` and `::after`: WebKit gives a scoped timeline to an element and
+not to a pseudo-element, which then ran on no timeline and showed its start
+edge for good. The box names its sideways scroll
+(`scroll-timeline: --sherpa-scroll-inline inline`) and the frame scopes the
+name (`timeline-scope`), so the frame's edges follow a scroll they are not
+inside: the start fades in over the first 16px, the end out over the last.
+With no sideways overflow the timeline is inactive and neither shows.
+Chromium and WebKit; Firefox 155 has no scroll timeline.
+
+**A box that pins columns says how far in its edges sit**: `--_scroll-inset-start`
+and `--_scroll-inset-end`. The grid always pins its first column (and the
+selection column), so its start edge stands past them — measured, in the same
+read as its column widths — and, with Actions, its end edge stands before that
+76px column. Content scrolls UNDER pinned columns, so that is where it hides.
+
+The frame takes the box's place in its layout (a flex column, `flex: 1 1 auto`,
+`min-block-size: 0`) and the box fills it, so a fit grid still measures the
+box. Frames: the grid's scroller, the app shell's Context, the dialog's body.
+
+- Site: `src/core/sherpa-base.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-scroll-shadow.spec.ts`

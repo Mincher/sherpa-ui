@@ -40,6 +40,13 @@
 }
 
 /* ── Regions: the bare header and footer are the regions sheet's. ── */
+/* Its frame takes the body's place in the card. TODO 478 */
+.body-edges {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
 .body {
   padding: var(--_pad);
   flex: 1 1 auto;

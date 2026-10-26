@@ -16,143 +16,163 @@
     "roots": [
       {
         "el": "div",
-        "class": "scroller sherpa-scroll-shadow",
-        "part": "scroller",
+        "class": "scroll-frame sherpa-scroll-frame",
         "children": [
           {
-            "el": "table",
-            "class": "grid",
-            "part": "grid",
+            "el": "span",
+            "class": "sherpa-scroll-edge-start",
+            "attrs": {
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "span",
+            "class": "sherpa-scroll-edge-end",
+            "attrs": {
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "scroller sherpa-scroll-shadow",
+            "part": "scroller",
             "children": [
               {
-                "el": "colgroup",
-                "class": "cols",
+                "el": "table",
+                "class": "grid",
+                "part": "grid",
                 "children": [
                   {
-                    "el": "col",
-                    "class": "select-col"
-                  },
-                  {
-                    "el": "col",
-                    "class": "actions-col"
-                  }
-                ]
-              },
-              {
-                "el": "thead",
-                "class": "head",
-                "part": "head",
-                "children": [
-                  {
-                    "el": "tr",
-                    "class": "head-row",
+                    "el": "colgroup",
+                    "class": "cols",
                     "children": [
                       {
-                        "el": "th",
-                        "class": "select-cell select-head",
-                        "attrs": {
-                          "scope": "col"
-                        },
+                        "el": "col",
+                        "class": "select-col"
+                      },
+                      {
+                        "el": "col",
+                        "class": "actions-col"
+                      }
+                    ]
+                  },
+                  {
+                    "el": "thead",
+                    "class": "head",
+                    "part": "head",
+                    "children": [
+                      {
+                        "el": "tr",
+                        "class": "head-row",
                         "children": [
                           {
-                            "el": "sherpa-select-checkbox",
-                            "class": "select-all",
+                            "el": "th",
+                            "class": "select-cell select-head",
                             "attrs": {
-                              "aria-label": "Select all rows"
+                              "scope": "col"
                             },
                             "children": [
                               {
-                                "el": "sherpa-menu",
+                                "el": "sherpa-select-checkbox",
+                                "class": "select-all",
                                 "attrs": {
-                                  "slot": "menu",
-                                  "data-align": "start"
+                                  "aria-label": "Select all rows"
                                 },
                                 "children": [
                                   {
-                                    "el": "button",
+                                    "el": "sherpa-menu",
                                     "attrs": {
-                                      "value": "page",
-                                      "type": "button"
-                                    }
-                                  },
-                                  {
-                                    "el": "button",
-                                    "attrs": {
-                                      "value": "all",
-                                      "type": "button"
-                                    }
-                                  },
-                                  {
-                                    "el": "button",
-                                    "attrs": {
-                                      "value": "none",
-                                      "type": "button"
-                                    }
+                                      "slot": "menu",
+                                      "data-align": "start"
+                                    },
+                                    "children": [
+                                      {
+                                        "el": "button",
+                                        "attrs": {
+                                          "value": "page",
+                                          "type": "button"
+                                        }
+                                      },
+                                      {
+                                        "el": "button",
+                                        "attrs": {
+                                          "value": "all",
+                                          "type": "button"
+                                        }
+                                      },
+                                      {
+                                        "el": "button",
+                                        "attrs": {
+                                          "value": "none",
+                                          "type": "button"
+                                        }
+                                      }
+                                    ]
                                   }
                                 ]
+                              }
+                            ]
+                          },
+                          {
+                            "el": "th",
+                            "class": "actions-cell actions-head",
+                            "attrs": {
+                              "scope": "col"
+                            },
+                            "children": [
+                              {
+                                "el": "span",
+                                "class": "actions-label sherpa-truncate"
                               }
                             ]
                           }
                         ]
                       },
                       {
-                        "el": "th",
-                        "class": "actions-cell actions-head",
-                        "attrs": {
-                          "scope": "col"
-                        },
+                        "el": "tr",
+                        "class": "filter-row",
                         "children": [
                           {
-                            "el": "span",
-                            "class": "actions-label sherpa-truncate"
+                            "el": "th",
+                            "class": "select-cell filter-spacer",
+                            "attrs": {
+                              "scope": "col",
+                              "aria-hidden": "true"
+                            }
+                          },
+                          {
+                            "el": "th",
+                            "class": "actions-cell filter-spacer",
+                            "attrs": {
+                              "scope": "col",
+                              "aria-hidden": "true"
+                            }
                           }
                         ]
                       }
                     ]
                   },
                   {
-                    "el": "tr",
-                    "class": "filter-row",
-                    "children": [
-                      {
-                        "el": "th",
-                        "class": "select-cell filter-spacer",
-                        "attrs": {
-                          "scope": "col",
-                          "aria-hidden": "true"
-                        }
-                      },
-                      {
-                        "el": "th",
-                        "class": "actions-cell filter-spacer",
-                        "attrs": {
-                          "scope": "col",
-                          "aria-hidden": "true"
-                        }
-                      }
-                    ]
+                    "el": "tbody",
+                    "class": "body",
+                    "part": "body"
                   }
                 ]
               },
               {
-                "el": "tbody",
-                "class": "body",
-                "part": "body"
-              }
-            ]
-          },
-          {
-            "el": "span",
-            "class": "cell-filter-home",
-            "children": [
-              {
-                "el": "sherpa-quick-filter",
-                "class": "cell-filter",
-                "attrs": {
-                  "data-icon-only": "",
-                  "data-no-value": "",
-                  "data-locked": ""
-                }
+                "el": "span",
+                "class": "cell-filter-home",
+                "children": [
+                  {
+                    "el": "sherpa-quick-filter",
+                    "class": "cell-filter",
+                    "attrs": {
+                      "data-icon-only": "",
+                      "data-no-value": "",
+                      "data-locked": ""
+                    }
+                  }
+                ]
               }
             ]
           }
