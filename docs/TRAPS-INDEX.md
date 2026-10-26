@@ -708,7 +708,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — data-grid
 
-## Charts (60)
+## Charts (61)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -728,6 +728,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-legend-toggle-is-a-filter](TRAPS.md#t-a-legend-toggle-is-a-filter) — chart-legend
 - [T-a-metric-condenses-by-wrapping](TRAPS.md#t-a-metric-condenses-by-wrapping) — metric
 - [T-a-metric-group-knows-it-is-stuck](TRAPS.md#t-a-metric-group-knows-it-is-stuck) — metric
+- [T-a-metric-stroke-takes-no-room](TRAPS.md#t-a-metric-stroke-takes-no-room) — metric
 - [T-a-narrow-chart-stacks-its-legend](TRAPS.md#t-a-narrow-chart-stacks-its-legend) — chart-legend, sherpa-chart-frame
 - [T-a-percentage-floor-needs-a-definite-parent](TRAPS.md#t-a-percentage-floor-needs-a-definite-parent) — barchart
 - [T-a-pie-slice-has-no-rounded-corner](TRAPS.md#t-a-pie-slice-has-no-rounded-corner) — radial-chart

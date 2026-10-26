@@ -372,9 +372,10 @@ test('the sparkline condenses away, and the tile keeps its height', async ({ pag
 /**
  * Figma binds BOTH a fill and a stroke on the Metric frame — `style-surface/base`
  * over `style-border/base`, 0.5px INSIDE, per-corner rounding. Only the fill was
- * coded, so every tile floated with no edge.
+ * coded, so every tile floated with no edge. INSIDE: four inset shadows, one per
+ * edge (TODO 444). TRAP T-a-metric-stroke-takes-no-room
  */
-test('the tile draws its Figma fill AND its border', async ({ page }) => {
+test('the tile draws its Figma fill AND its edge, inside', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-metric') as HTMLElement & {
       rendered?: Promise<void>;
@@ -386,28 +387,27 @@ test('the tile draws its Figma fill AND its border', async ({ page }) => {
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const cs = getComputedStyle(el);
+    // Each inset shadow: its colour, then its x and y offsets.
+    const edges = [...cs.boxShadow.matchAll(/(rgba?\([^)]*\))\s+(-?[\d.]+)px\s+(-?[\d.]+)px[^,]*inset/g)]
+      .map(([, colour, x, y]) => ({ colour, x: Number(x), y: Number(y) }));
     return {
       background: cs.backgroundColor,
-      borderStyle: cs.borderTopStyle,
-      borderColor: cs.borderTopColor,
       // All four corners rounded, as Figma binds each one.
       radii: [cs.borderTopLeftRadius, cs.borderTopRightRadius,
               cs.borderBottomRightRadius, cs.borderBottomLeftRadius],
-      // Every edge carries a width — none is zeroed by default.
-      widths: [cs.borderTopWidth, cs.borderRightWidth,
-               cs.borderBottomWidth, cs.borderLeftWidth],
+      edges,
     };
   });
 
   expect(r.background).toBe('rgb(255, 255, 255)');
-  expect(r.borderStyle).toBe('solid');
-  // style-border/base.
-  expect(r.borderColor).toBe('rgb(179, 179, 195)');
   expect(r.radii).toEqual(['4px', '4px', '4px', '4px']);
-  /* NOT asserted as 0.5px: getComputedStyle returns the USED value and every
-     engine rounds a sub-pixel border up to one device pixel.
-     TRAP T-a-sub-pixel-border-reads-back-as-1px */
-  for (const w of r.widths) expect(parseFloat(w)).toBeGreaterThan(0);
+  // Top, bottom, left, right: style-border/base, half a pixel in from each side.
+  expect(r.edges).toEqual([
+    { colour: 'rgb(179, 179, 195)', x: 0, y: 0.5 },
+    { colour: 'rgb(179, 179, 195)', x: 0, y: -0.5 },
+    { colour: 'rgb(179, 179, 195)', x: 0.5, y: 0 },
+    { colour: 'rgb(179, 179, 195)', x: -0.5, y: 0 },
+  ]);
 });
 
 /**
@@ -518,4 +518,21 @@ test('a metric\'s name is its composed Data Viz Header, with no rule, in one lay
   expect(r.before).toEqual({ tag: 'sherpa-data-viz-header', heading: 'Seats', icon: 'users', rule: 'none' });
   expect(r.after).toEqual({ heading: 'Seats sold', icon: null });
   expect(r.fits).toBe(true);
+});
+
+// Will, TODO 444 (A). TRAP T-a-metric-stroke-takes-no-room
+test('a metric is exactly one layout row tall: its edge is drawn inside and takes no room', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-metric') as MetricEl;
+    el.setAttribute('data-label', 'Seats');
+    el.setAttribute('data-value', '12,308');
+    el.setAttribute('data-delta', '+2%');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const cs = getComputedStyle(el);
+    return { height: el.getBoundingClientRect().height, border: cs.borderTopWidth, inset: cs.boxShadow.includes('inset') };
+  });
+  // The default density. Compact and comfortable wait for Figma's Metric there (TODO 444).
+  expect(r).toEqual({ height: 88, border: '0px', inset: true });
 });

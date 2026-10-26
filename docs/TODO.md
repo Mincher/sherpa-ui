@@ -125,7 +125,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
 | ✅ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
 | ✅ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
-| ❓ | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Cause found — ❓ A or B | bug |
+| 🚧 | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Cause found — ❓ A or B | bug |
 | ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
 | ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
 | ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
@@ -145,13 +145,13 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
 | ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
-| 🚧 | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
+| ✅ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | ✅ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
 | ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
 | ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
-| ⬜ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⏸️ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
 | ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
 | ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
 | ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
@@ -2208,7 +2208,7 @@ anywhere — while `pointermove` named each element. The bar follows
 `pointermove` now: every rest lights in ~200ms, every leave clears. The test
 rests three times. TRAP T-a-hovered-chip-previews-the-highlight.
 
-### `[ ]` 🚧 464 — REVIEW: the date chip and its logic
+### `[x]` ✅ 464 — REVIEW: the date chip and its logic
 
 Will, 2026-10-26: *"I think, in general, the date chip and it's logic just need
 a good thourough review, clean up, and correction."* His bugs:
@@ -2253,7 +2253,10 @@ the Date, so Reset to default took it off and the page never read as at default.
 row's unit select had no options yet when the chip read it. The row remembers
 its unit now, as it does its op.
 
-❓ **D2 — repro for the rest.** "Erratic" active state, the toggle glitch that
+**Closed, 2026-10-26** — Will: *"forget it for now"* for the rest (the toggle
+glitch, "range defaults to a range"); reopen with steps if it comes back.
+
+~~❓ **D2 — repro for the rest.**~~ "Erratic" active state, the toggle glitch that
 clears the value, and "range defaults to a range" did not show in the paths
 above. Which page, chip and clicks?
 
@@ -2335,6 +2338,8 @@ Seen 2026-10-26 in two full Demos runs: `reforged-settings-overlay:55`
 (leaving Settings by Back, or by Esc, restores the Context and its View) times
 out in WebKit and passes on retry. Find what it waits on.
 
+**Parked, 2026-10-26** — Will: *"ok for now"*.
+
 ### `[x]` ✅ 469 — BUG: Advanced rows rule out no value
 
 Will, 2026-10-26: *"In advanced filters EQUALS And EQUALS compound conditions
@@ -2395,7 +2400,7 @@ keeps its heading, "Filters". The classic panel is legacy and keeps its own.
 **✅ Done 2026-10-26,** in the bar and the column. "Edit" is narrower, so a
 test that folds chips at 300px now folds them at 220.
 
-### `[ ]` ❓ 444 — BUG: a metric is taller than its grid row
+### `[ ]` 🚧 444 — BUG: a metric is taller than its grid row
 
 Found in 402 (2026-10-26). `sherpa-metric.css` says the tile is exactly one
 grid row. Measured alone in the harness, at 1x and 2x: 89 for an 88 row, 79
@@ -2412,7 +2417,17 @@ the value line (52 / 60) do not follow the row (76 / 104).
 ❓ **A (my pick):** draw the edge INSIDE, as Figma's inside stroke (it takes
 no room), so the default is exactly 88; for compact and comfortable, take
 Figma's Metric at those densities. **B:** leave it: a held row clips 1–5px
-of padding.
+of padding. **Will, 2026-10-26: A.**
+
+**Part 1, done.** The edge is drawn inside — four inset shadows, one per edge —
+and the padding is the full 4 / 8, so at the default density the tile is
+exactly 88. TRAP `T-a-metric-stroke-takes-no-room`; `reforged-metric`.
+
+❓ **Part 2, waits for Figma.** On its own the tile is 78 in compact (row 76)
+and 108 in comfortable (row 104): its value-and-trend block (h1 line + gap +
+small line) is 2–4px taller than those rows leave it; a held row clips that.
+A says take Figma's Metric at those densities — the Desktop Bridge plugin was
+not connected (2026-10-26). Open it, and this is a light pull.
 
 ### `[x]` ✅ 441 — FEATURE: Highlight matches
 

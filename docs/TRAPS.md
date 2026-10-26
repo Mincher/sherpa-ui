@@ -13084,7 +13084,6 @@ throwaway element if in doubt: a div with 0.5/0.25/1/2px edges reports
 
 - Site: `src/core/sherpa-grouping.css`
 - Site: `test/e2e/reforged-grouping.spec.ts`
-- Site: `test/e2e/reforged-metric.spec.ts`
 
 ### T-an-empty-chip-opens-its-menu
 
@@ -19311,6 +19310,19 @@ against `/`. Its tests are in its own project.
 
 - Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
+
+### T-a-metric-stroke-takes-no-room
+
+**A metric's 0.5px edge is drawn INSIDE, as inset shadows, not a border** —
+Will, TODO 444 (A). Figma's stroke is inside and takes no room, and the tile is
+one layout-grid row tall (88). Chromium draws a 0.5px border 1px wide, at 1x and
+2x, so a padding that gave back 0.5 per side left the tile 89 tall, and a held
+row clipped it. Four inset shadows — one per edge, so a grouped run can still
+zero a side through `--sherpa-border-*` — take no room, and the padding is the
+full 4 / 8.
+
+- Site: `src/components/sherpa-metric/sherpa-metric.css`
+- Site: `test/e2e/reforged-metric.spec.ts`
 
 ### T-a-page-scope-starts-with-its-answers
 

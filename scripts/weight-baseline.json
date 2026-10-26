@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 934717,
+    "js": 934430,
     "files": 112,
     "fetched": 206276
   },
@@ -185,7 +185,7 @@
     "fetched": 0
   },
   "components/sherpa-metric/sherpa-metric.js": {
-    "js": 250031,
+    "js": 249744,
     "files": 15,
     "fetched": 0
   },
@@ -350,7 +350,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1114902,
+    "js": 1114615,
     "files": 155,
     "fetched": 206276
   }
