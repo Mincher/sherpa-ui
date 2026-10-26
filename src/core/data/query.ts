@@ -147,6 +147,7 @@ export type QueryRequest =
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
   | { scope?: string; field: string; highlight: boolean }
   | { scope?: string; field: string; preview: boolean }
+  | { scope?: string; order: readonly string[] }
   | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —

@@ -2929,6 +2929,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-reorder",
+          "valueSet": "v"
+        },
+        {
           "name": "data-reset-on-populate",
           "valueSet": "v"
         },

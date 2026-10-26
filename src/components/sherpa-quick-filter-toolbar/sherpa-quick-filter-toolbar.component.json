@@ -836,6 +836,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-reorder",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-reset-on-populate",
       "type": "boolean",
       "observed": true,
@@ -1025,7 +1033,7 @@
       "composed": true,
       "detail": {
         "active": "string[]",
-        "request": "QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; }",
+        "request": "QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; } | { order: string[]; }",
         "scope": "'bar'",
         "values": "Record<string, string[]>"
       }

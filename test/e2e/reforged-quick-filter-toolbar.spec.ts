@@ -2450,7 +2450,7 @@ test('a Reset leaves a chip the View holds as it is, and empties the rest', asyn
 /* Will, 2026-10-20: a chip whose every pick the filters before it rule out STAYS
    active — never greyed — so its reader sees it, opens its menu, clears it or
    turns it off; its menu greys the ruled-out rows. TRAP T-a-ruled-out-value-is-greyed */
-test('a chip whose every pick is ruled out stays active, toggles, and its menu greys the picks', async ({ page }) => {
+test('a chip whose every pick is ruled out stays active, and its menu greys the picks: one may be let go, never taken back', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bar = await window.__mount<HTMLElement & {
       drawPresent(p: unknown): void; setChipValues(id: string, v: string[]): void; report(): void;
@@ -2471,22 +2471,21 @@ test('a chip whose every pick is ruled out stays active, toggles, and its menu g
     probe.remove();
     const before = { greyed: chip.hasAttribute('data-unavailable'), on: chip.current,
       row: { greyed: row.hasAttribute('data-unavailable'), ticked: row.querySelector('input')!.checked, says: row.getAttribute('title'),
-        // Its box in the inactive mode, ticked too, and not interactive (Will, 2026-10-20).
+        // Its box in the inactive mode, ticked too (Will, 2026-10-20) — and, ticked, it may be let go (TODO 462).
         inactiveBox: getComputedStyle(row.querySelector('input')!).accentColor === inactive,
         refused: row.querySelector('input')!.disabled } };
-    // A press on the row leaves it ticked.
+    // A press on the row lets it go…
     row.click();
     await window.__settled();
-    const stillTicked = row.querySelector('input')!.checked;
-    // A press on its body turns it off, as any chip.
-    chip.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    const letGo = !row.querySelector('input')!.checked;
+    // …and a second cannot take it back.
+    row.click();
     await window.__settled();
-    return { before, stillTicked, off: !chip.current };
+    return { before, letGo, back: row.querySelector('input')!.checked, refused: row.querySelector('input')!.disabled };
   });
   expect(r.before).toEqual({ greyed: false, on: true,
-    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true, refused: true } });
-  expect(r.stillTicked).toBe(true);
-  expect(r.off).toBe(true);
+    row: { greyed: true, ticked: true, says: 'Limited by the filters before it: no matches.', inactiveBox: true, refused: false } });
+  expect(r).toMatchObject({ letGo: true, back: false, refused: true });
 });
 
 test('None in a Group or Sort menu clears it: the chip goes off with no column, and a sort asks to CLEAR (TODO 407)', async ({ page }) => {

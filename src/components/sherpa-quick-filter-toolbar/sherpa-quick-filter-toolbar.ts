@@ -33,6 +33,7 @@ import {
 import type { FilterSet, OrganiseColumn, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
+import { dragToOrder } from '../../core/ui/drag-order.js';
 import { ToolbarColumn } from './toolbar-column.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -104,6 +105,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-highlight-field': { type: 'string', kind: 'behaviour' },
     // A chip hovered previews what it matches: the app's choice. Will, TODO 449
     'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
+    // A chip, or a section, is dragged into its place in the query: the app's choice. Will, TODO 452
+    'data-reorder': { type: 'boolean', kind: 'style' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -468,7 +471,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }, HOVER_WAIT);
   };
 
-  /** Out of the bar: the preview goes. Within it, the next chip's pointerover decides. */
+  /** Out of the bar: the preview goes. Within it, the next pointermove decides. */
   #onLeaveBar = (event: Event): void => {
     const to = (event as PointerEvent).relatedTarget as Node | null;
     if (!to || (to !== this && !this.contains(to))) this.#leaveChip();
@@ -563,7 +566,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     this.addEventListener('menu-row-remove', this.#onRowRemove);
     this.addEventListener('menu-highlight-change', this.#onHighlight);
-    this.addEventListener('pointerover', this.#onHoverChip);
+    // MOVE, not over: inside a bar the browser sends one pointerover, then none. TODO 463
+    this.addEventListener('pointermove', this.#onHoverChip);
     this.addEventListener('pointerout', this.#onLeaveBar);
     this.addEventListener('menu-discard', this.#onMenuDiscard);
     this.addEventListener('menu-apply', this.#onMenuApply);
@@ -579,6 +583,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     this.#observer = new ResizeObserver(this.#onResize);
     if (bar) this.#observer.observe(bar);
+  }
+
+  override onConnect(): void {
+    // Along the bar, or down a column. TRAP T-a-filter-is-dragged-into-its-place
+    dragToOrder(this, {
+      axis: this.dataset['orientation'] === 'portrait' ? 'y' : 'x',
+      enabled: () => this.hasAttribute('data-reorder'),
+      items: () => this.#chips().filter((c) => !c.hasAttribute('data-persistent')
+        && !c.hasAttribute('data-folded-away') && !c.hasAttribute('data-superseded')),
+      moved: (order) => this.#askOrder(order),
+      signal: this.signal,
+    });
+  }
+
+  /** Ask for the bar's fields in this order: the query's order, each count's. */
+  #askOrder(order: readonly HTMLElement[]): void {
+    const fields = order.map((c) => this.#fieldFor(c.dataset['id'] ?? '')).filter((f): f is string => f != null);
+    this.emit('quick-filter-change', { scope: 'bar', request: { order: fields }, active: this.active, values: this.values });
   }
 
   override onDisconnect(): void {

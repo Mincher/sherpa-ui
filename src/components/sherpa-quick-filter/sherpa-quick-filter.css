@@ -364,8 +364,9 @@
 }
 
 /* ── Disabled — the INACTIVE mode, pinned in state-pins.yaml; never opacity ── */
+/* Ruled out and ON, it can still be let go. Will, TODO 462 */
 :host([disabled]) :is(.body, .caret),
-:host([data-unavailable]) :is(.body, .caret) {
+:host([data-unavailable]:not([data-current])) :is(.body, .caret) {
   cursor: not-allowed;
   pointer-events: none;
 }

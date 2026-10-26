@@ -8140,6 +8140,13 @@
             },
             {
               "kind": "field",
+              "name": "reorderFilters",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8624,6 +8631,12 @@
             {
               "name": "data-remote",
               "description": "its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-reorder",
               "type": {
                 "text": "boolean"
               }
@@ -9158,7 +9171,7 @@
               "name": "quick-filter-change",
               "description": "One reader act, as a request: a field's answer, an on or off, the Switch, Clear all.",
               "type": {
-                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; }; scope: 'bar'; values: Record<string, string[]> }>"
+                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; } | { order: string[]; }; scope: 'bar'; values: Record<string, string[]> }>"
               }
             },
             {

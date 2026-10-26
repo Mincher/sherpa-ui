@@ -319,6 +319,18 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: Single Apply & Discard. */
   #singleApply = true;
 
+  /** A reader drags a chip, or a panel section, into its place in the query.
+   *  The app sets it, from its session. Will, TODO 452 */
+  get reorderFilters(): boolean {
+    return this.#reorder;
+  }
+  set reorderFilters(on: boolean) {
+    this.#reorder = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: drag filters into a new order. */
+  #reorder = false;
+
   /** Every scope the page declares waits for its bar's Apply — not only the
    *  View's. The app sets it, from its session. Will, TODO 436.
    *  TRAP T-apply-and-discard-wait-for-a-change */
@@ -354,6 +366,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-highlight-matches', this.#highlight);
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     el.toggleAttribute('data-field-apply', !this.#singleApply);
+    el.toggleAttribute('data-reorder', this.#reorder);
   }
   /** The app's choice, for every source. */
   #limit = false;

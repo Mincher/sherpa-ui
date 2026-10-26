@@ -317,7 +317,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (173)
+## Filters (174)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -348,6 +348,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-panel, quick-filter-toolbar
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu, filter-panel
+- [T-a-filter-is-dragged-into-its-place](TRAPS.md#t-a-filter-is-dragged-into-its-place) — quick-filter-toolbar
 - [T-a-filter-menu-has-two-modes](TRAPS.md#t-a-filter-menu-has-two-modes) — quick-filter
 - [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — filter-panel, quick-filter-toolbar
 - [T-a-hovered-chip-previews-the-highlight](TRAPS.md#t-a-hovered-chip-previews-the-highlight) — quick-filter-toolbar
@@ -768,7 +769,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (117)
+## SherpaElement and the shared sheets (118)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -783,6 +784,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
 - [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — sherpa-element, templater
 - [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-field
+- [T-a-filter-is-dragged-into-its-place](TRAPS.md#t-a-filter-is-dragged-into-its-place) — drag-order
 - [T-a-flag-brings-the-base-methods](TRAPS.md#t-a-flag-brings-the-base-methods) — sherpa-element
 - [T-a-gauge-composes-the-ring](TRAPS.md#t-a-gauge-composes-the-ring) — shared-constants
 - [T-a-grid-group-computes-its-own-position](TRAPS.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping

@@ -651,11 +651,6 @@
     },
     {
       "$type": "state",
-      "name": "unavailable",
-      "selector": ":host([data-unavailable])"
-    },
-    {
-      "$type": "state",
       "name": "key",
       "selector": ":host([data-type=\"key\"])"
     },

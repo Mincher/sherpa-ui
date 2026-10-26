@@ -748,10 +748,11 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#openMenu();
   };
 
-  /** Ruled out: nothing to press, on or off — inactive is not interactive (Will,
-   *  2026-10-20). A chip with a menu still opens it. */
+  /** Ruled out and OFF: nothing to press — inactive is not interactive (Will,
+   *  2026-10-20). Ruled out and ON, a press lets it go, once (Will, TODO 462).
+   *  A chip with a menu still opens it. */
   #refused(): boolean {
-    return this.hasAttribute('data-unavailable');
+    return this.hasAttribute('data-unavailable') && !this.hasAttribute('data-current');
   }
 
   /** A chart legend's row. TRAP T-a-legend-row-is-a-key-chip */
@@ -1077,7 +1078,8 @@ export class SherpaQuickFilter extends SherpaElement {
     event.stopPropagation();
     // Inactive is not interactive. TRAP T-a-ruled-out-value-is-greyed
     const menu = this.#fieldMenu();
-    if (!menu || one.hasAttribute('data-unavailable')) return;
+    // …but one still ON may be let go. TODO 462
+    if (!menu || (one.hasAttribute('data-unavailable') && !one.hasAttribute('data-current'))) return;
     const value = one.dataset['value'] ?? '';
     const kids = (menu.itemData ?? []).filter((i) => i.parent === value).map((i) => i.value);
     const mine = new Set([value, ...kids]);

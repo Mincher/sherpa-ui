@@ -83,6 +83,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
+| `data-reorder` | boolean |  |  |
 | `data-reset-on-populate` | boolean |  |  |
 | `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
 | `data-saved-menu` | boolean | `false` | the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's |
@@ -148,7 +149,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined \| { field: string; highlight: boolean; } \| { field: string; preview: boolean; }; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
+| `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined \| { field: string; highlight: boolean; } \| { field: string; preview: boolean; } \| { order: string[]; }; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |

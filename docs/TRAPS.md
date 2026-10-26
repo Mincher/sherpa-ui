@@ -8067,6 +8067,13 @@ ruled-out value chip. A value still PICKED is never hidden, so it can be let
 go. A portrait section's value chips are marked by `limitField` too — it once
 marked only an unoffered one, and no rule hid even that (TODO 448).
 
+**Ruled out and still ON, it may be LET GO, never taken back** (Will, TODO
+462; it refused every press until then). A ticked row's box stays enabled and
+a menu marks its rows again after each tick, so the one let go is refused —
+and, hiding, goes — at once; an on value chip, or a chip whose every pick is
+ruled out, takes one press to go off (`#refused()`, and no `pointer-events:
+none` while `data-current`).
+
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
@@ -19299,9 +19306,12 @@ sets the page to 1 and loads: every hover sent the grid back to page 1. A mark
 compiles again and pushes each component its test; no row moves, so nothing
 loads.
 
-A pointer moving inside the bar is retargeted to the HOST for a host
-listener's `relatedTarget`, so the next chip's `pointerover` decides a move
-between chips; only a `pointerout` to outside the bar ends it there.
+**It follows `pointermove`, never `pointerover`** (TODO 463). Inside a bar
+Chromium sent ONE `pointerover` — the first element entered — and none after,
+setting on or off, with no pointer capture anywhere, while `pointermove` kept
+naming each element under the pointer. Hovered by `pointerover`, a preview came
+once, late or never. A `pointerout` to outside the bar still fires, and ends
+it; a host listener's `relatedTarget` inside the bar is the HOST itself.
 
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/data-source.ts`
@@ -19332,3 +19342,23 @@ chip — so the pair stayed hidden until a full restyle.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-a-filter-is-dragged-into-its-place
+
+**A chip is dragged along its bar, or a panel section down its column, into
+its place in the query** (Will, TODO 452; `provider.reorderFilters` →
+`data-reorder` on each bar). `core/ui/drag-order.ts` wires it: a press that
+moves 4px is a drag, the item follows by `--_drag-x` / `--_drag-y`, the item it
+would land beside is `data-drop="before|after"`, and the click the release
+makes is eaten, so a drag never toggles the chip. Alt and an arrow move a
+focused item one place: no pointer needed. The View chip, a folded chip and one
+superseded stay where they are.
+
+The bar asks `{ order: [...fields] }`; the QueryContext's `order()` puts those
+fields in that order in the places they hold, in BOTH copies (an order is no
+answer to Apply), and tells `order` — not `hold`. A `hold` that moves nothing
+is also a field added back, and a re-walk on every such hold cost the bench 13
+scans; an `order` re-walks alone, as each count is taken in that order.
+
+- Site: `src/core/ui/drag-order.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`

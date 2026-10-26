@@ -423,6 +423,19 @@ sherpa-accordion.scope::part(actions) {
 /* A section's ⋮ offers Reset only once there is something to clear. */
 .chips > .chip:not([data-current]) > .field-more .more-item[value="clear"] { display: none; }
 
+/* DRAGGED into its place, where the app lets a reader: it follows the pointer,
+   and a bar marks the gap it would land in. Will, TODO 452 */
+.chips > .chip[data-dragging] {
+  position: relative;
+  z-index: 2;
+  translate: var(--_drag-x, 0px) var(--_drag-y, 0px);
+  user-select: none;
+}
+.chips > .chip[data-drop="before"] { box-shadow: calc(-1 * var(--sherpa-display-mode-space-2xs, 4px)) 0 0 0 var(--sherpa-style-indicator-accent, #3b4ccd); }
+.chips > .chip[data-drop="after"] { box-shadow: var(--sherpa-display-mode-space-2xs, 4px) 0 0 0 var(--sherpa-style-indicator-accent, #3b4ccd); }
+:host([data-orientation="portrait"]) .chips > .chip[data-drop="before"] { box-shadow: 0 calc(-1 * var(--sherpa-display-mode-space-2xs, 4px)) 0 0 var(--sherpa-style-indicator-accent, #3b4ccd); }
+:host([data-orientation="portrait"]) .chips > .chip[data-drop="after"] { box-shadow: 0 var(--sherpa-display-mode-space-2xs, 4px) 0 0 var(--sherpa-style-indicator-accent, #3b4ccd); }
+
 /* Found by the column's search: what holds no match goes. So does a value the
    chain does not offer, or, hiding unmatched, one it rules out. TODO 448 */
 .chips > .chip[data-no-matches],

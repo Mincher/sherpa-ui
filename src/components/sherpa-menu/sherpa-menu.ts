@@ -1452,9 +1452,9 @@ export class SherpaMenu extends SherpaElement {
       const ruled = given.get(box.value)?.available === false || why === 'unmatched';
       row?.toggleAttribute('data-removed', (why === 'unoffered' || (hides && ruled)) && !box.checked);
       const out = ruled || why === 'unoffered';
-      // INACTIVE is not interactive, ticked or not: Clear, Remove or the chip's off let it go (Will, 2026-10-20).
+      // INACTIVE refuses a tick ON; one still ticked may be let go, once (Will, TODO 462).
       // Only ever undo its OWN refusal.
-      if (out) box.disabled = true;
+      if (out && !box.checked) box.disabled = true;
       else if (row?.hasAttribute('data-unavailable')) box.disabled = false;
       row?.toggleAttribute('data-unavailable', out);
       const said = box.getAttribute('aria-description');
@@ -2193,6 +2193,8 @@ export class SherpaMenu extends SherpaElement {
     }
     this.#syncSelectAll();
     this.#followPicks();
+    // A row let go that is ruled out is refused now — and goes, hiding them. TODO 462
+    this.#markPresent();
     this.#report();
   };
 

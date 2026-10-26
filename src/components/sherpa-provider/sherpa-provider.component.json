@@ -92,7 +92,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, switchable, contextLabel, sections, highlight, highlightOnHover, singleApply, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, switchable, contextLabel, sections, highlight, highlightOnHover, singleApply, reorderFilters, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -286,6 +286,11 @@
         },
         {
           "name": "singleApply",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "reorderFilters",
           "type": "boolean",
           "access": "read-write"
         },

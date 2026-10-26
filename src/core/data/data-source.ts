@@ -1038,6 +1038,12 @@ export class DataSource extends EventTarget {
       case 'recompose':
         this.#recompose();
         return;
+      case 'order':
+        // No row moves, but each count is counted in this order. TODO 452
+        if (this.#loaded) this.#walkSoon();
+        this.#binding.drawBarsBehind(change.scope);
+        this.#binding.drawScopesSoon();
+        return;
       case 'mark':
         // A chip hovered moves no row: mark it, and load nothing. TRAP T-a-hovered-chip-previews-the-highlight
         this.#compileNow();

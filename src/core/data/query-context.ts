@@ -40,6 +40,7 @@
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .suspend — Switch answers off and on, keeping each: one field's, or every answer in a scope.
  * - .hold — Say what a scope holds now.
+ * - .order — Put some of a scope's fields in this order; the rest keep their places.
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .release — A scope lets ONE field go.
  * - .take — A scope TAKES fields: down from the View, or up from a chart with its answer.
@@ -90,6 +91,8 @@ export type QueryChange =
   | { kind: 'recompose' }
   /** Only the highlight's driver moved: mark again, and load nothing. TODO 449 */
   | { kind: 'mark' }
+  /** Only a scope's ORDER moved: count again in it. TODO 452 */
+  | { kind: 'order'; scope: string }
   | { kind: 'commit' }
   /** Each field is drawn its answer; then a scope's bars, or each control's pending. */
   | { kind: 'drawn'; fields: string[]; bars?: string; pending?: true }
@@ -614,6 +617,22 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'hold', scope: name, moved });
   }
 
+  /** Put some of a scope's fields in this order, in the places they hold; the
+   *  rest keep theirs. A reader dragged one. Will, TODO 452 */
+  order(name: string, fields: readonly string[]): void {
+    const holds = this.scope(name);
+    const named = new Set(fields.filter((f) => holds.includes(f)));
+    const next = [...named];
+    const ordered = holds.map((f) => (named.has(f) ? next.shift()! : f));
+    if (ordered.every((f, i) => f === holds[i])) return;
+    // In both copies: an order is no answer to Apply.
+    for (const query of new Set([this.#live.applied, this.#live.draft])) {
+      const entry = query.scopes[name];
+      if (entry) entry.holds = ordered.filter((f) => entry.holds.includes(f));
+    }
+    this.#tell({ kind: 'order', scope: name });
+  }
+
   /** The View let go of a field: its home below gets back the answer it kept
    *  — or clears, for `{}` — and no scope keeps one for it now. */
   #giveBack(field: string): void {
@@ -1062,7 +1081,7 @@ export class QueryContext extends EventTarget {
       switch (change.kind) {
         case 'write': case 'select': return { fields: [change.field], scopes: [] };
         case 'drawn': return { fields: change.fields, scopes: [] };
-        case 'offer': case 'hold': return { fields: [], scopes: [change.scope] };
+        case 'offer': case 'hold': case 'order': return { fields: [], scopes: [change.scope] };
         case 'move': return { fields: [], scopes: change.scopes };
         case 'arranged': return { fields: [], scopes: this.scopes };
         // An Apply is a change to the page too: what keeps the Query hears it. TODO 406

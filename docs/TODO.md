@@ -133,7 +133,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
 | ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
-| ⬜ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
+| ✅ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
 | ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ⬜ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
 | ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
@@ -143,6 +143,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
 | ⬜ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
+| ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
+| ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
+| ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1997,12 +2000,22 @@ Settings › Filtering › Behaviour › "Single Apply & Discard". Test: Demos
 `reforged-view-chips` (a menu's Apply, a section's Discard and Apply; 3
 engines). TRAP T-each-field-can-apply-on-its-own.
 
-### `[ ]` ⬜ 452 — FEATURE: drag to reorder the query
+### `[x]` ✅ 452 — FEATURE: drag to reorder the query
 
 Will, 2026-10-26: *"A user should be able to drag a chip left/right, in a
 filter toolbar, to reorder it's position in the query. In a filter panel, they
 should be able to drag a section up/down to achieve the same. Enabling this
 should be a filtering setting."*
+
+**✅ Done 2026-10-26.** `provider.reorderFilters` (off by default) → each bar
+`data-reorder`. A chip drags along its bar, a panel section down its column;
+the item follows the pointer, a line marks where it lands, and Alt with an
+arrow moves a focused one. It asks `{ order }`; `QueryContext.order()` puts the
+fields in that order and tells a new `order` change, which re-counts. Demos:
+Settings › Filtering › Behaviour › "Drag filters into a new order". Tests:
+Demos `reforged-filter-layouts` (a chip, Alt+Arrow, a section; 3 engines).
+TRAP T-a-filter-is-dragged-into-its-place. The look is basic: the landing line
+is cut off before the bar's first chip.
 
 ### `[ ]` ⬜ 453 — FEATURE: the App Context, a setting
 
@@ -2066,6 +2079,48 @@ controls. This should overall reduce the height of the App Header
 considerably. A gap of 16 or 24px between the rows would probably be best."*
 And: *"if the view & context row could vertically line up with the Search
 icon/input in the nav that would be ideal."*
+
+### `[x]` ✅ 462 — BUG: an on filter ruled out can be turned off, not on
+
+Will, 2026-10-26: *"If a filter is already active, but becomes invalid due to
+context changes, then the user should be able to deactivate it, via clicking
+the relevant UI, but not be able to reactivate it (if limit filters is on).
+These active but invalid filters also shouldn't be hidden until deactivated if
+'hide invalid filters' is on."* Today a ticked ruled-out row, or an on value
+chip, refuses ANY press (TODO 362).
+
+**✅ Done 2026-10-26.** A ticked ruled-out row keeps its box enabled; the menu
+marks its rows again after each tick, so once let go it is refused, and hidden
+where Hide is on. An on value chip, or a chip whose every pick is ruled out,
+goes off at one press and stays refused after. Hide already kept a picked row
+and value. Tests: Demos `reforged-limit-options` (a menu row, a panel value
+chip), sherpa-ui `reforged-quick-filter-toolbar`.
+
+### `[x]` ✅ 463 — BUG: Highlight on hover fires at random, then never again
+
+Will, 2026-10-26: *"HIghlight on hover seems to trigger randomly, or delayed
+after a hover by a considerable time, and then seems to stop working after
+that first trigger."*
+
+**✅ Done 2026-10-26.** Measured with a real pointer on Records: the first rest
+lit 13 rows in ~200ms, and none after. Inside a bar Chromium sent ONE
+`pointerover` and none after — with the setting off too, and no pointer capture
+anywhere — while `pointermove` named each element. The bar follows
+`pointermove` now: every rest lights in ~200ms, every leave clears. The test
+rests three times. TRAP T-a-hovered-chip-previews-the-highlight.
+
+### `[ ]` ⬜ 464 — REVIEW: the date chip and its logic
+
+Will, 2026-10-26: *"I think, in general, the date chip and it's logic just need
+a good thourough review, clean up, and correction."* His bugs:
+
+- The calendar chip's active state is erratic.
+- A date chip set to 'range' defaults to a range.
+- The number input of the 'Last…' row is narrower than its row, its stepper
+  and its select.
+- Demos: the View/App Context's date chips default to an Advanced filter,
+  'Last 12 months', active.
+- Toggling the date chip's active state glitches, and can clear its value.
 
 ### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
 
