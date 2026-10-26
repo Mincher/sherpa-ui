@@ -62,7 +62,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
 | ⬜ | 0zi | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
 | ⬜ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later) | filters |
-| ⬜ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
+| ✅ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ✅ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
@@ -3871,6 +3871,18 @@ divider. While a scope is switched off, its sort and group are kept but not in
 force (`arrangementOf`), and the flip arranges the rows again; its search stays.
 Tests: `the-switch-suspends-the-arrangement` (node); the bar, panel and grid
 specs pass. **Will:** look at Demos Records' data bar: Switch, then Group.
+
+### `[x]` ✅ 381 — BUG: a donut's and a gauge's segment tips
+
+Will: *"a donut's (radial) and a gauge's segment tooltips do not show on hover."*
+
+**Found, 2026-10-26:** the FIRST segment hovered showed its tip; a move to the
+next showed none and left the first up — in all three engines. A pointer move
+between two elements of one shadow root never reaches the document (both ends
+are the same host outside it), and the tips were heard on the document alone.
+**Done:** every component's root hears them too (`liftTipsIn`). It fixes any
+two tips in one root — a legend's items too. TRAP `T-a-tip-lives-in-the-top-layer`.
+Test: `reforged-button-tip`.
 
 ### `[x]` ✅ 383 — UX: one "Filter actions" button
 

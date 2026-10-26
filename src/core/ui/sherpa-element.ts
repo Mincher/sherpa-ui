@@ -19,7 +19,7 @@
 
 import { hasIcon, iconsLoading, renderIcon, upgradeIcons } from './render-icon.js';
 import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
-import { liftTips } from './top-layer-tips.js';
+import { liftTips, liftTipsIn } from './top-layer-tips.js';
 import {
   adoptPageSheet, cachedTemplates, checkOwnTemplate, familyBody, filesFor, loadFamily, loadSheets, loadTemplates, onReload,
   reloadFiles, stampable, templateBody,
@@ -406,6 +406,8 @@ export abstract class SherpaElement extends Base {
     super();
     const own = this.constructor as typeof SherpaElement;
     this.root = this.attachShadow({ mode: 'open', delegatesFocus: own.delegatesFocus });
+    // Its own root hears its tips too. TRAP T-a-tip-lives-in-the-top-layer
+    liftTipsIn(this.root);
     if (Object.keys(own.aria).length) Object.assign(this.internals, own.aria);
     this.rendered = new Promise((res) => (this.#resolveRendered = res));
     const Ctor = new.target as typeof SherpaElement;

@@ -17608,6 +17608,15 @@ sheet. Before this, `ANCHOR` never matched a segment, so those tips were never
 lifted at all and a card could clip them (TODO 307). The cost: a re-render under
 a still pointer shows no tip until the pointer moves.
 
+**Each shadow root hears them too** (TODO 381). A `pointerover`, `pointerout`,
+`focusin` or `focusout` whose target and related target are in ONE shadow root
+stops at that root: outside it, both ends are the same host, so the browser
+dispatches nothing further. Heard on the document alone, the first segment
+hovered showed its tip, and a move to the next showed none and left the first
+up — in all three engines. So every component's root gets the same four
+listeners (`liftTipsIn`); an event that reaches both is shown once, as the lift
+checks `:popover-open` first.
+
 `sherpa-tooltip` lifts its own bubble: `T-a-tooltip-is-always-in-the-top-layer`.
 
 - Site: `src/core/ui/top-layer-tips.ts`

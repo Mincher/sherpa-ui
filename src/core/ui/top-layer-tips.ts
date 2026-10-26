@@ -7,6 +7,7 @@
  * TRAP T-a-tip-lives-in-the-top-layer
  *
  * Map:
+ * - liftTipsIn — …and in one shadow root: a move between two of its elements never reaches the document.
  * - liftTips — Hear every hover and focus in the document, once, and lift the tip concerned.
  */
 
@@ -49,6 +50,16 @@ const drop = (event: Event): void => {
     if (tip.matches(':popover-open') && !anchor.matches(':hover, :focus-visible')) tip.hidePopover();
   });
 };
+
+/** …and in one shadow root. A hover or focus that moves between two of its
+ *  elements never reaches the document: the browser stops an event whose two
+ *  ends are one host. TODO 381. TRAP T-a-tip-lives-in-the-top-layer */
+export function liftTipsIn(root: ShadowRoot): void {
+  root.addEventListener('pointerover', lift, { capture: true, passive: true });
+  root.addEventListener('pointerout', drop, { capture: true, passive: true });
+  root.addEventListener('focusin', lift, true);
+  root.addEventListener('focusout', drop, true);
+}
 
 /** Hear every hover and focus in the document, once, and lift the tip concerned. */
 export function liftTips(): void {

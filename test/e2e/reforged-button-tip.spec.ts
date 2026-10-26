@@ -119,3 +119,35 @@ test('a tip is lifted to the top layer, so a box that clips its button does not 
   await expect.poll(() => page.evaluate(() =>
     document.getElementById('bars')!.shadowRoot!.querySelector('.bar-col .sherpa-tip')!.matches(':popover-open'))).toBe(true);
 });
+
+/* A move from one segment to the next never reaches the document: both ends are
+   in the chart's root. Its root hears it. TODO 381 · TRAP T-a-tip-lives-in-the-top-layer */
+test('moving from one donut slice to the next shows the next slice\'s tip, and drops the first', async ({ page }) => {
+  await page.evaluate(async () => {
+    const chart = document.createElement('sherpa-radial-chart') as HTMLElement & { rendered: Promise<void>; populate(d: unknown): void };
+    chart.id = 'donut';
+    chart.style.cssText = 'inline-size: 320px; block-size: 320px';
+    document.getElementById('root')!.replaceChildren(chart);
+    await chart.rendered;
+    chart.populate([{ label: 'Free', value: 3 }, { label: 'Pro', value: 3 }, { label: 'Team', value: 3 }]);
+    await window.__settled();
+  });
+  // A point well inside each slice.
+  const inside = await page.evaluate(() => {
+    const sr = document.getElementById('donut')!.shadowRoot!;
+    return [...sr.querySelectorAll<SVGPathElement>('path.chart-segment')].map((path) => {
+      const r = path.getBoundingClientRect();
+      for (let i = 1; i < 10; i++) for (let j = 1; j < 10; j++) {
+        const x = r.x + (r.width * i) / 10, y = r.y + (r.height * j) / 10;
+        if ([[0, 0], [3, 3], [-3, -3]].every(([dx, dy]) => sr.elementFromPoint(x + dx!, y + dy!) === path)) return { x, y };
+      }
+      return null;
+    });
+  });
+  const open = () => page.evaluate(() => [...document.getElementById('donut')!.shadowRoot!.querySelectorAll('.sherpa-tip')]
+    .map((t) => t.matches(':popover-open')));
+  await page.mouse.move(inside[0]!.x, inside[0]!.y);
+  await expect.poll(open).toEqual([true, false, false]);
+  await page.mouse.move(inside[1]!.x, inside[1]!.y);
+  await expect.poll(open).toEqual([false, true, false]);
+});
