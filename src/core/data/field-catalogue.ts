@@ -27,6 +27,7 @@ import { compareValues, valueKey } from './store.js';
 import { fieldState, type FieldFacts, type FieldReading, type FilterState } from './filter-state.js';
 import { report } from './report.js';
 import type { FieldDeclaration, FieldFilter } from './data-source-types.js';
+import type { Threshold } from './threshold.js';
 
 /** Steps a number slider may take. */
 const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
@@ -131,7 +132,7 @@ export class FieldCatalogue {
    *  it has no values at all. TRAP T-the-field-type-decides-the-clause */
   facts(field: string, label?: string): Omit<FieldFacts, 'field'> {
     const facts = this.#fields.get(field) ?? {};
-    const values = this.#domains.get(field);
+    const values = this.#bandNames(field) ?? this.#domains.get(field);
     const named = label ?? facts.label;
     // A tiered field's children: each path's parent and its own name. TODO 369
     const paths = this.#paths(field);
@@ -162,6 +163,14 @@ export class FieldCatalogue {
   /** A field's filter, as any bar or panel draws it. */
   filterDef(field: string): FieldFilter {
     const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
+    // A banded number is a LIST of its bands, each in its status; Advanced asks the number questions. Will, TODO 477
+    const bands = this.#bands(field);
+    if (bands) {
+      return {
+        id: field, label: label ?? field, ...rest,
+        options: bands.map((b) => ({ value: b.label, label: b.label, ...(b.status ? { swatch: b.status } : {}) })),
+      };
+    }
     const body = type === 'number' || type === 'date' ? type : undefined;
     const values = body || rest.advanced === 'only' ? [] : this.valuesFor(field).map(valueKey);
     // A date's declared values are the days a calendar may pick. TRAP T-a-date-chip-names-its-field
@@ -185,15 +194,26 @@ export class FieldCatalogue {
     };
   }
 
-  /** A copy of a field's declared values. */
+  /** A copy of a field's declared values — a banded number's are its bands' names. */
   valuesFor(field: string): unknown[] {
-    return [...(this.#domains.get(field) ?? [])];
+    return [...(this.#bandNames(field) ?? this.#domains.get(field) ?? [])];
+  }
+
+  /** A NUMBER's bands, where it declares them: its values. TRAP T-a-band-is-a-value-of-its-field */
+  #bands(field: string): readonly Threshold[] | undefined {
+    const facts = this.#fields.get(field);
+    return facts?.type === 'number' && facts.thresholds?.length ? facts.thresholds : undefined;
+  }
+
+  /** A banded number's values: its bands' names, in order. */
+  #bandNames(field: string): string[] | undefined {
+    return this.#bands(field)?.map((b) => b.label);
   }
 
   /** A field's declared values, by their string key — a tiered field's paths too. */
   byKey(field: string): Map<string, unknown> {
     const out = new Map<string, unknown>();
-    for (const v of this.#domains.get(field) ?? []) out.set(valueKey(v), v);
+    for (const v of this.valuesFor(field)) out.set(valueKey(v), v);
     for (const p of this.#paths(field)) out.set(p.key, p.path);
     return out;
   }
@@ -201,6 +221,7 @@ export class FieldCatalogue {
   /** A field whose values are a list a control offers one by one. */
   isList(field: string): boolean {
     const facts = this.#fields.get(field) ?? {};
+    if (this.#bands(field)) return true;
     return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
       && facts.advanced !== 'only';
   }

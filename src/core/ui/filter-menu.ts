@@ -16,6 +16,7 @@
  */
 
 import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
+import type { Threshold } from '../data/threshold.js';
 import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
@@ -41,6 +42,8 @@ export interface FilterMenuDef extends KindSource {
   min?: number;
   max?: number;
   step?: number;
+  /** A banded number's bands. TODO 477 */
+  thresholds?: readonly Threshold[];
   availableDates?: readonly string[];
   range?: boolean;
   /** A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
@@ -185,8 +188,10 @@ export function menuFor(
         menu.setAttribute('data-advanced-only', '');
         menu.setAttribute('data-mode', 'advanced');
       }
-      const ops = OPS_FOR_TYPE['text'] ?? [];
+      // A banded NUMBER's rows ask the number questions, and carry its bands over. TODO 477
+      const ops = OPS_FOR_TYPE[def.thresholds?.length ? 'number' : 'text'] ?? [];
       if (ops.length) menu.setAttribute('data-conditions', ops.join(','));
+      if (def.thresholds?.length) menu.bands = def.thresholds;
       // A TYPED condition is an Advanced answer, so the menu opens on it.
       // TRAP T-a-conditioned-field-opens-on-its-rows
       if (def.text) {

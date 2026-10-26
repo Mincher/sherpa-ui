@@ -101,7 +101,8 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved
   filter names one: `{ "health": { "band": "At risk" } }`
-  (`T-a-threshold-is-a-fact-of-the-field`).
+  (`T-a-threshold-is-a-fact-of-the-field`). They are the field's VALUES: its
+  filter picks them, and a gauge's legend does too (`T-a-band-is-a-value-of-its-field`).
 - **`applyOn: "input"`** makes the source's filters apply LIVE: a number does
   not wait for Apply, and a value reports while it moves. The source loads
   `debounce` ms (default 300) after the last move. The default, `"change"`,

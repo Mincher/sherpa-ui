@@ -24,6 +24,7 @@ import {
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
+import type { Threshold } from '../../core/data/threshold.js';
 import { TreePicks } from '../../core/ui/tree-picks.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -55,8 +56,8 @@ export interface MenuItem {
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
   note?: string;
-  /** The data-viz series a chart draws it in, from 1: a value chip's swatch. TODO 425 */
-  swatch?: number;
+  /** The data-viz series a chart draws it in, from 1, or a band's status: a value chip's swatch. TODOs 425, 477 */
+  swatch?: number | string;
   /** The section it is in. A heading is drawn where the section changes.
    *  TRAP T-saved-filters-are-the-last-section */
   section?: string;
@@ -425,7 +426,7 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#mirror && this.conditions.some(rowAnswered)) return;
     // A number or a date carries its BODY over. TRAP T-a-number-has-advanced-rows
     const body = this.#dated() ? 'date' : this.#numeric() ? 'number' : undefined;
-    const rows = rowsFromPicks(body, body ? this.#bodyReading() : { picked: this.values });
+    const rows = rowsFromPicks(body, body ? this.#bodyReading() : { picked: this.values }, this.bands);
     if (rows) this.conditions = rows;
     if (!body) this.#mirror = true;
   }
@@ -433,6 +434,10 @@ export class SherpaMenu extends SherpaElement {
   /** The rows still copy the picks — until the reader edits a row.
    *  TRAP T-both-answers-are-kept */
   #mirror = false;
+
+  /** bands — a banded number's: its values name them, and a pick carries into
+   *  the rows as its ends. TRAP T-a-band-is-a-value-of-its-field */
+  bands: readonly Threshold[] | undefined;
 
   /** A pick moved: rows that still MIRROR the picks follow it. */
   #followPicks(): void {
@@ -1404,7 +1409,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** Each item's value, label and parent, from the items — a row not drawn yet
    *  too, as a shut parent's children are. TRAP T-a-tree-menu-keeps-its-ticks-as-data */
-  get itemData(): Array<{ value: string; label: string; parent?: string; swatch?: number }> {
+  get itemData(): Array<{ value: string; label: string; parent?: string; swatch?: number | string }> {
     return this.#items.map(({ value, label, parent, swatch }) => ({
       value, label: label ?? value, ...(parent !== undefined ? { parent } : {}), ...(swatch ? { swatch } : {}),
     }));

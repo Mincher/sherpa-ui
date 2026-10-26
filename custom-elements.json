@@ -5432,7 +5432,7 @@
               "kind": "field",
               "name": "itemData",
               "type": {
-                "text": "Array<{ value: string; label: string; parent?: string; swatch?: number }>"
+                "text": "Array<{ value: string; label: string; parent?: string; swatch?: number | string }>"
               },
               "readonly": true
             },

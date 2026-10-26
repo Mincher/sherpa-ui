@@ -74,9 +74,10 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   label: string;
   /** A number or a date draws a control of its own; any other field, its values. */
   kind?: 'number' | 'date';
-  /** `swatch`: the data-viz series a chart draws this value in, from 1. `parent`:
-   *  a tiered field's child value names its parent's key (TODO 369). */
-  options?: { value: string; label: string; swatch?: number; parent?: string }[];
+  /** `swatch`: the data-viz series a chart draws this value in, from 1, or a
+   *  band's status. `parent`: a tiered field's child value names its parent's
+   *  key (TODO 369). */
+  options?: { value: string; label: string; swatch?: number | string; parent?: string }[];
   /** Its values are still being read: a menu shows a loading row. 345 phase 5 */
   loading?: boolean;
   /** A date's days that have records — every other day draws inactive. */

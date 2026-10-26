@@ -158,7 +158,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
 | ✅ | 3a | 475 | LOOK — in the panel, a section's field labels line up with its accordion header's label, on their left (Will, 2026-10-26) | look |
 | ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
-| ⬜ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26) | data |
+| ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
+| ⬜ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2302,10 +2303,42 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 477 — FILTER: the gauge's legend takes no part in filtering
+### `[ ]` ⬜ 478 — LOOK: the scroll shadow works sideways too
+
+Will, 2026-10-26: *"The scroll under inner shadow needs to work for horizontal
+scrolling content, too. The inner shadow needs to be applied to the relevant
+side of the scrolling container when needed."*
+
+### `[x]` ✅ 477 — FILTER: the gauge's legend takes no part in filtering
 
 Will, 2026-10-26: *"In the demo app the gauge chart has legend items which
 could be filter values but we don't include it in the filtering at all."*
+
+Will: A — as the bar's and the donut's legends. A zone picked narrows the gauge
+alone, in its own section in the panel ("By health"); sent up, it narrows the
+page through the View. And: a number field's BANDS are its values — its
+Simple mode picks At risk / Watch / Healthy, in their status colours, and its
+Advanced keeps the number rows. The same chip in the bar, the panel and the
+gauge's section.
+
+The plan:
+
+| step | what | |
+|---|---|---|
+| 1 | DATA — a banded number field's values are its band names: the catalogue lists them, a picked band compiles to its range (several: either), and the walk counts a row under its band | ✅ |
+| 2 | CHIP — its filter is a list of bands with their status swatches; Advanced asks the number questions | ✅ |
+| 3 | GAUGE — its legend picks its field's bands, as the bar's picks its segments: a part that narrows the gauge alone; Demos' legend is no longer read-only | ✅ |
+| 4 | Docs, TRAP, Demos tests | ✅ |
+
+**Done.** Health's chip picks At risk / Watch / Healthy, each in its status
+colour; its Advanced rows ask number questions, and a band carries over as its
+ends. A row counts under its band, and a pick saves as its names. Both Demos
+gauges (Records' Mean risk, Dashboard's Storage used) have legends that pick:
+a zone turned off narrows the gauge alone, and its section joins the panel's
+Local Context. Its cost: a store not held is asked once more per act (the bench,
+recorded). TRAP `T-a-band-is-a-value-of-its-field`. Tests: sherpa-ui
+`a-band-is-a-value-of-its-field`, `reforged-advanced-rows`; Demos
+`reforged-gauge-legend-picks`.
 
 ### `[x]` ✅ 476 — CLEAN-UP: the legacy filter panel goes
 

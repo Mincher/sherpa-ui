@@ -7,6 +7,7 @@
  * - Threshold — One band, as a field declares it: its top, its name, its status.
  * - bandEdges — The edges a histogram cuts at: the field's lowest, then each band's top.
  * - bandCondition — A band as a condition: from the top below it, up to its own.
+ * - bandOf — The band a value falls in, by name — as a histogram cuts it.
  */
 import type { Condition } from './where.js';
 
@@ -31,4 +32,13 @@ export function bandCondition(thresholds: readonly Threshold[], name: string): C
   const below = thresholds[at - 1];
   const last = at === thresholds.length - 1;
   return { ...(below ? { gte: below.to } : {}), ...(last ? {} : { lt: thresholds[at]!.to }) };
+}
+
+/** The band a value falls in, by name — half-open, as `bandCondition` reads it;
+ *  undefined for no number. TRAP T-a-band-is-a-value-of-its-field */
+export function bandOf(thresholds: readonly Threshold[], value: unknown): string | undefined {
+  if (value == null || value === '') return undefined;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return undefined;
+  return thresholds.find((t, i) => n < t.to || i === thresholds.length - 1)?.label;
 }

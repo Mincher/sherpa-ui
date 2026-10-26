@@ -962,7 +962,16 @@ export class SherpaProvider extends SherpaElement {
     const asks = (el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' };
     // Nothing declared: it is the page's to populate.
     const needs = DECLARED_BY[asks.shape];
-    if (needs && !this.#inherited(el, needs)) return;
+    if (needs && !this.#inherited(el, needs)) {
+      /* …but a legend in a chart over a BANDED field — a gauge's — picks its
+         bands; the chart draws its rows. TRAP T-a-band-is-a-value-of-its-field */
+      const field = asks.picks && !el.hasAttribute('data-readonly') ? this.#inherited(el, 'data-field') : null;
+      if (field && source.fieldFacts(field).thresholds?.length) {
+        const unpick = this.#picks(el as Picker, source, field, asks.picks!);
+        if (unpick) asked.unbind = unpick;
+      }
+      return;
+    }
     const spec = SUMMARIES.has(asks.shape) ? this.#spec(el, asks) : undefined;
     if (SUMMARIES.has(asks.shape) && !spec) return;
     const leave = (): void => {
@@ -1004,7 +1013,7 @@ export class SherpaProvider extends SherpaElement {
       deliver: (payload) => callback(payload, leave),
     });
     this.#fetchFields(el, source);
-    const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec, asks.picks) : undefined;
+    const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
     asked.unbind = () => {
       unown?.();
@@ -1109,8 +1118,7 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-a-legend-toggle-is-a-filter
    * TRAP T-a-component-part-narrows-one-component
    */
-  #picks(el: Picker, source: DataSource, spec: SummarySpec, picks: NonNullable<DataAsk['picks']>): (() => void) | undefined {
-    const field = spec.segment ?? '';
+  #picks(el: Picker, source: DataSource, field: string, picks: NonNullable<DataAsk['picks']>): (() => void) | undefined {
     const values = source.valuesFor(field).map(valueKey);
     if (!values.length) {
       report({

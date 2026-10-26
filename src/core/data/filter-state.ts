@@ -41,7 +41,7 @@ import {
   picksClause, valueSet, valueKey,
   type Duration, type Filter, type FilterClause, type FilterOp,
 } from './store.js';
-import type { Threshold } from './threshold.js';
+import { bandCondition, type Threshold } from './threshold.js';
 
 /** What a field's selection is doing. */
 export type FieldState =
@@ -102,6 +102,8 @@ export interface FilterState {
   range: boolean;
   /** A TIERED field's child field: a pick may be a path over both. TODO 369 */
   child?: string;
+  /** A banded NUMBER's bands: a pick that names one is its range. Will, TODO 477 */
+  bands?: readonly Threshold[];
   /** EVERY value the field has — never only the reachable ones. */
   values: ValueEntry[];
   /**
@@ -271,7 +273,16 @@ export function modeOf(reading: FieldReading, rows: readonly FieldCondition[] = 
 
 /** Simple's answer as Advanced's rows, for a mode switch to carry over; undefined
  *  when a body has nothing to carry. TRAP T-a-mode-switch-carries-the-answer-over */
-export function rowsFromPicks(body: 'number' | 'date' | undefined, simple: FieldReading): FieldCondition[] | undefined {
+export function rowsFromPicks(
+  body: 'number' | 'date' | undefined, simple: FieldReading, bands?: readonly Threshold[],
+): FieldCondition[] | undefined {
+  // A band is its two ends; `A or B and C` reads A or (B and C). Will, TODO 477
+  if (bands?.length) {
+    const ends = (simple.picked ?? []).map((name) => bandCondition(bands, String(name)) as { gte?: number; lt?: number } | undefined)
+      .filter((c) => !!c)
+      .map((c) => [...(c.gte != null ? [{ op: 'gte' as const, text: String(c.gte) }] : []), ...(c.lt != null ? [{ op: 'lt' as const, text: String(c.lt) }] : [])]);
+    return ends.flatMap((band, i) => band.map((row, j): FieldCondition => (i || j ? { ...row, join: j ? 'and' : 'or' } : row)));
+  }
   const [a, b] = (simple.picked ?? []).map(String);
   // A date: one day is On it, two are Between them. TODO 21d
   if (body === 'date') {
@@ -394,6 +405,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     mode,
     range,
     ...(parentOf && facts.child ? { child: facts.child } : {}),
+    ...(type === 'number' && facts.thresholds?.length ? { bands: facts.thresholds } : {}),
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
@@ -500,6 +512,7 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
   if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
   // A tiered field's picks: parents, and paths over both fields. TODO 369
   if (state.child) return tierClause(state.field, state.child, picked, ROW_OPS[row.op] ?? row.op);
+  if (state.bands) return bandsClause(state.field, state.bands, picked, row.op === 'ne' || row.op === 'notin');
   /* A row's `in` / `notin` is its `eq` / `ne` over several picks: as given, `notin`
      with two picks compiled to `in`, and with one matched every row. TODO 386 */
   return picksClause(state.field, cast(picked, state.type), ROW_OPS[row.op] ?? row.op);
@@ -532,6 +545,28 @@ function tierClause(field: string, child: string, picked: readonly unknown[], op
   }
   if (parts.length < 2) return parts[0];
   return [not ? 'and' : 'or', ...parts];
+}
+
+/**
+ * A banded number's picks: each band NAMED is its range, several either — or,
+ * `not`, the bands NOT named. A pick that names no band is a number, as given.
+ * Will, TODO 477. TRAP T-a-band-is-a-value-of-its-field
+ */
+function bandsClause(field: string, bands: readonly Threshold[], picked: readonly unknown[], not: boolean): Filter | undefined {
+  const named = new Set(picked.map(String).filter((p) => bands.some((b) => b.label === p)));
+  const numbers = picked.filter((p) => !named.has(String(p)));
+  const take = bands.filter((b) => named.has(b.label) !== not);
+  const parts = take.flatMap((b) => {
+    const { gte, lt } = bandCondition(bands, b.label) as { gte?: number; lt?: number };
+    const ends: FilterClause[] = [...(gte != null ? [[field, 'gte', gte] as FilterClause] : []), ...(lt != null ? [[field, 'lt', lt] as FilterClause] : [])];
+    return ends.length > 1 ? [['and', ...ends] as Filter] : ends;
+  });
+  const listed = picksClause(field, cast(numbers, 'number'), not ? 'ne' : 'eq');
+  if (!named.size) return listed;
+  // Every band ruled out matches no row.
+  const either = parts.length > 1 ? (['or', ...parts] as Filter) : parts[0] ?? ([field, 'in', []] as FilterClause);
+  if (!listed) return either;
+  return [not ? 'and' : 'or', either, listed];
 }
 
 /** The last moment of a day (`2026-09-03`) or a minute (`2026-09-03T14:00`);

@@ -20,6 +20,7 @@
  * - walkInOrder — Walk the rows, scope by scope.
  */
 import { absoluteDates, filterFields, matchesFilter, readField, valueKey, type Filter, type Row } from './store.js';
+import { bandOf, type Threshold } from './threshold.js';
 
 /** A tiered field's child, and each path's parent key: a tally holds both tiers. TODO 369 */
 export interface WalkTier {
@@ -54,6 +55,8 @@ export interface WalkStep {
   countAll?: boolean;
   /** A tiered field: its tally holds each row's path too. */
   tier?: WalkTier;
+  /** A banded number: a row counts under its band. TODO 477 */
+  bands?: readonly Threshold[];
 }
 
 /** A list field no filter holds, tallied where it would stand: before step `at`. */
@@ -64,6 +67,7 @@ export interface WalkTap {
   tier?: WalkTier;
   /** Count every value, by key, over the rows that reach `at`. TODO 466 */
   countAll?: boolean;
+  bands?: readonly Threshold[];
 }
 
 /** One scope's walk: it starts from the rows `after` ends with — every row for null. */
@@ -159,6 +163,8 @@ export interface Scan {
   startFields: string[];
   /** A tiered field's child, by field. */
   childOf: Map<string, string>;
+  /** A banded number's bands, by field; none when no field has them. */
+  bandsOf: Map<string, readonly Threshold[]> | undefined;
   tally: Array<Set<string>>;
   count: number[];
   each: number[][];
@@ -171,26 +177,29 @@ export interface Scan {
   start: Map<string, Set<string>>;
 }
 
-/** A value as its key — none for an empty one, as `presentUnder` reads it. */
-function keyOf(row: Row, field: string): string | null {
+/** A value as its key — none for an empty one, as `presentUnder` reads it; a
+ *  banded number's, its band's name. TRAP T-a-band-is-a-value-of-its-field */
+function keyOf(row: Row, field: string, bands?: Scan['bandsOf']): string | null {
   const v = readField(row, field);
-  return v == null || v === '' ? null : valueKey(v);
+  if (v == null || v === '') return null;
+  const banded = bands?.get(field);
+  return banded ? bandOf(banded, v) ?? null : valueKey(v);
 }
 
 /** A row's keys for a field: its value's, and a tiered field's path's — as
  *  `valueKey` writes the pair, its names sorted, with no object made per row. */
-function addKeys(keys: Set<string>, row: Row, field: string, child: string | undefined): void {
-  const key = keyOf(row, field);
+function addKeys(keys: Set<string>, row: Row, field: string, child: string | undefined, bands?: Scan['bandsOf']): void {
+  const key = keyOf(row, field, bands);
   if (key === null) return;
   keys.add(key);
   const c = child ? keyOf(row, child) : null;
   if (c !== null) keys.add(child! < field ? `{${child}:${c},${field}:${key}}` : `{${field}:${key},${child}:${c}}`);
 }
 
-function add(into: Map<string, Set<string>>, row: Row, field: string, child: string | undefined): void {
+function add(into: Map<string, Set<string>>, row: Row, field: string, child: string | undefined, bands?: Scan['bandsOf']): void {
   let keys = into.get(field);
   if (!keys) into.set(field, (keys = new Set()));
-  addKeys(keys, row, field, child);
+  addKeys(keys, row, field, child, bands);
 }
 
 /** The taps at a place: each tallies its field over the rows that reach it. */
@@ -199,7 +208,7 @@ function tapAt(scan: Scan, at: number, row: Row): void {
   if (!fields) return;
   let tallies = scan.tapTally.get(at);
   if (!tallies) scan.tapTally.set(at, (tallies = new Map()));
-  for (const f of fields) add(tallies, row, f, scan.childOf.get(f));
+  for (const f of fields) add(tallies, row, f, scan.childOf.get(f), scan.bandsOf);
 }
 
 /** The taps at a place that count every value: each counts its row's. TODO 466 */
@@ -209,7 +218,7 @@ function countAt(scan: Scan, at: number, row: Row): void {
   let counts = scan.tapCounts.get(at);
   if (!counts) scan.tapCounts.set(at, (counts = new Map()));
   for (const f of fields) {
-    const key = keyOf(row, f);
+    const key = keyOf(row, f, scan.bandsOf);
     if (key === null) continue;
     let by = counts.get(f);
     if (!by) counts.set(f, (by = new Map()));
@@ -226,16 +235,16 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
   const stopped = new Uint32Array(rows.length);
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r]!;
-    if (from === 0) for (const f of scan.startFields) add(scan.start, row, f, scan.childOf.get(f));
+    if (from === 0) for (const f of scan.startFields) add(scan.start, row, f, scan.childOf.get(f), scan.bandsOf);
     let i = from;
     for (; i < n; i++) {
       tapAt(scan, i, row);
       countAt(scan, i, row);
       const step = steps[i]!;
-      if (scan.tallied[i]) addKeys(scan.tally[i]!, row, step.field!, step.tier?.child);
+      if (scan.tallied[i]) addKeys(scan.tally[i]!, row, step.field!, step.tier?.child, scan.bandsOf);
       const all = scan.all[i];
       if (all) {
-        const key = keyOf(row, step.field!);
+        const key = keyOf(row, step.field!, scan.bandsOf);
         if (key !== null) all.set(key, (all.get(key) ?? 0) + 1);
       }
       const each = scan.eachTests[i];
@@ -275,6 +284,7 @@ function scanOf(sc: WalkScope, now: Date): Scan {
     tapsAt,
     startFields,
     childOf: new Map([...steps, ...sc.taps].flatMap((s) => (s.field && s.tier ? [[s.field, s.tier.child] as const] : []))),
+    bandsOf: bandsOf([...steps, ...sc.taps]),
     tally: steps.map(() => new Set<string>()),
     count: steps.map(() => 0),
     each: steps.map((s) => (s.each ?? []).map(() => 0)),
@@ -284,6 +294,12 @@ function scanOf(sc: WalkScope, now: Date): Scan {
     tapTally: new Map(),
     start: new Map(),
   };
+}
+
+/** Each banded field's bands, or none when no field is banded. */
+function bandsOf(places: ReadonlyArray<{ field?: string; bands?: readonly Threshold[] }>): Scan['bandsOf'] {
+  const banded = places.flatMap((s) => (s.field && s.bands ? [[s.field, s.bands] as const] : []));
+  return banded.length ? new Map(banded) : undefined;
 }
 
 /** Clear what steps from `j` on gathered: they are scanned again. */

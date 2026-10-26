@@ -1928,7 +1928,7 @@
         },
         {
           "name": "itemData",
-          "type": "Array<{ value: string; label: string; parent?: string; swatch?: number }>",
+          "type": "Array<{ value: string; label: string; parent?: string; swatch?: number | string }>",
           "access": "read"
         },
         {

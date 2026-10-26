@@ -45,10 +45,12 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
     const state = fieldState({ field, ...facts?.(field) }, { ...reading, suspended: false });
     /* …but a TIERED field's is two fields, which a condition cannot say: it is
        written as its pick list, which reads back as itself. TODO 369 */
-    const tiered = state.child && state.mode === 'simple' && state.rows[0]?.picked
+    /* …and a BANDED number's picks are its bands' names, which read back as
+       picks. Will, TODO 477 · TRAP T-a-band-is-a-value-of-its-field */
+    const listed = (state.child || state.bands) && state.mode === 'simple' && state.rows[0]?.picked
       ? conditionOf(picksClause(field, state.rows[0].picked, state.op === 'ne' ? 'ne' : 'eq')!) : undefined;
-    const clause = tiered ? undefined : stateClause(state);
-    const said = tiered ?? (clause ? conditionOf(clause) : undefined);
+    const clause = listed ? undefined : stateClause(state);
+    const said = listed ?? (clause ? conditionOf(clause) : undefined);
     if (said) where[field] = { ...said, ...(reading.suspended ? { off: true } : {}) };
   }
   return where;
@@ -70,6 +72,10 @@ function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'fi
   const { off, band, ...rest } = given;
   // A band NAMES its ends; the field's thresholds say them. TRAP T-a-threshold-is-a-fact-of-the-field
   const named = band == null ? {} : bandCondition(facts?.thresholds ?? [], band);
+  // A banded NUMBER's band is one of its values: a pick. Will, TODO 477
+  if (named && band != null && facts?.type === 'number' && !Object.keys(rest).length) {
+    return { picked: [band], ...(off ? { suspended: true } : {}) };
+  }
   if (!named) {
     report({
       code: 'unknown-band',

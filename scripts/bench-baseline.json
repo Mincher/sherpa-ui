@@ -964,7 +964,7 @@
     "counts": 0,
     "distinct": 6,
     "changes": 0,
-    "fields": 17,
+    "fields": 18,
     "rows": 10025,
     "cells": 150375,
     "compiles": 0,
@@ -974,26 +974,26 @@
   "notheld/report": {
     "loads": 1,
     "counts": 7,
-    "distinct": 3,
+    "distinct": 4,
     "changes": 0,
-    "fields": 9,
+    "fields": 11,
     "rows": 25,
     "cells": 375,
     "compiles": 3,
     "clones": 1,
-    "scans": 14
+    "scans": 16
   },
   "notheld/save": {
     "loads": 2,
     "counts": 7,
-    "distinct": 3,
+    "distinct": 4,
     "changes": 0,
-    "fields": 9,
+    "fields": 11,
     "rows": 10025,
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 15
+    "scans": 17
   },
   "notheld/save-same": {
     "loads": 2,
@@ -1022,26 +1022,26 @@
   "notheld/add": {
     "loads": 2,
     "counts": 7,
-    "distinct": 3,
+    "distinct": 4,
     "changes": 0,
-    "fields": 9,
+    "fields": 11,
     "rows": 10026,
     "cells": 150390,
     "compiles": 0,
     "clones": 1,
-    "scans": 15
+    "scans": 17
   },
   "notheld/delete": {
     "loads": 2,
     "counts": 7,
-    "distinct": 3,
+    "distinct": 4,
     "changes": 0,
-    "fields": 9,
+    "fields": 11,
     "rows": 10025,
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 15
+    "scans": 17
   },
   "notheld/add-field": {
     "loads": 0,

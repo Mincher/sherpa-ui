@@ -2203,6 +2203,8 @@ Three readers, one fact:
 - **A saved filter** names one: `where: { health: { band: 'At risk' } }`. It is
   half-open, as a histogram's band is — the first has no floor and the last no
   top. A name no band has filters nothing, and is reported (`unknown-band`).
+- **A filter** picks them: the bands are the field's VALUES (TODO 477,
+  `T-a-band-is-a-value-of-its-field`).
 
 **A score that runs the other way** — risk as `100 − health` — is the gauge's
 `data-invert` (Will, A): it reads its value from the top and turns its field's
@@ -6352,8 +6354,9 @@ it and dims itself, so the two cannot disagree.
 
 ### T-readonly-legend-is-a-key-not-a-filter
 
-`data-readonly` makes a legend a pure KEY: no toggling, no button semantics. A
-gauge's rows name THRESHOLDS rather than a series, so there is nothing to hide.
+`data-readonly` makes a legend a pure KEY: no toggling, no button semantics.
+A gauge's rows name its field's BANDS; without `data-readonly` they pick them
+(TODO 477, `T-a-band-is-a-value-of-its-field`), and with it they only name them.
 
 Each row's key chip takes `data-readonly`: its BODY gets `role="presentation"`
 and `tabindex="-1"`, and no `aria-pressed` — a keyboard user must not be handed
@@ -19056,3 +19059,40 @@ scans; an `order` re-walks alone, as each count is taken in that order.
 
 - Site: `src/core/ui/drag-order.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
+### T-a-band-is-a-value-of-its-field
+
+Will, TODO 477: *"the gauge chart has legend items which could be filter values
+but we don't include it in the filtering at all."* And: a number's bands are
+its VALUES. A number field that declares `thresholds` is a LIST of its bands:
+
+- **The catalogue** lists their names as its values (`valuesFor`), and its
+  filter is a list, each option in its band's status (`swatch: 'critical'`),
+  carrying `thresholds`. Its Advanced rows still ask the NUMBER questions.
+- **A pick names a band** and compiles to its range — several are either, all
+  three are no filter, and Not is the other bands. A pick that names no band is
+  a number, as before.
+- **A row counts under its band**: the walk keys a banded field by `bandOf`, so
+  a chip's counts, Limit's greying and a legend's ruled-out rows all speak band
+  names. A store asked step by step answers numbers; they are mapped too.
+- **Saved and read back by name**: `whereOf` writes the picks (`in: ['At
+  risk', 'Healthy']`), and `{ band: 'Watch' }` reads back as the pick `Watch`.
+- **To Advanced**, a band carries over as its two ends: `lt 60`, then `or gte
+  60 and lt 80` — the chain reads `A or (B and C)`.
+- **A gauge's legend** picks its field's bands, as a bar's legend picks its
+  segments: the provider binds a legend with no segment field over its chart's
+  `data-field`, when that field is banded; the gauge still draws the rows. A
+  `data-readonly` legend is still a key.
+
+Its cost: a banded field is a list, so a walk tallies it — one more `distinct`
+per act on a store not held (the bench, recorded on purpose).
+
+- Site: `src/core/data/threshold.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/core/data/field-catalogue.ts`
+- Site: `src/core/data/walk.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/unit/a-band-is-a-value-of-its-field.test.mjs`
+- Site: `test/e2e/reforged-advanced-rows.spec.ts`

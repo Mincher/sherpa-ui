@@ -441,7 +441,8 @@ export class DataSource extends EventTarget {
         ...(tagOf(part.only) ? { component: tagOf(part.only)! } : {}),
         filters: options?.length ? [{
           ...def,
-          options: options.map((o, i) => ({ ...o, swatch: i + 1 })),
+          // A band paints in its status; any other value, its series. TODO 477
+          options: options.map((o, i) => ({ ...o, swatch: o.swatch ?? i + 1 })),
           ...(reading ? { state: structuredClone(reading) } : {}),
           ...(above.includes(part.field) ? { appliedAt: this.#context.scopeLabel(VIEW) } : {}),
         }] : [],
