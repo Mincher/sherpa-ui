@@ -76,6 +76,42 @@ test('a chip asks for it by request; the source tests a row, and pushes the mark
   assert.equal(bar.attrs.has('data-highlight-field'), false);
 });
 
+// TRAP T-a-hovered-chip-previews-the-highlight
+test('a chip HOVERED previews the highlight: never in the Query, no query-change, no load; the driver comes back (TODO 449)', async () => {
+  const query = new QueryContext();
+  const store = new ArrayStore(ROWS, { key: 'id' });
+  const source = new DataSource({ store, query });
+  const bar = marker('bar');
+  const grid = marker('grid');
+  bindSource(source, bar, { scope: 'data' });
+  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
+  query.hold('data', ['plan', 'region']);
+  query.setReading('data', 'plan', { picked: ['Pro'] });
+  query.setReading('data', 'region', { picked: ['EMEA'] });
+  await source.load();
+  query.highlight('data', 'plan', true);
+  await source.load();
+  let changes = 0;
+  query.addEventListener('query-change', () => changes++);
+  let loads = 0;
+  const load = store.load.bind(store);
+  store.load = (...args) => { loads++; return load(...args); };
+  const ask = (preview) => bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'region', preview } } }));
+
+  ask(true);
+  assert.deepEqual(query.previewed, { scope: 'data', field: 'region' });
+  assert.deepEqual(query.highlighted, { scope: 'data', field: 'plan' }, 'the driver stays');
+  assert.equal(query.applied.scopes.data.highlight, 'plan', 'never in the Query');
+  assert.equal(grid.test(ROWS[1]), true, 'EMEA, Free');
+  assert.equal(grid.test(ROWS[2]), false, 'AMER');
+  ask(false);
+  assert.equal(query.previewed, null);
+  assert.equal(grid.test(ROWS[1]), false, 'the driver again: Free');
+  assert.equal(grid.test(ROWS[2]), true, 'Pro');
+  await new Promise((r) => setTimeout(r, 20));
+  assert.deepEqual({ changes, loads }, { changes: 0, loads: 0 });
+});
+
 test('a chart\'s segments say the part the driver matches; with none, they say nothing', () => {
   const spec = { shape: 'segments', segment: 'region' };
   const pro = (row) => row.plan === 'Pro';

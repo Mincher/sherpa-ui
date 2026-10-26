@@ -2847,6 +2847,10 @@
           "name": "data-highlight-field"
         },
         {
+          "name": "data-highlight-hover",
+          "valueSet": "v"
+        },
+        {
           "name": "data-highlight-matches",
           "valueSet": "v"
         },

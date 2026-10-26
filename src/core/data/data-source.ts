@@ -900,7 +900,7 @@ export class DataSource extends EventTarget {
     this.#viewFilter = viewed;
     this.#scoped = scoped;
     // A new mark — or driver — moves no row, so nothing loads: each component is pushed it. TODO 441
-    const marked = JSON.stringify([this.#context.highlighted, filterKey(highlight)]);
+    const marked = JSON.stringify([this.#context.previewed ?? this.#context.highlighted, filterKey(highlight)]);
     this.#highlight = highlight;
     if (marked !== this.#marked) this.#binding.publish();
     this.#marked = marked;
@@ -918,6 +918,7 @@ export class DataSource extends EventTarget {
       mine: this.#mine,
       has: this.#has,
       fetched: this.#fetched,
+      ...(this.#context.previewed ? { highlight: this.#context.previewed } : {}),
     };
   }
 
@@ -1036,6 +1037,10 @@ export class DataSource extends EventTarget {
         return;
       case 'recompose':
         this.#recompose();
+        return;
+      case 'mark':
+        // A chip hovered moves no row: mark it, and load nothing. TRAP T-a-hovered-chip-previews-the-highlight
+        this.#compileNow();
         return;
       case 'commit':
         this.#recompose();

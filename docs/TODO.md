@@ -130,7 +130,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
 | ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
 | ✅ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
-| ⬜ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
+| ✅ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
 | ⬜ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ⬜ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
@@ -1947,11 +1947,21 @@ rule that hid even that one. Now both. With Limit off, data-scope fields do
 not limit each other, so nothing is greyed and nothing hides — as the setting
 says. Test: Demos `reforged-limit-options` (3 engines).
 
-### `[ ]` ⬜ 449 — FEATURE: Highlight matches on hover
+### `[x]` ✅ 449 — FEATURE: Highlight matches on hover
 
 Will, 2026-10-26: *"Add a setting to 'Highlight matches on hover' which will
 show match highlighting when hovering over any active filter chip where the
 matches have been calculated already."* Builds on 441's highlight.
+
+**✅ Done 2026-10-26.** `provider.highlightOnHover` marks each bar
+`data-highlight-hover`. Resting 150ms on an applied chip whose matches are
+counted PREVIEWS it as the driver: the grid's rows and each chart's part light
+up, as 441's. The preview is the QueryContext's, never the Query's — not saved,
+no `query-change`, no load, and a menu's driver comes back after. It tells a
+new `mark` change, as a recompose would send the grid to page 1. Demos:
+Settings › Filtering › Look › "Highlight matches on hover". Tests:
+`a-chip-drives-the-highlight` (node), Demos `reforged-highlight-matches`
+(3 engines). TRAP T-a-hovered-chip-previews-the-highlight.
 
 ### `[ ]` ⬜ 450 — FILTERS: Move to a scope, in each filter's menu (toolbar mode)
 

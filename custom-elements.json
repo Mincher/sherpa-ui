@@ -8113,6 +8113,13 @@
             },
             {
               "kind": "field",
+              "name": "highlightOnHover",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -8504,6 +8511,12 @@
               "name": "data-highlight-field",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-highlight-hover",
+              "type": {
+                "text": "boolean"
               }
             },
             {
@@ -9119,7 +9132,7 @@
               "name": "quick-filter-change",
               "description": "One reader act, as a request: a field's answer, an on or off, the Switch, Clear all.",
               "type": {
-                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; }; scope: 'bar'; values: Record<string, string[]> }>"
+                "text": "CustomEvent<{ active: string[]; request: QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; }; scope: 'bar'; values: Record<string, string[]> }>"
               }
             },
             {

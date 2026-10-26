@@ -19278,3 +19278,28 @@ against `/`. Its tests are in its own project.
 
 - Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
+
+### T-a-hovered-chip-previews-the-highlight
+
+**A chip hovered PREVIEWS the highlight; it never drives it** (Will, TODO 449,
+"Highlight matches on hover"). Resting 150ms on an applied chip whose matches
+are counted (`results` is not null: not pending, not a draft) asks
+`{ field, preview: true }`; leaving the chip, or the bar, asks it off. The
+preview is the QueryContext's (`preview()`, `previewed`), NOT the Query's: a
+hover is never saved, never a `query-change`, and a driver picked in a menu
+(TODO 441) comes back when it ends. `compile()` takes it as
+`facts.highlight`, in place of the Query's own driver.
+
+**It tells `mark`, not `recompose`.** A recompose re-queries, and a re-query
+sets the page to 1 and loads: every hover sent the grid back to page 1. A mark
+compiles again and pushes each component its test; no row moves, so nothing
+loads.
+
+A pointer moving inside the bar is retargeted to the HOST for a host
+listener's `relatedTarget`, so the next chip's `pointerover` decides a move
+between chips; only a `pointerout` to outside the bar ends it there.
+
+- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/a-chip-drives-the-highlight.test.mjs`

@@ -224,6 +224,7 @@ function ask(query: QueryContext, request: QueryRequest, scope: string): void {
   const at = one.scope ?? scope;
   if ('reset' in one) query.reset([at], one.reset);
   else if ('highlight' in one) query.highlight(at, one.field, one.highlight);
+  else if ('preview' in one) query.preview(at, one.field, one.preview);
   else if ('reading' in one) query.setReading(at, one.field, one.reading);
   else query.suspend(at, 'field' in one ? one.field : null, one.suspended);
   if ('commit' in one && one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });

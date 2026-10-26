@@ -146,6 +146,7 @@ export type QueryRequest =
   | { scope?: string; suspended: boolean; commit?: true }
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
   | { scope?: string; field: string; highlight: boolean }
+  | { scope?: string; field: string; preview: boolean }
   | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —
@@ -192,6 +193,8 @@ export interface CompileFacts {
   has?: (field: string) => boolean;
   /** A field the STORE answers: its answer as the keys it matched, once fetched. */
   fetched?: (field: string, reading: FieldReading) => Filter | undefined;
+  /** The highlight's driver for now — a chip hovered — in place of the Query's. TODO 449 */
+  highlight?: { scope: string; field: string };
 }
 
 /** A reading without the picks set aside. */
@@ -375,9 +378,10 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     }
     if (facts.has) for (const field of Object.keys(scope.readings)) if (!facts.has(field)) skipped.push(`${id}.${field}`);
     const clauses = scopeClauses(id, scope, viewHolds, facts);
-    const driver = scope.highlight && scope.readings[scope.highlight];
+    const drives = facts.highlight ? (facts.highlight.scope === id ? facts.highlight.field : undefined) : scope.highlight;
+    const driver = drives && scope.readings[drives];
     if (driver && !highlight) {
-      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [scope.highlight!]: driver } }, viewHolds, facts));
+      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
     }
 
     if (scope.narrows?.length) {

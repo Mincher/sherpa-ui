@@ -705,6 +705,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-highlight-hover",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-highlight-matches",
       "type": "boolean",
       "observed": true,
@@ -1009,7 +1017,7 @@
       "composed": true,
       "detail": {
         "active": "string[]",
-        "request": "QueryRequest | undefined | { field: string; highlight: boolean; }",
+        "request": "QueryRequest | undefined | { field: string; highlight: boolean; } | { field: string; preview: boolean; }",
         "scope": "'bar'",
         "values": "Record<string, string[]>"
       }

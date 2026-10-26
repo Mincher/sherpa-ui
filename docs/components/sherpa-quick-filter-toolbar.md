@@ -69,6 +69,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-highlight-field` | text |  |  |
+| `data-highlight-hover` | boolean |  |  |
 | `data-highlight-matches` | boolean |  |  |
 | `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178. |
 | `data-locked` | boolean |  | the host owns the state; report, never self-set |
@@ -146,7 +147,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined \| { field: string; highlight: boolean; }; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
+| `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined \| { field: string; highlight: boolean; } \| { field: string; preview: boolean; }; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |

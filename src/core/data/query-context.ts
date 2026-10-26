@@ -50,6 +50,8 @@
  * - .discard — Put the applied answers back over the draft — Discard, where a scope waits.
  * - .highlighted — The chip that drives the highlight, if one does.
  * - .highlight — Make a field's chip the highlight's driver, or let it go.
+ * - .previewed — The chip hovered, while it previews the highlight.
+ * - .preview — Preview a field's chip as the driver, or stop: never in the Query.
  * - .setSort — Order by one field, or stop; `null` suspends.
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
@@ -86,6 +88,8 @@ export type QueryChange =
   | { kind: 'move'; scopes: string[]; moved: boolean }
   /** The Query moved: compile it. */
   | { kind: 'recompose' }
+  /** Only the highlight's driver moved: mark again, and load nothing. TODO 449 */
+  | { kind: 'mark' }
   | { kind: 'commit' }
   /** Each field is drawn its answer; then a scope's bars, or each control's pending. */
   | { kind: 'drawn'; fields: string[]; bars?: string; pending?: true }
@@ -840,6 +844,23 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'recompose' });
     this.#tell({ kind: 'drawn', fields: [...new Set([field, ...(was ? [was.field] : [])])] });
   }
+
+  /** The chip hovered, while it previews the highlight. TODO 449 */
+  get previewed(): { scope: string; field: string } | null {
+    return this.#preview;
+  }
+
+  /** Preview a field's chip as the highlight's driver, or stop. Never in the
+   *  Query, so never saved, and it moves no row: no load. Will, TODO 449.
+   *  TRAP T-a-hovered-chip-previews-the-highlight */
+  preview(scope: string, field: string, on: boolean): void {
+    const was = this.#preview;
+    if (on ? was?.scope === scope && was.field === field : !was || was.scope !== scope || was.field !== field) return;
+    this.#preview = on ? { scope, field } : null;
+    this.#tell({ kind: 'mark' });
+  }
+  /** The chip hovered, or null. */
+  #preview: { scope: string; field: string } | null = null;
 
   /**
    * Order by one field, or stop. Every re-ordering returns to page 1.

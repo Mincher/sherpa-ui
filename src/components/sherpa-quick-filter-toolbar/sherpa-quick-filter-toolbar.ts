@@ -46,6 +46,8 @@ import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
+/** How long a pointer rests on a chip before it previews the highlight. TODO 449 */
+const HOVER_WAIT = 150;
 
 /** A portrait scope's icon, for what it narrows. TRAP T-a-scope-says-what-it-shows */
 const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
@@ -100,6 +102,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-highlight-matches': { type: 'boolean', kind: 'behaviour' },
     // The chip that drives the highlight, as its source says. TODO 441
     'data-highlight-field': { type: 'string', kind: 'behaviour' },
+    // A chip hovered previews what it matches: the app's choice. Will, TODO 449
+    'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
@@ -438,6 +442,49 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.emit('quick-filter-change', { scope: 'bar', request: { field, highlight: on }, active: this.active, values: this.values });
   }
 
+  /** The chip hovered. TODO 449 */
+  #hovered: HTMLElement | null = null;
+  /** The beat before it previews. */
+  #hoverWait: ReturnType<typeof setTimeout> | undefined;
+  /** It previews now. */
+  #previewing = false;
+
+  /** Over an applied chip whose matches are counted, it previews them after a
+   *  beat, so a pointer passing by previews nothing. Will, TODO 449.
+   *  TRAP T-a-hovered-chip-previews-the-highlight */
+  #onHoverChip = (event: Event): void => {
+    const chip = this.pathFind(event, CHIP);
+    if (chip === this.#hovered) return;
+    this.#leaveChip();
+    const counted = chip && chip.hasAttribute('data-current') && !chip.hasAttribute('data-persistent')
+      && (chip as SherpaQuickFilter).results != null;
+    if (!chip || !counted || !this.hasAttribute('data-highlight-hover')) return;
+    this.#hovered = chip;
+    this.#hoverWait = setTimeout(() => {
+      this.#previewing = true;
+      this.#askPreview(chip.dataset['id'] ?? '', true);
+    }, HOVER_WAIT);
+  };
+
+  /** Out of the bar: the preview goes. Within it, the next chip's pointerover decides. */
+  #onLeaveBar = (event: Event): void => {
+    const to = (event as PointerEvent).relatedTarget as Node | null;
+    if (!to || (to !== this && !this.contains(to))) this.#leaveChip();
+  };
+
+  /** The chip is left: its preview, or its wait, goes. */
+  #leaveChip(): void {
+    clearTimeout(this.#hoverWait);
+    if (this.#previewing) this.#askPreview(this.#hovered?.dataset['id'] ?? '', false);
+    this.#previewing = false;
+    this.#hovered = null;
+  }
+
+  /** Ask that a field PREVIEW the highlight, or stop: never kept. */
+  #askPreview(field: string, on: boolean): void {
+    this.emit('quick-filter-change', { scope: 'bar', request: { field, preview: on }, active: this.active, values: this.values });
+  }
+
   /** Each SECTION's name over the first chip of its run, in portrait: a named
    *  section's, or a lone chip's own field's — a list field heads itself, and
    *  a persistent chip is a picker. Will, TODO 438 · TRAP T-a-section-is-headed-once */
@@ -515,6 +562,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     this.addEventListener('menu-row-remove', this.#onRowRemove);
     this.addEventListener('menu-highlight-change', this.#onHighlight);
+    this.addEventListener('pointerover', this.#onHoverChip);
+    this.addEventListener('pointerout', this.#onLeaveBar);
     this.addEventListener('menu-discard', this.#onMenuDiscard);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
@@ -530,6 +579,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onDisconnect(): void {
+    this.#leaveChip();
     this.#conditioned.cancel();
     this.#observer?.disconnect();
     this.#observer = null;

@@ -38,6 +38,7 @@ Put it round the part of a page whose components need data: each component insid
 | `contextLabel` | `boolean` | read and write |  |
 | `sections` | `boolean` | read and write |  |
 | `highlight` | `boolean` | read and write |  |
+| `highlightOnHover` | `boolean` | read and write |  |
 | `applyEvery` | `boolean` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
 | `savedFilterSets` | `{ id: string; label: string; applied: boolean; own: boolean }[]` | read only |  |
