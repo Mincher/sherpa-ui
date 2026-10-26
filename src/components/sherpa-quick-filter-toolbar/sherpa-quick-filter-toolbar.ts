@@ -88,7 +88,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-no-results': { type: 'boolean', kind: 'behaviour' },
     // How many filters are APPLIED in what it answers, as its provider counts them. TODO 436
     'data-applied': { type: 'number', kind: 'behaviour' },
-    // Its Filters badge — a column's title — counts them, not the chips folded away. TODO 436
+    // A column's title counts them. TODO 436
     'data-count-applied': { type: 'boolean', kind: 'behaviour' },
     // The saved sets, the save rows and Manage: a Saved menu of their own. Will, TODO 436
     'data-saved-menu': { type: 'boolean', kind: 'behaviour' },
@@ -1579,10 +1579,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (this.#columned) this.#column.saved(this.#saved.all);
       else this.#renderAvailable();
     }
-    if (name === 'data-applied' || name === 'data-count-applied') {
-      if (name === 'data-count-applied' && !this.hasAttribute(name)) this.#renderAvailable();
-      this.#drawApplied();
-    }
+    if (name === 'data-applied' || name === 'data-count-applied') this.#drawApplied();
     if (name === 'data-no-results') {
       this.drawResults(this.#results);
       this.#drawValueResults();
@@ -1941,7 +1938,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#oneRows.tell(added);
     // Split, the sets are the Saved menu's. TODO 436
     const split = this.hasAttribute('data-saved-menu');
-    const def = drawFiltersButton(add, folded.length, added, offer, split ? [] : this.#saved.listed, !split && this.hasAttribute('data-saveable'));
+    const def = drawFiltersButton(add, added, offer, split ? [] : this.#saved.listed, !split && this.hasAttribute('data-saveable'));
     if (!def) return;
     this.#drawApplied();
     this.#drawSaved();
@@ -1951,16 +1948,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncOverflowActive();
   }
 
-  /** The filters APPLIED, where the app counts them: the Filters button's badge,
-   *  or a column's, beside its title. None, a badge of nothing. Will, TODO 436 */
+  /** The filters APPLIED, where the app counts them: a column's badge, beside
+   *  its title. None, a badge of nothing. Will, TODO 436; the Edit button has
+   *  none (TODO 447) */
   #drawApplied(): void {
     const n = Number(this.dataset['applied']) || 0;
     const counting = this.hasAttribute('data-count-applied');
-    const add = this.$('.add-btn');
-    if (add && counting) {
-      if (n) add.dataset['badge'] = String(n);
-      else add.removeAttribute('data-badge');
-    }
     const badge = this.$<HTMLElement>('.applied-count');
     const said = counting ? drawCount(badge, n || null, ['filter applied', 'filters applied']) : null;
     if (badge) {

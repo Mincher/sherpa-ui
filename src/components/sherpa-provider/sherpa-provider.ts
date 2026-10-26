@@ -222,8 +222,8 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: say the match counts. */
   #results = true;
 
-  /** The Filters button — a column's title — counts the filters APPLIED, not
-   *  the chips folded away. The app sets it, from its session. Will, TODO 436 */
+  /** A column's title counts the filters APPLIED. The app sets it, from its
+   *  session. Will, TODO 436 */
   get countApplied(): boolean {
     return this.#countApplied;
   }

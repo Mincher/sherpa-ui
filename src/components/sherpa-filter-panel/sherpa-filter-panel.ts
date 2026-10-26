@@ -1044,7 +1044,10 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     this.#spentFor = this.#spentKey();
-    const def = drawFiltersButton(btn, hides, added, offer, this.#saved.listed);
+    // Its badge, the filters it hides: the panel's own. TODO 447
+    if (hides) btn.dataset['badge'] = String(hides);
+    else btn.removeAttribute('data-badge');
+    const def = drawFiltersButton(btn, added, offer, this.#saved.listed);
     if (!def) return;
 
     const { menu, items } = menuFor(this.root, def);

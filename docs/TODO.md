@@ -128,6 +128,15 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Cause found — ❓ A or B | bug |
 | ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
 | ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
+| ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
+| ⬜ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
+| ⬜ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
+| ⬜ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
+| ⬜ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
+| ⬜ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
+| ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
+| ⬜ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
+| ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1910,6 +1919,71 @@ filter icon instead."*
 
 **✅ Done 2026-10-26, with 446:** the split's "Save" wears it, and the ▾ alone
 (where the filters may not be saved) is a filter icon.
+
+### `[x]` ✅ 447 — BUG: remove the Edit button's badge
+
+Will, 2026-10-26: *"Bug: The edit button badge should show the count of
+active filters and not the count of matches. Actually let's just remove that
+badge, and it's logic, for now."* Will: the bugs first.
+
+**✅ Done 2026-10-26.** The bar's and the column's Edit button have no badge:
+neither the chips folded away nor, with Count the filters applied, the filters
+applied. `drawFiltersButton` writes none; the classic panel keeps its own, at
+its call site. The column's title still counts the filters applied. The badge
+had widened the button, so three tests that fold chips at 300px fold at 220.
+
+### `[ ]` ⬜ 448 — BUG: Hide invalid does not hide
+
+Will, 2026-10-26: *"Bug: The 'Hide invalid filters' option doesn't hide
+invalid options."* The switch is 376's.
+
+### `[ ]` ⬜ 449 — FEATURE: Highlight matches on hover
+
+Will, 2026-10-26: *"Add a setting to 'Highlight matches on hover' which will
+show match highlighting when hovering over any active filter chip where the
+matches have been calculated already."* Builds on 441's highlight.
+
+### `[ ]` ⬜ 450 — FILTERS: Move to a scope, in each filter's menu (toolbar mode)
+
+Will, 2026-10-26: *"In Toolbar mode, add 'Move to X scope' as a menu item in
+each filter (if it can be moved scope)."* The panel's sections have it (425
+G4).
+
+### `[ ]` ⬜ 451 — FEATURE: Single Apply & Discard, a setting
+
+Will, 2026-10-26: *"Add 'Single Apply & Discard' as a filtering setting. If
+on, then there's a single Apply and Discard button like we have now. If off
+then there's an Apply and Discard per filter field in their menu/panel
+section."*
+
+### `[ ]` ⬜ 452 — FEATURE: drag to reorder the query
+
+Will, 2026-10-26: *"A user should be able to drag a chip left/right, in a
+filter toolbar, to reorder it's position in the query. In a filter panel, they
+should be able to drag a section up/down to achieve the same. Enabling this
+should be a filtering setting."*
+
+### `[ ]` ⬜ 453 — FEATURE: the App Context, a setting
+
+Will, 2026-10-26: *"Add a filtering setting to persist the 'View Context'
+filters across all app views (if we don't have it already). When this setting
+is on then relabel 'View Context' to 'App Context'. If a filter is irrelevant
+to an app view (no use of data stores/sources) then we set it as inactive and
+explain this in the tooltip. If this setting is off then each view has it's
+own unique 'View Context' filtering configuration."*
+
+### `[ ]` ⬜ 455 — FILTERS: an Advanced filter's rows, in its panel section
+
+Will, 2026-10-26: *"In the filter panel, instead of showing a chip for
+Advanced filters, that spawns a menu to edit the conditions, the condition
+input rows (menu content) should be shown directly in the filter section in
+the panel. I swear we had this before."* The classic panel draws them inline;
+the portrait column (425) shows a chip (G14).
+
+### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
+
+Will, 2026-10-26: *"Move the Reset filter options back to the 'Edit' fitlers
+menu."* 430 moved them to the ⋮.
 
 ### `[x]` ✅ 446 — LOOK: the Saved filters button is a split
 

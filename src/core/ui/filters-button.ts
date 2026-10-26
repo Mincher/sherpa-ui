@@ -12,9 +12,9 @@
  * - ListedFilter — One filter the menu lists.
  * - SavedSet — One saved set of filters, as the Filters menu lists it.
  * - AddedFilter — One filter the view holds.
- * - drawFiltersButton — The ONE Filters button, redrawn: its badge the filters it hides, the old menu gone; never off.
- * - reopenFilters — The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn.
+ * - drawFiltersButton — The ONE Filters button, redrawn: the old menu gone; never off.
  * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
+ * - reopenFilters — The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn.
  * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
  * - .set — Keep a copy of the host's sets.
  * - .all — A copy of each set, as kept.
@@ -121,16 +121,14 @@ function filtersMenuItems(
   ];
 }
 
-/** The ONE Filters button, redrawn: its badge the filters it hides, the old menu
- *  gone. Its menu's def — never off, as it holds the filter actions too (TODO 383).
+/** The ONE Filters button, redrawn: the old menu gone. Its menu's def — never
+ *  off, as it holds the filter actions too (TODO 383). No badge (Will, TODO 447).
  *  TRAP T-one-filters-button · TRAP T-add-menu-batches */
 export function drawFiltersButton(
-  btn: HTMLElement, hidden: number,
+  btn: HTMLElement,
   added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[], manage = false,
 ): FilterDef {
   const options = filtersMenuItems(added, offer, sets, manage);
-  if (hidden) btn.dataset['badge'] = String(hidden);
-  else btn.removeAttribute('data-badge');
   btn.querySelector('sherpa-menu')?.remove();
   return {
     id: 'add', label: FILTERS_LABEL, select: 'multiple',

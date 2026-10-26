@@ -1233,9 +1233,9 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
   expect(r.mid.ellipsis).toBe(true);
   expect(r.mid.rows).toBe(1);
 
-  // NARROW: chips fold too, into the Filters menu, and its badge counts them.
+  // NARROW: chips fold too, into the Filters menu; it wears no badge. TODO 447
   expect(Number(r.narrow.folded)).toBeGreaterThan(0);
-  expect(Number(r.narrow.badge)).toBe(Number(r.narrow.folded));
+  expect(r.narrow.badge).toBeNull();
   expect(Number(r.narrow.chipsOnBar)).toBeLessThan(Number(r.mid.chipsOnBar));
   expect(r.narrow.rows).toBe(1);
 
@@ -1303,8 +1303,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     const rows = [...chip.querySelectorAll('.menu-row[data-drill]')] as HTMLElement[];
     const list = {
       ...snap(),
-      // The badge counts the FOLDED FILTERS — "three are in here" is what a
-      // reader needs before opening it.
+      // No badge. TODO 447
       badge: chip.getAttribute('data-badge'),
       rowCount: rows.length,
       // The caret is a composed sherpa-button, not hand-rolled markup.
@@ -1341,7 +1340,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
   expect(r.list.drill).toBe(false);
   expect(r.list.heading).toBe('Filters');
   expect(r.list.caretTag).toBe('SHERPA-BUTTON');
-  expect(Number(r.list.badge)).toBe(r.list.rowCount);
+  expect(r.list.badge).toBeNull();
   expect(r.list.trail).toBe(false);
 
   // DRILLED: the filter's own rows, its name, and the way out.
@@ -1578,8 +1577,8 @@ test('a sort from the organise chip never reaches the host as a filter change', 
  */
 test('a folded BOOLEAN filter\'s tick is its on/off; one with options opens its values', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    // Narrow, so everything but the first chip folds.
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
+    // Narrow, so everything but the first chip folds — beside "Edit", 220. TODO 447
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 220px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -1662,13 +1661,13 @@ test('a folded BOOLEAN filter\'s tick is its on/off; one with options opens its 
 });
 
 /**
- * Ticking a folded on/off chip must not re-count the Filters button. It is
- * CHROME, not a filter: its badge counts FOLDED FILTERS, and it reads ON while
- * one of them is. TRAP T-the-filters-button-is-a-door-not-a-filter
+ * Ticking a folded on/off chip lights the Filters button. It is CHROME, not a
+ * filter: it reads ON while a folded filter is, and wears no badge (TODO 447).
+ * TRAP T-the-filters-button-is-a-door-not-a-filter
  */
-test('the Filters button follows a folded chip on and off, and its badge never moves', async ({ page }) => {
+test('the Filters button follows a folded chip on and off, and wears no badge', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 220px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -1730,9 +1729,8 @@ test('the Filters button follows a folded chip on and off, and its badge never m
   expect(r.start.moreCurrent).toBe(false);
   expect(r.ticked.moreCurrent).toBe(true);
   expect(r.unticked.moreCurrent).toBe(false);
-  // The BADGE counts folded filters, not active ones, so it never moves.
-  expect(r.ticked.moreCount).toBe(r.start.moreCount);
-  expect(r.unticked.moreCount).toBe(r.start.moreCount);
+  // No badge, on or off.
+  expect([r.start.moreCount, r.ticked.moreCount, r.unticked.moreCount]).toEqual([null, null, null]);
   // …while the chip the row stands for does exactly what was asked of it.
   expect(r.start.chip).toBe(false);
   expect(r.ticked.chip).toBe(true);
@@ -2085,7 +2083,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.add-btn[data-badge]'); i++) {
+    for (let i = 0; i < 25 && !el.getAttribute('data-folded'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     // Wait for the fold to SETTLE — the ResizeObserver fires more than once.

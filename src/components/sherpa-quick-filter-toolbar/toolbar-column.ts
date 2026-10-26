@@ -188,7 +188,7 @@ export class ToolbarColumn {
     // Split, the sets are the Saved menu's. TODO 436
     const split = this.#host.el.hasAttribute('data-saved-menu');
     const saveable = this.#host.el.hasAttribute('data-saveable');
-    const { menu, items } = menuFor(this.#host.root(), drawFiltersButton(btn, 0, added, offer, split ? [] : this.#saved.listed, !split && saveable));
+    const { menu, items } = menuFor(this.#host.root(), drawFiltersButton(btn, added, offer, split ? [] : this.#saved.listed, !split && saveable));
     menu.setAttribute('data-align', 'end');
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this.#host.el));
     btn.append(menu);

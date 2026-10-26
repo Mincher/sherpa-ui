@@ -6,8 +6,8 @@ import { test, expect, type Bar } from './harness';
  * It reads "Edit", with a pencil (TODO 445); its menu is headed "Filters".
  *
  * Its menu lists the chips the bar HIDES for want of room first — each still a
- * door into its own menu — then every filter, then the saved sets. Its badge
- * counts the hidden chips, and it reads ON when a hidden chip is on, as More did.
+ * door into its own menu — then every filter, then the saved sets. No badge
+ * (TODO 447); it reads ON when a hidden chip is on, as More did.
  * TRAP T-one-filters-button
  */
 const SIX = ['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner'].map((label) => ({
@@ -85,7 +85,8 @@ test('ONE button: "Edit", a pencil; hidden chips first, then Added, Available, C
   expect(narrow.rows[0]).toBe('§Added filters');
   expect(narrow.rows).not.toContain('§More filters');
   expect(hidden.length).toBeGreaterThan(0);
-  expect(Number(narrow.badge)).toBe(hidden.length);
+  // No badge, folded or not. TODO 447
+  expect(narrow.badge).toBeNull();
   expect(hidden.at(-1)).toBe('at-risk');
   expect(hidden.slice(0, -1).every((r) => r.startsWith('›'))).toBe(true);
   expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(['§Available filters', 'tier']);
@@ -154,52 +155,6 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
   expect(r.held).toBe(true);
   expect(r.kept).toEqual(['a']);
   expect(r.back).toEqual({ heading: 'Filters', commit: true, first: true });
-});
-
-test('its badge is a sherpa-badge, drawn exactly as a chip draws its count', async ({ page }) => {
-  await mount(page, 560);
-  const r = await page.evaluate(async () => {
-    const sr = document.querySelector('sherpa-quick-filter-toolbar')!.shadowRoot!;
-    const btn = sr.querySelector<HTMLElement>('.add-btn')!;
-    // ON, so the button's own tint is there to leak in if the pin were missing.
-    const menu = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void; hide(): void };
-    menu.show(btn);
-    await window.__settled();
-    const toggle = menu.querySelector<HTMLInputElement>('input[value="at-risk"]')!;
-    toggle.checked = true;
-    toggle.dispatchEvent(new Event('change', { bubbles: true }));
-    (menu.shadowRoot.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
-
-    const chip = document.createElement('sherpa-quick-filter');
-    chip.setAttribute('data-label', 'Region');
-    chip.setAttribute('data-count', '2');
-    document.getElementById('root')!.append(chip);
-    await window.__settled();
-    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
-
-    const draw = (el: Element) => {
-      const s = getComputedStyle(el);
-      return { border: s.borderTopStyle, edge: s.borderTopColor, fill: s.backgroundColor, ink: s.color,
-        size: s.fontSize, weight: s.fontWeight, height: s.height, radius: s.borderTopLeftRadius };
-    };
-    const badge = btn.shadowRoot!.querySelector('.badge-value')!;
-    return {
-      on: btn.getAttribute('data-status'),
-      tag: badge.tagName.toLowerCase(),
-      text: badge.textContent,
-      count: btn.getAttribute('data-badge'),
-      badge: draw(badge.shadowRoot!.querySelector('.box')!),
-      chip: draw(chip.shadowRoot!.querySelector('.count')!),
-      tint: getComputedStyle(btn.shadowRoot!.querySelector('.trigger')!).backgroundColor,
-    };
-  });
-
-  expect(r.on).toBe('active');
-  expect(r.tag).toBe('sherpa-badge');
-  expect(r.text).toBe(r.count);
-  expect(r.badge.border).toBe('solid');
-  expect(r.badge).toEqual(r.chip);
-  expect(r.badge.fill).not.toBe(r.tint);
 });
 
 /* An ADDED on/off filter is one value: its tick is its on/off, and its × takes

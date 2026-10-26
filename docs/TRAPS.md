@@ -10309,8 +10309,9 @@ filters" section above, and Will folded it in the same day
 (`T-a-row-opens-its-child-menu`). A folded chip that cannot be taken off has no
 box; its row is the caret's alone.
 
-Its badge counts the folded chips, and it reads active while one of them is on
-(`T-the-filters-button-is-a-door-not-a-filter`).
+It has NO badge (Will, TODO 447: it counted the wrong thing); it reads active
+while a folded chip is on (`T-the-filters-button-is-a-door-not-a-filter`). The
+classic panel's button keeps its own badge, at its own call site.
 
 **A drill borrows the menu, and gives it back.** Drilling copies the folded
 chip's own settings onto the Filters menu — its Apply, its search, one pick or
@@ -10333,8 +10334,8 @@ one was touched.
 `provider.countApplied` marks every control `data-count-applied`, and after
 each load the provider writes `data-applied` — `source.appliedCount()` over
 what the control answers: a bar its scope, a column its scopes and their
-charts'. The Filters badge says that count; a column says it beside its
-"Filters" title. Off, the badge counts the chips folded away again.
+charts'. A column says it beside its "Filters" title; the Edit button says
+nothing (TODO 447).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
