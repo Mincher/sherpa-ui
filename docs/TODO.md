@@ -139,7 +139,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | ✅ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ✅ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
-| ⬜ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
+| ✅ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
 | ✅ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
 | ✅ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
@@ -148,7 +148,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | ⬜ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
-| ⬜ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
+| ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
 | ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
@@ -2101,7 +2101,7 @@ toolbar's words where the tag says it badly (`sherpa-barchart` → "Bar Chart"),
 else Title Case from the tag. Demos `reforged-filter-column`: Bar Chart,
 Radial Chart, Data Grid; the View has none.
 
-### `[ ]` ⬜ 458 — FILTERS: the highlight reaches the whole View
+### `[x]` ✅ 458 — FILTERS: the highlight reaches the whole View
 
 Will, 2026-10-26: *"I think that highlighting always elevates to the view/app
 scope even if the filter field/value is in a local scope. This allows for
@@ -2110,6 +2110,11 @@ across all of the view data without having to actually move the filter to the
 view scope."* To check first: one source already pushes its test to every
 component it binds; a page with several sources compiles only its OWN scopes
 (`facts.mine`), so another source skips a local driver.
+
+**Done.** One source already lit everything it binds (Demos' Records and
+Dashboard have one each). For several sources, `compile` now reads the driver
+before it skips another source's scope, where this source has the field.
+TRAP `T-the-highlight-reaches-the-whole-page`; node `a-chip-drives-the-highlight`.
 
 ### `[x]` ✅ 459 — FILTERS: Highlight on hover, a field or one value
 
@@ -2246,10 +2251,15 @@ on chip's colour: the button by a pin, `active @filter-on`, and the mark by
 `--sherpa-filter-on-border-base-1`. So "Show active filters in green" turns
 them green with the chips. Demos `reforged-filter-chips-green`.
 
-### `[ ]` ⬜ 467 — FEATURE: highlight across every scope, or one
+### `[x]` ✅ 467 — FEATURE: highlight across every scope, or one
 
 Will, 2026-10-26: *"Add a setting to toggle highlighting across all scopes (on
 by default) or to limit highlighting to the filter's current scope."* With 458.
+
+**Done.** `highlightAcross` on the provider and the source, on by default. Off,
+a component outside the driver's scope gets no test (`highlightFor(scope)`); a
+View driver still lights all. Demos: Settings › Filtering › "Highlight across
+every scope"; `reforged-highlight-matches`.
 
 ### `[x]` ✅ 446 — LOOK: the Saved filters button is a split
 

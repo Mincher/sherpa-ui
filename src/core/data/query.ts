@@ -374,18 +374,21 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
 
   for (const [id, scope] of Object.entries(query.scopes)) {
     const mine = !facts.mine || facts.mine(id);
+    /* The highlight reaches the whole page: another source's scope drives it
+       here too, where this one has the field. Will, TODO 458.
+       TRAP T-the-highlight-reaches-the-whole-page */
+    const drives = facts.highlight ? (facts.highlight.scope === id ? facts.highlight.field : undefined) : scope.highlight;
+    const one = drives ? facts.highlight?.value : undefined;
+    const driver = one !== undefined ? { picked: [one] } : drives && scope.readings[drives];
+    if (driver && !highlight && (!facts.has || facts.has(drives!))) {
+      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
+    }
     if (!mine && id !== VIEW) {
       skipped.push(id);
       continue;
     }
     if (facts.has) for (const field of Object.keys(scope.readings)) if (!facts.has(field)) skipped.push(`${id}.${field}`);
     const clauses = scopeClauses(id, scope, viewHolds, facts);
-    const drives = facts.highlight ? (facts.highlight.scope === id ? facts.highlight.field : undefined) : scope.highlight;
-    const one = drives ? facts.highlight?.value : undefined;
-    const driver = one !== undefined ? { picked: [one] } : drives && scope.readings[drives];
-    if (driver && !highlight) {
-      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
-    }
 
     if (scope.narrows?.length) {
       for (const el of scope.narrows) (only[el] ??= []).push(...clauses);

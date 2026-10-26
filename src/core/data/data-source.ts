@@ -20,6 +20,8 @@
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
  * - .highlight — Does a row match the highlight's driver?
+ * - .highlightFor — The highlight's test for a component in `scope`: null where it stays in its driver's scope and this is not it.
+ * - .highlightAcross — The highlight reaches every component — or, off, those in its driver's scope alone.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declarePresets — A scope's own fields, as its page definition holds them: presets, never dragged.
@@ -110,7 +112,7 @@ export class DataSource extends EventTarget {
     rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
-    highlight: () => this.#highlight,
+    highlight: (scope) => (this.#reaches(scope) ? this.#highlight : undefined),
     mintId: () => this.#member.mintId(),
   });
   /** The last load's answer: the rows, and the total before paging. */
@@ -384,6 +386,33 @@ export class DataSource extends EventTarget {
     const filter = this.#highlight;
     return filter ? (row) => matchesFilter(row, filter) : null;
   }
+
+  /** The highlight's test for a component in `scope`: null where it stays in its
+   *  driver's scope and this is not it. Will, TODO 467 */
+  highlightFor(scope?: string | readonly string[]): ((row: Row) => boolean) | null {
+    return this.#reaches(scope) ? this.highlight : null;
+  }
+
+  /** Does the highlight reach a component in `scope`? Across every scope, or a
+   *  View driver: yes. TRAP T-the-highlight-reaches-the-whole-page */
+  #reaches(scope?: string | readonly string[]): boolean {
+    const driver = (this.#context.previewed ?? this.#context.highlighted)?.scope;
+    if (this.#across || !driver || driver === VIEW) return true;
+    return typeof scope === 'string' ? scope === driver : !!scope?.includes(driver);
+  }
+
+  /** The highlight reaches every component — or, off, those in its driver's
+   *  scope alone. The app's setting. Will, TODO 467 */
+  get highlightAcross(): boolean {
+    return this.#across;
+  }
+  set highlightAcross(on: boolean) {
+    if (on === this.#across) return;
+    this.#across = on;
+    this.#binding.publish();
+  }
+  /** The setting: does the highlight reach every scope? */
+  #across = true;
 
   /**
    * One scope as a control draws it WHOLE: each field it holds — a field held

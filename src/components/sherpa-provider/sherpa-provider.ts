@@ -307,6 +307,18 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: Highlight matches on hover. */
   #highlightHover = false;
 
+  /** The highlight reaches every component on the page — or, off, those in its
+   *  filter's own scope alone. The app sets it, from its session. Will, TODO 467 */
+  get highlightAcross(): boolean {
+    return this.#across;
+  }
+  set highlightAcross(on: boolean) {
+    this.#across = on;
+    for (const source of Object.values(this.#sources)) source.highlightAcross = on;
+  }
+  /** The app's choice: highlight across every scope. */
+  #across = true;
+
   /** ONE Apply and Discard for a scope that waits — or, off, each field's own,
    *  in its menu or its panel section. The app sets it, from its session. Will, TODO 451 */
   get singleApply(): boolean {
@@ -400,7 +412,10 @@ export class SherpaProvider extends SherpaElement {
       this.#pages.end();
     }
     this.#sources = { ...options.sources };
-    for (const source of Object.values(this.#sources)) source.limitOptions = this.#limit;
+    for (const source of Object.values(this.#sources)) {
+      source.limitOptions = this.#limit;
+      source.highlightAcross = this.#across;
+    }
     for (const made of this.#made) if (!this.#provides(made)) this.#closeMade(made);
     // BEFORE answering: an answer binds, and a bind starts the first load.
     this.#states?.abort();
@@ -891,7 +906,7 @@ export class SherpaProvider extends SherpaElement {
       ...(scope ? { scope } : {}),
       ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
-      ...(spec ? { readonly: true, as: (rows, src) => summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlight) } : {}),
+      ...(spec ? { readonly: true, as: (rows, src) => summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope)) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'

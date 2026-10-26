@@ -88,7 +88,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       // Through the callback it ASKED with, when a provider bound it.
       const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
       give(into ? mergeInto(el, into, payload) : payload);
-      el.drawHighlight?.(source.highlight);
+      el.drawHighlight?.(source.highlightFor(options.scope));
     },
     pending: (fields, dirty, waits, failed, applied) => {
       // What is applied first, so the flags that follow are read against it. TODO 424

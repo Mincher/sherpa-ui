@@ -8133,6 +8133,13 @@
             },
             {
               "kind": "field",
+              "name": "highlightAcross",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "singleApply",
               "type": {
                 "text": "boolean"

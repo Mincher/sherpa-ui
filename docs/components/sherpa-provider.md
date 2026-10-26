@@ -39,6 +39,7 @@ Put it round the part of a page whose components need data: each component insid
 | `sections` | `boolean` | read and write |  |
 | `highlight` | `boolean` | read and write |  |
 | `highlightOnHover` | `boolean` | read and write |  |
+| `highlightAcross` | `boolean` | read and write |  |
 | `singleApply` | `boolean` | read and write |  |
 | `reorderFilters` | `boolean` | read and write |  |
 | `applyEvery` | `boolean` | read and write |  |

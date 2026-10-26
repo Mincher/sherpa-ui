@@ -156,3 +156,53 @@ test('a series gives each point the part the driver matches, and a value its own
   // A plain number has nowhere to say it.
   assert.equal(summariseMarked(ROWS, { shape: 'aggregate' }, () => [], () => ({}), pro), 3);
 });
+
+// TRAP T-the-highlight-reaches-the-whole-page
+test('across every scope, or only the driver\'s: off, a local driver lights its own scope alone; a View driver lights all (TODO 467)', async () => {
+  const query = new QueryContext();
+  const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), query });
+  const bar = marker('bar');
+  const grid = marker('grid');
+  const own = marker('own');
+  bindSource(source, bar, { scope: 'data' });
+  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
+  bindSource(source, own, { scope: 'data', shows: 'grid' });
+  query.hold(VIEW, ['region']);
+  query.hold('data', ['plan']);
+  query.setReading('data', 'plan', { picked: ['Pro'] });
+  query.setReading(VIEW, 'region', { picked: ['EMEA', 'AMER'] });
+  await source.load();
+  query.highlight('data', 'plan', true);
+  await source.load();
+  assert.equal(source.highlightAcross, true, 'on by default');
+  assert.equal(grid.test(ROWS[0]), true, 'across: the View\'s grid is lit');
+  source.highlightAcross = false;
+  assert.equal(grid.test, null, 'off: not the driver\'s scope');
+  assert.equal(own.test(ROWS[0]), true, 'its own scope still is');
+  assert.equal(source.highlightFor(VIEW), null);
+  assert.equal(source.highlightFor(['data', VIEW])(ROWS[2]), true);
+  // A View driver is every scope's.
+  query.highlight(VIEW, 'region', true);
+  await source.load();
+  assert.equal(grid.test(ROWS[0]), true);
+  assert.equal(own.test(ROWS[0]), true);
+  query.highlight('data', 'plan', true);
+  await source.load();
+  source.highlightAcross = true;
+  assert.equal(grid.test(ROWS[2]), true, 'on again: pushed again');
+});
+
+// TRAP T-the-highlight-reaches-the-whole-page
+test('another source\'s scope drives this one\'s highlight, where it has the field (TODO 458)', () => {
+  const query = { v: 1, scopes: {
+    [VIEW]: { holds: ['region'], readings: {} },
+    data: { holds: ['plan'], readings: { plan: { picked: ['Pro'] } }, highlight: 'plan' },
+  } };
+  // This source owns the View alone: `data` is another's, so it filters nothing here…
+  const mine = (id) => id === VIEW;
+  const out = compile(query, { mine });
+  assert.equal(out.filter, undefined);
+  assert.deepEqual(out.highlight, ['plan', 'eq', 'Pro']);
+  // …and a source with no `plan` marks nothing.
+  assert.equal(compile(query, { mine, has: (f) => f !== 'plan' }).highlight, undefined);
+});

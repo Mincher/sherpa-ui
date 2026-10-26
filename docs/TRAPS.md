@@ -19305,6 +19305,25 @@ against `/`. Its tests are in its own project.
 - Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
 
+### T-the-highlight-reaches-the-whole-page
+
+**The highlight lights the whole page, whatever scope its filter is in** — Will,
+TODO 458: a reader sees a local filter's matches across the View without moving
+the filter. One source already gives its ONE test to every component it binds.
+A page with SEVERAL sources compiles only its own scopes (`facts.mine`), so
+`compile` reads the driver BEFORE it skips another source's scope — where this
+source has the field (`facts.has`); one without it marks nothing.
+
+**Or only within the filter's scope** — TODO 467, the app's setting,
+`highlightAcross` on the provider and the source (on by default). Off, a
+component outside the driver's scope is given no test (`highlightFor(scope)`),
+and the binding's push key carries that answer, so flipping it pushes again. A
+View driver is every scope's, on or off.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
+- Site: `test/unit/a-chip-drives-the-highlight.test.mjs`
+
 ### T-a-hovered-chip-previews-the-highlight
 
 **A chip hovered PREVIEWS the highlight; it never drives it** (Will, TODO 449,
