@@ -585,10 +585,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('menu-select', this.#onMenuSelect);
     this.addEventListener('menu-change', this.#onSavedPick);
     this.addEventListener('menu-open', this.#onFieldMoreOpen);
-    // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-reads-as-a-warning
-    for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
-      this.addEventListener(type, this.#queuePending);
-    }
     // A calendar commits through its own events — it has no Apply button.
     this.addEventListener('datetime-change', this.#onDatePicked);
     this.addEventListener('range-select', this.#onDatePicked);
@@ -825,10 +821,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * PENDING: a chip whose change is not applied yet — a draft in its own open
-   * menu, or a field its source says waits (`data-pending`). THIS BAR is the
-   * one writer of the chip's flag. Locally a menu never waits, so nothing is
-   * ever pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-reads-as-a-warning
+   * PENDING: a field its source says waits (`data-pending`) — this bar is the
+   * one writer of the chip's flag. A draft in its own open menu is the chip's
+   * own to show (TODO 415). Locally a menu never waits, so nothing is ever
+   * pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-reads-as-a-warning
    */
   #syncPending(): void {
     const waiting = pendingFields(this);
@@ -837,7 +833,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const field = this.#fieldOf(chip.dataset['id'] ?? '');
       // A SECTION is marked by its values, never its heading: they know what changed. TODO 425
       const section = chip.dataset['layout'] === 'section' ? { changed: new Set<Element>() } : {};
-      markField([chip], [chip.menu], { pending: waiting.has(field), failed: failed.has(field), drafting: chip.drafting, ...section });
+      markField([chip], [chip.menu], { pending: waiting.has(field), failed: failed.has(field), ...section });
     }
   }
 
@@ -873,11 +869,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.valueResults = shown ? results[field] ?? null : null;
     }
   }
-
-  /** Re-read the pending flags once the event that moved a draft has landed. */
-  #queuePending = (): void => {
-    queueMicrotask(() => this.#syncPending());
-  };
 
   /**
    * drawResults(results) — each answered chip's results, from its source: the

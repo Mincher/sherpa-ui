@@ -122,6 +122,10 @@ export class SherpaQuickFilter extends SherpaElement {
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
+    // A draft in its open menu, and its Apply or Cancel: it says so itself. TODO 415
+    for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
+      this.addEventListener(type, this.#onDraft);
+    }
     // A value chip's press, in a section: it picks its row. TODO 425
     this.addEventListener('quick-filter-click', this.#onValuePress);
     // …and a parent's Sites menu, CAUGHT before its value chip relays it. TODO 425
@@ -922,7 +926,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const n = this.#shownResults();
     const matches = n == null ? '' : countSaid(n, ['match', 'matches']).label;
     // A failed fetch says so first, then changed-not-applied. Will, TODO 406 and 411
-    const lead = [this.hasAttribute('data-failed') ? UNFETCHED : '', this.hasAttribute('data-pending') ? UNAPPLIED : ''];
+    const lead = [this.hasAttribute('data-failed') ? UNFETCHED : '', this.#unapplied() ? UNAPPLIED : ''];
     const said = [...lead, this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
     /* A chip with NO WORDS on it — a grid heading's sort button — says its
        name in the tip, as an icon button does: "Sorted by Name, descending". */
@@ -939,8 +943,31 @@ export class SherpaQuickFilter extends SherpaElement {
   /** The results the chip shows now: once applied, ON OR OFF — the source gives
    *  a number only to a chip that holds an answer. Will, TODO 123. */
   #shownResults(): number | null {
-    return this.hasAttribute('data-pending') ? null : this.#results ?? null;
+    return this.#unapplied() ? null : this.#results ?? null;
   }
+
+  /** Changed and not applied: its source says it waits, or its open menu holds a draft. */
+  #unapplied(): boolean {
+    return this.hasAttribute('data-pending') || this.drafting;
+  }
+
+  /**
+   * A DRAFT in its own menu reads as pending — the warning look, its count
+   * held back — until Apply or Cancel. The CHIP knows it has one; its source's
+   * `data-pending` is the other half, its host's to write. Next microtask: the
+   * menu settles its own `dirty` in the same event. TODO 415.
+   * TRAP T-a-pending-chip-reads-as-a-warning
+   */
+  #onDraft = (): void => {
+    queueMicrotask(() => {
+      if (this.drafting === this.#drafted) return;
+      this.#drafted = this.drafting;
+      this.toggleState('drafting', this.#drafted);
+      this.#syncBadge();
+    });
+  };
+  /** It showed a draft, as last drawn. */
+  #drafted = false;
 
   /**
    * The menu just stamped its rows — read this chip's FACE off them.

@@ -24,7 +24,8 @@ test('a remote chip is pending while its menu holds a draft; Apply makes it acti
       await settle();
       const body = chip(id).shadowRoot!.querySelector('.body')!;
       const cs = getComputedStyle(body);
-      return { pending: chip(id).hasAttribute('data-pending'), bg: cs.backgroundColor, edge: cs.borderTopColor };
+      // Pending as its source says, or a draft in its own menu: the chip's own state (TODO 415).
+      return { pending: chip(id).hasAttribute('data-pending') || chip(id).matches(':state(drafting)'), bg: cs.backgroundColor, edge: cs.borderTopColor };
     };
     const tip = (id: string) => chip(id).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
     const off = await look('plan');

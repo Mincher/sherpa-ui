@@ -17602,9 +17602,15 @@ the bar's `data-pending` — a panel edit waiting for its Apply.
 
 The look is a PIN (`'&[data-pending]': warning` in state-pins.yaml, written
 after the on pin so it outranks it); the chip's CSS only thickens the edge, as
-an on chip's, and its tip starts "Unapplied changes - " (Will, TODO 406). The chip's
-HOST is the one writer of its flag — the bar, or the panel — and both write it
-through ONE door, `markField` (`filter-host.ts`): a panel field marks EVERY chip
+an on chip's, and its tip starts "Unapplied changes - " (Will, TODO 406).
+
+A DRAFT in a bar chip's own open menu is the CHIP's to show (TODO 415): it
+hears its menu's events and sets `:state(drafting)`, pinned `warning` too, its
+count held back and its tip led the same way. The bar no longer sweeps every
+chip on six event types for it. `data-pending` is then the SOURCE's half only.
+
+The chip's `data-pending` has ONE writer — its HOST, the bar or the panel — and
+both write it through ONE door, `markField` (`filter-host.ts`): a panel field marks EVERY chip
 of its run, its tier parents and its menus, as the bar marks its one chip. Until
 424 the panel marked only a field drawn as one chip, so a run of values never
 read as a warning, and its menus' Discard was always off. Two writers of one

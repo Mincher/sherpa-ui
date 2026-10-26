@@ -36,6 +36,8 @@ sherpa-quick-filter:
   # TRAP T-a-pending-chip-reads-as-a-warning
   '&[data-pending]': warning
   '&[data-current][data-pending]': warning
+  # …and a DRAFT in its own open menu: the chip says so itself. TODO 415
+  '&:state(drafting)': warning
   # FAILED: its data could not be fetched — a system error, not 0 matches.
   # After pending, so it wins. Will, 2026-10-22 (TODO 411).
   '&[data-failed]': critical
