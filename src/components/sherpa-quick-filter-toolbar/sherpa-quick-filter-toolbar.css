@@ -240,7 +240,6 @@
 /* The chevron LEADS the heading; the badge and actions end the row. It stays
    at the top while its fields scroll under it. */
 sherpa-accordion.scope::part(header) {
-  align-items: center;
   position: sticky;
   inset-block-start: 0;
   z-index: 1;

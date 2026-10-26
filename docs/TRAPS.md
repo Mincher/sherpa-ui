@@ -11517,10 +11517,13 @@ than left to position.
 
 ### T-an-accordion-chevron-rides-the-heading-row
 
-`sherpa-accordion`'s summary row is CENTRED, in an even padding — Will,
-2026-10-22. It was `align-items: start` (and 16px over, 4px under): its titles
-are a COLUMN, so centring puts the chevron halfway down a two-row header; Will
-chose the centre. The actions, outside the summary (TRAP
+`sherpa-accordion`'s summary is ONE heading row, in an even padding — Will,
+2026-10-26 (TODO 471): the chevron, icon and badge each centre on the heading's
+LINE, and a description is the row under it, flush with the heading. So the
+row is `align-items: start` and each glyph's margin centres it in that line.
+(On 2026-10-22 Will had chosen the centre of the whole header, which put the
+chevron halfway down a two-row one; 471 replaced it. A one-row header reads
+the same either way.) The actions, outside the summary (TRAP
 `T-an-accordion-action-is-not-a-toggle`), sit in a box exactly one heading line
 tall, so a taller control overflows it evenly and stays on the heading's row.
 
@@ -11530,6 +11533,7 @@ icon's own contract — `T-icon-box-is-not-the-glyph`.
 
 ---
 - Site: `src/components/sherpa-accordion/sherpa-accordion.css`
+- Site: `test/e2e/reforged-accordion.spec.ts`
 
 ### T-a-slotted-row-is-outside-its-own-popover
 

@@ -272,6 +272,7 @@
     "actions.margin-inline-end": "{sherpa.theme-padding-md}",
     "actions.block-size": "{sherpa.theme-content-line-height-base}",
     "actions.gap": "{sherpa.display-mode-space-2xs}",
+    "badge.margin-block": "{sherpa.theme-content-line-height-base}",
     "titles.gap": "{sherpa.display-mode-space-3xs}",
     "heading.color": "{sherpa.theme-content-body-base}",
     "heading.font-size": "{sherpa.font-size-body-base}",

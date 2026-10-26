@@ -127,3 +127,26 @@ test('a shut section fills with the Style +2 surface; an open one keeps base', a
   // Open, the root paints nothing: the card's own fill shows.
   expect(r.opened).toBe('rgba(0, 0, 0, 0)');
 });
+
+// Will, TODO 471. TRAP T-an-accordion-chevron-rides-the-heading-row
+test('the chevron, icon and heading share one row; a description is the row under it, flush with the heading', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-accordion') as AccordionEl;
+    el.setAttribute('data-heading', 'By status');
+    el.setAttribute('data-description', 'Bar Chart');
+    el.setAttribute('data-icon', 'chart-column');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const box = (sel: string) => el.shadowRoot!.querySelector(sel)!.getBoundingClientRect();
+    const mid = (b: DOMRect) => b.top + b.height / 2;
+    const heading = box('.heading'), description = box('.description');
+    return {
+      chevron: Math.round(mid(box('.chevron')) - mid(heading)),
+      icon: Math.round(mid(box('.icon')) - mid(heading)),
+      below: description.top >= heading.bottom,
+      flush: Math.round(description.left - heading.left),
+    };
+  });
+  expect(r).toEqual({ chevron: 0, icon: 0, below: true, flush: 0 });
+});

@@ -40,8 +40,10 @@
 /* ── Summary: the toggle row ─────────────────────────────────────────── */
 .header {
   display: flex;
-  /* CENTRED, in an even padding. Will, 2026-10-22. TRAP T-an-accordion-chevron-rides-the-heading-row */
-  align-items: center;
+  /* ONE heading row, in an even padding: the chevron, icon and badge centre on
+     the heading's line; a description is the row under it. Will, TODO 471.
+     TRAP T-an-accordion-chevron-rides-the-heading-row */
+  align-items: start;
   gap: var(--sherpa-theme-gap-sm, 4px);
   padding-block: var(--sherpa-display-mode-space-sm, 12px);
   padding-inline: var(--sherpa-theme-padding-md, 8px);
@@ -88,7 +90,9 @@
 /* ── Badge ── a mark while SHUT, on the heading's row. Will, TODO 418 */
 .badge {
   display: none;
-  align-self: center;
+  margin-block: calc(
+    (var(--sherpa-theme-content-line-height-base, 20px)
+     - var(--sherpa-display-mode-size-sm, 16px)) / 2);
 }
 :host(:state(has-badge)) .root:not([open]) .badge { display: inline-flex; }
 
@@ -128,7 +132,6 @@
   transition: transform 160ms ease;
   /* Centred in the heading's row. The ICON keeps its own drawn size — sizing
      the box here made it 20px and broke the icon's own contract. */
-  align-self: center;
   margin-block: calc(
     (var(--sherpa-theme-content-line-height-base, 20px)
      - var(--sherpa-theme-content-size-base, 14px)) / 2);
@@ -142,7 +145,6 @@
    heading's row, as the chevron is. */
 .icon {
   display: none;
-  align-self: center;
   margin-block: calc(
     (var(--sherpa-theme-content-line-height-base, 20px)
      - var(--sherpa-theme-content-size-base, 14px)) / 2);

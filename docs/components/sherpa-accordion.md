@@ -76,6 +76,7 @@ What each class's base rule reads:
 | `--sherpa-theme-padding-md` | `.actions` | `margin-inline-end` |
 | `--sherpa-theme-content-line-height-base` | `.actions` | `block-size` |
 | `--sherpa-display-mode-space-2xs` | `.actions` | `gap` |
+| `--sherpa-theme-content-line-height-base` | `.badge` | `margin-block` |
 | `--sherpa-display-mode-space-3xs` | `.titles` | `gap` |
 | `--sherpa-theme-content-body-base` | `.heading` | `color` |
 | `--sherpa-font-size-body-base` | `.heading` | `font-size` |

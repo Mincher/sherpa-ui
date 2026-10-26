@@ -152,7 +152,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
 | ⬜ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
-| ⬜ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
+| ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2257,12 +2257,18 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 471 — LOOK: an accordion header's rows
+### `[x]` ✅ 471 — LOOK: an accordion header's rows
 
 Will, 2026-10-26: *"The chevron, icon, and heading of an accordion should be on
 the same row and aligned vertically. The description is on a separate row,
 left side flush with the heading label's left side."* (Seen in the panel's
 Local Context sections: "By status" over "Bar Chart", from 457.)
+
+**Done.** The summary row is `align-items: start`; the chevron, icon and badge
+each centre on the heading's line, and the description is the row under it,
+flush with the heading — every accordion, not only the panel's. It replaces
+the 10-22 centre of the whole header. TRAP
+`T-an-accordion-chevron-rides-the-heading-row`; `reforged-accordion`.
 
 ### `[ ]` ⬜ 470 — TEST: a WebKit flake leaving Settings
 
