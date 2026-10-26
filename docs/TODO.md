@@ -147,6 +147,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
 | ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
+| ⬜ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2137,6 +2138,12 @@ out, stayed in the Query, and could come back on matching nothing. Turned off,
 a chip now drops each pick the filters before it rule out; a valid pick is kept
 off, as before, and with none left the field clears. Test: Demos
 `reforged-limit-options` (3 engines).
+
+### `[ ]` ⬜ 466 — FEATURE: Always show client side match counts
+
+Will, 2026-10-26: *"Add a filtering setting to 'Always show client side match
+counts' even if the filter chip value hasn't been selected and/or the filter
+chip isn't active."*
 
 ### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
 
