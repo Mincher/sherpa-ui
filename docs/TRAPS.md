@@ -18355,6 +18355,10 @@ alone (`compile`, "one field, one scope"), and the grid marks the View's
 matches, not the heading's own. The heading keeps its answer for when the View
 lets the field go.
 
+A CELL's chip on such a field shows inactive and refuses before a pick (374),
+and does not show on a value the View filters by: it has nothing to take off
+there (Will, TODO 456).
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query.ts`
 **A read-only row removes nothing** (Will, TODO 236): no row ×, and its

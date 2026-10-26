@@ -3198,18 +3198,24 @@ test.describe('a cell filter chip', () => {
     ]);
   });
 
-  test('an INACTIVE chip on a field the View holds, that refuses; none on a grid whose headings do not filter', async ({ page }) => {
-    await page.evaluate(() => (document.querySelector('sherpa-data-grid') as HTMLElement & {
-      supersedeColumns(r: Record<string, unknown>, at?: string): void }).supersedeColumns({ team: { picked: ['Red'] } }, 'App header'));
+  test('an INACTIVE chip on a field the View holds, that refuses; none on a value it filters by, or where headings do not filter', async ({ page }) => {
+    const hold = (picked: string[]) => page.evaluate((p) => (document.querySelector('sherpa-data-grid') as HTMLElement & {
+      supersedeColumns(r: Record<string, unknown>, at?: string): void }).supersedeColumns({ team: { picked: p } }, 'App header'), picked);
+    await hold([]);
     await cell(page, 'team', 1).hover();
     const held = chipOf(page, 'team', 1);
     await expect(held).toBeVisible();
     await expect(held).toHaveAttribute('data-superseded', '');
     await expect(held).toHaveAttribute('data-applied-at', 'App header');
-    // ON as the View holds it: Red is the View's pick.
-    await expect(held).toHaveAttribute('data-current', '');
+    await expect(held).not.toHaveAttribute('data-current', '');
     await held.evaluate((c) => c.shadowRoot!.querySelector<HTMLElement>('.caret')!.click());
     expect(await heard(page)).toEqual([]);
+    // The View FILTERS by this value: nothing to take off here, so no chip. Will, TODO 456
+    await hold(['Red']);
+    await cell(page, 'name', 1).hover();
+    await cell(page, 'team', 1).hover();
+    await expect(held).toHaveAttribute('data-current', '');
+    await expect(held).toBeHidden();
     // A field the grid holds itself is a live chip again.
     await cell(page, 'name', 1).hover();
     await expect(chipOf(page, 'name', 1)).not.toHaveAttribute('data-superseded', '');
