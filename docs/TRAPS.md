@@ -1780,11 +1780,14 @@ the provider passes to `bindSource()`, and `describe(scope)` reports as
 itself. Figma has no chart glyph of its own yet, so a chart's section wears
 `reports` (three bars), and `table-columns` stands in for a table glyph.
 
+The filter panel COLUMN (the toolbar's portrait accordions) wears no icon —
+Will, TODO 472: its description names the component instead ("Bar Chart",
+TODO 457). The classic panel keeps its icons.
+
 - Site: `src/core/ui/context.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-a-filter-set-groups-or-chains
 
@@ -19308,6 +19311,22 @@ against `/`. Its tests are in its own project.
 
 - Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
+
+### T-a-page-scope-starts-with-its-answers
+
+**A page definition's scope may START with answers** (`where`, as a View
+writes them) — Will, TODO 464: Records' Date opens on "Last 12 months". They are
+NOT a component's own default (`declareDefault`): that makes its scope
+"fixed", and a View-held field's picks would stop being set aside. So the
+Query keeps them apart, as `starts` (`declareStart`), and `definitionOf` lays
+them under any View or restore that does not name the scope — as it does a
+component's default. Without that, a View naming only its data scope (Records'
+"All customers") started the View scope on a clean slate: Reset to default
+took the Date off, and the page never read as at its default.
+
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `test/unit/page-definition.test.mjs`
 
 ### T-the-app-context-is-one-answer
 

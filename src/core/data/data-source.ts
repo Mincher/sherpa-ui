@@ -1161,6 +1161,7 @@ export class DataSource extends EventTarget {
   #definition(given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft, copy = true): Query {
     return definitionOf(given, keep, base, {
       defaults: this.#defaults,
+      starts: this.#member.live().starts,
       readingsOf: (where) => this.readingsOf(where),
       carriesOver: (f) => this.#catalogue.carriesOver(f),
     }, copy);

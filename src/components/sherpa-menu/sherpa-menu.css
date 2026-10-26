@@ -269,6 +269,9 @@
 .condition-row:is([data-takes="date"], [data-takes="dates"], [data-takes="duration"]) > :is(.condition-time, .condition-time-to, .condition-unit) { flex: 2 1 0; min-inline-size: 0; }
 /* A FLOATING card hugs its rows, so a day needs a floor there: it was clipped to "dd/mm". */
 :host(:not([data-inline])) .condition-row:is([data-takes="date"], [data-takes="dates"]) > :is(.condition-date, .condition-date-to) { min-inline-size: 9.5rem; }
+/* …and "In the last 12 months" its count and unit: they shrank to a stepper and a caret. Will, TODO 464 */
+:host(:not([data-inline])) .condition-row[data-takes="duration"] > .condition-count { min-inline-size: 5rem; }
+:host(:not([data-inline])) .condition-row[data-takes="duration"] > .condition-unit { min-inline-size: 7rem; }
 /* …and the row's real right end, where nothing follows it. TRAP T-a-hidden-sibling-still-counts-as-first-child */
 :host(:not([data-time])) .condition-row[data-only][data-takes="date"] > .condition-date,
 :host([data-time]) .condition-row[data-only][data-takes="date"] > .condition-time,

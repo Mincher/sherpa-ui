@@ -283,3 +283,21 @@ test('a date is a RANGE only when its field says so, in the View too (TODO 397)'
   assert.equal(view.find((f) => f.id === 'due').range, undefined);
   assert.equal(source.describe('data').filters.find((f) => f.id === 'seen').range, undefined);
 });
+
+// Will, TODO 464: a page's scope may START with answers, as a View writes them.
+test('a scope\'s `where` is its answer at the start: in force, and what Reset puts back', async () => {
+  const source = await openSource({
+    store: 'rows',
+    fields: { created: { label: 'Date', type: 'date' }, plan: { label: 'Plan' } },
+    scopes: { view: { holds: ['created', 'plan'], where: { created: { last: 12, unit: 'month' }, plan: { eq: 'pro' } } } },
+  }, new ArrayStore([{ id: 1, created: '2026-01-01', plan: 'pro' }], { key: 'id' }));
+  const readings = source.query.applied.scopes.view.readings;
+  assert.deepEqual(readings.created.conditions, [{ op: 'last', text: '12', unit: 'month' }]);
+  assert.deepEqual(readings.plan.picked, ['pro']);
+  // A View that names only another scope keeps it — and that is the default. TRAP T-a-page-scope-starts-with-its-answers
+  const start = source.query.applied;
+  const view = { v: 1, scopes: { data: { sort: [], group: null, search: '' } } };
+  await source.query.setQuery(view, { holds: 'keep' });
+  assert.deepEqual(source.query.applied.scopes.view.readings.plan.picked, ['pro']);
+  assert.equal(source.atDefault(start, view), true);
+});

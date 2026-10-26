@@ -9006,7 +9006,7 @@
                   }
                 }
               ],
-              "description": "nameScope(scope) — its source names its scope: a portrait bar's heading, and an icon for what it narrows. TODO 425"
+              "description": "nameScope(scope) — its source names its scope: a portrait bar's heading, and the component it narrows. TODO 425"
             },
             {
               "kind": "method",

@@ -145,7 +145,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
 | ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
-| ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
+| 🚧 | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | ✅ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
 | ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
@@ -153,6 +153,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
 | ⬜ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
 | ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
+| ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
+| ⬜ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2206,7 +2208,7 @@ anywhere — while `pointermove` named each element. The bar follows
 `pointermove` now: every rest lights in ~200ms, every leave clears. The test
 rests three times. TRAP T-a-hovered-chip-previews-the-highlight.
 
-### `[ ]` ⬜ 464 — REVIEW: the date chip and its logic
+### `[ ]` 🚧 464 — REVIEW: the date chip and its logic
 
 Will, 2026-10-26: *"I think, in general, the date chip and it's logic just need
 a good thourough review, clean up, and correction."* His bugs:
@@ -2218,6 +2220,38 @@ a good thourough review, clean up, and correction."* His bugs:
 - Demos: the View/App Context's date chips default to an Advanced filter,
   'Last 12 months', active.
 - Toggling the date chip's active state glitches, and can clear its value.
+
+**2026-10-26, part 1.**
+- ✅ The "In the last" row: its count and unit had shrunk to a stepper and a
+  caret in a floating card; each has a floor now (5rem, 7rem).
+- ✅ A page's scope may START with answers: `where` in the page definition, as a
+  View writes it (`{ "created": { "last": 12, "unit": "month" } }`); Reset puts
+  it back. Schema and `openSource`.
+- Toggling on and off, with Apply between (Records' Date, a range), applied and
+  suspended cleanly every time; a range chip opens on today as a one-day range
+  (`[today, today]`).
+
+✅ **D1 — the Demos default "Last 12 months"** — Will: A. Done: the Demos
+records' dates are the 12 months up to today (the same draws, so no other value
+moved), reseeded once a day (`seedVersion` is today's date); Records' View starts
+on Advanced "Last 12 months", on; "Renewals this quarter" is the last 3 months.
+Was: The Demos data is from 2024
+(and today, 26 Oct 2026), so Last 12 months leaves about ONE row on Records.
+**A (pick):** make the demo data's dates relative to today, so the last 12
+months hold most rows — many Demos tests read fixed 2024 dates and move with it.
+**B:** keep the data; default to a span it covers (Last 36 months).
+
+**Part 2.** Found and fixed: a date chip answered by an Advanced row ("In the
+last 12 months") read as OFF — the chip counted only picks and typing, so the
+bar said one thing and the Query another; on a panel's first draw its menu had
+not even drawn its mode. It is ON now, by the reading's own mode. And a page's
+starting answers outlive a View that does not name their scope (`declareStart`,
+TRAP `T-a-page-scope-starts-with-its-answers`): Records' first View had wiped
+the Date, so Reset to default took it off and the page never read as at default.
+
+❓ **D2 — repro for the rest.** "Erratic" active state, the toggle glitch that
+clears the value, and "range defaults to a range" did not show in the paths
+above. Which page, chip and clicks?
 
 ### `[x]` ✅ 465 — BUG: an invalid filter turned off kept its value
 
@@ -2256,6 +2290,22 @@ Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
 save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[ ]` ⬜ 473 — LOOK: a chip without an icon is as big as one with
+
+Will, 2026-10-26: *"Filter chips with no icon are visually smaller than those
+with icons. We need to increase their size to meet those with icons. Ideally do
+this using padding value changes."*
+
+### `[x]` ✅ 472 — LOOK: no icon on a panel section's header
+
+Will, 2026-10-26: *"We can ditch the icons in the filter panel sections."*
+Asked which: the section headers only ("By status", "Customer records"); a
+field's name keeps its icon.
+
+**Done.** The panel column's accordions wear no icon; their description names
+the component (457). The classic panel keeps its icons. Demos
+`reforged-panel-scope-icon`.
 
 ### `[x]` ✅ 471 — LOOK: an accordion header's rows
 

@@ -52,11 +52,6 @@ const CHIP = '.chips > .chip';
 /** How long a pointer rests on a chip before it previews the highlight. TODO 449 */
 const HOVER_WAIT = 150;
 
-/** A portrait scope's icon, for what it narrows. TRAP T-a-scope-says-what-it-shows */
-const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
-  view: 'monitor', chart: 'reports', grid: 'table-columns', form: 'file-lines', list: 'list',
-};
-
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
   group?: OrganiseColumn[];
@@ -574,8 +569,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Left and Right move between the bar's controls. TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
     const bar = this.$('.bar');
     if (bar) toolbarKeys(bar);
-    // PORTRAIT: the accordion wears what its scope narrows. TODO 425
-    this.#drawIcon();
+    // PORTRAIT: the accordion says which component its scope narrows. TODO 457
+    this.#drawDescription();
     this.addEventListener('quick-filter-click', this.#onChipClick);
     // Delegated: every control fires the same button-click; data-act says which.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
@@ -935,29 +930,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** nameScope(scope) — its source names its scope: a portrait bar's heading,
-   *  and an icon for what it narrows. TODO 425 */
+   *  and the component it narrows. TODO 425 */
   nameScope(scope: { scope?: string; label: string; shows?: ScopeShows | undefined; component?: string | undefined }): void {
     if (scope.scope) this.#scope = scope.scope;
     if (scope.label) this.set('data-heading', scope.label);
-    this.#shows = scope.shows;
     this.#component = scope.component;
-    this.#drawIcon();
+    this.#drawDescription();
   }
 
   /** The scope its source drew. */
   #scope = '';
-  /** What its scope narrows. */
-  #shows: ScopeShows | undefined;
-  /** …and which component, by its tag. TODO 457 */
+  /** Which component its scope narrows, by its tag. TODO 457 */
   #component: string | undefined;
-  /** …as the portrait accordion's icon, and its name under the scope's: "Bar
-   *  Chart", "Data Grid". A flat scope's heading wears neither. Will, TODO 457 */
-  #drawIcon(): void {
+  /** …as the portrait accordion's description, under the scope's name: "Bar
+   *  Chart", "Data Grid". No icon: Will, TODO 472. A flat scope's heading has none. */
+  #drawDescription(): void {
     const portrait = this.templateId === 'portrait';
-    const icon = this.#shows && portrait ? SHOWS_ICON[this.#shows] : undefined;
     const box = this.$('.scope');
-    if (icon) box?.setAttribute('data-icon', icon);
-    else box?.removeAttribute('data-icon');
     const named = portrait && this.#component ? this.#componentName(this.#component) : '';
     if (named) box?.setAttribute('data-description', named);
     else box?.removeAttribute('data-description');

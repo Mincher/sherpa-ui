@@ -22,6 +22,7 @@
  * - .scopeOf — Which scope holds this field, or null.
  * - .fields — The fields a scope may hold.
  * - .canHold — May this scope hold this field?
+ * - .declareStart — declareStart(scope, readings) — a scope's answers at the start, as its page defines them: in force now, what…
  * - .defaultFor — A component's own default, as `declareDefault` left it — not its answer now.
  * - .partFacts — What `declarePart` was told for this scope, or undefined.
  * - .scopeFacts — What `declareScope` was told — not the fallbacks `scopeLabel()` and `arranges()` answer with.
@@ -162,6 +163,8 @@ export interface QueryLive {
   /** Each component's OWN default filter, by its scope.
    *  TRAP T-a-component-default-outlives-a-view */
   readonly defaults: Map<string, ScopeQuery>;
+  /** Each scope's answers at the start, as its page defines them. TODO 464 */
+  readonly starts: Map<string, ScopeQuery>;
   /** Each scope's name as a reader sees it. */
   readonly labels: Map<string, string>;
   /** Each scope's own word on whether it arranges. */
@@ -215,7 +218,7 @@ export class QueryContext extends EventTarget {
     const applied: Query = { v: 1, scopes: {} };
     this.#live = {
       applied, draft: applied,
-      defaults: new Map(), labels: new Map(), arranges: new Map(), sets: new Map(), offers: new Map(), parts: new Map(),
+      defaults: new Map(), starts: new Map(), labels: new Map(), arranges: new Map(), sets: new Map(), offers: new Map(), parts: new Map(),
     };
   }
 
@@ -283,6 +286,22 @@ export class QueryContext extends EventTarget {
   /** May this scope hold this field? Up is open; down is closed. */
   canHold(name: string, field: string): boolean {
     return name === VIEW || (this.#live.offers.get(name) ?? []).includes(field);
+  }
+
+  /**
+   * declareStart(scope, readings) — a scope's answers at the start, as its page
+   * defines them: in force now, what Reset to default puts back, and where a View
+   * or a restore that does not name the scope starts it. Unlike a component's
+   * own default, the scope stays the reader's. Will, TODO 464.
+   * TRAP T-a-page-scope-starts-with-its-answers
+   */
+  declareStart(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
+    for (const [field, reading] of Object.entries(readings)) this.#write(scope, field, reading);
+    const written = this.#live.draft.scopes[scope];
+    if (!written) return;
+    const start = structuredClone(written);
+    for (const r of Object.values(start.readings)) freezeReading(r);
+    this.#live.starts.set(scope, Object.freeze(start));
   }
 
   /** A component's own default, as `declareDefault` left it, or undefined — not
@@ -941,6 +960,7 @@ export class QueryContext extends EventTarget {
     }
     const next = definitionOf(query, options.holds === 'keep', this.#live.draft, {
       defaults: this.#live.defaults,
+      starts: this.#live.starts,
       readingsOf: (where) => this.#readingsOf(where),
       carriesOver: (f) => this.#knows(f)?.carriesOver(f) ?? false,
     });

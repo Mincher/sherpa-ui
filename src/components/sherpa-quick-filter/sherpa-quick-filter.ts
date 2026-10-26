@@ -392,8 +392,11 @@ export class SherpaQuickFilter extends SherpaElement {
     if (body === 'date') {
       menu.reading = next;
       this.#applySelection(menu.values ?? []);
-      const days = (next.text ?? '').trim() ? 1 : (next.picked ?? []).length;
-      this.current = days > 0 && !next.suspended;
+      /* In Advanced its ROWS answer it — "In the last 12 months" is ON. The
+         reading's own mode first: a menu not yet drawn still says Simple. Will, TODO 464 */
+      const answered = (next.mode ?? menu.mode) === 'advanced' ? readingRows(next).length > 0
+        : (next.text ?? '').trim() !== '' || (next.picked ?? []).length > 0;
+      this.current = answered && !next.suspended;
       this.refresh();
       return;
     }

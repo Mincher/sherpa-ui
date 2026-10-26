@@ -278,6 +278,8 @@ export function viewHeldReadings(query: Query): Record<string, FieldReading> {
 export interface DefinitionFacts {
   /** Each component's own default, by its scope. */
   defaults: ReadonlyMap<string, ScopeQuery>;
+  /** Each scope's answers at the start, as its page defines them. TODO 464 */
+  starts?: ReadonlyMap<string, ScopeQuery>;
   /** A View's plain conditions as readings, by the source's field types. */
   readingsOf: (where: Where) => Record<string, FieldReading>;
   /** Does this field keep its answer across Views? */
@@ -340,6 +342,9 @@ export function definitionOf(
      and a restore from before it joined. A View may name it to change it.
      TRAP T-a-component-default-outlives-a-view */
   for (const [id, scope] of facts.defaults) next.scopes[id] ??= structuredClone(scope);
+  /* …and so does a PAGE's start for a scope: a View or a restore that does not
+     name it starts it there. TRAP T-a-page-scope-starts-with-its-answers */
+  for (const [id, scope] of facts.starts ?? []) next.scopes[id] ??= structuredClone(scope);
   // A RESTORE is exact; only a View keeps chips and shows its answers on them.
   if (!keep) return next;
   /* A carry-over field keeps its answer where the View gives none.

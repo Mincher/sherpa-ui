@@ -112,6 +112,10 @@
           "oneOf": [{ "const": "all" }, { "type": "array", "items": { "type": "string" } }]
         },
         "holds": { "description": "The fields it holds at the start.", "type": "array", "items": { "type": "string" } },
+        "where": {
+          "description": "Its answers at the start, field by field, as a View writes them: { \"created\": { \"last\": 12, \"unit\": \"month\" } }. Reset puts them back.",
+          "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" }
+        },
         "arranges": {
           "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope over a grid or a list does, and the View does not.",
           "type": "boolean"

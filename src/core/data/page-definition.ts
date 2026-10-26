@@ -16,6 +16,7 @@ import { report } from './report.js';
 import type { Store } from './store.js';
 import type { QueryContext } from './query-context.js';
 import { isSavedFilter, type SavedFilter } from './query.js';
+import type { Condition } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
 export interface ScopeDefinition {
@@ -28,6 +29,9 @@ export interface ScopeDefinition {
   /** Group and Sort arrange its rows: its Organise chips. Left out, a scope
    *  over a grid or a list does, and the View does not. Will, TODO 99 */
   arranges?: boolean;
+  /** Its answers at the start, in the plain form a View writes:
+   *  `{ "created": { "last": 12, "unit": "month" } }`. Reset puts them back. Will, TODO 464 */
+  where?: Readonly<Record<string, Condition>>;
 }
 
 /** A page's source: which store, how it pages and searches, its fields and
@@ -96,6 +100,7 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
       source.query.hold(scope, facts.holds);
       source.declarePresets(scope, facts.holds);
     }
+    if (facts.where) source.query.declareStart(scope, source.readingsOf(facts.where));
     for (const set of facts.sets ?? []) {
       for (const field of set.fields) {
         if (facts.holds?.includes(field)) continue;
