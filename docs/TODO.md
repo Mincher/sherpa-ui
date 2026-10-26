@@ -155,7 +155,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
 | ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
 | ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
-| ⬜ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
+| ✅ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2299,10 +2299,14 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 474 — LOOK: a narrower label column in the panel
+### `[x]` ✅ 474 — LOOK: a narrower label column in the panel
 
 Will, 2026-10-26: *"We can narrow the column for panel section labels
 slightly. Maybe 75-80% of the current width."* (460's column is 120px.)
+
+**Done.** 96px — 80%, on the grid — in the chip and the toolbar's lone-chip
+heading alike. One name no longer fits whole: "Customer" with its icon AND a
+count reads "CUSTO…" (its tooltip says it in full).
 
 ### `[x]` ✅ 473 — LOOK: a chip without an icon is as big as one with
 

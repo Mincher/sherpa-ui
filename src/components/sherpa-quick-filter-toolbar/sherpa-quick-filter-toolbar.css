@@ -340,7 +340,7 @@ sherpa-accordion.scope::part(actions) {
 }
 :host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .chips > .chip[data-section-start]::before,
 :host([data-orientation="portrait"][data-label-column]:state(has-organise):not([data-no-sections])) .organise-zone::before {
-  flex: 0 0 var(--sherpa-quick-filter-label-size, 120px);
+  flex: 0 0 var(--sherpa-quick-filter-label-size, 96px);
   min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;

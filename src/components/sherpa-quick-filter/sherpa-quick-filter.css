@@ -147,7 +147,7 @@
    panel scans down one edge and spends no row on a heading. Advanced rows keep
    the whole row under it. Will, TODO 460 */
 :host([data-layout="section"][data-label-start]) .chip {
-  grid-template-columns: var(--sherpa-quick-filter-label-size, 120px) minmax(0, 1fr) auto;
+  grid-template-columns: var(--sherpa-quick-filter-label-size, 96px) minmax(0, 1fr) auto;
   align-items: start;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
