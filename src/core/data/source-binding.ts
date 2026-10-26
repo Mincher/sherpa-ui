@@ -16,6 +16,7 @@
  * - .fieldsRead — The fields the bound components read from a row, or null — every field.
  * - .wantsAllRows — Is any bind asking for the unpaged set?
  * - .showsOf — What the first component bound into a scope says it shows.
+ * - .componentOf — The tag of the first component bound into a scope that says what it shows.
  * - .showsRows — Is a grid or a list bound into this scope?
  * - .publish — Push rows and state to every bound component.
  * - .push — Give one component the rows and the view state.
@@ -30,6 +31,7 @@
  * - .supersede — Tell each bar below the View which of its fields the View holds now.
  * - .syncPending — Tell each control over a scope its pending fields and whether it is dirty.
  * - .debug — Each bind, for a bug report.
+ * - tagOf — A bound control's tag, where it is an element.
  */
 import { VIEW } from './query.js';
 import { andFilter, filterRows, type Filter, type Row } from './store.js';
@@ -155,6 +157,11 @@ export class SourceBinding {
   /** What the first component bound into a scope says it shows. */
   showsOf(scope: string): AttachFacts['shows'] {
     return [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows;
+  }
+
+  /** The tag of the first component bound into a scope that says what it shows. TODO 457 */
+  componentOf(scope: string): string | undefined {
+    return tagOf([...this.#bound].find(([, b]) => b.scope === scope && b.shows)?.[0]);
   }
 
   /** Is a grid or a list bound into this scope? */
@@ -308,4 +315,10 @@ export class SourceBinding {
       id: e.id, rows: e.rows, readonly: e.readonly, steerOnly: e.steerOnly,
     }));
   }
+}
+
+/** A bound control's tag, where it is an element. No DOM: it is only read. */
+export function tagOf(control: unknown): string | undefined {
+  const tag = (control as { localName?: unknown } | undefined)?.localName;
+  return typeof tag === 'string' ? tag : undefined;
 }

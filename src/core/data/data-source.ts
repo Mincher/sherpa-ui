@@ -63,7 +63,7 @@ import {
 } from './store.js';
 import { readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
-import { SourceBinding } from './source-binding.js';
+import { SourceBinding, tagOf } from './source-binding.js';
 import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
@@ -401,6 +401,7 @@ export class DataSource extends EventTarget {
       const reading = q.readings[part.field];
       return {
         scope, label: part.label ?? def.label, shows: 'chart', part: true, available: [],
+        ...(tagOf(part.only) ? { component: tagOf(part.only)! } : {}),
         filters: options?.length ? [{
           ...def,
           options: options.map((o, i) => ({ ...o, swatch: i + 1 })),
@@ -431,9 +432,10 @@ export class DataSource extends EventTarget {
     });
     const shows = scope === VIEW ? 'view'
       : this.#binding.showsOf(scope);
+    const component = scope === VIEW ? undefined : this.#binding.componentOf(scope);
     const sets = this.#context.sets(scope);
     const out: ScopeDescription = {
-      scope, label: this.#context.scopeLabel(scope), ...(shows ? { shows } : {}), filters: fields,
+      scope, label: this.#context.scopeLabel(scope), ...(shows ? { shows } : {}), ...(component ? { component } : {}), filters: fields,
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };

@@ -137,6 +137,8 @@ export interface ScopeDescription {
   label: string;
   /** What it narrows, as its bound component says. TRAP T-a-scope-says-what-it-shows */
   shows?: ScopeShows;
+  /** …and WHICH component, by its tag: a panel says it under the scope's name. TODO 457 */
+  component?: string;
   /** A PART: one component's own answer to ONE field — a chart's legend field.
    *  Nothing is added to it or saved from it. TRAP T-a-chart-scope-is-its-legend-field */
   part?: boolean;

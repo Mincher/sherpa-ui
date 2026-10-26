@@ -5,9 +5,9 @@
 
 :host {
   display: block;
-  /* Fixed 120 (Figma 150:3690), and it has to be on the HOST — sized by content,
-     tightening any inner gap shrank the whole header. */
-  block-size: 120px;
+  /* Fixed, on the HOST, so a Context without filters keeps the same edge. The
+     View & Context row is 48–80, level with the nav's Search. TODO 461 */
+  block-size: 88px;
   /* Two container types on one element: `inline-size` for the layout queries
      below, `scroll-state` for the stuck check. One alone cannot do both.
      `inline-size` FIRST: an engine without `scroll-state` drops the whole
@@ -28,8 +28,8 @@
   transition: box-shadow 150ms ease;
 }
 
-/* Positioning context for the loading-bar overlay; fills the host's fixed 120 so
-   the context block can bottom-align inside it. */
+/* Positioning context for the loading-bar overlay; fills the host's fixed height
+   so the context block can bottom-align inside it. */
 .bar {
   position: relative;
   display: flex;
@@ -49,7 +49,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-base, 16px);
   padding: var(--sherpa-theme-gap-md, 8px);
   /* Fills the host's fixed height, so the context block below bottom-aligns rather
      than the header shrinking to fit. */
@@ -142,7 +142,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
-  /* At the bottom of the fixed 120. */
+  /* At the bottom of the fixed height. */
   margin-block-start: auto;
 }
 

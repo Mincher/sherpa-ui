@@ -137,18 +137,19 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ✅ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
 | ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
-| ⬜ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
-| ⬜ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
+| ✅ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
+| ✅ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
 | ⬜ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
 | ✅ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
-| ⬜ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
+| ✅ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
 | ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
 | ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | ⬜ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
 | ⬜ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
+| ⬜ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2045,18 +2046,30 @@ input rows (menu content) should be shown directly in the filter section in
 the panel. I swear we had this before."* The classic panel draws them inline;
 the portrait column (425) shows a chip (G14).
 
-### `[ ]` ⬜ 456 — LOOK: no Remove filter on a cell the View filters
+### `[x]` ✅ 456 — LOOK: no Remove filter on a cell the View filters
 
 Will, 2026-10-26: *"Data Grid cells that are filtered, but in the view/app
 scope, shouldn't show the 'Remove filter' icon button on hover."* The cell
 chip is 373 and 416's; 374 made it inactive for a View field before a pick.
 
-### `[ ]` ⬜ 457 — LOOK: a panel accordion header says what it targets
+**Done.** The grid's CSS shows the cell chip only where it is not
+`[data-superseded][data-current]`: a field the View holds, with a pick. Before
+a pick it still shows, inactive (374). Demos `reforged-cell-filter`: a Region
+cell has the chip, and none once the View picks EMEA.
+
+### `[x]` ✅ 457 — LOOK: a panel accordion header says what it targets
 
 Will, 2026-10-26: *"In the filter panel, add a description label to the
 accordion headers that say the type of content/component targeted (e.g. Bar
 Chart, Data Grid). I think we already have logic for this to set the
 appropriate icon in the accordion header that we can reuse."*
+
+**Done.** The same door as the icon: `describe()` gives each scope its
+`component` (the bound control's tag, `SourceBinding.componentOf`), and
+`nameScope()` writes its name as the accordion's `data-description` — from the
+toolbar's words where the tag says it badly (`sherpa-barchart` → "Bar Chart"),
+else Title Case from the tag. Demos `reforged-filter-column`: Bar Chart,
+Radial Chart, Data Grid; the View has none.
 
 ### `[ ]` ⬜ 458 — FILTERS: the highlight reaches the whole View
 
@@ -2093,7 +2106,7 @@ should hopefully help make the panel more scannable and also reduce the amount
 of vertical height used. This could also be a configurable filtering setting
 (on by default for now)."*
 
-### `[ ]` ⬜ 461 — LOOK: a shorter App Header
+### `[x]` ✅ 461 — LOOK: a shorter App Header
 
 Will, 2026-10-26: *"With moving the app header icon and heading label up to the
 first row, we can reduce the gap between that row and the View & Context
@@ -2101,6 +2114,11 @@ controls. This should overall reduce the height of the App Header
 considerably. A gap of 16 or 24px between the rows would probably be best."*
 And: *"if the view & context row could vertically line up with the Search
 icon/input in the nav that would be ideal."*
+
+**Done.** 16px. The header is 88px, not 120: top row 8–32, a 16px gap
+(`space-base`), the View & Context row 48–80 — level with the nav's Search.
+Still a fixed height, so a Context without filters keeps the same edge. Demos
+`reforged-app-shell` measures it.
 
 ### `[x]` ✅ 462 — BUG: an on filter ruled out can be turned off, not on
 
@@ -2172,6 +2190,12 @@ Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
 save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[ ]` ⬜ 468 — LOOK: Advanced buttons and condition strings follow the active colour
+
+Will, 2026-10-26: *"Filter menu Advance Filter buttons, and advanced filter
+condition string highlighting, should use the same colour scheme that the
+active filters use. Currently they always use the default active purple."*
 
 ### `[ ]` ⬜ 467 — FEATURE: highlight across every scope, or one
 

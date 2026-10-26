@@ -828,10 +828,11 @@
   inset-block-start: 50%;
   translate: 0 -50%;
 }
-/* Only where the headings filter too. */
-:host([data-column-filters]) .cell:is(:hover, :focus-within) > .cell-filter { display: inline-flex; }
+/* Only where the headings filter too — and not on a value the View filters by:
+   it has nothing to take off here. Will, TODO 456 */
+:host([data-column-filters]) .cell:is(:hover, :focus-within) > .cell-filter:not([data-superseded][data-current]) { display: inline-flex; }
 /* Its cell makes room for it, and lets it paint in its padding. */
-:host([data-column-filters]) .cell:is(:hover, :focus-within):has(> .cell-filter) {
+:host([data-column-filters]) .cell:is(:hover, :focus-within):has(> .cell-filter:not([data-superseded][data-current])) {
   padding-inline-end: calc(var(--sherpa-display-mode-size-lg, 24px) + 2 * var(--sherpa-display-mode-space-2xs, 4px));
   overflow-clip-margin: padding-box;
 }

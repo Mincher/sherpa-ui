@@ -929,10 +929,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** nameScope(scope) — its source names its scope: a portrait bar's heading,
    *  and an icon for what it narrows. TODO 425 */
-  nameScope(scope: { scope?: string; label: string; shows?: ScopeShows | undefined }): void {
+  nameScope(scope: { scope?: string; label: string; shows?: ScopeShows | undefined; component?: string | undefined }): void {
     if (scope.scope) this.#scope = scope.scope;
     if (scope.label) this.set('data-heading', scope.label);
     this.#shows = scope.shows;
+    this.#component = scope.component;
     this.#drawIcon();
   }
 
@@ -940,12 +941,28 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #scope = '';
   /** What its scope narrows. */
   #shows: ScopeShows | undefined;
-  /** …as the portrait accordion's icon. A flat scope's heading wears none. */
+  /** …and which component, by its tag. TODO 457 */
+  #component: string | undefined;
+  /** …as the portrait accordion's icon, and its name under the scope's: "Bar
+   *  Chart", "Data Grid". A flat scope's heading wears neither. Will, TODO 457 */
   #drawIcon(): void {
-    const icon = this.#shows && this.templateId === 'portrait' ? SHOWS_ICON[this.#shows] : undefined;
+    const portrait = this.templateId === 'portrait';
+    const icon = this.#shows && portrait ? SHOWS_ICON[this.#shows] : undefined;
     const box = this.$('.scope');
     if (icon) box?.setAttribute('data-icon', icon);
     else box?.removeAttribute('data-icon');
+    const named = portrait && this.#component ? this.#componentName(this.#component) : '';
+    if (named) box?.setAttribute('data-description', named);
+    else box?.removeAttribute('data-description');
+  }
+
+  /** A component's name, as the markup's words say it — else from its tag. */
+  #componentName(tag: string): string {
+    for (const tpl of this.$$<HTMLTemplateElement>('template.words')) {
+      const hit = tpl.content.querySelector(`[data-word="${CSS.escape(tag)}"]`);
+      if (hit) return hit.textContent?.trim() ?? '';
+    }
+    return tag.replace(/^sherpa-/, '').split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
   /**
