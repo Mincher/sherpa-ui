@@ -96,7 +96,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
 | ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
-| ⬜ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
+| ❓ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
 | ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
@@ -3152,12 +3152,43 @@ button should show a discard icon and be critical status styled."*
 critical, outranking the chip's own on pin. Test: `reforged-data-grid` (cross
 and critical on, funnel off).
 
-### `[ ]` ⬜ 415 — REFACTOR: the toolbar and the panel, simplified
+### `[ ]` ❓ 415 — REFACTOR: the toolbar and the panel, simplified
 
 Will, 2026-10-22: *"With the second bug it's perhaps time to review the filter
 toolbar and panel code, with the querycontext component now in the data layer,
 to simplify the logic and minimise duplication, redundancy, or divergence where
 we don't need it."* Plan first, with Will, as the optimisations re-plan.
+
+**Planned 2026-10-26.** The bar and the column's sections are already ONE class
+(each section is a portrait toolbar). The excess is in four places: the column's
+header copies the bar's; every change rebuilds every chip, which needs a family
+of "keep what the reader did" workarounds; the bar works out state the chip or
+the Query owns; about 16 report paths are built by hand. Steps, each green on
+its own, in order:
+1. One report door — `#answerOf`, `#ask`, `#chipOf` (S–M).
+2. One test and one lookup — `#defOf`, `#fieldOf`, `#answering`; 12 superseded skips (S).
+3. The toolbar calls the chip, not FilterField; dead code out (`#act` 'clear',
+   the chip's `data-panelled`, the `filtersSuspended` setter, `drawFilterActions`'
+   unused arguments) (S).
+4. One header for the bar and the column (`ToolbarHeader`) — nine copied pairs (M).
+5. The chip owns its on/off and its draft (`:state(drafting)`); `data-pending`
+   comes only from the source (M).
+6. Keep chips across a rebuild: a chip whose def is unchanged is moved, not
+   remade — retires the live-DOM capture, `#keepAnswer`/`#pendingAnswers`,
+   `#heldDraws`, `#painted`, the chip's `#recheckEmpty` (L).
+7. A bound bar asks for its fields one change at a time, as the column does,
+   and is drawn once, by `drawScope` (M–L; D2).
+Not touched: the legacy `sherpa-filter-panel` (Demos' compare page still uses
+it — delete it and `filter-field.ts` once that page drops it), the data layer,
+fold/hover/drag/Switch, the cached counts, `values`/`active` on the event.
+
+❓ **D1 — a toolbar with no source** (its own Switch list, adds, early steers;
+~30 specs and the Gallery use one). **A (pick):** keep it, fenced behind
+`#sourced`, so a bound bar is only ever told. **B:** it binds a private Query,
+one path — most code out, but weight and those specs change.
+❓ **D2 — who owns a scope's field list.** **A (pick):** the Query; a bar asks
+one change at a time, as the column does (retires T-a-bar-reports-its-holds,
+T-a-panel-adds-through-the-bar-that-owns-the-list). **B:** the bar, as ratified.
 
 ### `[x]` ✅ 414 — BUG: switching panel and toolbar asks for Apply again
 
