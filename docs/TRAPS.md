@@ -17332,6 +17332,12 @@ reaching into the bar's shadow root.
 
 ### T-a-bar-reports-its-holds
 
+**Since TODO 415 (D2 A) the QUERY owns each scope's list.** A Sherpa bar with a
+source ASKS for one change — `filter-add { scope, ids }` takes, `filter-remove
+{ scope, id }` releases — and is drawn back by its source; it no longer edits
+its own list first. The whole-list report below stays only for a HOST's own
+bar, bound with no such request (and for headless tests).
+
 **A filter bar that asks for its scope REPORTS what it holds, and the source
 keeps each scope's holds from those reports.** Provider P3b, 2026-09-27.
 Before it, Records kept them by hand: `syncScopes` read each bar's chips,

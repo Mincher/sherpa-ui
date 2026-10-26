@@ -266,23 +266,23 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'filter-add':
     case 'filter-remove': {
       const scope = bind?.scope;
-      /* The panel ASKS a scope to take fields — from the Filters menu, or sent up
-         or down; a bar asks for one of its own to MOVE. TRAP T-send-to-view-filters */
-      if (type === 'filter-add' && (Array.isArray(scope) || typeof detail['from'] === 'string')) {
-        const ids = detail['ids'];
+      const named = typeof detail['scope'] === 'string' ? detail['scope'] : undefined;
+      /* ONE CHANGE, ASKED of the Query, which owns each scope's list: a scope
+         TAKES fields — a bar's Add, the panel's Filters menu, or sent up or down —
+         or LETS ONE GO. Will, TODO 415 (D2 A).
+         TRAP T-send-to-view-filters · TRAP T-a-panel-asks-for-its-scopes */
+      if (named && type === 'filter-add' && Array.isArray(detail['ids'])) {
         const from = detail['from'];
-        if (typeof detail['scope'] === 'string' && Array.isArray(ids)) {
-          source.query.take(detail['scope'], ids.map(String), typeof from === 'string' ? from : undefined);
-        }
+        source.query.take(named, (detail['ids'] as unknown[]).map(String), typeof from === 'string' ? from : undefined);
         return;
       }
-      // A scoped bar's chips ARE its scope's holds, said in its event. TRAP T-a-bar-reports-its-holds
+      if (named && type === 'filter-remove' && typeof detail['id'] === 'string') {
+        source.query.release(named, detail['id']);
+        return;
+      }
+      // A control that says its WHOLE list instead — a host's own bar. TRAP T-a-bar-reports-its-holds
       const holds = detail['holds'];
       if (typeof scope === 'string' && Array.isArray(holds)) source.query.hold(scope, holds.map(String));
-      // The panel ASKS a scope to let one go. TRAP T-a-panel-asks-for-its-scopes
-      else if (Array.isArray(scope) && typeof detail['scope'] === 'string' && typeof detail['id'] === 'string') {
-        source.query.release(detail['scope'], detail['id']);
-      }
       return;
     }
     case 'column-filter-change': {

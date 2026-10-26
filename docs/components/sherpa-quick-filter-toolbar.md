@@ -153,8 +153,8 @@ Each one bubbles.
 | `quick-filter-change` | `{ active: string[]; request: QueryRequest \| undefined; scope: 'bar'; values: Record<string, string[]> }` | One reader act, as a request: a field's answer, an on or off, the Switch, Clear all. |
 | `group-change` | `{ field: null \| string }` |  |
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
-| `filter-remove` | `{ filter: object; holds: string[]; id: string }` | A chip was removed. |
-| `filter-add` | `{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }` | Chips were added, ; or a REQUEST to move a field to another scope — Move to View filters, or back. |
+| `filter-remove` | `{ filter: object; holds: string[]; id: string; scope: string }` | A chip was removed. |
+| `filter-add` | `{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }` | Chips were added. |
 | `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
 | `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |

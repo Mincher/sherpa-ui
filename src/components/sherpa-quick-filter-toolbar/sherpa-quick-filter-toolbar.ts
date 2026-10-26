@@ -2187,6 +2187,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Move the chosen available filters onto the bar. SILENT for a restore. */
   #addFilters(ids: string[], { silent = false } = {}): void {
+    /* BOUND, it ASKS for them: the Query owns its scope's list, and its source
+       draws the bar back. Will, TODO 415 (D2 A) */
+    const scope = this.#askingScope(silent);
+    if (scope) {
+      const known = ids.filter((id) => this.#available.some((f) => f.id === id));
+      for (const id of ids) {
+        if (!known.includes(id)) report({ code: 'unknown-filter', message: 'addFilters: this bar offers no such filter, so nothing was added.', at: { id } });
+      }
+      if (known.length) this.emit('filter-add', { scope, ids: known, filters: known.map((id) => this.#available.find((f) => f.id === id)!) });
+      return;
+    }
     const added: FilterDef[] = [];
     for (const id of ids) {
       const i = this.#available.findIndex((f) => f.id === id);
@@ -2220,6 +2231,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Take one filter back OFF the bar. It returns to the Add menu, clean. */
   #removeFilter(id: string, { silent = false } = {}): void {
     const i = this.#filters.findIndex((f) => f.id === id);
+    // BOUND, it ASKS to let it go; its source draws the bar back. TODO 415 (D2 A)
+    const scope = this.#askingScope(silent);
+    if (scope && i >= 0) {
+      const { active: _active, ...filter } = this.#filters[i]!;
+      this.emit('filter-remove', { scope, id, filter });
+      return;
+    }
     if (i < 0) {
       // TRAP T-a-broken-assumption-reports
       report({
@@ -2237,6 +2255,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderAvailable();
     if (silent) return;
     this.emit('filter-remove', { id, filter: clean, holds: this.heldFields });
+  }
+
+  /** The scope a bound bar asks a change of — none unbound, or for a silent
+   *  change its source itself made. TODO 415 */
+  #askingScope(silent: boolean): string | undefined {
+    if (silent || !this.#sourced) return undefined;
+    return this.#scope || this.dataset['scope']?.trim() || undefined;
   }
 
   /* ── Action cluster ────────────────────────────────────────────────── */

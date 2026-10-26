@@ -9236,12 +9236,12 @@
               "name": "filter-remove",
               "description": "A chip was removed.",
               "type": {
-                "text": "CustomEvent<{ filter: object; holds: string[]; id: string }>"
+                "text": "CustomEvent<{ filter: object; holds: string[]; id: string; scope: string }>"
               }
             },
             {
               "name": "filter-add",
-              "description": "Chips were added, ; or a REQUEST to move a field to another scope — Move to View filters, or back.",
+              "description": "Chips were added.",
               "type": {
                 "text": "CustomEvent<{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }>"
               }
