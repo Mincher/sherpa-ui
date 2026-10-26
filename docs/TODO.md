@@ -134,9 +134,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ✅ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
-| ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
+| ❓ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ✅ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
-| ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
+| ✅ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | ✅ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ✅ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
 | ⬜ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
@@ -2030,7 +2030,7 @@ PRESET (`source.declarePresets`, `HeldFilter.preset`) and keeps its place; only
 an added filter drags, among the added ones, picked or not. Group and Sort never
 did. Tests drag added Seats and Spend.
 
-### `[ ]` ⬜ 453 — FEATURE: the App Context, a setting
+### `[ ]` ❓ 453 — FEATURE: the App Context, a setting
 
 Will, 2026-10-26: *"Add a filtering setting to persist the 'View Context'
 filters across all app views (if we don't have it already). When this setting
@@ -2039,13 +2039,42 @@ to an app view (no use of data stores/sources) then we set it as inactive and
 explain this in the tooltip. If this setting is off then each view has it's
 own unique 'View Context' filtering configuration."*
 
-### `[ ]` ⬜ 455 — FILTERS: an Advanced filter's rows, in its panel section
+**Planned 2026-10-26.** Today a View Context answer is per Context (a fresh
+Query per `provider.open()`), then per View, per tab; nothing crosses Contexts.
+- **Setting:** a provider prop `appContext` (as `applyEvery`); Demos' Filtering
+  page gets the switch, off by default.
+- **One answer:** the View scope's filter half (holds, readings, suspended, and
+  each field's face) at session `/filters/_app`. The provider swaps it into the
+  View scope on restore, on a View pick and on Reset (a pure, node-tested merge
+  beside `copyScope`), and writes it back on each reader act. Each Context keeps
+  its own answer underneath.
+- **Not used here:** a new `DataSource.has(field)` (the strict half of `#has`);
+  `declareUnused(VIEW, …)` beside `declarePresets`; the chip gets
+  `data-unused` — inactive, refused, with a tip "Not used on this page: its data
+  has no Date." (e.g. Dashboard has no `created`).
+- **Relabel:** the provider re-declares the View scope's label as "App Context"
+  while on; "Move to View Context" becomes "Move to" + the label.
+
+❓ **D1 — a saved View that sets View Context filters, while this is on**
+(Dashboard's "EMEA operations", Records' "Renewals"). **A (pick):** the App
+answer wins; the View sets only its local filters and sort. **B:** the View's
+filter wins and changes the App answer for every Context.
+
+❓ **D2 — turning it off.** **A (pick):** each Context gets back the answer it
+had before. **B:** each Context starts from the App answer.
+
+### `[x]` ✅ 455 — FILTERS: an Advanced filter's rows, in its panel section
 
 Will, 2026-10-26: *"In the filter panel, instead of showing a chip for
 Advanced filters, that spawns a menu to edit the conditions, the condition
 input rows (menu content) should be shown directly in the filter section in
 the panel. I swear we had this before."* The classic panel draws them inline;
 the portrait column (425) shows a chip (G14).
+
+**Done.** In Advanced, a section's rows are drawn in it, under its heading —
+answered or not — and its values give way; the ⋮'s Advanced only switches the
+mode now, and Simple brings the values back. The section chip makes its own menu
+`data-inline` (the same card, in the flow). Demos `reforged-filter-layouts`.
 
 ### `[x]` ✅ 456 — LOOK: no Remove filter on a cell the View filters
 

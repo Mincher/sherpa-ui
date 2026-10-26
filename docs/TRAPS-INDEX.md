@@ -316,7 +316,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (174)
+## Filters (173)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
@@ -400,7 +400,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-event-name-is-not-always-a-literal](TRAPS.md#t-an-event-name-is-not-always-a-literal) — filter-panel
 - [T-an-inactive-chip-says-where-its-filter-went](TRAPS.md#t-an-inactive-chip-says-where-its-filter-went) — filter-panel, quick-filter, quick-filter-toolbar
 - [T-an-inline-condition-row-keeps-its-tracks](TRAPS.md#t-an-inline-condition-row-keeps-its-tracks) — filter-panel
-- [T-an-inline-menu-is-the-same-menu](TRAPS.md#t-an-inline-menu-is-the-same-menu) — filter-menu, filter-panel
+- [T-an-inline-menu-is-the-same-menu](TRAPS.md#t-an-inline-menu-is-the-same-menu) — filter-menu, filter-panel, quick-filter
 - [T-an-open-panel-follows-the-data-layer](TRAPS.md#t-an-open-panel-follows-the-data-layer) — filter-panel
 - [T-an-operator-decides-pick-or-type](TRAPS.md#t-an-operator-decides-pick-or-type) — filter-menu, quick-filter, quick-filter-toolbar
 - [T-an-organise-chip-has-no-values](TRAPS.md#t-an-organise-chip-has-no-values) — quick-filter
@@ -471,7 +471,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — filter-def, filter-panel, quick-filter-toolbar
 - [T-sort-is-tri-state](TRAPS.md#t-sort-is-tri-state) — quick-filter
 - [T-the-add-menu-is-the-whole-list](TRAPS.md#t-the-add-menu-is-the-whole-list) — filter-panel, filters-button, quick-filter-toolbar
-- [T-the-baseline-is-taken-at-show](TRAPS.md#t-the-baseline-is-taken-at-show) — quick-filter-toolbar
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — quick-filter-toolbar
 - [T-the-filter-switch-keeps-what-it-turned-off](TRAPS.md#t-the-filter-switch-keeps-what-it-turned-off) — quick-filter-toolbar
 - [T-the-filters-button-is-a-door-not-a-filter](TRAPS.md#t-the-filters-button-is-a-door-not-a-filter) — filter-panel, quick-filter-toolbar

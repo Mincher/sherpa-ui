@@ -2127,7 +2127,6 @@ flag.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-the-more-menu-holds-what-folded
 
@@ -12611,10 +12610,18 @@ The attribute is in the TEMPLATE, so `#syncInline` REMOVES it rather than never
 writing it — and putting it back restores the floating card, which is how one
 element serves a chip and a panel.
 
+A panel SECTION uses the same switch (Will, TODO 455): while its field is in
+Advanced, the section chip sets `data-inline` on its own menu, so the rows sit
+under the heading in place of the values, answered or not; Simple puts the card
+back. The menu's host is `display: contents`, so in the section's grid the CARD
+is the item — it spans the row itself — and inline it drops its empty heading
+row from the header grid.
+
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`

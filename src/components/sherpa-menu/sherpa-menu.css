@@ -94,6 +94,9 @@
   padding: 0;
   background: none;
   box-shadow: none;
+  /* The host is `contents`, so in a grid host — a filter section — the card
+     is the item: it takes a whole row. TODO 455 */
+  grid-column: 1 / -1;
 }
 
 /* An inline menu has no card edge of its own, and no trigger to name. Its
@@ -189,6 +192,16 @@
     "heading  mode"
     "filter   filter"
     "add      add";
+}
+/* INLINE, its heading and f(x) are its host's: no empty row, and no gap under it. TODO 455 */
+:host([data-inline][data-type="filter"]) .header {
+  grid-template-areas: "filter";
+  grid-template-columns: 1fr;
+}
+:host([data-inline][data-mode="advanced"]) .header {
+  grid-template-areas:
+    "filter"
+    "add";
 }
 
 /* ONE OBJECT per row: [And|Or] [condition] [value] [x], snapped with no gap by

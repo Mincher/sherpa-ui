@@ -1568,12 +1568,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.#askHighlight(owner.dataset['id'] ?? '', !owner.hasAttribute('data-highlight'));
         return;
       }
-      /* ADVANCED: the field's menu opens, then goes to its rows as its own
-         button does — so the switch is its draft, Apply on and Discard back.
-         Simple goes back, shut. Will, TODO 425 G14 · TRAP T-the-baseline-is-taken-at-show */
+      /* ADVANCED: the field goes to its rows, drawn in its section (455); Simple
+         brings its values back. Will, TODO 425 G14 */
       if (value === 'advanced') {
         const menu = owner.querySelector<SherpaMenu>(':scope > sherpa-menu');
-        if (menu?.mode !== 'advanced' && !menu?.open) owner.toggleMenu();
         /* A draw held for this menu's first stamp is drawn FIRST — it holds the
            answer the rows carry — then the switch, which it would undo. TODO 426 */
         void Promise.resolve(menu?.rendered).then(() => {

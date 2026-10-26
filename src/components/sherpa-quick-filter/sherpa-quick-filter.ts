@@ -194,7 +194,10 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-layout') return this.#syncValues();
+    if (name === 'data-layout') {
+      this.#syncInline();
+      return this.#syncValues();
+    }
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
@@ -865,6 +868,16 @@ export class SherpaQuickFilter extends SherpaElement {
     const condition = state.condition;
     if (condition) this.set('data-condition', condition);
     else this.set('data-condition', null);
+    this.#syncInline();
+  }
+
+  /** A SECTION in Advanced draws its rows: its menu inline, not a card, answered
+   *  or not. Will, TODO 455. TRAP T-an-inline-menu-is-the-same-menu */
+  #syncInline(): void {
+    const menu = this.menu;
+    const inline = this.dataset['layout'] === 'section' && menu?.mode === 'advanced';
+    menu?.toggleAttribute('data-inline', inline);
+    this.toggleState('inline-rows', inline);
   }
 
   /** Drop a warning the menu answers once it has stamped. Never raises one. */
