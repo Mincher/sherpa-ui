@@ -22,10 +22,9 @@ import {
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
-import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
-import { valueKey, type SortDirection } from '../../core/data/store.js';
+import { DEFAULT_OP, valueKey, type SortDirection } from '../../core/data/store.js';
 import { ruleOut } from '../../core/data/filter-state.js';
 import { VIEW, readingAnswered, type QueryRequest } from '../../core/data/query.js';
 import {
@@ -322,7 +321,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A folded chip's row asked for its child menu: drill into it. TRAP T-a-row-opens-its-child-menu */
   #onMenuDrill = (event: Event): void => {
     // While the Switch is off, a folded chip is as still as a shown one.
-    if (this.filtersSuspended) return;
+    if (this.#filtersSuspended) return;
     const id = String((event as CustomEvent).detail?.value ?? '');
     const add = this.pathFind(event, '.add-btn');
     const into = add?.querySelector<SherpaMenu>('sherpa-menu');
@@ -819,16 +818,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     // The FIELD draws it, as a panel's does; its chip knows what answers it. TRAP T-a-chip-says-its-own-answer
     const chip = this.#chips().find((c) => c.dataset['id'] === id && c.hasAttribute('data-menu'));
-    if (chip) this.#field(chip).draw(reading);
+    // A Group or Sort chip is drawn by its arrangement, never a reading.
+    if (chip && !arranges(kindOf(this.#defOf(chip) ?? { id, label: id }))) chip.reading = reading;
     this.#keepOffChips();
-  }
-
-  /** A chip's FIELD, as the panel holds its own: ONE door to its answer, its
-   *  marks and its limits. TODO 424 · TRAP T-a-field-is-one-object */
-  #field(chip: SherpaQuickFilter): FilterField {
-    const id = chip.dataset['id'] ?? '';
-    const def = this.#defById(id) ?? { id, label: chip.dataset['label'] ?? id };
-    return new FilterField(def, '', chip, chip.parentElement ?? chip, { single: true, chip: '.chip' });
   }
 
   /**
@@ -841,11 +833,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const waiting = pendingFields(this);
     const failed = pendingFields(this, 'failed');
     for (const chip of this.#chips()) {
-      const one = this.#field(chip);
-      const field = one.def.field ?? one.def.id;
+      const field = this.#fieldOf(chip.dataset['id'] ?? '');
       // A SECTION is marked by its values, never its heading: they know what changed. TODO 425
       const section = chip.dataset['layout'] === 'section' ? { changed: new Set<Element>() } : {};
-      markField(one.chips(), one.menus(), { pending: waiting.has(field), failed: failed.has(field), drafting: chip.drafting, ...section });
+      markField([chip], [chip.menu], { pending: waiting.has(field), failed: failed.has(field), drafting: chip.drafting, ...section });
     }
   }
 
@@ -1048,7 +1039,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const field = this.#fieldOf(id);
     if (!chip.querySelector('sherpa-menu') || chip.hasAttribute('data-superseded')) return;
     // A section's value chips are greyed too. TODO 425
-    limitField(chip.querySelectorAll<HTMLElement>(':scope > .value'), this.#field(chip as SherpaQuickFilter).menus(),
+    limitField(chip.querySelectorAll<HTMLElement>(':scope > .value'), [(chip as SherpaQuickFilter).menu],
       { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
   }
 
@@ -1683,24 +1674,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * Every filter in the bar OFF, each keeping its value, or back ON. Bound, a
-   * request: the source turns them, and this bar draws it. Unbound, silent, as
-   * `values =` is. TRAP T-the-filter-switch-keeps-what-it-turned-off
+   * Is every filter in the bar OFF, each keeping its value? Its Switch says.
+   * TRAP T-the-filter-switch-keeps-what-it-turned-off
    */
-  get filtersSuspended(): boolean {
+  get #filtersSuspended(): boolean {
     return !(this.$<SherpaSwitch>('.filters-switch')?.checked ?? true);
-  }
-  set filtersSuspended(off: boolean) {
-    // A source's scope is turned by its Switch, so a bar with none cannot.
-    if (this.#sourced && !this.#switchable) {
-      report({
-        code: 'filter-switch-hidden',
-        message: 'filtersSuspended was set on a bar its source draws, and it shows no Switch. Add data-switchable, or call source.query.suspend().',
-      });
-      return;
-    }
-    if (this.hasAttribute('data-locked')) this.#emitChange({ suspended: off });
-    else this.#setSwitch(off);
   }
 
   /** Turn the chips — with no source — and draw it. */
@@ -1767,7 +1745,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#reflow();
     }
     // A Switch it no longer shows — hidden, or the panel answering — gives the filters back.
-    if ((name === 'data-panel-mode' || name === 'data-switchable' || name === 'data-type') && this.filtersSuspended
+    if ((name === 'data-panel-mode' || name === 'data-switchable' || name === 'data-type') && this.#filtersSuspended
       && (!this.#switchable || this.hasAttribute('data-panel-mode'))) {
       this.#setSwitch(false);
       this.#emitChange({ suspended: false });
@@ -1823,8 +1801,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = chip.dataset['id'] ?? '';
     this.#pendingAnswers.delete(id);
     this.#painted.set(id, '');
-    // The FIELD empties its chip, back to the condition its def opens on.
-    this.#field(chip).empty();
+    // Back to the condition its def opens on. TRAP T-empty-is-every-kind-of-answer
+    chip.clear(this.#defOf(chip)?.op ?? DEFAULT_OP);
   }
 
   /**
@@ -2281,7 +2259,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** One action, whichever button or row asked for it. */
   #act(act: string): void {
     switch (act) {
-      case 'clear':
       case 'reset':
         // RESETS, not announces: a host cannot reach chips it did not stamp.
         this.clearAll();
@@ -2394,7 +2371,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const flips: QueryRequest[] = [];
     let flipped = false;
     // While the Switch is off, a one-value row turns no chip on: its tick goes back.
-    const still = this.filtersSuspended;
+    const still = this.#filtersSuspended;
     for (const id of this.#oneRows.ids) {
       const on = want.has(id);
       const chip = this.#chips().find((c) => c.dataset['id'] === id);

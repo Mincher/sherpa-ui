@@ -1032,7 +1032,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (open, active, values, savedSets, superseded, filtersSuspended, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open, active, values, savedSets, superseded, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1421,11 +1421,6 @@
           "name": "superseded",
           "type": "string[]",
           "access": "read"
-        },
-        {
-          "name": "filtersSuspended",
-          "type": "boolean",
-          "access": "read-write"
         },
         {
           "name": "readings",

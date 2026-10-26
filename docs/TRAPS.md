@@ -12804,9 +12804,7 @@ measures 0×0 and lands in the viewport corner. A panelled chip's menu is not in
 use at all, because the panel draws value chips rather than the menu.
 
 ---
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 
 ### T-the-panel-is-desktop-only
 
@@ -14860,9 +14858,13 @@ Each chip a field draws says its field in `data-id` — the chip's own "which
 field this chip filters" — so the field finds its chips by it, and a section
 holding two fields (Organise: Group and Sort) never mixes them up.
 
+
+The TOOLBAR no longer goes through it (TODO 415): a bar's field IS its one
+chip, so it sets the chip's reading, clears it, and marks `[chip.menu]` itself.
+FilterField serves the legacy panel alone.
+
 - Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-none-is-an-answer
 

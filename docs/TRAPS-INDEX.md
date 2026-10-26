@@ -348,7 +348,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
 - [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, quick-filter-toolbar, sherpa-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
-- [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-panel, quick-filter-toolbar
+- [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-panel
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu, filter-panel
 - [T-a-filter-is-dragged-into-its-place](TRAPS.md#t-a-filter-is-dragged-into-its-place) — quick-filter-toolbar
@@ -487,7 +487,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — quick-filter-toolbar
 - [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def, filter-panel
 - [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — filter-panel
-- [T-the-view-chip-stays-on-the-header](TRAPS.md#t-the-view-chip-stays-on-the-header) — quick-filter, quick-filter-toolbar
+- [T-the-view-chip-stays-on-the-header](TRAPS.md#t-the-view-chip-stays-on-the-header) — quick-filter-toolbar
 - [T-toggle-chip-has-no-count](TRAPS.md#t-toggle-chip-has-no-count) — quick-filter-toolbar
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — quick-filter-toolbar
 - [T-toggling-a-conditioned-chip-suspends-its-condition](TRAPS.md#t-toggling-a-conditioned-chip-suspends-its-condition) — quick-filter

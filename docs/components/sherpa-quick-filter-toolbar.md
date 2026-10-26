@@ -107,7 +107,6 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `values` | `Record<string, string[]>` | read and write |  |
 | `savedSets` | `SavedSet[]` | read and write |  |
 | `superseded` | `string[]` | read only |  |
-| `filtersSuspended` | `boolean` | read and write |  |
 | `readings` | `Record<string, FieldReading & { label: string; values: string[] }>` | read only |  |
 | `heldFields` | `string[]` | read only |  |
 | `groupField` | `string \| null` | read only |  |

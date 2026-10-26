@@ -70,9 +70,6 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-pending': { type: 'boolean', kind: 'style' },
     // Its data could not be fetched: a system error, not 0 matches. Written by its host. TODO 411
     'data-failed': { type: 'boolean', kind: 'style' },
-    /* A filter PANEL is drawing this field instead, so the bar hides the chip.
-       Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
-    'data-panelled': { type: 'boolean', kind: 'style' },
     /* WHERE this field is filtered instead — "App header", "View". Shown in the
        tooltip of a chip that is off because something else owns its field: an
        inactive chip that says nothing tells a reader their filter vanished.
