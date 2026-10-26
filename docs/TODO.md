@@ -106,7 +106,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
-| 🚧 | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
+| ✅ | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
 | ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
@@ -157,7 +157,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
 | ✅ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
 | ✅ | 3a | 475 | LOOK — in the panel, a section's field labels line up with its accordion header's label, on their left (Will, 2026-10-26) | look |
-| ⬜ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
+| ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
+| ⬜ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26) | data |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2301,11 +2302,24 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 476 — CLEAN-UP: the legacy filter panel goes
+### `[ ]` ⬜ 477 — FILTER: the gauge's legend takes no part in filtering
+
+Will, 2026-10-26: *"In the demo app the gauge chart has legend items which
+could be filter values but we don't include it in the filtering at all."*
+
+### `[x]` ✅ 476 — CLEAN-UP: the legacy filter panel goes
 
 Will, 2026-10-26: A — remove `sherpa-filter-panel` now. Only the Demos compare
 page uses it. With it go `filter-field.ts`, its tests, its Gallery story, and
 the TRAPs that only it cites. Closes 425.
+
+**Done.** About 2,400 lines gone. Also gone: the chip's borrowed-menu cache,
+the menu's `data-mode-outside` and `addCondition()`, and `drawFilterActions`'
+save rows — only the old panel used them. 15 TRAPs only it cited are deleted.
+The provider and reset tests now use the column toolbar; the bench's panel is
+a column too. Demos' Filter layouts page shows the column beside its rows. The
+Gallery lost its story, and gained the two it lacked (`data-layout`,
+`data-orientation`) and Metric group's.
 
 ### `[x]` ✅ 475 — LOOK: a section's labels line up with its accordion's
 
@@ -2875,7 +2889,7 @@ the column, and a behaviour the column lacks is fixed here or queued below.
   right of its title (TODO 133); an add waits while a menu drafts.
   Chromium: sherpa-ui 1149, Demos 186.
 
-### `[ ]` 🚧 425 — REWORK: the panel is the bar, in portrait
+### `[x]` ✅ 425 — REWORK: the panel is the bar, in portrait
 
 Will, 2026-10-22: *"We need to rethink the filter panel and toolbar approach.
 The elements are the same across both so they should really just be 2

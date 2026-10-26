@@ -138,48 +138,6 @@ test('a binder tells a control over a live source so; never one over a remote so
   expect(r).toEqual({ local: 'input', remote: null });
 });
 
-test('a panel number field reports a typed number, and a Between row\'s ends', async ({ page }) => {
-  const r = await page.evaluate(async (EDIT) => {
-    const edit = eval(EDIT) as (el: Element, v: string) => Promise<void>;
-    const panel = await window.__mount<HTMLElement & {
-      show(): void;
-      readings: Record<string, Record<string, { picked?: string[]; conditions?: unknown[]; mode?: string }>>;
-    }>('sherpa-filter-panel', [{ scope: 'data', label: 'Data', filters: [
-      { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100 },
-    ] }]);
-    panel.show();
-    await window.__settled();
-    const frames = () => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
-    const heard: unknown[] = [];
-    panel.addEventListener('quick-filter-change', () => {
-      const one = panel.readings['data']?.['seats'];
-      heard.push(one?.mode === 'advanced' ? one.conditions : one?.picked);
-    });
-    // A field's own options are its ⋮ menu's rows. TODO 420
-    const menu = panel.shadowRoot!.querySelector('.field[data-field="seats"] sherpa-menu:not(.field-menu)') as Menu;
-    await menu.rendered;
-    await edit(menu.shadowRoot.querySelector('.body-number-one')!, '40');
-    await frames();
-    const typed = heard.splice(0);
-    // The field's own f(x), then a Between row's two boxes.
-    panel.shadowRoot!.querySelector<HTMLInputElement>('.field[data-field="seats"] .field-menu input[value="advanced"]')!.click();
-    await window.__settled();
-    await frames();
-    const row = menu.shadowRoot.querySelector<HTMLElement>('.condition-row')!;
-    const op = row.querySelector<Box>('.condition')!;
-    op.value = 'between';
-    op.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-    await window.__settled();
-    await edit(row.querySelector('.condition-value')!, '10');
-    await edit(row.querySelector('.condition-value-to')!, '30');
-    await frames();
-    return { typed, ranged: heard.splice(0) };
-  }, EDIT);
-
-  expect(r.typed.at(-1)).toEqual(['40']);
-  expect(r.ranged.at(-1)).toEqual([{ op: 'between', picked: ['10', '30'] }]);
-});
-
 test('a bound source filters the ROWS by a typed number, and by Between and Not between', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js') as unknown as {

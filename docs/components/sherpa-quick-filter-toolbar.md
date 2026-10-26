@@ -13,7 +13,7 @@ A strip of quick-filter chips above a grid/list.
 
 ## When to use it
 
-For the row of filter chips above a grid or list: it stamps one `sherpa-quick-filter` per filter and reports the whole answer in `quick-filter-change`. For the same filters in a column, use `sherpa-filter-panel`; for a strip of other controls, use `sherpa-toolbar`.
+For the row of filter chips above a grid or list: it stamps one `sherpa-quick-filter` per filter and reports the whole answer in `quick-filter-change`. For the same filters in a column, set `data-orientation="portrait"`; for a strip of other controls, use `sherpa-toolbar`.
 
 ## Example
 

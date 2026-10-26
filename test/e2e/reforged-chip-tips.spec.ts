@@ -83,38 +83,6 @@ test('a Sort chip says its column and which way; Group its column', async ({ pag
   expect(r.off).toEqual(['', false]);
 });
 
-test('a filter panel\'s date chip says its days, and follows a sort', async ({ page }) => {
-  const r = await page.evaluate(async (wait) => {
-    const panel = await window.__mount<HTMLElement & {
-      show(): void; setFieldReading(id: string, reading: unknown): void; drawResults(r: Record<string, number>, scope: string): void;
-    }>('sherpa-filter-panel', [{
-      scope: 'data', label: 'Data',
-      sort: [{ field: 'name', label: 'Name' }, { field: 'plan', label: 'Plan' }],
-      filters: [{ id: 'created', label: 'Date', kind: 'date', range: true, asChip: true }],
-    }]);
-    panel.show();
-    await window.__settled();
-    const chip = (id: string): Chip => panel.shadowRoot!.querySelector(`.value[data-value="${id}"]`)!;
-    const tip = (id: string): string => chip(id).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
-    panel.setFieldReading('created', { picked: ['2024-01-05', '2024-02-06'], range: true });
-    panel.setAttribute('data-sort-field', 'plan');
-    panel.setAttribute('data-sort-direction', 'asc');
-    await window.__settled(); await eval(wait);
-    const days = tip('created');
-    panel.drawResults({ created: 10 }, 'data');
-    return {
-      days, counted: tip('created'), on: chip('created').hasAttribute('data-current'),
-      value: chip('created').shadowRoot!.querySelector('.caret-label')!.textContent,
-      sort: [tip('sort'), chip('sort').hasAttribute('data-current')],
-    };
-  }, frames);
-  expect(r.days).toMatch(/05 .* to 06 .* 2024/);
-  expect(r.value).toBe(r.days);
-  expect(r.on).toBe(true);
-  expect(r.counted).toBe(`${r.days} - 10 matches`);
-  expect(r.sort).toEqual(['Plan, ascending', true]);
-});
-
 test('a grid heading\'s sort button says its column, and which way once it sorts', async ({ page }) => {
   const r = await page.evaluate(async (wait) => {
     const grid = await window.__mount<HTMLElement>('sherpa-data-grid', {

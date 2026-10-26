@@ -31,8 +31,6 @@ test('every emitted event is in its component\'s spec', () => {
 
 test('a save emitted through a variable is named, and a click dispatched on a child is not the bar\'s', () => {
   const bar = specEvents('sherpa-quick-filter-toolbar');
-  const panel = specEvents('sherpa-filter-panel');
   assert.ok(bar.has('filters-save') && bar.has('filters-save-as'));
-  assert.ok(panel.has('filters-save-as'));
-  assert.ok(!bar.has('button-click') && !panel.has('button-click') && !panel.has('menu-change'));
+  assert.ok(!bar.has('button-click') && !bar.has('menu-change'));
 });

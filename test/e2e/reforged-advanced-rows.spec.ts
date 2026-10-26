@@ -118,7 +118,7 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
     const { menu, items } = menuFor(host, def as never);
     document.getElementById('root')!.replaceChildren(menu);
     const m = menu as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[];
-      items?(i: unknown): void; addCondition(): void };
+      items?(i: unknown): void };
     await m.rendered;
     m.items?.(items);
     await settle();
@@ -133,7 +133,7 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
     };
     const clause = () => readingClause({ field: 'owner' }, { conditions: m.conditions, mode: 'advanced' });
     set(rows()[0]!, 'condition-pick', 'Ravi');
-    m.addCondition();
+    m.shadowRoot!.querySelector<HTMLElement>('.add-condition')!.click();
     await settle();
     const second = rows()[1]!;
     set(second, 'condition', 'contains');
@@ -157,7 +157,7 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
   expect(r.after).toEqual(['owner', 'eq', 'Ravi']);
 });
 
-test('Equals offers the field\'s values on the bar and in the panel; a field with none types it', async ({ page }) => {
+test('Equals offers the field\'s values on the bar; a field with none types it', async ({ page }) => {
   const r = await page.evaluate(async ({ list, only }) => {
     const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
     type Menu = HTMLElement & { mode: string };
@@ -180,16 +180,8 @@ test('Equals offers the field\'s values on the bar and in the panel; a field wit
     await settle();
     const chipMenu = (id: string) => bar.shadowRoot!.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as Menu;
     const onBar = { owner: await eqRow(chipMenu('owner')), name: await eqRow(chipMenu('name')) };
-    const panel = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-filter-panel', undefined, { open: true });
-    await panel.populate([{ scope: 'data', label: 'Rows', filters: [list] }]);
-    await settle();
-    // A field's own options are its ⋮ menu's rows. TODO 420
-    panel.shadowRoot!.querySelector<HTMLInputElement>('.field[data-field="owner"] .field-menu input[value="advanced"]')!.click();
-    await settle();
-    const inPanel = await eqRow(panel.shadowRoot!.querySelector('.field[data-field="owner"] sherpa-menu:not(.field-menu)') as Menu);
-    return { onBar, inPanel };
+    return { onBar };
   }, { list: KINDS.list.def, only: KINDS.only.def });
   expect(r.onBar.owner.list).toEqual(['', 'Dana', 'Ravi']);
   expect(r.onBar.name.list).toBe('typed');
-  expect(r.inPanel.list).toEqual(['', 'Dana', 'Ravi']);
 });

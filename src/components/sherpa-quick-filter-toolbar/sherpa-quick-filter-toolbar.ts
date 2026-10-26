@@ -1593,7 +1593,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  Edit menu opened: its Reset rows say whether there is anything to reset. */
   #onFieldMoreOpen = (event: Event): void => {
     const edit = this.pathFind(event, '.add-btn');
-    if (edit) drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'), undefined, false);
+    if (edit) drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'));
     const more = this.pathFind(event, '.field-more');
     const chip = more?.closest('sherpa-quick-filter');
     if (chip) this.#labelMode(chip);
@@ -2133,7 +2133,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#header.drawSaved();
     this.#addMenu(add, def);
     // The Edit menu leads with Reset. Will, TODO 454
-    drawFilterActions(this, this.root, add.querySelector('sherpa-menu'), undefined, false);
+    drawFilterActions(this, this.root, add.querySelector('sherpa-menu'));
     add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     this.#header.drawSave();
     this.#syncOverflowActive();

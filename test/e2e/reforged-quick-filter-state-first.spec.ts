@@ -26,27 +26,6 @@ test('values set before the menu has rows are its picks, and the face, once they
   expect(r).toEqual({ values: ['b'], face: 'Beta' });
 });
 
-test('values reach a menu the panel has borrowed out of the chip', async ({ page }) => {
-  const r = await page.evaluate(async (items) => {
-    const chip = document.createElement('sherpa-quick-filter') as Chip;
-    const menu = document.createElement('sherpa-menu') as Menu;
-    menu.slot = 'menu';
-    chip.append(menu);
-    const elsewhere = document.createElement('div');
-    document.getElementById('root')!.replaceChildren(chip, elsewhere);
-    await chip.rendered;
-    await menu.rendered;
-    menu.items(items);
-    // Borrowed: out of its slot and somewhere else. TRAP T-a-borrowed-menu-is-still-its-chips
-    void chip.menu;
-    menu.removeAttribute('slot');
-    elsewhere.append(menu);
-    chip.values = ['a'];
-    return menu.values;
-  }, ITEMS);
-  expect(r).toEqual(['a']);
-});
-
 test('a value label set before the first render is on the face', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const chip = document.createElement('sherpa-quick-filter') as Chip;

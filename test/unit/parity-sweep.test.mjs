@@ -54,11 +54,6 @@ const KNOWN = {
   /* A group or sort chip's arrangement. Both are DECLARED props, so a host
      writes them and the chip draws itself from them.
      TRAP T-a-chip-knows-what-kind-it-is */
-  /* The panel's own whole answer. It is WRITTEN by populate(): a scope's
-     filters carry `options[].selected` and their menus carry the conditions,
-     which is the same round trip a saved view needs.
-     TRAP T-the-panel-reports-its-own-reading */
-  'sherpa-filter-panel.readings': 'ok: populate() — selected options and menu conditions',
   'sherpa-quick-filter.column': 'ok: data-column attribute, or its menu pick',
   'sherpa-quick-filter.direction': 'ok: data-direction attribute',
   'sherpa-radial-chart.slices': 'ok: populate()',
@@ -90,7 +85,6 @@ const KNOWN = {
   'sherpa-provider.customView': 'ok: saveView(name) / deleteView() / a View pick — derived',
   // The page's sets, which are on screen and the one last taken: DERIVED. TODO 105, 366
   'sherpa-provider.savedFilterSets': 'ok: saveFilters(name) / applyFilters(id) / dismissFilters(id) / deleteFilters(id) — derived',
-  'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
   // Doors a host asks through, not values.
   'sherpa-app-header.notificationsAnchor': 'ok: not a value — the bell element, to anchor a panel to',
   'sherpa-nav.expandedIds': 'ok: populate() — an entry carries `expanded: true`',

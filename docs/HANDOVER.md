@@ -36,7 +36,7 @@ note is in its section of `docs/TODO.md`. The large ones:
 | Item | What it gave | Plan / TRAP |
 |---|---|---|
 | 350 D1 | `dist/bundle/` (esbuild, split): Records 221 → 33 requests; Demos, Gallery and the Starter map to it | `T-a-page-loads-the-bundle` |
-| 424 | ONE chip logic: the bar and the panel mark, draft and grey a field's chips through `filter-host.ts` (`markField`, `limitField`) | `docs/history/plan-424-one-chip-logic.md`, `T-a-field-is-one-object` |
+| 424 | ONE chip logic: the bar marks and greys a field's chips through `filter-host.ts` (`markField`, `limitField`); the old panel went in 476 | `docs/history/plan-424-one-chip-logic.md` |
 | 425 | The toolbar in PORTRAIT (`toolbar-column.ts`) IS the filter panel, and the default; the classic panel is behind Settings › Application › Classic filter panel | `docs/history/plan-425-portrait-toolbar.md`, `T-the-panel-is-the-bar-in-portrait`, `T-a-shut-column-draws-nothing` |
 | 426–428, 430–440 | Demos' Records on the column; Manage Saved Filters; Favorite, Save, Refresh and Suggest filters in the App Header; View Context label and container | — |
 | 436 | Demos' Settings › Filtering: every filter switch on one page; `provider.switchable`, `contextLabel`, `sections`; `outlet.definition`, `outlet.reload` | — |

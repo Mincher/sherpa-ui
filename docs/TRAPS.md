@@ -73,7 +73,6 @@ the type is what it WILL be, not proof that it is upgraded yet.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
@@ -804,7 +803,6 @@ The move itself is `MenuDrill`, shared by the bar and the panel. The panel
 drills into a menu it BUILDS for a run of values (`T-a-shut-scope-folds-like-a-bar`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filters-button.ts`
 
 ### T-drill-flags-travel-and-replace
@@ -1055,51 +1053,12 @@ of value chips, which has no one chip — its field reads the inline menu's own
 `reading`, the same door one level down. The panel's date is one chip, and
 uses the chip's.
 
-- Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/e2e/reforged-chip-tips.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
-
-### T-a-panel-follows-the-query-open-or-shut
-
-**ONE owner holds every filter answer: the Query, in the `DataSource`.** A
-toolbar, the header bar, the filter panel and a grid heading are VIEWS of it.
-Each reports what a reader did; the source writes it to the Query and draws
-it back into every bound control — `drawReading` for one field, `drawScope`
-or `drawScopes` for a whole scope. No control is asked what another holds.
-
-**The panel follows it open OR shut** — TODO 137, Will: "Numeric range filter
-values don't match between the filter-panel and filter-toolbar." A shut panel
-used to skip every `drawReading`, "refilled when it opens" — and the refill
-was the PAGE's, which went when the provider took the page over. So it opened
-on whatever it was last drawn with: the toolbar said Seats 37 to 120, the
-panel 4 to 240. Worse, its next change reported from that old state and wrote
-it over the Query — typing 60 made the range 60 to 240, and the 120 was gone.
-A view that can go stale is a second owner. The guard is gone: a shut panel
-is drawn as a bar is.
-
-**But a shut panel BUILDS nothing** — TODO 367, 2026-10-20. In toolbars mode the
-panel is `display: none`, and building every field on every filter act cost
-about 800 elements and 120 ms at 4x CPU. So a shut panel keeps every answer
-as DATA, at once: the scopes the source described, each count and
-ruled-out list, and a `drawReading` since (in `#early`, cleared by the next
-description, which is newer). It builds from that data when it opens. Its
-`readings` and `values` read the same data while shut, never a half-built
-field: a date chip fills its answer a tick after it is built. It cannot go
-stale, because nothing it shows or sends is older than the source's last
-word.
-
-**The gate** is `test/e2e/reforged-filter-coordination.spec.ts`: one Records
-page, forty steps across every kind of answer, and after each step every
-control must hold what the Query holds. When a filter control is added or
-changed, add its step there. It supersedes the "refilled on open" half of
-`T-an-open-panel-follows-the-data-layer`.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-suspended-answer-is-drawn-as-off
 
@@ -1113,9 +1072,7 @@ chips — shows no answer, in `setFieldReading` and in `drawScopes` alike. The
 Query keeps the value, for the chip. A DATE in the panel is one chip, which
 does have an off, so it keeps its days.
 
-- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/query.test.mjs`
 
 ### T-empty-is-every-kind-of-answer
@@ -1129,21 +1086,8 @@ rows, and left a number field as it was. One door each now — the toolbar's
 `#emptyChip`, the panel's `#empty` — and both write `{ picked: [] }` to the
 menu, which empties every body it owns.
 
-- Site: `src/core/ui/filter-field.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-
-### T-a-panel-date-answers-with-its-days
-
-**A date set in the filter panel filtered nothing.** In the panel a field is a
-run of value chips, and its answer is the ticked chips' values. A date is ONE
-chip with a calendar in its menu — so its "value" was its own id, and the
-panel sent `{ picked: ['created'], range: true }`. The Query stored it, no
-row matched a day called `created`, and the header's Date chip came back
-empty. A date answers with its menu's own reading, as a number does, and the
-source's answer is drawn into that chip: its days, and whether it is on.
-
-- Site: `src/core/ui/filter-field.ts`
 
 ### T-the-router-owns-the-url
 
@@ -1381,7 +1325,6 @@ data is.
 - Site: `src/components/sherpa-outlet/sherpa-outlet.html`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-nav/sherpa-nav.html`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
@@ -1670,8 +1613,6 @@ so its path holds no `.move`. A bar sends the same request,
 `filter-add { scope, ids, from }`: bindSource reads a `filter-add` carrying
 `from` as a request whatever the bar's own scope.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/send-down.test.mjs`
 - Site: `src/core/data/query.ts`
@@ -1768,8 +1709,6 @@ them once per scope that counts.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-chip-results.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/unit/a-chip-counts-within-the-filters-before-it.test.mjs`
 
 ### T-a-scope-says-what-it-shows
@@ -1788,7 +1727,6 @@ Will, TODO 472: its description names the component instead ("Bar Chart",
 TODO 457). The classic panel keeps its icons.
 
 - Site: `src/core/ui/context.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
 
@@ -1831,9 +1769,7 @@ may still add it.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/unit/a-serial-set-chains-its-fields.test.mjs`
 - Site: `test/e2e/reforged-serial-set.spec.ts`
 - Site: `test/e2e/reforged-filterset.spec.ts`
@@ -2011,7 +1947,6 @@ as it goes — `setQuery` applies what it returns.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-reset-to-default.spec.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-reset-at-default.spec.ts`
@@ -2070,8 +2005,6 @@ does not draw is not its to hold.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 
@@ -2166,10 +2099,6 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/more-menu.ts`
 - Site: `src/core/sherpa-filter-more.html`
 - Site: `src/core/sherpa-filter-more.css`
@@ -2426,7 +2355,6 @@ number chip reads its body's reading whatever its menu's type, or "> 2"
 filtered and its face stayed blank (TODO 82). And on a rebuild the READER'S kept answer wins over the def's opening
 one, or a def's typed condition came back on every rebuild.
 
-- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`
@@ -2435,8 +2363,6 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 
@@ -2506,7 +2432,6 @@ TRAP T-projected-slot-content-crosses-two-shadow-boundaries
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-projected-slot-content-crosses-two-shadow-boundaries
 
@@ -5353,7 +5278,6 @@ root for the raw `<input>`: `sherpa-input-text` re-dispatches the inner
 control's `input`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
 ### T-cancel-baseline-captured-on-open
@@ -5733,7 +5657,6 @@ binding went from 194 lines to 152.
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `src/core/ui/filter-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/query-context.ts`
 
 ### T-an-operator-decides-pick-or-type
@@ -6020,7 +5943,6 @@ This is the `data-locked` half of the state-ownership rule: `data-<thing>` in,
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 **A PERSISTENT chip is a locked chip.** "Always on, and its body does not flip
 it" — the toolbar's own words at its `data-persistent` site — is exactly what
@@ -7890,8 +7812,6 @@ ignores the field WITHOUT clearing them, so `values` is what is applied and
 `pickedValues` what is remembered.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-group-and-sort-are-component-scope
 
@@ -7931,8 +7851,6 @@ count. Two arranged grids on one source would need
 a load each — not built until a page has two.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-scope-arranges-its-own-rows.test.mjs`
 - Site: `src/core/browser/persist-view.ts`
@@ -8092,7 +8010,6 @@ in the Query that could only come back matching nothing (TODO 465).
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
@@ -8101,7 +8018,6 @@ in the Query that could only come back matching nothing (TODO 465).
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/stores.ts`
@@ -10447,11 +10363,9 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-menu-child-rows.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
-- Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
 ### T-a-date-picks-days-unless-it-says-range
 
@@ -10708,10 +10622,8 @@ then, shown once it has drawn, and removed when it shuts, so a shut chip holds
 no menu and a body press is never mistaken for an empty chip's open.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/source-counts.ts`
-- Site: `test/e2e/reforged-a-tiered-panel-chip.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-a-tiered-grid.spec.ts`
 
@@ -10773,55 +10685,7 @@ Measured after the Apply fixes (`T-a-chip-press-applies-its-menus-draft`):
 the swap itself keeps every answer both ways — the bar is steered on Apply,
 and the panel is refilled when it comes back. The panel open was the hole.
 
-- Site: `src/core/ui/filter-field.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/source-binding.ts`
-
-### T-a-shut-scope-folds-like-a-bar
-
-**A SHUT scope in the filter panel hides its filters the way a narrow bar
-folds its chips, so the panel's Filters button does what the bar's does.** Will,
-2026-09-25: *"make the Add Filters button in the filter panel behave the same
-as the toolbar version BUT shows More Filters when the accordion is
-collapsed."*
-
-Shut, every filter the scope draws is listed under **Added filters**, in its
-order, each with a caret into its child menu — but a preset, which is one
-value: its box is its on/off (`T-a-row-opens-its-child-menu`). The badge counts them and the button reads
-active while one of them is on. Open, there are no carets, no badge and no
-active state: an open scope speaks for itself.
-
-A caret drills IN PLACE, as the bar's does, but the panel has fewer menus to
-borrow. Group, Sort and a date are ONE chip each, with a menu: the drill moves
-those rows. A run of values has no menu at all — its values ARE its chips — so
-the panel BUILDS one from the same def, ticked as the chips are
-(`T-one-field-one-filter-menu`), and drops it on the way out. A field answered
-by a body of its own — a number, a condition — keeps that body in the menu's
-shadow, which a drill cannot move, so its door OPENS THE SCOPE on the field.
-
-**Which scopes are shut is the panel's own**, kept across a redraw: nothing
-outside can see it, and a populate re-opened every scope the reader had shut.
-
-Since 124 the button is ONE, in the panel's header: its badge and its active
-state sum every shut scope, and a toggle rebuilds the whole list.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-panel-filters-button.spec.ts`
-
-### T-a-drilled-pick-goes-home-first
-
-**The panel puts a drilled filter's rows back BEFORE it reports the pick.**
-
-A chip reads its answer from its OWN menu. While drilled, that menu is empty —
-the rows are in the Filters menu — so a pick reported there reached a chip
-that read nothing, and its face and its report were both wrong. Home first,
-then the same `menu-change` is sent from the chip's own menu, and the chip
-and the panel take it exactly as a pick made there.
-
-A run's built menu is not a chip's, so its pick ticks the chips instead. Its
-Apply is the panel's Apply (`T-a-chip-menu-apply-is-the-panels-apply`).
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-the-filters-button-is-a-door-not-a-filter
 
@@ -10845,7 +10709,6 @@ The panel's one Filters button is the same door, over every SHUT scope
 (`T-a-shut-scope-folds-like-a-bar`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-only-five-filter-chips-carry-an-icon
@@ -10961,7 +10824,6 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/moved-to.test.mjs`
 - Site: `src/core/data/source-binding.ts`
@@ -11086,8 +10948,6 @@ keeps its Range switch for now: 379.)
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-condition-badge-says-that-not-which
@@ -11201,26 +11061,6 @@ merely present ones, because a menu in Advanced mode always holds one row.
 
 ---
 
-### T-a-late-built-menu-takes-the-answer-as-it-stands
-
-A panel field drawn as chips has NO menu. One is built the first time the
-field flips to Advanced — and it used to be filled from `def.state`, the
-answer as the source DREW it, a tick after it rendered.
-
-That is right at draw and wrong at a flip. A field the Query holds as "Simple,
-with rows kept" — every field that was flipped back, then moved across a scope
-— was drawn Simple; its f(x) built the menu, set Advanced, and the late fill
-wrote `mode: 'simple'` back over it. The button read ON, the Query read
-Simple, and the next move drew it Simple: Will, TODO 151.
-
-So `#giveMenu(…, restore)` fills from the draw-time state only AT DRAW. A
-menu built later takes the answer as it stands NOW, set by whoever built it:
-the flip gives it the rows the Query kept and the chips as they are ticked;
-a source's steer gives it its own reading.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
-
 ### T-a-rebuilt-row-reads-empty-for-a-tick
 
 A rebuilt condition row reports NO answer until its value select has filled.
@@ -11242,7 +11082,6 @@ rendered (`#reportSoon`).
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ---
@@ -11295,43 +11134,6 @@ condition is applied."
 
 ---
 
-### T-a-composed-child-takes-an-attribute-not-text
-
-`kind: 'content'` on a prop whose `to` is a COMPOSED component writes text into
-it — and text replaces every child it has.
-
-`sherpa-filter-panel` declared `data-heading` that way, pointing at its
-`sherpa-container-header`. The base class wrote "Filters" into the header and
-deleted the search field slotted inside it. Nothing errored: the header still
-said Filters, and the search was simply gone.
-
-So a composed child takes an ATTRIBUTE. Declare it `kind: 'content'` with
-`as: 'attr'`: the base passes the attribute on, and the template's own is its
-default (`data-heading="Filters"` on the panel's header). Dialog, panel and
-the filter panel do.
-
-`kind: 'content'` is for a plain node the component owns — a `<span>`, a
-`<p>` — where there is nothing else in it to lose.
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
-### T-a-chip-rewrites-its-own-label
-
-`sherpa-quick-filter` rewrites its own `data-label` to "Field: Value" the
-moment exactly one value is picked.
-
-So anything that reads a chip's label back gets what the CHIP decided to show,
-not what the caller passed. A filter panel searching on `data-label` stopped
-matching a picked chip by its own name — the chip was called `Unassigned` and
-the attribute said something else.
-
-The panel records what it gave in `data-search` and matches on that. Give a
-chip a label and keep your own copy.
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
 ### T-a-scope-is-named-for-its-content
 
 A filter panel's component scope is named after the CONTENT it filters —
@@ -11344,8 +11146,6 @@ for, and "this context" answers for neither. The caller passes the name
 The VIEW scope keeps its own name, because there is exactly one of it.
 
 ---
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-panel-adds-through-the-bar-that-owns-the-list
@@ -11381,8 +11181,6 @@ field in its scope and draws that scope's bar from the Query — the bar is stil
 the one list on screen, and it is told, never asked.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-an-accordion-action-is-not-a-toggle
 
@@ -11404,7 +11202,6 @@ scrolls over them (the filter panel does).
 - Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
 - Site: `src/components/sherpa-accordion/sherpa-accordion.css`
 - Site: `src/components/sherpa-accordion/sherpa-accordion.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-composed-chrome-row-takes-its-inline-padding-from-its-container
 
@@ -11461,49 +11258,6 @@ gone.
 
 ---
 - Site: `src/core/ui/render-icon.ts`
-
-### T-a-chip-menu-apply-is-the-panels-apply
-
-Pressing Apply in a CHIP's own menu inside the filter panel is the panel
-applying.
-
-Group, Sort and Date are chips with popovers, so their footer Apply lands on
-the menu rather than on the panel's own footer — and a reader who pressed Apply
-expects the same thing to happen wherever they pressed it. The panel relays:
-the chip's on/off follows the pick, an organise chip also reports its own
-`group-change` or `sort-change`, and the field is REPORTED as any change is.
-On a LOCAL source the panel shows no footer (TODO 62): every change reports
-its own field as it is made, so a chip menu's Apply is simply that field's
-change. A REMOTE one shows Apply all and Discard all while a change waits, and
-each waiting field its own Apply and Discard in its action row (TODO 98).
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
-### T-a-chip-menu-in-the-panel-commits
-
-A FILTER menu drawn as a CHIP inside the filter panel gets `data-commit`. An
-ARRANGEMENT does not.
-
-Everything else in the panel waits for the panel's own Apply, so a date that
-landed on every click would be the one filter that did not.
-
-Group and Sort are the other half of the rule. They do not narrow the rows —
-they say how the rows are laid out — and they apply as they are picked, on a
-bar and in a panel alike. Forcing `data-commit` on them put an Apply button
-under a radio list: the column ticked, the chip stayed off, and the table never
-regrouped. `T-a-chip-knows-what-kind-it-is`.
-
-It is the panel's to set, not the chip's: the same menu on a toolbar commits or
-not by its own `select` mode. `T-commit-follows-select-mode`.
-
----
-**But not in a scope that WAITS** (TODO 406): the View's menus — a field's
-chip menu, a drill, a customer's sites — take no Apply of their own there, only
-Discard (its field's applied answer, `filter-discard`); the scope header's ONE
-Apply sends them.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-hidden-sibling-still-counts-as-first-child
 
@@ -11604,26 +11358,6 @@ again when a column joins — a changed `data-scope` asks again.
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
-### T-a-panel-flush-between-surfaces-draws-two-edges
-
-`sherpa-panel` draws LEFT and RIGHT borders only — `border-block-style: none`
-and `border-radius: 0` — because it is built to sit FLUSH between other in-flow
-surfaces.
-
-A filter panel is the other case: a standalone card beside the content. It
-looked clipped top and bottom in every screenshot, and the border was never
-being drawn at all. Three attempts went into "fixing" a clip that did not
-exist.
-
-Will: "Use a regular container instead of a panel and all this bs goes away."
-He was right. `sherpa-container` is a card — four edges, rounding, header,
-footer — and it supplies its composed footer's `--_pad-inline` already.
-
-**Check what a surface component is FOR before restyling it into another one.**
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-
 ### T-a-composed-child-hides-with-important
 
 `display: none` on a COMPOSED child does nothing. Its own `:host` rule wins.
@@ -11643,7 +11377,6 @@ this repo that needs one. Any other property is fine — this is specific to
 
 ---
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-only-group-and-sort-stay-one-chip
 
@@ -11672,13 +11405,8 @@ the field header's: read as a run, the chip's own id was sent as the pick.
 
 ---
 
- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/core/ui/filter-field.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/ui/filter-kind.ts`
-- Site: `test/e2e/reforged-panel-long-list.spec.ts`
 
 ### T-an-edge-resizes-its-box
 
@@ -11772,33 +11500,6 @@ first build multiplied the width at every size, and Will sent it back.
 
 ---
 
-### T-two-chips-in-one-section-need-their-own-id
-
-The filter panel's Organise section holds TWO chips — Group by and Sort by —
-because they answer one question and a header per control reads as noise.
-
-Every other section holds ONE field, so the panel found a chip's `Held` by
-asking which section CONTAINS it:
-
-```ts
-[...this.#held.values()].find((h) => h.values.contains(chip))
-```
-
-With two chips in one container that returns the FIRST every time. Measured:
-picking a column in the SORT menu emitted `group-change`, and the grid grouped
-by it. The Sort chip could not sort at all.
-
-`#held` was right — `scope:group` and `scope:sort`, each with its own `def.id`.
-Only the lookup was wrong.
-
-The chip carries its id in `data-value`, so ask the chip and fall back to the
-container test for everything else.
-
-**A container test identifies a section, never a control.** It reads as correct
-for as long as every section holds one thing.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
 ### T-an-organise-chip-is-named-for-its-job-not-its-field
 
 Group and Sort chips are called `group` and `sort`. The COLUMN they arrange by
@@ -11820,7 +11521,6 @@ the next set it to the wrong field.
 Suspended is not cleared — `setSort(null)` moves the column to the source's own
 memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-wall-of-values-is-not-a-filter
@@ -11962,7 +11662,6 @@ changed-key contract with the other stores.
 - Site: `src/data.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/a-broken-assumption-reports.test.mjs`
 - Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
 - Site: `src/core/ui/templater.ts`
@@ -12042,9 +11741,7 @@ column in `data-column`; a menu, where there is one, is the answer.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-kind.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/core/ui/filter-def.ts`
@@ -12119,7 +11816,6 @@ field's door opens its scope instead: each customer is a chip there, with its
 own sites menu.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-a-drilled-tree.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
@@ -12153,7 +11849,6 @@ or-chain.
 truthy `advancedOf()`, and `'only'` is truthy — so Email showed a switch with
 nothing behind it (Will, 2026-09-26). The switch is for `advanced === true` only.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -12196,27 +11891,6 @@ replacement, all }`. The HOST moves the match: the grid's `findStep()`.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-input-find.spec.ts`
-### T-a-section-heading-is-not-a-field
-
-The filter panel's `Organise` section holds Group and Sort. They share one
-`.field-values` container, and each is `select: 'single'`, so the single-select
-sweep — "one of many, untick the siblings" — cleared the OTHER control.
-
-Will: *"if I deactivate Sort then Group is also deactivated and bugs out.
-Group and Sort are still 2 separate filters, they're just organised under a
-custom header called 'Organise'. Organise is not the field for the filters in
-any way."*
-
-It bugs out twice over: the grid stays grouped while the chip reads OFF, so the
-next click on Group toggles it the wrong way.
-
-The sweep now clears only chips that resolve to the SAME `Held` — the same
-field. Two controls in one run have different `data-value`, so neither touches
-the other.
-
-- Site: `src/core/ui/filter-field.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-
 ### T-an-external-chip-caret-must-open-its-condition
 
 `addExternalFilter()` put a chip on the bar carrying a finished phrase —
@@ -12373,15 +12047,11 @@ for — the source tallies a field no chip holds where it would stand
 and refused in the list; gone while "Hide unmatching filters" is on. A held
 row is never greyed. The bar and the panel draw the list again only when what
 is spent moved.
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
-- Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 
 ### T-the-field-type-decides-the-clause
@@ -12419,40 +12089,6 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/field-catalogue.ts`
 
-### T-the-panel-reports-its-own-reading
-
-The filter panel reports WHAT THE READER DID — picked values and conditions —
-and the data layer decides what it means. It does not ask another component,
-and it does not reach into one.
-
-**This replaces `T-the-panel-asks-the-bar-it-does-not-answer-for-it`, which was
-half right.** That one correctly said the panel must not DERIVE a second
-answer, then prescribed the wrong cure: ask the toolbar. So the panel grew
-`#barOf` (a `document.querySelectorAll` for a toolbar), `#chipOf` (a reach into
-its shadow root), `#bars()`, and `#markConditioned` — which ticked the BAR's
-chips so the bar's own `readings` would see the panel's conditions — and then
-called `bar.report()` to make it re-emit.
-
-Will, 2026-09-25: *"The Panel and Bar should not be aware of each other. This
-is core to sherpa component agnosticism. The data layer is the coordinator."*
-
-`values` was ticks only, which is why the fix-up existed: a field in CONDITION
-mode has no ticked chips, so Apply committed nothing. The panel has `readings`
-now — picked, conditions and typed text, per scope and field — so there is
-nothing left to fix up. All four reaching methods are deleted, and neither
-component names the other.
-
-**366 step 20: each act is ONE REQUEST.** The event carries
-`{ scope: 'panel', request }`: one field's `{ scope, field, reading }`, or
-Reset all's `{ scope, reset: { organise: true } }` for each scope, as one
-list. The source's QueryContext applies it, and drops an answer already in
-force, so the panel no longer keeps what it last said. A bound panel's
-`setFieldReading` is a request too; `drawReading` only paints.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/unit/parity-sweep.test.mjs`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-
 ### T-closest-stops-at-the-shadow-boundary
 
 `Element.closest()` walks `parentElement`, and a shadow root is not one. A walk
@@ -12474,22 +12110,6 @@ inside one tree.
 
 - Site: `src/core/ui/sherpa-element.ts`
 
-### T-a-borrowed-menu-is-still-its-chips
-
-`sherpa-quick-filter.menu` was `this.querySelector('[slot="menu"]')`.
-
-A filter panel BORROWS the menu: it strips the `slot` and appends the element
-somewhere else entirely. The query then found nothing, so the chip reported no
-values and no conditions — while its menu was on screen, answered, in the
-panel.
-
-The chip remembers the menu when it first sees it, and returns the remembered
-one while it is still connected. A menu that has genuinely gone still reads as
-`null`.
-
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
-
 ### T-two-conditions-over-one-field-are-alternatives
 
 A second condition row defaulted its join to `and`. Over ONE field that matches
@@ -12510,7 +12130,7 @@ values meant different things depending on how they got there.
 
 ### T-a-borrowed-menu-leaves-its-toolbars-listeners-behind
 
-`sherpa-filter-panel` BORROWS a chip's own `<sherpa-menu>` and appends it into
+The old `sherpa-filter-panel` BORROWED a chip's own `<sherpa-menu>` and appended it into
 a field body. The menu is then genuinely out of the toolbar's tree — measured,
 a click on its range switch has the composed path
 `SHERPA-SWITCH → SHERPA-MENU → SHERPA-FILTER-PANEL → SHERPA-APP-SHELL`, and
@@ -12576,15 +12196,14 @@ object exactly as they are in the chip menu.
 looking.** Measure the CHAIN — the row, its body, its box — not just the row.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-an-inline-menu-drops-the-chrome-its-host-owns
 
 `sherpa-menu[data-inline]` hides its `use-condition` button and its footer.
 
-Inline, the menu is inside something that already has both: a filter panel's
-FIELD HEADER carries the list/condition switch, and the panel has ONE footer
-whose Apply commits every field at once. A second of each is two answers to one
+Inline, the menu is inside something that already has both: a column
+section's ⋮ carries the Simple/Advanced switch, and its scope has ONE Apply
+that commits every field at once. A second of each is two answers to one
 question, and a reader cannot tell which Apply applies.
 
 The MENU owns the rule, not the host. Inline is the menu's own mode, so what it
@@ -12629,13 +12248,9 @@ row from the header grid.
 
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-percentage-floor-needs-a-definite-parent
 
@@ -12746,9 +12361,7 @@ control without sharing the same element. What they DO share is the answer:
 seeds its own menu from that.
 
 - Site: `src/core/ui/filter-menu.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-def.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-the-panel-is-the-toolbar-in-a-column
 
@@ -12780,9 +12393,6 @@ child cannot know a sibling column is beside it — the records card sat straigh
 under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 
 ---
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-def.ts`
 
 ### T-the-view-chip-stays-on-the-header
@@ -12828,8 +12438,6 @@ the panel under it.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
@@ -13408,7 +13016,6 @@ A `Fires:` line reading `menu-open / menu-close` is one name, not two.
 
 - Site: `scripts/generate-component-spec.mjs`
 - Site: `scripts/lib/ts-facts.mjs`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/every-emitted-event-is-in-its-spec.test.mjs`
 
 ### T-a-metric-condenses-by-wrapping
@@ -14838,34 +14445,6 @@ that follows is what makes it read as unset.
 - Site: `src/core/data/source-counts.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 
-### T-a-field-is-one-object
-
-Will, TODO 424: *"All filter chips should be variants of the filter chip
-component and all logic centralised."* Every chip on a bar and in the panel is
-`sherpa-quick-filter`; what was written twice was the logic of a FIELD around
-them — drawing a told answer, reading it back, none, a tiered parent's flip,
-Reset. One class holds it now: `FilterField` (`src/core/ui/filter-field.ts`),
-one per drawn field — a run of value chips, a tiered run of parents, or one
-chip — and a host keeps a Map of them. What is the same on every surface is
-the class's; a host keeps only its layout (a bar's fold, a panel's sections).
-Its pending and failed marks are `markField`, its greying `limitField`
-(`filter-host.ts`). A bar's fields are the same class, each ONE chip
-(`{ single: true }`): its draw, Reset, marks and limits go through it. The plan,
-in eleven commits:
-`docs/history/plan-424-one-chip-logic.md`.
-
-Each chip a field draws says its field in `data-id` — the chip's own "which
-field this chip filters" — so the field finds its chips by it, and a section
-holding two fields (Organise: Group and Sort) never mixes them up.
-
-
-The TOOLBAR no longer goes through it (TODO 415): a bar's field IS its one
-chip, so it sets the chip's reading, clears it, and marks `[chip.menu]` itself.
-FilterField serves the legacy panel alone.
-
-- Site: `src/core/ui/filter-field.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
 ### T-none-is-an-answer
 
 Will, TODO 403: *"the Select All in the off state should select none and return
@@ -14886,7 +14465,6 @@ is not the amber "filtering nothing". Its body then toggles it: OFF asks for
 every row, as any chip does (Will's pick). A pick outranks none; a date, a
 range and a typed answer have none.
 
-- Site: `src/core/ui/filter-field.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/where.ts`
 - Site: `src/core/ui/filter-menu.ts`
@@ -14902,7 +14480,7 @@ panel area for panel mode)."*
 
 So the filter toolbar has an ORIENTATION, and panel mode is the toolbar too.
 Will: *"Both modes are variants of the filter toolbar component"* — the old
-`sherpa-filter-panel` is legacy, to be deleted; nothing new links to it.
+`sherpa-filter-panel` was legacy, and TODO 476 deleted it.
 
 `data-orientation="portrait"` over ONE scope stamps the `portrait` template:
 the scope is an accordion, as a panel's scope is — its name and icon, a badge of
@@ -15397,8 +14975,6 @@ reader's set under a page id is the reader's.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
@@ -16829,8 +16405,8 @@ not.
 
 ### T-every-close-reports-or-the-toolbars-stay-hidden
 
-`sherpa-filter-panel` has **two ways to close**: the reader clicks the header
-`×`, or the window narrows past the panel's minimum and the width path closes
+The panel area's column has **two ways to close**: the reader closes it,
+or the window narrows past the panel's minimum and the width path closes
 it. Only the first one emitted `filter-panel-close`, because `close()` was
 written as the button handler's helper and the width path called it directly.
 
@@ -16849,7 +16425,6 @@ The general shape: a component with two paths into the same state must emit from
 the state change, never from one path's handler. The second path is always the
 one nobody tests.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
@@ -16894,7 +16469,6 @@ stays live — its section has no Apply. Off sends what waits. `wait(scope,
 false)` tells the bars again AFTER it stops waiting: the commit's own drawing
 still said it waits, and a bar kept its Apply.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/a-waiting-scope-holds-its-picks.test.mjs`
 - Site: `test/e2e/reforged-the-view-waits-for-one-apply.spec.ts`
 - Site: `src/core/data/data-source.ts`
@@ -16904,11 +16478,7 @@ still said it waits, and a bar kept its Apply.
 - Site: `src/data.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `test/unit/headless-data-layer.test.mjs`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `src/core/ui/bind-source.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `test/unit/a-bar-apply-commits-its-own-field.test.mjs`
@@ -16993,7 +16563,6 @@ answer to the provider alone; `filter-configure` is gone. A host's buttons in
 the bar's slot fold away at narrow widths, as the old switch did.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
@@ -17323,7 +16892,6 @@ Panel mode is CSS now: a bar in panel mode shows only its persistent chip
 (the View), so a field the panel adds is hidden on the header without a page
 reaching into the bar's shadow root.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
@@ -17630,11 +17198,10 @@ attribute each undo the other's answer.
 
 ONLY WHAT CHANGED (Will, 2026-10-22: *"Just the altered value chips need to be
 styled."*). The source tells a bound control each waiting field's APPLIED answer
-(`drawApplied`, beside `data-pending`), and a panel field marks only the chips
-whose tick differs from it (`FilterField.changed`); one chip is its whole field.
+(`drawApplied`, beside `data-pending`), and a field marks only the chips whose
+tick differs from it; one chip is its whole field.
 
 - Site: `src/core/ui/filter-host.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
@@ -18361,8 +17928,6 @@ whose state has conditions opens in Advanced mode as it is drawn; and the
 panel writes rows and typed text only once each menu has drawn, then takes
 its snapshot again so Apply and Discard still read "unchanged".
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-view-held-heading-shows-and-refuses
@@ -18465,7 +18030,6 @@ it knows, so declaring a part declares its field.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/unit/chart-scope.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
@@ -18544,7 +18108,6 @@ its reader would; unbound, they stay silent writes.
 
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-source-compiles-only-what-it-has
 

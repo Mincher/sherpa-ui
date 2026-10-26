@@ -1255,123 +1255,6 @@
       ]
     },
     {
-      "name": "sherpa-filter-panel",
-      "description": "the filter toolbars, as a column.",
-      "attributes": [
-        {
-          "name": "data-apply-on",
-          "description": "input: its source applies LIVE, so a value reports while it moves. Set by a bound source. TODO 107",
-          "values": [
-            {
-              "name": "change"
-            },
-            {
-              "name": "input"
-            }
-          ]
-        },
-        {
-          "name": "data-at-default",
-          "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231.",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-dirty",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-failed"
-        },
-        {
-          "name": "data-fetch-fields",
-          "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
-        },
-        {
-          "name": "data-group-field",
-          "description": "the group in force. Written by the source; the Group chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut"
-        },
-        {
-          "name": "data-heading",
-          "description": "the panel's own title"
-        },
-        {
-          "name": "data-hide-unmatched",
-          "description": "on | off — the host hides what Limit rules out, when it is on",
-          "values": [
-            {
-              "name": "on"
-            },
-            {
-              "name": "off"
-            }
-          ]
-        },
-        {
-          "name": "data-limit-options",
-          "description": "on | off — the host offers \"Limit to matching filters\": its ⋮ menu holds the switch. Written by the provider. TODO 178.",
-          "values": [
-            {
-              "name": "on"
-            },
-            {
-              "name": "off"
-            }
-          ]
-        },
-        {
-          "name": "data-locked",
-          "description": "the source owns the state — report, never set",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-nothing-to-reset",
-          "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231.",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-pending",
-          "description": "the FIELDS changed and not yet applied, space-separated. Set by a bound source; each shows Apply and Discard."
-        },
-        {
-          "name": "data-remote",
-          "description": "its source fetches from outside the data layer, so a change waits for its field's Apply. Set by a bound source.",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-saveable",
-          "description": "the host SAVES filters: the header's Save filters saves every scope under one name; while a set is taken it reads \"Save <name>\", active, and saves over it. Its ▾ holds Save filters as and Delete filters, and its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-sort-direction",
-          "description": "the sort in force. Written by the source; the Sort chip shows it.",
-          "values": [
-            {
-              "name": "asc"
-            },
-            {
-              "name": "desc"
-            },
-            {
-              "name": ""
-            }
-          ]
-        },
-        {
-          "name": "data-sort-field",
-          "description": "the sort in force. Written by the source; the Sort chip shows it."
-        },
-        {
-          "name": "data-waits",
-          "valueSet": "v"
-        },
-        {
-          "name": "open",
-          "description": "the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only"
-        }
-      ]
-    },
-    {
       "name": "sherpa-gauge-chart",
       "description": "a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is not hittable.",
       "attributes": [
@@ -2225,10 +2108,6 @@
               "name": "advanced"
             }
           ]
-        },
-        {
-          "name": "data-mode-outside",
-          "valueSet": "v"
         },
         {
           "name": "data-no-select-all",

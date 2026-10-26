@@ -13,7 +13,10 @@ const SETUP = `
   const root = document.getElementById('root');
   root.innerHTML = '';
   const provider = document.createElement('sherpa-provider');
-  const panel = document.createElement('sherpa-filter-panel');
+  // The panel area's column: a portrait toolbar over both scopes.
+  const panel = document.createElement('sherpa-quick-filter-toolbar');
+  panel.setAttribute('data-orientation', 'portrait');
+  panel.setAttribute('data-scope', 'view data');
   provider.append(panel);
   root.append(provider);
   const data = { v: 1, id: 'p', source: { store: 's', fields: { name: { label: 'Name' } } } };

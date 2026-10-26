@@ -53,7 +53,6 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-max` | text |  |  |
 | `data-min` | text |  |  |
 | `data-mode` | `simple` `advanced` |  | FILTER type only: simple \| advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes |
-| `data-mode-outside` | boolean |  |  |
 | `data-no-select-all` | boolean |  | a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp. |
 | `data-none` | boolean |  | a SINGLE list leads with a None row: its nothing (Will, TODO 394) |
 | `data-op` | text |  | FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many. |
@@ -92,7 +91,6 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | Method | What it does |
 |---|---|
 | `switchMode(next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced')` | switchMode(next?) — what the menu's own Advanced button does: the other mode, or `next`, carrying the picks into the rows, and reported. A host's door to it — a section's ⋮. TODO 425 |
-| `addCondition()` | addCondition() — a new row, as the menu's own Add condition does: for a host that draws that button itself, as the panel's action row does. TODO 98 |
 | `takeBaseline()` | What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open. |
 | `setMatches(counts: Readonly<Record<string, number>> \| null)` | setMatches(counts) — each value row's match count at its end, by value: the rows that reach this field and hold it. `null` takes them off. Will, TODO 466 |
 | `setCount(value: string, count: number)` | Write a child menu's pick count on its row. An empty badge draws nothing. |

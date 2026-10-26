@@ -108,37 +108,6 @@ test('a bound source filters by a number\'s Advanced rows, `=` included', async 
   expect(r).toEqual({ either: 2, equals: 1, between: 2, simple: 1 });
 });
 
-test('in the panel, a number field\'s f(x) carries its number into the rows, and back', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const panel = await window.__mount<HTMLElement & { readings: Record<string, Record<string, Record<string, unknown>>>;
-      setFieldReading(id: string, r: unknown, scope?: string): void }>('sherpa-filter-panel', [{
-      scope: 'data', label: 'Customer records',
-      filters: [{ id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, advanced: true }],
-    }], { open: true, style: 'inline-size: 480px' });
-    await window.__settled();
-    const sr = panel.shadowRoot!;
-    const field = sr.querySelector<HTMLElement>('.field[data-field="seats"]')!;
-    // A field's own options are its ⋮ menu's rows. TODO 420
-    const menu = field.querySelector('sherpa-menu:not(.field-menu)') as Menu;
-    panel.setFieldReading('seats', { picked: ['37'], range: false }, 'data');
-    await window.__settled();
-    const heard: unknown[] = [];
-    panel.addEventListener('quick-filter-change', () => heard.push(panel.readings['data']?.['seats']));
-    const fx = () => field.querySelector<HTMLInputElement>('.field-menu input[value="advanced"]')!.click();
-    fx();
-    await window.__settled();
-    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
-    const advanced = { mode: menu.mode, field: field.hasAttribute('data-advanced'), conditions: menu.conditions };
-    fx();
-    await window.__settled();
-    return { advanced, back: { mode: menu.mode, picked: (menu.reading as { picked?: unknown[] }).picked }, heard: heard.length > 0 };
-  });
-
-  expect(r.advanced).toEqual({ mode: 'advanced', field: true, conditions: [{ op: 'eq', picked: ['37'] }] });
-  expect(r.back).toEqual({ mode: 'simple', picked: ['37'] });
-  expect(r.heard).toBe(true);
-});
-
 /**
  * A NUMBER's range is an Advanced row — TODO 375. Will: "| Condition select |
  * Start value input | End value input |" with the "Range Slider" under them,

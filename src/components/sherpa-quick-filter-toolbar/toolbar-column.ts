@@ -205,7 +205,7 @@ export class ToolbarColumn {
 
   /** The Edit menu leads with Reset. Will, TODO 454 */
   #drawResets(): void {
-    drawFilterActions(this.#host.el, this.#host.root(), this.#$('.column-filters sherpa-menu'), undefined, false);
+    drawFilterActions(this.#host.el, this.#host.root(), this.#$('.column-filters sherpa-menu'));
   }
 
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */

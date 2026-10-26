@@ -300,25 +300,10 @@ export class SherpaQuickFilter extends SherpaElement {
     if (caret) caret.textContent = this.#caretText;
   }
 
-  /** The chip's value menu, if it has one.
-   *
-   *  A filter PANEL borrows the menu out of the chip — it loses its `slot` and
-   *  is appended somewhere else entirely — so the slot query alone found
-   *  nothing and the chip read as having no values at all. The menu is
-   *  remembered when it is first seen, so a borrowed one is still the chip's.
-   *  TRAP T-a-borrowed-menu-is-still-its-chips */
+  /** The chip's value menu, if it has one — its OWN: a section's ⋮ holds a menu too. TODO 425 */
   get menu(): SherpaMenu | null {
-    // Its OWN: a section's ⋮ holds a menu too. TODO 425
-    const slotted = this.querySelector<SherpaMenu>(':scope > [slot="menu"]');
-    if (slotted) {
-      this.#menu = slotted;
-      return slotted;
-    }
-    // Borrowed, but only while it is still on the page.
-    return this.#menu?.isConnected ? this.#menu : null;
+    return this.querySelector<SherpaMenu>(':scope > [slot="menu"]');
   }
-  /** The slotted menu, cached once found. */
-  #menu: SherpaMenu | null = null;
 
   /** The chip's picked values — the same list `quick-filter-change` reports. */
   get values(): string[] {
@@ -329,7 +314,7 @@ export class SherpaQuickFilter extends SherpaElement {
   set values(next: readonly string[]) {
     const menu = this.menu;
     if (!menu) return;
-    /* THE MENU ticks its rows — a borrowed menu's, and rows not drawn yet,
+    /* THE MENU ticks its rows — rows not drawn yet too,
        which it holds. Upgraded first: a property set on a plain element hides
        the setter for good. TRAP T-a-menu-owns-its-own-bodies
        TRAP T-a-value-before-the-first-render-is-held · TRAP T-custom-element-upgrade */

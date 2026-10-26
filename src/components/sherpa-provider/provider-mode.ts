@@ -14,11 +14,10 @@
  * - .room — The shell lost room for the panel, or has it again.
  */
 
-/** Is it the panel area's occupant: a panel, or a toolbar turned to portrait
- *  over a scope list — or over one, said `data-column`? TODO 425, 436 */
+/** Is it the panel area's occupant: a toolbar turned to portrait over a scope
+ *  list — or over one, said `data-column`? TODO 425, 436 */
 export function isColumn(el: Element): boolean {
-  if (!('drawScopes' in el)) return false;
-  return !('drawScope' in el) || el.hasAttribute('data-column') || scopesOf(el).length > 1;
+  return 'drawScopes' in el && (el.hasAttribute('data-column') || scopesOf(el).length > 1);
 }
 
 /** The scopes it names. */

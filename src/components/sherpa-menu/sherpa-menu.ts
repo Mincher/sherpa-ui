@@ -147,9 +147,6 @@ export class SherpaMenu extends SherpaElement {
     'data-commit-fixed': { type: 'boolean', kind: 'style' },
     /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
     'data-inline': { type: 'boolean', kind: 'style' },
-    /* Its HOST draws the Simple / Advanced switch — a panel field's header f(x) —
-       so its own is not shown. Will, TODO 385. */
-    'data-mode-outside': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
     /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
@@ -546,12 +543,6 @@ export class SherpaMenu extends SherpaElement {
     this.set('data-op', op);
     const select = this.$<SherpaInputText>('.body-op');
     if (select && select.value !== op) select.value = op;
-  }
-
-  /** addCondition() — a new row, as the menu's own Add condition does: for a
-   *  host that draws that button itself, as the panel's action row does. TODO 98 */
-  addCondition(): void {
-    this.#onAddCondition();
   }
 
   /** Add a condition row, and report the chain. Focus goes to its condition

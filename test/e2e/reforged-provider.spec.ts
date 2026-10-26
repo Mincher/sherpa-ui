@@ -112,7 +112,8 @@ test('mode buttons wait for the provider to draw; nothing throws', async ({ page
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
-    const panel = document.createElement('sherpa-filter-panel');
+    const panel = document.createElement('sherpa-quick-filter-toolbar');
+    panel.setAttribute('data-orientation', 'portrait');
     panel.setAttribute('data-scope', 'view data');
     provider.append(bar, panel);
     root.append(provider);
@@ -343,7 +344,8 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
-    const panel = document.createElement('sherpa-filter-panel');
+    const panel = document.createElement('sherpa-quick-filter-toolbar');
+    panel.setAttribute('data-orientation', 'portrait');
     panel.setAttribute('data-scope', 'view data');
     provider.append(bar, panel);
     root.append(provider);
@@ -394,7 +396,8 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     await settle();
     const toggle = (el) => el.querySelector('[data-filter-mode]');
     const alone = !!toggle(bar);
-    const panel = document.createElement('sherpa-filter-panel');
+    const panel = document.createElement('sherpa-quick-filter-toolbar');
+    panel.setAttribute('data-orientation', 'portrait');
     panel.setAttribute('data-scope', 'view data');
     provider.append(panel);
     await settle();
@@ -420,7 +423,8 @@ test('a page with no data shuts the panel without changing the mode; the next pa
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const provider = document.createElement('sherpa-provider');
-    const panel = document.createElement('sherpa-filter-panel');
+    const panel = document.createElement('sherpa-quick-filter-toolbar');
+    panel.setAttribute('data-orientation', 'portrait');
     panel.setAttribute('data-scope', 'view data');
     provider.append(panel);
     root.append(provider);

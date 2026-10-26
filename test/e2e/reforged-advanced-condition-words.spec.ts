@@ -148,39 +148,9 @@ test('a grid column set to Is not keeps its NOT, and reads as Advanced', async (
   expect(r.off).toEqual({ condition: null, icon: null });
 });
 
-test('the panel reports its mode in the menu\'s own words', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const panel = await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel', [{
-      scope: 'data', label: 'Data', filters: [{
-        id: 'owner', label: 'Owner', select: 'multiple', advanced: true,
-        options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
-      }],
-    }], { style: 'inline-size: 400px' });
-    panel.show();
-    await window.__settled();
-    const heard: unknown[] = [];
-    // The switch is in the field's answer, as every report carries it.
-    panel.addEventListener('quick-filter-change', (e) => heard.push((e as CustomEvent).detail.request.reading.mode));
-    const sr = panel.shadowRoot!;
-    // A field's own options are its ⋮ menu's rows. TODO 420
-    const press = () => sr.querySelector<HTMLInputElement>('.field[data-field="owner"] .field-menu input[value="advanced"]')!.click();
-    press();
-    await window.__settled();
-    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu:not(.field-menu)') as Menu | null;
-    const on = { box: sr.querySelector('.field[data-field="owner"]')!.hasAttribute('data-advanced'), mode: menu?.mode };
-    press();
-    await window.__settled();
-    return { on, off: menu?.mode, heard };
-  });
-
-  expect(r.on).toEqual({ box: true, mode: 'advanced' });
-  expect(r.off).toBe('simple');
-  expect([...new Set(r.heard)]).toEqual(['advanced', 'simple']);
-});
-
 /**
- * THE DEF SPEAKS THEM TOO. `advanced: true | 'only'` on a chip, a column and a
- * panel field; the old `custom` and `conditions` keys offer nothing.
+ * THE DEF SPEAKS THEM TOO. `advanced: true | 'only'` on a chip and a column;
+ * the old `custom` and `conditions` keys offer nothing.
  */
 test('a def says advanced — and the old custom and conditions keys offer nothing', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -213,26 +183,7 @@ test('a def says advanced — and the old custom and conditions keys offer nothi
       rows: [...col.children].length,
     };
 
-    const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [{
-      scope: 'data', label: 'Data', filters: [
-        { id: 'owner', label: 'Owner', advanced: true, options: opts },
-        { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
-      ],
-    }]);
-    (panel as HTMLElement & { show(): void }).show();
-    await window.__settled();
-    const psr = panel.shadowRoot!;
-    // A field's own options are its ⋮ menu's rows. TODO 420
-    const field = !!psr.querySelector('.field[data-field="owner"] .field-act[data-act="advanced"]');
-    /* CONDITIONS ONLY: nowhere to switch to, so no switch — and its rows show
-       from the start. Will, 2026-09-26. */
-    const emailRows = psr.querySelector('.field[data-field="email"] sherpa-menu:not(.field-menu)')
-      ?.shadowRoot?.querySelector('.condition-row');
-    const onlyField = {
-      switch: !!psr.querySelector('.field[data-field="email"] .field-act[data-act="advanced"]'),
-      rows: !!emailRows && emailRows.getClientRects().length > 0,
-    };
-    return { chips, column, field, onlyField };
+    return { chips, column };
   });
 
   expect(r.chips.owner).toEqual({ advanced: true, only: false, mode: 'simple' });
@@ -241,6 +192,4 @@ test('a def says advanced — and the old custom and conditions keys offer nothi
   expect(r.chips.old).toBe(null);
   expect(r.chips.was).toBe(null);
   expect(r.column).toEqual({ only: true, rows: 0 });
-  expect(r.field).toBe(true);
-  expect(r.onlyField).toEqual({ switch: false, rows: true });
 });

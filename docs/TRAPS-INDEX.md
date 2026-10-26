@@ -320,98 +320,78 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (173)
+## Filters (149)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
-- [T-a-borrowed-menu-is-still-its-chips](TRAPS.md#t-a-borrowed-menu-is-still-its-chips) — quick-filter
-- [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — filter-panel, quick-filter-toolbar
-- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
+- [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — quick-filter, quick-filter-toolbar
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — filter-host, quick-filter
-- [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — filter-panel, quick-filter, quick-filter-toolbar
-- [T-a-chip-knows-what-kind-it-is](TRAPS.md#t-a-chip-knows-what-kind-it-is) — filter-def, filter-kind, filter-panel, quick-filter, quick-filter-toolbar
-- [T-a-chip-menu-apply-is-the-panels-apply](TRAPS.md#t-a-chip-menu-apply-is-the-panels-apply) — filter-panel
-- [T-a-chip-menu-in-the-panel-commits](TRAPS.md#t-a-chip-menu-in-the-panel-commits) — filter-panel
+- [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — quick-filter, quick-filter-toolbar
+- [T-a-chip-knows-what-kind-it-is](TRAPS.md#t-a-chip-knows-what-kind-it-is) — filter-def, filter-kind, quick-filter, quick-filter-toolbar
 - [T-a-chip-press-applies-its-menus-draft](TRAPS.md#t-a-chip-press-applies-its-menus-draft) — quick-filter
-- [T-a-chip-rewrites-its-own-label](TRAPS.md#t-a-chip-rewrites-its-own-label) — filter-panel
 - [T-a-chip-says-its-own-answer](TRAPS.md#t-a-chip-says-its-own-answer) — quick-filter, quick-filter-toolbar
 - [T-a-component-asks-its-provider](TRAPS.md#t-a-component-asks-its-provider) — quick-filter-toolbar
-- [T-a-composed-child-hides-with-important](TRAPS.md#t-a-composed-child-hides-with-important) — filter-panel
-- [T-a-composed-child-takes-an-attribute-not-text](TRAPS.md#t-a-composed-child-takes-an-attribute-not-text) — filter-panel
 - [T-a-condition-badge-says-that-not-which](TRAPS.md#t-a-condition-badge-says-that-not-which) — quick-filter
 - [T-a-condition-only-field-still-has-a-menu](TRAPS.md#t-a-condition-only-field-still-has-a-menu) — quick-filter-toolbar
 - [T-a-conditioned-chip-answers-with-its-clause](TRAPS.md#t-a-conditioned-chip-answers-with-its-clause) — quick-filter-toolbar
 - [T-a-conditioned-chip-reads-as-active](TRAPS.md#t-a-conditioned-chip-reads-as-active) — quick-filter
-- [T-a-conditioned-field-opens-on-its-rows](TRAPS.md#t-a-conditioned-field-opens-on-its-rows) — filter-menu, filter-panel
-- [T-a-conditions-only-menu-cannot-be-drilled](TRAPS.md#t-a-conditions-only-menu-cannot-be-drilled) — filter-panel, quick-filter-toolbar
-- [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — filter-panel, quick-filter-toolbar
+- [T-a-conditioned-field-opens-on-its-rows](TRAPS.md#t-a-conditioned-field-opens-on-its-rows) — filter-menu
+- [T-a-conditions-only-menu-cannot-be-drilled](TRAPS.md#t-a-conditions-only-menu-cannot-be-drilled) — quick-filter-toolbar
+- [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — quick-filter-toolbar
 - [T-a-divider-needs-a-neighbour-on-both-sides](TRAPS.md#t-a-divider-needs-a-neighbour-on-both-sides) — quick-filter-toolbar
-- [T-a-drilled-pick-goes-home-first](TRAPS.md#t-a-drilled-pick-goes-home-first) — filter-panel
 - [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, quick-filter-toolbar, sherpa-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
-- [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-panel
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
-- [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu, filter-panel
+- [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu
 - [T-a-filter-is-dragged-into-its-place](TRAPS.md#t-a-filter-is-dragged-into-its-place) — quick-filter-toolbar
 - [T-a-filter-menu-has-two-modes](TRAPS.md#t-a-filter-menu-has-two-modes) — quick-filter
-- [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — filter-panel, quick-filter-toolbar
+- [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — quick-filter-toolbar
 - [T-a-hovered-chip-previews-the-highlight](TRAPS.md#t-a-hovered-chip-previews-the-highlight) — quick-filter-toolbar
-- [T-a-late-built-menu-takes-the-answer-as-it-stands](TRAPS.md#t-a-late-built-menu-takes-the-answer-as-it-stands) — filter-panel
 - [T-a-legend-row-is-a-key-chip](TRAPS.md#t-a-legend-row-is-a-key-chip) — quick-filter
 - [T-a-menu-owns-its-own-bodies](TRAPS.md#t-a-menu-owns-its-own-bodies) — filter-menu, quick-filter, quick-filter-toolbar
 - [T-a-nested-menu-answers-for-itself](TRAPS.md#t-a-nested-menu-answers-for-itself) — quick-filter
 - [T-a-new-chip-opens-in-default-not-warning](TRAPS.md#t-a-new-chip-opens-in-default-not-warning) — quick-filter-toolbar
 - [T-a-number-has-advanced-rows](TRAPS.md#t-a-number-has-advanced-rows) — filter-menu, quick-filter
 - [T-a-number-waits-for-apply](TRAPS.md#t-a-number-waits-for-apply) — filter-menu
-- [T-a-panel-adds-through-the-bar-that-owns-the-list](TRAPS.md#t-a-panel-adds-through-the-bar-that-owns-the-list) — filter-panel, quick-filter-toolbar
-- [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — filter-def, filter-panel
-- [T-a-panel-builds-its-own-menus](TRAPS.md#t-a-panel-builds-its-own-menus) — filter-def, filter-menu, filter-panel
-- [T-a-panel-flush-between-surfaces-draws-two-edges](TRAPS.md#t-a-panel-flush-between-surfaces-draws-two-edges) — filter-panel
-- [T-a-panel-follows-the-query-open-or-shut](TRAPS.md#t-a-panel-follows-the-query-open-or-shut) — filter-panel
+- [T-a-panel-adds-through-the-bar-that-owns-the-list](TRAPS.md#t-a-panel-adds-through-the-bar-that-owns-the-list) — quick-filter-toolbar
+- [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — filter-def
+- [T-a-panel-builds-its-own-menus](TRAPS.md#t-a-panel-builds-its-own-menus) — filter-def, filter-menu
 - [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — quick-filter
-- [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, quick-filter, quick-filter-toolbar
 - [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — filter-host, quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
-- [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-host, filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-host, quick-filter, quick-filter-toolbar
 - [T-a-reflow-that-moves-nothing-keeps-its-menus](TRAPS.md#t-a-reflow-that-moves-nothing-keeps-its-menus) — quick-filter-toolbar
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — quick-filter-toolbar
-- [T-a-row-opens-its-child-menu](TRAPS.md#t-a-row-opens-its-child-menu) — filter-panel, quick-filter-toolbar
+- [T-a-row-opens-its-child-menu](TRAPS.md#t-a-row-opens-its-child-menu) — quick-filter-toolbar
 - [T-a-row-remembers-what-it-was-given](TRAPS.md#t-a-row-remembers-what-it-was-given) — quick-filter
-- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, filter-panel, quick-filter, quick-filter-toolbar
-- [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — filter-panel
-- [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — filter-panel
+- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, quick-filter, quick-filter-toolbar
 - [T-a-section-is-headed-once](TRAPS.md#t-a-section-is-headed-once) — quick-filter-toolbar
 - [T-a-shut-column-draws-nothing](TRAPS.md#t-a-shut-column-draws-nothing) — quick-filter-toolbar
-- [T-a-shut-scope-folds-like-a-bar](TRAPS.md#t-a-shut-scope-folds-like-a-bar) — filter-panel
 - [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-host, quick-filter
 - [T-a-silent-write-still-needs-a-way-to-report](TRAPS.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
 - [T-a-stale-draw-keeps-the-bars-own-change](TRAPS.md#t-a-stale-draw-keeps-the-bars-own-change) — quick-filter-toolbar
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — quick-filter
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — quick-filter-toolbar
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — quick-filter, quick-filter-toolbar
-- [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — filter-panel
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — quick-filter
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — quick-filter-toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
-- [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — filter-panel, quick-filter, quick-filter-toolbar
+- [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — quick-filter, quick-filter-toolbar
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — quick-filter-toolbar
-- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — filter-panel, quick-filter-toolbar
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — quick-filter-toolbar
 - [T-actions-were-a-slot](TRAPS.md#t-actions-were-a-slot) — quick-filter-toolbar
 - [T-add-menu-batches](TRAPS.md#t-add-menu-batches) — filters-button, quick-filter-toolbar
-- [T-an-accordion-action-is-not-a-toggle](TRAPS.md#t-an-accordion-action-is-not-a-toggle) — filter-panel
 - [T-an-active-chip-is-heavier-and-more-strongly-drawn](TRAPS.md#t-an-active-chip-is-heavier-and-more-strongly-drawn) — quick-filter
 - [T-an-allow-list-is-a-filter-not-an-order](TRAPS.md#t-an-allow-list-is-a-filter-not-an-order) — quick-filter-toolbar
 - [T-an-empty-chip-opens-its-menu](TRAPS.md#t-an-empty-chip-opens-its-menu) — quick-filter
-- [T-an-event-name-is-not-always-a-literal](TRAPS.md#t-an-event-name-is-not-always-a-literal) — filter-panel
-- [T-an-inactive-chip-says-where-its-filter-went](TRAPS.md#t-an-inactive-chip-says-where-its-filter-went) — filter-panel, quick-filter, quick-filter-toolbar
-- [T-an-inline-condition-row-keeps-its-tracks](TRAPS.md#t-an-inline-condition-row-keeps-its-tracks) — filter-panel
-- [T-an-inline-menu-is-the-same-menu](TRAPS.md#t-an-inline-menu-is-the-same-menu) — filter-menu, filter-panel, quick-filter
-- [T-an-open-panel-follows-the-data-layer](TRAPS.md#t-an-open-panel-follows-the-data-layer) — filter-panel
+- [T-an-inactive-chip-says-where-its-filter-went](TRAPS.md#t-an-inactive-chip-says-where-its-filter-went) — quick-filter, quick-filter-toolbar
+- [T-an-inline-menu-is-the-same-menu](TRAPS.md#t-an-inline-menu-is-the-same-menu) — filter-menu, quick-filter
 - [T-an-operator-decides-pick-or-type](TRAPS.md#t-an-operator-decides-pick-or-type) — filter-menu, quick-filter, quick-filter-toolbar
 - [T-an-organise-chip-has-no-values](TRAPS.md#t-an-organise-chip-has-no-values) — quick-filter
 - [T-an-organise-chip-is-named-for-its-job-not-its-field](TRAPS.md#t-an-organise-chip-is-named-for-its-job-not-its-field) — quick-filter
 - [T-anchor-cross-root](TRAPS.md#t-anchor-cross-root) — quick-filter
-- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — filter-panel
-- [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — filter-panel, quick-filter
+- [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — quick-filter
 - [T-calendar-header-has-no-heading](TRAPS.md#t-calendar-header-has-no-heading) — filter-menu
 - [T-capture-beats-registration-order](TRAPS.md#t-capture-beats-registration-order) — quick-filter-toolbar
 - [T-caret-carries-the-value-not-the-label](TRAPS.md#t-caret-carries-the-value-not-the-label) — quick-filter
@@ -421,41 +401,41 @@ files. An entry that only tests cite is under Tests only.
 - [T-clear-all-resets-organise-too](TRAPS.md#t-clear-all-resets-organise-too) — quick-filter-toolbar
 - [T-clone-item-is-for-two-destinations](TRAPS.md#t-clone-item-is-for-two-destinations) — quick-filter
 - [T-commit-follows-select-mode](TRAPS.md#t-commit-follows-select-mode) — filter-def, filter-menu, quick-filter-toolbar
-- [T-conditions-are-opt-in-per-field](TRAPS.md#t-conditions-are-opt-in-per-field) — filter-kind, filter-menu, filter-panel
-- [T-custom-element-upgrade](TRAPS.md#t-custom-element-upgrade) — filter-menu, filter-panel, quick-filter, quick-filter-toolbar
+- [T-conditions-are-opt-in-per-field](TRAPS.md#t-conditions-are-opt-in-per-field) — filter-kind, filter-menu
+- [T-custom-element-upgrade](TRAPS.md#t-custom-element-upgrade) — filter-menu, quick-filter, quick-filter-toolbar
 - [T-drill-flags-travel-and-replace](TRAPS.md#t-drill-flags-travel-and-replace) — filters-button
-- [T-drill-moves-not-clones](TRAPS.md#t-drill-moves-not-clones) — filter-panel, filters-button, quick-filter-toolbar
+- [T-drill-moves-not-clones](TRAPS.md#t-drill-moves-not-clones) — filters-button, quick-filter-toolbar
 - [T-each-field-can-apply-on-its-own](TRAPS.md#t-each-field-can-apply-on-its-own) — quick-filter, quick-filter-toolbar
 - [T-empty-flag-needs-rows-to-count](TRAPS.md#t-empty-flag-needs-rows-to-count) — quick-filter
 - [T-empty-is-every-kind-of-answer](TRAPS.md#t-empty-is-every-kind-of-answer) — quick-filter, quick-filter-toolbar
 - [T-every-chip-menu-gets-clear-and-search](TRAPS.md#t-every-chip-menu-gets-clear-and-search) — filter-menu
-- [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-panel, quick-filter-toolbar
+- [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — quick-filter-toolbar
 - [T-everything-on-is-no-filter](TRAPS.md#t-everything-on-is-no-filter) — quick-filter, quick-filter-toolbar
 - [T-grid-suspend-is-not-clear](TRAPS.md#t-grid-suspend-is-not-clear) — quick-filter, quick-filter-toolbar
-- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — filter-panel, quick-filter-toolbar
+- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — quick-filter-toolbar
 - [T-group-chip-body-toggles-grouping](TRAPS.md#t-group-chip-body-toggles-grouping) — quick-filter
 - [T-icon-only-is-purely-css](TRAPS.md#t-icon-only-is-purely-css) — quick-filter
 - [T-icon-writes-to-both-slots](TRAPS.md#t-icon-writes-to-both-slots) — quick-filter
 - [T-legend-status-swatch-shares-the-band-tokens](TRAPS.md#t-legend-status-swatch-shares-the-band-tokens) — quick-filter
-- [T-locked-chip-relays-and-nothing-else](TRAPS.md#t-locked-chip-relays-and-nothing-else) — filter-panel, quick-filter, quick-filter-toolbar
+- [T-locked-chip-relays-and-nothing-else](TRAPS.md#t-locked-chip-relays-and-nothing-else) — quick-filter, quick-filter-toolbar
 - [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — quick-filter
 - [T-menu-anchors-to-the-chip](TRAPS.md#t-menu-anchors-to-the-chip) — quick-filter
-- [T-menu-composes-real-components](TRAPS.md#t-menu-composes-real-components) — filter-menu, filter-panel
+- [T-menu-composes-real-components](TRAPS.md#t-menu-composes-real-components) — filter-menu
 - [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — filter-menu, quick-filter
 - [T-number-and-date-lead-with-a-range-switch](TRAPS.md#t-number-and-date-lead-with-a-range-switch) — filter-def
 - [T-off-is-not-forgotten](TRAPS.md#t-off-is-not-forgotten) — quick-filter
 - [T-one-condition-system](TRAPS.md#t-one-condition-system) — quick-filter
 - [T-one-cycle-for-one-value](TRAPS.md#t-one-cycle-for-one-value) — quick-filter, quick-filter-toolbar
 - [T-one-field-does-not-own-the-whole-map](TRAPS.md#t-one-field-does-not-own-the-whole-map) — quick-filter-toolbar
-- [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — filter-menu, filter-panel, quick-filter-toolbar
+- [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — filter-menu, quick-filter-toolbar
 - [T-one-filters-button](TRAPS.md#t-one-filters-button) — filters-button, quick-filter-toolbar
 - [T-one-pick-reads-field-and-value](TRAPS.md#t-one-pick-reads-field-and-value) — quick-filter
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — quick-filter-toolbar
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — quick-filter
 - [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — quick-filter-toolbar
 - [T-only-five-filter-chips-carry-an-icon](TRAPS.md#t-only-five-filter-chips-carry-an-icon) — filter-def
-- [T-only-group-and-sort-stay-one-chip](TRAPS.md#t-only-group-and-sort-stay-one-chip) — filter-def, filter-kind, filter-panel
-- [T-organise-chips-lead-the-bar](TRAPS.md#t-organise-chips-lead-the-bar) — filter-panel, quick-filter-toolbar
+- [T-only-group-and-sort-stay-one-chip](TRAPS.md#t-only-group-and-sort-stay-one-chip) — filter-def, filter-kind
+- [T-organise-chips-lead-the-bar](TRAPS.md#t-organise-chips-lead-the-bar) — quick-filter-toolbar
 - [T-organise-glyphs-are-named-not-inline](TRAPS.md#t-organise-glyphs-are-named-not-inline) — quick-filter-toolbar
 - [T-overflowing-needs-1px-slack](TRAPS.md#t-overflowing-needs-1px-slack) — quick-filter-toolbar
 - [T-panel-mode-hides-what-the-panel-answers](TRAPS.md#t-panel-mode-hides-what-the-panel-answers) — quick-filter-toolbar
@@ -467,31 +447,27 @@ files. An entry that only tests cite is under Tests only.
 - [T-remove-is-opt-in-and-a-footer-button](TRAPS.md#t-remove-is-opt-in-and-a-footer-button) — quick-filter-toolbar
 - [T-remove-matches-the-tag-not-the-class](TRAPS.md#t-remove-matches-the-tag-not-the-class) — quick-filter-toolbar
 - [T-render-captures-live-state](TRAPS.md#t-render-captures-live-state) — quick-filter-toolbar
-- [T-reset-to-default-is-the-views-own](TRAPS.md#t-reset-to-default-is-the-views-own) — filter-panel, quick-filter-toolbar
+- [T-reset-to-default-is-the-views-own](TRAPS.md#t-reset-to-default-is-the-views-own) — quick-filter-toolbar
 - [T-resize-reschedule-never-drop](TRAPS.md#t-resize-reschedule-never-drop) — quick-filter-toolbar
-- [T-saved-filters-are-every-scope](TRAPS.md#t-saved-filters-are-every-scope) — filter-panel, filters-button, quick-filter-toolbar
+- [T-saved-filters-are-every-scope](TRAPS.md#t-saved-filters-are-every-scope) — filters-button, quick-filter-toolbar
 - [T-saved-filters-are-the-last-section](TRAPS.md#t-saved-filters-are-the-last-section) — filters-button
 - [T-scope-does-not-stop-inheritance](TRAPS.md#t-scope-does-not-stop-inheritance) — quick-filter
-- [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — filter-def, filter-panel, quick-filter-toolbar
+- [T-send-to-view-filters](TRAPS.md#t-send-to-view-filters) — filter-def, quick-filter-toolbar
 - [T-sort-is-tri-state](TRAPS.md#t-sort-is-tri-state) — quick-filter
-- [T-the-add-menu-is-the-whole-list](TRAPS.md#t-the-add-menu-is-the-whole-list) — filter-panel, filters-button, quick-filter-toolbar
+- [T-the-add-menu-is-the-whole-list](TRAPS.md#t-the-add-menu-is-the-whole-list) — filters-button, quick-filter-toolbar
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — quick-filter-toolbar
 - [T-the-filter-switch-keeps-what-it-turned-off](TRAPS.md#t-the-filter-switch-keeps-what-it-turned-off) — quick-filter-toolbar
-- [T-the-filters-button-is-a-door-not-a-filter](TRAPS.md#t-the-filters-button-is-a-door-not-a-filter) — filter-panel, quick-filter-toolbar
+- [T-the-filters-button-is-a-door-not-a-filter](TRAPS.md#t-the-filters-button-is-a-door-not-a-filter) — quick-filter-toolbar
 - [T-the-fold-measures-a-chip-that-has-not-drawn-itself](TRAPS.md#t-the-fold-measures-a-chip-that-has-not-drawn-itself) — quick-filter-toolbar
 - [T-the-header-chips-must-reach-the-query](TRAPS.md#t-the-header-chips-must-reach-the-query) — quick-filter-toolbar
 - [T-the-local-context-waits-for-the-view](TRAPS.md#t-the-local-context-waits-for-the-view) — quick-filter-toolbar
-- [T-the-mode-switch-is-the-pages-own](TRAPS.md#t-the-mode-switch-is-the-pages-own) — filter-panel
-- [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — filter-panel, more-menu, quick-filter-toolbar, sherpa-filter-more
-- [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — filter-panel
+- [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — more-menu, quick-filter-toolbar, sherpa-filter-more
 - [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — quick-filter-toolbar
-- [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def, filter-panel
-- [T-the-panel-reports-its-own-reading](TRAPS.md#t-the-panel-reports-its-own-reading) — filter-panel
+- [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def
 - [T-the-view-chip-stays-on-the-header](TRAPS.md#t-the-view-chip-stays-on-the-header) — quick-filter-toolbar
 - [T-toggle-chip-has-no-count](TRAPS.md#t-toggle-chip-has-no-count) — quick-filter-toolbar
 - [T-toggle-chips-have-no-field](TRAPS.md#t-toggle-chips-have-no-field) — quick-filter-toolbar
 - [T-toggling-a-conditioned-chip-suspends-its-condition](TRAPS.md#t-toggling-a-conditioned-chip-suspends-its-condition) — quick-filter
-- [T-two-chips-in-one-section-need-their-own-id](TRAPS.md#t-two-chips-in-one-section-need-their-own-id) — filter-panel
 - [T-value-label-is-the-callers-words](TRAPS.md#t-value-label-is-the-callers-words) — quick-filter
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
@@ -772,12 +748,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (118)
+## SherpaElement and the shared sheets (107)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — sherpa-element
-- [T-a-chip-says-its-own-answer](TRAPS.md#t-a-chip-says-its-own-answer) — filter-field
 - [T-a-cloned-prototype-needs-its-icons-upgraded](TRAPS.md#t-a-cloned-prototype-needs-its-icons-upgraded) — sherpa-element
 - [T-a-component-asks-its-provider](TRAPS.md#t-a-component-asks-its-provider) — components, sherpa-element
 - [T-a-component-declares-its-summary](TRAPS.md#t-a-component-declares-its-summary) — sherpa-element
@@ -786,7 +761,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-condition-marks-every-match](TRAPS.md#t-a-condition-marks-every-match) — mark-text
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
 - [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — sherpa-element, templater
-- [T-a-field-is-one-object](TRAPS.md#t-a-field-is-one-object) — filter-field
 - [T-a-filter-is-dragged-into-its-place](TRAPS.md#t-a-filter-is-dragged-into-its-place) — drag-order
 - [T-a-flag-brings-the-base-methods](TRAPS.md#t-a-flag-brings-the-base-methods) — sherpa-element
 - [T-a-gauge-composes-the-ring](TRAPS.md#t-a-gauge-composes-the-ring) — shared-constants
@@ -800,18 +774,14 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — mark-text
 - [T-a-page-loads-the-bundle](TRAPS.md#t-a-page-loads-the-bundle) — render-icon
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
-- [T-a-panel-date-answers-with-its-days](TRAPS.md#t-a-panel-date-answers-with-its-days) — filter-field
-- [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — filter-field
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — shared-constants
 - [T-a-property-set-before-upgrade-shadows-its-accessor](TRAPS.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — shared-constants
 - [T-a-scroll-shadow-is-drawn-over-the-content](TRAPS.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base
-- [T-a-section-heading-is-not-a-field](TRAPS.md#t-a-section-heading-is-not-a-field) — filter-field
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — sherpa-element
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — sherpa-button-look
 - [T-a-sub-pixel-border-reads-back-as-1px](TRAPS.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
-- [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — filter-field
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — sherpa-element
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
 - [T-a-template-is-parsed-once](TRAPS.md#t-a-template-is-parsed-once) — templater
@@ -827,7 +797,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-icon-loads-when-first-drawn](TRAPS.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
 - [T-an-inactive-chip-says-where-its-filter-went](TRAPS.md#t-an-inactive-chip-says-where-its-filter-went) — shared-constants
 - [T-an-inner-event-stops-at-its-host](TRAPS.md#t-an-inner-event-stops-at-its-host) — sherpa-element
-- [T-an-open-panel-follows-the-data-layer](TRAPS.md#t-an-open-panel-follows-the-data-layer) — filter-field
 - [T-an-svg-with-a-focus-listener-is-a-tab-stop](TRAPS.md#t-an-svg-with-a-focus-listener-is-a-tab-stop) — roving-focus
 - [T-anchoring-is-generic](TRAPS.md#t-anchoring-is-generic) — sherpa-anchor
 - [T-any-component-can-be-bound](TRAPS.md#t-any-component-can-be-bound) — sherpa-element
@@ -835,7 +804,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-at-property-needs-the-document](TRAPS.md#t-at-property-needs-the-document) — sherpa-grouping
 - [T-base-class-does-four-things](TRAPS.md#t-base-class-does-four-things) — sherpa-element
 - [T-bind-locks-what-it-owns](TRAPS.md#t-bind-locks-what-it-owns) — sherpa-element
-- [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — filter-field
 - [T-clone-item-is-for-two-destinations](TRAPS.md#t-clone-item-is-for-two-destinations) — sherpa-element
 - [T-clone-returns-null-never-asserts](TRAPS.md#t-clone-returns-null-never-asserts) — sherpa-element
 - [T-cloning-prototypes-have-no-id](TRAPS.md#t-cloning-prototypes-have-no-id) — templater
@@ -845,7 +813,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-configuration-is-not-data](TRAPS.md#t-configuration-is-not-data) — sherpa-element
 - [T-custom-element-upgrade](TRAPS.md#t-custom-element-upgrade) — sherpa-element
 - [T-declared-only-means-css-owns-it](TRAPS.md#t-declared-only-means-css-owns-it) — sherpa-element
-- [T-empty-is-every-kind-of-answer](TRAPS.md#t-empty-is-every-kind-of-answer) — filter-field
 - [T-empty-write-lets-css-collapse](TRAPS.md#t-empty-write-lets-css-collapse) — sherpa-element
 - [T-every-button-says-its-action](TRAPS.md#t-every-button-says-its-action) — sherpa-anchor
 - [T-false-is-off](TRAPS.md#t-false-is-off) — sherpa-element
@@ -859,11 +826,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-mirroring-skips-value](TRAPS.md#t-mirroring-skips-value) — sherpa-element
 - [T-motion-is-owned-here](TRAPS.md#t-motion-is-owned-here) — sherpa-motion
 - [T-non-value-rows-is-one-selector](TRAPS.md#t-non-value-rows-is-one-selector) — shared-constants
-- [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — filter-field
 - [T-number-coercion](TRAPS.md#t-number-coercion) — sherpa-element
 - [T-one-tab-stop-per-set](TRAPS.md#t-one-tab-stop-per-set) — roving-focus
 - [T-one-value-one-declaration](TRAPS.md#t-one-value-one-declaration) — sherpa-base
-- [T-only-group-and-sort-stay-one-chip](TRAPS.md#t-only-group-and-sort-stay-one-chip) — filter-field
 - [T-parent-chain-walk-not-a-selector](TRAPS.md#t-parent-chain-walk-not-a-selector) — tree-rows
 - [T-populate-settles-after-render-data](TRAPS.md#t-populate-settles-after-render-data) — sherpa-element
 - [T-private-state-is-a-custom-state](TRAPS.md#t-private-state-is-a-custom-state) — form-value, sherpa-element

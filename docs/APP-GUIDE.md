@@ -80,7 +80,8 @@ Plus the app's stores, and its Views as JSON.
         <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-scope="view"
                                      data-locked data-reset-on-populate></sherpa-quick-filter-toolbar>
       </sherpa-app-header>
-      <sherpa-filter-panel slot="panel-start" id="filter-panel" data-scope="view data"></sherpa-filter-panel>
+      <sherpa-quick-filter-toolbar slot="panel-start" id="filter-column" data-orientation="portrait"
+                                   data-column data-scope="view data"></sherpa-quick-filter-toolbar>
       <sherpa-outlet id="context-root"></sherpa-outlet>
       <sherpa-dialog slot="overlay" id="settings" data-type="overlay">
         <sherpa-app-header slot="header" data-back></sherpa-app-header>
@@ -346,7 +347,7 @@ outlet.start({
   stores: () => ({ customers: customerStore }),
   ready: customersReady,
   drafts: () => 'session',
-  panels: { filters: document.getElementById('filter-panel') },
+  panels: { filters: document.getElementById('filter-column') },
   settings: { dialog: settings, header: settings.querySelector('sherpa-app-header'),
               root: document.getElementById('settings-root') },
 });

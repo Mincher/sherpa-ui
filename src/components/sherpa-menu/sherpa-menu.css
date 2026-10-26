@@ -104,18 +104,12 @@
 :host([data-inline]) .heading,
 :host([data-inline]) .drill-trail { display: none; }
 
-/* …and it drops the chrome its HOST already has. A filter panel's field header
-   carries the list/condition switch and the panel has ONE footer, so a second
-   of each is two answers to one question.
+/* …and it drops the chrome its HOST already has: its switch and its Apply.
    TRAP T-an-inline-menu-drops-the-chrome-its-host-owns */
-/* INLINE, a condition row keeps the TOOLBAR's grouped tracks — same controls,
-   same one-line object. Its host gives it the full column width by moving the
-   field's action buttons off the row (see `sherpa-filter-panel.css`); the
-   tracks are `fr`-based, so they simply narrow.
+/* INLINE, a condition row keeps the TOOLBAR's grouped tracks; they are `fr`-based, so they narrow.
    TRAP T-an-inline-condition-row-keeps-its-tracks */
 
 :host([data-inline]) .use-condition,
-:host([data-mode-outside]) .use-condition,
 :host([data-inline]) .footer {
   /* `!important`, and it is the honest answer. Both are COMPOSED components
      with their own `:host { display: … }`, and a host's own sheet wins over a

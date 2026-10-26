@@ -1,25 +1,26 @@
 import { test, expect, type Bar } from './harness';
 
 /**
- * RESET, AND RESET ALL TO DEFAULT — TODO 109, 129 and 383. Both lead the ONE
- * Filters menu, Reset filters first; "Reset all on view" asks for the
+ * RESET, AND RESET ALL TO DEFAULT — TODO 109, 129, 383 and 454. Both lead the
+ * Edit menu, Reset filters first; "Reset all on view" asks for the
  * View's OWN filters, which only the provider knows. The ask is CANCELABLE, so
  * an app can ask the reader first — and keep what is on screen under a name.
  * TRAP T-reset-to-default-is-the-views-own
  */
-test('the bar\'s Edit menu and the panel\'s Filters menu lead with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
+test('the bar\'s and the column\'s Edit menus lead with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const heard: string[] = [];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
-    const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [], { open: true, keep: true });
+    const column = await window.__mount<HTMLElement & { drawScopes(s: unknown): void }>('sherpa-quick-filter-toolbar', undefined,
+      { 'data-orientation': 'portrait', 'data-column': true, open: true, keep: true });
+    column.drawScopes([]);
     await window.__settled();
-    for (const el of [bar, panel]) {
-      el.addEventListener('view-reset', (e) => heard.push(`${el.localName}${e.cancelable ? ', cancelable' : ''}`));
+    for (const [name, el] of [['bar', bar], ['column', column]] as const) {
+      el.addEventListener('view-reset', (e) => heard.push(`${name}${e.cancelable ? ', cancelable' : ''}`));
     }
-    // The bar's are its Edit menu's rows (Will, TODO 454); the panel's, its Filters menu's (TODO 383).
+    // Each is its Edit menu's rows. Will, TODO 454
     const pick = async (host: HTMLElement): Promise<{ lead: string[][]; old: number; open: boolean }> => {
-      const bar = host.localName === 'sherpa-quick-filter-toolbar';
-      const btn = host.shadowRoot!.querySelector<HTMLElement>(bar ? '.add-btn' : '.filters-btn')!;
+      const btn = host.shadowRoot!.querySelector<HTMLElement>('.add-btn, .column-filters')!;
       btn.shadowRoot!.querySelector<HTMLElement>('button')!.click();
       await window.__settled();
       const menu = btn.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
@@ -32,13 +33,13 @@ test('the bar\'s Edit menu and the panel\'s Filters menu lead with Reset, and Re
       return { lead, old, open: menu.open };
     };
     const onBar = await pick(bar);
-    const onPanel = await pick(panel);
-    return { heard, onBar, onPanel };
+    const onColumn = await pick(column);
+    return { heard, onBar, onColumn };
   });
   const lead = [['reset', 'Reset filters'], ['reset-default', 'Reset all on view']];
   // A row picked shuts the menu.
   expect(r.onBar).toEqual({ lead, old: 0, open: false });
-  expect(r.onPanel).toEqual({ lead, old: 0, open: false });
+  expect(r.onColumn).toEqual({ lead, old: 0, open: false });
   // A host that asks the reader first can take it over.
-  expect(r.heard).toEqual(['sherpa-quick-filter-toolbar, cancelable', 'sherpa-filter-panel, cancelable']);
+  expect(r.heard).toEqual(['bar, cancelable', 'column, cancelable']);
 });

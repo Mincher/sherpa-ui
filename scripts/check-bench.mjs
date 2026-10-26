@@ -31,7 +31,7 @@ const COUNTER = Symbol.for('sherpa.bench');
 /** The costs per act that may only fall. */
 export const GATED = ['loads', 'counts', 'distinct', 'changes', 'fields', 'rows', 'cells', 'compiles', 'clones', 'scans'];
 // The fakes are read from these specs, so a change to one changes the bench.
-const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart', 'sherpa-filter-panel']
+const SPECS = ['sherpa-quick-filter-toolbar', 'sherpa-data-grid', 'sherpa-barchart']
   .map((tag) => `src/components/${tag}/${tag}.component.json`);
 const STAGED = ['src/core/data/', 'src/core/ui/bind-source.ts', 'scripts/check-bench.mjs', 'scripts/bench-baseline.json', PAGE, LEAN, ...SPECS];
 // `walks` and `draws` are printed, never gated.
@@ -233,13 +233,14 @@ async function page(L, def, store, columns) {
   const data = control('sherpa-quick-filter-toolbar', 'data-bar', def.scopes.data.holds);
   const grid = control('sherpa-data-grid', 'grid');
   const chart = control('sherpa-barchart', 'chart');
-  const panel = control('sherpa-filter-panel', 'panel');
+  // The panel area's column: a toolbar over both scopes.
+  const column = control('sherpa-quick-filter-toolbar', 'column');
   L.bindSource(source, view, { steerOnly: true, scope: 'view' });
   L.bindSource(source, data, { steerOnly: true, scope: 'data' });
   L.bindSource(source, grid, { scope: 'data', shows: 'grid', fields: columns });
   L.bindSource(source, chart, { readonly: true, rows: 'all', fields: ['status'] });
-  L.bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
-  return { source, initial, view, data, grid, chart, panel };
+  L.bindSource(source, column, { steerOnly: true, scope: ['view', 'data'] });
+  return { source, initial, view, data, grid, chart, column };
 }
 
 const REPORT = { status: { picked: ['active', 'trial'] }, owner: { picked: ['Owner 01'] }, plan: { picked: ['pro'] } };
@@ -256,7 +257,7 @@ const ACTS = {
   sort: (p) => p.grid.send('sort-change', { field: 'customer', direction: 'asc' }),
   heading: (p) => p.grid.send('column-filter-change', { field: 'tier', reading: { picked: ['gold'] } }),
   search: (p) => p.data.send('search-change', { value: 'owner 1' }),
-  raise: (p) => p.panel.send('filter-add', { scope: 'view', ids: ['status'], from: 'data' }),
+  raise: (p) => p.column.send('filter-add', { scope: 'view', ids: ['status'], from: 'data' }),
   clear: (p) => p.view.clear(),
   reset: (p) => p.source.query.setQuery(structuredClone(p.initial)),
   // A reader's own writes: each names its row, so a held set takes it in place.
