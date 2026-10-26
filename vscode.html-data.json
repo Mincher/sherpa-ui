@@ -2815,6 +2815,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-every-count",
+          "valueSet": "v"
+        },
+        {
           "name": "data-failed",
           "description": "the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411"
         },

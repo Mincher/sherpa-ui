@@ -638,6 +638,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-every-count",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-failed",
       "type": "string",
       "observed": true,

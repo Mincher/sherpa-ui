@@ -6022,6 +6022,19 @@
             },
             {
               "kind": "method",
+              "name": "setMatches",
+              "parameters": [
+                {
+                  "name": "counts",
+                  "type": {
+                    "text": "Readonly<Record<string, number>> | null"
+                  }
+                }
+              ],
+              "description": "setMatches(counts) — each value row's match count at its end, by value: the rows that reach this field and hold it. `null` takes them off. Will, TODO 466"
+            },
+            {
+              "kind": "method",
               "name": "setCount",
               "parameters": [
                 {
@@ -8161,6 +8174,13 @@
             },
             {
               "kind": "field",
+              "name": "countEveryValue",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "appContext",
               "type": {
                 "text": "boolean"
@@ -8508,6 +8528,12 @@
             {
               "name": "data-dirty",
               "description": "something in its scope is changed and not applied: Apply is on. Set by a bound source.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-every-count",
               "type": {
                 "text": "boolean"
               }

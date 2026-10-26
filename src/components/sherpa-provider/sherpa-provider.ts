@@ -359,6 +359,20 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: headings in a column. */
   #labelColumn = true;
 
+  /** Every value of a list filter shows its match count, picked or not, its
+   *  chip on or off — counted where the rows are held. The app sets it, from its
+   *  session. Will, TODO 466 */
+  get countEveryValue(): boolean {
+    return this.#countEvery;
+  }
+  set countEveryValue(on: boolean) {
+    this.#countEvery = on;
+    for (const source of Object.values(this.#sources)) source.countEveryValue = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: count every value. */
+  #countEvery = false;
+
   /** The View Context is the APP Context: one answer for every page, kept in
    *  the session; a page without a field it holds shows that filter inactive.
    *  Off, each page has its own again. The app sets it, from its session.
@@ -434,6 +448,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-field-apply', !this.#singleApply);
     el.toggleAttribute('data-reorder', this.#reorder);
     el.toggleAttribute('data-label-column', this.#labelColumn);
+    el.toggleAttribute('data-every-count', this.#countEvery);
   }
   /** The app's choice, for every source. */
   #limit = false;
@@ -470,6 +485,7 @@ export class SherpaProvider extends SherpaElement {
     for (const source of Object.values(this.#sources)) {
       source.limitOptions = this.#limit;
       source.highlightAcross = this.#across;
+      source.countEveryValue = this.#countEvery;
     }
     for (const made of this.#made) if (!this.#provides(made)) this.#closeMade(made);
     // BEFORE answering: an answer binds, and a bind starts the first load.

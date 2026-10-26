@@ -407,6 +407,14 @@
 .rows ::slotted(.menu-row-bare[data-drill]) {
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
+/* A value row's match count, at its end. Will, TODO 466 */
+.rows ::slotted(.menu-row[data-matches]) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.rows ::slotted(.menu-row-bare[data-matches]) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
 /* A ONE-value filter's row: box, label, then its × at the end. TODO 54 */
 .rows ::slotted(.menu-row[data-remove]) {
   display: grid;

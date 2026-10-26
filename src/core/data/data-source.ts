@@ -54,6 +54,7 @@
  * - .results — Each answered chip's results: the rows that reach it and match its answer.
  * - .valueResults — Each picked value's own results: the rows that reach its field and match that one value.
  * - .limitOptions — Does each list field offer only the values the filters before it leave? Settable, unlike applyOn.
+ * - .countEveryValue — Every value of a list field is counted, picked or not, on or off — where the rows are held: a store is never…
  * - .present — Each list field's values its ruler leaves in a scope: the filters before it, or the View's subset.
  * - .offered — What each field below the top of a SERIAL set offers: the values the rows hold at its place.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
@@ -1615,7 +1616,7 @@ export class DataSource extends EventTarget {
   #walkKey(): string {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#age, this.#member.walkVersion(), this.#walkAge, this.#limitOptions, withoutArrangement(this.#applied),
+    return JSON.stringify([this.#age, this.#member.walkVersion(), this.#walkAge, this.#limitOptions, this.#countEvery, withoutArrangement(this.#applied),
       components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }
@@ -1648,6 +1649,7 @@ export class DataSource extends EventTarget {
       now: new Date(),
       mine: this.#mine,
       has: this.#has,
+      ...(this.#countEvery ? { countAll: true } : {}),
     });
   }
 
@@ -1677,7 +1679,7 @@ export class DataSource extends EventTarget {
     if (this.#walking?.key === key) return this.#walking.walk;
     const plan = this.#planWalk();
     // Nothing to count or tally: no row is read.
-    if (!plan.scopes.some((sc) => sc.taps.length || sc.steps.some((st) => st.counts || st.each?.length || st.ruler || st.offers))) {
+    if (!plan.scopes.some((sc) => sc.taps.length || sc.steps.some((st) => st.counts || st.each?.length || st.countAll || st.ruler || st.offers))) {
       this.#walk = { key, walk: emptyWalk(), reads: [] };
       return this.#walk.walk;
     }
@@ -1817,6 +1819,19 @@ export class DataSource extends EventTarget {
   }
   /** The setting: does each list field offer only what the others leave? */
   #limitOptions = false;
+
+  /** Every value of a list field is counted, picked or not, on or off — where
+   *  the rows are held: a store is never asked once per value. Will, TODO 466 */
+  get countEveryValue(): boolean {
+    return this.#countEvery;
+  }
+  set countEveryValue(on: boolean) {
+    if (on === this.#countEvery) return;
+    this.#countEvery = on;
+    this.#walkSoon();
+  }
+  /** The setting: count every value? */
+  #countEvery = false;
 
   /**
    * Each list field's values its RULER leaves in a scope, as value keys: with

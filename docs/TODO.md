@@ -147,11 +147,12 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
 | ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
 | ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
-| ⬜ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
+| ✅ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
 | ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
 | ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
 | ⬜ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⬜ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2230,11 +2231,20 @@ a chip now drops each pick the filters before it rule out; a valid pick is kept
 off, as before, and with none left the field clears. Test: Demos
 `reforged-limit-options` (3 engines).
 
-### `[ ]` ⬜ 466 — FEATURE: Always show client side match counts
+### `[x]` ✅ 466 — FEATURE: Always show client side match counts
 
 Will, 2026-10-26: *"Add a filtering setting to 'Always show client side match
 counts' even if the filter chip value hasn't been selected and/or the filter
 chip isn't active."*
+
+**Done.** `countEveryValue` on the provider and the source (off by default).
+The walk counts every value of each list field by key as it passes the rows —
+a held field's step, or a tap (a chart's legend field) — never asking a store
+once per value: only where the rows are held. A bar's chip hands the counts to
+its menu (`setMatches`: a count at each row's end); a panel's value chips show
+them as they did their picks'. Demos: Settings › Filtering › "Always show match
+counts"; node `a-chip-counts-within-the-filters-before-it`; Demos
+`reforged-chip-results`.
 
 ### `[x]` ✅ 454 — LOOK: Reset goes back to the Edit menu
 
@@ -2246,6 +2256,13 @@ Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
 save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[ ]` ⬜ 471 — LOOK: an accordion header's rows
+
+Will, 2026-10-26: *"The chevron, icon, and heading of an accordion should be on
+the same row and aligned vertically. The description is on a separate row,
+left side flush with the heading label's left side."* (Seen in the panel's
+Local Context sections: "By status" over "Bar Chart", from 457.)
 
 ### `[ ]` ⬜ 470 — TEST: a WebKit flake leaving Settings
 

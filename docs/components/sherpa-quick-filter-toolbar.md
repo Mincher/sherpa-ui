@@ -62,6 +62,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-column` | boolean | `false` | portrait: a column, header and all, even over one scope and its parts |
 | `data-count-applied` | boolean |  |  |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
+| `data-every-count` | boolean |  |  |
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-field-apply` | boolean |  |  |

@@ -92,3 +92,20 @@ test('each picked value counts within the filters before its field', async () =>
   // Within EMEA's one open row.
   assert.deepEqual(values.plan, { pro: 1, free: 0 });
 });
+
+// Will, TODO 466
+test('counting every value: each value counts within the filters before its field, picked or not, on or off', async () => {
+  const source = await page();
+  source.countEveryValue = true;
+  const q = query({ region: { picked: ['EMEA', 'AMER'] } }, { status: { picked: ['open'], suspended: true } });
+  q.scopes.data.holds = ['status', 'plan'];
+  await source.query.setQuery(q);
+  const values = await source.valueResults('data');
+  // Status is OFF: every value counts within the View's four rows.
+  assert.deepEqual(values.status, { open: 3, shut: 1 });
+  // Plan holds no answer: each of its values counts too.
+  assert.deepEqual(values.plan, { pro: 3, free: 1 });
+  // Off again: only picks are counted, and here none are in force.
+  source.countEveryValue = false;
+  assert.deepEqual(Object.keys(await source.valueResults('data')), []);
+});

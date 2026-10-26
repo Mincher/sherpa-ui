@@ -1142,6 +1142,36 @@ export class SherpaMenu extends SherpaElement {
     }
   }
 
+  /** setMatches(counts) — each value row's match count at its end, by value: the
+   *  rows that reach this field and hold it. `null` takes them off. Will, TODO 466 */
+  setMatches(counts: Readonly<Record<string, number>> | null): void {
+    this.#matches = counts;
+    this.#drawMatches();
+  }
+  /** Each value's match count, as last given. */
+  #matches: Readonly<Record<string, number>> | null = null;
+
+  /** Draw each value row's count; a child menu's row keeps its badge for its picks. */
+  #drawMatches(): void {
+    const counts = this.#matches;
+    for (const box of this.#inputs()) {
+      const row = box.closest<HTMLElement>('.menu-row');
+      if (!row || row.hasAttribute('data-drill') || box.closest(NON_VALUE_ROWS)) continue;
+      const n = counts?.[valueKey(box.value)] ?? counts?.[box.value];
+      const had = row.querySelector<HTMLElement>(':scope > .menu-row-count');
+      if (n == null) {
+        had?.remove();
+        row.removeAttribute('data-matches');
+        continue;
+      }
+      const badge = had ?? this.clone<HTMLElement>('template.menu-count-tpl');
+      if (!badge) continue;
+      badge.textContent = String(n);
+      if (!had) row.append(badge);
+      row.setAttribute('data-matches', '');
+    }
+  }
+
   /** Write a child menu's pick count on its row. An empty badge draws nothing. */
   setCount(value: string, count: number): void {
     // The DATA too, so rows stamped later draw it.
@@ -1537,6 +1567,7 @@ export class SherpaMenu extends SherpaElement {
     this.#drawTicks();
     this.#drawOpen();
     this.#markPresent();
+    this.#drawMatches();
 
     /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
        rows fire no native change — so a chip built before its items arrived

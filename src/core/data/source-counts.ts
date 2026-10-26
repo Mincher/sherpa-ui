@@ -104,6 +104,8 @@ export interface WalkFacts {
   /** Is a scope this source's, and does it have a field? As compile asks. TRAP T-a-source-compiles-only-what-it-has */
   mine?: (scope: string) => boolean;
   has?: (field: string) => boolean;
+  /** Count every value of each list field, picked or not: the app's setting. TODO 466 */
+  countAll?: boolean;
 }
 
 /**
@@ -166,6 +168,8 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
           step.less = (aside) => readingClause({ field: f, ...fieldFacts }, withoutDropped(answer, aside));
         }
       }
+      // EVERY value counted, picked or not, on or off — over rows held alone. Will, TODO 466
+      if (list && facts.countAll) step.countAll = true;
       steps.push(step);
     }
     return steps;
@@ -182,7 +186,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
       // Where it would stand: after its set's last step here, else at the end.
       const set = sets.find((x) => x.fields.includes(f));
       const last = set ? steps.findLastIndex((s) => !!s.field && set.fields.includes(s.field)) : -1;
-      taps.push({ at: last >= 0 ? last + 1 : steps.length, field: f, ruler: rule, ...tierOf(facts.field(f)) });
+      taps.push({ at: last >= 0 ? last + 1 : steps.length, field: f, ruler: rule, ...tierOf(facts.field(f)), ...(facts.countAll ? { countAll: true } : {}) });
     }
     return taps;
   };

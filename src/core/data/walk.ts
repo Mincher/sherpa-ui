@@ -49,6 +49,9 @@ export interface WalkStep {
   less?: (aside: readonly string[]) => Filter | undefined;
   /** Each pick's own clause, by value key: a count of its own. */
   each?: ReadonlyArray<readonly [key: string, clause: Filter]>;
+  /** Count EVERY value of its field, by key, over the rows that reach it — only
+   *  where the rows are held: a store is never asked once per value. Will, TODO 466 */
+  countAll?: boolean;
   /** A tiered field: its tally holds each row's path too. */
   tier?: WalkTier;
 }
@@ -59,6 +62,8 @@ export interface WalkTap {
   field: string;
   ruler: 'here' | 'start';
   tier?: WalkTier;
+  /** Count every value, by key, over the rows that reach `at`. TODO 466 */
+  countAll?: boolean;
 }
 
 /** One scope's walk: it starts from the rows `after` ends with — every row for null. */
@@ -125,6 +130,7 @@ export function walkReads(plan: WalkPlan): Record<string, WalkReads> {
     for (const step of sc.steps) {
       if (step.clause && (step.on || step.counts)) for (const f of filterFields(step.clause)) tested.add(f);
       for (const [, clause] of step.each ?? []) for (const f of filterFields(clause)) tested.add(f);
+      if (step.field && step.countAll) tallied.add(step.field);
       if (step.field && (step.ruler || step.offers)) {
         tallied.add(step.field);
         if (step.tier) tallied.add(step.tier.child);
@@ -156,6 +162,11 @@ export interface Scan {
   tally: Array<Set<string>>;
   count: number[];
   each: number[][];
+  /** Each value's count at a step that counts them all. TODO 466 */
+  all: Array<Map<string, number> | null>;
+  /** The taps that count every value, by place, and their counts. TODO 466 */
+  countsAt: Map<number, string[]>;
+  tapCounts: Map<number, Map<string, Map<string, number>>>;
   tapTally: Map<number, Map<string, Set<string>>>;
   start: Map<string, Set<string>>;
 }
@@ -191,6 +202,21 @@ function tapAt(scan: Scan, at: number, row: Row): void {
   for (const f of fields) add(tallies, row, f, scan.childOf.get(f));
 }
 
+/** The taps at a place that count every value: each counts its row's. TODO 466 */
+function countAt(scan: Scan, at: number, row: Row): void {
+  const fields = scan.countsAt.get(at);
+  if (!fields) return;
+  let counts = scan.tapCounts.get(at);
+  if (!counts) scan.tapCounts.set(at, (counts = new Map()));
+  for (const f of fields) {
+    const key = keyOf(row, f);
+    if (key === null) continue;
+    let by = counts.get(f);
+    if (!by) counts.set(f, (by = new Map()));
+    by.set(key, (by.get(key) ?? 0) + 1);
+  }
+}
+
 /** ONE scan: each row, from step `from`, is tallied and counted at each step it
  *  reaches, and stops at the first step in force it fails. Gives the step each
  *  row stopped at — the step count for a row that passed them all. */
@@ -204,8 +230,14 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
     let i = from;
     for (; i < n; i++) {
       tapAt(scan, i, row);
+      countAt(scan, i, row);
       const step = steps[i]!;
       if (scan.tallied[i]) addKeys(scan.tally[i]!, row, step.field!, step.tier?.child);
+      const all = scan.all[i];
+      if (all) {
+        const key = keyOf(row, step.field!);
+        if (key !== null) all.set(key, (all.get(key) ?? 0) + 1);
+      }
       const each = scan.eachTests[i];
       if (each) for (let k = 0; k < each.length; k++) if (matchesFilter(row, each[k])) scan.each[i]![k]!++;
       const test = tests[i];
@@ -214,7 +246,10 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
       if (hit && step.counts) scan.count[i]!++;
       if (step.on && !hit) break;
     }
-    if (i === n) tapAt(scan, n, row);
+    if (i === n) {
+      tapAt(scan, n, row);
+      countAt(scan, n, row);
+    }
     stopped[r] = i;
   }
   return stopped;
@@ -225,6 +260,8 @@ function scanOf(sc: WalkScope, now: Date): Scan {
   const steps = sc.steps;
   const tapsAt = new Map<number, string[]>();
   for (const tap of sc.taps) if (tap.ruler === 'here') tapsAt.set(tap.at, [...(tapsAt.get(tap.at) ?? []), tap.field]);
+  const countsAt = new Map<number, string[]>();
+  for (const tap of sc.taps) if (tap.countAll) countsAt.set(tap.at, [...(countsAt.get(tap.at) ?? []), tap.field]);
   const startFields = [...new Set([
     ...steps.filter((s) => s.field && s.ruler === 'start').map((s) => s.field!),
     ...sc.taps.filter((t) => t.ruler === 'start').map((t) => t.field),
@@ -241,6 +278,9 @@ function scanOf(sc: WalkScope, now: Date): Scan {
     tally: steps.map(() => new Set<string>()),
     count: steps.map(() => 0),
     each: steps.map((s) => (s.each ?? []).map(() => 0)),
+    all: steps.map((s) => (s.countAll && s.field ? new Map() : null)),
+    countsAt,
+    tapCounts: new Map(),
     tapTally: new Map(),
     start: new Map(),
   };
@@ -252,14 +292,16 @@ function resetFrom(scan: Scan, j: number): void {
     scan.tally[i] = new Set();
     scan.count[i] = 0;
     scan.each[i] = scan.each[i]!.map(() => 0);
+    if (scan.all[i]) scan.all[i] = new Map();
   }
   for (const at of [...scan.tapTally.keys()]) if (at >= j) scan.tapTally.delete(at);
+  for (const at of [...scan.tapCounts.keys()]) if (at >= j) scan.tapCounts.delete(at);
 }
 
 /** Does this scope gather anything, or narrow anything? If not, it ends where it starts. */
 function needsScan(scan: Scan): boolean {
-  return scan.tests.some(Boolean) || scan.tallied.some(Boolean) || scan.tapsAt.size > 0
-    || scan.startFields.length > 0 || scan.eachTests.some(Boolean);
+  return scan.tests.some(Boolean) || scan.tallied.some(Boolean) || scan.tapsAt.size > 0 || scan.countsAt.size > 0
+    || scan.startFields.length > 0 || scan.eachTests.some(Boolean) || scan.all.some(Boolean);
 }
 
 /**
@@ -316,7 +358,11 @@ export function walkInOrder(rows: readonly Row[], plan: WalkPlan): Walk {
     steps.forEach((step, i) => {
       if (step.counts && scan.tests[i]) results[step.id] = scan.count[i]!;
       if (!step.field) return;
-      if (step.each?.length) values[step.field] = Object.fromEntries(step.each.map(([key], k) => [key, scan.each[i]![k]!]));
+      // Every value's count, then each pick's own, which a path or a parent may differ from.
+      const all = scan.all[i] ? Object.fromEntries(scan.all[i]!) : {};
+      if (step.each?.length || scan.all[i]) {
+        values[step.field] = { ...all, ...Object.fromEntries((step.each ?? []).map(([key], k) => [key, scan.each[i]![k]!])) };
+      }
       if (step.ruler) present[step.field] = [...(step.ruler === 'here' ? scan.tally[i]! : scan.start.get(step.field) ?? [])];
       if (step.offers && narrowedAt(i)) offered[step.field] = [...scan.tally[i]!];
     });
@@ -324,6 +370,7 @@ export function walkInOrder(rows: readonly Row[], plan: WalkPlan): Walk {
     for (const tap of sc.taps) {
       const keys = [...(tap.ruler === 'here' ? scan.tapTally.get(tap.at)?.get(tap.field) ?? [] : scan.start.get(tap.field) ?? [])];
       present[tap.field] = keys;
+      if (tap.countAll) values[tap.field] = Object.fromEntries(scan.tapCounts.get(tap.at)?.get(tap.field) ?? []);
       if (!keys.length) spent.push(tap.field);
     }
     const endRows = stopped ? start.filter((_, r) => stopped[r] === n) : start;

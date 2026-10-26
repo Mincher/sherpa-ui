@@ -1036,6 +1036,8 @@ export class SherpaQuickFilter extends SherpaElement {
   }
   set valueResults(results: Readonly<Record<string, number>> | null) {
     this.#valueResults = results;
+    // A chip's own menu draws them on its rows; a section's are its value chips. TODO 466
+    this.menu?.setMatches?.(this.dataset['layout'] === 'section' ? null : results);
     this.#syncValues();
   }
   /** Each value's count, as its host last said. */

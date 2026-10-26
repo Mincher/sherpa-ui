@@ -1640,7 +1640,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (switchMode, addCondition, takeBaseline, setCount, show, hide, close, toggle, apply, items). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (switchMode, addCondition, takeBaseline, setMatches, setCount, show, hide, close, toggle, apply, items). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1834,6 +1834,12 @@
           "name": "takeBaseline",
           "args": "",
           "description": "What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open."
+        },
+        {
+          "$type": "method",
+          "name": "setMatches",
+          "args": "counts: Readonly<Record<string, number>> | null",
+          "description": "setMatches(counts) — each value row's match count at its end, by value: the rows that reach this field and hold it. `null` takes them off. Will, TODO 466"
         },
         {
           "$type": "method",
