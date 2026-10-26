@@ -96,7 +96,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
 | ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
-| 🚧 | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
+| ✅ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
 | ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
@@ -156,6 +156,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
 | ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
 | ✅ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
+| ✅ | 3a | 475 | LOOK — in the panel, a section's field labels line up with its accordion header's label, on their left (Will, 2026-10-26) | look |
+| ⬜ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2299,6 +2301,22 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
+### `[ ]` ⬜ 476 — CLEAN-UP: the legacy filter panel goes
+
+Will, 2026-10-26: A — remove `sherpa-filter-panel` now. Only the Demos compare
+page uses it. With it go `filter-field.ts`, its tests, its Gallery story, and
+the TRAPs that only it cites. Closes 425.
+
+### `[x]` ✅ 475 — LOOK: a section's labels line up with its accordion's
+
+Will, 2026-10-26: *"The filter panel section labels should be left aligned with
+the accordion header labels' left side."*
+
+**Done.** A panel accordion's body starts where its heading's text does — the
+header's padding, the chevron and their gap (26px) — so each field name, and
+Organise, sits under "By status" or "Customer records". The View's section
+already lined up. Demos `reforged-filter-column`.
+
 ### `[x]` ✅ 474 — LOOK: a narrower label column in the panel
 
 Will, 2026-10-26: *"We can narrow the column for panel section labels
@@ -3162,7 +3180,7 @@ button should show a discard icon and be critical status styled."*
 critical, outranking the chip's own on pin. Test: `reforged-data-grid` (cross
 and critical on, funnel off).
 
-### `[ ]` 🚧 415 — REFACTOR: the toolbar and the panel, simplified
+### `[x]` ✅ 415 — REFACTOR: the toolbar and the panel, simplified
 
 Will, 2026-10-22: *"With the second bug it's perhaps time to review the filter
 toolbar and panel code, with the querycontext component now in the data layer,

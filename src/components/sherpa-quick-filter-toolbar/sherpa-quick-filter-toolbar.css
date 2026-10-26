@@ -246,6 +246,12 @@ sherpa-accordion.scope::part(header) {
   background: var(--sherpa-style-surface-base, #fff);
 }
 sherpa-accordion.scope::part(header):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+/* Its fields start where its heading's text does: the header's padding, its
+   chevron and their gap. Will, TODO 475 */
+sherpa-accordion.scope::part(body) {
+  padding-inline-start: calc(var(--sherpa-theme-padding-md, 8px) + var(--sherpa-theme-content-size-base, 14px)
+    + var(--sherpa-theme-gap-sm, 4px));
+}
 /* STUCK, it casts a shadow over its fields scrolled under it: from when its
    scope's top passes the column's, by a VIEW timeline on the scope, so a header
    further down casts none. Will, TODO 421. TRAP T-a-stuck-header-casts-a-shadow */
