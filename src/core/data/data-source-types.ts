@@ -101,6 +101,8 @@ export interface HeldFilter extends FieldFilter {
   removable?: boolean;
   /** The page's own: its definition holds it here. TODO 452 */
   preset?: boolean;
+  /** The App Context holds it; this page has no such field. TODO 453 */
+  unused?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here,
    *  and its `state` is this scope's own answer: kept, not in force.
    *  TRAP T-a-superseded-chip-suspends-it-is-never-removed */

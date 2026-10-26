@@ -1284,7 +1284,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-a-condition-only-field-still-has-a-menu
          TRAP T-a-chip-knows-what-kind-it-is */
       const kind = kindOf(f);
-      if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
+      // The App Context's, on a page with no such field: inactive, and it says why. TODO 453
+      if (f.unused) {
+        chip.setAttribute('disabled', '');
+        chip.setAttribute('data-unused', '');
+      } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');

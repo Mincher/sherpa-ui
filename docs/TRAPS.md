@@ -19305,6 +19305,33 @@ against `/`. Its tests are in its own project.
 - Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
 
+### T-the-app-context-is-one-answer
+
+**While the app shares it, the View Context is the APP Context: one answer for
+every page** — Will, TODO 453; D1 A, D2 A. The provider's `appContext` keeps it
+in the session at `/filters/_app` (a page id is never `_app`), as a `SharedView`:
+the View's fields, their answers, and each field's face.
+
+- **Read:** every Query a page puts on — a restore, a View pick, a draft — goes
+  through `setQuery(…, { lay })`, which lays the answer over the View
+  (`layShared`): its fields this page has, in its order, then the page's own it
+  lacks. A View sets its local filters alone (D1 A).
+- **Write:** each reader act writes the View back (`sharedOf`); a field this
+  page has not keeps its answer and its place for the pages that do. Reset all
+  on view resets the App answer too.
+- **Each page keeps its own:** `lay` keeps the View it covered, and a reload, a
+  draft and turning sharing off use THAT (`keptEntry`, `#keepDraft`, `share`) —
+  so off gives each page its own back (D2 A).
+- **A field this page has not** (`source.has`) is drawn after its View's,
+  inactive and refused, saying why (`declareUnused` → `data-unused`). It is
+  never in the Query, so nothing compiles or counts it.
+- **The name:** while shared, the provider declares the View scope "App
+  Context"; off, the page's own name comes back.
+
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
 ### T-the-highlight-reaches-the-whole-page
 
 **The highlight lights the whole page, whatever scope its filter is in** — Will,

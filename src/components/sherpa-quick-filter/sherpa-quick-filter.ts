@@ -12,7 +12,7 @@ import {
   fieldState, readingRows, rowAnswered, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo, unusedHere } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
@@ -57,6 +57,7 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    'data-unused': { type: 'boolean', kind: 'style' },
     /* The filters before it rule this value out: greyed and refused, on or off —
        inactive is not interactive. Written by its host. Will, TODO 174 and
        2026-10-20. TRAP T-a-ruled-out-value-is-greyed */
@@ -201,7 +202,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
-    if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
+    if (name === 'data-unavailable' || name === 'disabled' || name === 'data-unused') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
        which column — and never paints the caret or the glyph for it. Two hosts
        painting it is how Group came to forget its column when switched off
@@ -809,6 +810,7 @@ export class SherpaQuickFilter extends SherpaElement {
   #tipText(values: string): string {
     // A greyed chip says WHY, in a few words. Will, TODO 176.
     if (this.hasAttribute('data-unavailable')) return this.current && !this.#isKey() ? SET_ASIDE : RULED_OUT;
+    if (this.hasAttribute('data-unused')) return unusedHere(this.dataset['label']);
     if (this.hasAttribute('disabled')) return NOT_AVAILABLE;
     if (this.hasAttribute('data-superseded')) {
       // The VALUES too where there are any: they come back when the field is free.

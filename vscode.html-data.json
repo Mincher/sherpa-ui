@@ -3216,6 +3216,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-unused",
+          "valueSet": "v"
+        },
+        {
           "name": "disabled",
           "description": "greyed and refused; its tooltip says \"Not available here.\"",
           "valueSet": "v"

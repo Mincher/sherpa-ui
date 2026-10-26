@@ -67,6 +67,9 @@ export interface FilterDef extends OffersAdvanced {
   /** The page's own: its definition holds it here, so it keeps its place — a
    *  reader drags only what was added. Will, TODO 452 */
   preset?: boolean;
+  /** The App Context holds it, and this page has no such field: drawn
+   *  inactive, refused, and saying why. Will, TODO 453 */
+  unused?: boolean;
   /** Which condition it is on. Defaults to `eq`. */
   op?: FilterOp;
   /** What the reader TYPED, for a condition that takes text rather than a pick. */

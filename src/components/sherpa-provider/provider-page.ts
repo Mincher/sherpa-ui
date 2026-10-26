@@ -27,7 +27,10 @@
  * - .view — The View on screen.
  * - .views — Open the Views over one source: restore, then hear and keep.
  * - .stopViews — Stop the Views' listeners.
+ * - .sharing — sharing — the store before the page restores: set by its provider as it opens one.
+ * - .share — share(store) — the app starts sharing the View's answer, or (null) stops: the page on screen takes the App an…
  * - .takeView — A state taken in names a View: show it, and hear its next pick.
+ * - SharedStore — Where the App Context's answer is kept.
  */
 import {
   deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, viewQueryOf,
@@ -41,8 +44,8 @@ import {
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
-import { VIEW, type Query, type QueryDefaults, type SavedFilter } from '../../core/data/query.js';
-import { dropSet, takeSet } from '../../core/data/query-edits.js';
+import { VIEW, emptyScope, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery } from '../../core/data/query.js';
+import { dropSet, layShared, sharedOf, takeSet, type SharedView } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { ProvideOptions } from './sherpa-provider.js';
 
@@ -367,6 +370,11 @@ export class ProviderPage {
     // The View's own filters are on: nothing of the reader's is left to keep.
     if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
     if (this.#applied) this.#take(null);
+    // …and they are the App Context's now, and this page's own. TODO 453
+    if (this.#shared) {
+      this.#ownView = structuredClone(opened.query.applied.scopes[VIEW] ?? emptyScope());
+      this.#share(opened.source, true);
+    }
     this.#settle?.();
   }
 
@@ -497,12 +505,16 @@ export class ProviderPage {
     this.#drafts = options.drafts ? { ...options.drafts, source, library } : null;
     // A link to a View the reader left a draft on opens on the draft.
     const draft = this.#view ? this.#draftOf(this.#view) : undefined;
+    // The App Context's answer goes over each Query put on. TODO 453
+    const lay = this.#lay(source);
     if (kept?.query && kept.view === this.#view) {
-      await source.query.setQuery(kept.query);
-      if (kept.draft) redraft(source, kept.draft);
-    } else if (draft) await source.query.setQuery(draft);
-    else if (this.#view !== first && start?.query) await source.query.setQuery(start.query, { holds: 'keep' });
+      await source.query.setQuery(kept.query, { lay });
+      if (kept.draft) redraft(source, kept.draft, this.#shared ? VIEW : undefined);
+    } else if (draft) await source.query.setQuery(draft, { lay });
+    else if (this.#view !== first && start?.query) await source.query.setQuery(start.query, { holds: 'keep', lay });
+    else if (this.#shared) await source.query.setQuery(source.query.applied, { lay });
     if (signal.aborted) return;
+    this.#share(source);
     this.#hear = () => this.#hearPicks(source, library, signal);
     this.#hear();
     // Opened on a View with cards of its own: they are drawn now, and the page told. TODO 198
@@ -511,7 +523,8 @@ export class ProviderPage {
     let frame = 0;
     const write = (): void => {
       frame = 0;
-      if (key && session) session.set(key, keptEntry(source, this.#view));
+      this.#share(source, true);
+      if (key && session) session.set(key, keptEntry(source, this.#view, this.#kept()));
       this.#keepDraft();
     };
     /* The READER's changes only: a pick or a reset writes the Query too, says
@@ -530,7 +543,7 @@ export class ProviderPage {
       write();
     };
     // After a pick or a reset, the page's kept Query is the one on screen.
-    this.#settle = () => { if (key && session) session.set(key, keptEntry(source, this.#view)); };
+    this.#settle = () => { if (key && session) session.set(key, keptEntry(source, this.#view, this.#kept())); };
     source.query.addEventListener('query-change', keep, { signal });
     signal.addEventListener('abort', () => {
       cancelAnimationFrame(frame);
@@ -556,7 +569,79 @@ export class ProviderPage {
   #keepDraft(): void {
     const d = this.#drafts;
     if (!d || !this.#view) return;
-    saveDraft(d.page, this.#view, viewQueryOf(d.source), draftSig(d.library()[this.#view]), d.mode());
+    // While the App Context shares the View, this page's own is what it keeps. TODO 453
+    const own = this.#kept();
+    const from = own ? {
+      query: { export: () => ({ query: withView(d.source.query.export().query, own) }) },
+      whereOf: (r: Parameters<DataSource['whereOf']>[0]) => d.source.whereOf(r),
+    } : d.source;
+    saveDraft(d.page, this.#view, viewQueryOf(from), draftSig(d.library()[this.#view]), d.mode());
+  }
+
+  /** The App Context's store: one View answer for every page, while the app
+   *  shares it. TODO 453 · TRAP T-the-app-context-is-one-answer */
+  #shared: SharedStore | null = null;
+  /** This page's own View under the App answer: what it keeps, and what comes
+   *  back when sharing stops. */
+  #ownView: ScopeQuery | null = null;
+
+  /** sharing — the store before the page restores: set by its provider as it opens one. */
+  set sharing(store: SharedStore | null) {
+    this.#shared = store;
+    this.#ownView = null;
+  }
+
+  /** share(store) — the app starts sharing the View's answer, or (null) stops: the
+   *  page on screen takes the App answer, or gets its own back. Will, TODO 453 (D2 A) */
+  async share(store: SharedStore | null): Promise<void> {
+    const was = this.#shared;
+    const own = this.#ownView;
+    this.#shared = store;
+    const source = this.#opened?.source;
+    if (!source || !!store === !!was) return;
+    if (store) await source.query.setQuery(source.query.applied, { lay: this.#lay(source), by: 'provider' });
+    else {
+      this.#ownView = null;
+      if (own) await source.query.setQuery(withView(source.query.applied, own), { by: 'provider' });
+    }
+    this.#share(source);
+    this.#settle?.();
+  }
+
+  /** Lay the App answer over a Query about to go on — and keep, first, the View
+   *  it had: this page's own. */
+  #lay(source: DataSource): (query: Query) => void {
+    return (query) => {
+      const store = this.#shared;
+      if (!store) return;
+      this.#ownView = structuredClone(query.scopes[VIEW] ?? emptyScope());
+      const shared = store.get();
+      if (shared) layShared(query, shared, (f) => source.has(f));
+    };
+  }
+
+  /** Write the View's answer as the App's — on a reader's act, or where there is
+   *  none yet — and draw what it holds that this page has not. */
+  #share(source: DataSource, write = false): void {
+    const store = this.#shared;
+    if (!store) {
+      if (source.declareUnused(VIEW, [])) void this.drawBars(this.#view);
+      return;
+    }
+    const was = store.get();
+    const face = (f: string): { label: string; icon?: string } => {
+      const def = source.filterDef(f);
+      return { label: def.label, ...(def.icon ? { icon: def.icon } : {}) };
+    };
+    if (write || !was) store.set(sharedOf(source.query.applied, was, (f) => source.has(f), face));
+    const now = store.get();
+    const unused = (now?.holds ?? []).filter((f) => !source.has(f)).map((f) => ({ id: f, ...now!.faces[f]! }));
+    if (source.declareUnused(VIEW, unused)) void this.drawBars(this.#view);
+  }
+
+  /** The View this page keeps while sharing: its own. */
+  #kept(): ScopeQuery | undefined {
+    return this.#shared && this.#ownView ? this.#ownView : undefined;
   }
 
   /** Listen for View picks again, knowing the View on screen now. */
@@ -574,8 +659,10 @@ export class ProviderPage {
     // Whatever has an id in this subtree NOW — a View's content brings its own.
     const byId = (): Record<string, HTMLElement> =>
       Object.fromEntries([...el.querySelectorAll<HTMLElement>('[id]')].map((e) => [e.id, e]));
+    // A View's Query goes on under the App answer too: it sets its own filters alone. D1 A
+    const lay = this.#lay(source);
     onViewPicked(el, library, {
-      query: source.query,
+      query: { setQuery: (q, o) => source.query.setQuery(q, { ...o, lay }).then(() => this.#share(source)) },
       get elements() { return byId(); },
     }, {
       signal: picks.signal,
@@ -618,17 +705,31 @@ export class ProviderPage {
   }
 }
 
-/** What a page keeps across a reload: the View, the Query applied, and —
- *  while a pick waits for Apply — the draft. Will, TODO 410 */
-function keptEntry(source: DataSource, view: string | undefined): { view?: string; query: Query; draft?: Query } {
-  return { ...(view ? { view } : {}), query: source.query.applied, ...(source.query.dirty() ? { draft: source.query.draft } : {}) };
+/** Where the App Context's answer is kept. TODO 453 */
+export interface SharedStore {
+  get(): SharedView | null;
+  set(value: SharedView): void;
 }
 
-/** A pick that waited for Apply comes back waiting, in each scope that waits. TODO 410 */
-function redraft(source: DataSource, draft: Query): void {
+/** What a page keeps across a reload: the View, the Query applied, and —
+ *  while a pick waits for Apply — the draft; while the App Context shares the
+ *  View, its own View in both. Will, TODOs 410, 453 */
+function keptEntry(source: DataSource, view: string | undefined, own?: ScopeQuery): { view?: string; query: Query; draft?: Query } {
+  const mine = (q: Query): Query => (own ? withView(q, own) : q);
+  return { ...(view ? { view } : {}), query: mine(source.query.applied), ...(source.query.dirty() ? { draft: mine(source.query.draft) } : {}) };
+}
+
+/** A Query with another View scope. */
+function withView(query: Query, view: ScopeQuery): Query {
+  return { ...query, scopes: { ...query.scopes, [VIEW]: structuredClone(view) } };
+}
+
+/** A pick that waited for Apply comes back waiting, in each scope that waits —
+ *  but `skip`, the App Context's. TODO 410 */
+function redraft(source: DataSource, draft: Query, skip?: string): void {
   const applied = source.query.applied;
   for (const [scope, s] of Object.entries(draft.scopes)) {
-    if (!source.query.named(scope)) continue;
+    if (!source.query.named(scope) || scope === skip) continue;
     const was = applied.scopes[scope]?.readings ?? {};
     for (const field of new Set([...Object.keys(s.readings), ...Object.keys(was)])) {
       const want = s.readings[field] ?? null;

@@ -10,6 +10,7 @@
  * - .store — the records it reads; a write goes here, a view never does
  * - .timeField — The field holding each record's TIME, or undefined when the store has none.
  * - .state — The current view state.
+ * - .has — Does this source have the field: declared, in its store's domains or time, or seen in its rows?
  * - .query — The Query the rows are under. A copy.
  * - .atDefault — Would a Reset to default change nothing? Applies nothing.
  * - .answered — Is there anything a Reset would clear, in one scope or any?
@@ -25,6 +26,7 @@
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declarePresets — A scope's own fields, as its page definition holds them: presets, never dragged.
+ * - .declareUnused — declareUnused(scope, filters) — what a scope's bar draws after its own, that this page has no field for: the…
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
  * - .openOnFirst — Each FETCHING list opens on its first value, never on every row.
@@ -256,8 +258,13 @@ export class DataSource extends EventTarget {
    *  store's contract, its time, or in a row it loaded? Alone on its Query, or
    *  before it knows any field, yes: only another source's field is skipped. */
   #has = (field: string): boolean => this.#context.members < 2
-    || this.#catalogue.knows(field) || !!this.store.domains?.[field] || this.store.time === field
-    || this.#seen.has(field) || (!this.#seen.size && !this.#catalogue.knowsAny());
+    || this.has(field) || (!this.#seen.size && !this.#catalogue.knowsAny());
+
+  /** Does this source have the field: declared, in its store's domains or time,
+   *  or seen in its rows? TODO 453 */
+  has(field: string): boolean {
+    return this.#catalogue.knows(field) || !!this.store.domains?.[field] || this.store.time === field || this.#seen.has(field);
+  }
 
   /** The fields its loaded rows hold, from the first rows of each load. */
   #seen = new Set<string>();
@@ -464,7 +471,8 @@ export class DataSource extends EventTarget {
     const component = scope === VIEW ? undefined : this.#binding.componentOf(scope);
     const sets = this.#context.sets(scope);
     const out: ScopeDescription = {
-      scope, label: this.#context.scopeLabel(scope), ...(shows ? { shows } : {}), ...(component ? { component } : {}), filters: fields,
+      scope, label: this.#context.scopeLabel(scope), ...(shows ? { shows } : {}), ...(component ? { component } : {}),
+      filters: [...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true }))],
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };
@@ -518,6 +526,20 @@ export class DataSource extends EventTarget {
   }
   /** Each scope's presets. */
   #presets = new Map<string, ReadonlySet<string>>();
+
+  /** declareUnused(scope, filters) — what a scope's bar draws after its own, that
+   *  this page has no field for: the App Context's. Never in the Query. True when
+   *  it changed: a provider's bars are drawn by their provider. TODO 453 */
+  declareUnused(scope: string, filters: readonly { id: string; label: string; icon?: string }[]): boolean {
+    // The same list draws nothing again: a page tells it on every reader act.
+    if (JSON.stringify(filters) === JSON.stringify(this.#unused.get(scope) ?? [])) return false;
+    if (filters.length) this.#unused.set(scope, filters);
+    else this.#unused.delete(scope);
+    this.#binding.drawBars(scope);
+    return true;
+  }
+  /** Each scope's unused filters. */
+  #unused = new Map<string, readonly { id: string; label: string; icon?: string }[]>();
 
   /**
    * Declare a field's KIND and its reader-facing name.

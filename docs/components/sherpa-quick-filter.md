@@ -58,6 +58,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-type` | `default` `ai` `jump` `key` |  | default \| ai \| jump \| key `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view. `key` is a chart legend's row: no border, mono 12px, 16 tall. Its ON is SHOWN, so at rest every key is on. TODO 149 |
 | `data-unavailable` | boolean |  | the filters before it rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed |
 | `data-unsupported` | boolean |  |  |
+| `data-unused` | boolean |  |  |
 | `disabled` | boolean, native | `false` | greyed and refused; its tooltip says "Not available here." |
 
 ## Properties

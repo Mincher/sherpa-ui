@@ -10,6 +10,7 @@
  * - RULED_OUT — What a value the filters before it rule out says, on its chip and its menu row
  * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
+ * - unusedHere — What an App Context filter says on a page with no such field
  * - UNAPPLIED — What leads a pending chip's tip
  * - UNFETCHED — What leads the tip of a chip whose data could not be fetched
  * - VIEW_CHIP — The View chip's id: the chip a View is picked through.
@@ -41,6 +42,11 @@ export const SET_ASIDE = 'Limited by the filters before it: not applied.';
 
 /** What a disabled chip says. Will, TODO 176. */
 export const NOT_AVAILABLE = 'Not available here.';
+
+/** What an App Context filter says on a page with no such field. Will, TODO 453 */
+export function unusedHere(label?: string | null): string {
+  return `Not used on this page: its data has no ${label || 'such field'}.`;
+}
 
 /** What leads a pending chip's tip: changed, not applied. Will, TODO 406.
  *  TRAP T-a-pending-chip-reads-as-a-warning */

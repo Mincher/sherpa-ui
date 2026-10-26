@@ -536,6 +536,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-unused",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "disabled",
       "type": "boolean",
       "observed": true,

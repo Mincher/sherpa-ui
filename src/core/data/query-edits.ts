@@ -16,12 +16,15 @@
  * - homes — Which scope each answered field's reading sits in.
  * - moveHold — Move a field's hold between scopes; returns every scope touched, `to` first.
  * - copyField — One field's answer, from one copy onto the other, in the scope that holds it.
- * - copyScope — One scope's slice, from one copy onto the other.
  * - copyHolds — What each scope holds, from one copy onto the other: an Apply carries it.
  * - sameField — Does one field read the same in both copies, scope by scope?
  * - sameScope — Is one scope's slice the same in both copies?
+ * - copyScope — One scope's slice, from one copy onto the other.
  * - cameFrom — Where a field the View holds came UP from.
  * - setCameFrom — Remember, or forget, where a View field came up from, in one copy.
+ * - SharedView — The App Context's answer: the View's fields and their answers, one for every page — each with its face, for a…
+ * - layShared — Lay the App answer over a Query's View: the fields this page has, in the answer's order, then the page's own…
+ * - sharedOf — The App answer after a reader's act on this page: its View's fields and answers, then what the answer held th…
  * - viewHeldReadings — Each field the View holds, with its answer unless suspended.
  * - DefinitionFacts — What turning a definition into a Query needs from its source.
  * - definitionOf — A definition as a whole Query.
@@ -220,6 +223,46 @@ export function setCameFrom(query: Query, field: string, from: string | undefine
     .filter(([id]) => from || id !== field);
   if (next.length) view.from = Object.fromEntries(next);
   else delete view.from;
+}
+
+/** The App Context's answer: the View's fields and their answers, one for every
+ *  page — each with its face, for a page that has no such field. Will, TODO 453 */
+export interface SharedView {
+  holds: string[];
+  readings: Record<string, FieldReading>;
+  faces: Record<string, { label: string; icon?: string }>;
+}
+
+/** Lay the App answer over a Query's View: the fields this page has, in the
+ *  answer's order, then the page's own it does not hold; each answered as the
+ *  answer says. TRAP T-the-app-context-is-one-answer */
+export function layShared(query: Query, shared: SharedView, has: (field: string) => boolean): void {
+  const view = scopeEntry(query, VIEW);
+  const taken = new Set(shared.holds);
+  const mine = shared.holds.filter(has);
+  view.holds = [...mine, ...view.holds.filter((f) => !taken.has(f))];
+  for (const f of taken) Reflect.deleteProperty(view.readings, f);
+  for (const f of mine) if (shared.readings[f]) view.readings[f] = structuredClone(shared.readings[f]);
+}
+
+/** The App answer after a reader's act on this page: its View's fields and
+ *  answers, then what the answer held that this page has not, as it was. */
+export function sharedOf(
+  query: Query, was: SharedView | null, has: (field: string) => boolean,
+  face: (field: string) => { label: string; icon?: string },
+): SharedView {
+  const view = query.scopes[VIEW] ?? emptyScope();
+  const here = new Set(view.holds);
+  const holds = [...view.holds, ...(was?.holds ?? []).filter((f) => !here.has(f) && !has(f))];
+  const answer = (f: string): FieldReading | undefined => (here.has(f) ? view.readings[f] : was?.readings[f]);
+  return {
+    holds,
+    readings: Object.fromEntries(holds.flatMap((f) => {
+      const r = answer(f);
+      return r ? [[f, structuredClone(r)]] : [];
+    })),
+    faces: Object.fromEntries(holds.map((f) => [f, here.has(f) ? face(f) : was?.faces[f] ?? { label: f }])),
+  };
 }
 
 /** Each field the View holds, with its answer unless suspended. */

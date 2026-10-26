@@ -134,7 +134,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ✅ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
-| 🚧 | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
+| ✅ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
 | ✅ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
 | ✅ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | ✅ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
@@ -2031,7 +2031,7 @@ PRESET (`source.declarePresets`, `HeldFilter.preset`) and keeps its place; only
 an added filter drags, among the added ones, picked or not. Group and Sort never
 did. Tests drag added Seats and Spend.
 
-### `[ ]` 🚧 453 — FEATURE: the App Context, a setting
+### `[x]` ✅ 453 — FEATURE: the App Context, a setting
 
 Will, 2026-10-26: *"Add a filtering setting to persist the 'View Context'
 filters across all app views (if we don't have it already). When this setting
@@ -2065,6 +2065,17 @@ filter wins and changes the App answer for every Context.
 
 ✅ **D2 — turning it off.** **A (pick):** each Context gets back the answer it
 had before. **B:** each Context starts from the App answer.
+
+**Done.** `appContext` on the provider; the answer at session `/filters/_app`
+(per tab in Demos). `setQuery(…, { lay })` lays it over every Query a page puts
+on; a reader act writes it back; each page keeps its own View under it, which
+comes back when sharing stops. A field a page has not is a greyed chip saying
+"Not used on this page: its data has no Date." The View scope is named "App
+Context" while shared. Switching redraws the bars BEFORE the answer goes on: the
+other order lost a pick made in the same moment. TRAP
+`T-the-app-context-is-one-answer`; node `the-app-context-is-one-answer`; Demos
+`reforged-app-context` (Settings › Filtering › "Share the View Context across
+the app", off by default).
 
 ### `[x]` ✅ 455 — FILTERS: an Advanced filter's rows, in its panel section
 

@@ -928,10 +928,13 @@ export class QueryContext extends EventTarget {
    *
    * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
    * the chips it has, and every answer is a clean slate. `by` rides on the
-   * `query-change` it fires.
+   * `query-change` it fires. `lay` edits the whole Query before it goes on: the
+   * App Context's answer over the View (TODO 453).
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
    */
-  async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep'; by?: string } = {}): Promise<void> {
+  async setQuery(
+    query: Query | QueryDefaults, options: { holds?: 'keep'; by?: string; lay?: (query: Query) => void } = {},
+  ): Promise<void> {
     if (query?.v !== 1 || typeof query.scopes !== 'object') {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
       return;
@@ -941,6 +944,7 @@ export class QueryContext extends EventTarget {
       readingsOf: (where) => this.#readingsOf(where),
       carriesOver: (f) => this.#knows(f)?.carriesOver(f) ?? false,
     });
+    options.lay?.(next);
     this.#fillStarts(next);
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();

@@ -58,6 +58,12 @@
             "attrs": {
               "data-word": "view"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "app-context"
+            }
           }
         ]
       }
@@ -92,7 +98,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -301,6 +307,11 @@
         },
         {
           "name": "labelColumn",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "appContext",
           "type": "boolean",
           "access": "read-write"
         },

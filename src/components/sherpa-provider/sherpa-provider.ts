@@ -32,7 +32,8 @@ import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
-import { ProviderPage, type Bar } from './provider-page.js';
+import { ProviderPage, type Bar, type SharedStore } from './provider-page.js';
+import type { SharedView } from '../../core/data/query-edits.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and where its Query is kept. */
@@ -118,6 +119,9 @@ interface Asked {
   request: ContextRequestEvent<unknown>;
   unbind?: () => void;
 }
+
+/** Where the App Context's answer is kept, in the session a page keeps in. TODO 453 */
+const APP_CONTEXT_KEY = '/filters/_app';
 
 export class SherpaProvider extends SherpaElement {
   static override css = new URL('./sherpa-provider.css', import.meta.url);
@@ -355,6 +359,44 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: headings in a column. */
   #labelColumn = true;
 
+  /** The View Context is the APP Context: one answer for every page, kept in
+   *  the session; a page without a field it holds shows that filter inactive.
+   *  Off, each page has its own again. The app sets it, from its session.
+   *  Will, TODO 453 · TRAP T-the-app-context-is-one-answer */
+  get appContext(): boolean {
+    return this.#appContext;
+  }
+  set appContext(on: boolean) {
+    if (on === this.#appContext) return;
+    this.#appContext = on;
+    const source = this.#pages.opened?.source;
+    if (!source) return;
+    // The name first, on every bar; then the answer, which the bars hear as any change.
+    this.#relabel(source);
+    void this.#pages.drawBars(this.#pages.view).then(() => this.#pages.share(this.#sharedStore()));
+  }
+  /** The app's choice: share the View Context. */
+  #appContext = false;
+  /** Where the open page keeps its Query — and the App Context its answer. */
+  #session: OpenOptions['session'];
+  /** The open page's own name for its View scope. */
+  #viewLabel = '';
+
+  /** The App Context's store, while the app shares it and the page keeps. */
+  #sharedStore(): SharedStore | null {
+    const session = this.#session;
+    if (!this.#appContext || !session) return null;
+    return {
+      get: () => (session.get(APP_CONTEXT_KEY) as SharedView | null | undefined) ?? null,
+      set: (value) => session.set(APP_CONTEXT_KEY, value),
+    };
+  }
+
+  /** The View scope's name: "App Context" while it is shared, else its own. */
+  #relabel(source: DataSource): void {
+    source.query.declareScope(VIEW, { label: this.#appContext ? this.word('app-context') : this.#viewLabel });
+  }
+
   /** Every scope the page declares waits for its bar's Apply — not only the
    *  View's. The app sets it, from its session. Will, TODO 436.
    *  TRAP T-apply-and-discard-wait-for-a-change */
@@ -479,6 +521,12 @@ export class SherpaProvider extends SherpaElement {
       // …and, where the app asks, every scope the page declares. Will, TODO 436
       this.#scopes = Object.keys(def?.scopes ?? {});
       if (this.#applyEvery) for (const scope of this.#scopes) source?.query.wait(scope);
+      // Shared, the View is the App Context, and keeps its answer there. TODO 453
+      this.#session = options.session;
+      if (source) {
+        this.#viewLabel = source.query.scopeLabel(VIEW);
+        this.#relabel(source);
+      }
       opening?.stop();
       if (page.signal.aborted) return undefined;
       if (!source || !def) {
@@ -492,6 +540,7 @@ export class SherpaProvider extends SherpaElement {
         id: definition.id, store: def.store, source, query: source.query, library, initial: source.query.applied,
         savedFilters: savedFiltersOf(definition),
       });
+      this.#pages.sharing = this.#sharedStore();
       // A View this page does not have is the first.
       const view = options.view && library?.()[options.view] ? options.view : undefined;
       // BEFORE the Query: a kept one is drawn onto these chips.

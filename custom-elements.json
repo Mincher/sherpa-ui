@@ -8161,6 +8161,13 @@
             },
             {
               "kind": "field",
+              "name": "appContext",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "applyEvery",
               "type": {
                 "text": "boolean"
@@ -9638,6 +9645,12 @@
             },
             {
               "name": "data-unsupported",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-unused",
               "type": {
                 "text": "boolean"
               }
