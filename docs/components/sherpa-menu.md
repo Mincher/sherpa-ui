@@ -130,13 +130,14 @@ Each one bubbles.
 |---|---|---|
 | `header` | control | controls ABOVE the heading (a calendar's month stepper). |
 | (default) | item | the rows (labels with inputs, or buttons). |
+| `actions` | control |  |
 | `footer` | control | the host's own footer buttons, leading the footer row; the row shows once it is filled (a Find's Replace, Previous and Next) |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-highlight`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
+`add-condition`, `apply`, `body-actions`, `body-highlight`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 

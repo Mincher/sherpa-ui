@@ -363,6 +363,19 @@
             },
             {
               "el": "div",
+              "class": "body-actions",
+              "part": "body-actions",
+              "children": [
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
               "class": "body-highlight",
               "part": "body-highlight",
               "children": [
@@ -972,6 +985,19 @@
             },
             {
               "el": "div",
+              "class": "body-actions",
+              "part": "body-actions",
+              "children": [
+                {
+                  "slot": "actions",
+                  "attrs": {
+                    "data-accepts": "control"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
               "class": "body-highlight",
               "part": "body-highlight",
               "children": [
@@ -1479,6 +1505,13 @@
         "item"
       ],
       "description": "the rows (labels with inputs, or buttons)."
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control"
+      ]
     },
     {
       "$type": "slot",

@@ -1657,11 +1657,15 @@ and a View's draft carry it through a reload (TODO 235); sent back down, it is
 forgotten. `take()` and the `filter-add` request still take ANY scope, so a
 caller with no pointer can send a field anywhere, and the 168 rule holds.
 
-**The toolbar MOVES too** — Will, TODO 425 G1, G4: a chip's menu says "Move to
-View filters" (or "Move to / Return to <scope>" on a View chip) in its footer,
-beside Remove, and a portrait section says it in its ⋮. A bar sends the same
-request, `filter-add { scope, ids, from }`: bindSource reads a `filter-add`
-carrying `from` as a request whatever the bar's own scope.
+**The toolbar MOVES too** — Will, TODO 425 G1, G4, 450: in toolbar mode a
+chip's menu has a ROW above its footer, "Move to View Context" (or "Move to /
+Return to <scope>" on a View chip), in the menu's `actions` slot; a portrait
+section says it in its ⋮. It was a footer button until TODO 450 — and never
+drawn: the FILTER menu template had no `footer` slot, so the button had
+nowhere to go. A menu row says `menu-select { value: 'move' }` from the MENU,
+so its path holds no `.move`. A bar sends the same request,
+`filter-add { scope, ids, from }`: bindSource reads a `filter-add` carrying
+`from` as a request whatever the bar's own scope.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`

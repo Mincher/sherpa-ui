@@ -250,6 +250,11 @@
       A committing menu holds row changes as DRAFT until Apply, so what is behind
       the card does not re-query on every tick; Discard restores the opening values.
     -->
+    <!-- The HOST's actions on this field, as rows above the footer: a filter
+         bar's Move. Shown while filled. Will, TODO 450 -->
+    <div class="body-actions" part="body-actions">
+      <slot name="actions" data-accepts="control"></slot>
+    </div>
     <!-- HIGHLIGHT MATCHES: this field's answer drives the highlight, where the
          host offers it. Will, TODO 441 -->
     <div class="body-highlight" part="body-highlight">
@@ -458,6 +463,11 @@
       A committing menu holds row changes as DRAFT until Apply, so what is behind
       the card does not re-query on every tick; Discard restores the opening values.
     -->
+    <!-- The HOST's actions on this field, as rows above the footer: a filter
+         bar's Move. Shown while filled. Will, TODO 450 -->
+    <div class="body-actions" part="body-actions">
+      <slot name="actions" data-accepts="control"></slot>
+    </div>
     <!-- HIGHLIGHT MATCHES: this field's answer drives the highlight, where the
          host offers it. Will, TODO 441 -->
     <div class="body-highlight" part="body-highlight">

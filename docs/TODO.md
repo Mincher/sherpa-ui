@@ -131,7 +131,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
 | ✅ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
 | ✅ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
-| ⬜ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
+| ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
 | ⬜ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
 | ⬜ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
 | ⬜ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
@@ -139,6 +139,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
 | ⬜ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
 | ⬜ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
+| ⬜ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1963,11 +1964,19 @@ Settings › Filtering › Look › "Highlight matches on hover". Tests:
 `a-chip-drives-the-highlight` (node), Demos `reforged-highlight-matches`
 (3 engines). TRAP T-a-hovered-chip-previews-the-highlight.
 
-### `[ ]` ⬜ 450 — FILTERS: Move to a scope, in each filter's menu (toolbar mode)
+### `[x]` ✅ 450 — FILTERS: Move to a scope, in each filter's menu (toolbar mode)
 
 Will, 2026-10-26: *"In Toolbar mode, add 'Move to X scope' as a menu item in
 each filter (if it can be moved scope)."* The panel's sections have it (425
 G4).
+
+**✅ Done 2026-10-26.** 425 G4 had put a Move button in each chip menu's
+footer, but the FILTER menu template had no `footer` slot, so it was never
+drawn; its test read the text alone. Now it is a ROW above the footer, in a new
+`actions` slot of `sherpa-menu` (shown while filled), with the ⋮ rows' look:
+"Move to View Context" on a Local chip, "Move to / Return to <scope>" on a View
+chip. Portrait sections keep theirs in the ⋮. Test: Demos
+`reforged-filter-layouts` (it opens the menu and presses the row).
 
 ### `[ ]` ⬜ 451 — FEATURE: Single Apply & Discard, a setting
 
@@ -2012,6 +2021,16 @@ Will, 2026-10-26: *"In the filter panel, add a description label to the
 accordion headers that say the type of content/component targeted (e.g. Bar
 Chart, Data Grid). I think we already have logic for this to set the
 appropriate icon in the accordion header that we can reuse."*
+
+### `[ ]` ⬜ 458 — FILTERS: the highlight reaches the whole View
+
+Will, 2026-10-26: *"I think that highlighting always elevates to the view/app
+scope even if the filter field/value is in a local scope. This allows for
+filters to stay in their scope but for the user to temporarily see it's impact
+across all of the view data without having to actually move the filter to the
+view scope."* To check first: one source already pushes its test to every
+component it binds; a page with several sources compiles only its OWN scopes
+(`facts.mine`), so another source skips a local driver.
 
 ### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
 

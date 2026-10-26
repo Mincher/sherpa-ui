@@ -6212,6 +6212,10 @@
               "description": "the rows (labels with inputs, or buttons). (accepts: item)"
             },
             {
+              "name": "actions",
+              "description": "(accepts: control)"
+            },
+            {
               "name": "footer",
               "description": "the host's own footer buttons, leading the footer row; the row shows once it is filled (a Find's Replace, Previous and Next) (accepts: control)"
             }
@@ -6222,6 +6226,9 @@
             },
             {
               "name": "apply"
+            },
+            {
+              "name": "body-actions"
             },
             {
               "name": "body-highlight"

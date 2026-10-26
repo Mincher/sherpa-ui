@@ -546,7 +546,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
     this.addEventListener('menu-change', this.#onSavedPick);
-    this.addEventListener('button-click', this.#onMove);
     this.addEventListener('menu-open', this.#onFieldMoreOpen);
     // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-reads-as-a-warning
     for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
@@ -1398,11 +1397,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** A chip's menu MOVES its field — up to the View, or a View field back down
-   *  to the one scope its source names: a button in its footer, beside Remove.
-   *  Will, TODO 425 G4 · TRAP T-send-to-view-filters */
+   *  to the one scope its source names: a row above its footer, in toolbar mode;
+   *  in portrait a section's ⋮ has it. Will, TODOs 425 G4, 450 · TRAP T-send-to-view-filters */
   #addMove(chip: HTMLElement, menu: HTMLElement, def: FilterDef): void {
     const label = this.#moveLabel(def);
-    const move = label && chip.classList.contains('chip') ? this.clone('template.move-tpl') : null;
+    const move = label && chip.classList.contains('chip') && this.dataset['orientation'] !== 'portrait'
+      ? this.clone('template.move-tpl') : null;
     if (!move) return;
     move.textContent = label;
     menu.append(move);
@@ -1426,14 +1426,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     chip.querySelector<SherpaMenu>(':scope > sherpa-menu')?.hide?.();
     this.emit('filter-add', { scope: to, ids: [def.field ?? def.id], from: this.#scope });
   }
-
-  /** A chip menu's Move was pressed. */
-  #onMove = (event: Event): void => {
-    const chip = this.pathFind(event, '.move') ? this.pathFind(event, 'sherpa-quick-filter') : null;
-    if (!chip) return;
-    event.stopPropagation();
-    this.#move(chip);
-  };
 
   /** A SECTION's ⋮ — the field's own actions, each only where it applies — in
    *  its chip's `more` slot, in the caret's place; said again on each layout,
@@ -1505,6 +1497,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.#emptyChip(owner);
         this.#emitChange(this.#answerRequest(owner));
       } else this.#move(owner);
+      return;
+    }
+    // A chip menu's Move row: the menu says it, so its path holds no `.move`. TODO 450
+    const mover = value === 'move' ? this.pathFind(event, 'sherpa-quick-filter') : null;
+    if (mover) {
+      event.stopImmediatePropagation();
+      this.#move(mover);
       return;
     }
     // Manage Saved Filters, the Filters menu's one action — or, split, the Saved menu's rows. TODO 427, 436
