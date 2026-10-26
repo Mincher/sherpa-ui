@@ -146,6 +146,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
 | ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
 | ⬜ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
+| ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2062,6 +2063,9 @@ component it binds; a page with several sources compiles only its OWN scopes
 Will, 2026-10-26: *"Highlight on Hover should work for a Field (highlights all
 values) or a single Value. The single Value may be in a menu (toolbar mode) or
 panel section (panel mode)."* 449 previews a whole applied chip.
+Will, 2026-10-26, as a bug: *"Hovering on any value in a panel section is
+highlighting matches for all active values in that section. It should only
+highlight that value's matches."*
 
 ### `[ ]` ⬜ 460 — LOOK: a panel section's heading in a column on its left
 
@@ -2121,6 +2125,18 @@ a good thourough review, clean up, and correction."* His bugs:
 - Demos: the View/App Context's date chips default to an Advanced filter,
   'Last 12 months', active.
 - Toggling the date chip's active state glitches, and can clear its value.
+
+### `[x]` ✅ 465 — BUG: an invalid filter turned off kept its value
+
+Will, 2026-10-26: *"Deactivating an active but invalid filter works visually
+but it doesn't clear the value from the filter query."*
+
+**✅ Done 2026-10-26.** A menu row and a panel value chip cleared their pick;
+the chip's BODY suspended it — off keeps an answer — so Dana Whitlock, ruled
+out, stayed in the Query, and could come back on matching nothing. Turned off,
+a chip now drops each pick the filters before it rule out; a valid pick is kept
+off, as before, and with none left the field clears. Test: Demos
+`reforged-limit-options` (3 engines).
 
 ### `[ ]` ⬜ 454 — LOOK: Reset goes back to the Edit menu
 

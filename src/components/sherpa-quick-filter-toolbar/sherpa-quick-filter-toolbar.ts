@@ -24,7 +24,8 @@ import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFra
 import { FilterField } from '../../core/ui/filter-field.js';
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
-import type { SortDirection } from '../../core/data/store.js';
+import { valueKey, type SortDirection } from '../../core/data/store.js';
+import { ruleOut } from '../../core/data/filter-state.js';
 import { VIEW, readingAnswered, type QueryRequest } from '../../core/data/query.js';
 import {
   modeOf, readingRows,
@@ -1574,7 +1575,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if ((event as CustomEvent).detail?.picked) return this.#emitChange(this.#answerRequest(chip));
     const field = this.#fieldFor(chip.dataset['id'] ?? '');
     const on = chip.hasAttribute('data-locked') ? !chip.current : chip.current;
-    this.#emitChange(field != null && chip.reading ? { field, suspended: !on } : undefined);
+    const reading = chip.reading;
+    if (field == null || !reading) return this.#emitChange(undefined);
+    /* OFF, a pick the filters before it rule out GOES, not kept: it could never
+       come back on (TODO 462). None left, the field clears. Will, TODO 465 */
+    const picked = reading.picked ?? [];
+    const out = ruleOut(this.#present[field] ?? null, this.#offered[field] ?? null);
+    const kept = on || reading.mode === 'advanced' ? picked : picked.filter((v) => out(valueKey(v)) === null);
+    if (kept.length < picked.length) {
+      return this.#emitChange({ field, reading: kept.length ? { ...reading, picked: kept, suspended: true } : null });
+    }
+    this.#emitChange({ field, suspended: !on });
   };
 
   /** The Switch flipped: its own act, so the bar's `change` listeners never hear it. */
