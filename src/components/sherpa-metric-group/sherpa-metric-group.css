@@ -3,11 +3,13 @@
  * TRAP T-a-metric-group-knows-it-is-stuck
  */
 
-/* Every column, one row: never a resize handle's (it states no data-min-row-span). */
+/* Every column, ONE row, whatever it draws: a half-height group never moves the page. */
 :host {
   display: block;
   grid-column: 1 / -1;
   min-inline-size: 0;
+  block-size: var(--sherpa-layout-grid-row-height, 88px);
+  pointer-events: none;
 }
 
 :host([hidden]) {
@@ -16,7 +18,9 @@
 
 slot {
   display: flex;
+  block-size: calc(100% - 50% * var(--_metric-half, 0));
   gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
+  pointer-events: auto;
 }
 
 /* SOLO, as `data-group="solo"`: set here, so a grouped grid's edges never inherit in. */
@@ -33,8 +37,8 @@ slot {
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
-/* MOBILE: the layout grid's four-column band. */
-@container style(--sherpa-layout-grid-columns: 4) {
+/* MOBILE (the layout grid's four-column band) and STUCK: one object. */
+@container style(--sherpa-layout-grid-columns: 4) or style(--_stuck: 1) {
   slot {
     --_joined: 1;
     gap: 0;
@@ -43,41 +47,66 @@ slot {
 
 /* ── Sticky ──────────────────────────────────────────────────────────────
    A grid item sticks for its whole grid. A later group sticks under the ones
-   before it. */
+   before it, and slides UNDER them on its way up. */
 :host([data-sticky]) {
   position: sticky;
   inset-block-start: var(--_top, 0px);
-  z-index: 4;
+  z-index: 7;
 }
 
 :host(:nth-child(2 of sherpa-metric-group[data-sticky])) {
   --_top: var(--sherpa-layout-grid-row-height, 88px);
+  z-index: 6;
 }
 
 :host(:nth-child(3 of sherpa-metric-group[data-sticky])) {
   --_top: calc(2 * var(--sherpa-layout-grid-row-height, 88px));
+  z-index: 5;
 }
 
 :host(:nth-child(4 of sherpa-metric-group[data-sticky])) {
   --_top: calc(3 * var(--sherpa-layout-grid-row-height, 88px));
+  z-index: 4;
 }
 
-/* STUCK: its own view timeline, its view cut to the line it sticks at, starts
-   the moment it sticks. Chromium and WebKit; Firefox shows a plain row. */
+/* STUCK: its own view timeline, named by the page sheet, starts the moment it
+   sticks. From two stuck groups, each is HALF a row: a later one once it
+   sticks, the first once the second does. Chromium and WebKit; Firefox stacks
+   full rows, unjoined. */
 @supports (animation-timeline: view()) {
   :host([data-sticky]) {
-    view-timeline: --sherpa-metric-group block;
-    view-timeline-inset: 0px calc(100% - var(--_top, 0px));
     animation: sherpa-metric-group-stuck linear both;
     animation-timeline: --sherpa-metric-group;
     animation-range: cover 0px cover 1px;
+  }
+
+  /* An unnamed timeline fills to its end, so only a first group with a second. */
+  :host(:nth-child(1 of sherpa-metric-group[data-sticky]):not(:nth-last-child(1 of sherpa-metric-group[data-sticky]))) {
+    animation: sherpa-metric-group-stuck linear both, sherpa-metric-group-half linear both;
+    animation-timeline: --sherpa-metric-group, --sherpa-metric-group-second;
+    animation-range: cover 0px cover 1px;
+  }
+
+  :host(:nth-child(2 of sherpa-metric-group[data-sticky])) {
+    --_top: calc(var(--sherpa-layout-grid-row-height, 88px) / 2);
+    animation-name: sherpa-metric-group-stuck-under;
+  }
+
+  :host(:nth-child(3 of sherpa-metric-group[data-sticky])) {
+    --_top: var(--sherpa-layout-grid-row-height, 88px);
+    animation-name: sherpa-metric-group-stuck-under;
+  }
+
+  :host(:nth-child(4 of sherpa-metric-group[data-sticky])) {
+    --_top: calc(1.5 * var(--sherpa-layout-grid-row-height, 88px));
+    animation-name: sherpa-metric-group-stuck-under;
   }
 
   /* Stuck, it casts a shadow over what scrolls under it, as a grid's head does. */
   :host([data-sticky])::after {
     content: '';
     position: absolute;
-    inset-block-start: 100%;
+    inset-block-start: calc(100% - 50% * var(--_metric-half, 0));
     inset-inline: 0;
     block-size: var(--sherpa-display-mode-space-sm, 12px);
     pointer-events: none;
@@ -87,21 +116,32 @@ slot {
     animation-timeline: --sherpa-metric-group;
     animation-range: cover 0px cover var(--sherpa-display-mode-space-base, 16px);
   }
+
+  /* The first casts none over a second stuck under it: one shadow, at the foot. */
+  :host(:nth-child(1 of sherpa-metric-group[data-sticky]))::after {
+    block-size: calc(var(--sherpa-display-mode-space-sm, 12px) * (1 - var(--_metric-half, 0)));
+  }
 }
 
 @keyframes sherpa-metric-group-stuck {
-  from { --_joined: 0; }
-  to { --_joined: 1; }
+  from { --_stuck: 0; }
+  to { --_stuck: 1; }
+}
+
+@keyframes sherpa-metric-group-stuck-under {
+  from { --_stuck: 0; --_metric-half: 0; }
+  to { --_stuck: 1; --_metric-half: 1; }
+}
+
+@keyframes sherpa-metric-group-half {
+  from { --_metric-half: 0; }
+  to { --_metric-half: 1; }
 }
 
 /* ── Joined ──────────────────────────────────────────────────────────────
    As `.sherpa-group`: a shared edge is halved on both sides, and only the
    outer corners round. TRAP T-a-shared-edge-is-halved-on-both-sides */
 @container style(--_joined: 1) {
-  slot {
-    gap: 0;
-  }
-
   ::slotted(*) {
     --sherpa-border-left: var(--sherpa-display-mode-border-width-xs, 0.25px);
     --sherpa-border-right: var(--sherpa-display-mode-border-width-xs, 0.25px);
@@ -121,5 +161,20 @@ slot {
     --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
     --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
     --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  }
+}
+
+/* Stuck groups stacked read as ONE object: the joint squares, its edge halved on both sides. */
+@container style(--_metric-half: 1) {
+  :host(:nth-child(1 of sherpa-metric-group[data-sticky])) ::slotted(*) {
+    --sherpa-border-bottom: var(--sherpa-display-mode-border-width-xs, 0.25px);
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  :host(:not(:nth-child(1 of sherpa-metric-group[data-sticky]))) ::slotted(*) {
+    --sherpa-border-top: var(--sherpa-display-mode-border-width-xs, 0.25px);
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
   }
 }

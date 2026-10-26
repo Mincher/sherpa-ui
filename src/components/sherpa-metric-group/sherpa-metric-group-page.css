@@ -1,0 +1,22 @@
+/**
+ * sherpa-metric-group-page.css — each sticky group's timeline, named in the PAGE, so the first sees the second stick.
+ * WebKit reads a timeline name only inside one tree. TRAP T-a-metric-group-knows-it-is-stuck
+ * TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page
+ */
+@layer components {
+  @supports (animation-timeline: view()) {
+    /* Its view cut to the line it sticks at: `cover 0` is the moment it sticks. */
+    sherpa-metric-group[data-sticky] {
+      view-timeline: --sherpa-metric-group block;
+      view-timeline-inset: 0px calc(100% - var(--_top, 0px));
+    }
+
+    sherpa-metric-group:nth-child(2 of sherpa-metric-group[data-sticky]) {
+      view-timeline-name: --sherpa-metric-group, --sherpa-metric-group-second;
+    }
+
+    :has(> sherpa-metric-group[data-sticky] ~ sherpa-metric-group[data-sticky]) {
+      timeline-scope: --sherpa-metric-group-second;
+    }
+  }
+}

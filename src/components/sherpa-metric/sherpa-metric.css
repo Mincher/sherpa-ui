@@ -167,6 +167,36 @@
   align-self: stretch;
 }
 
+/* ── Half a row: a metric group stuck under another. Its name and value on
+   one line. TRAP T-a-metric-group-knows-it-is-stuck ─────────────────────── */
+@container style(--_metric-half: 1) {
+  :host {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sherpa-display-mode-space-xs, 8px);
+  }
+
+  .row {
+    flex: 0 1 auto;
+    block-size: auto;
+    box-shadow: none;
+  }
+
+  .figures {
+    min-inline-size: 0;
+  }
+
+  .value {
+    font-size: var(--sherpa-theme-content-size-base, 14px);
+    line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  }
+
+  .trend,
+  :host([data-has-values]) .spark {
+    display: none;
+  }
+}
+
 /* ── Disabled — never opacity. Figma has no disabled Metric, and body/+2 has
    no Style name. ─────────────────────────────────────────────────────── */
 :host([disabled]) :is(.value, .head, .trend) {

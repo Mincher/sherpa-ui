@@ -702,7 +702,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — data-grid
 
-## Charts (59)
+## Charts (60)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -721,6 +721,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-legend-row-is-a-key-chip](TRAPS.md#t-a-legend-row-is-a-key-chip) — chart-legend
 - [T-a-legend-toggle-is-a-filter](TRAPS.md#t-a-legend-toggle-is-a-filter) — chart-legend
 - [T-a-metric-condenses-by-wrapping](TRAPS.md#t-a-metric-condenses-by-wrapping) — metric
+- [T-a-metric-group-knows-it-is-stuck](TRAPS.md#t-a-metric-group-knows-it-is-stuck) — metric
 - [T-a-narrow-chart-stacks-its-legend](TRAPS.md#t-a-narrow-chart-stacks-its-legend) — chart-legend, sherpa-chart-frame
 - [T-a-percentage-floor-needs-a-definite-parent](TRAPS.md#t-a-percentage-floor-needs-a-definite-parent) — barchart
 - [T-a-pie-slice-has-no-rounded-corner](TRAPS.md#t-a-pie-slice-has-no-rounded-corner) — radial-chart
@@ -884,7 +885,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (109)
+## Other components (110)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -915,6 +916,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-name-where-a-native-element-does-the-job](TRAPS.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — button
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
+- [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — app-header

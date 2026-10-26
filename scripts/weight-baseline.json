@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 917660,
+    "js": 920286,
     "files": 111,
     "fetched": 206276
   },
@@ -180,12 +180,12 @@
     "fetched": 0
   },
   "components/sherpa-metric-group/sherpa-metric-group.js": {
-    "js": 231428,
+    "js": 233677,
     "files": 11,
     "fetched": 0
   },
   "components/sherpa-metric/sherpa-metric.js": {
-    "js": 246933,
+    "js": 247310,
     "files": 15,
     "fetched": 0
   },
@@ -350,7 +350,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1090883,
+    "js": 1093509,
     "files": 154,
     "fetched": 206276
   }

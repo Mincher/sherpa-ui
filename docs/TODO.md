@@ -83,7 +83,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
 | ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
 | ✅ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
-| ❓ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22). 10-26: built but for the half height — ❓ A or B | component |
+| ✅ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22). Done 2026-10-26 | component |
 | ✅ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
 | ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
 | ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
@@ -123,6 +123,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
 | ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
 | ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
+| ⬜ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
+| ⬜ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
+| ⬜ | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402) | bug |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -1889,6 +1892,27 @@ date, `created`, says `"range": true`, so it stays a range there. Tests:
 `T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
 held by Will).
 
+### `[ ]` ⬜ 442 — LOOK: the divider after the View chip is not centred
+
+Will, 2026-10-26: *"The divider between the view selection and view scope
+filters, in the filter toolbar mode, is not aligned to the centre
+vertically."* The divider is 433's.
+
+### `[ ]` ⬜ 443 — LOOK: the Saved filters button wears a filter icon
+
+Will, 2026-10-26: *"The 'Saved' Filters button doesn't need a star icon. Use a
+filter icon instead."*
+
+### `[ ]` ⬜ 444 — BUG: a metric is taller than its grid row
+
+Found in 402 (2026-10-26). `sherpa-metric.css` says the tile is exactly one
+grid row. Measured alone in the harness, at 1x and 2x: 89 for an 88 row, 79
+for 76 in compact density, 109 for 104 in comfortable. Its parts add to 88 at
+the default (padding 3.5 + border 0.5 each side, header 20, gap 4, line 56),
+so 1px comes from somewhere not yet found; compact and comfortable miss by
+more. A fixed or fit row, and a metric group, hold it to the row, so its foot
+runs into its padding.
+
 ### `[x]` ✅ 441 — FEATURE: Highlight matches
 
 Will, 2026-10-23, in 436: *"Highlight matches (Highlights grid rows, chart
@@ -2947,7 +2971,7 @@ the Demos on the whole set, and show the start on one page made for it. **B:**
 turn it on in the Demos (Customer and Region), and I move the 58 tests.
 **Will, 2026-10-22: deferred for now.**
 
-### `[~]` ❓ 402 — COMPONENT: a metric group, and sticky metrics that work
+### `[x]` ✅ 402 — COMPONENT: a metric group, and sticky metrics that work
 
 Will, 2026-10-22: *"Sticky metric items eventually scroll off screen (out of the
 content area). They also don't activate on all views with metrics in the content
@@ -3025,7 +3049,20 @@ deleted.
   pageCss`, a new use of it), so both engines can. A half-height metric shows
   its name and value on one line; its trend and sparkline hide. **B:** no
   half height: stuck groups stack at full height. Nothing more to build. No
-  Demos View has two groups today.
+  Demos View has two groups today. **Will, 2026-10-26: A.**
+- ✅ **Step 2 (2026-10-26): half height.** Every sticky group's timeline is
+  named in the page (`sherpa-metric-group-page.css`, `static pageCss`), and
+  the second's is scoped to their parent, so the first sees the second stick
+  in WebKit too. A later group is half a row once stuck, the first once the
+  second is; the second sticks half a row down and slides under the first on
+  its way up. A half metric shows its name and value on one line
+  (`--_metric-half`, read by `sherpa-metric.css`). The group is always one grid
+  row in the page and only DRAWS half, so the page never moves. Stacked, the
+  joint squares and one shadow falls at the foot. Firefox stacks full rows.
+  Test: `reforged-metric-group` (3 engines).
+
+**✅ Done 2026-10-26.** Found on the way: a metric is taller than its grid row
+(TODO 444).
 
 
 ### `[x]` ✅ 401 — LOOK: a scroll shadow for any scroll box (investigate)

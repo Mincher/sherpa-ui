@@ -36,13 +36,20 @@ const look = (page: Page, id: string, y?: number) => page.evaluate(async ([id, y
   const kids = [...group.children] as HTMLElement[];
   const cs = kids.map((k) => getComputedStyle(k));
   const after = getComputedStyle(group, '::after');
+  const value = getComputedStyle(kids[0]!.shadowRoot!.querySelector('.value')!);
   return {
     top: Math.round(group.getBoundingClientRect().top - box.getBoundingClientRect().top),
+    // What it draws, and what it holds in the page.
+    drawn: Math.round(group.shadowRoot!.querySelector('slot')!.getBoundingClientRect().height),
+    held: Math.round(group.getBoundingClientRect().height),
+    value: value.fontSize,
+    trend: getComputedStyle(kids[0]!.shadowRoot!.querySelector('.trend')!).display,
     gap: Math.round(kids[1]!.getBoundingClientRect().left - kids[0]!.getBoundingClientRect().right),
     corners: cs.map((c) => [c.borderStartStartRadius, c.borderStartEndRadius].join(' ')),
     // The edge as set: a drawn width under 1px reads as 1px.
     inner: cs[0]!.getPropertyValue('--sherpa-border-right').trim(),
-    shadow: after.content === 'none' ? 0 : Number(after.opacity),
+    shadow: after.content === 'none' || after.blockSize === '0px' ? 0 : Number(after.opacity),
+    foot: [cs[0]!.borderEndStartRadius, cs.at(-1)!.borderEndEndRadius].join(' '),
   };
 }, [id, y ?? null] as const);
 
@@ -69,8 +76,8 @@ test('at the grid\'s mobile width the metrics join as one object', async ({ page
 test('a sticky group joins the moment it sticks, and parts on the way back', async ({ page, browserName }) => {
   await open(page);
   expect(await look(page, 'one', 15)).toMatchObject({ top: 1, gap: 16, corners: SOLO, shadow: 0 });
-  // Far down the grid it is still at the top.
-  const far = await look(page, 'one', 600);
+  // Down the grid it is still at the top (the second group not yet stuck).
+  const far = await look(page, 'one', 300);
   expect(far.top).toBe(0);
   if (browserName === 'firefox') {
     expect(far, 'no view timeline: a plain row').toMatchObject({ gap: 16, corners: SOLO });
@@ -80,12 +87,41 @@ test('a sticky group joins the moment it sticks, and parts on the way back', asy
   expect(await look(page, 'one', 0)).toMatchObject({ top: 16, gap: 16, corners: SOLO, shadow: 0 });
 });
 
-test('a second sticky group sticks under the first', async ({ page, browserName }) => {
+test('two stuck groups are each half a row, the second under the first; the page never moves', async ({ page, browserName }) => {
   await open(page);
   const row = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('sherpa-layout-grid')!)
     .getPropertyValue('--sherpa-layout-grid-row-height')));
-  const r = await look(page, 'two', 2000);
-  expect(r.top).toBe(row);
-  expect((await look(page, 'one')).top).toBe(0);
-  if (browserName !== 'firefox') expect(r.gap).toBe(0);
+  const card = () => page.evaluate(() => {
+    const last = document.querySelector('sherpa-layout-grid')!.lastElementChild!;
+    return Math.round(last.getBoundingClientRect().top - document.getElementById('box')!.getBoundingClientRect().top
+      + document.getElementById('box')!.scrollTop);
+  });
+  const before = await card();
+  // One stuck: a full row, its value full size.
+  const alone = await look(page, 'one', 200);
+  const two = await look(page, 'two', 2000);
+  const one = await look(page, 'one');
+  expect(await card(), 'the page never moves').toBe(before);
+  expect(alone).toMatchObject({ top: 0, drawn: row, held: row, trend: 'flex' });
+  expect(alone.value).not.toBe('14px');
+  if (browserName === 'firefox') {
+    expect(two, 'no view timeline: full rows').toMatchObject({ top: row, drawn: row, gap: 16 });
+    expect(one).toMatchObject({ top: 0, drawn: row });
+    return;
+  }
+  expect(two).toMatchObject({ top: row / 2, drawn: row / 2, held: row, gap: 0, value: '14px', trend: 'none' });
+  expect(one).toMatchObject({ top: 0, drawn: row / 2, held: row, gap: 0, value: '14px', trend: 'none' });
+  // ONE object: a square joint, and one shadow, at the foot.
+  expect(one).toMatchObject({ foot: '0px 0px', shadow: 0 });
+  expect(two).toMatchObject({ corners: ['0px 0px', '0px 0px'], foot: '4px 4px', shadow: 1 });
+  // Back up past the second's line, the first is a full row again.
+  expect(await look(page, 'one', 200)).toMatchObject({ drawn: row, trend: 'flex' });
+});
+
+test('a sticky group alone never halves', async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => document.getElementById('two')!.removeAttribute('data-sticky'));
+  const row = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('sherpa-layout-grid')!)
+    .getPropertyValue('--sherpa-layout-grid-row-height')));
+  expect(await look(page, 'one', 2000)).toMatchObject({ top: 0, drawn: row });
 });

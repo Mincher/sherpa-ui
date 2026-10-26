@@ -1407,10 +1407,17 @@ rule comes BEFORE `:state(leaving)`, so a leaving toast still takes no pointer.
 no structure. A constructed sheet needs no `'unsafe-inline'`, so it runs under
 the strict CSP.
 
+**The second use: a NAME that several shadow roots share.** WebKit matches a
+timeline name only inside one tree, so the metric group names its timelines in
+a page sheet, on its own hosts (TODO 402,
+`T-a-metric-group-knows-it-is-stuck`). Use it for that, never for what a
+`:host` rule can say.
+
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-toast/sherpa-toast.ts`
 - Site: `src/components/sherpa-toast/sherpa-toast-stack.css`
+- Site: `src/components/sherpa-metric-group/sherpa-metric-group-page.css`
 - Site: `scripts/lint-css.mjs`
 - Site: `test/e2e/reforged-toast.spec.ts`
 
@@ -16222,10 +16229,23 @@ animation, not `scroll-state()`). `view-timeline-inset: 0
 calc(100% - <its top>)` leaves a view of zero height at that line, so `cover
 0` is the scroll at which its top reaches it: the moment it sticks. Measured
 to the pixel in Chromium and WebKit, for a second group under the first too.
-Its animation sets `--_joined: 1`, and `@container style(--_joined: 1)` joins
+Its animation sets `--_stuck: 1`, and `@container style(--_stuck: 1)` joins
 the slotted metrics. At the grid's mobile band,
-`style(--sherpa-layout-grid-columns: 4)` sets the same flag; style queries
-work in all three engines.
+`style(--sherpa-layout-grid-columns: 4)` joins them too; style queries work in
+all three engines.
+
+**From two stuck groups each is HALF a row** (Will: A): a later group once it
+sticks, the first once the SECOND does, so the first must read the second's
+timeline. WebKit reads a timeline name only inside one tree, so every group's
+timeline is named in the PAGE, by the group's `static pageCss`, with
+`timeline-scope` on their parent; the shadow sheet only reads them. The flag
+is `--_metric-half`, which the metric reads too: its name and value on one
+line. A first group with no second gets no half animation: a named timeline
+that does not resolve fills to its END, so it would be half for ever.
+
+**A half group never moves the page.** The host is always one grid row; only
+its slot draws half, and the host takes no pointer. Had the first group's row
+shrunk, the second's line would move with it.
 
 Three things that do NOT work, each measured:
 
@@ -16233,16 +16253,17 @@ Three things that do NOT work, each measured:
   range takes the stuck distance in, so its exit is at the grid's end.
 - The GRID's timeline (`exit-crossing <px>`) does, but needs the group's
   offset in the grid, which CSS cannot know.
-- One group reading ANOTHER's named timeline (`timeline-scope`): Chromium
-  does it across shadow roots; WebKit only when every name is in the page's
-  own tree. So half height at two stuck groups waits (TODO 402).
+- A name declared in one shadow root, read from another: Chromium does it;
+  WebKit does not.
 
 A sticky GRID item sticks for the whole grid, not just its row, in all three
-engines. Firefox 155 has no view timeline: it sticks, with a plain row, and
+engines. Firefox 155 has no view timeline: it sticks, full rows, unjoined, and
 `@supports` keeps a 0s animation from leaving it joined.
 
 - Site: `src/components/sherpa-metric-group/sherpa-metric-group.css`
+- Site: `src/components/sherpa-metric-group/sherpa-metric-group-page.css`
 - Site: `src/components/sherpa-metric-group/sherpa-metric-group.ts`
+- Site: `src/components/sherpa-metric/sherpa-metric.css`
 - Site: `test/e2e/reforged-metric-group.spec.ts`
 
 ### T-a-section-is-headed-once
