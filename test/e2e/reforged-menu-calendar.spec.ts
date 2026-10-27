@@ -481,9 +481,9 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   expect(r.calendar.discard.x).toBeLessThan(r.calendar.apply.x);
 
   // The node's own widths: Today 57, Apply 54 (±1 for text metrics); Discard, its
-  // text's — Figma's node still says Cancel (62). TODO 395
+  // text's — Figma's node still says Cancel (62), TODO 395 — and its trash can's, TODO 417.
   expect(Math.abs(r.calendar.today.w - 57)).toBeLessThanOrEqual(1);
-  expect(Math.abs(r.calendar.discard.w - 67)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.calendar.discard.w - 89)).toBeLessThanOrEqual(1);
   expect(Math.abs(r.calendar.apply.w - 54)).toBeLessThanOrEqual(1);
 
   // The BUTTON is the menu's; the BEHAVIOUR is the calendar's. Clicking it from

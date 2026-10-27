@@ -43,7 +43,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 15 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27). Done: the selected row pins the Default look's Active mode — a solid pale fill and its purple edge, inside; Figma pins Transparent/active, so this departs from it on Will's word. TRAP `T-a-selected-nav-row-wears-its-edge` | a11y |
 | ✅ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next). Done: a column's `tags` draw as pills in each value's series colour (bigger, Will, 2026-10-27); a press picks the value, again lets it go; the heading menu joins the lists, a section each, and answers each field; the View's field is greyed with ONE moved tip (`showFor()`); `provider.multiFieldColumns` → `data-multi-field`, on; Demos: Filtering › Multi-field columns, Name 300px. TRAP `T-a-joined-menu-answers-each-field` | grid |
 | ✅ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped). Done (Will A, an off shape too): the Checkbox's box lifted into `sherpa-checkbox-look.css`; each toggle's shape wears it, empty off and ticked on, sized by `--_checkbox-size`. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
-| 🚧 | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Found and fixed: the panel's binding heard its section bars' events too (`T-a-nested-control-steers-through-its-own-binding`). Not yet reproduced: the glitch itself — ❓ steps asked | bug |
+| ❓ | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Fixed on the way: the panel's binding heard its section bars' events too. REPRODUCED from Will's lead: a SET-ASIDE pick (Limit, 174/349) stays ticked, greyed and disabled, the chip still names it; untick the rest and it alone holds the field at 0 rows. ❓ A: let a ruled-out pick go at once; B: keep it aside but pressable, and the face names only what filters | bug |
 | ✅ | 19 | 513 | BUG — 'Highlight matches on hover': resting on a chart LEGEND item highlights only once one legend item has been toggled (Will, 2026-10-27; see 495, 496). Done: a chart's own scope is made at its first toggle, and the highlight compiled only from scopes the Query had; a rested value whose scope is not made yet now compiles from an empty one. TRAP `T-a-hovered-chip-previews-the-highlight` | bug |
 | ✅ | 20 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
 | ✅ | 21 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493). Done: the panel's chips flow in one wrapping row, every chip but a preset a row of its own; with headings in a column the run sits in the value column, its heading beside the first line. TRAP `T-a-preset-is-its-own-part` | bug |
@@ -65,9 +65,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
 | 🚧 | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| ❓ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
 | 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ⬜ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ❓ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | ✅ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate. Done 2026-10-27: `tsconfig.tests.json` maps `/dist/*` to the source (not `tsconfig.json`: Playwright reads that one and would rewrite the imports a spec hands the browser); 261 errors to 0 across 30 specs — casts, unused helpers, a stale `await src.ready`, a fallback import of a file that never existed; `npm run type-check:tests`, ~3s, in the pre-commit hook | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
 | ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
@@ -2405,6 +2405,26 @@ named its scope asked twice. **Fixed:** a binding skips an event that started in
 another control it bound (`T-a-nested-control-steers-through-its-own-binding`).
 **❓ Asked Will for the steps** of the glitch he sees: where (bar, panel, heading,
 cell, tag), which field, which settings, and what it does.
+
+**Will, 2026-10-27:** *"I think the issues caused when removing filters is that
+some filters are still active while being limited (and thus not shown in the UI)
+resulting in the appearance of broken filters and mismatched data."*
+
+**Reproduced** (Demos Records, Limit on): Region AMER + APAC (49 rows); Customer
+Proseware, which has no AMER → AMER is SET ASIDE (174, 349): kept in the
+reading, out of the rows, its row ticked, greyed and DISABLED, and the chip's
+face still reads "Americas…" (4 rows: APAC). Untick APAC by hand and AMER is the
+only pick left — it cannot be unticked, and a filter whose every pick is ruled
+out stays in force (Will, 10-20): 0 rows, a "broken" filter. Clear Customer
+instead and AMER comes back into force unseen (49 rows).
+
+**❓ Asked Will:**
+- **A (my pick):** a pick the filters before it rule out is LET GO at once —
+  dropped from the answer, so the chip, the menu and the rows always agree, and
+  clearing an earlier filter never brings an old pick back. (Every pick ruled out
+  at once: as today, it stays at 0, visible.)
+- **B:** keep it set aside, but its row stays pressable (unticking lets it go),
+  and the chip's face names only the picks in force.
 
 ### `[x]` ✅ 503 — A11Y: the on/off shape is a Sherpa checkbox
 
@@ -11326,7 +11346,7 @@ and fixed 20 wrong names or claims. The skill now has today's collection table
 
 Those are Figma's to clean; the skill says not to copy them (339).
 
-### `[ ]` ⬜ 339 — FIGMA: dead bindings and hidden collections in the live file
+### `[ ]` ❓ 339 — FIGMA: dead bindings and hidden collections in the live file
 
 Found by 336's live read, 2026-10-16. In the Figma file, not the code:
 
@@ -11432,7 +11452,7 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 sideways, the selection column keeps its pin and its place through a header
 filter change — all 27 of its cells.
 
-### `[ ]` ⬜ 341 — DATA: a component is only a TYPE in the data layer
+### `[ ]` ❓ 341 — DATA: a component is only a TYPE in the data layer
 
 Will, 2026-10-16: *"Charts and metrics are just visual representations of
 data. The definition of a 'chart' or 'metric', or any other UI component,
@@ -11443,6 +11463,35 @@ that `arranges` because a grid or list is bound, "a summary binds to all the
 rows", a chart's legend scope. Measure every such decision, and plan how each
 becomes a data shape (rows, one page, all rows, a count) that any component
 may ask for.
+
+**Measured 2026-10-27** (a read-only planning agent; its key claim checked by
+hand). The component words that DECIDE:
+- **Who arranges** — `showsRows` (`shows` is `'grid'`/`'list'`,
+  `source-binding.ts`) feeds `arranges()`'s default, the sort's owner and
+  `#mine`. What it means: a PAGE of rows is drawn in this scope.
+- **`shows`** — asked, stored and put in `describe()`; no component reads it
+  there (the bar's `nameScope` uses `component` only). `'list'` and `'form'`
+  are never declared.
+- **A part** is hard-coded `shows: 'chart'`; `part: true` already says it.
+- **Summaries** are already a data shape (`rows: 'all'`), and so are
+  `componentScopes` and `narrows: 'host'`. The TODO text is off there.
+- **Not in the TODO:** `colorIndex` and `swatch` are a value's place in its
+  field's order, named for paint.
+
+**Plan, one commit each:** 1. a scope arranges because a PAGE is drawn in it
+(`pagedIn` = not steer-only and `rows: 'page'`) — the provider's pages behave
+as today; hand binds of plain bars in a scope would start arranging, so about
+15 node-test binds take `steerOnly`. 2. `describe()` stops saying `shows`; a
+scope names its component by the first bind given rows. 3. `shows` goes from
+the asks and binds (`ScopeShows`, `DataAsk.shows`, five component asks). 4.
+Words: schema, PAGE-DEFINITION, comments, trap bodies (ids kept). 1–3 change
+public names or hand-bind behaviour.
+
+**❓ Asked Will:** (1) a silent scope arranges when — A (my pick): a page of
+rows is drawn in it; B: a new explicit `arranged: true` on the bind. (2)
+`shows` — A (my pick): removed outright (nothing reads it); B: accepted and
+ignored for one release, with a report. (3) `colorIndex`/`swatch` — A: part of
+341; B (my pick): type fields, a TODO of their own if at all.
 
 ### `[x]` ✅ 342 — The "No matches" banner goes
 
