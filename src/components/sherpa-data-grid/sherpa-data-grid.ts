@@ -1859,7 +1859,8 @@ export class SherpaDataGrid extends SherpaElement {
   /** Eat exactly one click — the one a finished resize drag synthesises. */
   #swallowClick = false;
 
-  /** A heading was clicked: cycle its sort — unless a resize just ended. */
+  /** A heading's SORT button was clicked: cycle its sort — unless a resize just
+   *  ended. The rest of the heading sorts nothing. Will, TODO 502 · TRAP T-grid-sort-is-tri-state */
   #onHeaderClick = (event: Event): void => {
     // A RESIZE just ended and the browser is synthesising its click.
     if (this.#swallowClick) {
@@ -1868,10 +1869,8 @@ export class SherpaDataGrid extends SherpaElement {
       event.preventDefault();
       return;
     }
-    // The FILTER button is in the heading, so its click reaches here. The chip
-    // handles its own.
-    if ((event.target as HTMLElement).closest('.head-filter')) return;
-    // The SORT chip carries no menu, so its click falls through to the cycle.
+    // Only the SORT chip cycles; it carries no menu, so its click falls through to here.
+    if (!(event.target as HTMLElement).closest('.head-sort')) return;
     const th = (event.target as HTMLElement).closest<HTMLElement>('.head-cell');
     const field = th?.dataset['field'];
     if (!field || th!.dataset['sortable'] === 'false') return;

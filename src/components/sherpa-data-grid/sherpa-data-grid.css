@@ -97,6 +97,8 @@
    cells — each pinned header cell casts its own over them. A strip per header
    cell stacked under a pinned column as columns scrolled past it. Will, TODOs
    421, 481. TRAP T-a-stuck-header-casts-a-shadow */
+/* …and the shared top edge hangs there too, under the sticky header. Will, TODO 499 */
+.scroller { --_scroll-shadow-top: var(--_head-h, 0px); }
 @supports (animation-timeline: scroll()) {
   .scroller::before {
     content: '';
@@ -353,8 +355,6 @@
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 
-  &[data-sortable="false"] .head-btn { cursor: default; }
-
 }
 /* An ACTING column's heading is deliberately UNPAINTED — the chips carry the
    on-state. `data-status="active"` is still written, for a host to style. */
@@ -385,13 +385,13 @@
 
   /* THE TRAILING CLEARANCE LIVES HERE, ON THE ROW — one owner. `.head-cell` is
      padding 0 inline by design; on the row it holds for whichever child ends
-     the row (sort chip, filter chip, or the label). `.head-btn` keeps only its
+     the row (sort chip, filter chip, or the label). `.head-name` keeps only its
      LEADING padding, so the two never stack into 16. */
   padding-inline-end: var(--sherpa-display-mode-space-xs, 8px);
 
   /* The NAME takes what the two controls leave, so the chips line up down the
      header row instead of stepping in and out with each label's length. */
-  .head-btn { flex: 1 1 auto; min-inline-size: 0; }
+  .head-name { flex: 1 1 auto; min-inline-size: 0; }
   .head-filter,
   .head-sort { flex: 0 0 auto; }
 }
@@ -459,12 +459,12 @@
   cursor: col-resize;
   user-select: none;
 }
-:host(:state(resizing)) .head-btn { cursor: col-resize; }
+:host(:state(resizing)) .head-name { cursor: col-resize; }
 
-.head-btn {
+.head-name {
   display: flex;
   align-items: center;
-  /* The glyph is not in here — this button holds only the label. */
+  /* The glyph is not in here — this holds only the label. */
   justify-content: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
@@ -473,8 +473,6 @@
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline-start: var(--sherpa-display-mode-space-xs, 8px);
   padding-inline-end: 0;
-  border: none;
-  background: none;
   /* Figma binds every Grid Cell label to weight REGULAR 400 / size 14 / line
      20. Stated in full because `font: inherit` picks up the UA's bold <th>. */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
@@ -484,16 +482,10 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-style-content-base, #0c0b11);
   text-align: start;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: var(--sherpa-focus-ring);
-    outline-offset: var(--sherpa-focus-offset);
-  }
 }
 
 /* A NUMERIC column aligns its header with its right-aligned digits. */
-.head-cell[data-type="number"] .head-btn {
+.head-cell[data-type="number"] .head-name {
   justify-content: flex-end;
   text-align: end;
 }

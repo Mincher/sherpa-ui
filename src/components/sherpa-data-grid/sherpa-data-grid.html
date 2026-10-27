@@ -165,9 +165,10 @@
       <!-- The flex row must be an inner wrapper: `display: flex` on a <th> takes
            the cell out of table layout and the header row stacks. -->
       <span class="head-row-inner">
-        <button class="head-btn" type="button">
+        <!-- The column's NAME, and nothing to press: its Sort button sorts. Will, TODO 502 -->
+        <span class="head-name">
           <span class="head-label sherpa-truncate"></span>
-        </button>
+        </span>
         <!-- A chip, not a button of our own — it already owns the popover, and
              in the light DOM its menu escapes the scroller clip. JS stamps the
              menu body per column TYPE. `data-locked` is required: a chip derives
@@ -176,8 +177,8 @@
         <sherpa-quick-filter class="head-filter" data-icon-only data-menu
                              data-no-value data-locked
                              data-plain></sherpa-quick-filter>
-        <!-- Sort: no `data-menu` — a sort has nothing to pick, the click cycles
-             asc → desc → off. `data-locked` for the reason above. -->
+        <!-- Sort: no `data-menu` — a sort has nothing to pick, its click cycles
+             asc → desc → off; the only control that does. `data-locked` for the reason above. -->
         <sherpa-quick-filter class="head-sort" data-icon-only data-plain
                              data-no-value data-locked></sherpa-quick-filter>
       </span>

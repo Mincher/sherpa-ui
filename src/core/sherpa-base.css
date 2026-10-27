@@ -95,8 +95,9 @@
    on each edge its content is hidden past. A box with a flex `gap` names it in
    `--_scroll-shadow-gap`, so the edges take no room. Will, TODO 401.
    TRAP T-a-scroll-shadow-is-drawn-over-the-content */
-/* Its own, never an outer box's: a custom property inherits into a slotted grid. */
-.sherpa-scroll-shadow { --_scroll-shadow-gap: 0px; }
+/* Its own, never an outer box's: a custom property inherits into a slotted grid.
+   A box with a sticky header names that header's foot as its top. TODO 499 */
+.sherpa-scroll-shadow { --_scroll-shadow-gap: 0px; --_scroll-shadow-top: 0px; }
 @supports (animation-timeline: scroll()) {
   :host([data-scroll-shadow]) .sherpa-scroll-shadow::before,
   :host([data-scroll-shadow]) .sherpa-scroll-shadow::after {
@@ -115,7 +116,7 @@
     animation-timeline: scroll(nearest block);
   }
   :host([data-scroll-shadow]) .sherpa-scroll-shadow::before {
-    inset-block-start: 0;
+    inset-block-start: var(--_scroll-shadow-top, 0px);
     margin-block-end: calc(-1 * (var(--sherpa-display-mode-space-sm, 12px) + var(--_scroll-shadow-gap, 0px)));
     background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
     animation-range: 0 var(--sherpa-display-mode-space-base, 16px);

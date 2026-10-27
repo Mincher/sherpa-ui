@@ -56,12 +56,12 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
         (h) => h.dataset['field'] === 'score',
       )!;
 
-    scoreHeader().querySelector<HTMLElement>('.head-btn')!.click(); // asc by score
+    scoreHeader().querySelector<HTMLElement>('.head-sort')!.click(); // asc by score
     await window.__settled();
     const asc = names();
     const ascAttr = { field: el.dataset['sortField'], dir: el.dataset['sortDirection'] };
 
-    scoreHeader().querySelector<HTMLElement>('.head-btn')!.click(); // desc
+    scoreHeader().querySelector<HTMLElement>('.head-sort')!.click(); // desc
     await window.__settled();
     const desc = names();
 
@@ -70,6 +70,28 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
   expect(r.asc).toEqual(['Charlie', 'Bob', 'Alice']); // 30, 60, 90
   expect(r.ascAttr).toEqual({ field: 'score', dir: 'asc' });
   expect(r.desc).toEqual(['Alice', 'Bob', 'Charlie']); // 90, 60, 30
+});
+
+// Will, TODO 502: only its Sort button sorts — the heading's name, or its cell, never does.
+test('a click on a heading\'s name sorts nothing; its Sort button does', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(config);
+    await window.__settled();
+    const heard: unknown[] = [];
+    el.addEventListener('sort-change', (e) => heard.push((e as CustomEvent).detail));
+    const th = el.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="score"]')!;
+    th.querySelector<HTMLElement>('.head-name')!.click();
+    th.click();
+    await window.__settled();
+    const name = { heard: heard.length, field: el.dataset['sortField'] ?? null, button: th.querySelector('.head-name')!.localName };
+    th.querySelector<HTMLElement>('.head-sort')!.click();
+    await window.__settled();
+    return { name, sorted: el.dataset['sortField'] ?? null, heard: heard.length };
+  }, CONFIG);
+  expect(r).toEqual({ name: { heard: 0, field: null, button: 'span' }, sorted: 'score', heard: 1 });
 });
 
 test('clicking a row fires row-click with the record', async ({ page }) => {
@@ -137,7 +159,7 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
       return { weight: s.fontWeight, style: s.fontStyle, size: s.fontSize,
                lh: s.lineHeight, align: s.textAlign };
     };
-    return { headBtn: read('.head-btn'), filterInput: read('.filter-input'), cell: read('.body .row .cell') };
+    return { headBtn: read('.head-name'), filterInput: read('.filter-input'), cell: read('.body .row .cell') };
   });
 
   // Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)
@@ -325,7 +347,7 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
     const clean = { ...status(), paint: paint('name'), spendPaint: paint('spend') };
 
     // SORT alone.
-    sr.querySelector<HTMLElement>('.head-cell[data-field="spend"] .head-btn')!.click();
+    sr.querySelector<HTMLElement>('.head-cell[data-field="spend"] .head-sort')!.click();
     await settle();
     const sorted = { ...status(), paint: paint('spend') };
 
@@ -863,7 +885,7 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
       const td = sr.querySelector(`.cell[data-type], .row .cell`) as HTMLElement;
       return {
         type: th.dataset['type'] ?? null,
-        header: getComputedStyle(th.querySelector('.head-btn')!).justifyContent,
+        header: getComputedStyle(th.querySelector('.head-name')!).justifyContent,
         filter: getComputedStyle(
           sr.querySelector(`.filter-cell[data-field="${field}"] .filter-input`)!,
         ).textAlign,
@@ -1055,7 +1077,7 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
     const th = Array.from(
       document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelectorAll('.head-cell'),
     )[0]!;
-    th.querySelector<HTMLElement>('.head-btn')!.click();
+    th.querySelector<HTMLElement>('.head-sort')!.click();
   });
   await page.evaluate(() => window.__settled());
   expect(await sortField()).toBe('name');
@@ -1270,7 +1292,7 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
     // it is `display: inline` and the button drops onto its own line UNDER the
     // label. Measured, because that is the part a reader sees.
     const boxes = {
-      label: cell.querySelector('.head-btn')!.getBoundingClientRect(),
+      label: cell.querySelector('.head-name')!.getBoundingClientRect(),
       filter: cell.querySelector('.head-filter')!.getBoundingClientRect(),
       sort: cell.querySelector('.head-sort')!.getBoundingClientRect(),
     };
@@ -1322,7 +1344,7 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
   // A NUMBER column offers one too, and leads with the Range switch.
   expect(r.numberShown).not.toBe('none');
   expect(r.numberRange).toBe(true);
-  expect(r.order).toEqual(['head-btn', 'head-filter', 'head-sort']);
+  expect(r.order).toEqual(['head-name', 'head-filter', 'head-sort']);
   expect(r.cellDisplay).toBe('table-cell');
   expect(r.sideBySide.rowDisplay).toBe('flex');
   expect(r.sideBySide.sameLine).toBe(true);

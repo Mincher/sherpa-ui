@@ -4406,7 +4406,9 @@ is what those traps exist to prevent.
 
 ### T-grid-sort-is-tri-state
 
-A column header's sort is TRI-STATE:
+A column header's sort is TRI-STATE, and only its Sort button cycles it: the
+column's name is plain text, and a click on it or the cell sorts nothing (Will,
+TODO 502):
 
 ```
 not this column  →  ascending
@@ -15869,6 +15871,12 @@ header's strip (`::part(header)::after`) fades in over `exit-crossing 0` to
 header sticks. A header further down casts none. Chromium and WebKit; Firefox
 has no view timeline and shows none.
 
+
+**With the app's scroll shadows on** (`data-scroll-shadow`), the shared sheet's
+top edge is stronger than the grid's own rule, and it pinned the edge at the
+box's top — under the opaque header, so it never showed (Will, TODO 499). The
+shared rule reads `--_scroll-shadow-top` (0 by default), and the grid sets it to
+`--_head-h`, its header's foot.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`

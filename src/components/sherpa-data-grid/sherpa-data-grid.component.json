@@ -226,11 +226,8 @@
                 "class": "head-row-inner",
                 "children": [
                   {
-                    "el": "button",
-                    "class": "head-btn",
-                    "attrs": {
-                      "type": "button"
-                    },
+                    "el": "span",
+                    "class": "head-name",
                     "children": [
                       {
                         "el": "span",
@@ -934,14 +931,14 @@
     "head-row-inner.gap": "{sherpa.display-mode-space-xs}",
     "head-row-inner.padding-inline-end": "{sherpa.display-mode-space-xs}",
     "resize-grip.inline-size": "{sherpa.display-mode-space-xs}",
-    "head-btn.gap": "{sherpa.display-mode-space-2xs}",
-    "head-btn.padding-block": "{sherpa.display-mode-space-2xs}",
-    "head-btn.padding-inline-start": "{sherpa.display-mode-space-xs}",
-    "head-btn.font-family": "{sherpa.font-family-body}",
-    "head-btn.font-size": "{sherpa.font-size-body-base}",
-    "head-btn.font-weight": "{sherpa.font-weight-regular}",
-    "head-btn.line-height": "{sherpa.theme-content-line-height-base}",
-    "head-btn.color": "{sherpa.style-content-base}",
+    "head-name.gap": "{sherpa.display-mode-space-2xs}",
+    "head-name.padding-block": "{sherpa.display-mode-space-2xs}",
+    "head-name.padding-inline-start": "{sherpa.display-mode-space-xs}",
+    "head-name.font-family": "{sherpa.font-family-body}",
+    "head-name.font-size": "{sherpa.font-size-body-base}",
+    "head-name.font-weight": "{sherpa.font-weight-regular}",
+    "head-name.line-height": "{sherpa.theme-content-line-height-base}",
+    "head-name.color": "{sherpa.style-content-base}",
     "actions-cell.border-inline-start": "{sherpa.border-left}",
     "actions-head.padding": "{sherpa.display-mode-space-2xs}",
     "actions-cell.border-inline-start-color": "{sherpa.style-border-base}",

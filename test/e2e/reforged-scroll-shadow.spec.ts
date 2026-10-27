@@ -76,6 +76,34 @@ test('a grid\'s header casts a shadow only once rows scroll under it', async ({ 
   expect(r).toEqual({ at: '0', scrolled: '1', driven: true });
 });
 
+// Will, TODO 499: with the app's scroll shadows on, the top edge hangs at the header's foot, never under it.
+test('with scroll shadows on, a grid\'s top edge shows below its sticky header once rows scroll under it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.style.blockSize = '200px';
+    el.setAttribute('data-scroll-shadow', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!({ columns: [{ field: 'name', header: 'Name' }], rows: Array.from({ length: 30 }, (_, i) => ({ name: `Row ${i}` })) });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const scroller = sr.querySelector<HTMLElement>('.scroller')!;
+    const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    const edge = (): { opacity: string; top: number } => {
+      const cs = getComputedStyle(scroller, '::before');
+      return { opacity: cs.opacity, top: Math.round(parseFloat(cs.insetBlockStart)) };
+    };
+    const at = edge();
+    scroller.scrollTop = 100;
+    await frames();
+    return { at: at.opacity, scrolled: edge(), head: Math.round(sr.querySelector('.head')!.getBoundingClientRect().height), driven: CSS.supports('animation-timeline: scroll()') };
+  });
+  test.skip(!r.driven, 'no scroll timeline: no shadow');
+  expect(r.at).toBe('0');
+  expect(r.scrolled).toEqual({ opacity: '1', top: r.head });
+  expect(r.head).toBeGreaterThan(0);
+});
+
 // TODO 478. TRAP T-a-sideways-scroll-shadow-is-its-frames
 test('a grid scrolled sideways shows each side edge only while content is hidden past it, past its pinned columns', async ({ page }) => {
   const r = await page.evaluate(async () => {
