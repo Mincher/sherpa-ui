@@ -6,8 +6,11 @@
     data-segment-field  ASKED of its provider, or read off its chart: one row per value.
                         A click narrows its chart alone
     data-readonly     a KEY, not a filter: its rows do not toggle
+    data-highlight-hover  a rest on a row says legend-hover. Set by its provider. TODO 495
 
-  Fires: legend-item-click — detail: { index, label, active }
+  Fires:
+    legend-item-click — detail: { index, label, active }
+    legend-hover — a pointer rests on a row, or leaves it. detail: { label, on }
 -->
 <template id="default">
   <div class="legend" part="legend" role="group" aria-label="Legend"></div>

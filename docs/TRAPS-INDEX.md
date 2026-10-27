@@ -243,7 +243,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (80)
+## The join and the app layer (81)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -264,6 +264,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — bind-source
 - [T-a-heading-opens-the-chips-menu](TRAPS.md#t-a-heading-opens-the-chips-menu) — context, provider
 - [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — context, provider
+- [T-a-hovered-chip-previews-the-highlight](TRAPS.md#t-a-hovered-chip-previews-the-highlight) — provider
 - [T-a-legend-toggle-is-a-filter](TRAPS.md#t-a-legend-toggle-is-a-filter) — provider
 - [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — provider
 - [T-a-page-is-its-definition](TRAPS.md#t-a-page-is-its-definition) — provider
@@ -326,7 +327,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (149)
+## Filters (150)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -374,6 +375,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, quick-filter, quick-filter-toolbar
 - [T-a-section-is-headed-once](TRAPS.md#t-a-section-is-headed-once) — quick-filter-toolbar
 - [T-a-shut-column-draws-nothing](TRAPS.md#t-a-shut-column-draws-nothing) — quick-filter-toolbar
+- [T-a-shut-scope-wears-its-chips-fill](TRAPS.md#t-a-shut-scope-wears-its-chips-fill) — quick-filter-toolbar
 - [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-host, quick-filter
 - [T-a-silent-write-still-needs-a-way-to-report](TRAPS.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
 - [T-a-stale-draw-keeps-the-bars-own-change](TRAPS.md#t-a-stale-draw-keeps-the-bars-own-change) — quick-filter-toolbar

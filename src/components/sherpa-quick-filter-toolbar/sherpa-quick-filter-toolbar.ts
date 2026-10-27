@@ -613,9 +613,28 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     this.#observer = new ResizeObserver(this.#onResize);
     if (bar) this.#observer.observe(bar);
+    this.#watchChips();
   }
 
+  /** A chip on anywhere in it, kept as `:state(chips-on)`: a shut scope's header
+   *  wears the on fill. Will, TODO 494 · TRAP T-a-shut-scope-wears-its-chips-fill */
+  #watchChips(): void {
+    this.#chipsOn?.disconnect();
+    const chips = this.$('.chips');
+    if (!chips) return;
+    this.#chipsOn = new MutationObserver(this.#syncChipsOn);
+    this.#chipsOn.observe(chips, { subtree: true, childList: true, attributeFilter: ['data-current'] });
+    this.#syncChipsOn();
+  }
+  /** Watches its chips' on-state. */
+  #chipsOn: MutationObserver | null = null;
+  /** Say whether a chip is on. */
+  #syncChipsOn = (): void => {
+    this.toggleState('chips-on', this.#chips().some((c) => c.hasAttribute('data-current') && !c.hasAttribute('data-persistent')));
+  };
+
   override onConnect(): void {
+    if (!this.#chipsOn) this.#watchChips();
     // Along the bar, or down a column. TRAP T-a-filter-is-dragged-into-its-place
     dragToOrder(this, {
       axis: this.dataset['orientation'] === 'portrait' ? 'y' : 'x',
@@ -639,6 +658,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#conditioned.cancel();
     this.#observer?.disconnect();
     this.#observer = null;
+    this.#chipsOn?.disconnect();
+    this.#chipsOn = null;
     if (this.#frame != null) cancelAnimationFrame(this.#frame);
     this.#frame = null;
   }

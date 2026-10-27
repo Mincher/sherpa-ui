@@ -31,10 +31,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3 | 388 | PROVIDER ALWAYS — a data grid is never wired by hand: `bindSource()` on a grid with no `<sherpa-provider>` logs a console warning; where it can, Sherpa finds a hand-wired grid and routes its data through a provider before it draws. So the Query and the page number are kept by the provider (Will, 2026-10-27, answering the ask: "We should always use the provider. Never hand wire a data grid.") Done: `bindSource()` reports `grid-without-provider` for a grid bound with no `deliver` (every provider bind passes one); PRINCIPLES, CLAUDE.md and DATA-SOURCE-RULES lead with the provider. NOT re-routed: the binder is DOM-free and a grid never imports the app layer, so it cannot make its own provider; the report names the fix. TRAP `T-a-grid-is-never-wired-by-hand` | data |
 | ✅ | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27. Done: Figma's Metric is FIXED at every density, so the tile's height is the row (76 / 88 / 104) and the space between value and trend takes what is left | bug |
 | ❓ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27). Part 1 DONE: the setting, off by default, in the bar, the panel and a grid heading. Part 2 ❓: Customer and Region open with nothing ticked — `"start": "all"` means no filter. Ticking every value at start meets Will's 09-22 rule (every value ticked must look like no filter, chip off): A, every value ticked and the chip OFF; B, every value ticked and the chip ON, reading All | filters |
-| ⬜ | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27) | filters |
-| ⬜ | 7 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27) | filters |
-| ⬜ | 8 | 495 | HIGHLIGHT — with 'Highlight matches on hover' on, a pointer resting on a chart LEGEND item highlights its matches too, as a chip does (Will, 2026-10-27) | filters |
-| ⬜ | 9 | 496 | HIGHLIGHT — on hover, a scope needs NO filter or value on to highlight, when its data is already held on the client (Will, 2026-10-27) | filters |
+| ❓ | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27). ❓ A preset chip with several conditions is what 366 took out of the Query: A, the chip is its OWN part; B, the chip LOADS into the field chips  (a) done: the panel draws no divider | filters |
+| ✅ | 7 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27). Done: a state pin on the shut accordion, keyed on `:state(chips-on)` — Firefox misses `:has()` here. TRAP `T-a-shut-scope-wears-its-chips-fill` | filters |
+| ✅ | 8 | 495 | HIGHLIGHT — with 'Highlight matches on hover' on, a pointer resting on a chart LEGEND item highlights its matches too, as a chip does (Will, 2026-10-27). Done: the legend says `legend-hover`; the provider previews the value | filters |
+| ❓ | 9 | 496 | HIGHLIGHT — on hover, a scope needs NO filter or value on to highlight, when its data is already held on the client (Will, 2026-10-27). ❓ Probed on :4200 with nothing applied: a rest on a VALUE highlights its rows — bar and panel, View and data. Only a rest on an OFF chip does nothing. Is that it? A: an OFF chip that holds values previews them, data held on the client only; B: something else — show me where | filters |
 | ⬜ | 10 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
 | ⬜ | 11 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
 | ⬜ | 12 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
@@ -1809,7 +1809,7 @@ in the Gallery; nothing in sherpa-ui changes.
 **✅ Done 2026-10-20** (Gallery `6ca9655`): the gauge story writes `min` and `max`,
 and five variant stories step the enums. Gallery node 3/3, Playwright 207.
 
-### `[ ]` ❓ 388 — ASK: what a page with no provider keeps across a reload
+### `[x]` ✅ 388 — ASK: what a page with no provider keeps across a reload
 
 Found 2026-10-21, building 366 steps 10 and 11; the plan's "Still open" and its
 last check both name it. Step 10: `persistView` keeps each component's state
@@ -2343,7 +2343,36 @@ and panel menus only. This is because I'm not 100% sure how we handle a
 combination of advanced and simple filters in a single menu just yet. This
 should also be a Filtering setting and on by default."*
 
-### `[ ]` ⬜ 489 — SETTING: "Select none shows all data", off by default
+### `[ ]` ❓ 493 — PRESETS: boolean chips that set a whole context
+
+Will, 2026-10-27: *"Ditch the divider between preset & custom filters in the
+panel mode. Update the definitions so that we're not using simple, single,
+fields as the preset filters. Preset filters should be Advanced filters that
+allow the user to quickly set complex contexts from a simple boolean chip
+toggle. We used to have some of these along the lines of 'High Risk' … I think
+by default that preset filters shouldn't be able to move scope either … we can
+add them to their own section in the panel (labelled Presets) and present each
+chip as a value within that section."*
+
+**Found.** Today a "preset" is a field the page's scope `holds` (Status, Plan,
+Tier, Owner). The old 'High Risk' chips were `custom` chips: each was its own
+named part of the Query (`saved:<id>`, a15ef736). TODO 366 (2026-10-21) took
+that out: a saved filter is a query definition that LOADS into the field chips,
+and the Query names none (5b2e25b8). Records still has three such definitions
+(`savedFilters`: Has open tickets, At risk, Unassigned).
+
+❓ **What does a preset chip DO when it is on?**
+- **A (my pick):** it is its OWN part, as before 366: on, its conditions narrow
+  its scope beside the field chips; off, they go. The field chips do not change,
+  so a reader sees "High Risk" on and still picks Region freely.
+- **B:** it LOADS, as a saved filter does now: on, it fills the field chips with
+  its readings; off, it empties those fields. It is on while they still hold them.
+
+Then, either way: the held simple fields stop being presets (they are the
+page's chips, after the divider); a preset offers no Send to; the panel lists
+the presets as value chips in a "Presets" section; the panel's divider goes.
+
+### `[ ]` ❓ 489 — SETTING: "Select none shows all data", off by default
 
 Will, 2026-10-27: *"Add a filtering setting to have 'Select none shows all
 data'. Have this setting off by default. When off, if Select All isn't ticked
@@ -2380,7 +2409,7 @@ value ticked must LOOK like no filter: the chip off. **A (my pick):** every valu
 ticked, the chip OFF — all ticked filters nothing, as 09-22 says. **B:** every
 value ticked, the chip ON, reading All — a choice in force.
 
-### `[ ]` ⬜ 486 — BUG: no bottom shadow over the grid's pinned columns
+### `[x]` ✅ 486 — BUG: no bottom shadow over the grid's pinned columns
 
 Will, 2026-10-27: *"Related to 481, pinned columns don't show an inner shadow at
 the bottom if there is overflow content (more cells) in that direction."* Then:
@@ -2420,7 +2449,7 @@ everything inside it. **Done:** the ⋮ pins `data-status="default"`, as the
 field's Apply pair already did; its open state is still its own. Test: Demos
 `reforged-filter-column`.
 
-### `[ ]` ⬜ 482 — LOOK: a divider between preset and added chips
+### `[x]` ✅ 482 — LOOK: a divider between preset and added chips
 
 Will, 2026-10-27: *"Put a divider between preset and user added filter chips in
 the toolbar mode. Consider an equivalent visual in the Panel mode, too."*
@@ -2460,7 +2489,7 @@ it; the chip keeps it, locked or not). The last value let go turns the chip off:
 every row, in the bar and the panel, every scope. TRAP `T-none-is-an-answer`.
 Tests: sherpa-ui `reforged-menu`; Demos `reforged-none-is-an-answer`.
 
-### `[ ]` ⬜ 479 — FILTER: a gauge's zones highlight; its needle stays
+### `[x]` ✅ 479 — FILTER: a gauge's zones highlight; its needle stays
 
 Will, 2026-10-27: *"When filtering gauge chart segments the needle shouldn't
 move. This chart shows a range with demarked threshold segments. Toggling a
@@ -2618,7 +2647,7 @@ flush with the heading — every accordion, not only the panel's. It replaces
 the 10-22 centre of the whole header. TRAP
 `T-an-accordion-chevron-rides-the-heading-row`; `reforged-accordion`.
 
-### `[ ]` ⬜ 470 — TEST: a WebKit flake leaving Settings
+### `[ ]` ⏸️ 470 — TEST: a WebKit flake leaving Settings
 
 Seen 2026-10-26 in two full Demos runs: `reforged-settings-overlay:55`
 (leaving Settings by Back, or by Esc, restores the Context and its View) times
@@ -3522,7 +3551,7 @@ its key. Re-sent by the bar, the same answer read as a change, and waited. It
 compares picks as a set of keys now. Test: `the-same-picks-in-any-order-are-the-same-answer`
 (fails before the fix). Will to confirm on his page.
 
-### `[ ]` ❓ 413 — BUG: no count badge on the View's chips in the panel
+### `[x]` ✅ 413 — BUG: no count badge on the View's chips in the panel
 
 Will, 2026-10-22: *"Count badges on view scope filters don't show in the filter
 panel."*
@@ -11241,7 +11270,7 @@ another.
 **✅ Closed 2026-10-16. Will: B.** No phase B: the grid, its filter toolbar and
 its pager stay three parts that share one source.
 
-### `[ ]` ⬜ 337 — DOCS: the filter toolbar spec's stale divergence note
+### `[x]` ✅ 337 — DOCS: the filter toolbar spec's stale divergence note
 
 `sherpa-quick-filter-toolbar.component.json` carries a hand-written
 `divergence` note from the prior spec: "the only event emitted is
@@ -11601,7 +11630,7 @@ and Down, natively), a select keeps Up and Down, an open menu its own; Up and
 Down never move between controls. `reforged-a-toolbar-moves-by-arrow` (2,
 Chromium). TRAP `T-a-toolbar-moves-by-arrow-and-keeps-its-tabs`.
 
-### `[ ]` ⬜ 315 — Phase 5: the calendar's roving grid
+### `[x]` ✅ 315 — Phase 5: the calendar's roving grid
 
 Waits for a measured run. The plan: `sherpa-calendar-cell` gets
 `delegatesFocus`; each grid (days, months, years) is one tab stop with the date
@@ -11696,7 +11725,7 @@ so it is its own commit.
 prototypes they had lost (additions only, 1,400 lines); all 66 still round-trip,
 which is the proof the gate gives; the manifest gains the parts it missed.
 
-### `[ ]` ⬜ 311 — Phase 5: 285 part C's timing step
+### `[x]` ✅ 311 — Phase 5: 285 part C's timing step
 
 Waits for Will's test run. Four prototypes hold custom elements: the grid's row
 (select boxes), the bar's chip, the panel's value chip and the menu's condition
@@ -11918,7 +11947,7 @@ slot at the top of the panel shows only while it is maximised. Named
 its own `sherpa-breadcrumbs`, and the app header gets none. Tests written in
 both projects; **not run** — Will's next test run.
 
-### `[ ]` ⬜ 302 — Phase 5: the filter family's last frame waits
+### `[x]` ✅ 302 — Phase 5: the filter family's last frame waits
 
 Waits for Will's next test run. In the toolbar: `#onConditionChanged`'s second
 report, `#keepAnswer`'s two-frame hold, the two frames after `#settled()`, and

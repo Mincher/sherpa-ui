@@ -165,6 +165,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-highlight-hover",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a rest on a row says legend-hover. Set by its provider. TODO 495"
+    },
+    {
+      "$type": "prop",
       "name": "data-orientation",
       "type": "enum",
       "observed": true,
@@ -245,6 +254,17 @@
       "trigger": {
         "on": "click",
         "node": ".legend"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "legend-hover",
+      "description": "A pointer rests on a row, or leaves it.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "label": "string",
+        "on": "false | true"
       }
     }
   ],

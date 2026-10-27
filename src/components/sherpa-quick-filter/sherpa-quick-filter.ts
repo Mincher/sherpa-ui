@@ -843,7 +843,7 @@ export class SherpaQuickFilter extends SherpaElement {
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
     const empty = !!menu && this.current && !advanced
-      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !this.#empties();
+      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !(this.#none && this.#empties());
 
     this.set('data-filters-nothing', empty);
     /* AND CHECK AGAIN. `data-filters-nothing` is the AMBER warning, and a rebuilt menu

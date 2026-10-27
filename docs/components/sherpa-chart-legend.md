@@ -50,6 +50,7 @@ For the colour key of a chart, in the chart's `legend` slot. Its rows are toggle
 | `data-bands` | text |  |  |
 | `data-bucket` | `day` `month` `year` |  |  |
 | `data-field` | text |  |  |
+| `data-highlight-hover` | boolean |  | a rest on a row says legend-hover. Set by its provider. TODO 495 |
 | `data-orientation` | `horizontal` `vertical` | `vertical` | vertical \| horizontal |
 | `data-over-field` | text |  |  |
 | `data-readonly` | boolean |  | a KEY, not a filter: its rows do not toggle |
@@ -68,9 +69,10 @@ For the colour key of a chart, in the chart's `legend` slot. Its rows are toggle
 
 Each one bubbles.
 
-| Event | Detail |
-|---|---|
-| `legend-item-click` | `{ active: boolean; index: number; indices: number[]; label: string }` |
+| Event | Detail | What it means |
+|---|---|---|
+| `legend-item-click` | `{ active: boolean; index: number; indices: number[]; label: string }` |  |
+| `legend-hover` | `{ label: string; on: false \| true }` | A pointer rests on a row, or leaves it. |
 
 ## Parts
 

@@ -1595,6 +1595,13 @@
               }
             },
             {
+              "name": "data-highlight-hover",
+              "description": "a rest on a row says legend-hover. Set by its provider. TODO 495",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-orientation",
               "description": "vertical | horizontal",
               "type": {
@@ -1657,6 +1664,13 @@
               "name": "legend-item-click",
               "type": {
                 "text": "CustomEvent<{ active: boolean; index: number; indices: number[]; label: string }>"
+              }
+            },
+            {
+              "name": "legend-hover",
+              "description": "A pointer rests on a row, or leaves it.",
+              "type": {
+                "text": "CustomEvent<{ label: string; on: false | true }>"
               }
             }
           ],

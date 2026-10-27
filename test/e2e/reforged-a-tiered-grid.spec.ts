@@ -54,7 +54,7 @@ test('the Customer heading opens the tree; Site has no heading filter', async ({
   expect(r.site).toBe(false);
 });
 
-test('a Site cell chip picks its path on Customer, and a second press takes it off', async ({ page }) => {
+test('a Site cell chip picks its path on Customer, and a second press lets it go: none (TODO 489)', async ({ page }) => {
   const cell = page.locator('sherpa-data-grid .row >> nth=1').locator('td.cell[data-field="site"]');
   await cell.hover();
   const chip = cell.locator('.cell-filter');
@@ -69,7 +69,7 @@ test('a Site cell chip picks its path on Customer, and a second press takes it o
   await expect(cell.locator('.cell-filter')).toHaveAttribute('data-current', '');
   await cell.hover();
   await cell.locator('.cell-filter .caret').click();
-  await expect.poll(async () => ((await heard()).at(-1) as { reading: unknown }).reading).toBeNull();
+  await expect.poll(async () => ((await heard()).at(-1) as { reading: unknown }).reading).toEqual({ picked: [], mode: 'simple', none: true });
 });
 
 test('a Site cell chip is inactive while the View holds Customer, and refuses', async ({ page }) => {

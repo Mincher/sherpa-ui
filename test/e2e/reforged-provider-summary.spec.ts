@@ -92,6 +92,41 @@ test('a legend reads its chart\'s field; its pick narrows that chart alone', asy
   expect(r['reports']).toEqual([]);
 });
 
+/* With "Highlight matches on hover", a rest on a legend row previews its
+   value's matches, as a chip's value does. Will, TODO 495 */
+test('a rest on a legend row previews its value while Highlight matches on hover is on', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-radial-chart id="donut" data-segment-field="plan">
+        <sherpa-chart-legend slot="legend" id="legend"></sherpa-chart-legend>
+      </sherpa-radial-chart>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const legend = provider.querySelector('#legend');
+    const item = () => legend.shadowRoot.querySelector('.item .label');
+    const rest = async (type) => {
+      (type === 'over' ? item() : legend.shadowRoot.querySelector('.legend'))
+        .dispatchEvent(new PointerEvent(type === 'over' ? 'pointerover' : 'pointerleave', { bubbles: true, composed: true }));
+      await new Promise((done) => setTimeout(done, 250));
+      return source.query.previewed;
+    };
+    const off = await rest('over');
+    await rest('leave');
+    provider.highlightOnHover = true;
+    const marked = legend.hasAttribute('data-highlight-hover');
+    const on = await rest('over');
+    const left = await rest('leave');
+    return { off, marked, on, left };
+  })()`) as Record<string, unknown>;
+  expect(r['off']).toBeNull();
+  expect(r['marked']).toBe(true);
+  expect(r['on']).toMatchObject({ field: 'plan', value: 'Free' });
+  expect(r['left']).toBeNull();
+});
+
 test('a child uses the nearest data-source above it; a new declaration asks again; a bad one is loud', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

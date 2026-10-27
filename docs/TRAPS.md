@@ -19055,6 +19055,13 @@ counted.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-chip-drives-the-highlight.test.mjs`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+A LEGEND row is a value too (Will, TODO 495): while the provider's
+`highlightOnHover` is on, it writes `data-highlight-hover` on each legend that
+picks, and a rest on a row (150 ms, as a chip's) says `legend-hover`; the
+provider previews that value — in the View where the View holds the field, else
+in the legend's own part. "Other" folds many values, so it previews none.
 
 ### T-each-field-can-apply-on-its-own
 
@@ -19241,3 +19248,18 @@ the value at the top and the trend at the foot of it: the space between is 2 /
 
 - Site: `src/components/sherpa-metric/sherpa-metric.css`
 - Site: `test/e2e/reforged-metric.spec.ts`
+
+### T-a-shut-scope-wears-its-chips-fill
+
+**A shut panel scope with a chip on wears the chips' on fill on its header** —
+Will, TODO 494. It is a state pin, `active @filter-on`, so it is the chips' own
+colour and follows a page's re-point (green). It pins the ACCORDION, keyed on
+`:state(chips-on)`, which the toolbar keeps from a MutationObserver on its
+chips' `data-current`. Not `:has()`: Firefox 155 never re-checks
+`:host(…) sherpa-accordion:has(.chip[data-current])` when a chip inside
+changes — the rule only matched after an unrelated restyle. And not through
+`::part(header)`: shut, the body is hidden, so pinning the accordion changes
+nothing else; its badge and its Apply and Discard pin default.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`

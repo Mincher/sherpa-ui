@@ -87,27 +87,13 @@
 }
 
 /* The page's own chips, then the reader's: a divider after the last of the
-   page's while one of the reader's follows. Will, TODO 482 */
+   page's while one of the reader's follows. On the bar only. Will, TODOs 482, 493 */
 :host(:not([data-panel-mode], [data-orientation="portrait"])) .chips > .chip[data-preset]:not(:has(~ .chip[data-preset])):has(~ .chip:not([data-preset], [data-folded-away]))::after {
   content: "";
   display: block;
   flex: 0 0 auto;
   align-self: center;
   margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
-}
-/* …and in a column, a rule across the last of the page's fields' row, hung in
-   the middle of the gap below it. */
-:host([data-orientation="portrait"]) .chips > .chip[data-preset]:has(+ .chip:not([data-preset], [data-folded-away])) {
-  position: relative;
-}
-:host([data-orientation="portrait"]) .chips > .chip[data-preset]:has(+ .chip:not([data-preset], [data-folded-away]))::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: calc(-1 * var(--sherpa-display-mode-space-base, 16px) / 2);
-  inline-size: auto;
-  block-size: var(--sherpa-display-mode-border-width-base, 1px);
-  background: var(--sherpa-style-border-base, #b3b3c3);
 }
 
 /* The scope's name — "View Context" — over the View's first filter, as the

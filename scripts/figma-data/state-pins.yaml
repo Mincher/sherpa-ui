@@ -170,6 +170,12 @@ sherpa-quick-filter-toolbar:
   # Its filter Switch is off: every chip it stopped reads inactive.
   # TRAP T-the-filter-switch-keeps-what-it-turned-off
   '&:state(filters-off) .chips': inactive
+  # A scope SHUT with a chip on inside: its header wears the chips' on fill, and
+  # follows a page's re-point. Shut, its body is hidden; its badge and buttons keep
+  # their own. Will, TODO 494 · TRAP T-a-shut-scope-wears-its-chips-fill
+  '&:state(chips-on) sherpa-accordion.scope:not([open])': active @filter-on
+  '& .scope-tip': default
+  '& .actions-zone': default
 
 sherpa-app-header:
   # The notification count is a Badge instance pinned Saturated=default.

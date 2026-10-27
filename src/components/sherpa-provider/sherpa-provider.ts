@@ -307,7 +307,11 @@ export class SherpaProvider extends SherpaElement {
   set highlightOnHover(on: boolean) {
     this.#highlightHover = on;
     for (const el of this.#limited()) this.#offerLimit(el);
+    // …and a legend that picks: a rest on a row previews it. Will, TODO 495
+    for (const el of this.#pickers) el.toggleAttribute('data-highlight-hover', on);
   }
+  /** Each legend that picks — a field's values, as a chip's. */
+  #pickers = new Set<Element>();
   /** The app's choice: Highlight matches on hover. */
   #highlightHover = false;
 
@@ -1175,7 +1179,21 @@ export class SherpaProvider extends SherpaElement {
       (el as Picker & { present?: readonly string[] | null }).present = left?.[field] ?? null;
     };
     source.addEventListener('present', hear);
+    /* A rest on a row previews its value's matches, as a chip's value does — in
+       the View where the View holds the field. Will, TODO 495
+       TRAP T-a-hovered-chip-previews-the-highlight */
+    const scope = (): string => (source.query.scope(VIEW).includes(field) ? VIEW : key);
+    const rest = (event: Event): void => {
+      const { label, on } = (event as CustomEvent<{ label: string; on: boolean }>).detail;
+      source.query.preview(scope(), field, on, label);
+    };
+    el.addEventListener('legend-hover', rest);
+    this.#pickers.add(el);
+    el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     return () => {
+      el.removeEventListener('legend-hover', rest);
+      this.#pickers.delete(el);
+      el.removeAttribute('data-highlight-hover');
       source.removeEventListener('present', hear);
       source.query.declarePart(key, undefined);
       unbind();

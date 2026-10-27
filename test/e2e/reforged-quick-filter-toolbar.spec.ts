@@ -2674,3 +2674,40 @@ test('a rebuild MOVES a chip built from the same def, and remakes only one whose
   });
   expect(r).toEqual({ planKept: true, tierKept: false, order: ['plan', 'tier', 'owner'] });
 });
+
+// Will, TODO 494: shut, with a chip on inside, a scope's header wears the chips' on fill — the page's too.
+// TRAP T-a-shut-scope-wears-its-chips-fill
+test('in portrait, a SHUT scope with a chip on wears the on fill on its header only, and follows a re-point', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-orientation': 'portrait' });
+    el.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] }]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const scope = sr.querySelector<HTMLElement & { open: boolean }>('sherpa-accordion.scope')!;
+    const header = () => getComputedStyle(scope.shadowRoot!.querySelector('[part="header"]')!).backgroundColor;
+    const discard = () => getComputedStyle(sr.querySelector('.discard-all')!.shadowRoot!.querySelector('button')!).backgroundColor;
+    const frames = () => new Promise((done) => setTimeout(done, 150));
+    scope.open = false;
+    await frames();
+    const shutOff = header();
+    const before = discard();
+    (el as unknown as { setChipValues(id: string, p: string[]): void }).setChipValues('plan', ['pro']);
+    await window.__settled();
+    await frames();
+    // In a column a list's values are its chips: the one on wears the fill.
+    const body = getComputedStyle(sr.querySelector('.chip[data-id="plan"] > .value[data-value="pro"]')!.shadowRoot!.querySelector('.body')!).backgroundColor;
+    const shutOn = header();
+    const after = discard();
+    el.style.setProperty('--sherpa-filter-on-surface-base', 'rgb(0, 128, 0)');
+    const repointed = header();
+    el.style.removeProperty('--sherpa-filter-on-surface-base');
+    scope.open = true;
+    await frames();
+    return { shutOff, body, shutOn, repointed, open: header(), discardKept: before === after };
+  });
+  expect(r.shutOn).toBe(r.body);
+  expect(r.shutOn).not.toBe(r.shutOff);
+  expect(r.repointed).toBe('rgb(0, 128, 0)');
+  expect(r.open).toBe(r.shutOff);
+  expect(r.discardKept).toBe(true);
+});

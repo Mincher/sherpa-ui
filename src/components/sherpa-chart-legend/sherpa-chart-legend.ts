@@ -31,6 +31,9 @@ const ROLLUP_LABEL = 'Other';
 export type LegendItem = LegendDatum;
 
 /** @tier sub-component — renders inside charts; excluded from the public catalog. */
+/** How long a pointer rests on a row before it previews, as a chip's. */
+const REST_WAIT = 150;
+
 export class SherpaChartLegend extends SherpaElement {
   static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
@@ -48,6 +51,8 @@ export class SherpaChartLegend extends SherpaElement {
     'data-orientation': SHARED_PROPS['data-orientation'],
     /* Report clicks, never toggle a series — the host owns the selection. */
     'data-readonly': { type: 'boolean', kind: 'style' },
+    // A rest on a row says so, for its provider's highlight. Will, TODO 495
+    'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   /** The legend rows, as populated. */
@@ -96,8 +101,45 @@ export class SherpaChartLegend extends SherpaElement {
   override onRender(): void {
     // A key chip is LOCKED: it reports a press, and the legend decides.
     this.$('.legend')?.addEventListener('quick-filter-click', this.#onClick);
+    this.$('.legend')?.addEventListener('pointerover', this.#onHover);
+    this.$('.legend')?.addEventListener('pointerleave', this.#onHover);
     if (this.#items.length) this.#render();
   }
+
+  override onDisconnect(): void {
+    this.#rest(null);
+  }
+
+  /** A pointer moved onto a row, or off the legend: the row it RESTS on, after a moment. */
+  #onHover = (event: Event): void => {
+    const item = event.type === 'pointerleave' ? null : (event.target as Element).closest<HTMLElement>('.item');
+    const index = Number(item?.dataset['index']);
+    // "Other" folds many values, so it previews none.
+    const label = item && !(this.#rolledUp && index === this.#items.length - 1) ? this.#items[index]?.label ?? null : null;
+    this.#rest(this.hasAttribute('data-highlight-hover') ? label : null);
+  };
+
+  /** Say the row rested on — and the last one left — once the pointer stops. */
+  #rest(label: string | null): void {
+    if (label === this.#wants) return;
+    this.#wants = label;
+    clearTimeout(this.#restWait);
+    if (this.#rested != null && label !== this.#rested) {
+      this.emit('legend-hover', { label: this.#rested, on: false });
+      this.#rested = null;
+    }
+    if (label == null) return;
+    this.#restWait = setTimeout(() => {
+      this.#rested = label;
+      this.emit('legend-hover', { label, on: true });
+    }, REST_WAIT);
+  }
+  /** The row the pointer is on. */
+  #wants: string | null = null;
+  /** The row last said to rest. */
+  #rested: string | null = null;
+  /** The wait before a rest is said. */
+  #restWait: ReturnType<typeof setTimeout> | undefined;
 
   /** populate([{ label, value?, colorIndex }]). Keeps the off-set. */
   protected override renderData(data: unknown): void {
