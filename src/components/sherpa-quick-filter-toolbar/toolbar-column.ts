@@ -59,7 +59,7 @@ export class ToolbarColumn {
   constructor(host: ColumnHost) {
     this.#host = host;
     this.#saved = new SavedSets(host.el);
-    this.#header = new ToolbarHeader(host, this.#saved, { saved: '.column-saved', save: '.column-save' });
+    this.#header = new ToolbarHeader(host, this.#saved, { saved: '.column-saved', save: '.column-save', saveAs: '.column-save-as' });
   }
   /** Its header's Saved menu, Save <name> and filter acts — the bar's too. TODO 415 */
   readonly #header: ToolbarHeader;

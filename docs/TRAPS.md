@@ -1945,6 +1945,12 @@ saved filter on, the rows arranged. It sets `data-at-default` and
 (a toolbar's ⋮ reads both as it opens). Asking applies nothing: the Query builder no longer arranges the rows
 as it goes — `setQuery` applies what it returns.
 
+**Nor is a Save** (Will, TODO 382): Save filters, "Save <name>" and Save
+filters as are off while `data-at-default` — the filters ARE the View's own,
+so a save would keep nothing new. Delete stays: a set taken can always go.
+The header's Save buttons follow the attribute as it changes; the ⋮ and the
+Saved menu read it as they draw.
+
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-reset-to-default.spec.ts`

@@ -33,8 +33,8 @@ export class ToolbarHeader {
   constructor(
     private readonly host: HeaderHost,
     private readonly saved: SavedSets,
-    /** Its Saved button and its Save <name> button. */
-    private readonly at: { saved: string; save: string },
+    /** Its Saved button, its Save <name> button and its Save button. */
+    private readonly at: { saved: string; save: string; saveAs: string },
   ) {}
 
   /** THE SAVED MENU, where the app splits it from Filters: the sets — a tick
@@ -60,7 +60,8 @@ export class ToolbarHeader {
     else if (set.dismiss) this.host.emit('filters-dismiss', { id: set.dismiss });
   }
 
-  /** "Save <name>" while a saved set is taken. Will, 366 */
+  /** "Save <name>" while a saved set is taken; it and Save are off while the
+   *  filters are the View's own, as Reset all is. Will, 366, 382 */
   drawSave(): void {
     const applied = this.saved.applied;
     this.host.toggleState('set-taken', !!applied);
@@ -69,6 +70,8 @@ export class ToolbarHeader {
     if (name) name.textContent = applied?.label ?? '';
     save?.toggleAttribute('data-status', false);
     if (applied) save?.setAttribute('data-status', 'active');
+    const same = this.host.el.hasAttribute('data-at-default');
+    for (const btn of [save, this.host.root().querySelector(this.at.saveAs)]) btn?.toggleAttribute('disabled', same);
   }
 
   /** A filter act both templates send; false for one that is not. Reset is each

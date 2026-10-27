@@ -1008,7 +1008,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     root: () => this.root,
     emit: (name, detail, options) => { this.emit(name, detail, options); },
     toggleState: (name, on) => this.toggleState(name, on),
-  }, this.#saved, { saved: '.saved-btn', save: '.save-set' });
+  }, this.#saved, { saved: '.saved-btn', save: '.save-set', saveAs: '.save-as-btn' });
 
   /** Steers given before `populate()` drew a chip, for `#render()` to replay in
    *  order. TRAP T-a-value-before-the-first-render-is-held */
@@ -1752,6 +1752,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-saved-menu') {
       if (this.#columned) this.#column.saved(this.#saved.all);
       else this.#renderAvailable();
+    }
+    // The saves are off while the filters are the View's own. Will, TODO 382
+    if (name === 'data-at-default') {
+      if (this.#columned) this.#column.saved(this.#saved.all);
+      this.#header.drawSave();
+      this.#header.drawSaved();
     }
     if (name === 'data-applied' || name === 'data-count-applied') this.#drawApplied();
     if (name === 'data-no-results') {

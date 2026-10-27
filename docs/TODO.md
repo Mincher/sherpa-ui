@@ -63,7 +63,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 0zi | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
 | ✅ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later; 10-27: drop the × only) | filters |
 | ✅ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
-| ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
+| ✅ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ✅ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
 | ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
@@ -160,6 +160,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
 | ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
 | ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
+| ⬜ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
+| ⬜ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
+| ⬜ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2303,6 +2306,33 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
+### `[ ]` ⬜ 481 — BUG: shadows stack on the grid's pinned columns
+
+Will, 2026-10-27: *"There's some inner shadow stacking on pinned columns when
+other columns are scrolled under them horizontally. Perhaps because cells don't
+have a default white background and are transparent instead?"* Likely 478's
+side edges or 421's header shadow.
+
+### `[ ]` ⬜ 480 — BUG: every value toggled off is not "show all"
+
+Will, 2026-10-27: *"Toggling all active filter values to off, in the panel
+mode, doesn't reset back to the correct 'show all when none selected' state that
+I'd expect. I have to manually choose the reset action to correct it. I think
+this is just at the view scope but it's worth checking, and correcting, across
+all scopes."*
+
+### `[ ]` ⬜ 479 — FILTER: a gauge's zones highlight; its needle stays
+
+Will, 2026-10-27: *"When filtering gauge chart segments the needle shouldn't
+move. This chart shows a range with demarked threshold segments. Toggling a
+legend item, or filter chips, for this type of chart should highlight the
+active segments. In the Sherpa Demos records example, the risk gauge chart
+filters should be at the view scope as these are actually segments of the whole
+customer record dataset."*
+
+Changes 477: there a zone turned off narrowed the gauge alone, and moved its
+needle.
+
 ### `[x]` ✅ 478 — LOOK: the scroll shadow works sideways too
 
 Will, 2026-10-26: *"The scroll under inner shadow needs to work for horizontal
@@ -3871,6 +3901,15 @@ divider. While a scope is switched off, its sort and group are kept but not in
 force (`arrangementOf`), and the flip arranges the rows again; its search stays.
 Tests: `the-switch-suspends-the-arrangement` (node); the bar, panel and grid
 specs pass. **Will:** look at Demos Records' data bar: Switch, then Group.
+
+### `[x]` ✅ 382 — UX: Save only while the filters are not the View's own
+
+Will: *"Save filters and Save filters as are active ONLY while the Query differs
+from the View's own definition, as Reset all is."* **Done:** while
+`data-at-default`, Save filters, "Save <name>" and Save filters as are off — in
+the ⋮, the Saved menu, and the bar's and the column's Save buttons; Delete
+stays. TRAP `T-reset-to-default-is-the-views-own`. Tests: sherpa-ui
+`reforged-reset-at-default`; Demos `reforged-saved-filter`.
 
 ### `[x]` ✅ 380 — BUG: the Filters menu's × goes
 
