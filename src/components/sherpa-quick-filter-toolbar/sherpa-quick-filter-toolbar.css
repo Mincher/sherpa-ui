@@ -213,8 +213,8 @@
   align-items: center;
   flex: 0 0 auto;
 }
-:host([data-saved-menu]:is([data-saveable], :state(has-sets))) .saved-group { display: inline-flex; }
-:host(:not([data-saveable])) :is(.save-as-btn, .column-save-as) { display: none; }
+:host([data-saved-menu]:is([data-saveable]:not([data-no-saves]), :state(has-sets))) .saved-group { display: inline-flex; }
+:host(:is(:not([data-saveable]), [data-no-saves])) :is(.save-as-btn, .column-save-as) { display: none; }
 .saved-group > :not(:first-child) { margin-inline-start: var(--sherpa-structure-space-snapped, 0px); }
 
 /* The Saved chip, while a set is on. TODO 105 */

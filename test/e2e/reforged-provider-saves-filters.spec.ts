@@ -6,7 +6,8 @@ import { test, expect } from './harness';
  * section, it LOADS into the chips: every scope matches it, and no chip names
  * it. The column's Save then reads "Save <name>", active, and saves over
  * it; the Filters menu ticks the set taken; unticked, the
- * scopes it names lose their filters. ONE set is taken at a time.
+ * scopes it names lose their filters. ONE set is taken at a time. That is
+ * "Save filters at any scope" ON (TODO 485); OFF, its own test, last.
  * TRAP T-saved-filters-are-every-scope
  */
 const PAGE = `{
@@ -22,6 +23,7 @@ const SETUP = `
   const session = new SessionStore({});
   const root = document.getElementById('root');
   const provider = document.createElement('sherpa-provider');
+  provider.saveAnyScope = true;
   provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>'
     + '<sherpa-quick-filter-toolbar data-orientation="portrait" data-scope="view data" data-saveable open></sherpa-quick-filter-toolbar>';
   root.replaceChildren(provider);
@@ -249,6 +251,7 @@ test('a page\'s own saved filter is listed on an unsaveable bar, fills the chips
   const r = await page.evaluate(`(async () => {
     const { ArrayStore } = await import('/dist/index.js');
     const provider = document.createElement('sherpa-provider');
+    provider.saveAnyScope = true;
     provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="view"></sherpa-quick-filter-toolbar>'
       + '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>';
     document.getElementById('root').replaceChildren(provider);
@@ -291,4 +294,55 @@ test('a page\'s own saved filter is listed on an unsaveable bar, fills the chips
   expect(r['deleted']).toBe(false);
   expect(r['copy']).toBe('pro-only-copy-001');
   expect(r['after']).toEqual([['pro-only', false], ['pro-only-copy-001', true]]);
+});
+
+/* OFF — the default (Will, TODO 485): a set is ONE local scope's. The bar that
+   asks saves its own scope alone, is told its own scope's sets alone, and taking
+   one leaves every other scope's filters; the View's bar and the panel save
+   nothing, and list nothing. On, every scope again. */
+test('Save filters at any scope OFF: a set is the asking bar\'s scope alone, listed and taken there; the View and the panel save nothing', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const { ArrayStore } = await import('/dist/index.js');
+    const provider = document.createElement('sherpa-provider');
+    provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="view" data-saveable></sherpa-quick-filter-toolbar>'
+      + '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>'
+      + '<sherpa-quick-filter-toolbar data-orientation="portrait" data-scope="view data" data-saveable open></sherpa-quick-filter-toolbar>';
+    document.getElementById('root').replaceChildren(provider);
+    const [viewBar, dataBar, column] = provider.querySelectorAll('sherpa-quick-filter-toolbar');
+    const rows = [{ id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }, { id: 3, plan: 'Pro', tier: 'silver' }];
+    const source = await provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
+    const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
+    await settle();
+    const flags = () => [viewBar, dataBar, column].map((b) => b.hasAttribute('data-no-saves'));
+    const told = () => [viewBar, dataBar, column].map((b) => b.savedSets.map((set) => set.id));
+    source.query.setReading('view', 'tier', { picked: ['gold'] });
+    source.query.setReading('data', 'plan', { picked: ['Pro'] });
+    source.query.commit();
+    await source.load();
+    // The DATA bar asks; the host names it.
+    dataBar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
+    const id = provider.saveFilters('Pro rows');
+    await settle();
+    const stored = Object.keys(JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}')['pro-rows']?.query.scopes ?? {});
+    // …and the View's bar asks: nothing is saved.
+    viewBar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
+    const fromView = provider.saveFilters('From the View') ?? null;
+    const off = { flags: flags(), told: told(), id, stored, fromView };
+    // Taken after a change everywhere: the data scope matches it, the View keeps silver.
+    source.query.setReading('view', 'tier', { picked: ['silver'] });
+    source.query.setReading('data', 'plan', { picked: ['Free'] });
+    source.query.commit();
+    await source.load();
+    await provider.applyFilters('pro-rows');
+    await source.load();
+    const taken = { tier: source.query.applied.scopes.view.readings.tier?.picked, plan: source.query.applied.scopes.data.readings.plan?.picked };
+    provider.saveAnyScope = true;
+    await settle();
+    return { off, taken, on: { flags: flags(), told: told() } };
+  })()`) as Record<string, any>;
+  expect(r['off']).toEqual({
+    flags: [true, false, true], told: [[], ['pro-rows'], []], id: 'pro-rows', stored: ['data'], fromView: null,
+  });
+  expect(r['taken']).toEqual({ tier: ['silver'], plan: ['Pro'] });
+  expect(r['on']).toEqual({ flags: [false, false, false], told: [['pro-rows'], ['pro-rows'], ['pro-rows']] });
 });

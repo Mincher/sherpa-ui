@@ -19,7 +19,7 @@ import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
-import { MANAGE_SETS, SavedSets, drawFiltersButton, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
+import { MANAGE_SETS, SavedSets, drawFiltersButton, saves, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
 import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows } from '../../core/ui/more-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { ToolbarHeader } from './toolbar-header.js';
@@ -193,7 +193,7 @@ export class ToolbarColumn {
     this.#spentFor = this.#spentKey();
     // Split, the sets are the Saved menu's. TODO 436
     const split = this.#host.el.hasAttribute('data-saved-menu');
-    const saveable = this.#host.el.hasAttribute('data-saveable');
+    const saveable = saves(this.#host.el);
     const { menu, items } = menuFor(this.#host.root(), drawFiltersButton(btn, added, offer, split ? [] : this.#saved.listed, !split && saveable));
     menu.setAttribute('data-align', 'end');
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this.#host.el));

@@ -14988,6 +14988,24 @@ the query definition."*
   2026-10-14). The per-scope card's Edit filter, Save and Delete went with
   them: a set is changed by saving again (Will, A; 186 closed with it).
 
+**Saved at a LOCAL scope** (Will, TODO 485: *"By default it is off which will
+mean we can only save filter definitions at a local scope (and also only apply
+them at a local scope)"*). `provider.saveAnyScope`, OFF unless the app says:
+- A set is ONE scope's, not the View's. Save keeps the asking bar's scope alone
+  — the provider hears `filters-save` and `filters-save-as` in CAPTURE, before
+  the host names the set, and remembers which bar asked (or the host passes
+  `saveFilters(label, scope)`).
+- Each bar is told only the sets that name its scope and no other; "Save
+  <name>" saves over the taken set only there. A set naming several scopes, or
+  the View, is listed nowhere — it waits for the setting.
+- Taking one changes ITS scope; every other scope keeps its filters
+  (`takeSet(…, local)`). Still one taken at a time.
+- The View's bar and the panel (a column, over every scope) save nothing: the
+  provider sets `data-no-saves`, and `saves(host)` — `data-saveable` and not
+  `data-no-saves` — is the one test every Save row, the Saved split and Manage
+  read. `data-saveable` stays the app's: two writers would fight over it.
+On, all of the above is as it was: every scope in one set, from any bar.
+
 **A page's OWN saved filters** (366 S2) are the same shape, in its JSON
 (`savedFilters`), checked as it opens (`savedFiltersOf`: one that is not a name
 and a query is reported, `saved-filter-invalid`). They are listed beside a

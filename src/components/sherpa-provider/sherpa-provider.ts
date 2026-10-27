@@ -251,6 +251,21 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: a Saved menu of its own. */
   #savedMenu = false;
 
+  /** A filter set may be saved and taken at ANY scope: the View's too, every
+   *  scope in one set. Off, a set is ONE local scope's — saved from its bar,
+   *  listed there and taken there alone — and the View's bar and the panel save
+   *  nothing. Off unless the app says. Will, TODO 485 · TRAP T-saved-filters-are-every-scope */
+  get saveAnyScope(): boolean {
+    return this.#saveAny;
+  }
+  set saveAnyScope(on: boolean) {
+    this.#saveAny = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#pages.savesChanged();
+  }
+  /** The app's choice: saved filters at any scope. */
+  #saveAny = false;
+
   /** Each bar shows its filter Switch. The app sets it, from its session;
    *  until then a bar keeps its own `data-switchable`. Will, TODO 436 */
   get switchable(): boolean {
@@ -493,6 +508,8 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-no-results', !this.#results);
     el.toggleAttribute('data-count-applied', this.#countApplied);
     el.toggleAttribute('data-saved-menu', this.#savedMenu);
+    // Off, the View's bar and the panel save nothing. TODO 485
+    if ('drawScope' in el) el.toggleAttribute('data-no-saves', !this.#saveAny && (isColumn(el) || this.#inherited(el, 'data-scope') === VIEW));
     if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
     el.toggleAttribute('data-no-context-label', !this.#contextLabel);
     el.toggleAttribute('data-no-sections', !this.#sections);
@@ -747,14 +764,16 @@ export class SherpaProvider extends SherpaElement {
    * its Views. A set of the same name is saved over, so a host asks first; a
    * page's own name gets a copy's. With none, over the reader's set last taken
    * ("Save <name>"); none answers undefined. The set's id. Will, TODO 105, 366.
+   * Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked
+   * to save — and nothing from the View's bar or the panel. TODO 485
    * TRAP T-saved-filters-are-every-scope
    */
-  saveFilters(label?: string): string | undefined {
-    return this.#pages.saveFilters(label);
+  saveFilters(label?: string, scope?: string): string | undefined {
+    return this.#pages.saveFilters(label, scope);
   }
 
   /** TAKE a saved set: every scope matches it; one it does not name has no
-   *  filters. TRAP T-saved-filters-are-every-scope */
+   *  filters — without `saveAnyScope`, keeps them. TRAP T-saved-filters-are-every-scope */
   applyFilters(id: string): Promise<boolean> {
     return this.#pages.applyFilters(id);
   }
@@ -802,6 +821,7 @@ export class SherpaProvider extends SherpaElement {
     bars: () => this.#bars() as Bar[],
     panels: () => this.#panels(),
     scopeOf: (el) => this.#inherited(el, 'data-scope'),
+    saveAnyScope: () => this.#saveAny,
     viewChanged: (id, elements) => {
       this.emit('view-change', { id, ...(elements ? { elements } : {}) });
     },

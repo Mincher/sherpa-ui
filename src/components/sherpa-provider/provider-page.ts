@@ -20,6 +20,7 @@
  * - .deleteFilters — Delete a saved set; its filters stay.
  * - .renameFilters — Rename a reader's saved set; its id follows its name.
  * - .savedFilterSets — The page's saved sets, and the one taken.
+ * - .savesChanged — The app changed where filters are saved: every control told again.
  * - .customView — Is the View on screen the reader's own?
  * - .resetView — Put the filters back as the View on screen defines them.
  * - .drawBars — Draw every bar from its scope, as the source describes it.
@@ -83,6 +84,8 @@ export interface PageHost {
   panels(): Element[];
   /** The scope a control sits in. */
   scopeOf(el: Element): string | null;
+  /** May a set be saved and taken at any scope? Off, one local scope's. TODO 485 */
+  saveAnyScope(): boolean;
   /** The View on screen changed. */
   viewChanged(id: string | undefined, elements?: Record<string, HTMLElement>): void;
   /** A word from the provider's markup, once it has drawn. TRAP T-a-word-is-in-the-markup */
@@ -158,6 +161,14 @@ export class ProviderPage {
         void (type === 'filters-apply' ? this.applyFilters(id) : this.dismissFilters(id));
       }, { signal });
     }
+    // Which control asked to save, before the host names the set: off, it is that scope's. TODO 485
+    for (const type of ['filters-save', 'filters-save-as']) {
+      el.addEventListener(type, (event) => {
+        const path = event.composedPath();
+        const from = [...this.#host.bars(), ...this.#host.panels()].find((c) => path.includes(c));
+        this.#savingAt = from ? this.#localOf(from) : null;
+      }, { signal, capture: true });
+    }
   }
 
   /** Save what is on screen as a View of the open page, and put it on the View chip. */
@@ -211,15 +222,19 @@ export class ProviderPage {
    *  that name is saved over, so a host asks first. With none, over the set last
    *  taken; none taken answers undefined. It is then the set last taken.
    *  TRAP T-saved-filters-are-every-scope */
-  saveFilters(label?: string): string | undefined {
+  saveFilters(label?: string, scope?: string): string | undefined {
     const opened = this.#opened;
+    // Off, ONE local scope's: the one named, or the bar's that asked. TODO 485
+    const local = this.#host.saveAnyScope() ? null : scope ?? this.#savingAt;
+    if (local === undefined || (!this.#host.saveAnyScope() && (!local || local === VIEW))) return undefined;
     const taken = this.#takenSet();
     // A page's own is never saved over; a new name never takes one of its names.
-    const name = label == null ? (taken?.own ? taken.label : undefined)
+    const name = label == null ? (taken?.own && (!local || this.#namesOnly(taken.id, local)) ? taken.label : undefined)
       : label.trim() && opened && uniqueViewLabel(label, Object.values(opened.savedFilters).map((set) => set.label));
     if (!opened || !name) return undefined;
     this.#flush?.();
-    saveFilterAs(opened.id, name, filtersOf(viewQueryOf(opened.source)));
+    const all = filtersOf(viewQueryOf(opened.source));
+    saveFilterAs(opened.id, name, local ? { v: 1, scopes: { [local]: all.scopes[local] ?? emptyScope() } } : all);
     const id = labelId(name);
     this.#take(id);
     return id;
@@ -233,7 +248,8 @@ export class ProviderPage {
     const set = this.#library()[id];
     if (!opened || !set) return false;
     this.#flush?.();
-    await opened.query.setQuery(takeSet(opened.query.applied, set.query, this.#own()), { by: 'reader' });
+    // Off, a set is LOCAL: the scopes it does not name keep theirs. TODO 485
+    await opened.query.setQuery(takeSet(opened.query.applied, set.query, this.#own(), !this.#host.saveAnyScope()), { by: 'reader' });
     this.#take(id);
     return true;
   }
@@ -336,11 +352,38 @@ export class ProviderPage {
       .map(({ id, label, applied, own }) => ({ id, label, ...(applied ? { applied } : {}), ...(own ? { own } : {}) }));
   }
 
-  /** These controls are told the sets. */
+  /** These controls are told the sets — off, each local bar its own scope's
+   *  alone, and the View's bar and the panel none. TODO 485 */
   #tellSets(els: readonly Element[], sets: SavedSet[]): void {
+    const any = this.#host.saveAnyScope();
     for (const el of els as Array<Element & { savedSets?: SavedSet[] }>) {
-      if ('savedSets' in el) el.savedSets = sets;
+      if (!('savedSets' in el)) continue;
+      const local = any ? null : this.#localOf(el);
+      el.savedSets = any ? sets : local ? sets.filter((set) => this.#namesOnly(set.id, local)) : [];
     }
+  }
+
+  /** The app changed where filters are saved: every control told again. */
+  savesChanged(): void {
+    this.#sentSets = '';
+    this.#saySaved();
+  }
+
+  /** The control that last asked to save: its local scope, or null for the View's
+   *  bar and a panel; undefined before any asked. TODO 485 */
+  #savingAt: string | null | undefined = undefined;
+
+  /** A control's LOCAL scope: a bar's, not the View's; a panel has none. */
+  #localOf(el: Element): string | null {
+    if (!this.#host.bars().includes(el as Bar)) return null;
+    const scope = this.#host.scopeOf(el);
+    return scope && scope !== VIEW ? scope : null;
+  }
+
+  /** Does a set name this scope and no other? */
+  #namesOnly(id: string, scope: string): boolean {
+    const named = Object.keys(this.#library()[id]?.query.scopes ?? {});
+    return named.length === 1 && named[0] === scope;
   }
 
   /** The bar over one scope. */

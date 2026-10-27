@@ -14,6 +14,7 @@
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: the old menu gone; never off.
  * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
+ * - saves — Does this host save filters: `data-saveable`, and its provider allows it here?
  * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
  * - .set — Keep a copy of the host's sets.
  * - .all — A copy of each set, as kept.
@@ -151,6 +152,13 @@ export function savedMenuDef(sets: readonly SavedSet[]): FilterDef {
 }
 
 
+/** Does this host save filters: it is `data-saveable`, and its provider does
+ *  not keep saving off it (`data-no-saves`: the View's bar and the panel, while
+ *  sets are saved at local scopes only). TODO 485 */
+export function saves(host: Element): boolean {
+  return host.hasAttribute('data-saveable') && !host.hasAttribute('data-no-saves');
+}
+
 /** The reader's saved sets, as the host last drew them, and the ONE taken. No
  *  chip names it: a set taken LOADS into the chips. Will, 366.
  *  TODO 105 · TRAP T-saved-filters-are-every-scope */
@@ -176,12 +184,13 @@ export class SavedSets {
 
   /** The one set taken while it is the reader's: what "Save <name>" saves over and Delete deletes. */
   get applied(): SavedSet | undefined {
-    return this.#host.hasAttribute('data-saveable') ? this.#sets.find((set) => set.applied && set.own) : undefined;
+    return saves(this.#host) ? this.#sets.find((set) => set.applied && set.own) : undefined;
   }
 
   /** What the Filters menu lists: the page's own always; the reader's while the host saves. */
   get listed(): readonly SavedSet[] {
-    return this.#host.hasAttribute('data-saveable') ? this.#sets : this.#sets.filter((set) => !set.own);
+    if (this.#host.hasAttribute('data-no-saves')) return [];
+    return saves(this.#host) ? this.#sets : this.#sets.filter((set) => !set.own);
   }
 
   /** A Filters menu's ticks, as a saved-set request: a set newly ticked is

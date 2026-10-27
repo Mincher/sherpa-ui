@@ -14,7 +14,7 @@ import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, type AddedFilter, type SavedSet,
+  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, saves, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
@@ -92,6 +92,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-count-applied': { type: 'boolean', kind: 'behaviour' },
     // The saved sets, the save rows and Manage: a Saved menu of their own. Will, TODO 436
     'data-saved-menu': { type: 'boolean', kind: 'behaviour' },
+    // Its provider keeps saving off it: no sets, no Save. Will, TODO 485
+    'data-no-saves': { type: 'boolean', kind: 'style' },
     // No "View Context" over the View's first filter, in toolbar mode. Will, TODO 436
     'data-no-context-label': { type: 'boolean', kind: 'visibility' },
     // No section names over its filters, in portrait. Will, TODO 436
@@ -1845,6 +1847,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     this.#syncArrangement();
     if (name === 'data-saveable') this.#header.drawSave();
+    // Its provider keeps saving off it, or lets it save again. TODO 485
+    if (name === 'data-no-saves') {
+      if (this.#columned) this.#column.saved(this.#saved.all);
+      else this.#renderAvailable();
+      this.#header.drawSave();
+      this.#header.drawSaved();
+    }
   }
 
   /** ONE reader act, as a request — none for an act no field hears. `values`
@@ -2190,7 +2199,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#oneRows.tell(added);
     // Split, the sets are the Saved menu's. TODO 436
     const split = this.hasAttribute('data-saved-menu');
-    const def = drawFiltersButton(add, added, offer, split ? [] : this.#saved.listed, !split && this.hasAttribute('data-saveable'));
+    const def = drawFiltersButton(add, added, offer, split ? [] : this.#saved.listed, !split && saves(this));
     if (!def) return;
     this.#drawApplied();
     this.#header.drawSaved();

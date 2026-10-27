@@ -28,7 +28,7 @@
  * - viewHeldReadings — Each field the View holds, with its answer unless suspended.
  * - DefinitionFacts — What turning a definition into a Query needs from its source.
  * - definitionOf — A definition as a whole Query.
- * - takeSet — A saved filter TAKEN: the screen then matches it exactly; every other scope's filters go.
+ * - takeSet — A saved filter TAKEN: the screen then matches it exactly; every other scope's filters go, unless it is local.
  * - dropSet — A saved filter TAKEN OFF: the scopes it names lose their filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
  * - answersOf — A scope's answers, as one comparable value.
@@ -391,11 +391,12 @@ export function definitionOf(
 /** A saved filter TAKEN: the screen then matches it exactly (Will, 366). Each
  *  scope it names takes its filters, and keeps what it held plus what it answers
  *  unless the set says its holds; every OTHER scope's filters go, its chips and
- *  arrangement kept. A component's `own` scope is what it IS, and stays.
+ *  arrangement kept — unless it is LOCAL: then they stay too (TODO 485). A
+ *  component's `own` scope is what it IS, and stays.
  *  TRAP T-saved-filters-are-every-scope */
-export function takeSet(now: Query, set: QueryDefaults, own: ReadonlySet<string> = new Set()): QueryDefaults {
+export function takeSet(now: Query, set: QueryDefaults, own: ReadonlySet<string> = new Set(), local = false): QueryDefaults {
   const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, scope] of Object.entries(now.scopes)) scopes[id] = own.has(id) ? scope : unfiltered(scope);
+  for (const [id, scope] of Object.entries(now.scopes)) scopes[id] = own.has(id) || (local && !(id in set.scopes)) ? scope : unfiltered(scope);
   for (const [id, scope] of Object.entries(structuredClone(set.scopes))) {
     if (own.has(id)) continue;
     const named = Object.keys(scope.where ?? {});

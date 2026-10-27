@@ -794,6 +794,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-saves",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-no-sections",
       "type": "boolean",
       "observed": true,
@@ -1005,6 +1013,11 @@
       "$type": "state",
       "name": "view",
       "selector": ":host([data-type=\"view\"])"
+    },
+    {
+      "$type": "state",
+      "name": "no-saves",
+      "selector": ":host([data-no-saves])"
     },
     {
       "$type": "state",

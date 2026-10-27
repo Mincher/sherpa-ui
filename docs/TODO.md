@@ -42,23 +42,26 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 14 | 497 | A11Y SETTING — 'Show On/Off shapes on toggle components' (on in Demos): every control that toggles shows its on/off state as well as its fill — the words On/Off where it fits, as the Switch does; else a tick icon inside, likely at the start. For now: the simple Switch, filter chips, chips, tags. Menu items and checkboxes have one already (Will, 2026-10-27). Done: `html[data-toggle-shapes]` sets `--sherpa-toggle-shape`; an ON filter chip (bar, panel value, legend item) leads with a tick, the simple Switch's knob wears one. Chip and Tag have no on state yet. Demos: Appearance › Accessibility, on. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
 | ✅ | 15 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27). Done: the selected row pins the Default look's Active mode — a solid pale fill and its purple edge, inside; Figma pins Transparent/active, so this departs from it on Will's word. TRAP `T-a-selected-nav-row-wears-its-edge` | a11y |
 | ✅ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next). Done: a column's `tags` draw as pills in each value's series colour (bigger, Will, 2026-10-27); a press picks the value, again lets it go; the heading menu joins the lists, a section each, and answers each field; the View's field is greyed with ONE moved tip (`showFor()`); `provider.multiFieldColumns` → `data-multi-field`, on; Demos: Filtering › Multi-field columns, Name 300px. TRAP `T-a-joined-menu-answers-each-field` | grid |
-| ⬜ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped) | a11y |
-| ⬜ | 18 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
-| ⬜ | 19 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
-| 🚧 | 20 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
-| 🚧 | 21 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
-| ⬜ | 22 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
-| ⬜ | 23 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
-| ⏸️ | 24 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
-| ⬜ | 25 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
-| ⬜ | 26 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
-| 🚧 | 27 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| 🚧 | 28 | 288 | Phase 6 — one copy of each data helper | refactor |
-| 🚧 | 29 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 30 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
-| 🚧 | 31 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ⬜ | 32 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
-| ⬜ | 33 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
+| ❓ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped) | a11y |
+| ✅ | 18 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
+| ⬜ | 19 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493) | bug |
+| ⬜ | 20 | 504 | LOOK — the scroll shadow (the inner shadow a box casts over what it scrolls under) is too harsh: softer, in line with the other Sherpa drop shadows, a shorter reach, and none until the scroll starts (Will, 2026-10-27) | look |
+| ⬜ | 21 | 506 | LOOK — a grid's GROUP row: its leading padding one step more (Will, 2026-10-27) | look |
+| ⬜ | 22 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
+| 🚧 | 23 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| 🚧 | 24 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ⬜ | 25 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
+| ⬜ | 26 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
+| ⏸️ | 27 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⬜ | 28 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
+| ⬜ | 29 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| 🚧 | 30 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| 🚧 | 31 | 288 | Phase 6 — one copy of each data helper | refactor |
+| 🚧 | 32 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ⬜ | 33 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| 🚧 | 34 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ⬜ | 35 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ⬜ | 36 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
 | ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 34 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
@@ -2374,7 +2377,7 @@ the tags a step bigger (12px text in a 20px pill) and the column wide enough —
 Demos sets Name to 300px. The pins are a class key, on the chip's blocks: +52
 bytes an import, not 4.5 KB. TRAP `T-a-joined-menu-answers-each-field`
 
-### `[ ]` ⬜ 503 — A11Y: the on/off shape is a Sherpa checkbox
+### `[ ]` ❓ 503 — A11Y: the on/off shape is a Sherpa checkbox
 
 Will, 2026-10-27, on 490's tags: *"I think we should try using something like a
 0 (off) or I (on) icon, like ubuntu/GNOME's accessible switches, on togglable UI
@@ -2388,6 +2391,16 @@ chip, the simple Switch's knob, and a grid cell's tag. To find: a size below the
 checkbox's smallest that sits in a 16-20px pill; and its cost, where a grid draws
 one per tag (300 on a 100-row page) — a checkbox's LOOK on a native box, as the
 Button's is (`sherpa-button-look.css`), may be the light way.
+
+**❓ Asked Will, 2026-10-27.** Found: `sherpa-select-checkbox` is heavy for this —
+each one stamps a box, a label and its own caret `sherpa-button`, so a grid page
+would make 300 of each. Its box is CSS on a native `<input>`.
+- **A (my pick):** lift the box's look into a shared sheet, `.sherpa-checkbox`, as
+  the Button's look was (`.sherpa-button`). The checkbox component wears it, and
+  so does each toggle's shape: the SAME box, one place, no element per toggle. A
+  new `xs` size fits a 16-20px pill.
+- **B:** a real `<sherpa-select-checkbox>` inside each toggle, with a new `xs`
+  size. Literal, but slow where a grid draws hundreds.
 
 ### `[x]` ✅ 493 — PRESETS: boolean chips that set a whole context
 
@@ -2497,12 +2510,45 @@ the top-left, middle and bottom-right: top under the header over every column,
 bottom over every column, start past the pinned Name, end before Actions —
 each only while content lies that way. Test: `reforged-scroll-shadow`.
 
-### `[ ]` ⬜ 485 — SETTING: save filters at any scope, off by default
+### `[x]` ✅ 485 — SETTING: save filters at any scope, off by default
 
 Will, 2026-10-27: *"Add a setting to allow Saving Filters at any scope. By
 default it is off which will mean we can only save filter definitions at a local
 scope (and also only apply them at a local scope). When off there will be no
 need for a Save Filters button/menu in the View Context toolbar or panel."*
+
+**✅ Done 2026-10-27:** `provider.saveAnyScope`, OFF unless the app says (Demos:
+Filtering › "Save filters at any scope", off). Off, a set is ONE local scope's:
+the provider hears which bar asked to save (in capture, before the host names
+it) and keeps that scope alone; each bar is told only its own scope's sets; a
+set taken changes its scope and leaves the rest (`takeSet(…, local)`). The
+View's bar and the panel get `data-no-saves`: no Save rows, no Saved split, no
+sets — `saves(host)` is the one test. A set that names the View, or several
+scopes (Records' page set "At risk"), is listed nowhere until the setting is on.
+Demos: "Save filters" asks for a name when the set taken is another scope's. On,
+every scope as before; the old tests run with it on. On the way: the token
+script dropped a SECOND class key joining one block — the menu row's ruled-out
+pin went when 490's tag joined first (fixed, 65a923d4).
+TRAP `T-saved-filters-are-every-scope`
+
+### `[ ]` ⬜ 505 — BUG: the panel's Presets are one per row
+
+Will, 2026-10-27: *"Preset filter sections in the panel are showing one filter
+per row. We should display them in a single, wrapping, row like we do with other
+section values."* From 493, which gave the presets their own section.
+
+### `[ ]` ⬜ 506 — LOOK: a group row's leading padding, one step more
+
+Will, 2026-10-27: *"The group row left padding needs to be increased a notch."*
+
+### `[ ]` ⬜ 504 — LOOK: a softer scroll shadow
+
+Will, 2026-10-27: *"The scroll under inner shadow strength is a bit too harsh. I
+think it could be more in line with other sherpa drop shadow styles. It also
+doesn't need to have particularly large distance values."* The shared
+`.sherpa-scroll-shadow` (see 421, 478, 481, 486, 499): its colour and blur from
+the elevation tokens a drop shadow uses, and a shorter distance. And: *"we don't
+need to show the shadow until scroll start."* — at scroll 0, no shadow at all.
 
 ### `[ ]` ⬜ 484 — LAYOUT: a sticky metrics row sits above the layout grid
 

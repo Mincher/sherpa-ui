@@ -98,7 +98,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, countEveryValue, noneShowsAll, headingGroup, headingHover, multiFieldColumns, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, countEveryValue, noneShowsAll, headingGroup, headingHover, multiFieldColumns, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -188,14 +188,14 @@
         {
           "$type": "method",
           "name": "saveFilters",
-          "args": "label?: string",
-          "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366."
+          "args": "label?: string, scope?: string",
+          "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485"
         },
         {
           "$type": "method",
           "name": "applyFilters",
           "args": "id: string",
-          "description": "TAKE a saved set: every scope matches it; one it does not name has no filters."
+          "description": "TAKE a saved set: every scope matches it; one it does not name has no filters — without `saveAnyScope`, keeps them."
         },
         {
           "$type": "method",
@@ -262,6 +262,11 @@
         },
         {
           "name": "savedMenu",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "saveAnyScope",
           "type": "boolean",
           "access": "read-write"
         },

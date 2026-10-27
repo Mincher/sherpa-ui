@@ -22,6 +22,7 @@
 
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 import { report } from '../data/report.js';
+import { saves } from './filters-button.js';
 
 /** One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off. */
 export type MoreRow = readonly [value: string, disabled?: boolean, name?: string];
@@ -53,7 +54,7 @@ export function hidesUnmatched(host: HTMLElement): boolean {
  *  as and Delete filters — none unless the host saves; the two saves off while
  *  the filters are the View's own, as Reset all is. TODO 105 · Will, 366, 382 */
 export function saveRows(host: HTMLElement, applied?: { label: string }): MoreRow[] {
-  if (!host.hasAttribute('data-saveable')) return [];
+  if (!saves(host)) return [];
   const same = host.hasAttribute('data-at-default');
   return applied ? [['filters-save', same, applied.label], ['filters-save-as', same], ['filters-delete']] : [['filters-save', same]];
 }

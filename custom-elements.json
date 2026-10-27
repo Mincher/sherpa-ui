@@ -7610,6 +7610,13 @@
             },
             {
               "kind": "field",
+              "name": "saveAnyScope",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "switchable",
               "type": {
                 "text": "boolean"
@@ -7862,9 +7869,16 @@
                     "text": "string"
                   },
                   "optional": true
+                },
+                {
+                  "name": "scope",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
                 }
               ],
-              "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366."
+              "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485"
             },
             {
               "kind": "method",
@@ -7877,7 +7891,7 @@
                   }
                 }
               ],
-              "description": "TAKE a saved set: every scope matches it; one it does not name has no filters."
+              "description": "TAKE a saved set: every scope matches it; one it does not name has no filters — without `saveAnyScope`, keeps them."
             },
             {
               "kind": "method",
@@ -8172,6 +8186,12 @@
                 "text": "boolean"
               },
               "default": "false"
+            },
+            {
+              "name": "data-no-saves",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "name": "data-no-sections",
