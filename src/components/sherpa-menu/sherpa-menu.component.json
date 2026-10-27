@@ -421,7 +421,8 @@
                   "class": "discard",
                   "part": "discard",
                   "attrs": {
-                    "data-footer": "revert"
+                    "data-footer": "revert",
+                    "data-icon-start": "trash"
                   }
                 },
                 {
@@ -1021,7 +1022,8 @@
                   "class": "discard",
                   "part": "discard",
                   "attrs": {
-                    "data-footer": "revert"
+                    "data-footer": "revert",
+                    "data-icon-start": "trash"
                   }
                 },
                 {

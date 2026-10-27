@@ -60,8 +60,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
 | ⬜ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry | tests |
 | ⏸️ | 34 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
-| ⬜ | 35 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
-| ⬜ | 36 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| ✅ | 35 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22). Done: `trash` leads every Discard — the bar's, a portrait scope's and the flat View row's Discard all, a field's own, and both menu footers' | look |
+| ⏸️ | 36 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23). Paused: Will, 2026-10-23, "discard for now. We'll do it later" — both commits reverted | demos |
 | 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
 | 🚧 | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
@@ -3694,12 +3694,16 @@ answered field's count) — and its tip each field's, one per line (the tooltip
 keeps line breaks now). Will, later: the header row is CENTRED, in an even 12px
 padding. a11y 68/68. Test: Demos `reforged-panel-scope-header`.
 
-### `[ ]` ⬜ 417 — LOOK, later: Discard wears a trash can
+### `[x]` ✅ 417 — LOOK, later: Discard wears a trash can
 
 Will, 2026-10-22: *"Todo later: Use a trash can icon for discard. Add the discard
 icon on the left of menu footer discard buttons."* The bar's and the panel's
 icon-only Discard (406) take it, and every menu footer's Discard leads its label
 with it. Check the icon set has one first.
+
+**✅ Done 2026-10-27:** the set has `trash`. It leads the label of every Discard:
+the bar's Discard all, a portrait scope's and the flat View row's, a field's own
+(451), and both menu footers'. Test: `reforged-discard-icon`.
 
 ### `[x]` ✅ 416 — LOOK: an ON cell filter button reads as Discard
 
@@ -11700,6 +11704,10 @@ not, so its counts are higher.) **Waits for a test:** 7 (one test per filter)
 and 8 (one compile per act). **Not run yet:**
 present-limits-each-field, page-definition and the stores' unit tests.
 
+**2026-10-27:** every step has run in the full suites since. Step 8 is met: the
+bench reads ONE compile per pick on a local source, two on a remote or REST one.
+Step 7 stays open.
+
 ### `[x]` ✅ 290 — Phase 6: honest entry points
 
 **✅ Done 2026-10-15** (Q1, my pick A, as CODE-REVIEW-PLAN 6.4 says). 32
@@ -11742,6 +11750,11 @@ test), 10 (`sameFilter`, order-free, at three sites). **Deferred:** 11 (one
 version counter for the applied Query), after 287.
 **Not run yet:** every step — type-check, lint and the bench only.
 
+**2026-10-27:** steps 1–8a have run in every full suite since (all green). 8b
+looked at again: each of the three is one read and one write, already over
+`web-storage.ts`'s `readJson`/`writeJson` — a keyed store would add a layer to
+save about ten lines. My pick: drop 8b. 9 and 10 stay open.
+
 ### `[~]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
 
 **🚧 Steps 1–5a and 6 done 2026-10-15**, one commit each, each safe by reading.
@@ -11765,6 +11778,12 @@ modules cost more than one); no display component grew.
 class behind a `CountHost`. The bench does not cover serial sets, chart parts or
 carry-over fields. **Not run yet:** every step — type-check, lint, the bench and
 the d.ts diff only.
+
+**2026-10-27:** steps 1–6 have run in every full suite since (all green). 5b is
+left: the walk reads about 25 of the source's parts (its age, binding, catalogue,
+sets, defaults, parts, held rows, compile, requery…), so a `CountHost` would be
+25 hooks to move 280 lines. My pick: leave it until the walk changes for a reason
+of its own.
 
 ### `[x]` ✅ 286 — Phase 6: the bench
 

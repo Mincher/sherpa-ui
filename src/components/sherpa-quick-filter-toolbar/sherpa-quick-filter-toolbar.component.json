@@ -91,7 +91,7 @@
                   "attrs": {
                     "data-act": "discard",
                     "data-size": "sm",
-                    "data-icon-start": "cross",
+                    "data-icon-start": "trash",
                     "disabled": ""
                   }
                 },
@@ -244,7 +244,7 @@
                   "attrs": {
                     "data-act": "discard",
                     "data-size": "sm",
-                    "data-icon-start": "cross",
+                    "data-icon-start": "trash",
                     "disabled": ""
                   }
                 },
@@ -333,7 +333,7 @@
                   "attrs": {
                     "data-act": "discard",
                     "data-size": "sm",
-                    "data-icon-start": "cross",
+                    "data-icon-start": "trash",
                     "disabled": ""
                   }
                 },
