@@ -1,13 +1,13 @@
 import { test, expect } from './harness';
 
 /**
- * ON/OFF SHAPES — Will, TODO 497. With the page's `data-toggle-shapes`, a toggle
- * shows its state by a shape, not by its fill alone: an ON filter chip leads with
- * a tick, and the simple Switch's knob wears one. Off the page's setting, or off
- * the control, no tick.
+ * ON/OFF SHAPES — Will, TODOs 497, 503. With the page's `data-toggle-shapes`, a
+ * toggle shows its state by a shape, not by its fill alone: the Checkbox's box,
+ * EMPTY while off and ticked while on — a filter chip's, a simple Switch's knob,
+ * a grid tag's. Off the page's setting, no box.
  * TRAP T-a-toggle-shows-its-state-by-a-shape
  */
-test('with data-toggle-shapes, an ON chip and a simple Switch that is on wear a tick; otherwise none', async ({ page }) => {
+test('with data-toggle-shapes, a chip and a simple Switch wear a box, ticked while on; otherwise none', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const chip = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void>; current: boolean };
     chip.setAttribute('data-label', 'Status');
@@ -15,10 +15,12 @@ test('with data-toggle-shapes, an ON chip and a simple Switch that is on wear a 
     sw.setAttribute('data-type', 'simple');
     document.getElementById('root')!.replaceChildren(chip, sw);
     await Promise.all([chip.rendered, sw.rendered]);
-    const shown = () => ({
-      chip: getComputedStyle(chip.shadowRoot!.querySelector('.tick')!).display !== 'none',
-      sw: getComputedStyle(sw.shadowRoot!.querySelector('.tick')!).display !== 'none',
-    });
+    const box = (el: HTMLElement) => {
+      const tick = el.shadowRoot!.querySelector<HTMLElement>('.tick')!;
+      if (getComputedStyle(tick).display === 'none') return 'none';
+      return getComputedStyle(tick, '::before').content === 'none' ? 'empty' : 'ticked';
+    };
+    const shown = () => ({ chip: box(chip), sw: box(sw) });
     const states: Record<string, unknown> = {};
     chip.current = true;
     sw.checked = true;
@@ -34,8 +36,8 @@ test('with data-toggle-shapes, an ON chip and a simple Switch that is on wear a 
     return states;
   });
   expect(r).toEqual({
-    'page off': { chip: false, sw: false },
-    on: { chip: true, sw: true },
-    off: { chip: false, sw: false },
+    'page off': { chip: 'none', sw: 'none' },
+    on: { chip: 'ticked', sw: 'ticked' },
+    off: { chip: 'empty', sw: 'empty' },
   });
 });

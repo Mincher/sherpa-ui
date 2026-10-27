@@ -83,11 +83,6 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-display-mode-space-xs` | `.field` | `gap` |
 | `--sherpa-theme-content-body-base` | `.field` | `color` |
-| `--sherpa-style-border-base-1` | `.control` | `--_border` |
-| `--sherpa-style-surface-base` | `.control` | `--_surface` |
-| `--sherpa-style-indicator-accent` | `.control` | `--_fill` |
-| `--sherpa-display-mode-border-width-sm` | `.control` | `border-width` |
-| `--sherpa-display-mode-border-rounding-sm` | `.control` | `border-radius` |
 | `--sherpa-display-mode-space-2xs` | `.text` | `gap` |
 | `--sherpa-theme-content-body-1` | `.label` | `color` |
 | `--sherpa-font-size-body-base` | `.label` | `font-size` |

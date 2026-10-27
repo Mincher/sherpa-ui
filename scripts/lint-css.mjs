@@ -241,8 +241,10 @@ for (const name of readdirSync(join(ROOT, 'src', 'core')).filter((f) => /^sherpa
   lintFile(`src/core/${name}`, readFileSync(join(ROOT, 'src', 'core', name), 'utf8'));
 }
 // A shared LOOK a node wears by class: linted as a sheet of its own. TRAP T-a-native-wears-the-button-class
-fileCount++;
-lintFile('src/core/sherpa-button-look.css', readFileSync(join(ROOT, 'src', 'core', 'sherpa-button-look.css'), 'utf8'));
+for (const name of ['sherpa-button-look.css', 'sherpa-checkbox-look.css']) {
+  fileCount++;
+  lintFile(`src/core/${name}`, readFileSync(join(ROOT, 'src', 'core', name), 'utf8'));
+}
 // A PAGE sheet a component adopts into the document. TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page
 for (const d of readdirSync(C, { withFileTypes: true }).filter((e) => e.isDirectory())) {
   for (const name of readdirSync(join(C, d.name)).filter((f) => f.endsWith('-stack.css') && f !== `${d.name}.css`)) {

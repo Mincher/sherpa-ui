@@ -885,8 +885,8 @@
 }
 /* A pinned cell is sticky, which places the chip already. */
 .cell:not([data-pinned]):has(> .cell-filter) { position: relative; }
-/* On a multi-field cell, it sits by the first line, not between the two. */
-.cell[data-tags] > .cell-filter {
+/* In a two-line grid, it sits by the first line, not between the two. Will, TODOs 490, 509 */
+:host(:state(multi-field)) .cell > .cell-filter {
   inset-block-start: calc(var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-base, 20px) / 2);
 }
 
@@ -922,13 +922,13 @@
   }
 }
 .cell-tag[data-superseded] { cursor: not-allowed; }
-/* ON, by a shape too, where the page asks. TODO 497 · TRAP T-a-toggle-shows-its-state-by-a-shape */
+/* ON or OFF, by a shape too, where the page asks: the Checkbox's box, ticked as
+   the tag is pressed. TODOs 497, 503 · TRAP T-a-toggle-shows-its-state-by-a-shape */
 .tag-tick {
   display: none;
-  inline-size: var(--sherpa-theme-content-size-small, 12px);
-  block-size: var(--sherpa-theme-content-size-small, 12px);
+  --_checkbox-size: var(--sherpa-theme-content-size-small, 12px);
 }
-.cell-tag[data-current] .tag-tick { display: var(--sherpa-toggle-shape, none); }
+.cell-tag > .tag-tick { display: var(--sherpa-toggle-shape, none); }
 /* With a multi-field column, EVERY cell is two lines and starts at the first:
    the values align across the row. Will, TODO 509 */
 :host(:state(multi-field)) .row > :is(.cell, .select-cell, .actions-cell) {

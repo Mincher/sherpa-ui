@@ -11,7 +11,11 @@ import '../sherpa-menu/sherpa-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 export class SherpaSelectCheckbox extends SherpaElement {
-  static override css = new URL('./sherpa-select-checkbox.css', import.meta.url);
+  // The box is the shared Checkbox look, worn by a toggle's shape too. TODO 503
+  static override css = [
+    new URL('../../core/sherpa-checkbox-look.css', import.meta.url),
+    new URL('./sherpa-select-checkbox.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-select-checkbox.html', import.meta.url);
   static override delegatesFocus = true;
   static override props = {

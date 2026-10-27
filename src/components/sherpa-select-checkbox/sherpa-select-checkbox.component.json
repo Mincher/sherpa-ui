@@ -34,7 +34,7 @@
                 "children": [
                   {
                     "el": "input",
-                    "class": "control",
+                    "class": "control sherpa-checkbox",
                     "part": "control",
                     "attrs": {
                       "type": "checkbox"
@@ -197,11 +197,6 @@
       "$type": "state",
       "name": "advanced",
       "selector": ":host([data-advanced])"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ".control:focus-visible"
     }
   ],
   "capabilities": [
@@ -243,11 +238,6 @@
   "tokens": {
     "field.gap": "{sherpa.display-mode-space-xs}",
     "field.color": "{sherpa.theme-content-body-base}",
-    "control.--_border": "{sherpa.style-border-base-1}",
-    "control.--_surface": "{sherpa.style-surface-base}",
-    "control.--_fill": "{sherpa.style-indicator-accent}",
-    "control.border-width": "{sherpa.display-mode-border-width-sm}",
-    "control.border-radius": "{sherpa.display-mode-border-rounding-sm}",
     "text.gap": "{sherpa.display-mode-space-2xs}",
     "label.color": "{sherpa.theme-content-body-1}",
     "label.font-size": "{sherpa.font-size-body-base}",

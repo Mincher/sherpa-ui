@@ -9,7 +9,10 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 
 export class SherpaSwitch extends SherpaElement {
-  static override css = new URL('./sherpa-switch.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-checkbox-look.css', import.meta.url),
+    new URL('./sherpa-switch.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-switch.html', import.meta.url);
   static override delegatesFocus = true;
   /* Its words beside the track, as a checkbox's. Will, TODO 230. */

@@ -10,7 +10,7 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   /* 20 square, per Figma's Checkbox (Atom) — not 16. */
-  --_size: var(--sherpa-display-mode-size-md, 20px);
+  --_checkbox-size: var(--sherpa-display-mode-size-md, 20px);
 }
 
 /* ── The ADVANCED group (Figma `Checkbox - Advanced`) ────────────────────
@@ -80,94 +80,8 @@ slot[name="menu"] { display: contents; }
 /* In the group the label hugs, else the caret is pushed to the far edge. */
 :host([data-advanced]) .field { inline-size: auto; }
 
-/* ── The control (native input, custom-drawn box) ─────────────────── */
-.control {
-  /* The Style names Figma binds, declared HERE so the box's PIN reaches them.
-     Checkbox takes border +1, radio takes base. TRAP T-style-border-base-is-default-1. */
-  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_fill: var(--sherpa-style-indicator-accent, #3b4ccd);
-  appearance: none;
-  -webkit-appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  inline-size: var(--_size);
-  block-size: var(--_size);
-  margin: 0;
-  padding: 0;
-  position: relative;
-  /* 0.5, not 1. TRAP T-checkbox-stroke-is-sm. */
-  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--_border);
-  /* ONE flat token, not the per-corner chain — that chain let the snap group's
-     rounding inherit in. TRAP T-checkbox-rounding-is-flat-sm. */
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--_surface);
-  cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease;
-
-  /* ── Checked / indeterminate — inset accent indicator ──────────────── */
-  &:is(:checked, :indeterminate)::before {
-    content: "";
-    position: absolute;
-    /* `inset` measures from the padding box, so the 0.5 border never enters it. */
-    inset: var(--sherpa-display-mode-space-3xs, 2px);
-    border-radius: 1px; /* off-grid-ok: Figma's checkmark instance corner */
-    background: var(--_fill);
-  }
-
-  /* The mark: style-content/inverse, the FIXED ramp. TRAP T-the-tick-needs-the-fixed-ramp. */
-  &:is(:checked, :indeterminate)::after {
-    content: "";
-    display: block;
-    position: relative;
-    background-color: var(--sherpa-style-content-inverse, #ffffff);
-  }
-
-  /* Checkmark — SVG mask. Sized as a ratio of the box, so every size stays in
-     proportion. */
-  &:checked::after {
-    inline-size: calc(var(--_size) * 0.55);
-    block-size: calc(var(--_size) * 0.5);
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
-    -webkit-mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-  }
-
-  /* Indeterminate dash — beats the checkmark. */
-  &:indeterminate::after {
-    inline-size: 6px; /* off-grid-ok */
-    block-size: 2px; /* off-grid-ok */
-    border-radius: 1px; /* off-grid-ok */
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-
-  /* ── Hover / active ───────────────────────────────────────────────── */
-  &:hover:not(:disabled) {
-    border-color: var(--sherpa-theme-border-default-1, #e8e8f6); /* theme-direct */
-  }
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:is(:checked, :indeterminate):hover:not(:disabled)::before {
-      background: color-mix(in oklab, var(--_fill) 88%, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11)); /* theme-direct */
-    }
-  }
-  &:active:not(:disabled) {
-    transform: scale(0.92);
-  }
-
-  /* ── Focus — inset ring, never a bare outline (WCAG 2.4.11) ───────── */
-  &:focus-visible {
-    outline: var(--sherpa-focus-ring);
-    outline-offset: var(--sherpa-focus-offset);
-  }
-}
+/* ── The control: the shared Checkbox look, `.sherpa-checkbox` (sherpa-checkbox-look.css),
+   which a toggle's on/off shape wears too. TODO 503 ── */
 
 /* ── Label + description ──────────────────────────────────────────── */
 .text {

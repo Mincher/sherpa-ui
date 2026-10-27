@@ -22,8 +22,9 @@
   <label class="field" part="field">
     <span class="track sherpa-border-edges" part="track">
       <input class="input" type="checkbox" role="switch" />
-      <!-- ON, by a shape too, where the page asks: a tick in the knob. Will, TODO 497 -->
-      <span class="knob" aria-hidden="true"><i class="tick sherpa-icon-box" data-icon="tick"></i></span>
+      <!-- ON or OFF, by a shape too, where the page asks: the Checkbox's box in the
+           knob, ticked while on. Will, TODOs 497, 503 -->
+      <span class="knob" aria-hidden="true"><span class="tick sherpa-checkbox" data-swap-on="checked" data-swap-data-checked=""></span></span>
       <span class="label" aria-hidden="true"></span>
     </span>
     <span class="text" part="text">

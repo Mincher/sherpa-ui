@@ -141,3 +141,21 @@ test('a grid with tags makes every cell two lines, its value on the first', asyn
   expect(r.on.height).toBeGreaterThan(r.height);
   expect(r.off).not.toBe('top');
 });
+
+/* …and a cell's filter button sits by that first line, not mid-cell. Will, TODO 511 */
+test('in a two-line grid, a cell\'s filter button sits by its first line', async ({ page }) => {
+  await page.evaluate(`(async () => { ${SETUP} })()`);
+  await page.locator('sherpa-data-grid .row .cell[data-field="plan"]').first().hover();
+  const r = await page.evaluate(() => {
+    const sr = document.querySelector('sherpa-data-grid')!.shadowRoot!;
+    const cell = sr.querySelector('.row .cell[data-field="plan"]')!;
+    const chip = sr.querySelector('.cell-filter')!;
+    const range = document.createRange();
+    range.selectNodeContents(cell.firstChild!);
+    const line = range.getBoundingClientRect();
+    const c = chip.getBoundingClientRect();
+    return { home: chip.parentElement === cell, off: Math.abs((c.top + c.height / 2) - (line.top + line.height / 2)) };
+  });
+  expect(r.home).toBe(true);
+  expect(r.off).toBeLessThanOrEqual(2);
+});

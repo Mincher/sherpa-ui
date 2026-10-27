@@ -109,8 +109,9 @@
     <sherpa-tooltip class="count-wrap" data-anchor=".chip"
                     data-swap-on="data-layout=section" data-swap-data-anchor=".body"></sherpa-tooltip>
     <button class="body sherpa-border-corners" part="body" type="button">
-      <!-- ON, by a shape too, where the page asks: a tick. Will, TODO 497 -->
-      <i class="tick sherpa-icon-box" part="tick" data-icon="tick" aria-hidden="true"></i>
+      <!-- ON or OFF, by a shape too, where the page asks: the Checkbox's box,
+           ticked as this button is pressed. Will, TODOs 497, 503 -->
+      <span class="tick sherpa-checkbox" part="tick" aria-hidden="true"></span>
       <span class="indicator" part="indicator" aria-hidden="true"></span>
       <!-- role=img so the aria-label is announced: no role = no accessible name. -->
       <span class="count sherpa-text-mono-base" part="count" role="img"></span>

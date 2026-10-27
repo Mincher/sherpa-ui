@@ -544,10 +544,9 @@
             },
             "children": [
               {
-                "el": "i",
-                "class": "tag-tick sherpa-icon-box",
+                "el": "span",
+                "class": "tag-tick sherpa-checkbox",
                 "attrs": {
-                  "data-icon": "tick",
                   "aria-hidden": "true"
                 }
               },
@@ -1113,8 +1112,7 @@
     "cell-tag.color": "{sherpa.style-content-base}",
     "cell-tag.font-size": "{sherpa.theme-content-size-small}",
     "cell-tag.line-height": "{sherpa.theme-content-line-height-small}",
-    "tag-tick.inline-size": "{sherpa.theme-content-size-small}",
-    "tag-tick.block-size": "{sherpa.theme-content-size-small}"
+    "tag-tick.--_checkbox-size": "{sherpa.theme-content-size-small}"
   },
   "$extensions": {
     "sherpa": {

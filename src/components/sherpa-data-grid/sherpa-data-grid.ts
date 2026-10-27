@@ -133,7 +133,10 @@ const FILTERABLE: ReadonlySet<string> = new Set(['text', 'number', 'date']);
 
 
 export class SherpaDataGrid extends SherpaElement {
-  static override css = new URL('./sherpa-data-grid.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-checkbox-look.css', import.meta.url),
+    new URL('./sherpa-data-grid.css', import.meta.url),
+  ];
   static override html = [FILTER_MENU_HTML, new URL('./sherpa-data-grid.html', import.meta.url)];
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`

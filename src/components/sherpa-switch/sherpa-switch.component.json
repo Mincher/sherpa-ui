@@ -41,10 +41,11 @@
               },
               "children": [
                 {
-                  "el": "i",
-                  "class": "tick sherpa-icon-box",
+                  "el": "span",
+                  "class": "tick sherpa-checkbox",
                   "attrs": {
-                    "data-icon": "tick"
+                    "data-swap-on": "checked",
+                    "data-swap-data-checked": ""
                   }
                 }
               ]
@@ -160,6 +161,11 @@
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "simple",
+      "selector": ":host([data-type=\"simple\"])"
+    },
     {
       "$type": "state",
       "name": "focus-visible",

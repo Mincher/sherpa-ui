@@ -525,7 +525,10 @@ axes (bar, line) or `src/core/sherpa-chart-segments.css` for segmented charts
 (gauge, radial), by Will's ruling (2026-09-29); and
 `src/core/sherpa-container-regions.css`, a card's header, body and footer
 (container, dialog, panel — TODO 285); and `src/core/sherpa-filter-more.css`, the
-⋮ menu's rows (toolbar, panel — TODO 344). A family sheet MAY carry `:host` rules —
+⋮ menu's rows (toolbar, panel — TODO 344). `src/core/sherpa-checkbox-look.css` is
+a LOOK listed the same way: the Checkbox's box as `.sherpa-checkbox`, worn by its
+control and by each toggle's on/off shape (select-checkbox, quick-filter, switch,
+grid — TODO 503). A family sheet MAY carry `:host` rules —
 only its family adopts it — and `lint:css` reads it as it reads a component.
 
 **A family's MARKUP works the same way:** `static html` may be a list too, its

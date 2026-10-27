@@ -28,7 +28,10 @@ interface JumpItem {
 }
 
 export class SherpaQuickFilter extends SherpaElement {
-  static override css = new URL('./sherpa-quick-filter.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-checkbox-look.css', import.meta.url),
+    new URL('./sherpa-quick-filter.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-quick-filter.html', import.meta.url);
   static override props = {
     'data-icon-only': { type: 'boolean', kind: 'style' },

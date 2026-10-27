@@ -771,7 +771,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (108)
+## SherpaElement and the shared sheets (113)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -811,6 +811,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-template-is-parsed-once](TRAPS.md#t-a-template-is-parsed-once) — templater
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-anchor, sherpa-element
+- [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — sherpa-checkbox-look
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — roving-focus
 - [T-a-tree-menu-keeps-its-ticks-as-data](TRAPS.md#t-a-tree-menu-keeps-its-ticks-as-data) — tree-picks
 - [T-a-tree-rule-beats-slotted](TRAPS.md#t-a-tree-rule-beats-slotted) — sherpa-base
@@ -828,6 +829,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-at-property-needs-the-document](TRAPS.md#t-at-property-needs-the-document) — sherpa-grouping
 - [T-base-class-does-four-things](TRAPS.md#t-base-class-does-four-things) — sherpa-element
 - [T-bind-locks-what-it-owns](TRAPS.md#t-bind-locks-what-it-owns) — sherpa-element
+- [T-checkbox-rounding-is-flat-sm](TRAPS.md#t-checkbox-rounding-is-flat-sm) — sherpa-checkbox-look
+- [T-checkbox-stroke-is-sm](TRAPS.md#t-checkbox-stroke-is-sm) — sherpa-checkbox-look
 - [T-clone-item-is-for-two-destinations](TRAPS.md#t-clone-item-is-for-two-destinations) — sherpa-element
 - [T-clone-returns-null-never-asserts](TRAPS.md#t-clone-returns-null-never-asserts) — sherpa-element
 - [T-cloning-prototypes-have-no-id](TRAPS.md#t-cloning-prototypes-have-no-id) — templater
@@ -871,6 +874,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-sherpa-runs-under-a-strict-csp](TRAPS.md#t-sherpa-runs-under-a-strict-csp) — trusted-html
 - [T-slot-guards-only-when-filled](TRAPS.md#t-slot-guards-only-when-filled) — sherpa-element
 - [T-state-is-the-saved-view-half](TRAPS.md#t-state-is-the-saved-view-half) — components
+- [T-style-border-base-is-default-1](TRAPS.md#t-style-border-base-is-default-1) — sherpa-checkbox-look
 - [T-template-id-read-once-was-permanent](TRAPS.md#t-template-id-read-once-was-permanent) — sherpa-element, templater
 - [T-temporal-is-the-date-model](TRAPS.md#t-temporal-is-the-date-model) — temporal
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — components, index
@@ -878,11 +882,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-shared-vocabulary-is-declared-once](TRAPS.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
 - [T-the-templates-text-is-the-default](TRAPS.md#t-the-templates-text-is-the-default) — sherpa-element
 - [T-the-text-is-in-the-js](TRAPS.md#t-the-text-is-in-the-js) — templater
+- [T-the-tick-needs-the-fixed-ramp](TRAPS.md#t-the-tick-needs-the-fixed-ramp) — sherpa-checkbox-look
 - [T-tokens-css-never-reaches-shadow](TRAPS.md#t-tokens-css-never-reaches-shadow) — sherpa-element, sherpa-style-modes
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (111)
+## Other components (108)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -945,8 +950,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-calendar-anchors-where-the-data-is](TRAPS.md#t-calendar-anchors-where-the-data-is) — calendar
 - [T-calendar-view-is-not-the-figma-type](TRAPS.md#t-calendar-view-is-not-the-figma-type) — calendar
 - [T-cell-state-is-the-only-paint](TRAPS.md#t-cell-state-is-the-only-paint) — calendar
-- [T-checkbox-rounding-is-flat-sm](TRAPS.md#t-checkbox-rounding-is-flat-sm) — select-checkbox
-- [T-checkbox-stroke-is-sm](TRAPS.md#t-checkbox-stroke-is-sm) — select-checkbox
 - [T-clone-item-is-for-two-destinations](TRAPS.md#t-clone-item-is-for-two-destinations) — select-group
 - [T-custom-highlight-not-painted-in-shadow](TRAPS.md#t-custom-highlight-not-painted-in-shadow) — nav-item
 - [T-describedby-must-not-be-a-live-region](TRAPS.md#t-describedby-must-not-be-a-live-region) — input-text
@@ -984,14 +987,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-slider-second-thumb-is-revealed-not-built](TRAPS.md#t-slider-second-thumb-is-revealed-not-built) — slider
 - [T-slot-assigns-direct-children-only](TRAPS.md#t-slot-assigns-direct-children-only) — calendar
 - [T-slot-guards-only-when-filled](TRAPS.md#t-slot-guards-only-when-filled) — container-header
-- [T-style-border-base-is-default-1](TRAPS.md#t-style-border-base-is-default-1) — container-footer, select-checkbox, select-radio
+- [T-style-border-base-is-default-1](TRAPS.md#t-style-border-base-is-default-1) — container-footer, select-radio
 - [T-temporal-is-the-date-model](TRAPS.md#t-temporal-is-the-date-model) — calendar
 - [T-the-footer-owns-nothing-to-save](TRAPS.md#t-the-footer-owns-nothing-to-save) — container-footer
 - [T-the-nav-is-a-menu-on-a-phone](TRAPS.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-panel-is-desktop-only](TRAPS.md#t-the-panel-is-desktop-only) — app-shell
 - [T-the-shell-owns-the-panel-areas](TRAPS.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — app-header
-- [T-the-tick-needs-the-fixed-ramp](TRAPS.md#t-the-tick-needs-the-fixed-ramp) — select-checkbox
 - [T-two-months-share-one-grid](TRAPS.md#t-two-months-share-one-grid) — calendar
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text

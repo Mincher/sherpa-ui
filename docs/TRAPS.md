@@ -9510,7 +9510,7 @@ The width changes the geometry inside it. The checked indicator is inset 2px
 and must land at 14 on a 20 box; `inset` measures from the PADDING box, so it is
 immune — but arithmetic from the content box would draw 15 at a 0.5px border.
 
-- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+- Site: `src/core/sherpa-checkbox-look.css`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.css`
 - Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
 
@@ -9524,7 +9524,7 @@ It is a sub-pixel stroke on a 20px box. On a 1x display it renders as a lighter
 1px line rather than a thinner one, so the change shows up as a subtly paler
 box and reads as a colour bug, not a width one.
 
-- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+- Site: `src/core/sherpa-checkbox-look.css`
 
 ### T-compose-never-reimplement
 
@@ -9616,7 +9616,7 @@ Read this as the general rule: **a control that is snapped inside a wrapper
 should not itself consume the per-corner rounding variables.** The wrapper
 snaps; the thing inside it keeps its own shape.
 
-- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+- Site: `src/core/sherpa-checkbox-look.css`
 
 ### T-selection-lives-in-the-keys-not-the-objects
 
@@ -9733,7 +9733,7 @@ which composes `Display Mode/color/neutral/fixed/color 1`.
 Ink on a surface that does NOT flip must not. Getting this wrong is invisible in
 light mode, which is where it gets reviewed.
 
-- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+- Site: `src/core/sherpa-checkbox-look.css`
 
 ### T-a-persistent-chip-reports-on-every-change
 
@@ -19412,17 +19412,27 @@ query: Firefox has none for a custom property, and a property is the one shape
 that reaches a bare host (`T-one-value-one-declaration`). A host that does not
 link `page.css` sets the property itself.
 
-Who wears one: an ON filter chip leads with a tick — a bar's, a panel's value
-chip, a legend's item — but not a picker (always on), a section's heading (its
-values are the toggles) or an icon-only button; and the SIMPLE Switch's knob,
-in the track's colour (the default Switch already says ON or OFF). A menu row
-and a checkbox have a tick already. A grid cell's TAG (TODO 490) is a toggle
-too, and wears one when on. Chip and the Tag component have no on state today,
+**The shape is the Checkbox's BOX, in BOTH states** (Will, TODO 503: A, *"but we
+need an off icon, too"*): empty while off, ticked while on. It is the
+Checkbox's own look, lifted into `sherpa-checkbox-look.css` as `.sherpa-checkbox`
+— the checkbox component's control wears it, and so does each shape, an empty
+span. Not the component itself: each one stamps a label and its own caret
+button, and a grid page draws 300 tags. A shape is ticked by the control it sits
+in — `[aria-pressed="true"] > .sherpa-checkbox` (a chip's body, a tag) — or by
+`data-checked`, which the Switch's template swaps in from `checked`
+(`data-swap-on`). Its size is `--_checkbox-size`, set by the toggle.
+
+Who wears one: a filter chip that toggles — a bar's, a panel's value chip, a
+legend's item — but not a picker (always on), a section's heading (its values
+are the toggles) or an icon-only button; the SIMPLE Switch's knob (the default
+Switch already says ON or OFF); and a grid cell's TAG (TODO 490). A menu row and
+a checkbox are boxes already. Chip and the Tag component have no on state today,
 so nothing to mark.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-switch/sherpa-switch.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/core/sherpa-checkbox-look.css`
 - Site: `test/e2e/reforged-toggle-shapes.spec.ts`
 - Site: `scripts/project-tokens.mjs`
 

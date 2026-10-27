@@ -36,11 +36,10 @@
           },
           "children": [
             {
-              "el": "i",
-              "class": "tick sherpa-icon-box",
+              "el": "span",
+              "class": "tick sherpa-checkbox",
               "part": "tick",
               "attrs": {
-                "data-icon": "tick",
                 "aria-hidden": "true"
               }
             },

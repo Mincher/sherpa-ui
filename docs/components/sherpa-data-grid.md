@@ -278,8 +278,7 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.cell-tag` | `color` |
 | `--sherpa-theme-content-size-small` | `.cell-tag` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.cell-tag` | `line-height` |
-| `--sherpa-theme-content-size-small` | `.tag-tick` | `inline-size` |
-| `--sherpa-theme-content-size-small` | `.tag-tick` | `block-size` |
+| `--sherpa-theme-content-size-small` | `.tag-tick` | `--_checkbox-size` |
 
 ## populate()
 

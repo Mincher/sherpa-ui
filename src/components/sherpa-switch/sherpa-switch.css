@@ -103,8 +103,8 @@
 }
 /* Value=on binds the thumb to content/base. */
 :host([checked]) .knob { background: var(--sherpa-style-content-base, #ffffff); }
-/* ON, by a shape too: the simple Switch says no ON, so its knob wears a tick,
-   in the track's own colour, where the page asks. Will, TODO 497
+/* ON or OFF, by a shape too: the simple Switch says neither, so its knob wears
+   the Checkbox's box, ticked while on, where the page asks. Will, TODOs 497, 503
    TRAP T-a-toggle-shows-its-state-by-a-shape */
 .knob {
   display: inline-flex;
@@ -112,10 +112,9 @@
   justify-content: center;
 }
 .tick { display: none; }
-:host([data-type="simple"][checked]) .tick {
+:host([data-type="simple"]) .tick {
   display: var(--sherpa-toggle-shape, none);
-  --_icon-size: calc(var(--sherpa-switch-size-thumb, 16px) * 0.75);
-  color: var(--_fill);
+  --_checkbox-size: calc(var(--sherpa-switch-size-thumb, 16px) * 0.75);
 }
 
 /* The knob and label swap sides ON. An explicit 0, as `auto` does not animate. */
