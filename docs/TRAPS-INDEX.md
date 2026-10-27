@@ -72,7 +72,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — data-source, query-context
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-set, page-definition, store, store-cache
 - [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — data-source, spoof-remote, store, store-cache, stores
-- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, source-counts, store, stores, walk
+- [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-context, source-counts, store, stores, walk
 - [T-a-scope-is-a-place-not-a-reach](TRAPS.md#t-a-scope-is-a-place-not-a-reach) — data-source
 - [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — data-source-types
 - [T-a-series-has-a-value-at-every-point](TRAPS.md#t-a-series-has-a-value-at-every-point) — aggregate

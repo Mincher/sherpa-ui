@@ -95,13 +95,16 @@ test('a failed walk sets nothing aside, and is not asked again until something m
   const { store, seen } = slowRemote();
   const source = new DataSource({ store, limitOptions: true, holdRows: 0, pageSize: 2 });
   const bar = await viewBar(source, { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } });
-  assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
+  await sleep(40);
+  // Ruled out, LATAM was let go. TODO 512 (A)
+  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['EMEA']);
   seen.fail = true;
   bar.held = { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA', 'APAC'] } };
   bar.report();
   await sleep(40);
-  // The older Query's set-aside is gone: every region picked applies.
+  // A walk that failed sets nothing aside, so lets nothing go: every region picked applies.
   assert.deepEqual(source.debugState().aside, {});
+  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['LATAM', 'EMEA', 'APAC']);
   const asked = seen.distinct;
   source.setPage(2);
   await sleep(40);

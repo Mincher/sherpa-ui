@@ -1746,9 +1746,9 @@ filter is parallel without a set, as before.
 `source.offered(scope)` says what each chained field offers, and a bound
 control is told it (`drawOffered`). A value the chain does not offer is
 REMOVED — serial exists to offer less, and the way back is the field above —
-but a PICK it rules out stays, set aside (`T-a-ruled-out-value-is-greyed`):
-kept in the Query, out of the rows, drawn inactive. This runs whatever Limit
-says. The source gathers a set's fields in `describe()`, in the one order
+and a PICK it rules out is let go (`T-a-ruled-out-value-is-greyed`, Will,
+TODO 512 A): out of the rows at once, then out of the Query. This runs whatever
+Limit says. The source gathers a set's fields in `describe()`, in the one order
 (`T-one-walk-counts-and-limits-in-order`).
 
 **A set is only an ORDER on screen** — Will, TODO 240 and 241: *"I don't
@@ -7939,11 +7939,16 @@ went on filtering. Will, TODO 167.
 **A value the filters BEFORE it rule out stays in its list, greyed out, and
 cannot be picked** — Will, TODO 174 (110's B), made ONE WAY by TODO 349 (D4 A):
 a field's scopes and the filters before it in the one order limit it, never
-the ones after. A value already picked stays ticked and greyed — SET ASIDE:
-kept in the reading (a saved View, a draft and the URL keep it),
-left out of the compiled filter (`CompileFacts.drop`). Let the earlier filter
-go and it is back. (Until 349 a LATER answer set an earlier pick aside —
-TODO 180, newest first; the one order replaced it.)
+the ones after. A value already picked is LET GO (Will, TODO 512 A): the walk
+sets it aside — out of the compiled filter (`CompileFacts.drop`), so the load
+is right — and the source then takes it out of the reading, applied and drafted
+alike (`QueryContext.letGo`), asking no Apply. Until 512 it stayed in the
+reading, ticked, greyed and disabled, and came back when the earlier filter
+went: a chip named a pick that filtered nothing, and unticking the rest left
+that pick alone holding the field at 0 rows (Will: *"some filters are still
+active while being limited … the appearance of broken filters and mismatched
+data"*). (Until 349 a LATER answer set an earlier pick aside — TODO 180,
+newest first; the one order replaced it.)
 
 **What rules a field** (`T-one-walk-counts-and-limits-in-order`) — a
 grid heading too, but never an Advanced row (`T-an-advanced-row-rules-out-nothing`): with `limitOptions` on (Settings › Application, off by default), the rows at its
@@ -8017,6 +8022,7 @@ none` while `data-current`). Turned off by its body, a chip DROPS each pick the
 filters before it rule out — off otherwise keeps an answer, which left a pick
 in the Query that could only come back matching nothing (TODO 465).
 
+- Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`

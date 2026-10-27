@@ -64,13 +64,19 @@ test('a field offers what the fields above it leave; the top of the chain offers
   assert.deepEqual(await source.offered(VIEW), { region: ['APAC'] });
 });
 
-test('a pick the chain rules out is SET ASIDE: kept in the Query, out of the rows', async () => {
+test('a pick the chain rules out is LET GO: out of the Query, and the earlier filter cleared brings nothing back (Will, TODO 512 A)', async () => {
   // Adventure Works has no LATAM rows; it has EMEA ones.
   const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } });
   assert.equal(source.debugState().total, 1);
-  assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
-  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['LATAM', 'EMEA']);
+  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['EMEA']);
+  assert.deepEqual(source.query.draft.scopes.view.readings.region.picked, ['EMEA']);
+  assert.deepEqual(source.debugState().aside, {});
   assert.deepEqual(sorted(await source.offered(VIEW)).region, ['AMER', 'APAC', 'EMEA']);
+  // Customer let go: LATAM does not come back.
+  source.query.setReading(VIEW, 'customer', null);
+  source.query.commit();
+  for (let i = 0; i < 4; i++) await source.load().then(tick);
+  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['EMEA']);
 });
 
 test('every pick the chain rules out: the field stays in force, at 0 (Will, 2026-10-20)', async () => {
@@ -84,7 +90,7 @@ test('a field is never ruled out by one BELOW it — even with Limit on, and Reg
   const { source } = await setup({ customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } }, { limit: true });
   // Customer is before Region: it stands, and LATAM goes.
   assert.equal(source.debugState().total, 1);
-  assert.deepEqual(source.debugState().aside, { view: { region: ['LATAM'] } });
+  assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['EMEA']);
 });
 
 test('a filter before the set limits the chain, though the top is unanswered', async () => {

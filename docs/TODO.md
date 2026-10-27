@@ -43,7 +43,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 15 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27). Done: the selected row pins the Default look's Active mode — a solid pale fill and its purple edge, inside; Figma pins Transparent/active, so this departs from it on Will's word. TRAP `T-a-selected-nav-row-wears-its-edge` | a11y |
 | ✅ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next). Done: a column's `tags` draw as pills in each value's series colour (bigger, Will, 2026-10-27); a press picks the value, again lets it go; the heading menu joins the lists, a section each, and answers each field; the View's field is greyed with ONE moved tip (`showFor()`); `provider.multiFieldColumns` → `data-multi-field`, on; Demos: Filtering › Multi-field columns, Name 300px. TRAP `T-a-joined-menu-answers-each-field` | grid |
 | ✅ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped). Done (Will A, an off shape too): the Checkbox's box lifted into `sherpa-checkbox-look.css`; each toggle's shape wears it, empty off and ticked on, sized by `--_checkbox-size`. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
-| ❓ | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Fixed on the way: the panel's binding heard its section bars' events too. REPRODUCED from Will's lead: a SET-ASIDE pick (Limit, 174/349) stays ticked, greyed and disabled, the chip still names it; untick the rest and it alone holds the field at 0 rows. ❓ A: let a ruled-out pick go at once; B: keep it aside but pressable, and the face names only what filters | bug |
+| ✅ | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Fixed on the way: the panel's binding heard its section bars' events too. REPRODUCED from Will's lead: a SET-ASIDE pick (Limit, 174/349) stays ticked, greyed and disabled, the chip still names it; untick the rest and it alone holds the field at 0 rows. ❓ A: let a ruled-out pick go at once; B: keep it aside but pressable, and the face names only what filters. Will, 2026-10-27: A. Done: a ruled-out pick is LET GO — out of the rows at once (as before), then out of the reading, applied and drafted alike (`QueryContext.letGo`), no Apply asked. TRAP `T-a-ruled-out-value-is-greyed` | bug |
 | ✅ | 19 | 513 | BUG — 'Highlight matches on hover': resting on a chart LEGEND item highlights only once one legend item has been toggled (Will, 2026-10-27; see 495, 496). Done: a chart's own scope is made at its first toggle, and the highlight compiled only from scopes the Query had; a rested value whose scope is not made yet now compiles from an empty one. TRAP `T-a-hovered-chip-previews-the-highlight` | bug |
 | ✅ | 20 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
 | ✅ | 21 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493). Done: the panel's chips flow in one wrapping row, every chip but a preset a row of its own; with headings in a column the run sits in the value column, its heading beside the first line. TRAP `T-a-preset-is-its-own-part` | bug |
@@ -53,9 +53,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 25 | 508 | LOOK — a multi-field cell: more gap between its text and its tags (Will, 2026-10-27). Done: 4px, a step up from 2 | look |
 | ✅ | 26 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27). Done: `:state(multi-field)` while a shown column draws tags; every cell of a row is two lines tall and top-aligned, its box and ⋮ too. TRAP `T-a-joined-menu-answers-each-field` | look |
 | ✅ | 27 | 511 | LOOK — in a two-line grid (509) a cell's filter button sits by the FIRST line, as the value does, not mid-cell (Will, 2026-10-27). Done: under `:state(multi-field)` the button centres on the first line in every cell | look |
-| ❓ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493) | filters |
-| ❓ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
-| 🚧 | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| ⬜ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A | filters |
+| ⬜ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B | look |
+| ⬜ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A | bug |
 | 🚧 | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
 | ⬜ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry. Measured 2026-10-27, idle machine: 1 in 40 (Settings never opened — the click was lost), then 0 in 120 (all four ways out) and 0 in 60 (a scripted loop with Navigation-API logging). Load-bound, as 390 said; next time, run it with `--trace=retain-on-failure` | tests |
@@ -65,9 +65,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
 | 🚧 | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ❓ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| ⬜ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B | refactor |
 | 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ❓ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ✅ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one. Will, 2026-10-27: "Leave 339" — the file stays as it is; closed with nothing done | figma |
 | ✅ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate. Done 2026-10-27: `tsconfig.tests.json` maps `/dist/*` to the source (not `tsconfig.json`: Playwright reads that one and would rewrite the imports a spec hands the browser); 261 errors to 0 across 30 specs — casts, unused helpers, a stale `await src.ready`, a fallback import of a file that never existed; `npm run type-check:tests`, ~3s, in the pre-commit hook | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
 | ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
@@ -76,7 +76,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 36 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | | | | **Later — held or deferred by Will, or big and last** | |
 | ⏸️ | 37 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — Will: better than it was; not a priority now | explore |
-| ⬜ | 38 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
+| ⏸️ | 38 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends. Will, 2026-10-27: "Skip 379 for now" | filters |
 | 🚧 | 39 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
 | ⬜ | 40 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
 | ⬜ | 41 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
@@ -2384,7 +2384,7 @@ the tags a step bigger (12px text in a 20px pill) and the column wide enough —
 Demos sets Name to 300px. The pins are a class key, on the chip's blocks: +52
 bytes an import, not 4.5 KB. TRAP `T-a-joined-menu-answers-each-field`
 
-### `[ ]` ⬜ 512 — BUG: clearing every active value glitches the filter
+### `[x]` ✅ 512 — BUG: clearing every active value glitches the filter
 
 Will, 2026-10-27: *"There's still an issue where clearing all active values,
 manually, results in the filter glitching out. There's some crossed wires going
@@ -2425,6 +2425,16 @@ instead and AMER comes back into force unseen (49 rows).
   at once: as today, it stays at 0, visible.)
 - **B:** keep it set aside, but its row stays pressable (unticking lets it go),
   and the chip's face names only the picks in force.
+
+**Will, 2026-10-27: "Your picks" — A. ✅ Done 2026-10-27:** the walk still sets a
+ruled-out pick aside, so the load is right first time; the source then LETS IT
+GO — `QueryContext.letGo(scope, field, keys)` takes it out of the applied answer
+and the draft alike, asks no Apply, and tells one compile (the rows do not
+move). Every pick ruled out at once: as before, it stays at 0. The bench's two
+`aside` acts cost one compile and one walk more, recorded. Tests: unit
+`a-serial-set-chains-its-fields` (let go; the Customer cleared brings nothing
+back), `the-walk-holds-under-change` (a failed walk lets nothing go); Demos
+`reforged-limit-options` (Will's case: AMER + APAC, then Proseware).
 
 ### `[x]` ✅ 503 — A11Y: the on/off shape is a Sherpa checkbox
 
@@ -2618,7 +2628,7 @@ filter-on colours while picked.
 
 **✅ Done 2026-10-27:** as written; `paintSwatch` stays, the chip's swatch uses it.
 
-### `[ ]` ❓ 510 — PRESETS: stacked Advanced conditions, in the query
+### `[ ]` ⬜ 510 — PRESETS: stacked Advanced conditions, in the query
 
 Will, 2026-10-27: *"Preset filters should be a wrapper around stacked advanced
 filter conditions that get injected into the overall filter query. The filter
@@ -2675,7 +2685,7 @@ scroll edge and stuck-header strip reads — five copies of the 12px strip had
 grown. The bottom edge and a sideways end edge show from the first pixel
 scrolled. TRAP `T-a-scroll-shadow-is-drawn-over-the-content`
 
-### `[ ]` ❓ 484 — LAYOUT: a sticky metrics row sits above the layout grid
+### `[ ]` ⬜ 484 — LAYOUT: a sticky metrics row sits above the layout grid
 
 Will, 2026-10-27: *"When a metrics row is sticky, I think we need to move it out
 of the layout grid and place it above it inside the content area. With this done
@@ -11346,7 +11356,7 @@ and fixed 20 wrong names or claims. The skill now has today's collection table
 
 Those are Figma's to clean; the skill says not to copy them (339).
 
-### `[ ]` ❓ 339 — FIGMA: dead bindings and hidden collections in the live file
+### `[x]` ✅ 339 — FIGMA: dead bindings and hidden collections in the live file
 
 Found by 336's live read, 2026-10-16. In the Figma file, not the code:
 
@@ -11452,7 +11462,7 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 sideways, the selection column keeps its pin and its place through a header
 filter change — all 27 of its cells.
 
-### `[ ]` ❓ 341 — DATA: a component is only a TYPE in the data layer
+### `[ ]` ⬜ 341 — DATA: a component is only a TYPE in the data layer
 
 Will, 2026-10-16: *"Charts and metrics are just visual representations of
 data. The definition of a 'chart' or 'metric', or any other UI component,

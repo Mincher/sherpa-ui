@@ -1795,6 +1795,14 @@ export class DataSource extends EventTarget {
     const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
     if (key(next) === key(this.#setAside)) return false;
     this.#setAside = next;
+    /* …and LET GO, not kept: a ruled-out pick leaves the answer, so the chip, its
+       menu and the rows agree, and clearing the filter before it brings nothing
+       back. After this act, as the rows have them out already. Will, TODO 512 (A) */
+    if (next.size) {
+      queueMicrotask(() => {
+        for (const [scope, fields] of next) for (const [field, keys] of Object.entries(fields)) this.#context.letGo(scope, field, keys);
+      });
+    }
     return true;
   }
 
@@ -1910,7 +1918,7 @@ export class DataSource extends EventTarget {
   /**
    * What each field below the top of a SERIAL set OFFERS: the values the rows
    * hold at its place, once anything before it narrows, as value keys. A control
-   * REMOVES the rest — but a pick it holds stays, set aside. Whatever
+   * REMOVES the rest, and a pick it held is let go (TODO 512). Whatever
    * `limitOptions` says. TRAP T-a-filter-set-groups-or-chains
    */
   async offered(scope: string): Promise<Record<string, string[]>> {

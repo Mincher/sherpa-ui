@@ -46,6 +46,7 @@
  * - .release — A scope lets ONE field go.
  * - .take — A scope TAKES fields: down from the View, or up from a chart with its answer.
  * - .setReading — ONE field's answer — at its home, or a component's own; the answer in force is a no-op.
+ * - .letGo — The filters before a field rule these picks out: they leave its answer, applied and drafted alike.
  * - .setPreset — A scope's preset on or off: the app's own named conditions, beside the fields'.
  * - .reset — Clear all, Reset all: every answer homed in these scopes goes.
  * - .batch — The doors one act calls are ONE change to the page.
@@ -76,7 +77,7 @@ import {
   copyHolds, sameField, sameScope, scopeEntry, setCameFrom, setReading,
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
-import type { SortDirection, SortSpec } from './store.js';
+import { valueKey, type SortDirection, type SortSpec } from './store.js';
 import type { FieldReading } from './filter-state.js';
 import { report } from './report.js';
 
@@ -786,6 +787,26 @@ export class QueryContext extends EventTarget {
     const next = this.#raw(field, picked, reading ?? {});
     if (!sameReading(readingOf(this.#live.draft, field), readingAnswered(next) ? next : undefined)) this.#select(field, picked, reading ?? {});
     if (fresh) this.#tell({ kind: 'bars', scope });
+  }
+
+  /**
+   * letGo(scope, field, keys) — the filters before a field rule these picks out:
+   * they leave its answer, applied and drafted alike, and no Apply is asked — the
+   * rows had them out already. Will, TODO 512 (A) · TRAP T-a-ruled-out-value-is-greyed
+   */
+  letGo(scope: string, field: string, keys: readonly string[]): void {
+    let moved = false;
+    for (const query of new Set([this.#live.applied, this.#live.draft])) {
+      const reading = query.scopes[scope]?.readings[field];
+      const kept = reading?.picked?.filter((v) => !keys.includes(valueKey(v)));
+      if (!reading || !kept || kept.length === reading.picked!.length) continue;
+      query.scopes[scope]!.readings[field] = { ...reading, picked: kept };
+      moved = true;
+    }
+    if (!moved) return;
+    // ONE compile: what is applied moved; then the field is drawn its answer.
+    this.#tell({ kind: 'commit' });
+    this.#tell({ kind: 'drawn', fields: [field] });
   }
 
   /** A scope's PRESET on or off — the app's own named conditions, in force beside
