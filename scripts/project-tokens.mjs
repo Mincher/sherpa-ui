@@ -976,7 +976,8 @@ if (existsSync(STATE_PINS)) {
      list of its TWIN, the component's host pin with the same look and mode, so it
      costs no new block. TRAP T-a-native-wears-the-button-class */
   const twins = new Map();
-  const addSelector = (block, sel) => block.replace(/^ {2}([^\n]*) \{/, (_m, first) => `  ${first},\n  ${sel} {`);
+  // At the END of the list: a block joined twice has a list, not one line. TODO 490
+  const addSelector = (block, sel) => block.replace(/ \{\n/, `,\n  ${sel} {\n`);
   for (const [tag, rules] of Object.entries(pins)) {
     const isClass = tag.startsWith('.');
     if (!isClass && !existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);

@@ -969,7 +969,8 @@ sherpa-quick-filter[data-current][data-failed] {
 }
 
 sherpa-quick-filter[data-superseded],
-:where(.cell-tag:not([part~="trigger"]))[data-superseded] {
+:where(.cell-tag:not([part~="trigger"]))[data-superseded],
+:where(.menu-row:not([part~="trigger"]))[data-unavailable] {
   --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
