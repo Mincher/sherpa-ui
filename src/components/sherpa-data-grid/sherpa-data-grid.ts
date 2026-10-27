@@ -255,7 +255,8 @@ export class SherpaDataGrid extends SherpaElement {
     // A re-stamp's observer replaces the last; the select cell too, for a density change.
     this.#fillWatch?.disconnect();
     this.#fillWatch = new ResizeObserver(() => this.#measure(true));
-    for (const box of [this.$('.scroller'), this.$('.head-row > .select-cell')]) if (box) this.#fillWatch.observe(box);
+    // …and the header, whose foot the rows' shadow hangs from. TODO 481
+    for (const box of [this.$('.scroller'), this.$('.head-row > .select-cell'), this.$('.head')]) if (box) this.#fillWatch.observe(box);
     // Both footer buttons commit. Delegated — a heading cell can be made again.
     this.$('.head-row')?.addEventListener('menu-apply', this.#onColumnFilterCommit);
     this.$('.head-row')?.addEventListener('menu-clear', this.#onColumnFilterCommit);
@@ -446,8 +447,11 @@ export class SherpaDataGrid extends SherpaElement {
     const edges = this.$$('.head-row > .select-cell, .head-row > .actions-cell')
       .reduce((sum, cell) => sum + cell.getBoundingClientRect().width, 0);
     const room = box.clientWidth;
+    const head = this.$('.head')?.getBoundingClientRect().height ?? 0;
     // …then WRITE.
     this.style.setProperty('--_pin-offset', `${offset}px`);
+    // The header's foot: where the shadow over the scrolled rows hangs. TRAP T-a-stuck-header-casts-a-shadow
+    this.style.setProperty('--_head-h', `${head}px`);
     const free = shown.map((col) => !this.#widths.has(col.field));
     const share = base.reduce((sum, w, i) => sum + (free[i] ? w : 0), 0);
     const slack = room - edges - base.reduce((sum, w) => sum + w, 0);

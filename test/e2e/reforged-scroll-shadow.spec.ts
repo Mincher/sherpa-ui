@@ -133,3 +133,50 @@ test('a grid that fits across shows no side edge', async ({ page }) => {
   test.skip(!r.driven, 'no scroll timeline: no shadow');
   expect(r.edges).toEqual(['0', '0']);
 });
+
+/* ONE header shadow: under a pinned column it is no darker than under a scrolled
+   one, however far the columns have scrolled under it. TODO 481.
+   TRAP T-a-stuck-header-casts-a-shadow */
+test('the header\'s shadow does not stack under a pinned column as columns scroll under it', async ({ page }) => {
+  const at = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.id = 'wide';
+    el.style.cssText = 'block-size: 240px; inline-size: 480px';
+    el.toggleAttribute('data-selectable', true);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const columns = Array.from({ length: 10 }, (_, i) => ({ field: `c${i}`, header: `Column ${i}`, width: 120 }));
+    el.populate!({ columns, rows: Array.from({ length: 30 }, (_, r) => Object.fromEntries(columns.map((c) => [c.field, `${c.field}-${r}`]))) });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const scroller = sr.querySelector<HTMLElement>('.scroller')!;
+    scroller.scrollTop = 120;
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const head = sr.querySelector('.head')!.getBoundingClientRect();
+    const pin = sr.querySelector('.head-row > [data-pin-last]')!.getBoundingClientRect();
+    return { y: head.bottom + 2, pinned: pin.left + pin.width / 2, scrolled: pin.right + 60, driven: CSS.supports('animation-timeline: scroll()') };
+  });
+  test.skip(!at.driven, 'no scroll timeline: no shadow');
+  const pixel = async (x: number): Promise<number> => {
+    const shot = await page.screenshot({ clip: { x: Math.round(x), y: Math.round(at.y), width: 1, height: 1 } });
+    return page.evaluate(async (b64) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${b64}`;
+      await img.decode();
+      const c = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d')!;
+      c.drawImage(img, 0, 0);
+      return c.getImageData(0, 0, 1, 1).data[0]!;
+    }, shot.toString('base64'));
+  };
+  const read = async () => ({ pinned: await pixel(at.pinned), scrolled: await pixel(at.scrolled) });
+  const rest = await read();
+  await page.evaluate(() => {
+    document.getElementById('wide')!.shadowRoot!.querySelector<HTMLElement>('.scroller')!.scrollLeft = 600;
+  });
+  await page.evaluate(() => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res))));
+  const across = await read();
+  // Shaded at all; no darker under the pinned column; and no darker there once columns pass under it.
+  expect(rest.scrolled).toBeLessThan(250);
+  expect(rest.pinned).toBeGreaterThanOrEqual(rest.scrolled - 6);
+  expect(Math.abs(across.pinned - rest.pinned)).toBeLessThanOrEqual(3);
+});

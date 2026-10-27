@@ -15840,6 +15840,17 @@ or a 1px gap splits the shadow.
 A hidden cell never animates: `getComputedStyle` reads its strip at 0. Read a
 SHOWN cell — the select column is hidden on a grid that does not select.
 
+**ONE edge, not a strip per cell** (Will, TODO 481). Every header cell's strip
+hung below the header, so a column scrolled sideways under a pinned one hung its
+strip over the pinned body cell too — one per column passed, stacked darker
+than the rest (measured: 204 to 170). Lifting the pinned body cells over them
+cannot work: the sticky `<thead>` is one stacking layer, so a body cell level
+with it covered the pinned header cells too. So the strip under the scrolling
+columns is the scroll box's own `::before`, sticky at the header's foot
+(`--_head-h`, measured with the column widths, and on a header resize) at
+`z-index: 1` — under the pinned body cells (2), which hide it — and only a
+PINNED header cell, and Actions, keeps a strip of its own, over them.
+
 **The panel's Local Context headers** stick inside the column, which scrolls
 for all of them, so its scroll says nothing about ONE header. Each scope
 names a VIEW timeline (`view-timeline: --sherpa-scope block`), and its
@@ -15849,6 +15860,7 @@ header sticks. A header further down casts none. Chromium and WebKit; Firefox
 has no view timeline and shows none.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 

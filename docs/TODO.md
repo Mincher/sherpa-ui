@@ -162,8 +162,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
 | ⬜ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
 | ✅ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
-| ⬜ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
+| ✅ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
 | ⬜ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
+| ⬜ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2307,17 +2308,32 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
+### `[ ]` ⬜ 483 — BUG: a section's ⋮ is green while a value is picked
+
+Will, 2026-10-27: *"The overflow menu buttons for panel mode sections uses the
+green active styling when 1 or more filter values is selected. The
+state/styling of this button shouldn't be tied to value selection status other
+than to populate its menu items correctly."*
+
 ### `[ ]` ⬜ 482 — LOOK: a divider between preset and added chips
 
 Will, 2026-10-27: *"Put a divider between preset and user added filter chips in
 the toolbar mode. Consider an equivalent visual in the Panel mode, too."*
 
-### `[ ]` ⬜ 481 — BUG: shadows stack on the grid's pinned columns
+### `[x]` ✅ 481 — BUG: shadows stack on the grid's pinned columns
 
 Will, 2026-10-27: *"There's some inner shadow stacking on pinned columns when
 other columns are scrolled under them horizontally. Perhaps because cells don't
 have a default white background and are transparent instead?"* Likely 478's
 side edges or 421's header shadow.
+
+**Found:** not the cells (they are white) and not 478: 421's header shadow was a
+strip under EVERY header cell, so the strips of columns scrolled under a pinned
+column piled up over it. **Done:** one edge under the scrolling columns — the
+scroll box's own, at the header's foot, under the pinned cells — and a strip
+only on a pinned header cell and Actions. TRAP `T-a-stuck-header-casts-a-shadow`.
+Test: `reforged-scroll-shadow` (a pixel under the pinned column stays put as
+columns pass under it; the old rule fails it, 204 to 170).
 
 ### `[x]` ✅ 480 — BUG: every value toggled off is not "show all"
 

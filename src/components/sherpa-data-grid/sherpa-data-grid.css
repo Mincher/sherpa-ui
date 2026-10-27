@@ -92,12 +92,31 @@
 }
 /* NO per-row offset — both rows pin at the <thead>'s own sticky position. */
 
-/* STUCK, the header casts a shadow over the rows scrolled under it: a strip
-   under each cell of its LAST row, so the cells draw one edge. Will, TODO 421.
-   TRAP T-a-stuck-header-casts-a-shadow */
+/* STUCK, the header casts a shadow over the rows scrolled under it: ONE edge,
+   the scroll box's own, hung at the header's foot and under the pinned body
+   cells — each pinned header cell casts its own over them. A strip per header
+   cell stacked under a pinned column as columns scrolled past it. Will, TODOs
+   421, 481. TRAP T-a-stuck-header-casts-a-shadow */
 @supports (animation-timeline: scroll()) {
-  :host(:not([data-filterable])) .head-row > *::after,
-  :host([data-filterable]) .filter-row > *::after {
+  .scroller::before {
+    content: '';
+    position: sticky;
+    inset-block-start: var(--_head-h, 0px);
+    inset-inline-start: 0;
+    /* Over the scrolling rows, under the pinned cells (2) and the header (3). */
+    z-index: 1;
+    display: block;
+    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    margin-block-end: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    opacity: 0;
+    animation: sherpa-scroll-shadow linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
+  }
+  :host(:not([data-filterable])) .head-row > :is([data-pinned], .actions-head)::after,
+  :host([data-filterable]) .filter-row > :is([data-pinned], .actions-cell)::after {
     content: '';
     position: absolute;
     inset-block-start: 100%;
