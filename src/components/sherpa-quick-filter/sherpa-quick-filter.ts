@@ -114,6 +114,7 @@ export class SherpaQuickFilter extends SherpaElement {
   override onRender(): void {
     this.#syncText();
     this.#drawLabel();
+    this.#drawMoved();
     // A name given before the first render is said now.
     this.#writeTip();
     this.#paintSwatch();
@@ -219,10 +220,15 @@ export class SherpaQuickFilter extends SherpaElement {
        it. TRAP T-an-inactive-chip-says-where-its-filter-went */
     else if (name === 'data-superseded' || name === 'data-applied-at') {
       this.#syncCountTip(this.menu?.values ?? []);
-      // A section held above says where its filter went, in its values' place. TODO 426
-      const moved = this.$('.moved');
-      if (moved) moved.textContent = this.hasAttribute('data-superseded') ? movedTo(this.dataset['appliedAt']) : '';
+      this.#drawMoved();
     } else this.#syncText();
+  }
+
+  /** A section held above says where its filter went, in its values' place —
+   *  held before its first render too. TODOs 426, 479 */
+  #drawMoved(): void {
+    const moved = this.$('.moved');
+    if (moved) moved.textContent = this.hasAttribute('data-superseded') ? movedTo(this.dataset['appliedAt']) : '';
   }
 
   /** Give the swatch its series' hue and stroke — the legend's own paint. A

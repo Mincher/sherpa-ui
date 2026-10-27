@@ -21,6 +21,7 @@
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
  * - .highlight — Does a row match the highlight's driver?
+ * - .pickedFor — A field's picks in force on one component: its own part's, else the View's.
  * - .highlightFor — The highlight's test for a component in `scope`: null where it stays in its driver's scope and this is not it.
  * - .highlightAcross — The highlight reaches every component — or, off, those in its driver's scope alone.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
@@ -64,7 +65,7 @@
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
-  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, groupSummaries, matchesFilter, readField, valueKey,
+  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, filterWithout, groupSummaries, matchesFilter, readField, valueKey,
 } from './store.js';
 import { readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
@@ -113,6 +114,8 @@ export class DataSource extends EventTarget {
     partScopes: () => this.#narrowing.keys(),
     view: () => this.#boundView(),
     rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
+    freeRows: (fields) => this.#freeRows.get(fields.join('\n'))?.rows ?? this.#allRows,
+    pickedFor: (el, field) => this.pickedFor(el, field),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
     highlight: (scope) => (this.#reaches(scope) ? this.#highlight : undefined),
@@ -393,6 +396,20 @@ export class DataSource extends EventTarget {
   get highlight(): ((row: Row) => boolean) | null {
     const filter = this.#highlight;
     return filter ? (row) => matchesFilter(row, filter) : null;
+  }
+
+  /** A field's picks in force on one component, as value keys: its own part's,
+   *  else the View's — applied, not drafted. A chart FREE of its field lights
+   *  them. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
+  pickedFor(el: BoundControl, field: string): string[] {
+    const picks = (r: FieldReading | undefined): string[] => (r && !r.suspended ? (r.picked ?? []).map(valueKey) : []);
+    for (const [scope, part] of this.#narrowing) {
+      if (part.only === el && part.field === field) {
+        const own = picks(this.#applied.scopes[scope]?.readings[field]);
+        if (own.length) return own;
+      }
+    }
+    return picks(this.#applied.scopes[VIEW]?.readings[field]);
   }
 
   /** The highlight's test for a component in `scope`: null where it stays in its
@@ -1545,6 +1562,20 @@ export class DataSource extends EventTarget {
           this.#allFor = allKey;
         }
       }
+      /* …and each set a chart is FREE of: the View's rows less its clauses on
+         them. TRAP T-a-chart-is-free-of-its-own-field */
+      const sets = this.#binding.freeSets();
+      for (const key of [...this.#freeRows.keys()]) if (!sets.some((f) => f.join('\n') === key)) this.#freeRows.delete(key);
+      for (const fields of sets) {
+        const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
+        const without = filterWithout(viewed, new Set(fields));
+        const asked = without ? { ...rest, filter: without } : rest;
+        const freeKey = JSON.stringify([this.#age, this.#allAge, asked]);
+        if (this.#freeRows.get(fields.join('\n'))?.key === freeKey) continue;
+        const free = await this.#reads.load(asked);
+        if (!this.#inFlight.is(ticket)) return this.#result;
+        this.#freeRows.set(fields.join('\n'), { key: freeKey, rows: free.rows });
+      }
 
       // Re-clamp and reload ONCE, FORCED. Never while GROUPED: the page count
       // there is the GRID's to report, and the re-load would ask the same thing.
@@ -1861,6 +1892,8 @@ export class DataSource extends EventTarget {
   #age = 0;
   /** What the unpaged rows were last read for. */
   #allFor = '';
+  /** Each set a chart is free of: its rows, and what they were read for. TODO 479 */
+  #freeRows = new Map<string, { key: string; rows: readonly Row[] }>();
 
   /* ── Binding ───────────────────────────────────────────────────────── */
 
@@ -1884,6 +1917,11 @@ export class DataSource extends EventTarget {
     if (facts.scope && this.#context.waiting()) this.#syncPending();
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
+    /* …and a bar below the View, what the View holds: one bound after the last
+       word — a column's section drawn later — never heard it. Will, TODO 479 */
+    if (typeof facts.scope === 'string' && facts.scope !== VIEW && el.supersede) {
+      el.supersede(this.#context.scope(VIEW), this.#context.scopeLabel(VIEW));
+    }
     /* …and the answers the Query holds already — a fetching list's start — LAST:
        a bar told its scope waits rebuilds its chips. TODO 403 */
     if (facts.scope && el.drawReading) for (const field of this.selectedFields) this.#draw(field);
@@ -1893,7 +1931,8 @@ export class DataSource extends EventTarget {
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
-    const needsAll = facts.rows === 'all' && !this.#allRows.length;
+    const needsAll = facts.rows === 'all' && (!this.#allRows.length
+      || (!!facts.free?.length && !this.#freeRows.has([...facts.free].sort().join('\n'))));
     // It reads a field the held set lacks: asked again, and the column read. TRAP T-a-held-set-reads-the-pages-fields
     const set = this.#closed ? null : this.#cache?.set;
     const lacks = !!set && !!this.#result.rows.length && !set.covers(this.#need());

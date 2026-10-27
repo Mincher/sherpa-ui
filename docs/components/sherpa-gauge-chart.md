@@ -94,6 +94,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`number \| { value, zones? }`
+`number \| { value, zones?, picked? }`
 
-set the value. `zones` are its field's thresholds, drawn where `data-zones` says none.
+set the value. `zones` are its field's thresholds, drawn where `data-zones` says none; `picked`, the zones its field's filter keeps — the rest fade, and the needle stays.

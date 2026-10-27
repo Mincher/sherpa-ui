@@ -984,7 +984,11 @@ export class SherpaProvider extends SherpaElement {
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
     const fields = spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
+    /* A chart over its field's ZONES is free of that field: its filter lights the
+       zones and never moves the value. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
+    const zoned = asks.thresholds && spec?.field ? spec.field : undefined;
     const unbind = bindSource(source, el as Populatable, {
+      ...(zoned ? { free: [zoned] } : {}),
       ...(fields ? { fields } : {}),
       rows: spec || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
@@ -993,7 +997,11 @@ export class SherpaProvider extends SherpaElement {
       ...(scope ? { scope } : {}),
       ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
-      ...(spec ? { readonly: true, as: (rows, src) => summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope)) } : {}),
+      ...(spec ? { readonly: true, as: (rows, src) => {
+        const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope));
+        return zoned && summary && typeof summary === 'object' && 'zones' in summary
+          ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
+      } } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'

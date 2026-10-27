@@ -76,13 +76,15 @@ export class SherpaGaugeChart extends SherpaElement {
     this.#sync();
   }
 
-  /** populate(number | { value, zones? }) — set the value. `zones` are its
-   *  field's thresholds, drawn where `data-zones` says none.
-   *  TRAP T-a-threshold-is-a-fact-of-the-field */
+  /** populate(number | { value, zones?, picked? }) — set the value. `zones` are
+   *  its field's thresholds, drawn where `data-zones` says none; `picked`, the
+   *  zones its field's filter keeps — the rest fade, and the needle stays.
+   *  TRAP T-a-threshold-is-a-fact-of-the-field · TRAP T-a-chart-is-free-of-its-own-field */
   protected override renderData(data: unknown): void {
-    const given = data as { value?: unknown; zones?: readonly Threshold[]; matched?: unknown } | null;
+    const given = data as { value?: unknown; zones?: readonly Threshold[]; matched?: unknown; picked?: unknown } | null;
     const value = typeof data === 'number' ? data : given?.value;
     if (Array.isArray(given?.zones)) this.#given = given.zones;
+    this.#picked = Array.isArray(given?.picked) ? given.picked.map(String) : [];
     this.#matched = typeof given?.matched === 'number' && Number.isFinite(given.matched) ? given.matched : null;
     if (typeof value === 'number' && Number.isFinite(value)) this.value = value;
     // New zones with the same value change no attribute, so it draws here.
@@ -91,6 +93,8 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /** Its field's thresholds, as its provider handed them. */
   #given: readonly Threshold[] = [];
+  /** The zones its field's filter keeps, by name; none, every zone shows. TODO 479 */
+  #picked: string[] = [];
   /** The value the highlight's driver matches, as handed; null, none. TODO 441 */
   #matched: number | null = null;
 
@@ -344,6 +348,8 @@ export class SherpaGaugeChart extends SherpaElement {
       arc.dataset['index'] = String(i);
       // The remainder is chrome, not data.
       if (band.rest) arc.dataset['rest'] = '';
+      // A zone its field's filter leaves out fades. Will, TODO 479
+      arc.toggleAttribute('data-off', !!this.#picked.length && !!band.zone?.label && !this.#picked.includes(band.zone.label));
       if (band.color) arc.style.setProperty('--_hue', band.color);
       if (band.border) arc.style.setProperty('--_border', band.border);
       host.appendChild(arc);

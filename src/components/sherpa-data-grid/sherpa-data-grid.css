@@ -115,6 +115,9 @@
     animation-timeline: scroll(nearest block);
     animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
   }
+  /* …and the BOTTOM edge over every column, pinned too: the rows below run on
+     under all of them. Will, TODO 486 */
+  :host([data-scroll-shadow]) .scroller::after { z-index: 3; }
   :host(:not([data-filterable])) .head-row > :is([data-pinned], .actions-head)::after,
   :host([data-filterable]) .filter-row > :is([data-pinned], .actions-cell)::after {
     content: '';

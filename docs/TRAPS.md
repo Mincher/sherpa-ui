@@ -19163,3 +19163,34 @@ box. Frames: the grid's scroller, the app shell's Context, the dialog's body.
 - Site: `src/core/sherpa-base.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
+
+### T-a-chart-is-free-of-its-own-field
+
+Will, TODO 479: *"When filtering gauge chart segments the needle shouldn't
+move. This chart shows a range with demarked threshold segments. Toggling a
+legend item, or filter chips, for this type of chart should highlight the
+active segments."*
+
+A chart over its field's ZONES — a gauge — is FREE of that field
+(`free: [field]` on its bind; its provider says so for any summary that asks
+for thresholds). Its rows are the View's less every clause on that field
+(`filterWithout`: an `and` drops its parts on it; an `or` goes only when all of
+it is that field), and its own part's answer less the same — loaded beside the
+unpaged set, once per set of fields, and handed the chart in place of it. So the
+View's OTHER filters still move the needle (Will, D1 A) and its own never does.
+
+Its picks LIGHT it: `pickedFor(el, field)` — the chart's own part's picks, else
+the View's, as applied — rides with the summary as `picked`, and a zone not
+picked fades (D2 A). The push key carries those picks, because a pick on a free
+field changes no row the chart is handed.
+
+Where the View HOLDS the field, the gauge's legend writes the View's answer
+(`bindSelection`'s "raised"), so in Demos' Records the zones filter the whole
+page, as Will asked: the Records View holds Health.
+
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-binding.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `test/unit/a-chart-is-free-of-its-own-field.test.mjs`

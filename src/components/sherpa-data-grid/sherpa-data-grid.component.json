@@ -720,6 +720,11 @@
   "states": [
     {
       "$type": "state",
+      "name": "scroll-shadow",
+      "selector": ":host([data-scroll-shadow])"
+    },
+    {
+      "$type": "state",
       "name": "filterable",
       "selector": ":host([data-filterable])"
     },

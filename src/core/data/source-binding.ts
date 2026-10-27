@@ -14,6 +14,7 @@
  * - .entries — Every bind, live, in the order they were made.
  * - .componentScopes — The scopes a bound component answers — every other one is the page's.
  * - .fieldsRead — The fields the bound components read from a row, or null — every field.
+ * - .freeSets — Each set of fields a bind is free of, once.
  * - .wantsAllRows — Is any bind asking for the unpaged set?
  * - .showsOf — What the first component bound into a scope says it shows.
  * - .componentOf — The tag of the first component bound into a scope that says what it shows.
@@ -34,7 +35,7 @@
  * - tagOf — A bound control's tag, where it is an element.
  */
 import { VIEW } from './query.js';
-import { andFilter, filterRows, type Filter, type Row } from './store.js';
+import { andFilter, filterRows, filterWithout, type Filter, type Row } from './store.js';
 import { coalesce } from './timing.js';
 import type { AttachFacts, BindSink, BoundControl, BoundView, ScopeDescription } from './data-source-types.js';
 import type { FieldReading } from './filter-state.js';
@@ -55,6 +56,8 @@ export interface Bound {
   shows?: AttachFacts['shows'];
   /** See AttachFacts.fields. */
   fields?: readonly string[];
+  /** See AttachFacts.free. */
+  free?: readonly string[];
   /** Where its view, rows and pending fields go. */
   sink: BindSink;
 }
@@ -71,6 +74,10 @@ export interface BindHost {
   view(): BoundView;
   /** The rows a bind is under: the page, or every row. */
   rows(which: 'page' | 'all'): readonly Row[];
+  /** Every row under the View less its clauses on these fields. TODO 479 */
+  freeRows(fields: readonly string[]): readonly Row[];
+  /** A field's picks in force on one component. TODO 479 */
+  pickedFor(el: BoundControl, field: string): string[];
   /** What narrows one bound component alone, by its id. */
   only(id: string): Filter | undefined;
   /** A component scope's own answer. */
@@ -103,6 +110,7 @@ export class SourceBinding {
       ...(facts.scope ? { scope: facts.scope } : {}),
       ...(facts.shows ? { shows: facts.shows } : {}),
       ...(facts.fields ? { fields: [...facts.fields] } : {}),
+      ...(facts.free?.length ? { free: [...facts.free].sort() } : {}),
     });
   }
 
@@ -148,6 +156,13 @@ export class SourceBinding {
     return out;
   }
 
+  /** Each set of fields a bind is free of, once. TRAP T-a-chart-is-free-of-its-own-field */
+  freeSets(): string[][] {
+    const sets = new Map<string, string[]>();
+    for (const entry of this.#bound.values()) if (entry.free) sets.set(entry.free.join('\n'), [...entry.free]);
+    return [...sets.values()];
+  }
+
   /** Is any bind asking for the unpaged set? TRAP T-a-summary-binds-to-all-the-rows */
   wantsAllRows(): boolean {
     for (const entry of this.#bound.values()) if (entry.rows === 'all') return true;
@@ -186,14 +201,18 @@ export class SourceBinding {
     // Skip a push that would hand over the same rows again.
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
-    const base = this.#host.rows(entry.rows);
+    // FREE of a field, its rows are the View's less that field's clauses. TRAP T-a-chart-is-free-of-its-own-field
+    const free = entry.free ? new Set(entry.free) : undefined;
+    const base = entry.free ? this.#host.freeRows(entry.free) : this.#host.rows(entry.rows);
     /* What narrows THIS component alone, on top of the shared query — and, for
        a summary bound INTO a component scope, that scope's answer.
        TRAP T-a-component-part-narrows-one-component */
     const into = entry.rows === 'all' && typeof entry.scope === 'string' ? this.#host.scoped(entry.scope) : undefined;
-    const own = andFilter([this.#host.only(entry.id), into].filter((f): f is Filter => !!f));
-    // …and the highlight, which moves no row. TODO 441
-    const ownKey = JSON.stringify([own ?? null, this.#host.highlight(entry.scope) ?? null]);
+    const narrows = andFilter([this.#host.only(entry.id), into].filter((f): f is Filter => !!f));
+    const own = free ? filterWithout(narrows, free) : narrows;
+    // …and the highlight, which moves no row; and a free field's picks, which light it. TODO 441, 479
+    const lit = entry.free?.map((f) => this.#host.pickedFor(el, f)) ?? null;
+    const ownKey = JSON.stringify([own ?? null, this.#host.highlight(entry.scope) ?? null, lit]);
     if (entry.lastRows === base && entry.lastOwn === ownKey) return;
     entry.lastRows = base;
     entry.lastOwn = ownKey;

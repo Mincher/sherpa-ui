@@ -1,0 +1,61 @@
+/**
+ * A CHART IS FREE OF ITS OWN FIELD — Will, TODO 479. A gauge over its field's
+ * zones is never narrowed by that field: its rows are the View's less any
+ * clause on it, so the needle stays; the picks only light its zones. The View's
+ * other filters still narrow it.
+ *
+ *   node --test test/unit/a-chart-is-free-of-its-own-field.test.mjs
+ *
+ * TRAP T-a-chart-is-free-of-its-own-field
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+import { ArrayStore, bindSource, openSource } from '../../dist/data.js';
+import { filterWithout } from '../../dist/core/data/store.js';
+
+const HEALTH = [
+  { to: 60, label: 'At risk', status: 'critical' },
+  { to: 80, label: 'Watch', status: 'warning' },
+  { to: 100, label: 'Healthy', status: 'success' },
+];
+const ROWS = [
+  { id: 1, health: 50, region: 'EMEA' }, { id: 2, health: 70, region: 'EMEA' },
+  { id: 3, health: 90, region: 'EMEA' }, { id: 4, health: 95, region: 'APAC' },
+];
+const settle = () => new Promise((res) => setTimeout(res, 20));
+
+test('a filter less a field: an and drops its parts on it; an or goes only when all of it is that field', () => {
+  const health = ['health', 'lt', 60];
+  const region = ['region', 'eq', 'EMEA'];
+  assert.deepEqual(filterWithout(['and', health, region], new Set(['health'])), region);
+  assert.equal(filterWithout(health, new Set(['health'])), undefined);
+  assert.deepEqual(filterWithout(['or', health, region], new Set(['health'])), ['or', health, region]);
+  assert.equal(filterWithout(['or', health, ['health', 'gte', 80]], new Set(['health'])), undefined);
+  assert.deepEqual(filterWithout(['and', ['and', health, region], ['region', 'ne', 'APAC']], new Set(['health'])),
+    ['and', region, ['region', 'ne', 'APAC']]);
+});
+
+test('a chart free of its field is narrowed by the View\'s other filters, never by its own; its picks are told', async () => {
+  const source = await openSource({
+    store: 'rows',
+    fields: { health: { label: 'Health', type: 'number', thresholds: HEALTH }, region: { label: 'Region', start: 'all' } },
+    scopes: { view: { label: 'View', holds: ['region', 'health'] } },
+  }, new ArrayStore(ROWS, { key: 'id' }));
+  const seen = [];
+  const gauge = { populate(d) { seen.push(d.map((r) => r.id)); }, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} };
+  const grid = { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} };
+  bindSource(source, grid, {});
+  bindSource(source, gauge, { rows: 'all', readonly: true, free: ['health'] });
+  await source.load();
+  await settle();
+  source.query.setReading('view', 'health', { picked: ['At risk'] });
+  source.query.setReading('view', 'region', { picked: ['EMEA'] });
+  source.query.commit();
+  await source.load();
+  await settle();
+  // The page is narrowed by both; the gauge by Region alone.
+  assert.equal(source.debugState().total, 1);
+  assert.deepEqual(seen.at(-1), [1, 2, 3]);
+  assert.deepEqual(source.pickedFor(gauge, 'health'), ['At risk']);
+});

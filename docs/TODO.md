@@ -160,11 +160,17 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
 | ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
 | ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
-| ⬜ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
+| ✅ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
 | ✅ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
 | ✅ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
 | ⬜ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
 | ✅ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
+| ⬜ | 3j | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
+| ⬜ | 3k | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
+| ✅ | 3l | 486 | BUG — the grid's pinned columns show no inner shadow at the BOTTOM while more rows lie below; then CHECK every scroll shadow in the grid — top, bottom, start, end — over pinned and unpinned columns (Will, 2026-10-27) | look |
+| ⬜ | 3m | 487 | DEFAULT — the data grid's rows per page start at the 100 option (Will, 2026-10-27) | data |
+| ⬜ | 3n | 488 | UX — with 'Show view context in panel mode' OFF, the View Context toolbar has no panel-mode button; only Local Context toolbars show it (Will, 2026-10-27) | filters |
+| ⬜ | 3o | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2308,6 +2314,46 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
+### `[ ]` ⬜ 489 — SETTING: "Select none shows all data", off by default
+
+Will, 2026-10-27: *"Add a filtering setting to have 'Select none shows all
+data'. Have this setting off by default. When off, if Select All isn't ticked
+for a filter then no data is returned for that filter. The user has to select 1
+or all for this to return data. When on, Selecting no items in a filter menu
+shows all of the data for that field. Set the Customer and Regions filters, in
+all Sherpa Demo view definitions, to have Select All active by default."*
+
+NOTE: OFF is the opposite of 480 (the last value let go shows every row). On is
+480's rule. Ask Will which a value chip let go follows while it is off.
+
+### `[ ]` ⬜ 486 — BUG: no bottom shadow over the grid's pinned columns
+
+Will, 2026-10-27: *"Related to 481, pinned columns don't show an inner shadow at
+the bottom if there is overflow content (more cells) in that direction."* Then:
+*"Actually we need to check all overflow scroll under shadow logic in the data
+grid from both pinned and unpinned columns."*
+
+**Done.** The bottom edge sat under the pinned body cells (level 1 under 2); it
+now runs over every column (level 3 — it never meets the header). Checked at
+the top-left, middle and bottom-right: top under the header over every column,
+bottom over every column, start past the pinned Name, end before Actions —
+each only while content lies that way. Test: `reforged-scroll-shadow`.
+
+### `[ ]` ⬜ 485 — SETTING: save filters at any scope, off by default
+
+Will, 2026-10-27: *"Add a setting to allow Saving Filters at any scope. By
+default it is off which will mean we can only save filter definitions at a local
+scope (and also only apply them at a local scope). When off there will be no
+need for a Save Filters button/menu in the View Context toolbar or panel."*
+
+### `[ ]` ⬜ 484 — LAYOUT: a sticky metrics row sits above the layout grid
+
+Will, 2026-10-27: *"When a metrics row is sticky, I think we need to move it out
+of the layout grid and place it above it inside the content area. With this done
+we can let the layout-grids scroll under inner shadow conditions handle the
+shadow effect. We no longer need a drop shadow on the metrics row when scrolled
+under."*
+
 ### `[x]` ✅ 483 — BUG: a section's ⋮ is green while a value is picked
 
 Will, 2026-10-27: *"The overflow menu buttons for panel mode sections uses the
@@ -2366,6 +2412,32 @@ customer record dataset."*
 
 Changes 477: there a zone turned off narrowed the gauge alone, and moved its
 needle.
+
+Will, 2026-10-27: D1 A — the needle ignores only its OWN field's filter; the
+View's other filters (Customer, Region, Date) still move it. D2 A — picked
+zones keep their colour, the rest fade, as an OFF legend item does; nothing
+picked, all show.
+
+The plan:
+
+| step | what | |
+|---|---|---|
+| 1 | DATA — a binding can be FREE of fields: its rows are the View's less any clause on them, and its own part's too (`free`); and `pickedFor(el, field)` says the picks in force on it | ✅ |
+| 2 | GAUGE — its provider binds it free of its own field, and hands it the zones picked; the others fade | ✅ |
+| 3 | DEMOS — Records' View holds Health, so its gauge legend writes the View's answer (bindSelection's "raised") | ✅ |
+| 4 | Tests, TRAP | ✅ |
+
+**Done.** On Records a zone turned off in the gauge legend, or a Health chip in
+the View, filters the whole page (Records' View holds Health; its At risk View
+and saved filter now name Health there); the gauge fades the zones left out,
+and its needle stays — the View's other filters still move it. On the way: a
+section bound after the View took its field never heard it (the source now
+tells a bar what the View holds as it binds), a rebuild lost a chip's held-above
+mark (kept as state now), a held-above section chip drawn before it rendered
+said nothing (it says "Filter moved to View Context scope." now), and a bar's
+settle could wait for good on a chip a rebuild replaced. TRAP
+`T-a-chart-is-free-of-its-own-field`. Tests: sherpa-ui
+`a-chart-is-free-of-its-own-field`; Demos `reforged-gauge-legend-picks`.
 
 ### `[x]` ✅ 478 — LOOK: the scroll shadow works sideways too
 

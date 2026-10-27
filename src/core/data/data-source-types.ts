@@ -227,6 +227,10 @@ export interface AttachFacts {
   /** The fields it reads from a row. A component given rows that names none
    *  reads every field. TRAP T-a-held-set-reads-the-pages-fields */
   fields?: readonly string[];
+  /** Fields that never NARROW it, with `rows: 'all'`: its rows are the View's
+   *  less any clause on them, its own part's too — a gauge over its own zones,
+   *  which they only light. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
+  free?: readonly string[];
 }
 
 /** What a bound component is told of the view; `undefined` is none. The binder

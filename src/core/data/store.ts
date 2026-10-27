@@ -38,6 +38,7 @@
  * - valueKey — A value as the string a CONTROL can put in an attribute.
  * - valueSet — A set of values to test against, using the query's own comparison.
  * - andFilter — several clauses as ONE filter, or undefined when there are none
+ * - filterWithout — A filter less what narrows these fields alone.
  * - picksClause — One field and the values picked for it, as a clause.
  * - filterRows — Rows matching a filter.
  * - searchRows — Rows matching a free-text search — `fields` when given, else every value.
@@ -552,6 +553,16 @@ export function andFilter(clauses: readonly Filter[]): Filter | undefined {
   const kept = clauses.filter(Boolean);
   if (!kept.length) return undefined;
   return kept.length === 1 ? kept[0]! : (['and', ...kept] as Filter);
+}
+
+/** A filter less what narrows these fields alone: an `and` drops its parts on
+ *  them, and an `or` goes only when every branch is theirs. TODO 479 */
+export function filterWithout(filter: Filter | undefined, fields: ReadonlySet<string>): Filter | undefined {
+  if (!filter || !fields.size) return filter;
+  if (filter[0] === 'and') {
+    return andFilter((filter.slice(1) as Filter[]).map((f) => filterWithout(f, fields)).filter((f): f is Filter => !!f));
+  }
+  return filterFields(filter).every((f) => fields.has(f)) ? undefined : filter;
 }
 
 /**

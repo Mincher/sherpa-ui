@@ -1144,8 +1144,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
   supersede(ids: readonly string[], appliedAt?: string): void {
+    // KEPT, so a chip a rebuild remakes is held above again. Will, TODO 479
+    this.#above = { ids: [...ids], ...(appliedAt ? { at: appliedAt } : {}) };
     if (!this.#chips().length) {
-      this.#held.supersede = { ids: [...ids], ...(appliedAt ? { at: appliedAt } : {}) };
+      this.#held.supersede = this.#above;
       return;
     }
     // By field or by id: a chip named for its question answers its def's field.
@@ -1163,6 +1165,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       else chip.removeAttribute('data-applied-at');
     }
   }
+
+  /** The fields the View holds, as last told: every rebuild draws them again. */
+  #above: { ids: string[]; at?: string } | null = null;
 
   /** The ids this bar currently has suspended. */
   get superseded(): string[] {
@@ -1333,7 +1338,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if ('picks' in steer) this.#paintPicks(id, steer.picks);
       else this.#paintReading(id, steer.reading);
     }
-    if (held.supersede) this.supersede(held.supersede.ids, held.supersede.at);
+    const above = held.supersede ?? this.#above;
+    if (above) this.supersede(above.ids, above.at);
     this.drawResults(this.#results);
 
     /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is
@@ -1481,11 +1487,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * the reader had. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
    */
   async #settled(): Promise<void> {
-    await Promise.all(this.#chips().map(
-      (chip) => chip.rendered,
-    ));
-    await Promise.all(this.#chips().flatMap((chip) =>
-      [...chip.querySelectorAll<SherpaMenu>('sherpa-menu')].map((menu) => menu.rendered)));
+    /* The chips and menus as they are NOW, read again each frame: one a rebuild
+       replaced before it rendered never resolves, and waiting on it hung the
+       draw for good — a part's section never heard it was held above. TODO 479 */
+    const pending = (): Array<{ rendered: Promise<void> }> => this.#chips()
+      .flatMap((chip) => [chip, ...chip.querySelectorAll('sherpa-menu')])
+      .filter((el) => el.isConnected && (el as { hasRendered?: boolean }).hasRendered === false) as never;
+    for (let left = pending(); left.length; left = pending()) {
+      await Promise.race([Promise.all(left.map((el) => el.rendered)), new Promise((r) => requestAnimationFrame(r))]);
+    }
   }
 
   /** Give a chip's menu its "Remove" action. TRAP T-remove-is-opt-in-and-a-footer-button */

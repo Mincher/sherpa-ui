@@ -403,8 +403,8 @@
     }
   ],
   "populate": {
-    "shape": "number | { value, zones? }",
-    "description": "set the value. `zones` are its field's thresholds, drawn where `data-zones` says none."
+    "shape": "number | { value, zones?, picked? }",
+    "description": "set the value. `zones` are its field's thresholds, drawn where `data-zones` says none; `picked`, the zones its field's filter keeps — the rest fade, and the needle stays."
   },
   "states": [
     {

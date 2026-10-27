@@ -98,6 +98,13 @@
   cursor: default;
 }
 
+/* A zone its field's filter leaves out FADES, as a donut's slice does while it
+   highlights; the picked keep their colour. Will, TODO 479 */
+.zone[data-off] {
+  fill: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
+  stroke: color-mix(in srgb, var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c8))) 35%, transparent);
+}
+
 /* ── Needle ──────────────────────────────────────────────────────────
    The PIVOT spans the gauge box: a zero-size hub makes the needle's percentage
    height zero. */

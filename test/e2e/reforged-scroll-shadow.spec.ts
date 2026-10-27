@@ -180,3 +180,46 @@ test('the header\'s shadow does not stack under a pinned column as columns scrol
   expect(rest.pinned).toBeGreaterThanOrEqual(rest.scrolled - 6);
   expect(Math.abs(across.pinned - rest.pinned)).toBeLessThanOrEqual(3);
 });
+
+/* The BOTTOM edge runs over every column, the pinned ones too, while rows lie
+   below: the rows run on under all of them. TODO 486 */
+test('the grid\'s bottom edge shades its pinned column while more rows lie below, and not at the end', async ({ page }) => {
+  const at = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.id = 'tall';
+    el.style.cssText = 'block-size: 240px; inline-size: 480px';
+    el.toggleAttribute('data-scroll-shadow', true);
+    el.toggleAttribute('data-selectable', true);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const columns = Array.from({ length: 3 }, (_, i) => ({ field: `c${i}`, header: `Column ${i}`, width: 120 }));
+    el.populate!({ columns, rows: Array.from({ length: 30 }, (_, r) => Object.fromEntries(columns.map((c) => [c.field, `${c.field}-${r}`]))) });
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const sr = el.shadowRoot!;
+    const scroller = sr.querySelector<HTMLElement>('.scroller')!.getBoundingClientRect();
+    const pin = sr.querySelector('.head-row > [data-pin-last]')!.getBoundingClientRect();
+    return { y: scroller.bottom - 3, x: pin.left + 6, driven: CSS.supports('animation-timeline: scroll()') };
+  });
+  test.skip(!at.driven, 'no scroll timeline: no shadow');
+  const pixel = async (): Promise<number> => {
+    const shot = await page.screenshot({ clip: { x: Math.round(at.x), y: Math.round(at.y), width: 1, height: 1 } });
+    return page.evaluate(async (b64) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${b64}`;
+      await img.decode();
+      const c = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d')!;
+      c.drawImage(img, 0, 0);
+      return c.getImageData(0, 0, 1, 1).data[0]!;
+    }, shot.toString('base64'));
+  };
+  const more = await pixel();
+  await page.evaluate(async () => {
+    const s = document.getElementById('tall')!.shadowRoot!.querySelector<HTMLElement>('.scroller')!;
+    s.scrollTop = s.scrollHeight;
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+  });
+  const end = await pixel();
+  // Shaded while rows lie below; clear at the end.
+  expect(end - more).toBeGreaterThan(20);
+});
