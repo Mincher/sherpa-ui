@@ -19450,7 +19450,9 @@ A TAG is its value's toggle. Pressed, its value is picked — out of All too, so
 again, it is let go, and the last let go is NO filter, not none (Will: "clicking
 the tag again clears the filter value"). It wears the plain Tag look, and the
 filters' on colours while picked: the data-viz colours were tried first, and
-were "not great" (Will, TODO 507).
+were "not great" (Will, TODO 507). While a shown column draws tags, EVERY cell is
+two lines and starts at the first (`:state(multi-field)`), so the values align
+across the row (Will, TODO 509).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-multi-field-column.spec.ts`

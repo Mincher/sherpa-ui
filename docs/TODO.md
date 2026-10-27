@@ -49,7 +49,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 21 | 504 | LOOK — the scroll shadow (the inner shadow a box casts over what it scrolls under) is too harsh: softer, in line with the other Sherpa drop shadows, a shorter reach, and none until the scroll starts (Will, 2026-10-27). Done: 8px, half the shadow ink, in ONE pair of properties (`--sherpa-scroll-shadow-size`, `-ink`) the edges, the grid's header, a stuck metric row and a scope header read; the bottom and a sideways end edge hidden until the scroll starts. TRAP `T-a-scroll-shadow-is-drawn-over-the-content` | look |
 | ✅ | 22 | 506 | LOOK — a grid's GROUP row: its leading padding one step more (Will, 2026-10-27). Done: 8px before the group's box, at rest and while it scrolls sideways | look |
 | ✅ | 23 | 508 | LOOK — a multi-field cell: more gap between its text and its tags (Will, 2026-10-27). Done: 4px, a step up from 2 | look |
-| ⬜ | 24 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27) | look |
+| ✅ | 24 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27). Done: `:state(multi-field)` while a shown column draws tags; every cell of a row is two lines tall and top-aligned, its box and ⋮ too. TRAP `T-a-joined-menu-answers-each-field` | look |
 | ⬜ | 25 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
 | 🚧 | 26 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | 🚧 | 27 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
@@ -2561,10 +2561,14 @@ filter-on colours while picked.
 
 **✅ Done 2026-10-27:** as written; `paintSwatch` stays, the chip's swatch uses it.
 
-### `[ ]` ⬜ 509 — LOOK: every cell two rows when one is multi-field
+### `[x]` ✅ 509 — LOOK: every cell two rows when one is multi-field
 
 Will, 2026-10-27: *"If there are multi-value cells then all cells in the grid
 should have 2 rows so that the value labels align vertically."*
+
+**✅ Done 2026-10-27:** the grid wears `:state(multi-field)` while a shown column
+draws tags; then every row's cells — its box and its ⋮ too — are two lines tall
+(52px) and start at the first, so each value sits on one line across the row.
 
 ### `[x]` ✅ 508 — LOOK: a multi-field cell's rows, further apart
 

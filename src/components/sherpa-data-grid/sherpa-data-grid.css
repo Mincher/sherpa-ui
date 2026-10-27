@@ -929,5 +929,12 @@
   block-size: var(--sherpa-theme-content-size-small, 12px);
 }
 .cell-tag[data-current] .tag-tick { display: var(--sherpa-toggle-shape, none); }
+/* With a multi-field column, EVERY cell is two lines and starts at the first:
+   the values align across the row. Will, TODO 509 */
+:host(:state(multi-field)) .row > :is(.cell, .select-cell, .actions-cell) {
+  vertical-align: top;
+  block-size: calc(3 * var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-base, 20px)
+    + var(--sherpa-display-mode-size-md, 20px));
+}
 /* The one tip is placed by measure: its own box takes no room. */
 .tag-tip { position: absolute; }

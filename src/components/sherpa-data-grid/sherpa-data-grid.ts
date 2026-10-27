@@ -1342,6 +1342,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     const group = this.dataset['groupField'];
     const columns = this.#shownColumns();
+    // A column draws tags: every row is two lines, so the values align. Will, TODO 509
+    this.toggleState('multi-field', columns.some((c) => this.#tagsOf(c).length > 0));
     // The cell chip goes home first: it would leave with its row. TRAP T-a-cell-chip-is-one-and-moves
     if (this.#cellChip) this.$('.cell-filter-home')?.appendChild(this.#cellChip);
     body.replaceChildren();

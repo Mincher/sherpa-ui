@@ -118,3 +118,26 @@ test('a tag whose field the View holds is greyed, refused, and says where it wen
   })()`);
   expect(r).toEqual({ held: true, reading: null, tip: 'Filter moved to View scope.', sections: ['Status'] });
 });
+
+/* With a multi-field column, EVERY cell is two lines and starts at the first,
+   so the values align across the row (Will, TODO 509); off, one line again. */
+test('a grid with tags makes every cell two lines, its value on the first', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const top = (field) => {
+      const cell = sr.querySelector('.row .cell[data-field="' + field + '"]');
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      return Math.round(range.getClientRects()[0].top);
+    };
+    const tall = () => sr.querySelector('.row .cell[data-field="plan"]').getBoundingClientRect().height;
+    const on = { align: getComputedStyle(sr.querySelector('.row .cell[data-field="plan"]')).verticalAlign,
+      same: top('plan') === top('name'), height: tall() };
+    grid.removeAttribute('data-multi-field');
+    await settle();
+    return { on, off: getComputedStyle(sr.querySelector('.row .cell[data-field="plan"]')).verticalAlign, height: tall() };
+  })()`) as { on: { align: string; same: boolean; height: number }; off: string; height: number };
+  expect(r.on).toMatchObject({ align: 'top', same: true });
+  expect(r.on.height).toBeGreaterThan(r.height);
+  expect(r.off).not.toBe('top');
+});
