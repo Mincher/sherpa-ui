@@ -49,6 +49,14 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   if (options.scope === 'all' || (Array.isArray(options.scope) && options.scope.includes('all'))) {
     report({ code: 'scope-all', message: "bind: `scope: 'all'` names a filter scope; for every row, say `rows: 'all'`." });
   }
+  // A provider binds with `deliver`. Will, TODO 388. TRAP T-a-grid-is-never-wired-by-hand
+  if (!options.deliver && (el as { localName?: string }).localName === 'sherpa-data-grid') {
+    report({
+      code: 'grid-without-provider',
+      message: 'bind: a data grid is wired by hand. Put it in a <sherpa-provider> and give the provider its source: provider.provide({ sources: { name: source } }).',
+      at: { tag: 'sherpa-data-grid', id: (el as { id?: string }).id || undefined },
+    });
+  }
 
   const { as: adapt, deliver, into } = options;
   const readonly = options.readonly ?? false;

@@ -27,8 +27,8 @@ Everything below serves one separation:
 The join is the SOURCE. A component ASKS for what it wants, in its own
 attributes; `sherpa-provider` opens a page's source from its page definition
 (`docs/PAGE-DEFINITION.md`) and answers each ask through `bindSource`.
-A hand `bindSource(source, el, options)` is the manual way, for a page with no
-provider. A
+Every page joins its data that way: a data grid bound by hand is reported
+(`grid-without-provider`, TRAP `T-a-grid-is-never-wired-by-hand`). A
 component never reaches past the source to a store, and two components never
 speak directly.
 

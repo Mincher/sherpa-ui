@@ -215,8 +215,8 @@ saved Views or the app definition, so one button never pays for them
 
 **A page joins its data through `<sherpa-provider>`.** It opens a page
 definition's source and answers each component's ask
-(`docs/PAGE-DEFINITION.md`, `docs/PROVIDER-DESIGN.md`); `bindSource()` is
-the manual way, for a page with no provider.
+(`docs/PAGE-DEFINITION.md`, `docs/PROVIDER-DESIGN.md`). Always: a data grid
+bound by hand is reported (TRAP `T-a-grid-is-never-wired-by-hand`).
 
 ### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
 

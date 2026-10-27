@@ -238,16 +238,17 @@ full regardless.
 
 ## 6. What the source adds
 
-A `DataSource` holds one query and pushes results to bound components. In an
-app, `<sherpa-provider>` does the binding: it opens a page definition's source
-and answers each component's ask (`docs/PAGE-DEFINITION.md`). The binds below
-are the manual way, for a page with no provider:
+A `DataSource` holds one query and pushes results to bound components.
+`<sherpa-provider>` always does the binding: it opens a page definition's
+source and answers each component's ask (`docs/PAGE-DEFINITION.md`). A data
+grid bound by hand is reported (`grid-without-provider`):
 
 ```js
 const source = new DataSource({ store, pageSize: 25 });
-bindSource(source, grid);                                       // two-way: reads and steers
-bindSource(source, chart, { readonly: true, as: byCategory });  // reads only
+provider.provide({ sources: { records: source } });  // each component inside asks; the provider binds it
 ```
+
+What a bind can say — the provider says it for each component's ask:
 
 - **`readonly`** — the component shows the data but never steers it.
 - **`steerOnly`** — its events reach the source but no rows are pushed back

@@ -19199,3 +19199,25 @@ page, as Will asked: the Records View holds Health.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `test/unit/a-chart-is-free-of-its-own-field.test.mjs`
+
+### T-a-grid-is-never-wired-by-hand
+
+Will, TODO 388: *"We should always use the provider. Never hand wire a data
+grid. Throw a console warning/log if a consumer of sherpa tries to hand wire a
+grid without a provider."*
+
+A grid joined by a hand `bindSource(source, grid)` shows rows, but nothing
+keeps its Query, its Views or its draft over a reload; the provider does. So
+`bindSource()` reports `grid-without-provider` (a `console.warn` unless the
+app routes reports) for a `sherpa-data-grid` bound with no `deliver`. Every
+provider bind passes `deliver` — the callback the component asked with — so
+that is how a hand bind is told from the provider's. A plain object standing
+in for a grid in a node test has no `localName`, and is not reported.
+
+Sherpa does NOT re-route a hand-wired grid through a provider. Two rules stop
+it: the binder is DOM-free and names no component, and no display component
+imports the app layer (TRAP `T-the-app-layer-is-opt-in`), so a grid cannot
+make a provider for itself. The report names the one-line fix instead.
+
+- Site: `src/core/ui/bind-source.ts`
+- Site: `test/unit/a-grid-is-never-wired-by-hand.test.mjs`

@@ -243,7 +243,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (78)
+## The join and the app layer (79)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -259,6 +259,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — bind-source
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — provider
 - [T-a-filter-set-groups-or-chains](TRAPS.md#t-a-filter-set-groups-or-chains) — provider
+- [T-a-grid-is-never-wired-by-hand](TRAPS.md#t-a-grid-is-never-wired-by-hand) — bind-source
 - [T-a-group-is-a-data-layer-concept](TRAPS.md#t-a-group-is-a-data-layer-concept) — provider
 - [T-a-heading-asks-through-the-source](TRAPS.md#t-a-heading-asks-through-the-source) — bind-source
 - [T-a-heading-opens-the-chips-menu](TRAPS.md#t-a-heading-opens-the-chips-menu) — context, provider
