@@ -171,6 +171,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 3m | 487 | DEFAULT — the data grid's rows per page start at the 100 option (Will, 2026-10-27) | data |
 | ✅ | 3n | 488 | UX — with 'Show view context in panel mode' OFF, the View Context toolbar has no panel-mode button; only Local Context toolbars show it (Will, 2026-10-27) | filters |
 | ⬜ | 3o | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
+| ⬜ | 3p | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2313,6 +2314,24 @@ Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
 save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[ ]` ⬜ 490 — GRID: multi-field columns, with tags
+
+Will, 2026-10-27 (at the next best opportunity): *"Support multi field columns in
+the data grid. For example, in the Customer Records data grid, allow the Name
+column cells to have a secondary row that shows a color coded tag for Plan,
+Tier, and Status (match data viz colors if possible). The column header filter
+menu will need to concatenate each fields values into a single menu. The
+toolbar and panel still show individual chips, sections, and values per field.
+They don't combine in any way. Clicking on a tag in this multi field cell should
+filter the data by that tag's value. Clicking the tag again clears the filter
+value. Filtered tags should use the active colours set for filter chips in the
+settings. If a field, that is a tag, is moved to the view context then hovering
+over the tag should show the explainer tooltip. Advanced filtering for this
+column isn't available via the concatenated menu and is reserved for the toolbar
+and panel menus only. This is because I'm not 100% sure how we handle a
+combination of advanced and simple filters in a single menu just yet. This
+should also be a Filtering setting and on by default."*
 
 ### `[ ]` ⬜ 489 — SETTING: "Select none shows all data", off by default
 
