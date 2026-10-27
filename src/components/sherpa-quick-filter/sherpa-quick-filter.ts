@@ -326,6 +326,8 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-value-before-the-first-render-is-held · TRAP T-custom-element-upgrade */
     customElements.upgrade(menu);
     if (!((menu as Element) instanceof SherpaElement)) return;
+    // A list given is a list, not ALL. TRAP T-all-is-an-answer
+    this.#all = false;
     menu.values = next;
     // Read BACK, never trust the ask: a value naming no row never landed.
     this.#applySelection(menu.values ?? []);
@@ -351,15 +353,19 @@ export class SherpaQuickFilter extends SherpaElement {
     const own = menu.reading;
     // ON at NONE: no rows. Will, TODOs 403, 489 · TRAP T-none-is-an-answer
     const none = this.current && this.#none && this.#empties() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
+    // ALL: every value, whichever come — no filter; OFF keeps it, as it keeps picks. TRAP T-all-is-an-answer
+    const all = this.#all && own.mode !== 'advanced' && !(own.text ?? '').trim();
     // A tiered parent switched OFF keeps its picks. TODO 369, 425 · TRAP T-a-parent-pick-is-the-parent
     const off = this.#off.size ? { off: [...this.#off] } : {};
-    return { ...own, ...off, ...(none ? { none: true } : {}), ...(this.current ? {} : { suspended: true }) };
+    return { ...own, ...off, ...(none ? { none: true } : {}), ...(all ? { picked: [], all: true } : {}), ...(this.current ? {} : { suspended: true }) };
   }
 
   /** Picks a tiered parent switched OFF keeps for when it comes back on, by key. */
   #off = new Set<string>();
   /** NONE was asked — Select all off, or drawn so: ON with nothing ticked. Will, TODO 480 */
   #none = false;
+  /** ALL was asked — Select all on, or drawn so: ON with every value ticked. Will, TODO 489 */
+  #all = false;
 
   /** Nothing ticked, while on, answers no rows. TODO 489 */
   #empties(): boolean {
@@ -407,15 +413,22 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     // By KEY: a site pick is an object, and String() makes it "[object Object]". TODO 422
     this.#off = new Set((next.off ?? []).map(valueKey));
-    this.#setPicks((next.picked ?? []).map(valueKey), next.suspended, next.none);
+    this.#setPicks((next.picked ?? []).map(valueKey), next.suspended, next.none, next.all);
   }
 
   /** Picks, and OFF where there are none or the answer is suspended — ON for none.
    *  TRAP T-everything-on-is-no-filter · TRAP T-none-is-an-answer */
-  #setPicks(picks: readonly string[], off = false, none = false): void {
+  #setPicks(picks: readonly string[], off = false, none = false, all = false): void {
     this.#none = none && !off;
     this.values = picks;
-    if (none && !off) this.current = true;
+    // ALL ticks every value its menu has, and every one that comes. TRAP T-all-is-an-answer
+    this.#all = all;
+    const menu = all ? this.#fieldMenu() : null;
+    if (menu) {
+      menu.all = true;
+      this.#applySelection(menu.values ?? []);
+    }
+    if ((none || all) && !off) this.current = true;
     else if (!picks.length || off) this.current = false;
   }
 
@@ -427,6 +440,7 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   clear(op: FilterOp = DEFAULT_OP): void {
     this.#off.clear();
+    this.#all = false;
     /* GROUP or SORT: no column, and no way — FORGOTTEN, not written: the chip
        answers `asc` for one with none. TODO 424 · TRAP T-one-cycle-for-one-value */
     if (this.#arranges()) {
@@ -464,7 +478,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** The rule, over the picks as given. */
   #answers(values: readonly string[]): boolean {
     // A TYPING condition answers with text; NONE too. TODOs 480, 489
-    return values.length > 0 || this.#hasTypedAnswer() || (this.#none && this.#empties());
+    return values.length > 0 || this.#hasTypedAnswer() || (this.#none && this.#empties()) || this.#all;
   }
 
   /** Does its menu hold a change not yet sent — a draft its Apply would send?
@@ -792,6 +806,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (this.#arranges()) { this.#arrangeFromMenu(); return; }
     // Select all off asks for none; any other change does not — locked or not. TODO 480
     this.#none = !!(event as CustomEvent).detail?.none;
+    this.#all = !!(event as CustomEvent).detail?.all;
     // A locked chip's menu rows are not its values: relay, change nothing.
     if (this.hasAttribute('data-locked')) {
       this.emit('quick-filter-change', { scope: 'chip', values });
@@ -843,7 +858,7 @@ export class SherpaQuickFilter extends SherpaElement {
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
     const empty = !!menu && this.current && !advanced
-      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !(this.#none && this.#empties());
+      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !(this.#none && this.#empties()) && !this.#all;
 
     this.set('data-filters-nothing', empty);
     /* AND CHECK AGAIN. `data-filters-nothing` is the AMBER warning, and a rebuilt menu
@@ -1197,8 +1212,9 @@ export class SherpaQuickFilter extends SherpaElement {
           : Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
         ...(tree ? { parentOf: new Map(tree.flatMap((i) => (i.parent !== undefined ? [[i.value, i.parent] as const] : []))) } : {}),
       },
-      list ? { ...list, picked: values } : {
+      list ? { ...list, picked: values, ...(this.#all ? { all: true } : {}) } : {
         picked: values,
+        ...(this.#all ? { all: true } : {}),
         op: isFilter ? ((menu?.dataset['op'] ?? DEFAULT_OP) as FilterOp) : DEFAULT_OP,
         text: isFilter ? (menu?.conditionValue ?? '') : '',
         // A DATE's two days are a span, as its calendar has it.

@@ -5472,6 +5472,13 @@
               }
             },
             {
+              "kind": "field",
+              "name": "all",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "kind": "method",
               "name": "switchMode",
               "parameters": [
@@ -5585,7 +5592,7 @@
               "name": "menu-change",
               "description": "The selection was COMMITTED.",
               "type": {
-                "text": "CustomEvent<{ none: true; values: string[] }>"
+                "text": "CustomEvent<{ all: true; none: true; values: string[] }>"
               }
             },
             {
@@ -5599,7 +5606,7 @@
               "name": "menu-apply",
               "description": "Apply was clicked.",
               "type": {
-                "text": "CustomEvent<{ none: true; values: string[] }>"
+                "text": "CustomEvent<{ all: true; none: true; values: string[] }>"
               }
             },
             {

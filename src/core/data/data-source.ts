@@ -642,9 +642,10 @@ export class DataSource extends EventTarget {
 
   /**
    * Each FETCHING list opens on its first value, never on every row: a list the
-   * View holds, or any on a remote source, with no answer and no `start: 'all'`.
-   * The first a row holds under the starts before it, so a chain never opens
-   * empty. Will, TODO 403 · TRAP T-a-fetching-list-opens-on-its-first-value
+   * View holds, or any on a remote source, with no answer. The first a row holds
+   * under the starts before it, so a chain never opens empty. `start: 'all'`
+   * opens on EVERY value ticked: on, and no filter. Will, TODOs 403, 489
+   * TRAP T-a-fetching-list-opens-on-its-first-value
    */
   async openOnFirst(): Promise<void> {
     for (const scope of this.query.scopes) {
@@ -656,7 +657,12 @@ export class DataSource extends EventTarget {
         const known = { field, ...this.#catalogue.facts(field) };
         const had = this.query.applied.scopes[scope]?.readings[field];
         const answer = had && readingAnswered(had) ? had : undefined;
-        if (!answer && facts.select !== 'single' && facts.start !== 'all') {
+        // ALL: every value it has, ticked, whichever come — no filter, and nothing to read. TRAP T-all-is-an-answer
+        if (!answer && facts.select !== 'single' && facts.start === 'all') {
+          this.query.startWith(scope, field, { picked: [], all: true });
+          continue;
+        }
+        if (!answer && facts.select !== 'single') {
           // The first field's values are read already; one after a start asks what is left.
           let found: string[] | null = null;
           if (before.length || !known.values?.length) {
@@ -1011,6 +1017,8 @@ export class DataSource extends EventTarget {
     const key = this.store.key;
     if (this.#catalogue.get(field)?.fetch !== 'server' || !key) return undefined;
     const { suspended: _off, ...on } = answerOf(reading);
+    // Every value ticked asks nothing: it is no filter. TODO 489
+    if (!readingClause({ field, ...this.#catalogue.facts(field) }, on)) return undefined;
     const answer = JSON.stringify(on);
     const got = this.#fetchedKeys.get(field);
     if (got?.answer === answer) return got.clause;

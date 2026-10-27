@@ -120,6 +120,8 @@ export interface FilterState {
   rows: readonly FieldCondition[];
   /** Nothing picked, on purpose: it matches no row. Will, TODO 403 · TRAP T-none-is-an-answer */
   none?: boolean;
+  /** Every value ticked, on purpose: it filters nothing. Will, TODO 489 · TRAP T-all-is-an-answer */
+  all?: boolean;
 }
 
 /**
@@ -203,6 +205,9 @@ export interface FieldReading {
   /** Nothing picked, ON PURPOSE: no rows — a fetching list's Select All off.
    *  Will, TODO 403 · TRAP T-none-is-an-answer */
   none?: boolean;
+  /** EVERY value ticked, on purpose — Select all on, or a list that starts so —
+   *  whatever values come: no filter. Will, TODO 489 · TRAP T-all-is-an-answer */
+  all?: boolean;
 }
 
 /** One row of a multi-condition filter. */
@@ -330,9 +335,11 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      row holds. TRAP T-a-value-can-be-an-object */
   const raws = [...declared];
   const all = raws.map(valueKey);
+  // ALL ticks every value it has, whichever come. TRAP T-all-is-an-answer
+  const every = !!reading.all && !range && type !== 'date' && reading.mode !== 'advanced' && (OP_TAKES[reading.op ?? DEFAULT_OP] ?? 'list') === 'list';
   /* The QUERY's comparison — a chip's option values may be spelled differently
      from the data. TRAP T-one-comparison-rule-for-query-and-ui */
-  const picked = valueSet(reading.picked ?? []);
+  const picked = valueSet(every ? raws : reading.picked ?? []);
   // No `present` given means "everything is reachable", not "nothing is".
   const present = reading.present ? valueSet(reading.present) : null;
   const op = reading.op ?? DEFAULT_OP;
@@ -410,6 +417,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
     ...(none && mode !== 'advanced' ? { none: true } : {}),
+    ...(every ? { all: true } : {}),
   };
 }
 
@@ -442,6 +450,7 @@ export function readingClause(facts: FieldFacts, reading: FieldReading): Filter 
  * TRAP T-saved-filters-are-every-scope
  */
 export function savedReading(state: FilterState): FieldReading | undefined {
+  if (state.all) return { picked: [], all: true };
   if (!state.rows.length) return undefined;
   if (state.none) return { picked: [], none: true };
   if (state.condition === 'advanced') return { conditions: state.rows.map((row) => ({ ...row })) };

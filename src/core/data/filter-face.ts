@@ -51,6 +51,9 @@ export interface FilterFace {
  * badge — a mark on every ordinary control is noise.
  * TRAP T-one-state-per-filtered-field
  */
+/** What a list with every value ticked says. */
+const ALL = 'All';
+
 export function filterFace(state: FilterState): FilterFace {
   /* The answer IN FORCE: Advanced speaks for its first row, Simple for its
      picks — the two can differ now both are kept. TRAP T-both-answers-are-kept */
@@ -77,8 +80,10 @@ export function filterFace(state: FilterState): FilterFace {
   const said = state.type === 'date' ? picks.map((day) => formatDate(day)) : picks;
 
   const typedSaid = typed ? sayTyped(lead ?? { op, text }, state.type === 'date') : '';
-  const value = typed ? typedSaid : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
-  const spelled = typed ? typedSaid : span || said.join(', ');
+  // ALL reads as All: on, and no filter. Will, TODO 489 · TRAP T-all-is-an-answer
+  const every = !!state.all;
+  const value = typed ? typedSaid : every ? ALL : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
+  const spelled = typed ? typedSaid : every ? ALL : span || said.join(', ');
 
   /* AN ADVANCED ANSWER reads as its conditions, on the face and in the tip:
      `equals(John) AND !contains(Smith)`. Will, TODO 409.

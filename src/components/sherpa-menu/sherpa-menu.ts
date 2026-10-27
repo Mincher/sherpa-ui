@@ -1270,6 +1270,8 @@ export class SherpaMenu extends SherpaElement {
     const dates = this.#calendarValues();
     if (dates) return dates;
     if (this.#heldValues) return [...this.#heldValues];
+    // ALL, before its rows are drawn: every item. TRAP T-all-is-an-answer
+    if (this.#all && !this.#stamped && this.#items.length) return this.#items.filter((item) => item.parent === undefined).map((item) => item.value);
     if (this.#tree) return this.#tree.values;
     // Not stamped yet: its items' own picks. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     if (!this.#stamped && this.#items.length) return this.#items.filter((item) => item.selected).map((item) => item.value);
@@ -1350,6 +1352,8 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set values(next: readonly string[]) {
+    // A list given is a list, not ALL: its host says all after, where it is.
+    this.#all = false;
     /* Nothing to show them yet: HELD until it is drawn — a date's calendar is
        light DOM, so it takes them now. A drill moves the rows themselves, so
        once drawn they stay the live answer.
@@ -1466,6 +1470,8 @@ export class SherpaMenu extends SherpaElement {
     const hides = this.hasAttribute('data-hide-unavailable');
     const limit = ruleOut(this.#present, this.#offered);
     const outOf = (box: HTMLInputElement): boolean => given.get(box.value)?.available === false || limit(box.value) !== null;
+    // ALL is every value it may have: one ruled out or not offered is not ticked, and comes back. TRAP T-all-is-an-answer
+    if (this.#all && !this.#tree) for (const box of this.#inputs()) box.checked = !outOf(box);
     /* Every ticked row ruled out: the filter stays in force (Will, 2026-10-20), so
        they say "no matches"; only beside a pick that stands are they "not applied". */
     const ticked = this.#inputs().filter((box) => box.checked);
@@ -1563,6 +1569,7 @@ export class SherpaMenu extends SherpaElement {
     this.prepend(...[...this.children].filter((n) => n.hasAttribute('data-lead')));
     this.#stamped = true;
     this.#drawTicks();
+    if (this.#all) this.#tickAll();
     this.#drawOpen();
     this.#markPresent();
     this.#drawMatches();
@@ -2026,15 +2033,45 @@ export class SherpaMenu extends SherpaElement {
       for (const box of boxes) box.checked = on;
     }
     input.indeterminate = false;
+    // Select all ON is ALL: rows that come later are ticked too. TRAP T-all-is-an-answer
+    this.#all = this.values.length > 0;
     this.#syncSelectAll();
     this.#followPicks();
-    if (!this.#commits) this.emit('menu-change', { values: this.values, ...this.#none() });
+    if (!this.#commits) this.emit('menu-change', { values: this.values, ...this.#said() });
   }
 
-  /** A reader's act that leaves the list empty is NONE: no rows — unless the app's
-   *  "Select none shows all data" is on. Clear is not one. Will, TODO 489 · TRAP T-none-is-an-answer */
-  #none(): { none?: true } {
-    return !this.values.length && this.hasAttribute('data-empties') && this.mode !== 'advanced' ? { none: true } : {};
+  /** What a reader's act says beyond its ticks. ALL: Select all on. NONE: the list
+   *  left empty — no rows, unless the app's "Select none shows all data" is on;
+   *  Clear is not one. Will, TODO 489 · TRAP T-none-is-an-answer · TRAP T-all-is-an-answer */
+  #said(): { none?: true; all?: true } {
+    if (this.mode === 'advanced') return {};
+    if (this.#all) return { all: true };
+    return !this.values.length && this.hasAttribute('data-empties') ? { none: true } : {};
+  }
+
+  /** EVERY value ticked, on purpose — Select all on, or its host's answer: a row
+   *  that comes later is ticked too. Will, TODO 489 · TRAP T-all-is-an-answer */
+  get all(): boolean {
+    return this.#all;
+  }
+  set all(on: boolean) {
+    this.#all = on;
+    if (on) this.#tickAll();
+  }
+  /** Every value ticked, on purpose. */
+  #all = false;
+
+  /** Tick every row Select all could — once there are rows; stamping ticks them after. */
+  #tickAll(): void {
+    if (!this.#stamped) return;
+    const boxes = this.#inputs().filter((b) => !b.disabled);
+    if (this.#tree) {
+      this.#tree.all(true, this.#canTick(boxes));
+      this.#drawTicks();
+    } else {
+      for (const box of boxes) box.checked = true;
+    }
+    this.#syncSelectAll();
   }
 
   /** What Select all may tick: a value whose box is drawn and not refused. */
@@ -2187,6 +2224,7 @@ export class SherpaMenu extends SherpaElement {
     }
     // NONE: its radio group has unticked the rest; the answer is nothing.
     if (input.closest('.qf-none')) {
+      this.#all = false;
       this.#tree?.set([]);
       this.#drawTicks();
       this.#markPresent();
@@ -2198,6 +2236,8 @@ export class SherpaMenu extends SherpaElement {
       else this.#tree.tick(input.value, input.checked);
       this.#drawTicks();
     }
+    // One row changed: a list now, not ALL — unless every row is ticked again.
+    this.#all = this.#all && this.#inputs().every((b) => b.checked || b.disabled);
     this.#syncSelectAll();
     this.#followPicks();
     // A row let go that is ruled out is refused now — and goes, hiding them. TODO 462
@@ -2225,7 +2265,7 @@ export class SherpaMenu extends SherpaElement {
   /** Report the values — or, in a COMMITTING menu, hold them as a DRAFT until Apply. */
   #report(): void {
     if (this.#commits) return;
-    this.emit('menu-change', { values: this.values, ...this.#none() });
+    this.emit('menu-change', { values: this.values, ...this.#said() });
   }
 
   /** Whether changes wait for Apply. */
@@ -2263,11 +2303,11 @@ export class SherpaMenu extends SherpaElement {
     this.#applying = true;
     this.#settledByAction = true;
     this.#takeBaseline();
-    this.emit('menu-apply', { values: this.values, ...this.#none() });
+    this.emit('menu-apply', { values: this.values, ...this.#said() });
     /* The ROWS are part of what Apply applies. Without this a committing menu
        held its conditions for ever. TRAP T-a-condition-is-a-draft-too */
     if (this.mode === 'advanced') this.#emitConditions(true);
-    this.emit('menu-change', { values: this.values, ...this.#none() });
+    this.emit('menu-change', { values: this.values, ...this.#said() });
     this.hide();
     this.#applying = false;
   };
@@ -2291,6 +2331,7 @@ export class SherpaMenu extends SherpaElement {
   /** Empty the selection and report it — the checkboxes AND a slotted
    * calendar's date attributes. TRAP T-clear-empties-both-body-shapes */
   #onClear = (): void => {
+    this.#all = false;
     for (const input of this.#own<HTMLInputElement>('input')) input.checked = false;
     this.#tree?.set([]);
     this.#drawTicks();

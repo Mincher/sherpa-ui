@@ -20,7 +20,8 @@ async function mount(page: Page) {
   await page.evaluate(async (rows) => {
     const { ArrayStore, openSource, bindSource } = await import('/dist/index.js') as unknown as {
       ArrayStore: new (r: unknown[], o: object) => unknown;
-      openSource(d: object, s: unknown): Promise<{ describe(s: string): unknown; load(): Promise<void> }>;
+      openSource(d: object, s: unknown): Promise<{ describe(s: string): unknown; load(): Promise<void>;
+        query: { setReading(s: string, f: string, r: null): void; commit(): void } }>;
       bindSource(s: unknown, el: Element, o: object): void;
     };
     const src = await openSource({
@@ -32,6 +33,10 @@ async function mount(page: Page) {
       (src.describe('view') as { filters: unknown[] }).filters, { style: 'inline-size: 1200px' });
     bar.id = 'bar';
     bindSource(src, bar, { steerOnly: true, scope: 'view' });
+    await src.load();
+    // Customer opens on All; these pick from no answer. TODO 489
+    src.query.setReading('view', 'customer', null);
+    src.query.commit();
     await src.load();
     (window as unknown as { __src: unknown }).__src = src;
     await window.__settled();

@@ -29,6 +29,8 @@ export type Condition = { [op in FilterOp]?: unknown } & {
   /** One of the field's bands, by name: `{ health: { band: 'At risk' } }`.
    *  TRAP T-a-threshold-is-a-fact-of-the-field */
   band?: string;
+  /** Every value, on purpose — Select all on: `{ region: { all: true } }`. TRAP T-all-is-an-answer */
+  all?: boolean;
 };
 
 /** Each field's condition, by field. */
@@ -49,6 +51,7 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
        picks. Will, TODO 477 · TRAP T-a-band-is-a-value-of-its-field */
     const listed = (state.child || state.bands) && state.mode === 'simple' && state.rows[0]?.picked
       ? conditionOf(picksClause(field, state.rows[0].picked, state.op === 'ne' ? 'ne' : 'eq')!) : undefined;
+    // ALL filters nothing, so it says nothing: a start puts it back. TRAP T-all-is-an-answer
     const clause = listed ? undefined : stateClause(state);
     const said = listed ?? (clause ? conditionOf(clause) : undefined);
     if (said) where[field] = { ...said, ...(reading.suspended ? { off: true } : {}) };
@@ -69,7 +72,8 @@ export function readingsOf(
 }
 
 function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'field'>): FieldReading | undefined {
-  const { off, band, ...rest } = given;
+  const { off, band, all, ...rest } = given;
+  if (all) return { picked: [], all: true, ...(off ? { suspended: true } : {}) };
   // A band NAMES its ends; the field's thresholds say them. TRAP T-a-threshold-is-a-fact-of-the-field
   const named = band == null ? {} : bandCondition(facts?.thresholds ?? [], band);
   // A banded NUMBER's band is one of its values: a pick. Will, TODO 477

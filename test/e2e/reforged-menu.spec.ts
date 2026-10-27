@@ -977,9 +977,10 @@ for (const empties of [true, false]) {
       return heard;
     }, empties);
     const none = empties ? { none: true } : {};
+    // Select all ON says ALL, either way. TODO 489 · TRAP T-all-is-an-answer
     expect(r).toEqual([
       { values: ['EMEA'] }, { values: [], ...none },
-      { values: ['EMEA', 'APAC'] }, { values: [], ...none },
+      { values: ['EMEA', 'APAC'], all: true }, { values: [], ...none },
       { values: ['APAC'] }, { values: [] },
     ]);
   });

@@ -85,6 +85,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `itemData` | `Array<{ value: string; label: string; parent?: string; swatch?: number \| string }>` | read only |  |
 | `present` | `readonly string[] \| null` | read and write |  |
 | `offered` | `readonly string[] \| null` | read and write |  |
+| `all` | `boolean` | read and write |  |
 
 ## Methods
 
@@ -107,9 +108,9 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `menu-change` | `{ none: true; values: string[] }` | The selection was COMMITTED. |
+| `menu-change` | `{ all: true; none: true; values: string[] }` | The selection was COMMITTED. |
 | `change` |  | The number body's field or slider changed. It stops at the shadow root. |
-| `menu-apply` | `{ none: true; values: string[] }` | Apply was clicked. |
+| `menu-apply` | `{ all: true; none: true; values: string[] }` | Apply was clicked. |
 | `menu-discard` |  | Discard put the values back as they were when the menu opened; it stays open. |
 | `menu-clear` |  | Clear was clicked; the selection is already empty. |
 | `menu-select` | `{ label: string; value: 'remove' \| string }` | An action row was clicked. |

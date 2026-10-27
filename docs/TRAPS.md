@@ -14565,6 +14565,9 @@ specifies otherwise)"* — so a page never asks for every row as it opens. Will'
 picks: Q1 A, every list the View holds plus any list on a remote source; Q2 A,
 the field key `"start": "all"` opts out (`"first"` is the default).
 
+`"start": "all"` now opens a list on ALL — every value ticked, on, no filter
+(Will, TODO 489 B; TRAP `T-all-is-an-answer`).
+
 `openSource` ends with `source.openOnFirst()`: each such held list with no
 answer takes the FIRST value a row holds under the starts before it in its
 scope — so Region opens on a region the chosen Customer has, never on none. The
@@ -14583,6 +14586,7 @@ before, a rebuilt chip lost its answer.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
 
 ### T-a-breakdown-pick-is-a-legend-pick
 
@@ -19263,3 +19267,32 @@ nothing else; its badge and its Apply and Discard pin default.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+### T-all-is-an-answer
+
+**ALL is said on purpose, as `none` is: `{ picked: [], all: true }`** — Will,
+TODO 489 (B): Customer and Region open with every value ticked and the chip ON,
+reading All. A field's `"start": "all"` opens it so; a reader's Select all on
+says it too. It filters nothing, so it compiles to no clause, a server field
+asks its store nothing, and the plain `where` form leaves it out — the start
+puts it back.
+
+It is a FLAG, not a list of every value. A list goes stale: a value added later
+started unticked, and in a chained set Region kept, ticked and greyed, the
+regions the chosen Customer has not. So the menu keeps `all` and ticks every row
+it may have — rows that arrive later, and back again when the chain offers them;
+one ruled out or not offered is not ticked. A list given (`values = …`) or one
+row changed ends it; Clear ends it. The chip keeps it while OFF, as it keeps
+picks, and the bar's `readings` say `all`, never the rows ticked now.
+
+The face says "All" for the flag only: a list ticked by hand says its values.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-face.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
+- Site: `test/e2e/reforged-menu.spec.ts`

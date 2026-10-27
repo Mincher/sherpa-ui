@@ -1921,7 +1921,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       label: chip.dataset['label'] ?? field,
       values: all,
       ...((listed ? this.#pendingAnswers.get(field) : undefined) ?? reading),
-      ...(listed ? { picked: this.#chipPicks(chip) } : {}),
+      // ALL is said as all, never as a list of what is ticked now. TRAP T-all-is-an-answer
+      ...(listed && !reading.all ? { picked: this.#chipPicks(chip) } : {}),
       suspended: !!reading.suspended,
     };
   }
