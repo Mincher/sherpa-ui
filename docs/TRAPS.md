@@ -16589,6 +16589,11 @@ which forwards into its header. Both come from the provider's template and
 answer to the provider alone; `filter-configure` is gone. A host's buttons in
 the bar's slot fold away at narrow widths, as the old switch did.
 
+**Only a bar a column ANSWERS gets one** (Will, TODO 488): a View the column
+leaves out ("Include View Context in the panel" off) stays a toolbar, so its bar
+switches nothing and carries no button; it follows the column's scopes as they
+change.
+
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`

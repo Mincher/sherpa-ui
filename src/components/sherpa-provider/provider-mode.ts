@@ -141,7 +141,8 @@ export class ProviderMode {
     const panels = this.#host.panels();
     for (const bar of this.#strips()) {
       let toggle = this.#toggles.get(bar);
-      if (!panels.length) {
+      // A bar no panel answers — a View the column leaves out — switches nothing. Will, TODO 488
+      if (!panels.length || !this.#answered(bar)) {
         toggle?.remove();
         this.#toggles.delete(bar);
         continue;
@@ -175,13 +176,16 @@ export class ProviderMode {
     return this.#host.bars().filter((bar) => (bar as HTMLElement).dataset['orientation'] !== 'portrait');
   }
 
-  /** A bar steps back while a panel answers for it — one whose column holds
-   *  its scope; a panel answers for every scope. A View the column leaves out
+  /** A bar steps back while a panel answers for it. A View the column leaves out
    *  stays a toolbar. Will, TODO 436. TRAP T-panel-mode-hides-what-the-panel-answers */
   #stepBack(bar: Element): void {
+    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && this.#answered(bar) && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
+  }
+
+  /** Does a column answer this bar — hold its scope? */
+  #answered(bar: Element): boolean {
     const scope = scopesOf(bar)[0] ?? '';
-    const answered = this.#host.panels().some((panel) => !('drawScope' in panel) || scopesOf(panel).includes(scope));
-    bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && answered && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
+    return this.#host.panels().some((panel) => scopesOf(panel).includes(scope));
   }
 
   /** A mode button: the reader switches the mode. */

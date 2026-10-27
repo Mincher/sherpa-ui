@@ -999,13 +999,13 @@
     },
     {
       "$type": "state",
-      "name": "no-actions",
-      "selector": ":host([data-no-actions])"
+      "name": "portrait",
+      "selector": ":host([data-orientation=\"portrait\"])"
     },
     {
       "$type": "state",
-      "name": "portrait",
-      "selector": ":host([data-orientation=\"portrait\"])"
+      "name": "no-actions",
+      "selector": ":host([data-no-actions])"
     },
     {
       "$type": "state",

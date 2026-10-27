@@ -1307,6 +1307,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-persistent', '');
         chip.setAttribute('data-current', '');
       }
+      // The page's own, apart from what the reader added. Will, TODO 482
+      chip.toggleAttribute('data-preset', !!f.preset);
       this.#lock(chip);
       /* THE KIND DECIDES. A boolean has nothing to open; everything else does
          — a date or number carries its own body, and so does an Advanced one,

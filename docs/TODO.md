@@ -163,13 +163,13 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
 | ✅ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
 | ✅ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
-| ⬜ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
+| ✅ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
 | ✅ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
 | ⬜ | 3j | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
 | ⬜ | 3k | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
 | ✅ | 3l | 486 | BUG — the grid's pinned columns show no inner shadow at the BOTTOM while more rows lie below; then CHECK every scroll shadow in the grid — top, bottom, start, end — over pinned and unpinned columns (Will, 2026-10-27) | look |
-| ⬜ | 3m | 487 | DEFAULT — the data grid's rows per page start at the 100 option (Will, 2026-10-27) | data |
-| ⬜ | 3n | 488 | UX — with 'Show view context in panel mode' OFF, the View Context toolbar has no panel-mode button; only Local Context toolbars show it (Will, 2026-10-27) | filters |
+| ❓ | 3m | 487 | DEFAULT — the data grid's rows per page start at the 100 option (Will, 2026-10-27) | data |
+| ✅ | 3n | 488 | UX — with 'Show view context in panel mode' OFF, the View Context toolbar has no panel-mode button; only Local Context toolbars show it (Will, 2026-10-27) | filters |
 | ⬜ | 3o | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
@@ -2324,7 +2324,9 @@ shows all of the data for that field. Set the Customer and Regions filters, in
 all Sherpa Demo view definitions, to have Select All active by default."*
 
 NOTE: OFF is the opposite of 480 (the last value let go shows every row). On is
-480's rule. Ask Will which a value chip let go follows while it is off.
+480's rule. Will, 2026-10-27, A: while OFF, nothing ticked is NO rows however it
+came — Select none or the last value let go; the chip stays on at 0. ON, nothing
+ticked is every row (480).
 
 ### `[ ]` ⬜ 486 — BUG: no bottom shadow over the grid's pinned columns
 
@@ -2370,6 +2372,11 @@ field's Apply pair already did; its open state is still its own. Test: Demos
 
 Will, 2026-10-27: *"Put a divider between preset and user added filter chips in
 the toolbar mode. Consider an equivalent visual in the Panel mode, too."*
+
+**Done.** A chip the page's definition holds carries `data-preset`. In a bar the
+last of them draws the toolbar's 1×16 divider after it while a chip the reader
+added follows (none while nothing was added); in a column a rule runs across
+the gap below the last of the page's fields. Test: Demos `reforged-filter-column`.
 
 ### `[x]` ✅ 481 — BUG: shadows stack on the grid's pinned columns
 
