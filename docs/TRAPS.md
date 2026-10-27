@@ -12026,8 +12026,9 @@ Only a REMOVABLE field is listed. A scope's own fixed filters stay off the menu
 thing more quietly.
 
 **A ONE-value row's tick is its ON, not its held** — an on/off chip, a preset
-(Will, TODO 54, his pick A). So its untick cannot remove it: a small × at the
-row's end does, reported as `menu-row-remove`. A row with values keeps "ticked
+(Will, TODO 54, his pick A). So its untick cannot remove it: its chip's own
+Remove does. A × at the row's end did, until Will took it out (TODO 380, his
+pick: the tick keeps switching a FOLDED chip). A row with values keeps "ticked
 is held". Two rules keep the tick honest:
 
 - **Apply flips only a row the reader CHANGED.** The bar and the panel keep
@@ -12035,8 +12036,6 @@ is held". Two rules keep the tick honest:
   leaves a stale tick, and comparing the tick with the chip turned it back.
 - **A press elsewhere re-ticks the shut menu's row**, so the reader sees the
   chip as it is. An open menu is left alone: it holds the reader's draft.
-
-A × rebuilds the menu under the pointer, so the rebuilt menu opens again.
 
 The TOOLBAR's chip menus keep their own Remove in the footer. A chip is the
 filter, so removing it from its own menu is where a reader looks; the panel is
@@ -12053,7 +12052,6 @@ is spent moved.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 

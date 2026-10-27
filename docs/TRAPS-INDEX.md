@@ -474,7 +474,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (113)
+## Menus, tips and overlays (112)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — menu
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
@@ -582,7 +582,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-select-all-ticks-boxes-not-values](TRAPS.md#t-select-all-ticks-boxes-not-values) — menu
 - [T-show-then-measure](TRAPS.md#t-show-then-measure) — menu
 - [T-slot-guards-only-when-filled](TRAPS.md#t-slot-guards-only-when-filled) — toast
-- [T-the-add-menu-is-the-whole-list](TRAPS.md#t-the-add-menu-is-the-whole-list) — menu
 - [T-the-baseline-is-taken-at-show](TRAPS.md#t-the-baseline-is-taken-at-show) — menu
 - [T-the-footer-owns-nothing-to-save](TRAPS.md#t-the-footer-owns-nothing-to-save) — menu
 - [T-today-and-remove-are-menu-chrome](TRAPS.md#t-today-and-remove-are-menu-chrome) — menu

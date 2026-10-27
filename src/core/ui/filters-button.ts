@@ -14,7 +14,6 @@
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: the old menu gone; never off.
  * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
- * - reopenFilters — The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn.
  * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
  * - .set — Keep a copy of the host's sets.
  * - .all — A copy of each set, as kept.
@@ -85,7 +84,7 @@ export interface AddedFilter extends ListedFilter {
   /** Picks its child menu holds. */
   count?: number;
   /** A ONE-value filter — a preset, an on/off chip — and whether it is ON:
-   *  its tick means On, and a × removes it. Will, TODO 54. */
+   *  its tick means On; its chip's own Remove takes it off. Will, TODOs 54, 380 */
   on?: boolean;
 }
 
@@ -102,9 +101,9 @@ function filtersMenuItems(
   return [
     // A held filter the reader cannot take off is listed only while hidden.
     ...added.filter((f) => f.removable || f.hidden).map((f) => (f.on !== undefined ? {
-      // ONE value: its tick turns it on, and its × takes it off. Will, TODO 54.
+      // ONE value: its tick turns it on. No ×: the chip takes it off. Will, TODOs 54, 380
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
-      selected: f.on, ...(f.removable ? { remove: true } : {}),
+      selected: f.on,
     } : {
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
       ...(f.removable ? { selected: true } : { pickable: false }),
@@ -151,13 +150,6 @@ export function savedMenuDef(sets: readonly SavedSet[]): FilterDef {
   };
 }
 
-/** The Filters menu, rebuilt under the reader's pointer by a ×: open it again once it has drawn. TODO 54 */
-export async function reopenFilters(button: HTMLElement | null): Promise<void> {
-  const menu = button?.querySelector<SherpaMenu>('sherpa-menu');
-  if (!button || !menu) return;
-  await menu.rendered;
-  if (menu.isConnected) menu.show?.(button);
-}
 
 /** The reader's saved sets, as the host last drew them, and the ONE taken. No
  *  chip names it: a set taken LOADS into the chips. Will, 366.

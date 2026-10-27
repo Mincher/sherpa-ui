@@ -5636,13 +5636,6 @@
               }
             },
             {
-              "name": "menu-row-remove",
-              "description": "A row's × was pressed.",
-              "type": {
-                "text": "CustomEvent<{ value: string }>"
-              }
-            },
-            {
               "name": "menu-range-change",
               "description": "A number or date body's Range switch flipped.",
               "type": {

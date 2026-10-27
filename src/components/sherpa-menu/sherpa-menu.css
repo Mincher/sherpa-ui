@@ -412,11 +412,6 @@
 .rows ::slotted(.menu-row-bare[data-matches]) {
   grid-template-columns: minmax(0, 1fr) auto;
 }
-/* A ONE-value filter's row: box, label, then its × at the end. TODO 54 */
-.rows ::slotted(.menu-row[data-remove]) {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-}
 
 /* A SECTION heading inside the list, set as the menu's own heading is, with a
    rule above it. TRAP T-saved-filters-are-the-last-section */

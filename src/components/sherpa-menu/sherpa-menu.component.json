@@ -328,22 +328,6 @@
             },
             {
               "el": "template",
-              "class": "menu-remove-tpl",
-              "children": [
-                {
-                  "el": "sherpa-button",
-                  "class": "menu-row-remove",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "xs",
-                    "data-look": "transparent",
-                    "data-icon-start": "cross"
-                  }
-                }
-              ]
-            },
-            {
-              "el": "template",
               "class": "menu-twisty-tpl",
               "children": [
                 {
@@ -944,22 +928,6 @@
                     "data-size": "xs",
                     "data-look": "transparent",
                     "data-icon-start": "chevron-right"
-                  }
-                }
-              ]
-            },
-            {
-              "el": "template",
-              "class": "menu-remove-tpl",
-              "children": [
-                {
-                  "el": "sherpa-button",
-                  "class": "menu-row-remove",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "xs",
-                    "data-look": "transparent",
-                    "data-icon-start": "cross"
                   }
                 }
               ]
@@ -1725,16 +1693,6 @@
       "composed": true,
       "detail": {
         "mode": "ConditionType"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "menu-row-remove",
-      "description": "A row's × was pressed.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "value": "string"
       }
     },
     {

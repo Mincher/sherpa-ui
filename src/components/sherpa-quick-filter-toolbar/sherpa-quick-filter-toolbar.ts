@@ -14,7 +14,7 @@ import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, reopenFilters, type AddedFilter, type SavedSet,
+  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
   FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
@@ -593,7 +593,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('condition-change', this.#onConditionChanged);
     // The Add menu hangs off a sherpa-BUTTON, which never relays quick-filter-change.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
-    this.addEventListener('menu-row-remove', this.#onRowRemove);
     this.addEventListener('menu-highlight-change', this.#onHighlight);
     // MOVE, not over: inside a bar the browser sends one pointerover, then none. TODO 463
     this.addEventListener('pointermove', this.#onHoverChip);
@@ -2400,16 +2399,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!flipped) return;
     this.#syncOverflowActive();
     this.#emitChange(flips);
-  };
-
-  /** A ONE-value row's × was pressed: take that filter off. TODO 54 */
-  #onRowRemove = (event: Event): void => {
-    if (!this.pathFind(event, '.add-btn')) return;
-    event.stopPropagation();
-    const id = String((event as CustomEvent).detail?.value ?? '');
-    if (!id) return;
-    this.#removeFilter(id);
-    void reopenFilters(this.$('.add-btn'));
   };
 
   /** What each ONE-value row was told. TODO 54 */

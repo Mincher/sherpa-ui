@@ -108,7 +108,7 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
 
     // The hidden ON/OFF chip: no caret, and its tick turns it on. TODO 54
     const row = menu.querySelector<HTMLInputElement>('input[value="at-risk"]')!.closest<HTMLElement>('.menu-row')!;
-    const shape = { drill: row.hasAttribute('data-drill'), remove: !!row.querySelector('.menu-row-remove') };
+    const shape = { drill: row.hasAttribute('data-drill'), buttons: row.querySelectorAll('sherpa-button').length };
     const toggle = row.querySelector<HTMLInputElement>('input')!;
     toggle.checked = true;
     toggle.dispatchEvent(new Event('change', { bubbles: true }));
@@ -148,7 +148,7 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
 
   expect(r.on).toBe('active');
   // Not one the reader can take off, so no ×.
-  expect(r.shape).toEqual({ drill: false, remove: false });
+  expect(r.shape).toEqual({ drill: false, buttons: 0 });
   expect(r.drilled.drill).toBe(true);
   expect(r.drilled.heading).not.toBe('Filters');
   expect(r.ticked).toEqual(['a']);
@@ -157,9 +157,9 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
   expect(r.back).toEqual({ heading: 'Filters', commit: true, first: true });
 });
 
-/* An ADDED on/off filter is one value: its tick is its on/off, and its × takes
-   it off. The menu rebuilt under the pointer opens again. Will, TODO 54. */
-test('an added on/off filter: its tick is its on/off; its × takes it off and the menu stays open', async ({ page }) => {
+/* An ADDED on/off filter is one value: its tick is its on/off. Its row has no
+   ×: its chip takes it off. Will, TODOs 54, 380. */
+test('an added on/off filter: its tick is its on/off, and its row has no ×', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { style: 'inline-size: 1200px' });
     el.populate([{ id: 'region', label: 'Region', options: [{ value: 'a', label: 'A' }] }]);
@@ -178,7 +178,7 @@ test('an added on/off filter: its tick is its on/off; its × takes it off and th
     const chip = () => sr.querySelector<HTMLElement>('.chips > .chip[data-id="vip"]');
     const look = () => ({
       on: !!chip()?.hasAttribute('data-current'), box: !!row()?.querySelector('input')?.checked,
-      remove: row()?.querySelector('.menu-row-remove')?.getAttribute('aria-label') ?? null,
+      buttons: row()?.querySelectorAll('sherpa-button').length ?? null,
     });
     await commit(['vip']);
     const added = look();
@@ -193,21 +193,13 @@ test('an added on/off filter: its tick is its on/off; its × takes it off and th
     await window.__settled();
     await commit(['vip']);
     const kept = look();
-    menu().show(add);
-    await window.__settled();
-    row()!.querySelector('.menu-row-remove')!.shadowRoot!.querySelector('button')!.click();
-    await window.__settled();
-    return { added, ticked, pressed, kept, gone: !chip(), open: menu().open, offered: !!row() && !row()!.querySelector('.menu-row-remove') };
+    return { added, ticked, pressed, kept };
   });
 
-  expect(r.added).toEqual({ on: false, box: false, remove: 'Remove VIP' });
-  expect(r.ticked).toEqual({ on: true, box: true, remove: 'Remove VIP' });
-  expect(r.pressed).toEqual({ on: false, box: false, remove: 'Remove VIP' });
-  expect(r.kept).toEqual({ on: true, box: true, remove: 'Remove VIP' });
-  expect(r.gone).toBe(true);
-  expect(r.open).toBe(true);
-  // Back in Available filters.
-  expect(r.offered).toBe(true);
+  expect(r.added).toEqual({ on: false, box: false, buttons: 0 });
+  expect(r.ticked).toEqual({ on: true, box: true, buttons: 0 });
+  expect(r.pressed).toEqual({ on: false, box: false, buttons: 0 });
+  expect(r.kept).toEqual({ on: true, box: true, buttons: 0 });
 });
 
 /* 349: a field the filters before it leave no value for is SPENT — greyed in the

@@ -118,7 +118,6 @@ Each one bubbles.
 | `menu-close` |  |  |
 | `condition-change` | `{ conditions: FieldCondition[]; op: FilterOp; value: string }` | The condition or its typed value changed. |
 | `condition-mode-change` | `{ mode: ConditionType }` | The mode button was pressed. |
-| `menu-row-remove` | `{ value: string }` | A row's × was pressed. |
 | `menu-range-change` | `{ range: boolean }` | A number or date body's Range switch flipped. |
 | `menu-highlight-change` | `{ on: boolean }` | Its Highlight matches switch flipped: a request, which the host answers. |
 | `menu-items` | `{ values: string[] }` | Its items were stamped, so a host can read its face. |

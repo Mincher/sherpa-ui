@@ -61,7 +61,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
 | ⬜ | 0zi | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
-| ⬜ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later) | filters |
+| ✅ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later; 10-27: drop the × only) | filters |
 | ✅ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
 | ⬜ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ✅ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
@@ -3871,6 +3871,15 @@ divider. While a scope is switched off, its sort and group are kept but not in
 force (`arrangementOf`), and the flip arranges the rows again; its search stays.
 Tests: `the-switch-suspends-the-arrangement` (node); the bar, panel and grid
 specs pass. **Will:** look at Demos Records' data bar: Switch, then Group.
+
+### `[x]` ✅ 380 — BUG: the Filters menu's × goes
+
+Will: *"the row's checkbox already adds or removes the filter: the × goes."*
+The × was only on a ONE-value row (an on/off chip, a preset), whose tick is its
+ON. Will, 2026-10-27: drop the × only — the tick still switches a folded chip;
+the chip's own Remove takes it off the bar. **Done:** the row's ×, its event
+(`menu-row-remove`), the bar's handler and `reopenFilters` are gone. Test:
+`reforged-one-filters-button`.
 
 ### `[x]` ✅ 381 — BUG: a donut's and a gauge's segment tips
 
