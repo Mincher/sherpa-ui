@@ -37,7 +37,7 @@
  * - filterKey — A filter as one string, its AND and OR children in one order.
  * - appliesIn — Does a scope's reading of a field apply?
  * - scopeClauses — One scope's clauses: each reading that applies, each saved filter on.
- * - presetClauses — Each preset on in a scope, as clauses: its own conditions, over any fields, wherever those are held.
+ * - presetClause — A preset's own conditions as one clause — its chip's count.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
@@ -69,9 +69,6 @@ export interface ScopeQuery {
   /** Its bar's filter Switch is OFF: the fields it switched off, so ON brings
    *  back exactly those. TRAP T-the-filter-switch-keeps-what-it-turned-off */
   suspended?: { fields: string[] };
-  /** The app's PRESETS on in this scope, by id: each its own conditions, in
-   *  force beside the fields'. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
-  presets?: Record<string, boolean>;
   /** How this scope arranges its rows. ONE scope arranges at a time.
    *  TRAP T-group-and-sort-are-component-scope */
   sort?: SortSpec[];
@@ -203,8 +200,6 @@ export interface CompileFacts {
   /** The highlight's driver for now — a chip hovered — in place of the Query's;
    *  with `value`, that one value of it. TODOs 449, 459 */
   highlight?: { scope: string; field: string; value?: string };
-  /** A scope's preset, by id: the readings it applies when on. TODO 493 */
-  preset?: (scope: string, id: string) => Readonly<Record<string, FieldReading>> | undefined;
 }
 
 /** A reading without the picks set aside. */
@@ -346,8 +341,8 @@ export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: 
   return scope === VIEW || !viewHolds.has(field) || !!fixed?.has(scope);
 }
 
-/** One scope's clauses: each reading that applies and is not suspended, and
- *  each preset on, while its Switch is on. */
+/** One scope's clauses: each reading that applies and is not suspended, while
+ *  its Switch is on. */
 export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlySet<string>, facts: CompileFacts = {}): Filter[] {
   const clauses: Filter[] = [];
   for (const [field, reading] of Object.entries(scope.readings)) {
@@ -356,23 +351,19 @@ export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlyS
       ?? readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
     if (clause) clauses.push(clause);
   }
-  if (!scope.suspended) clauses.push(...presetClauses(id, scope, facts));
   return clauses;
 }
 
-/** Each preset on in a scope, as clauses: its own conditions, over any fields,
- *  wherever those are held. TRAP T-a-preset-is-its-own-part */
-export function presetClauses(id: string, scope: ScopeQuery, facts: CompileFacts = {}): Filter[] {
+/** A preset's own conditions as ONE clause — its chip's count. Its rows are in
+ *  its fields' answers, so nothing compiles it twice. TODO 510 · TRAP T-a-preset-is-its-own-part */
+export function presetClause(readings: Readonly<Record<string, FieldReading>>, facts: CompileFacts = {}): Filter | undefined {
   const clauses: Filter[] = [];
-  for (const [preset, on] of Object.entries(scope.presets ?? {})) {
-    if (!on) continue;
-    for (const [field, reading] of Object.entries(facts.preset?.(id, preset) ?? {})) {
-      if (facts.has && !facts.has(field)) continue;
-      const clause = readingClause({ field, ...facts.field?.(field) }, reading);
-      if (clause) clauses.push(clause);
-    }
+  for (const [field, reading] of Object.entries(readings)) {
+    if (facts.has && !facts.has(field)) continue;
+    const clause = readingClause({ field, ...facts.field?.(field) }, reading);
+    if (clause) clauses.push(clause);
   }
-  return clauses;
+  return andFilter(clauses);
 }
 
 /**
@@ -408,7 +399,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     // A chip hovered OFF previews what it holds. Will, TODO 496 · TRAP T-a-hovered-chip-previews-the-highlight
     const driver = one !== undefined ? { picked: [one] } : held && facts.highlight ? { ...held, suspended: false } : held;
     if (driver && !highlight && (!facts.has || facts.has(drives!))) {
-      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver }, presets: {} }, viewHolds, facts));
+      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
     }
     if (!mine && id !== VIEW) {
       skipped.push(id);

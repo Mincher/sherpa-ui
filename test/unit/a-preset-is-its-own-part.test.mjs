@@ -1,8 +1,9 @@
 /**
- * A PRESET IS ITS OWN PART — Will, TODO 493 (A). A scope's definition names its
- * presets: the app's own conditions, over several fields, each a boolean chip.
- * On, they narrow beside the fields' answers, which they never change; off, they
- * go. The Switch stops them and keeps them; Reset turns them off.
+ * A PRESET IS A WRAPPER ROUND ITS FIELDS' CONDITIONS — Will, TODOs 493 (A), 510
+ * (A). A scope's definition names its presets: the app's own conditions, over
+ * several fields, each a boolean chip. On, it WRITES them into each field's
+ * answer, ANDed with what the field holds, so every control shows them; off, it
+ * takes them out. It reads on while every one is still there.
  *
  *   node --test test/unit/a-preset-is-its-own-part.test.mjs
  *
@@ -33,11 +34,22 @@ async function page() {
     },
   }, new ArrayStore(ROWS, { key: 'id' }));
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
+  // The scope HAS these fields, as a grid's columns say: a preset's may be held here.
+  source.query.offer('data', ['plan', 'health', 'tickets']);
   await source.load();
   await settle();
   return source;
 }
 const ids = (source) => source.rows.map((r) => r.id).sort();
+
+const readings = (source) => source.query.applied.scopes.data.readings;
+const on = (source) => source.describe('data').filters[0].active;
+const act = async (source, fn) => {
+  fn();
+  source.query.commit({ scope: 'data' });
+  await source.load();
+  await settle();
+};
 
 test('a preset leads its scope as a boolean chip, off at the start', async () => {
   const source = await page();
@@ -47,45 +59,52 @@ test('a preset leads its scope as a boolean chip, off at the start', async () =>
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
 });
 
-test('on, it narrows by its own conditions, beside the fields, which it never changes', async () => {
+test('on, it writes its conditions into the fields — held here, as chips — and off takes them out', async () => {
   const source = await page();
-  source.query.setPreset('data', 'high-risk', true);
-  source.query.commit({ scope: 'data' });
-  await source.load();
-  await settle();
+  await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1, 4]);
-  assert.equal(source.describe('data').filters[0].active, true);
-  assert.deepEqual(source.query.applied.scopes.data.readings, {});
-  // A field's answer narrows within it.
-  source.query.setReading('data', 'plan', { picked: ['free'] });
-  source.query.commit({ scope: 'data' });
-  await source.load();
-  await settle();
+  assert.equal(on(source), true);
+  assert.deepEqual(readings(source).health.conditions, [{ op: 'lt', text: '60' }]);
+  assert.deepEqual(readings(source).tickets.conditions, [{ op: 'gt', text: '0' }]);
+  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan', 'health', 'tickets']);
+  // A field's own answer narrows beside them.
+  await act(source, () => source.query.setReading('data', 'plan', { picked: ['free'] }));
   assert.deepEqual(ids(source), [4]);
-  // Off, only the field's answer is left.
-  source.query.setPreset('data', 'high-risk', false);
-  source.query.commit({ scope: 'data' });
-  await source.load();
-  await settle();
+  await act(source, () => source.query.setPreset('data', 'high-risk', false));
   assert.deepEqual(ids(source), [3, 4]);
+  assert.equal(on(source), false);
+  assert.equal(readings(source).health, undefined);
+  assert.equal(readings(source).tickets, undefined);
 });
 
-test('the Switch stops a preset and keeps it on; Reset turns it off', async () => {
+test('its rows are ANDed with a field\'s own; off, the field\'s own is all that is left', async () => {
   const source = await page();
-  source.query.setPreset('data', 'high-risk', true);
-  source.query.commit({ scope: 'data' });
+  await act(source, () => source.query.setReading('data', 'tickets', { op: 'gt', text: '1' }));
+  assert.deepEqual(ids(source), [1, 3]);
+  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  assert.deepEqual(ids(source), [1]);
+  assert.deepEqual(readings(source).tickets.conditions, [{ op: 'gt', text: '1' }, { op: 'gt', text: '0', join: 'and' }]);
+  await act(source, () => source.query.setPreset('data', 'high-risk', false));
+  assert.deepEqual(ids(source), [1, 3]);
+});
+
+test('a row of its edited away turns it off; the Switch shows it off while the fields are off', async () => {
+  const source = await page();
+  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  await act(source, () => source.query.setReading('data', 'health', { conditions: [{ op: 'lt', text: '50' }], mode: 'advanced' }));
+  assert.equal(on(source), false);
+  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  assert.equal(on(source), true);
   source.query.suspend('data', null, true);
   await source.load();
   await settle();
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
+  assert.equal(on(source), false);
   source.query.suspend('data', null, false);
   await source.load();
   await settle();
-  assert.deepEqual(ids(source), [1, 4]);
-  source.query.reset(['data']);
-  source.query.commit({ scope: 'data' });
-  await source.load();
-  await settle();
+  assert.equal(on(source), true);
+  await act(source, () => source.query.reset(['data']));
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
-  assert.equal(source.query.applied.scopes.data?.presets, undefined);
+  assert.equal(on(source), false);
 });

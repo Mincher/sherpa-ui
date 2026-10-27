@@ -30,6 +30,11 @@
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
+ * - asRows — A reading as condition rows — the answer it puts in force.
+ * - sameRow — Two rows say the same thing: op, typed text, unit and picks.
+ * - withRows — A field's answer with these rows ANDed into every run, in force.
+ * - withoutRows — …and without them; only its own picks left, Simple again; nothing, null.
+ * - holdsRows — Does this answer hold every one of these rows, in force?
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -303,6 +308,71 @@ export function rowsFromPicks(
   return (simple.picked ?? []).map((value, i) => (
     i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] } : { op: DEFAULT_OP, picked: [value] }
   ));
+}
+
+/* ── A PRESET's rows in a field's answer — Will, TODO 510 · TRAP T-a-preset-is-its-own-part ── */
+
+/** A reading as condition rows — the answer it puts in force, Simple's picks as
+ *  their rows; none while it is off, All or none. */
+export function asRows(reading: FieldReading | undefined, type?: 'number' | 'date'): FieldCondition[] {
+  if (!reading || reading.suspended || reading.all || reading.none) return [];
+  if (modeOf(reading) === 'advanced') return readingRows(reading);
+  const picked = reading.picked ?? [];
+  if (reading.range && picked.length === 2) return [{ op: 'between', picked: [...picked] }];
+  if ((reading.op ?? DEFAULT_OP) !== DEFAULT_OP || (reading.text ?? '').trim()) return readingRows({ ...reading, conditions: [] });
+  return rowsFromPicks(type, reading) ?? [];
+}
+
+/** Two rows say the same thing: op, typed text, unit and picks — never their join. */
+export function sameRow(a: FieldCondition, b: FieldCondition): boolean {
+  const picks = (r: FieldCondition): string => JSON.stringify([...(r.picked ?? [])].map(String).sort());
+  return a.op === b.op && (a.text ?? '').trim() === (b.text ?? '').trim() && (a.unit ?? '') === (b.unit ?? '') && picks(a) === picks(b);
+}
+
+/** Rows split at each `or`: `A or B and C` is [[A], [B, C]]. */
+function runsOf(rows: readonly FieldCondition[]): FieldCondition[][] {
+  const runs: FieldCondition[][] = [];
+  for (const row of rows) {
+    if (!runs.length || row.join === 'or') runs.push([row]);
+    else runs[runs.length - 1]!.push(row);
+  }
+  return runs;
+}
+
+/** Runs back as rows: each run's first `or`, the rest `and`, the very first none. */
+function rowsOfRuns(runs: readonly (readonly FieldCondition[])[]): FieldCondition[] {
+  return runs.flatMap((run, i) => run.map(({ join: _join, ...row }, j) => (
+    i === 0 && j === 0 ? row : { ...row, join: j === 0 ? 'or' as const : 'and' as const })));
+}
+
+/** A field's answer with these rows ANDed into EVERY run — `(A or B) and P` —
+ *  in force, as Advanced rows; its Simple picks are kept for a switch back. */
+export function withRows(reading: FieldReading | undefined, rows: readonly FieldCondition[], type?: 'number' | 'date'): FieldReading {
+  const own = asRows(reading, type);
+  const { suspended: _off, all: _all, none: _none, ...base } = reading ?? {};
+  const runs = own.length ? runsOf(own) : [[]];
+  return { ...base, conditions: rowsOfRuns(runs.map((run) => [...run, ...rows])), mode: 'advanced' };
+}
+
+/** …and without them: each row equal to one of `rows` goes, and a run left empty
+ *  with it. Only its own Simple picks left: Simple again. Nothing left: null. */
+export function withoutRows(reading: FieldReading, rows: readonly FieldCondition[], type?: 'number' | 'date'): FieldReading | null {
+  const runs = runsOf(readingRows(reading))
+    .map((run) => run.filter((row) => !rows.some((one) => sameRow(row, one))))
+    .filter((run) => run.length);
+  const left = rowsOfRuns(runs);
+  const { conditions: _rows, mode: _mode, ...base } = reading;
+  const picks = (base.picked ?? []).length ? asRows({ ...base, mode: 'simple' }, type) : [];
+  if (!left.length) return picks.length ? { ...base, mode: 'simple' } : null;
+  if (picks.length === left.length && picks.every((row, i) => sameRow(row, left[i]!))) return { ...base, mode: 'simple' };
+  return { ...base, conditions: left, mode: 'advanced' };
+}
+
+/** Does this answer hold every one of these rows, in force? */
+export function holdsRows(reading: FieldReading | undefined, rows: readonly FieldCondition[]): boolean {
+  if (!reading || reading.suspended || modeOf(reading) !== 'advanced') return false;
+  const own = readingRows(reading);
+  return rows.every((one) => own.some((row) => sameRow(row, one)));
 }
 
 /**

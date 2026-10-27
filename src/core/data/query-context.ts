@@ -47,6 +47,10 @@
  * - .take — A scope TAKES fields: down from the View, or up from a chart with its answer.
  * - .setReading — ONE field's answer — at its home, or a component's own; the answer in force is a no-op.
  * - .letGo — The filters before a field rule these picks out: they leave its answer, applied and drafted alike.
+ * - .declarePresets — A scope's presets: the app's own named conditions, each a boolean chip.
+ * - .presets — A scope's presets, in order: each its id, its name and the readings it writes.
+ * - .presetOn — Is this preset on: every row it writes still in its field's answer, in force?
+ * - .presetsOver — The scopes whose presets write this field: its answer moving moves their on.
  * - .setPreset — A scope's preset on or off: the app's own named conditions, beside the fields'.
  * - .reset — Clear all, Reset all: every answer homed in these scopes goes.
  * - .batch — The doors one act calls are ONE change to the page.
@@ -78,7 +82,7 @@ import {
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
 import { valueKey, type SortDirection, type SortSpec } from './store.js';
-import type { FieldReading } from './filter-state.js';
+import { asRows, holdsRows, withRows, withoutRows, type FieldReading } from './filter-state.js';
 import { report } from './report.js';
 
 /** What the context did, as each member hears it: the follow-ups are the member's. */
@@ -809,17 +813,62 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'drawn', fields: [field] });
   }
 
-  /** A scope's PRESET on or off — the app's own named conditions, in force beside
-   *  the fields', in the draft as a field's answer is. Will, TODO 493
-   *  TRAP T-a-preset-is-its-own-part */
-  setPreset(scope: string, id: string, on: boolean): void {
-    if (!!this.#live.draft.scopes[scope]?.presets?.[id] === on) return;
-    const entry = scopeEntry(this.#live.draft, scope);
-    const { [id]: _was, ...rest } = entry.presets ?? {};
-    if (on) entry.presets = { ...rest, [id]: true };
-    else if (Object.keys(rest).length) entry.presets = rest;
-    else delete entry.presets;
-    prune(this.#live.draft);
+  /**
+   * declarePresets(scope, presets) — a scope's PRESETS: the app's own named
+   * conditions, each a boolean chip that writes them into the fields. TODO 493, 510
+   */
+  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
+    this.#presets.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading> }])));
+    this.#tell({ kind: 'preset', scope });
+  }
+  /** Each scope's presets, by id. */
+  readonly #presets = new Map<string, Map<string, { label: string; readings: Record<string, FieldReading> }>>();
+
+  /** A scope's presets, in order: each its id, its name and the readings it writes. */
+  presets(scope: string): { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[] {
+    return [...this.#presets.get(scope) ?? []].map(([id, p]) => ({ id, label: p.label, readings: p.readings }));
+  }
+
+  /** Is this preset ON: every row it writes still in its field's answer, in force —
+   *  the draft's, or with `applied`, what the rows are under. TODO 510 */
+  presetOn(scope: string, id: string, applied = false): boolean {
+    const preset = this.#presets.get(scope)?.get(id);
+    if (!preset) return false;
+    const query = applied ? this.#live.applied : this.#live.draft;
+    const entries = Object.entries(preset.readings).filter(([, given]) => asRows(given).length);
+    // Each at its field's home, where setReading writes it.
+    return entries.length > 0 && entries.every(([field, given]) => holdsRows(readingOf(query, field), asRows(given)));
+  }
+
+  /** The scopes whose presets write this field: its answer moving moves their on. */
+  presetsOver(field: string): string[] {
+    return [...this.#presets].filter(([, ps]) => [...ps.values()].some((p) => field in p.readings)).map(([scope]) => scope);
+  }
+
+  /**
+   * setPreset(scope, id, on) — a preset ON writes its conditions into each field's
+   * answer, at the field's home (or held here), ANDed with what it holds; OFF
+   * takes them out. Its on is read from the fields — editing one away turns it
+   * off. With `commit`, the fields it moved are applied at once. Will, TODO 510 (A)
+   * TRAP T-a-preset-is-its-own-part
+   */
+  setPreset(scope: string, id: string, on: boolean, commit = false): void {
+    const preset = this.#presets.get(scope)?.get(id);
+    if (!preset || this.presetOn(scope, id) === on) return;
+    this.batch(() => {
+      const moved: string[] = [];
+      for (const [field, given] of Object.entries(preset.readings)) {
+        const rows = asRows(given);
+        if (!rows.length) continue;
+        // At its home — held here, where nothing holds it and this scope may.
+        const home = this.scopeOf(field) ?? scope;
+        const now = readingOf(this.#live.draft, field);
+        if (!on && !now) continue;
+        this.setReading(home, field, on ? withRows(now, rows) : withoutRows(now!, rows));
+        moved.push(field);
+      }
+      if (commit) for (const field of moved) this.commit({ field });
+    });
     this.#tell({ kind: 'preset', scope });
   }
 
@@ -833,11 +882,6 @@ export class QueryContext extends EventTarget {
         const s = this.#live.draft.scopes[id];
         if (!s) continue;
         if (s.suspended) s.suspended = { fields: [] };
-        // Presets go off: none is on unless a reader puts it on. TODO 493
-        if (s.presets) {
-          delete s.presets;
-          this.#tell({ kind: 'preset', scope: id });
-        }
         for (const field of Object.keys(s.readings)) {
           if (options.carry && this.#knows(field)?.carriesOver(field)) continue;
           const start = this.#starts.get(id)?.get(field);

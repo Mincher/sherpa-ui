@@ -19356,17 +19356,29 @@ The face says "All" for the flag only: a list ticked by hand says its values.
 
 ### T-a-preset-is-its-own-part
 
-**A preset is the app's own named conditions, its own part of its scope** —
-Will, TODO 493 (A). A scope's definition lists `presets` (`{ id, label, where }`);
-each is a boolean chip that leads its scope. The Query keeps which are on,
-`presets: { id: true }` per scope, so a draft, a View and the kept Query carry
-them; compile adds an on preset's clauses beside the fields' (`presetClauses`),
-over any fields wherever they are held. It never writes a field chip: that was
-the other way (B), and TODO 366's saved filters still LOAD into the chips.
+**A preset is a WRAPPER round its fields' conditions** — Will, TODO 510 (A):
+*"Preset filters should be a wrapper around stacked advanced filter conditions
+that get injected into the overall filter query. The filter query component
+should broadcast the changes out to all other UI components."* A scope's
+definition lists `presets` (`{ id, label, where }`), kept by the Query
+(`declarePresets`); each is a boolean chip that leads its scope. ON writes its
+conditions into each field's answer, as Advanced rows ANDed into every run of
+what the field holds — `(A or B) and P` — at the field's HOME (a View-held
+Health goes to the View), or held in its own scope where nothing holds it and it
+may; OFF takes them out, and a field left with only its own Simple picks is
+Simple again. So every control shows them: the Health chip reads `lessThan(60)`.
+With `commit`, the fields it moved apply at once — a scope that waits still
+waits for its Apply.
 
-The walk counts each on preset first in its scope, so the chips after it count
-within it, and it wears its own count. The Switch stops presets and keeps them
-on; Reset turns them off. The plain `where` form of a scope says no preset.
+**Its ON is read from the fields** (`presetOn`): every row it writes still in
+its field's answer, in force. Edit one away and it is off; the Switch off, it
+reads off; Reset clears the fields, so it is off. No `presets` flag is kept: an
+old stored one is a key a scope does not have, dropped and reported once (D4).
+Until 510 the Query kept `presets: { id: true }` and compile added the clauses
+apart (`presetClauses`) — the rows narrowed, and no chip said why.
+
+The walk counts each preset ON first in its scope, with its own clause
+(`presetClause`), narrowing nothing — its rows are in its fields' steps.
 
 The bar: its press asks `{ preset, on }`; its on is the source's, drawn on every
 draw — `drawScope` would otherwise empty a chip that answers no field. It offers
@@ -19375,6 +19387,7 @@ preset on the bar (482); the panel heads them "Presets" (a word in the
 toolbar's markup), stacked in the value column, or side by side under the
 heading. The held fields that 452 called "presets" are `own` now.
 
+- Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/data-source.ts`

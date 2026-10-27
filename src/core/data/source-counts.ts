@@ -15,7 +15,7 @@
 import { andFilter, readField, valueKey, type Filter, type Store } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import {
-  appliesIn, heldInView, narrowsOne, presetClauses, scopeClauses, VIEW, withoutDropped,
+  appliesIn, heldInView, narrowsOne, presetClause, scopeClauses, VIEW, withoutDropped,
   type CompileFacts, type Query,
 } from './query.js';
 import { emptyWalk, holdsKey, type Walk, type WalkPlan, type WalkScope, type WalkStep, type WalkTap, type WalkTier } from './walk.js';
@@ -107,8 +107,8 @@ export interface WalkFacts {
   has?: (field: string) => boolean;
   /** Count every value of each list field, picked or not: the app's setting. TODO 466 */
   countAll?: boolean;
-  /** A scope's preset, by id: the readings it applies when on. TODO 493 */
-  preset?: CompileFacts['preset'];
+  /** A scope's presets ON, each with the readings it writes: its chip counts them. TODO 493, 510 */
+  presets?: (scope: string) => readonly { id: string; readings: Readonly<Record<string, FieldReading>> }[];
 }
 
 /**
@@ -124,7 +124,6 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   // An unknown saved filter is compile's to report; here it applies nothing.
   const compiling: CompileFacts = {
     field: facts.field, components: facts.components, fixed: facts.fixed, ...(facts.has ? { has: facts.has } : {}),
-    ...(facts.preset ? { preset: facts.preset } : {}),
   };
   const page: Filter[] = [];
   const others: string[] = [];
@@ -145,11 +144,12 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   const stepsOf = (scope: string): WalkStep[] => {
     const q = applied.scopes[scope];
     const steps: WalkStep[] = [];
-    // Each preset on leads its scope: the chips after it count within it. TODO 493 · TRAP T-a-preset-is-its-own-part
-    if (q && !q.suspended) {
-      for (const [preset, on] of Object.entries(q.presets ?? {})) {
-        const clause = on ? andFilter(presetClauses(scope, { holds: [], readings: {}, presets: { [preset]: true } }, compiling)) : undefined;
-        if (clause) steps.push({ id: `preset:${preset}`, clause, on: true, counts: true });
+    /* Each preset on leads its scope with its count: its rows are in its fields'
+       answers, so it narrows nothing here. TODOs 493, 510 · TRAP T-a-preset-is-its-own-part */
+    if (!q?.suspended) {
+      for (const p of facts.presets?.(scope) ?? []) {
+        const clause = presetClause(p.readings, compiling);
+        if (clause) steps.push({ id: `preset:${p.id}`, clause, on: false, counts: true });
       }
     }
     for (const e of answerOrder(applied, facts.sets(scope), scope)) {

@@ -101,8 +101,10 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **A scope's `presets`** are the app's own named conditions, each a boolean
   chip leading its scope: `"presets": [{ "id": "high-risk", "label": "High
   risk", "where": { "health": { "lt": 60 }, "openTickets": { "gt": 0 } } }]`.
-  On, its conditions narrow beside the fields', which it never changes; the
-  panel heads them "Presets"; none moves scope (`T-a-preset-is-its-own-part`).
+  On, it writes its conditions into those fields' answers — ANDed with what each
+  holds, at the field's home — so their chips show them; off takes them out; it
+  reads on while all its conditions are still there. The panel heads them
+  "Presets"; none moves scope (`T-a-preset-is-its-own-part`).
 - **A number field's `thresholds`** are its bands, declared once:
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved

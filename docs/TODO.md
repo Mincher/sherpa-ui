@@ -53,7 +53,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 25 | 508 | LOOK — a multi-field cell: more gap between its text and its tags (Will, 2026-10-27). Done: 4px, a step up from 2 | look |
 | ✅ | 26 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27). Done: `:state(multi-field)` while a shown column draws tags; every cell of a row is two lines tall and top-aligned, its box and ⋮ too. TRAP `T-a-joined-menu-answers-each-field` | look |
 | ✅ | 27 | 511 | LOOK — in a two-line grid (509) a cell's filter button sits by the FIRST line, as the value does, not mid-cell (Will, 2026-10-27). Done: under `:state(multi-field)` the button centres on the first line in every cell | look |
-| ⬜ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A | filters |
+| ✅ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A. Done: on writes its rows into each field's answer (at its home, ANDed into every run); off takes them out; its on is read from the fields; no `presets` flag. TRAP `T-a-preset-is-its-own-part` | filters |
 | ⬜ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B | look |
 | ⬜ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A | bug |
 | 🚧 | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
@@ -2628,7 +2628,7 @@ filter-on colours while picked.
 
 **✅ Done 2026-10-27:** as written; `paintSwatch` stays, the chip's swatch uses it.
 
-### `[ ]` ⬜ 510 — PRESETS: stacked Advanced conditions, in the query
+### `[x]` ✅ 510 — PRESETS: stacked Advanced conditions, in the query
 
 Will, 2026-10-27: *"Preset filters should be a wrapper around stacked advanced
 filter conditions that get injected into the overall filter query. The filter
@@ -2654,6 +2654,19 @@ turned on where a field already has the reader's own filter:
   reads ON while every one of its conditions is still in the query, so editing
   one away turns it off. One truth: the query.
 - **B:** it REPLACES the field's own filter while on, and gives it back when off.
+
+**Will, 2026-10-27: "Your picks" — A. ✅ Done 2026-10-27.** The Query keeps the
+presets (`declarePresets`); ON writes each field's rows into its answer as
+Advanced rows ANDed into every run (`withRows`), at the field's HOME — Records'
+High risk puts `lessThan(60)` on the View's Health chip and adds a Tickets chip
+`greaterThan(0)` to the grid's bar — and OFF takes them out (`withoutRows`; a
+field left with only its own Simple picks is Simple again). Its on is read from
+the fields (`presetOn`), so an edited row turns it off and a field's change
+redraws its chip. A preset press applies the fields it moved at once, in a
+scope that does not wait. The `presets` flag and the separate compile
+(`presetClauses`) went; an old stored `presets` is dropped and reported once.
+Tests: unit `a-preset-is-its-own-part` (4), `a-saved-filter-is-a-query`;
+Demos `reforged-presets`.
 
 ### `[x]` ✅ 509 — LOOK: every cell two rows when one is multi-field
 

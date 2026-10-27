@@ -471,8 +471,8 @@ export class DataSource extends EventTarget {
        TRAP T-one-walk-counts-and-limits-in-order */
     const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], scope).flatMap((e) => (e.held ? [e.id] : []));
     // The app's presets lead the scope: a boolean chip each. TODO 493
-    const presets: HeldFilter[] = [...this.#presetsOf.get(scope) ?? []].map(([id, p]) => ({
-      id: `preset:${id}`, label: p.label, preset: true, active: !!q.presets?.[id],
+    const presets: HeldFilter[] = this.#context.presets(scope).map((p) => ({
+      id: `preset:${p.id}`, label: p.label, preset: true, active: this.#context.presetOn(scope, p.id),
     }));
     const fields: HeldFilter[] = held.map((f) => {
       // Held above, its state is its own kept answer. D2 A
@@ -552,14 +552,11 @@ export class DataSource extends EventTarget {
   #own = new Map<string, ReadonlySet<string>>();
 
   /** A scope's PRESETS: the app's own named conditions, each a boolean chip — on,
-   *  its readings filter beside the fields'. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
+   *  its rows are written into the fields'. Kept by the Query. Will, TODOs 493, 510
+   *  TRAP T-a-preset-is-its-own-part */
   declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
-    this.#presetsOf.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading> }])));
-    this.#recompose();
-    this.#binding.drawBars(scope);
+    this.#context.declarePresets(scope, presets);
   }
-  /** Each scope's presets, by id. */
-  #presetsOf = new Map<string, Map<string, { label: string; readings: Record<string, FieldReading> }>>();
 
   /** declareUnused(scope, filters) — what a scope's bar draws after its own, that
    *  this page has no field for: the App Context's. Never in the Query. True when
@@ -1021,7 +1018,6 @@ export class DataSource extends EventTarget {
       mine: this.#mine,
       has: this.#has,
       fetched: this.#fetched,
-      preset: (scope, id) => this.#presetsOf.get(scope)?.get(id)?.readings,
       ...(this.#context.previewed ? { highlight: this.#context.previewed } : {}),
     };
   }
@@ -1128,6 +1124,8 @@ export class DataSource extends EventTarget {
         this.#recompose();
         this.#draw(change.field);
         this.readValues([change.field]);
+        // A preset reads its on from this field: its chip is drawn again. TODO 510
+        for (const scope of this.#context.presetsOver(change.field)) this.#binding.drawBars(scope);
         return;
       case 'hold':
         // A field just held needs its values. 345 phase 5
@@ -1712,7 +1710,7 @@ export class DataSource extends EventTarget {
       mine: this.#mine,
       has: this.#has,
       ...(this.#countEvery ? { countAll: true } : {}),
-      preset: (scope, id) => this.#presetsOf.get(scope)?.get(id)?.readings,
+      presets: (scope) => this.#context.presets(scope).filter((p) => this.#context.presetOn(scope, p.id, true)),
     });
   }
 

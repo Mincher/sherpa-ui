@@ -246,7 +246,7 @@ function ask(query: QueryContext, request: QueryRequest, scope: string): void {
   else if ('highlight' in one) query.highlight(at, one.field, one.highlight);
   else if ('preview' in one) query.preview(at, one.field, one.preview, one.value);
   else if ('order' in one) query.order(at, one.order);
-  else if ('preset' in one) query.setPreset(at, one.preset, one.on);
+  else if ('preset' in one) query.setPreset(at, one.preset, one.on, !!one.commit);
   else if ('reading' in one) query.setReading(at, one.field, one.reading);
   else query.suspend(at, 'field' in one ? one.field : null, one.suspended);
   if ('commit' in one && one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });

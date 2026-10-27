@@ -51,7 +51,7 @@ export function prune(query: Query): void {
     // …and one that keeps an answer the View holds over it. D2 A
     // …and one with a preset on. TODO 493
     if (!scope.holds.length && !Object.keys(scope.readings).length && !scope.suspended
-      && !arranging(scope) && !scope.superseded && !Object.values(scope.presets ?? {}).some(Boolean)) {
+      && !arranging(scope) && !scope.superseded) {
       Reflect.deleteProperty(query.scopes, id);
     }
   }
@@ -288,7 +288,7 @@ export interface DefinitionFacts {
 }
 
 /** The keys a scope keeps, beside its readings. */
-const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search', 'superseded', 'presets']);
+const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search', 'superseded']);
 
 /**
  * A definition as a whole Query; its sort, group and search stay in it, in
