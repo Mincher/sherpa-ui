@@ -390,6 +390,7 @@ export class SherpaOutlet extends SherpaElement {
     this.#drop();
     this.innerHTML = String(markup ?? '');
     this.#lift();
+    this.toggleState('drawn', true);
     const waits: Promise<unknown>[] = [];
     this.emit('context-markup', { context: name, root: this, waitUntil: (work: Promise<unknown>) => void waits.push(work) });
     await Promise.all(waits);

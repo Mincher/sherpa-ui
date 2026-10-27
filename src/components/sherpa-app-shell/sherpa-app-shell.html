@@ -58,12 +58,11 @@
             <div class="edge edge-start" part="panel-start-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
           </aside>
-          <!-- The Context's column: a fixed region, then its scroll area. TRAP T-a-context-has-a-fixed-region -->
-          <div class="context-column">
+          <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
+          <div class="context-edges sherpa-scroll-frame"><span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span><div class="context-frame sherpa-scroll-shadow">
+            <!-- A Context's fixed region, pinned over what scrolls. TRAP T-a-context-has-a-fixed-region -->
             <div class="context-header" part="context-header"><slot name="context-header" data-accepts="header"></slot></div>
-            <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
-            <div class="context-edges sherpa-scroll-frame"><span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span><div class="context-frame sherpa-scroll-shadow"><slot data-accepts="content"></slot></div></div>
-          </div>
+            <slot data-accepts="content"></slot></div></div>
           <aside class="panel-end" part="panel-end">
             <div class="edge edge-end" part="panel-end-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>

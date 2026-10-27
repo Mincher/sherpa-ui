@@ -14,7 +14,8 @@
   container: sherpa-app-shell / inline-size;
   block-size: 100%;
   min-block-size: 100vh;
-  background: var(--sherpa-theme-surface-default-base, #ffffff); /* theme-direct */
+  --_shell-surface: var(--sherpa-theme-surface-default-base, #ffffff); /* theme-direct */
+  background: var(--_shell-surface);
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
@@ -183,18 +184,7 @@
   inline-size: 100%;
 }
 
-/* The Context's column between the panel areas: its FIXED region, then its
-   scroll area under it. Will, TODO 484 */
-.context-column {
-  min-inline-size: 0;
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-block-size: 0;
-}
-.context-header { flex: none; }
-
-/* Its frame takes the scroller's place under the fixed region. TODO 478 */
+/* Its frame takes the scroller's place between the panel areas. TODO 478 */
 .context-edges {
   min-inline-size: 0;
   flex: 1 1 auto;
@@ -212,6 +202,31 @@
   flex-direction: column;
   min-block-size: 0;
   overflow: auto;
+}
+/* A Context's FIXED region: first in the scroller and pinned there, so what
+   scrolls passes under it — and the scroller never moves when it fills.
+   TRAP T-a-context-has-a-fixed-region */
+.context-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  flex: none;
+  background: var(--_shell-surface);
+}
+@supports (animation-timeline: scroll()) {
+  :host([data-scroll-shadow]:state(has-context-header)) .context-header::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    block-size: var(--sherpa-scroll-shadow-size);
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--sherpa-scroll-shadow-ink), transparent);
+    opacity: 0;
+    animation: sherpa-scroll-shadow linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
+  }
 }
 /* THE CONTEXT FILLS THE FRAME, however little it holds: a fit grid's `100%`
    measures this box. Left to its content, a grid of ten rows "fitted" a

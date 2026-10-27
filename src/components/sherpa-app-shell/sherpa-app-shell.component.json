@@ -94,50 +94,44 @@
                     },
                     {
                       "el": "div",
-                      "class": "context-column",
+                      "class": "context-edges sherpa-scroll-frame",
                       "children": [
                         {
-                          "el": "div",
-                          "class": "context-header",
-                          "part": "context-header",
-                          "children": [
-                            {
-                              "slot": "context-header",
-                              "attrs": {
-                                "data-accepts": "header"
-                              }
-                            }
-                          ]
+                          "el": "span",
+                          "class": "sherpa-scroll-edge-start",
+                          "attrs": {
+                            "aria-hidden": "true"
+                          }
+                        },
+                        {
+                          "el": "span",
+                          "class": "sherpa-scroll-edge-end",
+                          "attrs": {
+                            "aria-hidden": "true"
+                          }
                         },
                         {
                           "el": "div",
-                          "class": "context-edges sherpa-scroll-frame",
+                          "class": "context-frame sherpa-scroll-shadow",
                           "children": [
                             {
-                              "el": "span",
-                              "class": "sherpa-scroll-edge-start",
-                              "attrs": {
-                                "aria-hidden": "true"
-                              }
-                            },
-                            {
-                              "el": "span",
-                              "class": "sherpa-scroll-edge-end",
-                              "attrs": {
-                                "aria-hidden": "true"
-                              }
-                            },
-                            {
                               "el": "div",
-                              "class": "context-frame sherpa-scroll-shadow",
+                              "class": "context-header",
+                              "part": "context-header",
                               "children": [
                                 {
-                                  "slot": "",
+                                  "slot": "context-header",
                                   "attrs": {
-                                    "data-accepts": "content"
+                                    "data-accepts": "header"
                                   }
                                 }
                               ]
+                            },
+                            {
+                              "slot": "",
+                              "attrs": {
+                                "data-accepts": "content"
+                              }
                             }
                           ]
                         }

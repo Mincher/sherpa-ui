@@ -50,7 +50,7 @@ test('the outlet loads the route\'s Context, hands it one ctx, and tears it down
 
 /* A CONTEXT'S FIXED REGION: its `slot="context-header"` element goes up into
    the shell, over the scroll area, and leaves with it. TRAP T-a-context-has-a-fixed-region */
-test('a Context\'s context-header element is lifted into the shell, above its scroll area, and leaves with it', async ({ page }) => {
+test('a Context\'s context-header element is lifted into the shell, at the top of its scroll area, and leaves with it', async ({ page }) => {
   await page.goto('/test/reforged/outlet.html');
   await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
   const r = await page.evaluate(`(async () => {
@@ -66,7 +66,9 @@ test('a Context\'s context-header element is lifted into the shell, above its sc
     const frame = shell.shadowRoot.querySelector('.context-frame');
     const alpha = {
       inShell: top?.parentElement === shell, slot: top?.assignedSlot?.name ?? null,
-      above: Math.round(top.getBoundingClientRect().bottom) <= Math.round(frame.getBoundingClientRect().top),
+      // First in the scroller, at its top. TODO 484
+      inFrame: top.assignedSlot?.parentElement?.parentElement === frame,
+      atTop: Math.round(top.getBoundingClientRect().top) === Math.round(frame.getBoundingClientRect().top),
       gap: [getComputedStyle(document.querySelector('#alpha-top-grid')).paddingBottom,
         getComputedStyle(document.querySelector('#alpha-grid')).paddingTop],
     };
@@ -74,7 +76,7 @@ test('a Context\'s context-header element is lifted into the shell, above its sc
     return { alpha, gone: !document.querySelector('#alpha-top') };
   })()`) as { alpha: Record<string, unknown>; gone: boolean };
   // One gap between them: the region's grid keeps its bottom edge, the Context's drops its top.
-  expect(r.alpha).toEqual({ inShell: true, slot: 'context-header', above: true, gap: ['16px', '0px'] });
+  expect(r.alpha).toEqual({ inShell: true, slot: 'context-header', inFrame: true, atTop: true, gap: ['16px', '0px'] });
   expect(r.gone).toBe(true);
 });
 

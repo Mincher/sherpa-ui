@@ -15835,10 +15835,20 @@ It waits for animations on the document's own timeline only.
 ### T-a-context-has-a-fixed-region
 
 **A Context can keep a row in view above its scroll area** (Will, TODO 484, B):
-the shell's `context-header` slot sits over `.context-frame`, outside the
-scroller, so what scrolls passes UNDER it and the frame's own scroll shadow
-shades it. It replaced a sticky metrics row inside the grid, which needed its
-own drop shadow.
+the shell's `context-header` slot is the FIRST thing in `.context-frame`,
+sticky at its top with the shell's surface, so what scrolls passes UNDER it,
+and its own edge shades it while the frame is scrolled. It replaced a sticky
+metrics row inside the grid, which needed its own drop shadow.
+
+**Inside the scroller, not above it — and an EMPTY outlet.** Above it, the
+region filled as the markup arrived and pushed the scroller down 120px: a
+layout shift, CLS 0.05 to 0.08 at 4x where it was 0.01. Chromium counts a box
+that moves when it is a SCROLL box, or has ANY child box, even if nothing
+paints — measured: an empty `overflow: auto` box moved 120px scored 0.15; an
+empty plain box 0; the outlet with only its two hidden helpers (`.reach-say`,
+`.reach-after`) 0.073. So the region is first in the scroller, which never
+moves, and the outlet shows its helpers only once its first Context is drawn
+(`:state(drawn)`). CLS 0.009 since.
 
 **The outlet lifts it.** A slot only takes the shell's own children, and a
 Context's markup is the outlet's. So after the markup goes in, each
@@ -15857,9 +15867,12 @@ Context's FIRST grid drops its top one while a region is there
 (`sherpa-app-shell:has(> [slot="context-header"])`, in `tokens.css`).
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.css`
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-outlet.spec.ts`
+- Site: `test/e2e/reforged-app-shell.spec.ts`
 
 ### T-a-scroll-shadow-is-drawn-over-the-content
 

@@ -140,6 +140,43 @@ test('only the Context scrolls: the header and a panel stay put, and the frame s
   expect([r.end.top, r.end.bottom]).toEqual(['1', '0']);
 });
 
+/* A CONTEXT'S FIXED REGION is first in the scroller, pinned: filling it never
+   moves the scroller (a moved scroll box is a layout shift), and what scrolls
+   passes under it. TRAP T-a-context-has-a-fixed-region */
+test('a context-header region fills without moving the scroller, and stays put while the Context scrolls', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<div style="block-size: 400px"><sherpa-app-shell data-scroll-shadow style="min-block-size: 0">'
+      + '<div slot="nav">N</div><div slot="header" style="block-size: 40px">H</div>'
+      + '<div><div class="page" style="block-size: 1200px">Context</div></div></sherpa-app-shell></div>';
+    await window.__settled();
+    const shell = root.querySelector('sherpa-app-shell')!;
+    (shell.shadowRoot!.querySelector('.shell') as HTMLElement).style.minBlockSize = '0';
+    const frame = shell.shadowRoot!.querySelector<HTMLElement>('.context-frame')!;
+    const box = (): string => { const b = frame.getBoundingClientRect(); return [b.top, b.height].map(Math.round).join(','); };
+    const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    await frames();
+    const before = box();
+    const region = document.createElement('div');
+    region.slot = 'context-header';
+    region.className = 'region';
+    region.style.blockSize = '60px';
+    shell.append(region);
+    await frames();
+    const top = (sel: string): number => Math.round(root.querySelector(sel)!.getBoundingClientRect().top);
+    const at = { region: top('.region'), page: top('.page') };
+    frame.scrollTop = 200;
+    await frames();
+    return { before, after: box(), at, scrolled: { region: top('.region'), page: top('.page') } };
+  });
+  expect(r.after).toBe(r.before);
+  // The page starts under the region…
+  expect(r.at.page).toBe(r.at.region + 60);
+  // …and scrolls under it, while the region stays.
+  expect(r.scrolled.region).toBe(r.at.region);
+  expect(r.scrolled.page).toBe(r.at.page - 200);
+});
+
 test('the content inset holds at the collapsed width until the rail is latched open', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };

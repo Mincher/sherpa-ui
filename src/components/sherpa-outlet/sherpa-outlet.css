@@ -40,6 +40,9 @@
 }
 /* Where focus goes when the banner it was in goes. */
 .reach-after { outline: none; }
+/* Neither before the first Context: an outlet with ANY box in it is a layout
+   shift when a fixed region moves it. TRAP T-a-context-has-a-fixed-region */
+:host(:not(:state(drawn))) :is(.reach-say, .reach-after) { display: none; }
 :host(:state(reach-unreached)) .reach-unreached,
 :host(:state(reach-down)) .reach-down { display: block; }
 .reach-actions {
