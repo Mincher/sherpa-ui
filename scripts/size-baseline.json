@@ -498,7 +498,7 @@
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.html": 38,
   "src/components/sherpa-provider/sherpa-provider.html": 46,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html": 277,
-  "src/components/sherpa-quick-filter-toolbar/toolbar-rows.html": 66,
+  "src/components/sherpa-quick-filter-toolbar/toolbar-rows.html": 67,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.html": 155,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.html": 77,
   "src/components/sherpa-router/sherpa-router.html": 30,

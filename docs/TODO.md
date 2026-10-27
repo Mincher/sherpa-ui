@@ -164,7 +164,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
 | ✅ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
 | ⬜ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
-| ⬜ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
+| ✅ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2308,12 +2308,17 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
-### `[ ]` ⬜ 483 — BUG: a section's ⋮ is green while a value is picked
+### `[x]` ✅ 483 — BUG: a section's ⋮ is green while a value is picked
 
 Will, 2026-10-27: *"The overflow menu buttons for panel mode sections uses the
 green active styling when 1 or more filter values is selected. The
 state/styling of this button shouldn't be tied to value selection status other
 than to populate its menu items correctly."*
+
+**Found:** the ⋮ sits in its chip, and an ON chip re-points the Style names for
+everything inside it. **Done:** the ⋮ pins `data-status="default"`, as the
+field's Apply pair already did; its open state is still its own. Test: Demos
+`reforged-filter-column`.
 
 ### `[ ]` ⬜ 482 — LOOK: a divider between preset and added chips
 

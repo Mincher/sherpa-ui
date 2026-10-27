@@ -48,9 +48,10 @@
     </span>
   </template>
   <!-- A SECTION's ⋮, in its chip's `more` slot: the field's own actions, each
-       only where it applies. Will, TODO 425 G1 -->
+       only where it applies. Will, TODO 425 G1. `default`: never its chip's
+       active look — the picks decide only its rows. Will, TODO 483 -->
   <template class="field-more-tpl">
-    <sherpa-button slot="more" class="field-more" data-type="icon" data-size="sm"
+    <sherpa-button slot="more" class="field-more" data-type="icon" data-size="sm" data-status="default"
                    data-icon-start="ellipses-vertical" aria-haspopup="dialog">
       <sherpa-menu slot="menu" class="field-menu" data-align="end">
         <button class="more-item" type="button" value="advanced"><span class="more-label"></span></button>
