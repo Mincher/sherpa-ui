@@ -26,7 +26,7 @@ test('the height is N row units plus the gutters between them', async ({ page })
       await el.rendered;
       out[`r${n}`] = Math.round(el.getBoundingClientRect().height);
     }
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     // Read the tokens the rule consumes, so the test does not hardcode a number
     // that a Figma re-point would silently break.
     const cs = getComputedStyle(document.documentElement);
@@ -56,7 +56,7 @@ test('an only child FILLS the card', async ({ page }) => {
     el.innerHTML = '<div id="only"></div>';
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       // clientHeight is the CONTENT box — the card's own 0.5px ring is inside its
       // declared height, so the outer rect is 1px taller at each edge.
@@ -87,7 +87,7 @@ test('data-fill + data-grow picks the grower; the others keep their natural heig
       '<div id="pager" style="block-size:48px"></div>';
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const h = (id: string) => Math.round(document.getElementById(id)!.getBoundingClientRect().height);
     // clientHeight — the content box, inside the card's own 0.5px ring.
     return { card: el.clientHeight, t1: h('t1'), t2: h('t2'), grid: h('grid'), pager: h('pager') };
@@ -109,7 +109,7 @@ test('without data-rows the card is content-height', async ({ page }) => {
     el.innerHTML = '<div style="block-size:60px"></div>';
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return el.clientHeight;
   });
   // Sizing is opt-in: a plain card must not suddenly claim six grid rows.
@@ -130,7 +130,7 @@ test('a body child grows even when a header shares the light DOM', async ({ page
     el.innerHTML = '<div slot="header">Title</div><div id="body"></div>';
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const header = el.shadowRoot!.querySelector('.header')!.getBoundingClientRect();
     return {
       card: el.clientHeight,
@@ -162,7 +162,7 @@ test('data-padding-inline pads the content sideways without restoring the block 
       }
       root.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const body = el.shadowRoot!.querySelector('.body')!;
       const s = getComputedStyle(body);
       return { block: s.paddingTop, inline: s.paddingLeft };

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-select-group on the reforged base — a group of composed
@@ -8,13 +8,7 @@ import { test, expect } from './fixture';
  * composed change, found via composedPath()).
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-select-group'));
 });
 
@@ -37,7 +31,7 @@ test('renders one child per option with label + description', async ({ page }) =
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     const children = el.querySelectorAll('sherpa-select-radio'); // options are slotted (light DOM)
     return {
@@ -60,7 +54,7 @@ test('multiple renders checkboxes and allows multi-select', async ({ page }) => 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const boxes = el.querySelectorAll('sherpa-select-checkbox');
     el.value = ['a', 'c'];
@@ -79,7 +73,7 @@ test('radio value is a single string (single-select)', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     el.value = 'b';
     return { value: el.value };
   }, OPTIONS);
@@ -93,7 +87,7 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     let detail: unknown = null;
     el.addEventListener('change', (e) => (detail = (e as CustomEvent).detail.value));
@@ -104,7 +98,7 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
     };
     await child.rendered;
     child.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { detail };
   }, OPTIONS);
   expect(r.detail).toEqual(['a']); // aggregate value carried up from the child
@@ -118,7 +112,7 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
  */
 test('a value set before the options arrive, and a tick, both survive populate()', async ({ page }) => {
   const r = await page.evaluate(async (options) => {
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     const one = document.createElement('sherpa-select-group') as unknown as GroupEl;
     one.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(one);
@@ -162,7 +156,7 @@ test('options come from the prototypes: multiple swaps them, and an author-writt
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     await settle();
     const radios = [...el.querySelectorAll('sherpa-select-radio')].map((c) => c.getAttribute('value'));
     const left = [...el.querySelectorAll('sherpa-select-radio:not([value="own"])')].map((c) => [...c.attributes].map((a) => a.name).filter((n) => n.startsWith('data-attr-')));

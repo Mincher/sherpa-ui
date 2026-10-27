@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * SAVE FILTERS — Will, TODO 105 and 366. Every scope's filters under one name,
@@ -44,8 +44,6 @@ const SETUP = `
 `;
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/test/reforged/harness.html');
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(() => {
     for (const key of Object.keys(localStorage)) if (key.startsWith('sherpa:filter')) localStorage.removeItem(key);
     for (const key of Object.keys(sessionStorage)) if (key.startsWith('sherpa:filter')) sessionStorage.removeItem(key);

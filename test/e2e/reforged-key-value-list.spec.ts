@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-key-value-list on the reforged base — populate() renders dt/dd pairs
@@ -6,13 +6,7 @@ import { test, expect } from './fixture';
  * vertical (pure CSS).
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-key-value-list'));
 });
 

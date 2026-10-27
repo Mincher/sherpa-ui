@@ -1,4 +1,4 @@
-import { expect, test } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-notifications — the bell's list, as a menu.
@@ -7,10 +7,6 @@ import { expect, test } from './fixture';
  * sherpa-button for the action. The component owns only WHICH notifications
  * there are and what happens when one is clicked.
  */
-test.beforeEach(async ({ page }) => {
-  await page.goto('/test/reforged/harness.html');
-});
-
 const ITEMS = [
   { id: 'a', label: 'Renewed', description: 'Enterprise', time: '2m ago', unread: true },
   { id: 'b', label: 'Payment failed', description: 'Declined', time: '1h ago', unread: true },
@@ -28,7 +24,7 @@ test('it composes real components, and marks unread rows', async ({ page }) => {
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate(items);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const menu = el.shadowRoot.querySelector('.menu')!;
     const rows = [...menu.querySelectorAll('.notification')] as HTMLElement[];
@@ -75,7 +71,7 @@ test('mark all read clears the pips at once and reports the ids', async ({ page 
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate(items);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     let reported: string[] = [];
     el.addEventListener('notification-read', (e) => {
@@ -88,7 +84,7 @@ test('mark all read clears the pips at once and reports the ids', async ({ page 
     };
     await button.rendered;
     button.shadowRoot.querySelector('button')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const rows = [...el.shadowRoot.querySelector('.menu')!.querySelectorAll('.notification')];
     return {
@@ -117,7 +113,7 @@ test('an empty list says so rather than showing an empty card', async ({ page })
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate([]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const menu = el.shadowRoot.querySelector('.menu')!;
     const readAll = menu.querySelector('.read-all')!;

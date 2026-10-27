@@ -33,9 +33,9 @@ async function openCalendarMenu(page: import('@playwright/test').Page) {
     const cal = menu.querySelector('sherpa-calendar') as HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot };
     await menu.rendered;
     await cal.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     menu.show(document.getElementById('t')!);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const stepper = menu.querySelector(':scope > .cal-header-projected') as HTMLElement | null;
     const btns = stepper ? ([...stepper.children] as HTMLElement[]) : [];
@@ -133,7 +133,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
       { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'created', label: 'Created', kind: 'date', removable: true },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const chip = el.shadowRoot.querySelector('.chip[data-id="created"]') as HTMLElement;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
@@ -145,7 +145,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
     await menu.rendered;
     await cal.rendered;
     menu.show(chip);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     let picked: unknown = null;
     cal.addEventListener('datetime-change', (e) => { picked = (e as CustomEvent).detail; });
@@ -154,7 +154,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
       (c) => (c as HTMLElement).dataset['iso'] && !c.hasAttribute('disabled'),
     ) as (HTMLElement & { shadowRoot: ShadowRoot }) | undefined;
     cell?.shadowRoot.querySelector('button')?.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterPick = cal.getAttribute('value');
 
     // TODAY is the left footer button on a calendar (Figma puts it in that
@@ -165,7 +165,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
     const today = menu.shadowRoot.querySelector('.today') as HTMLElement;
     const todayReachable = getComputedStyle(today).display !== 'none';
     today.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const now = new Date();
     const p2 = (n: number) => String(n).padStart(2, '0');
@@ -203,9 +203,9 @@ test('a calendar heads its own two-row header; the footer buttons are default si
       await m.rendered;
       const cal = m.querySelector('sherpa-calendar') as (HTMLElement & { rendered?: Promise<void> }) | null;
       if (cal) await cal.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       m.show(document.getElementById('t')!);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const btn = (c: string) => {
         const b = m.shadowRoot.querySelector('.' + c) as HTMLElement;
         const box = b.getBoundingClientRect();
@@ -308,7 +308,7 @@ test('a cell fills its grid track in every view â€” nothing clips it', async ({ 
     const out: Record<string, unknown> = {};
     for (const [view, sel] of [['day', '.cal-days'], ['month', '.cal-months'], ['year', '.cal-years']] as const) {
       cal.dataset['view'] = view;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const grid = cal.shadowRoot.querySelector(sel) as HTMLElement;
       const cells = [...grid.querySelectorAll('sherpa-calendar-cell')] as (HTMLElement & { shadowRoot: ShadowRoot })[];
       const c = cells[Math.floor(cells.length / 2)]!;
@@ -371,14 +371,14 @@ test('the grid keeps one width across day / month / year, INSIDE a hugging menu'
     };
     await menu.rendered;
     await cal.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     menu.show(document.getElementById('t')!);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const out: Record<string, { gridW: number; cols: number[] }> = {};
     for (const [view, sel] of [['day', '.cal-days'], ['month', '.cal-months'], ['year', '.cal-years']] as const) {
       cal.dataset['view'] = view;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const grid = cal.shadowRoot.querySelector(sel) as HTMLElement;
       out[view] = {
         gridW: Math.round(grid.getBoundingClientRect().width),
@@ -428,9 +428,9 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
         rendered?: Promise<void>; dataset: DOMStringMap;
       }) | null;
       if (cal) await cal.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       m.show(document.getElementById('t')!);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return { m, cal };
     };
     const box = (m: HTMLElement & { shadowRoot: ShadowRoot }, c: string) => {
@@ -451,10 +451,10 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
     // Drive it from somewhere far away â€” a year view with no date picked.
     cal.cal!.dataset['view'] = 'year';
     cal.cal!.removeAttribute('value');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const before = { view: cal.cal!.dataset['view'], value: cal.cal!.getAttribute('value') };
     (cal.m.shadowRoot.querySelector('.today') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const after = { view: cal.cal!.dataset['view'], value: cal.cal!.getAttribute('value') };
     const stillOpen = !!cal.m.shadowRoot.querySelector('.menu:popover-open');
     cal.m.hide();
@@ -516,7 +516,7 @@ test('the footer holds all four: Today, Remove, then the committing pair', async
       { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'created', label: 'Created', kind: 'date', removable: true, commit: true },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const chip = el.shadowRoot.querySelector('.chip[data-id="created"]') as HTMLElement;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
@@ -526,7 +526,7 @@ test('the footer holds all four: Today, Remove, then the committing pair', async
     await menu.rendered;
     await cal.rendered;
     menu.show(chip);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const rect = (el2: Element) => {
       const b = el2.getBoundingClientRect();
@@ -632,7 +632,7 @@ test('a date chip waits for Apply unless it says `commit: false`; auto, it keeps
       { id: 'waits', label: 'Due', kind: 'date' },
       { id: 'plain', label: 'Plain', select: 'single', options: [{ value: 'a', label: 'A' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const menuOf = (id: string) =>
       el.shadowRoot.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as HTMLElement & {
@@ -717,7 +717,7 @@ test('a calendar menu reports its picked day as the menu value', async ({ page }
     menu.appendChild(cal);
     root.appendChild(menu);
     await menu.rendered;
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const empty = menu.values;
@@ -765,7 +765,7 @@ test('an unpicked calendar anchors to its available days, not to today', async (
       root.appendChild(cal);
       return cal;
     };
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
 
     // Days in a month that is NOT this one.
     const withData = make('2024-12-02,2024-12-06,2024-12-19');
@@ -855,7 +855,7 @@ test('an empty date chip reads Today, OFF, and one press turns it on at Today â€
       { id: 'day', label: 'Due', kind: 'date', availableDates: ['2001-02-03'] },
       { id: 'span', label: 'Created', kind: 'date', range: true, availableDates: ['2001-02-03'] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const asks: unknown[] = [];
     el.addEventListener('quick-filter-change', (e) => asks.push((e as CustomEvent).detail.request));
 
@@ -866,7 +866,7 @@ test('an empty date chip reads Today, OFF, and one press turns it on at Today â€
     const press = async (id: string) => {
       const chip = el.shadowRoot.querySelector(`.chip[data-id="${id}"]`) as Chip & { shadowRoot: ShadowRoot };
       (chip.shadowRoot.querySelector('.body') as HTMLElement).click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
     const menu = el.shadowRoot.querySelector('.chip[data-id="day"] sherpa-menu')!;
     const before = { day: read('day'), span: read('span'), available: menu.getAttribute('data-available') };
@@ -909,12 +909,12 @@ test('a date menu with f(x): the button ends the heading row, the stepper fills 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ id: 'created', label: 'Date', kind: 'date', range: true, advanced: true }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const chip = el.shadowRoot.querySelector('.chip') as HTMLElement;
     const m = chip.querySelector('sherpa-menu') as M;
     await m.rendered;
     m.show(chip);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const box = (n: Element | null) => {
       const b = n!.getBoundingClientRect();
       return { l: Math.round(b.left), r: Math.round(b.right), t: Math.round(b.top), shown: b.width > 0 };
@@ -926,7 +926,7 @@ test('a date menu with f(x): the button ends the heading row, the stepper fills 
       fx: box(m.shadowRoot.querySelector('.use-condition')), stepper: box(stepper),
     };
     m.mode = 'advanced';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const day = m.shadowRoot.querySelector('.condition-row .condition-date')!;
     return {
       simple,

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-app-header on the reforged base — rebuilt to the Figma "App Header":
@@ -11,13 +11,7 @@ import { test, expect } from './fixture';
  * compiled module (and the composed children) to trigger customElements.define().
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-app-header/sherpa-app-header.js');
     await customElements.whenDefined('sherpa-app-header');
@@ -54,12 +48,12 @@ test('data-notifications shows a count badge; 0/unset hides it', async ({ page }
     const hidden = getComputedStyle(badge).display === 'none';
 
     el.setAttribute('data-notifications', '5');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const shownText = badge.textContent;
     const shown = getComputedStyle(badge).display !== 'none';
 
     el.setAttribute('data-notifications', '0');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const clearedAttr = el.hasAttribute('data-notifications');
 
     return { hidden, shownText, shown, clearedAttr };
@@ -114,7 +108,7 @@ test('every header action fires its event', async ({ page }) => {
       const host = s.querySelector(sel) as HTMLElement & { shadowRoot: ShadowRoot };
       (host.shadowRoot.querySelector('button') as HTMLElement).click();
     }
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       seen,
@@ -143,7 +137,7 @@ test('data-loading reveals the loading bar', async ({ page }) => {
     });
     const before = read();
     el.setAttribute('data-loading', '');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const after = read();
     return { before, after };
   });
@@ -176,12 +170,12 @@ test('populate() composes breadcrumbs + a quick-filter toolbar, and breadcrumb-s
       breadcrumb: [{ label: 'Home' }, { label: 'Reports' }],
       filters: [{ id: 'all', label: 'All', active: true }, { id: 'mine', label: 'Mine' }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const crumbs = el.querySelector('sherpa-breadcrumbs[slot="breadcrumb"]') as WithRender;
     const qft = el.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
     await crumbs.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     // ONE NAME. The crumbs' own event bubbles composed, so it surfaces on the
     // header under its own name — the header used to re-emit it as
@@ -191,7 +185,7 @@ test('populate() composes breadcrumbs + a quick-filter toolbar, and breadcrumb-s
     crumbs.dispatchEvent(new CustomEvent('breadcrumb-select', {
       bubbles: true, composed: true, detail: { index: 0, label: 'Home' },
     }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       hasCrumbs: !!crumbs,
@@ -340,10 +334,10 @@ test('the bell reports the panel state the host gives it', async ({ page }) => {
 
     const closed = read();
     el.setAttribute('data-notifications-open', '');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const opened = read();
     el.removeAttribute('data-notifications-open');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { closed, opened, shut: read() };
   });
 
@@ -422,7 +416,7 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
     const star = el.shadowRoot!.querySelector('.favourite') as HTMLElement;
     const press = async () => {
       (star.shadowRoot!.querySelector('button') as HTMLElement).click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return {
         on: el.hasAttribute('data-favourite'),
         icon: star.getAttribute('data-icon-start'),

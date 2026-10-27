@@ -15,7 +15,7 @@ test('the nav rail is a full-height overlay; the header is a row above the scrol
       '<div slot="nav">N</div><div slot="header">H</div><div>Content</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const q = (s: string) => el.shadowRoot!.querySelector(s) as HTMLElement;
     const nav = getComputedStyle(q('.nav'));
     const shellBox = q('.shell').getBoundingClientRect();
@@ -77,7 +77,7 @@ test('a Context fills its frame however little it holds, so `100%` inside it mea
       + '<div slot="header" style="block-size: 40px">H</div>'
       + '<div class="ctx" style="min-block-size: 0"><div class="fit" style="block-size: 100%"><div style="block-size: 50px">little</div></div></div>'
       + '</sherpa-app-shell></div>';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const shell = root.querySelector('sherpa-app-shell')!;
     (shell.shadowRoot!.querySelector('.shell') as HTMLElement).style.minBlockSize = '0';
     await new Promise<void>((res) => requestAnimationFrame(() => res()));
@@ -231,7 +231,7 @@ test('the overlay slot covers the header and content exactly, and the rail stays
       '<div slot="overlay">Settings</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     await new Promise((res) => setTimeout(res, 250)); // the inset animates
     const frame = el.shadowRoot!.querySelector('.frame')!.getBoundingClientRect();
     const overlay = el.querySelector('[slot="overlay"]')!.getBoundingClientRect();
@@ -255,7 +255,7 @@ for (const [density, px] of [['compact', 36], ['default', 40], ['comfortable', 4
       el.innerHTML = '<div>Content</div>';
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       await new Promise((res) => setTimeout(res, 250)); // width and inset animate
       const nav = el.shadowRoot!.querySelector('sherpa-nav')!;
       const tile = nav.shadowRoot!.querySelector('.brand-icon')!.getBoundingClientRect();

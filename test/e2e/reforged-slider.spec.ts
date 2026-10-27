@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-slider on the reforged base — a single-value range control wrapping a
@@ -7,8 +7,6 @@ import { test, expect } from './fixture';
  * styling), the input/change re-dispatch with a { value } detail, and disabled.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type SliderEl = HTMLElement & {
   rendered?: Promise<void>;
   value?: number;
@@ -16,10 +14,6 @@ type SliderEl = HTMLElement & {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-slider'));
 });
 
@@ -89,7 +83,7 @@ test('a native input event re-dispatches as input with { value }', async ({ page
     input.value = '60';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       events,
@@ -111,7 +105,7 @@ test('populate({ value }) sets the value', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ value: 33 });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { value: el.value, pct: el.style.getPropertyValue('--_pct').trim() };
   });
   expect(r.value).toBe(33);
@@ -147,7 +141,7 @@ test('data-show-value reveals an editable value input; typing updates the slider
     // `.value-end`, not `.value-input`: range mode added a SECOND field before
     // the track, so the bare class now matches two and querySelector would take
     // the start one — which single mode keeps hidden.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const field = el.shadowRoot!.querySelector('.value-end') as HTMLInputElement;
     const visible = getComputedStyle(field).display !== 'none';
     const initial = field.value;
@@ -158,7 +152,7 @@ test('data-show-value reveals an editable value input; typing updates the slider
     const control = field.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
     control.value = '65';
     control.dispatchEvent(new Event('change', { bubbles: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { visible, initial, changed, hostValue: el.getAttribute('value'), pct: (el.style as CSSStyleDeclaration).getPropertyValue('--_pct') };
   });
@@ -181,12 +175,12 @@ test('the value input clamps out-of-range entries to min/max on commit', async (
     // `.value-end`, not `.value-input`: range mode added a SECOND field before
     // the track, so the bare class now matches two and querySelector would take
     // the start one — which single mode keeps hidden.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const field = el.shadowRoot!.querySelector('.value-end') as HTMLInputElement;
     const control = field.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
     control.value = '999';
     control.dispatchEvent(new Event('change', { bubbles: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { fieldValue: field.value, hostValue: el.getAttribute('value') };
   });
   expect(r.fieldValue).toBe('50'); // snapped to max
@@ -217,7 +211,7 @@ test('data-type="range" draws two thumbs, two fields, and a fill between them', 
     el.style.inlineSize = '400px';
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const shown = (sel: string): boolean =>
@@ -262,14 +256,14 @@ test('the range ends clamp against each other and always read low-first', async 
     el.setAttribute('data-value-end', '70');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const drag = async (sel: string, to: number): Promise<void> => {
       const input = sr.querySelector<HTMLInputElement>(sel)!;
       input.value = String(to);
       input.dispatchEvent(new Event('input', { bubbles: true }));
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
 
     const events: unknown[] = [];
@@ -291,7 +285,7 @@ test('the range ends clamp against each other and always read low-first', async 
     sr.querySelector<HTMLInputElement>('.range-end')!.dispatchEvent(
       new Event('change', { bubbles: true }),
     );
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { lowPushed, highPushed, written, events };
   });
@@ -320,7 +314,7 @@ test('a value field is a Sherpa number field; its event stops at the slider, whi
     el.setAttribute('data-value-end', '60');
     el.setAttribute('data-show-value', '');
     document.getElementById('root')!.appendChild(el);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const fields = [...el.shadowRoot!.querySelectorAll<HTMLElement>('.value-input')];
     const seen: unknown[] = [];
     // OUTSIDE the slider: only its own reports arrive, never a field's `{ value }`.
@@ -345,7 +339,7 @@ test('the value fields sit UNDER the track, in one row, at any width', async ({ 
     const root = document.getElementById('root')!;
     root.innerHTML = [200, 640].map((w) => `<div style="inline-size: ${w}px"><sherpa-slider data-type="range" min="0" max="100000"`
       + ' data-value-start="0" data-value-end="100000" data-show-value></sherpa-slider></div>').join('');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return [...root.querySelectorAll('sherpa-slider')].map((el) => {
       const box = (sel: string) => el.shadowRoot!.querySelector(sel)!.getBoundingClientRect();
       const [track, start, end] = [box('.track-area'), box('.value-start'), box('.value-end')];

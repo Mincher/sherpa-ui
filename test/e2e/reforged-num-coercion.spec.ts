@@ -31,7 +31,7 @@ async function build(page: import('@playwright/test').Page, tag: string, attrs: 
       for (const [k, v] of Object.entries(a as Record<string, string>)) el.setAttribute(k, v);
       root.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return true;
     },
     [tag, attrs] as const,
@@ -90,7 +90,7 @@ for (const tag of ['sherpa-barchart', 'sherpa-line-chart'] as const) {
           // wrong reason.
           : { labels: ['a', 'b', 'c'], series: [{ label: 's', values: [10, 20, 30] }] },
       );
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el.shadowRoot!.querySelectorAll('.y-axis > *').length;
     }, tag);
     // Before the fix `Number('')` was 0, so the axis rendered zero ticks and the
@@ -117,7 +117,7 @@ for (const tag of ['sherpa-barchart', 'sherpa-line-chart'] as const) {
           // wrong reason.
           : { labels: ['a', 'b', 'c'], series: [{ label: 's', values: [10, 20, 30] }] },
       );
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el.shadowRoot!.querySelectorAll('.y-axis > *').length;
     }, tag);
     expect(ticks).toBe(0);
@@ -194,7 +194,7 @@ test('step tracker: data-current-step="0" marks the first step active', async ({
     root.appendChild(el);
     await el.rendered;
     el.populate([{ label: 'One' }, { label: 'Two' }, { label: 'Three' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return [...el.shadowRoot!.querySelectorAll('.step')].map((s) => (s as HTMLElement).dataset['state']);
   });
   expect(states).toEqual(['active', 'todo', 'todo']);
@@ -259,7 +259,7 @@ test('props: a FILLED slot beside the target wins over the attribute, by CSS', a
     el.textContent = 'from the slot';
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const text = el.shadowRoot!.querySelector<HTMLElement>('.heading-text')!;
     return { slotted: !!el.firstChild && !!(el.firstChild as Text).assignedSlot, textShown: text.getClientRects().length > 0 };
   });
@@ -274,7 +274,7 @@ test('props: an EMPTY slot leaves the attribute\'s text showing', async ({ page 
     el.setAttribute('data-heading', 'from the attribute');
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const text = el.shadowRoot!.querySelector<HTMLElement>('.heading-text')!;
     return { says: text.textContent, shown: text.getClientRects().length > 0 };
   });
@@ -291,7 +291,7 @@ test('props: an old alias writes nothing — data-message was the toast\'s', asy
       el.setAttribute(attr, value);
       root.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el.shadowRoot!.querySelector('.heading')!.textContent;
     };
     return { alias: await read('data-message', 'legacy'), primary: await read('data-heading', 'current') };
@@ -309,7 +309,7 @@ test('props: a declared prop re-syncs when the attribute changes', async ({ page
     await el.rendered;
     const before = el.shadowRoot!.querySelector('.title')!.textContent;
     el.setAttribute('data-heading', 'second');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { before, after: el.shadowRoot!.querySelector('.title')!.textContent };
   });
   expect(got).toEqual({ before: 'first', after: 'second' });
@@ -319,7 +319,7 @@ test('props: a declared prop re-syncs when the attribute changes', async ({ page
  *  TRAP T-the-templates-text-is-the-default */
 test("props: the template's own text is the default, and comes back when the attribute goes", async ({ page }) => {
   const got = await page.evaluate(async () => {
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const list = document.createElement('sherpa-transfer-list') as HTMLElement & { rendered?: Promise<void> };
@@ -358,7 +358,7 @@ test('props: `all` writes EVERY matching node, not just the first', async ({ pag
     el.setAttribute('data-label', 'repeated');
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return [...el.shadowRoot!.querySelectorAll('.title')].map((n) => n.textContent);
   });
   expect(titles.length).toBeGreaterThan(1);
@@ -392,7 +392,7 @@ for (const [tag, sel] of [
         el.setAttribute('data-icon', 'price-tag');
         root.appendChild(el);
         await el.rendered;
-        await (window as unknown as { __settled: () => Promise<void> }).__settled();
+        await window.__settled();
         const icon = el.shadowRoot!.querySelector(s)!;
         const svg = icon.querySelector('svg');
         return {
@@ -423,7 +423,7 @@ for (const [tag, sel] of [
         el.setAttribute('data-icon', '+');
         root.appendChild(el);
         await el.rendered;
-        await (window as unknown as { __settled: () => Promise<void> }).__settled();
+        await window.__settled();
         const icon = el.shadowRoot!.querySelector(s)!;
         return { text: icon.textContent, hasFa: [...icon.classList].some((c) => c.startsWith('fa-')) };
       },
@@ -442,7 +442,7 @@ test('icon: swapping the value does not accumulate two icons', async ({ page }) 
     root.appendChild(el);
     await el.rendered;
     el.setAttribute('data-icon', 'star');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const glyph = el.shadowRoot!.querySelector('.glyph')!;
     return { classes: [...glyph.classList], svgs: glyph.querySelectorAll('svg').length };
   });
@@ -464,7 +464,7 @@ test('icon: the drawing actually RENDERS — an unknown name would be empty', as
     el.setAttribute('data-icon', 'price-tag');
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const glyph = el.shadowRoot!.querySelector('.glyph')!;
     const path = glyph.querySelector('path');
     const box = glyph.getBoundingClientRect();
@@ -505,7 +505,7 @@ test('clone: a renamed template fails with a NAMED error, not a null crash', asy
     el.shadowRoot!.querySelector('template.cal-cell-tpl')?.remove();
     try {
       el.setAttribute('value', '2026-09-15');
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return 'no error';
     } catch (e) {
       return (e as Error).message;
@@ -526,7 +526,7 @@ test('clone: the calendar still stamps its day cells', async ({ page }) => {
     el.setAttribute('value', '2026-09-15');
     root.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return el.shadowRoot!.querySelectorAll('.cal-days .cal-cell').length;
   });
   // A month grid is never empty.
@@ -549,11 +549,11 @@ test('renderList: `own-children` clears only the stamped rows, never the <slot>'
     root.appendChild(el);
     await el.rendered;
     el.populate([{ title: 'one' }, { title: 'two' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const first = el.shadowRoot!.querySelectorAll('.body > .row-item').length;
     // Re-populate: the rows must be REPLACED, not appended to.
     el.populate([{ title: 'only' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       first,
       second: el.shadowRoot!.querySelectorAll('.body > .row-item').length,
@@ -574,10 +574,10 @@ test('renderList: the default mode replaces the container contents', async ({ pa
     root.appendChild(el);
     await el.rendered;
     el.populate([{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const first = el.shadowRoot!.querySelectorAll('.tabs > *').length;
     el.populate([{ id: 'x', label: 'X' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { first, second: el.shadowRoot!.querySelectorAll('.tabs > *').length };
   });
   expect(got).toEqual({ first: 3, second: 1 });
@@ -594,9 +594,9 @@ test('renderList: an empty list clears what was there', async ({ page }) => {
     root.appendChild(el);
     await el.rendered;
     el.populate([{ label: 'Home' }, { label: 'Here' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     el.populate([]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return el.shadowRoot!.querySelectorAll('.crumbs > *').length;
   });
   expect(remaining).toBe(0);

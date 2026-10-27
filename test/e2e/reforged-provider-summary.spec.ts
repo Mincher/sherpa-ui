@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * A chart or tile DECLARES what it needs of the rows, and its provider answers
@@ -6,15 +6,6 @@ import { test, expect } from './fixture';
  * narrows that chart alone. docs/PROVIDER-DESIGN.md §7 P2.
  * TRAP T-a-component-declares-its-summary
  */
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
-
 const SETUP = `
   const { ArrayStore, DataSource, onReport } = await import('/dist/index.js');
   const reports = [];

@@ -17,13 +17,13 @@ const GROUP = (id: string, n: number): string => `<sherpa-metric-group id="${id}
 async function open(page: Page, width = 1280): Promise<void> {
   await page.setViewportSize({ width, height: 720 });
   await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
   await page.evaluate(async ([a, b]) => {
     const cards = (n: number): string => '<div data-col-span="small" style="block-size:88px;background:#ddd"></div>'.repeat(n);
     document.getElementById('root')!.innerHTML = `<div id="box" style="block-size:400px;overflow:auto">
       <sherpa-layout-grid>${a}${cards(12)}${b}${cards(40)}</sherpa-layout-grid></div>`;
     await customElements.whenDefined('sherpa-metric-group');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
   }, [GROUP('one', 3), GROUP('two', 2)]);
 }
 

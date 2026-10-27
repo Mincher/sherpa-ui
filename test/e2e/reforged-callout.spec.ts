@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-callout on the reforged base — the status-enum surface (data-status
@@ -6,13 +6,7 @@ import { test, expect } from './fixture';
  * message slot, and the dismissible close button + callout-dismiss event.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-callout'));
 });
 

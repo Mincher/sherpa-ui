@@ -469,7 +469,7 @@ test('the caret label sits on the SAME text line as the chip label', async ({ pa
     await document.fonts.ready;
 
     input.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const textTop = (node: Element): number => {
       const range = document.createRange();
@@ -509,7 +509,7 @@ test('the caret label sits on the SAME text line as the chip label', async ({ pa
 test('an EMPTY chip opens its menu; one holding a value still toggles', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
 
     const host = document.getElementById('root')!;
     host.replaceChildren();
@@ -619,10 +619,10 @@ test('a superseded chip says where its field is filtered instead', async ({ page
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     await (menu as HTMLElement & { rendered?: Promise<void> }).rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const settle = async (): Promise<void> => {
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       await new Promise((res) => setTimeout(res, 60));
     };
     const tip = (): string =>
@@ -685,7 +685,7 @@ test('switching a chip OFF keeps what it holds — values, and the column', asyn
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.replaceChildren();
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
 
     /** A chip of `kind`, with a menu of columns and one of them picked. */
     const make = (kind: string | null, picked: string): HTMLElement => {

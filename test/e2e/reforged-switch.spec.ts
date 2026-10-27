@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-switch on the reforged base — a binary toggle backed by a native
@@ -8,20 +8,11 @@ import { test, expect } from './fixture';
  * hiding its label.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type SwitchEl = HTMLElement & {
   rendered?: Promise<void>;
   checked?: boolean;
   disabled?: boolean;
 };
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('defaults to off and exposes a native switch input', async ({ page }) => {
   const r = await page.evaluate(async () => {

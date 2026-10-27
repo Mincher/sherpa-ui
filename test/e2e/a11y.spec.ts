@@ -1,4 +1,4 @@
-import { test, expect, type Page } from './fixture';
+import { test, expect, type Page } from './harness';
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { EXAMPLES } from '../a11y/examples.mjs';
@@ -13,7 +13,6 @@ import { EXAMPLES } from '../a11y/examples.mjs';
  *
  * TRAP T-the-a11y-gate-reads-shadow-roots
  */
-const HARNESS = '/test/reforged/harness.html';
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const REPORTS = 'test/a11y/reports';
 const BASELINE = 'test/a11y/baseline.json';
@@ -29,8 +28,6 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'one engine, one base
 test.describe.configure({ mode: 'default' });
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.addScriptTag({ path: AXE });
 });
 
@@ -51,7 +48,7 @@ const audit = (page: Page): Promise<Failure[]> => page.evaluate(async (tags) => 
 /** Draw one fixture: its markup, its data, and the part it opens. */
 const mount = (page: Page, fixture: Fixture): Promise<void> => page.evaluate(async (f) => {
   type Part = HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => unknown; show?: (anchor?: Element | null) => void };
-  const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+  const settled = window.__settled;
   const root = document.getElementById('root')!;
   root.innerHTML = f.html;
   await settled();

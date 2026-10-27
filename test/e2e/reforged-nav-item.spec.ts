@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-nav-item on the reforged base — a standalone nav row. Label / icon /
@@ -7,13 +7,7 @@ import { test, expect } from './fixture';
  * the harness index, so each test imports its compiled module first.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-nav-item/sherpa-nav-item.js');
     await customElements.whenDefined('sherpa-nav-item');

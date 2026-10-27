@@ -1,8 +1,6 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /** sherpa-data-grid — columns/rows from populate(); click-to-sort; row-click. */
-
-const HARNESS = '/test/reforged/harness.html';
 
 const CONFIG = {
   columns: [
@@ -16,11 +14,6 @@ const CONFIG = {
   ],
 };
 
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
-
 test('renders header cells and a row per record', async ({ page }) => {
   const r = await page.evaluate(async (config) => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
@@ -30,7 +23,7 @@ test('renders header cells and a row per record', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(config);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sr = el.shadowRoot!;
     return {
       headers: Array.from(sr.querySelectorAll('.head-label')).map((h) => h.textContent),
@@ -54,7 +47,7 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(config);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const names = () =>
       Array.from(el.shadowRoot!.querySelectorAll('.body .row')).map((row) => row.querySelector('.cell')!.textContent);
@@ -64,12 +57,12 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
       )!;
 
     scoreHeader().querySelector<HTMLElement>('.head-btn')!.click(); // asc by score
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const asc = names();
     const ascAttr = { field: el.dataset['sortField'], dir: el.dataset['sortDirection'] };
 
     scoreHeader().querySelector<HTMLElement>('.head-btn')!.click(); // desc
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const desc = names();
 
     return { asc, ascAttr, desc };
@@ -88,7 +81,7 @@ test('clicking a row fires row-click with the record', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(config);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     let row: Record<string, unknown> | null = null;
     el.addEventListener('row-select', (e) => (row = (e as CustomEvent).detail.row));
@@ -107,7 +100,7 @@ test('an empty rows array shows the empty state', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ columns: [{ field: 'x' }], rows: [] });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       empty: el.matches(':state(empty)'),
       visible: getComputedStyle(el.shadowRoot!.querySelector('.empty')!).display !== 'none',
@@ -134,7 +127,7 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
       ],
       rows: [{ name: 'Alpha', qty: 3 }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = grid.shadowRoot!;
     const read = (sel: string): Record<string, string> => {
@@ -206,7 +199,7 @@ async function installBuilder(page: import('@playwright/test').Page): Promise<vo
       root.appendChild(el);
       await el.rendered;
       el.populate(config);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el;
     };
   });
@@ -223,7 +216,7 @@ test('typing in a filter narrows rows to substring matches in THAT column', asyn
       const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
     const names = (): (string | null)[] =>
       Array.from(sr.querySelectorAll('.body .row')).map((row) => row.children[1]!.textContent);
@@ -292,7 +285,7 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
   const r = await page.evaluate(async (config) => {
     const el = await window.__buildGrid(config);
     const sr = el.shadowRoot!;
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     const type = async (field: string, value: string): Promise<void> => {
       const input = sr
         .querySelector(`.filter-cell[data-field="${field}"]`)!
@@ -417,7 +410,7 @@ test('a populated filter shows a clear button that empties only its own column',
       const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
 
     const empty = { clearShown: shown(clear('name')), flag: cell('name').hasAttribute('data-has-value') };
@@ -450,7 +443,7 @@ test('a populated filter shows a clear button that empties only its own column',
     };
 
     clear('name').click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterClear = {
       nameValue: cell('name').querySelector<HTMLInputElement>('.filter-input')!.value,
       nameClearShown: shown(clear('name')),
@@ -491,7 +484,7 @@ test('a filter matching nothing keeps the filter row usable', async ({ page }) =
     )!;
     input.value = 'zzzzzz';
     input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const shown = (sel: string): boolean => {
       const node = sr.querySelector(sel);
@@ -532,14 +525,14 @@ test('row-click resolves against the FILTERED list, not the full one', async ({ 
     )!;
     input.value = 'active'; // leaves Jane (index 2) and Nina (index 3) of the full list
     input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const clicks: unknown[] = [];
     el.addEventListener('row-select', (e) => clicks.push((e as CustomEvent).detail));
     // Click the FIRST visible row. Its data-index is 0, which in the UNFILTERED
     // list would be Marcus — the wrong record.
     (sr.querySelector('.body .row .cell') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { clicks };
   }, FILTER_CONFIG);
 
@@ -559,7 +552,7 @@ test('re-populating clears stale filters', async ({ page }) => {
     )!;
     input.value = 'marcus';
     input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const filtered = sr.querySelectorAll('.body .row').length;
 
     // New data may not even have that column. Carrying the filter over would hide
@@ -568,7 +561,7 @@ test('re-populating clears stale filters', async ({ page }) => {
       columns: [{ field: 'other', header: 'Other' }],
       rows: [{ other: 'x' }, { other: 'y' }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       filtered,
       afterRepopulate: sr.querySelectorAll('.body .row').length,
@@ -605,7 +598,7 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
       ],
     });
     el.dataset['groupField'] = 'team';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const read = () => ({
@@ -635,7 +628,7 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
     // Fold the first group shut.
     const first = sr.querySelector<HTMLElement>('.group-row')!;
     first.querySelector<HTMLElement>('.group-toggle')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const folded = {
       ...read(),
       collapsed: first.hasAttribute('data-collapsed'),
@@ -645,12 +638,12 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
     // A re-render (here: a sort) must KEEP the fold — the flag lives on the
     // component, not on the rows it just replaced.
     el.dataset['sortField'] = 'name';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterSort = { visible: read().visible, collapsed: sr.querySelector('.group-row')!.hasAttribute('data-collapsed') };
 
     // Un-grouping brings the column straight back, with no re-populate.
     delete el.dataset['groupField'];
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const ungrouped = { headers: read().headers, groups: read().groups.length };
 
     return { grouped, folded, afterSort, ungrouped };
@@ -704,7 +697,7 @@ test('sorting BY the grouped column turns the group order around', async ({ page
       ],
     });
     el.dataset['groupField'] = 'team';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const groups = () =>
@@ -718,18 +711,18 @@ test('sorting BY the grouped column turns the group order around', async ({ page
     // Sort by the grouped column, descending.
     el.dataset['sortField'] = 'team';
     el.dataset['sortDirection'] = 'desc';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const desc = { groups: groups(), names: names() };
 
     // ...and ascending again.
     el.dataset['sortDirection'] = 'asc';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const asc = groups();
 
     // A DIFFERENT sort column must not touch the group order.
     el.dataset['sortField'] = 'name';
     el.dataset['sortDirection'] = 'desc';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const other = { groups: groups(), names: names() };
 
     return { plain, desc, asc, other };
@@ -769,7 +762,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
       ],
     });
     el.dataset['groupField'] = 'team';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     let emitted: string[] = [];
@@ -792,7 +785,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
       '.group-row[data-group-key="Blue"] .group-select',
     )!;
     blueBox.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const selected = {
       blue: checkedIn('Blue'),
       blueTotal: rowsIn('Blue').length,
@@ -806,7 +799,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
       .querySelector('.row-multi')!
       .shadowRoot!.querySelector<HTMLInputElement>('.control')!
       .click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const partial = { checked: blueBox.checked, indeterminate: blueBox.indeterminate };
 
     // Click the INDETERMINATE box: the browser resolves it to CHECKED (that is
@@ -815,10 +808,10 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     const clickBlue = (): void =>
       blueBox.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
     clickBlue();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const refilled = { blue: checkedIn('Blue'), emitted: emitted.length };
     clickBlue();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const cleared = { blue: checkedIn('Blue'), emitted: emitted.length };
 
     // The header select-all fills every group box in.
@@ -827,7 +820,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
        real user clicks. */
     sr.querySelector('.select-all')!.shadowRoot!
       .querySelector<HTMLInputElement>('.control')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const all = {
       groups: Array.from(
         sr.querySelectorAll<HTMLElement & { checked: boolean }>('.group-select'),
@@ -862,7 +855,7 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
       ],
       rows: [{ name: 'Acme', seats: 42 }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = grid.shadowRoot!;
     const pick = (field: string) => {
@@ -908,13 +901,13 @@ test('the scroller FILLS a sized host, and still scrolls inside it', async ({ pa
       columns: [{ field: 'name', header: 'Name' }],
       rows: Array.from({ length: 40 }, (_, i) => ({ name: `Row ${i}` })),
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sc = grid.shadowRoot!.querySelector('.scroller') as HTMLElement;
     const gridH = grid.getBoundingClientRect().height;
     const scH = sc.getBoundingClientRect().height;
     sc.scrollTop = 120;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       hostH: gridH,
       scrollerH: scH,
@@ -1040,7 +1033,7 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
     await page.mouse.down();
     await page.mouse.move(g.x + dx, g.y, { steps: 10 });
     await page.mouse.up();
-    await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
+    await page.evaluate(() => window.__settled());
   };
 
   expect(await width(0)).toBe(160);
@@ -1064,7 +1057,7 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
     )[0]!;
     th.querySelector<HTMLElement>('.head-btn')!.click();
   });
-  await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
+  await page.evaluate(() => window.__settled());
   expect(await sortField()).toBe('name');
 });
 
@@ -1076,7 +1069,7 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
 test('a SELECTED row paints the active base; focused mixes the grey over it', async ({ page }) => {
   const r = await page.evaluate(async (config) => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const root = document.getElementById('root')!;
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
@@ -1153,7 +1146,7 @@ test('data-select="single" draws radios, holds one row, and drops the select-all
   await installBuilder(page);
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
 
     const run = async (single: boolean): Promise<Record<string, unknown>> => {
       const el = await window.__buildGrid({
@@ -1253,7 +1246,7 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
       ],
       rows: [{ name: 'Ada', spend: 10 }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1363,7 +1356,7 @@ test('applying a column filter flags the column and reports a ready clause', asy
       columns: [{ field: 'name', header: 'Name' }, { field: 'team', header: 'Team' }],
       rows: [{ name: 'Ada', team: 'Blue' }, { name: 'Bob', team: 'Red' }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1516,7 +1509,7 @@ test('a column filter button never sorts the column it sits in', async ({ page }
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'Ada' }] });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1562,7 +1555,7 @@ test('a NUMBER column filters by one value, an Advanced condition, or a Between 
          TRAP T-grid-slider-spans-real-values */
       rows: [{ spend: 5 }, { spend: 10 }, { spend: 50 }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1657,7 +1650,7 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
       columns: [{ field: 'created', header: 'Created', type: 'date' }],
       rows: [{ created: '2026-01-05' }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1757,7 +1750,7 @@ test('a TEXT column filter MARKS its matches; number and date cells stay plain',
         { name: 'Omar', team: 'Sales', spend: 204 },
       ],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1844,7 +1837,7 @@ test('REMOVE FILTER ends a column filter outright; the menu never inherits a col
       columns: [{ field: 'name', header: 'Name' }],
       rows: [{ name: 'Ada' }, { name: 'Bob' }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -1952,7 +1945,7 @@ test('a column filter can be SUSPENDED and resumed without losing it', async ({ 
       columns: [{ field: 'name', header: 'Name' }],
       rows: [{ name: 'Marcus' }, { name: 'Omar' }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -2043,7 +2036,7 @@ test('setColumnFilter restores a column from outside — the round trip a saved 
       ],
       rows: [{ name: 'Marcus', spend: 10 }, { name: 'Omar', spend: 50 }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -2136,7 +2129,7 @@ test('selection has a programmatic door, and it is by KEY not position', async (
         { email: 'c@x', name: 'Cy' },
       ],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const events: unknown[] = [];
@@ -2206,10 +2199,10 @@ test('selectedKeys is EMPTY without a key — honest, not approximate', async ({
     await el.rendered;
     // NO key in the config.
     el.populate({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'Ada' }] });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     el.select(['anything']);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { keys: el.selectedKeys, records: el.selectedRecords.length };
   });
 
@@ -2223,7 +2216,7 @@ test('a SHUT group costs one slot of the page, not one per row', async ({ page }
   // is one slot. Shutting Gold used to leave a page holding one heading and 24
   // rows CSS was hiding, and a pager insisting there were more pages like it.
   const r = await page.evaluate(async () => {
-    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settled = () => window.__settled();
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
@@ -2313,7 +2306,7 @@ test('row actions: a pinned trailing column, one shared menu, and a report', asy
      TRAP T-grid-actions-are-declared-once-used-twice — the same list feeds the
      row menu and a host's bulk bar, so they cannot disagree. */
   const r = await page.evaluate(async () => {
-    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settled = () => window.__settled();
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): Promise<void> | void;
@@ -2424,7 +2417,7 @@ test('no actions declared: no column, no menu, no attribute', async ({ page }) =
       columns: [{ field: 'name', header: 'Name' }],
       rows: [{ name: 'Ada' }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     return {
@@ -2449,7 +2442,7 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
      TRAP T-advanced-checkbox-widens-the-select-column
      TRAP T-select-all-is-the-visible-rows */
   const r = await page.evaluate(async () => {
-    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settled = () => window.__settled();
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): Promise<void> | void;
@@ -2583,7 +2576,7 @@ test('an EMPTY grid shows a plain checkbox, not the advanced one', async ({ page
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     await el.populate({ columns: [{ field: 'name' }], rows: [] });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const box = sr.querySelector('.select-all')!;
@@ -2615,7 +2608,7 @@ test('an EMPTY grid shows a plain checkbox, not the advanced one', async ({ page
 test('data-filter-fields lights the column CHIP, and survives a re-render', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
 
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
@@ -2708,7 +2701,7 @@ test('a number column with BLANKS bounds its menu on the real values', async ({ 
         { spend: '' },       // the same, from an empty cell
       ],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     // The ends a Between row's slider and the one box take. TODO 375
     const menu = el.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="spend"] sherpa-menu')!;
@@ -2746,7 +2739,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
       ],
       rows: [{ name: 'Marcus', spend: 10 }, { name: 'Omar', spend: 50 }],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -2813,7 +2806,7 @@ test('an advanced-only column drops its list and opens on its own op', async ({ 
         { email: 'omar@example.com', status: 'churned' },
       ],
     });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = el.shadowRoot!;
@@ -3054,7 +3047,7 @@ test('few columns fill a wide card; a dragged one keeps its width; a narrow card
     document.getElementById('root')!.replaceChildren(box);
     await el.rendered;
     el.populate!(config);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
   }, { config: CONFIG, width });
   const read = () => page.evaluate(() => {
     const sr = document.querySelector('sherpa-data-grid')!.shadowRoot!;

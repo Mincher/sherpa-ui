@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-sparkline on the reforged base — a compact trend chart drawn in CSS.
@@ -8,18 +8,12 @@ import { test, expect } from './fixture';
  * parse, and populate([...]). TODO 283: no fixed slots in the CSS or HTML.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type SparkEl = HTMLElement & {
   rendered?: Promise<void>;
   populate?: (d: unknown) => void;
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-sparkline'));
 });
 
@@ -31,7 +25,7 @@ test('populate() stamps a shape per pair and sets --_min / --_range', async ({ p
     await el.rendered;
 
     el.populate!([10, 25, 15, 30]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     return {
@@ -68,7 +62,7 @@ test('only what the data needs is stamped: 3 values, 2 shapes, 3 dots', async ({
     el.setAttribute('data-values', '5,9,7');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sr = el.shadowRoot!;
     return {
       shapes: [...sr.querySelectorAll<HTMLElement>('.shape')].filter((sh) => sh.checkVisibility()).length,
@@ -113,7 +107,7 @@ test('empty values, or one, stamp nothing', async ({ page }) => {
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       el.populate!(values);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el.shadowRoot!.querySelectorAll('.shape, .hotspot').length;
     };
     return { empty: await count([]), one: await count([5]) };

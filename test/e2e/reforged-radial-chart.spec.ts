@@ -48,7 +48,7 @@ test('draws one real SVG path per slice, spanning its share', async ({ page }) =
       { label: 'B', value: 30 }, // 25%
       { label: 'C', value: 30 }, // 25%
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const arcs = Array.from(sr.querySelectorAll<SVGPathElement>('.slice'));
@@ -134,7 +134,7 @@ test('pie variant fills to the centre (no hole)', async ({ page }) => {
         { label: 'C', value: 1 },
         { label: 'D', value: 1 },
       ]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const d = el.shadowRoot!.querySelector<SVGPathElement>('.slice')!.getAttribute('d')!;
       // The RADII of every arc command in the path — \u0060A rx ry rot large sweep x y\u0060.
       // A donut segment traces an inner arc as well as an outer one and so has a
@@ -179,7 +179,7 @@ test('the ring scales uniformly to whichever axis runs out first', async ({ page
       root.appendChild(box);
       await el.rendered;
       el.populate([{ label: 'A', value: 3 }, { label: 'B', value: 1 }]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const ring = el.shadowRoot!.querySelector('.ring-wrap')!.getBoundingClientRect();
       return {
         w: Math.round(ring.width),
@@ -227,7 +227,7 @@ test('slices left out re-share the whole circle, and keep their colour', async (
     };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     const A = { label: 'A', value: 50, colorIndex: 1 };
     const B = { label: 'B', value: 30, colorIndex: 2 };
     const C = { label: 'C', value: 20, colorIndex: 3 };
@@ -283,23 +283,23 @@ test('the centre derives the total, follows what is drawn, and yields to data-la
 
     const derived = await mk();
     derived.populate!(data);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const total = centre(derived);
 
     // A slice left out leaves the total, because the RING no longer counts it.
     derived.populate!(data.slice(1));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterHide = centre(derived);
 
     // A host that named its own centre keeps it.
     const named = await mk('Fleet');
     named.populate!(data);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     // Nothing drawn, nothing claimed.
     const empty = await mk();
     empty.populate!([]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { total, afterHide, named: centre(named), empty: centre(empty) };
   });
@@ -326,7 +326,7 @@ test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ 
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate!([{ label: 'a', value: 3 }, { label: 'b', value: 1 }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const slice = el.shadowRoot!.querySelector('.slice')!;
     const r = slice.getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
@@ -377,7 +377,7 @@ test('a pie slice reaches the centre with a sharp point; a donut keeps its round
         document.getElementById('root')!.replaceChildren(el);
         await el.rendered;
         el.populate!([{ label: 'a', value: 3 }, { label: 'b', value: 1 }]);
-        await (window as unknown as { __settled: () => Promise<void> }).__settled();
+        await window.__settled();
         return el.shadowRoot!.querySelector('.slice')!.getAttribute('d') ?? '';
       };
       const donut = await draw(null);
@@ -416,7 +416,7 @@ test('data-sweep-start and data-sweep stop the ring short', async ({ page }) => 
         { label: 'b', value: 1 },
         { label: 'c', value: 2 },
       ]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return [...el.shadowRoot!.querySelectorAll('.slice')].map((s) => s.getAttribute('d') ?? '');
     };
 

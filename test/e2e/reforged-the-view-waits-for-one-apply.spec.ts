@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * THE VIEW WAITS FOR ONE APPLY — TODO 406. A bar over a scope that waits draws
@@ -7,13 +7,6 @@ import { test, expect } from './fixture';
  * sends it. Discard puts back that field's answer as last applied.
  * TRAP T-apply-and-discard-wait-for-a-change
  */
-
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('a pick waits; the bar\'s one Apply sends it; a menu\'s Discard puts back the applied answer', async ({ page }) => {
   const r = await page.evaluate(async () => {

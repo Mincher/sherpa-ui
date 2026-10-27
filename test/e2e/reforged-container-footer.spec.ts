@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-container-footer on the reforged base — the footer bar for a container's
@@ -9,13 +9,9 @@ import { test, expect } from './fixture';
  * Not registered by the harness index — the spec imports its module in-page.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type FooterEl = HTMLElement & { rendered?: Promise<void> };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-container-footer/sherpa-container-footer.js');
     await customElements.whenDefined('sherpa-container-footer');
@@ -27,13 +23,13 @@ test('collapses when empty, appears when the slot has content', async ({ page })
     const bare = document.createElement('sherpa-container-footer') as FooterEl;
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const full = document.createElement('sherpa-container-footer') as FooterEl;
     full.innerHTML = '<button>Save</button>';
     document.getElementById('root')!.appendChild(full);
     await full.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       bareContentAttr: bare.matches(':state(has-content-slot)'),
@@ -56,7 +52,7 @@ test('data-align controls the row justification', async ({ page }) => {
       el.innerHTML = '<button>A</button><button>B</button>';
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return getComputedStyle(el.shadowRoot!.querySelector('.row')!).justifyContent;
     };
     return {
@@ -82,7 +78,7 @@ test('data-align="stretch" lets ONE wide control fill the row', async ({ page })
     box.appendChild(el);
     root.appendChild(box);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       row: Math.round(el.shadowRoot!.querySelector('.row')!.getBoundingClientRect().width),
       child: Math.round(document.getElementById('wide')!.getBoundingClientRect().width),
@@ -109,7 +105,7 @@ test('the default still hugs its content at the end', async ({ page }) => {
     box.appendChild(el);
     root.appendChild(box);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const row = el.shadowRoot!.querySelector('.row')!.getBoundingClientRect();
     const child = document.getElementById('btn')!.getBoundingClientRect();
     const pad = parseFloat(getComputedStyle(

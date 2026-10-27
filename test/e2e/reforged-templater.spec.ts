@@ -24,7 +24,7 @@ test('your own markup and sheets: yours drawn, yours last, and what it lacks is 
   await page.route('**/own/tag.css', (route) => route.fulfill({ contentType: 'text/css', body: css }));
   await page.route('**/own/tag.html', (route) => route.fulfill({ contentType: 'text/html', body: html }));
   await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
 
   const read = () => page.evaluate(() => {
     const el = document.querySelector('#root sherpa-tag')!;
@@ -81,7 +81,7 @@ test('a component with no files of yours is drawn from its JS, one shared sheet,
   const fetched: string[] = [];
   page.on('request', (req) => { if (/sherpa-badge\.(html|css)$/.test(req.url())) fetched.push(req.url().split('/').at(-1)!); });
   await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const els = [1, 2, 3].map((n) => {

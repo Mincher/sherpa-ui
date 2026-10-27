@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-provider — a component ASKS, the nearest provider ANSWERS.
@@ -8,15 +8,6 @@ import { test, expect } from './fixture';
  * unnamed ask, loudly, and a named one reaches its source. docs/PROVIDER-DESIGN.md.
  * TRAP T-a-component-asks-its-provider
  */
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
-
 const SETUP = `
   const { ArrayStore, DataSource, onReport } = await import('/dist/index.js');
   const reports = [];

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-nav-section on the reforged base — the Figma "Navigation Section" (32:43134):
@@ -7,15 +7,9 @@ import { test, expect } from './fixture';
  * (The former settings-panel behaviour + item-select event were removed 2026-09-07.)
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type SectionEl = HTMLElement & { rendered?: Promise<void> };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-nav-section'));
 });
 

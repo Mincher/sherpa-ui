@@ -6,7 +6,7 @@ import { test, expect } from './harness';
  * is one thing a reader does with a thumb. TRAP T-the-nav-is-a-menu-on-a-phone
  */
 const settled = (page: import('@playwright/test').Page) =>
-  page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
+  page.evaluate(() => window.__settled());
 
 /** Every box inside the screen's width: nothing to scroll sideways to reach. */
 const onScreen = (page: import('@playwright/test').Page, sel: string) => page.evaluate((s) => {

@@ -36,7 +36,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
       rows: [{ name: 'a', n: 1, x: 'p' }, { name: 'b', n: 2, x: 'q' }],
     });
     await document.fonts.ready;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     // The sort control is an icon-only <sherpa-quick-filter> now, so the glyph
     // is TWO shadow roots down: the chip writes its data-icon-start into its
@@ -70,7 +70,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
       // Click the SORT CHIP itself — it is the control now, not the label.
       const chip = el.shadowRoot.querySelector(`.head-cell[data-field="${field}"] .head-sort`) as HTMLElement;
       (chip.shadowRoot!.querySelector('.caret') as HTMLElement).click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
 
     const unsorted = read();
@@ -140,7 +140,7 @@ test('the grid and the toolbar read ONE glyph map, not two that match', async ({
     await t.rendered;
     g.populate({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'a' }] });
     t.organise({ sort: [{ field: 'name', label: 'Name' }] });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const gridGlyph = (g.shadowRoot!
       .querySelector('.head-cell[data-field="name"] .head-sort') as HTMLElement)

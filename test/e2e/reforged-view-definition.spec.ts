@@ -51,7 +51,7 @@ test('applyState configures an element through its OWN API, not its attributes',
       notAMethod: 'ignored',                                    // unknown → skipped
     });
     await new Promise((res) => setTimeout(res, 150));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     return {
@@ -82,7 +82,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
   // snapshot — what persistView keeps.
   const r = await page.evaluate(async () => {
     const { ArrayStore, DataSource, bindSource, captureView, applyViewSnapshot } = await import('/dist/index.js');
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     const rows = Array.from({ length: 60 }, (_, i) => ({
       email: `e${i}@x`, name: `n${i % 9}`, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 400,
     }));
@@ -176,7 +176,7 @@ test('one method, MANY calls — a state block is a map, so calls nest', async (
   // second vocabulary nothing else understands, so the calls nest instead.
   const r = await page.evaluate(async () => {
     const { applyState } = await import('/dist/index.js');
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
 
     const grid = async (attrs: Record<string, string>, data: unknown) => {
       const el = document.createElement('sherpa-data-grid') as HTMLElement & {
@@ -232,7 +232,7 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
   // carries, and an agent sends over MCP.
   const r = await page.evaluate(async () => {
     const { ArrayStore, DataSource, bindSource, applyViewSnapshot } = await import('/dist/index.js');
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
 
     const rows = Array.from({ length: 90 }, (_, i) => ({
       id: i, name: `n${i % 11}`, tier: ['Bronze', 'Silver', 'Gold'][i % 3],

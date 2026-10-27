@@ -13,7 +13,7 @@ test('renders one node per step and marks states around the current step', async
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'Details' }, { label: 'Review' }, { label: 'Done' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const steps = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.step'));
     return { count: steps.length, states: steps.map((s) => s.getAttribute('data-state')) };
@@ -32,9 +32,9 @@ test('advancing data-current-step re-marks the states', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'A' }, { label: 'B' }, { label: 'C' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     el.setAttribute('data-current-step', '2');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.step')).map((s) =>
       s.getAttribute('data-state'),
     );
@@ -57,7 +57,7 @@ test('each step shows its label, its description and its 1-based number', async 
       { label: 'Details', description: 'Who you are' },
       { label: 'Review' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const pick = (sel: string): (string | null)[] =>
       Array.from(el.shadowRoot!.querySelectorAll(sel)).map((n) => n.textContent);
     return {

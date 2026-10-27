@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-chat-message on the reforged base — a chat bubble. Proves the role-driven
@@ -10,13 +10,7 @@ import { test, expect } from './fixture';
  * compiled module to trigger its customElements.define().
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-chat-message/sherpa-chat-message.js');
     await customElements.whenDefined('sherpa-chat-message');
@@ -100,7 +94,7 @@ test('assistant shows the avatar; user hides it', async ({ page }) => {
       if (role) el.setAttribute('data-type', role);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const avatar = el.shadowRoot!.querySelector('.avatar')!;
       return { shown: getComputedStyle(avatar).display !== 'none', drawn: !!avatar.querySelector('svg') };
     };

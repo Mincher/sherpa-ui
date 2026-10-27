@@ -29,7 +29,7 @@ test('transfer-list: what was moved across can be put back', async ({ page }) =>
       { value: 'b', label: 'B' },
       { value: 'c', label: 'C' },
     ]);
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     el.selected = ['a', 'c'];
@@ -59,7 +59,7 @@ test('one chart datum: the SAME array feeds a chart and its legend', async ({ pa
   // itself. Sharing one array also lets the source's skip-if-unchanged guard
   // hold — it compares by IDENTITY, and a rebuilt array never matches.
   const r = await page.evaluate(async () => {
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     const data = [
       { label: 'Disk', value: 42, colorIndex: 1 },
       { label: 'CPU', value: 31, colorIndex: 2 },

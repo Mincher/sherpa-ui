@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-container-header on the reforged base — the header bar for a container's
@@ -9,13 +9,9 @@ import { test, expect } from './fixture';
  * Not registered by the harness index — the spec imports its module in-page.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type HeaderEl = HTMLElement & { rendered?: Promise<void> };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-container-header/sherpa-container-header.js');
     await customElements.whenDefined('sherpa-container-header');
@@ -70,7 +66,7 @@ test('the heading slot overrides data-heading', async ({ page }) => {
     el.innerHTML = '<h2 slot="heading">Slotted</h2>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       hasHeadingAttr: el.matches(':state(has-heading)'),
       // The default .title is FALLBACK content inside <slot name="heading">; a
@@ -89,14 +85,14 @@ test('the actions region hides when empty and appears when slotted', async ({ pa
     bare.setAttribute('data-heading', 'Bare');
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const full = document.createElement('sherpa-container-header') as HeaderEl;
     full.setAttribute('data-heading', 'Full');
     full.innerHTML = '<button slot="actions">Act</button>';
     document.getElementById('root')!.appendChild(full);
     await full.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const vis = (el: HTMLElement) =>
       getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display !== 'none';
@@ -154,7 +150,7 @@ test('data-dismissible close button fires dismiss', async ({ page }) => {
     let dismissed = false;
     el.addEventListener('header-dismiss', () => (dismissed = true));
     close.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { closeVisible, dismissed };
   });
   expect(r.closeVisible).toBe(true);
@@ -176,7 +172,7 @@ test('data-collapsible toggle flips data-collapsed and fires toggle', async ({ p
     let detail: unknown = null;
     el.addEventListener('header-collapse', (e) => (detail = (e as CustomEvent).detail));
     toggle.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { collapsedAfter: el.hasAttribute('data-collapsed'), detail };
   });
   expect(r.collapsedAfter).toBe(true);
@@ -191,14 +187,14 @@ test('the metadata slot is hidden when empty and appears when slotted', async ({
     bare.setAttribute('data-heading', 'Bare');
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const withMeta = document.createElement('sherpa-container-header') as HeaderEl;
     withMeta.setAttribute('data-heading', 'Meta');
     withMeta.innerHTML = '<span slot="metadata">Updated 2h ago</span>';
     document.getElementById('root')!.appendChild(withMeta);
     await withMeta.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const vis = (el: HTMLElement) =>
       getComputedStyle(el.shadowRoot!.querySelector('.metadata')!).display !== 'none';
@@ -228,7 +224,7 @@ test('the panel variant renders a link-style title and the metadata row', async 
     panel.innerHTML = '<span slot="metadata">buildings · Acme Corp</span>';
     document.getElementById('root')!.appendChild(panel);
     await panel.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const s = panel.shadowRoot!;
     const titleColor = getComputedStyle(s.querySelector('.title')!).color;
@@ -254,7 +250,7 @@ test('the default variant: its description is the metadata row, and no link-styl
     el.setAttribute('data-description', 'A subtitle');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     return {
       variant: el.getAttribute('data-type'), // unset by default
@@ -282,7 +278,7 @@ test('the header is Figma\'s grid: metadata under the title, 4 below; the chevro
       el.style.inlineSize = '576px';
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el;
     };
     const box = (el: HeaderEl, sel: string) => el.shadowRoot!.querySelector(sel)!.getBoundingClientRect();

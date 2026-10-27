@@ -640,7 +640,7 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
     const source = new DataSource({ store: new ArrayStore(data) });
     bindSource(source, grid, { scope: 'view', as: (rows: unknown[]) => ({ columns, rows }) });
     await source.load();
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
 
     const sr = grid.shadowRoot!;
@@ -734,7 +734,7 @@ test('source: a component\'s state survives a page reload, per TAB', async ({ pa
 
   // A REAL reload — same tab, fresh document, nothing carried in memory.
   await page.reload({ waitUntil: 'load' });
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
 
   const after = await page.evaluate(async () => {
     const { ArrayStore, DataSource, bindSource, persistView, clearViewState } = await import('/dist/index.js');

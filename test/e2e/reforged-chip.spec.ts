@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-chip on the reforged base — the Figma Chip (62:1732): a near-square
@@ -7,11 +7,7 @@ import { test, expect } from './fixture';
  * button + chip-dismiss event.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(() => customElements.whenDefined('sherpa-chip'));
 });
 

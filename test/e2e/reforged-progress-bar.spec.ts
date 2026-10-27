@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-progress-bar on the reforged base — native-first: a real <progress>
@@ -9,8 +9,6 @@ import { test, expect } from './fixture';
  * populate({value}).
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type ProgressEl = HTMLElement & {
   rendered?: Promise<void>;
   value?: number;
@@ -18,10 +16,6 @@ type ProgressEl = HTMLElement & {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-progress-bar'));
 });
 
@@ -105,7 +99,7 @@ test('populate({ value }) sets the percentage', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ value: 75 });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const bar = el.shadowRoot!.querySelector('.bar') as HTMLProgressElement;
     return { value: el.value, barValue: bar.value };
   });

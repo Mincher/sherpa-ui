@@ -17,7 +17,7 @@ const GAP = 4; // SherpaMenu.OFFSET — Figma space/2xs
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1200, height: 800 });
   await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
 });
 
 /**
@@ -246,14 +246,14 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
 
     // Open, tick one, and confirm NOTHING has been reported yet.
     menu.show();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     inputs[0]!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const draft = { events: events.length, ticked: inputs[0]!.checked, values: menu.values };
 
     // Discard restores the values the menu OPENED with, and it stays open. TODO 395
     press('.discard');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const cancelled = {
       names: events.map(([n]) => n),
       ticked: inputs[0]!.checked,
@@ -263,11 +263,11 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
 
     // Reopen, tick a different row, Apply.
     menu.show();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     inputs[1]!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     press('.apply');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const applied = {
       names: events.map(([n]) => n),
       values: menu.values,
@@ -318,7 +318,7 @@ test('a menu WITHOUT data-commit still commits on every tick', async ({ page }) 
     const footerShown =
       getComputedStyle(menu.shadowRoot!.querySelector('.footer')!).display !== 'none';
     menu.querySelector<HTMLInputElement>('input')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { footerShown, changes };
   });
 
@@ -356,7 +356,7 @@ test('data-search filters the rows without disturbing what is ticked', async ({ 
     const type = async (v: string) => {
       control.value = v;
       control.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
 
     // Tick one BEFORE searching, to prove a filter never disturbs the draft.
@@ -641,11 +641,11 @@ test('a menu opened with no trigger falls back to the nearest drawn box', async 
     document.getElementById('root')!.replaceChildren(host);
     await menu.rendered;
     menu.items([{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     // BARE show — the path `open = true` takes.
     menu.show();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const card = menu.shadowRoot!.querySelector('.menu')!;
     const cs = getComputedStyle(card);
@@ -691,7 +691,7 @@ test('a committing menu\'s Apply and Cancel wait for a change', async ({ page })
     }
     root.appendChild(menu);
     await menu.rendered;
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     const sr = menu.shadowRoot!;
     const off = () => ({
       apply: sr.querySelector('.apply')!.hasAttribute('disabled'),
@@ -748,7 +748,7 @@ test('a menu takes NO grouping from the grouped button that opens it', async ({ 
         </sherpa-button>
       </span>
       <sherpa-button class="plain">Plain<sherpa-menu slot="menu"><button type="button" value="a">One</button></sherpa-menu></sherpa-button>`;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const edges = (host: string) => {
       const menu = root.querySelector<Menu>(`${host} sherpa-menu`)!;
       menu.show(root.querySelector<HTMLElement>(host)!);

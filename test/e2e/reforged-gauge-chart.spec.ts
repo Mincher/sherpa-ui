@@ -176,7 +176,7 @@ test('grey fills only the scale the bands leave uncovered', async ({ page }) => 
       for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const all = [...el.shadowRoot!.querySelectorAll('.zone')] as SVGPathElement[];
       const rest = all.find((b) => b.dataset['rest'] !== undefined);
       return {
@@ -303,7 +303,7 @@ test('a gauge with no zones outlines its band in its own fill, not a card\'s gre
     await customElements.whenDefined('sherpa-gauge-chart');
     await el.rendered;
     el.populate!(40);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const band = el.shadowRoot!.querySelector<SVGPathElement>('.zone:not([data-rest])')!;
     const cs = getComputedStyle(band);
     return { fill: cs.fill, stroke: cs.stroke };

@@ -15,7 +15,7 @@ test('a disabled fieldset disables each control inside it; a reset puts back its
       <sherpa-select-radio name="r" value="1" checked></sherpa-select-radio>
       <sherpa-select-radio name="r" value="2"></sherpa-select-radio>
     </fieldset></form>`;
-    const settle = (window as unknown as { __settled(): Promise<void> }).__settled;
+    const settle = window.__settled;
     await settle();
     const form = root.querySelector('form')!;
     const fieldset = root.querySelector('fieldset')!;
@@ -64,7 +64,7 @@ test('the slider, select card, calendar, file upload and transfer list submit th
       <sherpa-file-upload name="docs" multiple></sherpa-file-upload>
       <sherpa-transfer-list name="regions"></sherpa-transfer-list>
     </fieldset></form>`;
-    const settle = (window as unknown as { __settled(): Promise<void> }).__settled;
+    const settle = window.__settled;
     const list = root.querySelector('sherpa-transfer-list') as HTMLElement & { populate(d: unknown): Promise<void>; selected: string[] };
     await list.populate([{ value: 'emea', selected: true }, { value: 'apac' }, { value: 'latam' }]);
     await settle();

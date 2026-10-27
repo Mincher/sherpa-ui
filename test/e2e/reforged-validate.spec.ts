@@ -1,4 +1,4 @@
-import { expect, test } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * validate.ts — one answer shape for every caller.
@@ -7,10 +7,6 @@ import { expect, test } from './fixture';
  * reporting on submit have different timing and different consequences, but
  * "what is wrong with this" should not be three different questions.
  */
-test.beforeEach(async ({ page }) => {
-  await page.goto('/test/reforged/harness.html');
-});
-
 test('rules() builds a Standard Schema, and reports the first failure per field', async ({
   page,
 }) => {

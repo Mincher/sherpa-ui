@@ -29,7 +29,7 @@ const CONFIG = {
 test.describe('the grid', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(HARNESS);
-    await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+    await page.waitForFunction(() => window.__reforgedReady === true);
   });
 
   test('holds the current row by key, sets it silently, and steps it', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('the grid', () => {
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       el.populate!(config);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const marked = () => [...el.shadowRoot!.querySelectorAll('.body .row[data-current]')]
         .map((tr) => tr.querySelector('.cell')!.textContent);
       let fired = 0;
@@ -58,7 +58,7 @@ test.describe('the grid', () => {
 
       // A re-populate (an edit reloads the rows) keeps it: the key names the row.
       el.populate!({ ...config, rows: config.rows.map((row) => ({ ...row })) });
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return { clicked, set, stepped, atEnd, kept: { key: el.currentKey, marked: marked() } };
     }, CONFIG);
     expect(r.clicked).toEqual({ key: 'a', marked: ['Alice'], fired: 1 });

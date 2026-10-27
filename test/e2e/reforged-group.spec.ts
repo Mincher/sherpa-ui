@@ -37,7 +37,7 @@ const edges = (
       el.innerHTML = Array.from({ length: count }, (_, i) => `<i>${i}</i>`).join('');
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return [...el.children].map((c) => {
         const s = getComputedStyle(c);
         const p = (n: string): string => s.getPropertyValue(n).trim();
@@ -105,7 +105,7 @@ test('a re-order needs nothing from the children', async ({ page }) => {
     const el = document.querySelector('sherpa-group')!;
     // Move the LAST child to the front. No attribute is touched.
     el.insertBefore(el.lastElementChild!, el.firstElementChild);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return [...el.children].map((c) => {
       const s = getComputedStyle(c);
       return `${s.getPropertyValue('--sherpa-border-rounding-top-left').trim()}/${
@@ -147,7 +147,7 @@ test('it matches the .sherpa-group class exactly', async ({ page }) => {
     wrap.className = 'sherpa-group';
     wrap.innerHTML = '<i>0</i><i>1</i><i>2</i>';
     host.shadowRoot!.append(wrap);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { component: read(el), cls: read(wrap) };
   });

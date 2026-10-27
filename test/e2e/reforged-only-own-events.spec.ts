@@ -24,7 +24,7 @@ test('every custom event that leaves a host is one its spec lists', async ({ pag
       root.append(el);
       await el.rendered;
       // Its parts draw after it does.
-      await (window as unknown as { __settled(): Promise<void> }).__settled();
+      await window.__settled();
       const heard = new Set<string>();
       const hear = (e: Event): void => { if (e.type.includes('-') && e.composedPath().includes(el)) heard.add(e.type); };
       const types = new Set(specs.flatMap((s) => s.events));
@@ -35,7 +35,7 @@ test('every custom event that leaves a host is one its spec lists', async ({ pag
       for (const b of buttons) {
         try { (b as HTMLElement).click(); } catch { /* a press may need state the bare host lacks */ }
       }
-      await (window as unknown as { __settled(): Promise<void> }).__settled();
+      await window.__settled();
       for (const t of types) document.removeEventListener(t, hear);
       for (const t of heard) if (!events.includes(t)) out.push(`${tag}: ${t}`);
     }

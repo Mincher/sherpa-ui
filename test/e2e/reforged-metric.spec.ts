@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-metric on the reforged base — a KPI tile. Proves the label/value/delta
@@ -7,18 +7,12 @@ import { test, expect } from './fixture';
  * and the embedded sparkline being fed + revealed only when values are supplied.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type MetricEl = HTMLElement & {
   rendered?: Promise<void>;
   populate?: (d: unknown) => void;
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() =>
     Promise.all([
       customElements.whenDefined('sherpa-metric'),
@@ -34,7 +28,7 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
     await el.rendered;
 
     el.populate!({ label: 'Revenue', value: '$1.2M', deltaPercent: 12.5 });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const text = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
     // The name is its composed HEADER's title (Figma's Metric, TODO 9b).
@@ -61,7 +55,7 @@ test('a down trend colours the delta critical', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ label: 'Churn', value: '3.1%', deltaPercent: -4 });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       trend: el.getAttribute('data-trend'),
       delta: el.shadowRoot!.querySelector('.delta')!.textContent,
@@ -87,7 +81,7 @@ test('attribute-only usage renders text without populate()', async ({ page }) =>
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const text = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const label = el.shadowRoot!.querySelector('.head')!.shadowRoot!.querySelector('.title')!.textContent;
     return { label, value: text('.value'), delta: text('.delta') };
   });
@@ -110,7 +104,7 @@ test('values feed and reveal the embedded sparkline', async ({ page }) => {
       rendered?: Promise<void>;
     };
     await spark.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       hasValuesAttr: el.hasAttribute('data-has-values'),
@@ -132,7 +126,7 @@ test('no values → the sparkline region stays hidden', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ label: 'Flat', value: '7' });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       hasValuesAttr: el.hasAttribute('data-has-values'),
       sparkHidden: getComputedStyle(el.shadowRoot!.querySelector('.spark')!).display === 'none',
@@ -151,7 +145,7 @@ test('status is derived from the trend, and the card stays white with no border'
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       el.populate(data);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const row = el.shadowRoot!.querySelector('.row')!;
       const rs = getComputedStyle(row);
       return {
@@ -210,7 +204,7 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
       root.appendChild(box);
       await el.rendered;
       el.populate({ label: 'Active endpoints', value: '1,284', deltaPercent: 3.1 });
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const sr = el.shadowRoot!;
       return {
         label: getComputedStyle(sr.querySelector('.head')!.shadowRoot!.querySelector('.title')!).color,
@@ -253,7 +247,7 @@ test('populate takes label, and the old `name` labels nothing', async ({ page })
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       el.populate(payload);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return {
         attr: el.dataset['label'] ?? null,
         text: (el.shadowRoot?.querySelector('.head')?.shadowRoot?.textContent ?? '').replace(/\s+/g, ' ').trim(),
@@ -293,7 +287,7 @@ test('show: last | total picks the number, and a total names itself', async ({ p
       await customElements.whenDefined('sherpa-metric');
       await el.rendered;
       el.populate!(data);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return { label: el.dataset['label'], value: el.dataset['value'] };
     };
 
@@ -384,7 +378,7 @@ test('the tile draws its Figma fill AND its edge, inside', async ({ page }) => {
     el.setAttribute('data-value', '1,284');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const cs = getComputedStyle(el);
     // Each inset shadow: its colour, then its x and y offsets.
@@ -503,13 +497,13 @@ test('a metric\'s name is its composed Data Viz Header, with no rule, in one lay
     el.setAttribute('data-delta', '+2%');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const head = el.shadowRoot!.querySelector<HTMLElement>('.head')!;
     const before = { tag: head.localName, heading: head.dataset['heading'], icon: head.dataset['icon'],
       rule: getComputedStyle(head).boxShadow };
     el.removeAttribute('data-icon');
     el.setAttribute('data-label', 'Seats sold');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const tile = el.getBoundingClientRect();
     const trend = el.shadowRoot!.querySelector('.trend')!.getBoundingClientRect();
     return { before, after: { heading: head.dataset['heading'], icon: head.dataset['icon'] ?? null },
@@ -529,7 +523,7 @@ test('a metric is exactly one layout row tall: its edge is drawn inside and take
     el.setAttribute('data-delta', '+2%');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const cs = getComputedStyle(el);
     return { height: el.getBoundingClientRect().height, border: cs.borderTopWidth, inset: cs.boxShadow.includes('inset') };
   });

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * A native <button class="sherpa-button"> wears the Button's look — the same
@@ -7,13 +7,7 @@ import { test, expect } from './fixture';
  * TRAP T-a-native-wears-the-button-class
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true, {
-    timeout: 15_000,
-  });
   // A page links the look beside tokens.css.
   await page.evaluate(() => new Promise<void>((done) => {
     const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: '/dist/styles/button.css' });
@@ -55,7 +49,7 @@ test('a native in the page draws as the Button does, in each look, size and stat
       box.append(button, native);
       root.append(box);
       await button.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const read = (el: Element) => {
         const cs = getComputedStyle(el) as unknown as Record<string, string>;
         return Object.fromEntries(props.map((p) => [p, cs[p]!]));
@@ -81,7 +75,7 @@ test('a native in a disabled fieldset is inactive, as a disabled Button is', asy
     set.append(native);
     root.replaceChildren(button, set);
     await button.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const read = (el: Element) => {
       const cs = getComputedStyle(el);
       return { bg: cs.backgroundColor, ink: cs.color, cursor: cs.cursor, events: cs.pointerEvents };
@@ -107,7 +101,7 @@ test('a native inside a shadow root wears the look too, its size and look includ
     native.setAttribute('data-look', 'saturated');
     native.setAttribute('data-size', 'sm');
     host.shadowRoot!.append(native);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const read = (el: Element) => {
       const cs = getComputedStyle(el);
       return { bg: cs.backgroundColor, ink: cs.color, height: cs.minHeight, font: cs.fontSize, pad: cs.paddingLeft };

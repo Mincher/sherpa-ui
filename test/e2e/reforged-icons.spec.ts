@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -17,8 +17,6 @@ import { join } from 'node:path';
  * The test scans the source itself rather than taking a hand-kept list, so a
  * new icon is covered the moment it is written.
  */
-
-const HARNESS = '/test/reforged/harness.html';
 
 const ROOT = join(import.meta.dirname, '../..');
 // The app's own names are checked in Sherpa Demos (test/e2e/app-icons.spec.ts).
@@ -43,13 +41,6 @@ function collectNames(): string[] {
   for (const d of SCAN) walk(join(ROOT, d));
   return [...found].sort();
 }
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('every icon name in the repo draws a real glyph', async ({ page }) => {
   const names = collectNames();
@@ -133,7 +124,7 @@ test('no rendered leaf is an icon name in plain text', async ({ page }) => {
       ),
     );
     navEl.populate?.({ product: { name: 'Acme', icon: 'group' }, sections: [] });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const bad: string[] = [];
     const walk = (node: ParentNode, path: string): void => {
@@ -181,9 +172,9 @@ test('icons stamped from a cloning prototype are drawn', async ({ page }) => {
       columns: [{ field: 'team', header: 'Team' }, { field: 'name', header: 'Name' }],
       rows: [{ team: 'A', name: 'Jo' }, { team: 'A', name: 'Sam' }, { team: 'B', name: 'Kit' }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     el.setAttribute('data-group-field', 'team');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const boxes = [...el.shadowRoot!.querySelectorAll('[data-icon]')];
     return {

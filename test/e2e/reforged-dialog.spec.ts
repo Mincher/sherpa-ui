@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-dialog on the reforged base — a modal surface on native <dialog>.
@@ -6,21 +6,12 @@ import { test, expect } from './fixture';
  * closing fires a composed `close`, and the header/body/footer regions render.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type DialogEl = HTMLElement & {
   rendered?: Promise<void>;
   open?: boolean;
   show?: () => void;
   close?: () => void;
 };
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('show() opens the modal and reflects open; close() closes it', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -62,7 +53,7 @@ test('closing the dialog fires a composed close event', async ({ page }) => {
     el.show!();
     el.close!();
     // The native <dialog> close event is dispatched on a task — let it flush.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return count;
   });
   expect(fired).toBe(1);
@@ -109,7 +100,7 @@ test('the card has a MINIMUM width, so a short form does not shrink it', async (
     root.appendChild(el);
     await el.rendered;
     el.show?.();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const card = el.shadowRoot!.querySelector('.root') as HTMLElement;
     return { w: Math.round(card.getBoundingClientRect().width), viewport: window.innerWidth };
   });
@@ -130,7 +121,7 @@ test('the card still has a MAXIMUM, so a long form does not fill the screen', as
     root.appendChild(el);
     await el.rendered;
     el.show?.();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const card = el.shadowRoot!.querySelector('.root') as HTMLElement;
     return { w: Math.round(card.getBoundingClientRect().width), viewport: window.innerWidth };
   });

@@ -18,7 +18,7 @@ type Bar = HTMLElement & {
   organise(d: unknown): void;
 };
 
-const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+const settled = () => window.__settled();
 
 const BUILD = `
   const el = document.createElement('sherpa-quick-filter-toolbar');

@@ -11,7 +11,7 @@ test('renders a quick-filter chip per filter, honouring initial active', async (
       { id: 'region', label: 'Region', active: true },
       { id: 'ai', label: 'Suggested', type: 'ai' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const chips = Array.from(el.shadowRoot!.querySelectorAll('.chip'));
     return {
       count: chips.length,
@@ -36,7 +36,7 @@ test('toggling a chip emits quick-filter-change with all active ids', async ({ p
     // loaded machine the chip had not rendered, shadowRoot was null, and the
     // test threw rather than failed. __settled() awaits every pending
     // sherpa-* render, including inside shadow roots.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const events: string[][] = [];
     el.addEventListener('quick-filter-change', (e) => events.push((e as CustomEvent).detail.active));
@@ -45,9 +45,9 @@ test('toggling a chip emits quick-filter-change with all active ids', async ({ p
     // the menu caret).
     const chips = Array.from(el.shadowRoot!.querySelectorAll('.chip')) as HTMLElement[];
     (chips[0]!.shadowRoot!.querySelector('.body') as HTMLElement).click(); // A on
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     (chips[1]!.shadowRoot!.querySelector('.body') as HTMLElement).click(); // B on
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return events;
   });
@@ -70,7 +70,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       group: [{ field: 'team', label: 'Team' }],
       sort: [{ field: 'name', label: 'Name' }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const zone = sr.querySelector('.organise-zone')!;
@@ -105,7 +105,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       if (menu.hasAttribute('data-commit')) {
         (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
       }
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
 
     const events: Array<Record<string, unknown>> = [];
@@ -126,7 +126,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
     ];
     for (const step of ['1', '2', '3', '4', '5', '6']) {
       (sortChip.shadowRoot!.querySelector('.body') as HTMLElement).click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       cycle.push({ step, field: el.sortField, dir: el.sortDirection, suspended: el.sortSuspended });
     }
 
@@ -183,7 +183,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
       { id: 'plan', label: 'Plan', select: 'multiple',
         options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="plan"]')!;
     const menu = chip.querySelector('sherpa-menu')!;
@@ -200,7 +200,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
       b.dispatchEvent(new Event('change', { bubbles: true }));
     }
     (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const snap = () => ({
       on: chip.hasAttribute('data-current'),
@@ -216,12 +216,12 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
 
     // Toggle OFF from the chip body.
     (chip.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const off = snap();
 
     // …and back ON.
     (chip.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const back = snap();
 
     return { applied, off, back };
@@ -334,7 +334,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     el.populate(['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner', 'Tier', 'Plan'].map((label) => ({
       id: label.toLowerCase(), label, options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
     })));
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     await settle();
     for (let i = 0; i < 20 && !el.matches(':state(collapse-3)'); i++) await new Promise((res) => setTimeout(res, 50));
     const sr = el.shadowRoot!;
@@ -372,7 +372,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
     // The Add menu is only stamped when something is LEFT to add.
     el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
     await settled();
@@ -439,7 +439,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
     el.organise!({ group: [{ field: 'region', label: 'Region' }] });
     // populate() stamps the chips, which are themselves custom elements — give
     // them a turn to upgrade before reaching for one.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     // Turn the menu chip on so there is a live value constraint to clear.
     const plan = el.shadowRoot!.querySelector('.chip[data-id="plan"]') as HTMLElement;
@@ -452,7 +452,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
 
     // Reset is the ⋮'s row. Will, TODO 430
     (await window.__editRow(el, 'reset'))!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       before,
@@ -487,7 +487,7 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
       },
       { id: 'trial', label: 'Trial', active: true },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const view = el.shadowRoot!.querySelector('.chip[data-id="view"]') as HTMLElement;
     const trial = el.shadowRoot!.querySelector('.chip[data-id="trial"]') as HTMLElement;
@@ -497,18 +497,18 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
 
     // Click the persistent chip's body — an ordinary chip would go off.
     (view.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterClick = { view: on(view), trial: on(trial) };
 
     // …and the ordinary one still toggles, so this is not just "nothing works".
     (trial.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterTrial = { view: on(view), trial: on(trial) };
 
     // A full reset must not leave the page with no view.
     // Reset is the ⋮'s row. Will, TODO 430
     (await window.__editRow(el, 'reset'))!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };
   });
@@ -566,7 +566,7 @@ test('the view chip offers no remove, defaults to its first option, and never go
       // …and one that opts OUT, which is the new default.
       { id: 'region', label: 'Region', options: [{ value: 'emea', label: 'EMEA' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const chip = (id: string) => sr.querySelector(`.chip[data-id="${id}"]`) as HTMLElement;
@@ -615,7 +615,7 @@ test('the Add button puts an available filter on the bar and drops it from its m
       { id: 'health', label: 'Health', options: [{ value: 'good', label: 'Good' }] },
       { id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
@@ -632,10 +632,10 @@ test('the Add button puts an available filter on the bar and drops it from its m
     // OPEN, as a reader must: a shut menu's Apply is off, and an off button
     // acts on nothing. TRAP T-a-disabled-button-acts-on-nothing
     (add.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void }).show(add);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     // MULTI-select: pick one and commit it, exactly as the caret's menu does.
     ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === 'health')!.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const menu = add.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
     (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 120));
@@ -678,7 +678,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
       { id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] },
       { id: 'tickets', label: 'Tickets', options: [{ value: '1', label: '1' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
@@ -707,7 +707,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     // Add TWO in one visit — the point of multi-select. OPEN first, as a
     // reader must. TRAP T-a-disabled-button-acts-on-nothing
     (addMenu as HTMLElement & { show(t: HTMLElement): void }).show(add);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     for (const v of ['health', 'seats']) {
       ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === v)!.click();
     }
@@ -760,7 +760,7 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
       { id: 'trial', label: 'Trial' },
     ]);
     el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const apply = async (host: Element) => {
@@ -780,7 +780,7 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
       await apply(chip);
     }
     (sr.querySelector('.chip[data-id="trial"]')!.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const before = snap();
 
     // ADD one — by name: the Filters menu has no Select all to lead it.
@@ -821,7 +821,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'created', label: 'Created', kind: 'date', removable: true },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const chip = sr.querySelector('.chip[data-id="created"]') as HTMLElement;
@@ -874,11 +874,11 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
 
     // The projected stepper still drives the calendar it came from.
     (projected.querySelector('.cal-next') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const steppedTo = projected.querySelector('.cal-label')!.textContent;
 
     cal.setAttribute('value', '2024-06-15');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 200));
 
@@ -970,7 +970,7 @@ test('the VIEW selector keeps its own icon, whatever the app passes', async ({ p
         // A normal chip beside it still takes the icon it was given.
         { id: 'plan', label: 'Plan', icon: 'price-tag', options: [{ value: 'pro', label: 'Pro' }] },
       ]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const chips = [...bar.shadowRoot!.querySelectorAll('sherpa-quick-filter.chip')];
       return chips.map((c) => c.getAttribute('data-icon-start'));
     };
@@ -1001,7 +1001,7 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
       const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
       // NOTE: no `selected` on any option — the chip decides.
       bar.populate([{ ...def, options: [{ value: 'a', label: 'First' }, { value: 'b', label: 'Second' }] }]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const chip = bar.shadowRoot!.querySelector('sherpa-quick-filter.chip')!;
       return {
         caret: chip.shadowRoot!.querySelector('.caret-label')!.textContent,
@@ -1034,14 +1034,14 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([{ id: 'created', label: 'Created', kind: 'date', active: true }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const menu = el.shadowRoot!.querySelector('.chip[data-id="created"] sherpa-menu') as HTMLElement & {
       show(): void;
       shadowRoot: ShadowRoot;
     };
     menu.show();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
 
     const cal = menu.querySelector('sherpa-calendar')!;
@@ -1056,7 +1056,7 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
       };
       await sw.rendered;
       sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
     };
 
     const before = (cal as HTMLElement).dataset['type'] ?? null;
@@ -1183,7 +1183,7 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
         options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
       })),
     );
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const settle = (): Promise<void> =>
@@ -1271,7 +1271,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
         options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
       })),
     );
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
 
     const sr = el.shadowRoot!;
@@ -1285,7 +1285,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     };
     await menu.rendered;
     menu.show(chip);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const settle = (): Promise<void> =>
       new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
@@ -1373,7 +1373,7 @@ test('a DATE chip names its whole range, day first, without truncating', async (
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     // Applied on the pick (`commit: false`): the label is the point here, not Apply.
     el.populate([{ id: 'when', label: 'When', kind: 'date', range: true, commit: false, active: true }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const chip = el.shadowRoot!.querySelector('.chip[data-id="when"]') as HTMLElement & {
       shadowRoot: ShadowRoot;
@@ -1399,7 +1399,7 @@ test('a DATE chip names its whole range, day first, without truncating', async (
           new CustomEvent('datetime-change', { bubbles: true, composed: true, detail: start }),
         );
       }
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const label = chip.shadowRoot.querySelector('.caret-label') as HTMLElement;
       return {
         text: label.textContent,
@@ -1453,7 +1453,7 @@ test('a DATE chip names its whole range, day first, without truncating', async (
 test('data-reset-on-populate drops live picks; without it they survive', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
 
     const run = async (reset: boolean): Promise<{ before: string[]; after: string[] }> => {
       const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
@@ -1550,7 +1550,7 @@ test('a sort from the organise chip never reaches the host as a filter change', 
       sort: [{ field: 'name', label: 'Name' }, { field: 'spend', label: 'Spend' }],
       group: [{ field: 'status', label: 'Status' }],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const menu = el.shadowRoot!.querySelector(
       '.organise-chip[data-id="sort"] sherpa-menu',
@@ -1561,7 +1561,7 @@ test('a sort from the organise chip never reaches the host as a filter change', 
     )!;
     radio.checked = true;
     radio.dispatchEvent(new Event('change', { bubbles: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { filterChanges, sortChanges };
   });
@@ -1587,7 +1587,7 @@ test('a folded BOOLEAN filter\'s tick is its on/off; one with options opens its 
       { id: 'plan', label: 'Plan', type: 'data',
         options: [{ value: 'pro', label: 'Pro' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sr = el.shadowRoot!;
     for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .menu-row[data-drill]'); i++) {
       await new Promise((res) => setTimeout(res, 100));
@@ -1675,7 +1675,7 @@ test('the Filters button follows a folded chip on and off, and wears no badge', 
       { id: 'churned', label: 'Churned', type: 'data' },
       { id: 'plan', label: 'Plan', type: 'data', options: [{ value: 'pro', label: 'Pro' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sr = el.shadowRoot!;
     for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .menu-row[data-drill]'); i++) {
       await new Promise((res) => setTimeout(res, 100));
@@ -1761,7 +1761,7 @@ test('data-group-field sets the Group chip, and an off chip reports nothing', as
       organise(d: unknown): void;
       groupField: string | null;
     };
-    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settled = () => window.__settled();
 
     // A host must hear NOTHING from a write it made itself. Wired before render,
     // the ordering that broke sort.
@@ -1857,7 +1857,7 @@ test('the bar comes to rest fitting, not overflowing', async ({ page }) => {
       { id: 'churned', label: 'Churned', type: 'data' },
       { id: 'plan', label: 'Plan', type: 'data', options: [{ value: 'pro', label: 'Pro' }] },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     /* A PLAIN WAIT, deliberately — NOT a loop that waits for `data-folded` to
        stop changing.
@@ -1899,7 +1899,7 @@ test('the Group chip BODY toggles grouping, and reports it', async ({ page }) =>
      on the body flipped the chip's own data-current off, made it LOOK
      ungrouped, and told nobody. */
   const r = await page.evaluate(async () => {
-    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settled = () => window.__settled();
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.organise({
       group: [{ field: 'team', label: 'Team' }, { field: 'plan', label: 'Plan' }],
@@ -1976,7 +1976,7 @@ test('a persistent chip is LOCKED, so one click writes data-current once', async
     await t.rendered;
     // No `options`, so no menu — the chip CAN reach its own flip.
     t.populate([{ id: 'sel', label: 'Selector', type: 'data', persistent: true }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const chip = t.shadowRoot!.querySelector('.chip') as HTMLElement;
     const w = window as unknown as { __chip: HTMLElement; __writes: boolean[] };
@@ -2026,7 +2026,7 @@ test('allowFields limits the chips AND the Add menu, and null restores both', as
       { id: 'spend', label: 'Spend', kind: 'number' },
     ]);
     const settle = async (): Promise<void> => {
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       await new Promise((res) => setTimeout(res, 200));
     };
     await settle();
@@ -2081,7 +2081,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
       { id: 'trial', label: 'Trial', type: 'data' },
       { id: 'churned', label: 'Churned', type: 'data' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     for (let i = 0; i < 25 && !el.getAttribute('data-folded'); i++) {
@@ -2102,7 +2102,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
     if (!more || !menu) return { err: 'no Filters menu' };
 
     const settled = async (): Promise<void> => {
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       await new Promise((res) => setTimeout(res, 60));
     };
     const state = (): { more: boolean; activeFolded: string[] } => ({
@@ -2170,7 +2170,7 @@ test('an ADVANCED field with no options gets a menu, not a toggle', async ({ pag
       // The control: a real toggle, which must stay one.
       { id: 'at-risk', label: 'At risk' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const look = (id: string) => {
       const chip = el.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
@@ -2207,7 +2207,7 @@ test('a FOLDED advanced-only filter opens its own menu, not a blank drill', asyn
         options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }] },
       { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ]);
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     await settle();
     for (let i = 0; i < 20 && !el.getAttribute('data-folded'); i++) {
       await new Promise((res) => setTimeout(res, 80));
@@ -2298,7 +2298,7 @@ test('a resize that folds nothing new keeps the open Filters menu; a real unfold
 test('the Add menu lists held AND offered, and an untick removes', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'inline-size: 1400px' });
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
 
     el.populate([
       { id: 'status', label: 'Status', removable: true,

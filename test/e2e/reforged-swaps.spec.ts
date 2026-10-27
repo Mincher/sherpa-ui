@@ -8,7 +8,7 @@ import { test, expect } from './harness';
 test('a swap follows its host attribute both ways, from the first render', async ({ page }) => {
   const r = await page.evaluate(async () => {
     await import('/dist/index.js');
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const make = async (tag: string, attrs: Record<string, string> = {}) => {

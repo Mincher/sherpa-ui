@@ -8,7 +8,7 @@ import { test, expect } from './fixture';
  */
 test('bindSettings draws each control from the session, writes its change back, and stops on abort', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
   const r = await page.evaluate(`(async () => {
     const { SessionStore, bindSettings } = await import('/dist/index.js');
     const root = document.getElementById('root');
@@ -43,7 +43,7 @@ test('bindSettings draws each control from the session, writes its change back, 
    `value` "on": an app's `=== true` read it as off. TODO 331's Demos setting. */
 test('a switch whose key holds nothing yet writes true and false', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
   const r = await page.evaluate(`(async () => {
     const { SessionStore, bindSettings } = await import('/dist/index.js');
     const root = document.getElementById('root');

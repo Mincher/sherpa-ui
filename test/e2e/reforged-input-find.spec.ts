@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * A FIND — Will, TODO 136: *"A variant of the search input, a Find input, that
@@ -11,18 +11,11 @@ import { test, expect } from './fixture';
  * `find-replace`. The grid answers a step with `findStep()`.
  * TRAP T-a-find-asks-its-host-to-step
  */
-const HARNESS = '/test/reforged/harness.html';
-
 type Field = HTMLElement & { value: string };
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('a Find: the search glyph, two steppers that ASK, and Enter and Shift+Enter', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
     const el = document.createElement('sherpa-input-text') as Field;
     el.setAttribute('data-type', 'find');
     el.setAttribute('aria-label', 'Find customers');
@@ -70,7 +63,7 @@ test('a Find: the search glyph, two steppers that ASK, and Enter and Shift+Enter
 
 test('Find & Replace: Replace asks at once; Replace all asks the reader first', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
     const el = document.createElement('sherpa-input-text') as Field;
     el.setAttribute('data-type', 'find');
     el.setAttribute('data-replace', '');
@@ -134,7 +127,7 @@ test('Find & Replace: Replace asks at once; Replace all asks the reader first', 
 
 test('a grid steps through its marks, round the end, and asks for the next page past its last', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
     const grid = await (window as unknown as { __mount: (t: string, d?: unknown, a?: Record<string, string>) => Promise<HTMLElement> })
       .__mount('sherpa-data-grid', undefined, { style: 'inline-size: 800px' }) as HTMLElement & {
       populate(d: unknown): void;

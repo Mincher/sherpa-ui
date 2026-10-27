@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-select-checkbox on the reforged base — a labelled checkbox wrapping a
@@ -9,13 +9,7 @@ import { test, expect } from './fixture';
  * (a filled box + checkmark), with no JS styling.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.waitForFunction(() => !!customElements.get('sherpa-select-checkbox'));
 });
 

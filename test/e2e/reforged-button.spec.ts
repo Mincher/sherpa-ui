@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * Foundation proof — the reforged SherpaElement, exercised end-to-end through
@@ -8,15 +8,6 @@ import { test, expect } from './fixture';
  *
  * Runs against /dist (compiled from src/), not the legacy /dist.
  */
-
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true, {
-    timeout: 15_000,
-  });
-});
 
 test('renders the template into a shadow root and applies default attrs', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -80,7 +71,7 @@ test('emits button-click; suppresses it when disabled', async ({ page }) => {
     const afterEnabled = clicks;
 
     el.setAttribute('disabled', '');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     trigger.click();
     const afterDisabled = clicks;
 
@@ -117,7 +108,7 @@ test('slot presence reflects to has-content-slot on the host', async ({ page }) 
     empty.setAttribute('data-label', 'via-attr');
     document.getElementById('root')!.appendChild(empty);
     await empty.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       withText: withText.matches(':state(has-content-slot)'),
@@ -217,7 +208,7 @@ test('a click opens the slotted menu and marks the button open', async ({ page }
     const menu = m as HTMLElement & { open: boolean; rendered?: Promise<void> };
     await menu.rendered;
     const trigger = el.shadowRoot!.querySelector('.trigger') as HTMLElement;
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
 
     const state = () => ({
       open: menu.open,
@@ -263,7 +254,7 @@ test('a menu swapped out as it shuts leaves the button shut: the next press open
     await el.rendered;
     await first.rendered;
     const trigger = el.shadowRoot!.querySelector('.trigger') as HTMLElement;
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
     trigger.click();
     await settled();
     // Shut, and swapped before its close is heard.
@@ -308,7 +299,7 @@ test('populate({ label, iconStart, noTab }) sets the declared attributes; "false
       tab: el.shadowRoot!.querySelector('.trigger')!.getAttribute('tabindex'),
     };
     el.setAttribute('data-no-tab', 'false');
-    await (window as unknown as { __settled(): Promise<void> }).__settled();
+    await window.__settled();
     return { drawn, off: el.hasAttribute('data-no-tab'), tab: el.shadowRoot!.querySelector('.trigger')!.getAttribute('tabindex') };
   });
   expect(r.drawn).toEqual({ label: 'Save', icon: 'plus', tab: '-1' });

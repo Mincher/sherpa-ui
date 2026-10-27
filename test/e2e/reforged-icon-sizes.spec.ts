@@ -45,7 +45,7 @@ test('every button size paints its box at its own icon-size token', async ({ pag
       rendered?: Promise<void>; shadowRoot: ShadowRoot;
     })[];
     await Promise.all(btns.map((b) => b.rendered));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return btns.map((b) => {
       const box = b.shadowRoot.querySelector('.icon-start') as HTMLElement;
@@ -114,7 +114,7 @@ test('a drawing keeps 1:1 and never overflows its box', async ({ page }) => {
         rendered?: Promise<void>; shadowRoot: ShadowRoot;
       };
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
 
       for (const box of [...el.shadowRoot.querySelectorAll('.sherpa-icon-box')] as HTMLElement[]) {
         const rect = box.getBoundingClientRect();

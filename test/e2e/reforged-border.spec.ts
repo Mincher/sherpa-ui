@@ -39,7 +39,7 @@ const AXES: Record<string, (mode: string) => { h: string; v: string }> = {
 
 test('grouping: :root carries the full outer width', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
 
   const r = await page.evaluate(() => {
     const read = (n: string) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -55,7 +55,7 @@ test('grouping: :root carries the full outer width', async ({ page }) => {
 
 test('grouping: every position halves exactly the edges it shares', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
 
   const VALUES: string[] = [];
   for (const mode of ['solo', 'start', 'mid', 'end']) VALUES.push(mode);
@@ -111,7 +111,7 @@ test('grouping: every position halves exactly the edges it shares', async ({ pag
 
 test('grouping: two halves of a shared edge sum to one full stroke', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
 
   const r = await page.evaluate(() => {
     const root = document.getElementById('root')!;

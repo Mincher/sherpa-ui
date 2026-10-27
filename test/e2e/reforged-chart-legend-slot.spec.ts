@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * The CHART owns the split with its own legend — not the card around it.
@@ -15,13 +15,7 @@ import { test, expect } from './fixture';
  * dropped all twelve rules silently.
  */
 
-const HARNESS = '/test/reforged/harness.html';
 const CHARTS = ['sherpa-barchart', 'sherpa-line-chart', 'sherpa-gauge-chart', 'sherpa-radial-chart'] as const;
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 /** Build one chart in a fixed box, 600x400 unless told, with a legend slotted in. */
 async function build(page: import('@playwright/test').Page, tag: string, orientation: string, width = 600) {
@@ -50,7 +44,7 @@ async function build(page: import('@playwright/test').Page, tag: string, orienta
           : [{ label: 'a', value: 1 }, { label: 'b', value: 2 }],
       );
       legend.populate?.([{ label: 'Alpha' }, { label: 'Beta' }]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
 
       const r = (el: Element) => {
         const b = el.getBoundingClientRect();
@@ -130,7 +124,7 @@ for (const tag of CHARTS) {
       box.appendChild(chart);
       root.appendChild(box);
       await chart.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const body = chart.shadowRoot!.querySelector('.chart-body')!.getBoundingClientRect();
       return {
         bodyW: body.width,
@@ -169,7 +163,7 @@ test('sherpa-barchart: a SHORT host shrinks the plot; an unsized one keeps 180px
       await legend.rendered;
       chart.populate([{ label: 'a', value: 1 }, { label: 'b', value: 2 }]);
       legend.populate([{ label: 'Alpha' }, { label: 'Beta' }]);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const sr = chart.shadowRoot!;
       return {
         plot: Math.round(sr.querySelector('.plot')!.getBoundingClientRect().height),
@@ -203,7 +197,7 @@ test('the split is declared on the CHART, not read from the legend', async ({ pa
     chart.appendChild(legend);
     root.appendChild(chart);
     await chart.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { display: getComputedStyle(chart).display };
   });
   expect(r.display).toBe('grid');

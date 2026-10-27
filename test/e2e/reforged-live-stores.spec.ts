@@ -1,4 +1,4 @@
-import { expect, test } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * live-stores.ts — records the SERVER pushes.
@@ -7,10 +7,6 @@ import { expect, test } from './fixture';
  * other direction, and a notification count that is right without anybody
  * refreshing is the case they exist for.
  */
-test.beforeEach(async ({ page }) => {
-  await page.goto('/test/reforged/harness.html');
-});
-
 test('a push applies as a whole set OR as one change, and the message decides', async ({
   page,
 }) => {

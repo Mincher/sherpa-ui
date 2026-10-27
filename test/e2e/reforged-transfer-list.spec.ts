@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-transfer-list on the reforged base — a two-pane shuttle. Exercises pane
@@ -7,13 +7,7 @@ import { test, expect } from './fixture';
  * event, and the add-all control.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-transfer-list'));
 });
 
@@ -35,7 +29,7 @@ test('splits items into available and selected panes', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     return {
       available: s.querySelectorAll('.source .row').length,
@@ -54,7 +48,7 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
 
     let detail: unknown = null;
@@ -68,7 +62,7 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
       new CustomEvent('selection-change', { bubbles: true, composed: true, detail: { selected: true } }),
     );
     (s.querySelector('sherpa-button[data-move="add"]') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       detail,
@@ -88,10 +82,10 @@ test('add-all moves every available item across', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     (s.querySelector('sherpa-button[data-move="add-all"]') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { selected: el.selected!.sort(), available: s.querySelectorAll('.source .row').length };
   }, POOL);
   expect(r.selected).toEqual(['r', 'w', 'x']);
@@ -104,10 +98,10 @@ test('remove-all empties the selected pane', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     (s.querySelector('sherpa-button[data-move="remove-all"]') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { selected: el.selected, empty: s.querySelector('.target')!.hasAttribute('data-empty') };
   }, POOL);
   expect(r.selected).toEqual([]);
@@ -120,7 +114,7 @@ test('rows are composed sherpa-list-item + moves are composed sherpa-button', as
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     return {
       listItems: s.querySelectorAll('.row sherpa-list-item').length,
@@ -145,7 +139,7 @@ test('each row shows its label as the list-item label', async ({ page }) => {
     const el = document.createElement('sherpa-transfer-list') as unknown as TransferEl;
     document.getElementById('root')!.appendChild(el);
     await el.populate!(pool);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const headings = (pane: string): (string | null)[] =>
       Array.from(
         el.shadowRoot!.querySelectorAll(`.${pane} .pane-list sherpa-list-item`),

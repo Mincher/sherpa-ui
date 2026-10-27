@@ -49,7 +49,7 @@ for (const chart of CHARTS) {
       await customElements.whenDefined(tag);
       await el.rendered;
       el.populate!(data);
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
 
       const sr = el.shadowRoot!;
       const marks = Array.from(sr.querySelectorAll<HTMLElement>(mark));
@@ -101,7 +101,7 @@ test('sherpa-gauge-chart: its bands are one tab stop, named, and the arrows move
     await customElements.whenDefined('sherpa-gauge-chart');
     await el.rendered;
     el.populate!(72);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const zones = Array.from(sr.querySelectorAll<HTMLElement>('.zone[role="img"]'));
@@ -135,7 +135,7 @@ test('sherpa-gauge-chart: its bands are one tab stop, named, and the arrows move
 
 test('a segment past the old caps still shows its tip: slice 13 of 14, zone 7 of 8', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     const make = async (tag: string, setup: (el: HTMLElement) => void, data: unknown): Promise<ShadowRoot> => {
       const el = document.createElement(tag) as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
       setup(el);

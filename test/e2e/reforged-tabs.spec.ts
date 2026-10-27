@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-tabs on the reforged base — a tabbed content switcher. Proves the tab
@@ -6,8 +6,6 @@ import { test, expect } from './fixture';
  * clicking a tab switches data-current-id + fires tab-change, only the matching
  * slotted panel shows, and arrow keys move the active tab (roving focus).
  */
-
-const HARNESS = '/test/reforged/harness.html';
 
 type TabsEl = HTMLElement & {
   rendered?: Promise<void>;
@@ -17,10 +15,6 @@ type TabsEl = HTMLElement & {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-tabs'));
 });
 
@@ -38,7 +32,7 @@ test('renders tabs from populate() and defaults the first tab active', async ({ 
       { id: 'b', label: 'Beta' },
       { id: 'c', label: 'Gamma' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const tabs = el.shadowRoot!.querySelectorAll('.tab');
     const active = el.shadowRoot!.querySelector('.tab[data-current] .label')?.textContent;
@@ -62,7 +56,7 @@ test('an explicit data-current-id selects that tab and shows only its panel', as
       { id: 'a', label: 'Alpha' },
       { id: 'b', label: 'Beta' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const vis = (sel: string) =>
       getComputedStyle(el.querySelector(sel)!).display !== 'none';
@@ -85,7 +79,7 @@ test('clicking a tab switches the active id and fires tab-change', async ({ page
       { id: 'a', label: 'Alpha' },
       { id: 'b', label: 'Beta' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     let fired: string | null = null;
     el.addEventListener('tab-select', (e) => (fired = (e as CustomEvent).detail.id));
@@ -94,7 +88,7 @@ test('clicking a tab switches the active id and fires tab-change', async ({ page
       (t) => t.dataset['id'] === 'b',
     )!;
     beta.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const bVisible = getComputedStyle(el.querySelector('[data-tab="b"]')!).display !== 'none';
     return { fired, activeId: el.getAttribute('data-current-id'), bVisible };
@@ -116,7 +110,7 @@ test('arrow keys move the active tab (roving focus)', async ({ page }) => {
       { id: 'b', label: 'Beta' },
       { id: 'c', label: 'Gamma' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const strip = el.shadowRoot!.querySelector('.tabs')!;
     strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-accordion on the reforged base — a disclosure card backed by native
@@ -7,16 +7,7 @@ import { test, expect } from './fixture';
  * property reflects both ways, and data-heading renders the summary label.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type AccordionEl = HTMLElement & { rendered?: Promise<void>; open?: boolean };
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('defaults closed; the body is hidden until [open]', async ({ page }) => {
   const r = await page.evaluate(async () => {

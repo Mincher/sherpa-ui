@@ -16,7 +16,7 @@ test('renders a bar per datum with height proportional to the max', async ({ pag
       { label: 'Q2', value: 100 }, // 100%
       { label: 'Q3', value: 25 }, // 25%
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const bars = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.bar'));
     return {
       count: bars.length,
@@ -38,7 +38,7 @@ test('clicking a bar fires bar-click with the datum', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'A', value: 10 }, { label: 'B', value: 20 }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     let detail: { index: number; label: string; value: number } | null = null;
     el.addEventListener('bar-click', (e) => (detail = (e as CustomEvent).detail));
@@ -62,7 +62,7 @@ test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', as
       { label: 'A', value: 5, colorIndex: 1 },
       { label: 'B', value: 3, colorIndex: 2 },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const bars = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.bar'));
     return bars.map((bar) => {
@@ -129,7 +129,7 @@ test('the y axis labels its gridlines and lines up with the plot', async ({ page
       { label: 'A', value: 40 },
       { label: 'B', value: 20 },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const axis = sr.querySelector('.y-axis')!;
@@ -175,7 +175,7 @@ test('the y axis labels its gridlines and lines up with the plot', async ({ page
     // data-ticks="0" must remove the axis — an ABSENT attribute means "default 4",
     // so the state has to be written by the JS rather than inferred by a selector.
     el.setAttribute('data-ticks', '0');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const noTicks = {
       shown: getComputedStyle(axis).display !== 'none',
       flag: el.matches(':state(has-y-axis)'),
@@ -223,7 +223,7 @@ test('the x axis labels sit BELOW the baseline, one per bar', async ({ page }) =
       { label: 'CPU', value: 30 },
       { label: 'Memory', value: 20 },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const row = sr.querySelector('.x-axis-row')!;
@@ -274,7 +274,7 @@ test('the tooltip shows the value in full; the axis still compacts', async ({ pa
       { label: 'Huge', value: 1250500, colorIndex: 2 },
       { label: 'Fractional', value: 7.25, colorIndex: 3 },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = chart.shadowRoot!;
     return {
@@ -311,7 +311,7 @@ test('a NEGATIVE value hangs below a lifted zero line', async ({ page }) => {
     el.populate!([
       { label: 'A', value: -5 }, { label: 'B', value: 10 }, { label: 'C', value: 20 },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const plot = el.shadowRoot!.querySelector('.bars')!.getBoundingClientRect();
     const line = el.shadowRoot!.querySelector('.bars-zero')!;
@@ -356,7 +356,7 @@ test('a chart of POSITIVE values is untouched — no line, bars on the floor', a
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'A', value: 10 }, { label: 'B', value: 20 }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const plot = el.shadowRoot!.querySelector('.bars')!.getBoundingClientRect();
     const line = el.shadowRoot!.querySelector('.bars-zero')!;

@@ -28,7 +28,7 @@ test('a view built from markup is the same DOM an authored template gives', asyn
     `);
     const host = document.getElementById('root')!;
     host.replaceChildren(fragment);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const grid = host.querySelector('sherpa-data-grid');
     return {
@@ -80,7 +80,7 @@ test('the allow-list drops what a saved view has no business carrying', async ({
 
     const { fragment, report } = parseViewMarkup(hostile);
     host.replaceChildren(fragment);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     await new Promise((r2) => setTimeout(r2, 300));
 
     return {

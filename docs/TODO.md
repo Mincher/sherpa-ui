@@ -26,43 +26,44 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
 | | | | **Next — open work, in this order** (Will asked for a review, 2026-10-27) | |
-| ⬜ | 1 | 491 | TESTS — a full run, then clean up: less complexity and faster runs, with no loss of quality (Will, 2026-10-27) | tests |
+| ✅ | 1 | 491 | TESTS — a full run, then clean up: less complexity and faster runs, with no loss of quality (Will, 2026-10-27). Done: the run was green (sherpa-ui 3266 + 709 node, 4.6m; Demos 669, 2.9m) and Will found the time fine. 48 sherpa-ui specs moved onto the shared `./harness` setup; 531 `window` casts became the typed `window.__settled()` / `__reforgedReady`; Demos' 12 copies of a row-total helper became one `total(page)` in its fixture. The 10 fixed waits stay: each proves that nothing happens, or waits for a hover rest | tests |
 | ⬜ | 2 | 487 | DEFAULT — the data grid's rows per page start at the 100 option — Will sees 10 rows on load, in the grid and the pager's box (Will, 2026-10-27) | data |
-| 🚧 | 3 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27 | bug |
-| ⬜ | 4 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
-| ⬜ | 5 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
-| ⬜ | 6 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
-| ⬜ | 7 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
-| 🚧 | 8 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
-| 🚧 | 9 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
-| ⬜ | 10 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
-| ⬜ | 11 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
-| ⏸️ | 12 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
-| ⬜ | 13 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
-| ⬜ | 14 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
-| 🚧 | 15 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| 🚧 | 16 | 288 | Phase 6 — one copy of each data helper | refactor |
-| 🚧 | 17 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 18 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
-| 🚧 | 19 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ⬜ | 20 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ⬜ | 3 | 388 | PROVIDER ALWAYS — a data grid is never wired by hand: `bindSource()` on a grid with no `<sherpa-provider>` logs a console warning; where it can, Sherpa finds a hand-wired grid and routes its data through a provider before it draws. So the Query and the page number are kept by the provider (Will, 2026-10-27, answering the ask: "We should always use the provider. Never hand wire a data grid.") | data |
+| 🚧 | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27 | bug |
+| ⬜ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
+| ⬜ | 6 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
+| ⬜ | 7 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
+| ⬜ | 8 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
+| 🚧 | 9 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| 🚧 | 10 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ⬜ | 11 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
+| ⬜ | 12 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
+| ⏸️ | 13 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⬜ | 14 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
+| ⬜ | 15 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| 🚧 | 16 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| 🚧 | 17 | 288 | Phase 6 — one copy of each data helper | refactor |
+| 🚧 | 18 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ⬜ | 19 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| 🚧 | 20 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ⬜ | 21 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ⬜ | 22 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
-| ✅ | 21 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
-| ❓ | 22 | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
-| ✅ | 23 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
-| ✅ | 24 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
-| ✅ | 25 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
+| ✅ | 23 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| ✅ | 24 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
+| ✅ | 25 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
+| ✅ | 26 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | | | | **Later — held or deferred by Will, or big and last** | |
-| ⏸️ | 26 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — Will: better than it was; not a priority now | explore |
-| ⬜ | 27 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
-| 🚧 | 28 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
-| ⬜ | 29 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
-| ⬜ | 30 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
-| ⬜ | 31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
-| ⬜ | 32 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
-| ⬜ | 33 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
-| ⬜ | 34 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
-| ⬜ | 35 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
+| ⏸️ | 27 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — Will: better than it was; not a priority now | explore |
+| ⬜ | 28 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
+| 🚧 | 29 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| ⬜ | 30 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
+| ⬜ | 31 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
+| ⬜ | 32 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
+| ⬜ | 33 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
+| ⬜ | 34 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
+| ⬜ | 35 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
+| ⬜ | 36 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |

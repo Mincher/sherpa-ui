@@ -26,7 +26,7 @@ async function build(page: import('@playwright/test').Page, attrs: string, itemA
         .join('');
       root.appendChild(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
 
       const run = el.shadowRoot!.querySelector('.run') as HTMLElement;
       const cs = getComputedStyle(run);
@@ -104,7 +104,7 @@ test('data-fill + data-grow gives ONE child the spare space; siblings keep their
     outer.appendChild(el);
     root.appendChild(outer);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const h = (id: string) => Math.round(document.getElementById(id)!.getBoundingClientRect().height);
     return { a: h('a'), b: h('b'), c: h('c') };
   });
@@ -128,7 +128,7 @@ test('data-scroll makes the run scroll instead of pushing the page', async ({ pa
     outer.appendChild(el);
     root.appendChild(outer);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const run = el.shadowRoot!.querySelector('.run') as HTMLElement;
     return {
       overflowY: getComputedStyle(run).overflowY,
@@ -156,7 +156,7 @@ test('data-wrap shares a row and breaks it when the items no longer fit', async 
     outer.appendChild(el);
     root.appendChild(outer);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const y = (id: string) => Math.round(document.getElementById(id)!.getBoundingClientRect().y);
     return { wrap: getComputedStyle(el.shadowRoot!.querySelector('.run')!).flexWrap, a: y('a'), b: y('b'), c: y('c') };
   });
@@ -177,7 +177,7 @@ test('data-measure caps the run at a reading measure and centres it', async ({ p
     outer.appendChild(el);
     root.appendChild(outer);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const run = el.shadowRoot!.querySelector('.run') as HTMLElement;
     const rb = run.getBoundingClientRect();
     const ob = outer.getBoundingClientRect();
@@ -201,7 +201,7 @@ test('it is a bare layout surface — no fill, no border, no padding', async ({ 
     el.innerHTML = '<div>x</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const cs = getComputedStyle(el);
     const run = getComputedStyle(el.shadowRoot!.querySelector('.run')!);
     return {
@@ -229,7 +229,7 @@ test('without data-fill the stack is content-height — data-grow alone does not
     outer.appendChild(el);
     root.appendChild(outer);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { hostH: Math.round(el.getBoundingClientRect().height) };
   });
   // 40px of content in a 300px box: the stack did NOT take the parent's height,

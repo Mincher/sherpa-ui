@@ -12,7 +12,7 @@ test('maps a series to an SVG polyline (y inverted, x across the width)', async 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ labels: ['a', 'b', 'c'], series: [[0, 50, 100]] }); // min 0, max 100
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const line = el.shadowRoot!.querySelector('polyline.line')!;
     return {
       points: line.getAttribute('points'),
@@ -39,7 +39,7 @@ test('renders one series group per series (multi-series)', async ({ page }) => {
         { name: 'B', values: [2, 1] },
       ],
     });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return el.shadowRoot!.querySelectorAll('.series-layer > .series').length;
   });
   expect(count).toBe(2);
@@ -56,7 +56,7 @@ test('area variant reveals the fill; line variant hides it', async ({ page }) =>
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       el.populate!({ labels: ['a', 'b'], series: [[10, 20]] });
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return getComputedStyle(el.shadowRoot!.querySelector('.area')!).display;
     };
     return { line: await mk(), area: await mk('area') };
@@ -76,7 +76,7 @@ test('a series left out re-scales the axis, and the rest keep their colour', asy
     };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = () => window.__settled();
     const big = { name: 'big', values: [900, 1000, 950], colorIndex: 1 };
     const small = { name: 'small', values: [2, 8, 5], colorIndex: 2 };
     const sr = el.shadowRoot!;
@@ -124,7 +124,7 @@ test('the y axis spans the data extent, not zero to max', async ({ page }) => {
     // Values well above zero: an axis running 0..1000 would label gridlines that
     // are nowhere near where the line actually sits.
     el.populate({ labels: ['a', 'b', 'c'], series: [[900, 1000, 950]] });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const ticks = Array.from(sr.querySelectorAll('.y-tick'));

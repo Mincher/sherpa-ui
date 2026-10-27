@@ -404,7 +404,7 @@ const mount = async (page: import('@playwright/test').Page, html: string, attrs 
       g.innerHTML = html;
       root.appendChild(g);
       await g.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return null;
     },
     { html, attrs },
@@ -501,7 +501,7 @@ const grouped = (page: import('@playwright/test').Page, on: boolean) =>
     await Promise.all(
       [...g.children].map((c) => (c as HTMLElement & { rendered?: Promise<void> }).rendered),
     );
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     /* The measuring runs on a FRAME, and it re-runs when a child resizes — and
        four sherpa-containers finish rendering at their own pace. Wait for the
        answer to stop changing rather than for one frame. */

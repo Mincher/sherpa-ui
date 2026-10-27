@@ -20,6 +20,15 @@ export function parkThePointer(page: Page): Page {
   return page;
 }
 
+declare global {
+  interface Window {
+    /** Set by the harness page once its font has loaded. */
+    __reforgedReady?: boolean;
+    /** Resolves once every Sherpa element on the page has drawn. */
+    __settled(): Promise<void>;
+  }
+}
+
 export const test = base.extend({
   page: async ({ page }, use) => { await use(parkThePointer(page)); },
 });

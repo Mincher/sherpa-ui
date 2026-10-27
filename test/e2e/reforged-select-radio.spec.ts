@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-select-radio on the reforged base — a labelled radio wrapping a native
@@ -9,13 +9,7 @@ import { test, expect } from './fixture';
  * (a white face with a coloured inner dot), with no JS styling.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.waitForFunction(() => !!customElements.get('sherpa-select-radio'));
 });
 
@@ -105,7 +99,7 @@ test('radios sharing a name group natively — selecting one deselects the other
 
     inputB.checked = true; // user picks B
     inputB.dispatchEvent(new Event('change', { bubbles: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled(); // let group coordination settle
+    await window.__settled(); // let group coordination settle
 
     return {
       sameName,

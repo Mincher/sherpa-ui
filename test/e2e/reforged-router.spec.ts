@@ -21,7 +21,7 @@ type Seen = { changed: string[]; type: string; route: Record<string, string | nu
 /** Mount a router, and keep every `route-change` on `window.__seen`. */
 async function mount(page: Page): Promise<void> {
   await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+  await page.waitForFunction(() => window.__reforgedReady === true);
   await page.evaluate(async () => {
     const w = window as unknown as { __seen: Seen[]; __booted: number };
     w.__seen = [];

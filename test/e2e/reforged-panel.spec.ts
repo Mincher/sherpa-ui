@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-panel on the reforged base — a persistent inline <section> card.
@@ -7,16 +7,7 @@ import { test, expect } from './fixture';
  * header.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type PanelEl = HTMLElement & { rendered?: Promise<void> };
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('renders header (from data-heading) / body / footer regions', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -25,7 +16,7 @@ test('renders header (from data-heading) / body / footer regions', async ({ page
     el.innerHTML = '<p>body</p><div slot="footer">actions</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const vis = (sel: string) =>
       getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {

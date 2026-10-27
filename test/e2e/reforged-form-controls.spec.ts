@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * THE FORM CONTROLS TAKE PART IN A PLAIN <form>: what each submits, and when
@@ -7,13 +7,6 @@ import { test, expect } from './fixture';
  * radios (Will, 2026-09-29). TRAP T-a-form-value-follows-every-write
  * TRAP T-radios-in-shadow-roots-are-not-one-group
  */
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
-
 test('checkbox, switch, radio group and select group: what a form sends, and when it refuses', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
@@ -30,7 +23,7 @@ test('checkbox, switch, radio group and select group: what a form sends, and whe
       populate(d: unknown): Promise<void>; value: string | null;
     };
     await group.populate([{ value: 'free' }, { value: 'pro' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sent = () => [...new FormData(form).entries()].map(([k, v]) => `${k}=${v}`).sort();
     const before = { valid: form.checkValidity(), sent: sent() };
     (form.querySelector('sherpa-select-checkbox') as HTMLElement & { checked: boolean }).checked = true;

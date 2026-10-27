@@ -14,7 +14,7 @@ test('plain HTML fills the tabs, the breadcrumbs, a select and a key-value list'
       <sherpa-breadcrumbs><a href="/home">Home</a><a href="/records">Records</a><a>Ann</a></sherpa-breadcrumbs>
       <sherpa-input-text data-type="select" data-label="Tier"><option value="g">Gold</option><option value="s">Silver</option></sherpa-input-text>
       <sherpa-key-value-list><dt>Customers</dt><dd>12</dd><dt>Trials</dt><dd>3</dd></sherpa-key-value-list>`;
-    const settle = (window as unknown as { __settled(): Promise<void> }).__settled;
+    const settle = window.__settled;
     await settle();
     const $ = <T extends Element>(tag: string, sel: string): T[] =>
       [...document.querySelector(tag)!.shadowRoot!.querySelectorAll<T>(sel)];

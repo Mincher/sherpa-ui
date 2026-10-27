@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-prompt-composer on the reforged base — the AI prompt input. Proves the
@@ -10,13 +10,7 @@ import { test, expect } from './fixture';
  * compiled module to trigger its customElements.define().
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-prompt-composer/sherpa-prompt-composer.js');
     await customElements.whenDefined('sherpa-prompt-composer');

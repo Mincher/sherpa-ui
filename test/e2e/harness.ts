@@ -30,7 +30,7 @@ export const HARNESS = '/test/reforged/harness.html';
 export async function gotoHarness(page: Page): Promise<void> {
   await page.goto(HARNESS);
   await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
+    () => window.__reforgedReady === true,
   );
   // TRAP T-chromium-pointer-starts-on-the-page — park it off the page.
   await page.mouse.move(-1, -1);
@@ -52,7 +52,7 @@ export const test = base.extend<Record<string, never>>({
   },
 });
 
-export { expect } from '@playwright/test';
+export { expect, type Page } from '@playwright/test';
 
 /**
  * The cast every spec writes to reach a Sherpa element's `rendered` promise.
@@ -83,7 +83,6 @@ declare global {
       data?: unknown,
       attrs?: Record<string, string | boolean>,
     ): Promise<T>;
-    __settled(): Promise<void>;
     /** A bar's answers as clauses, built by the data layer. */
     __clauses(bar: Element): Promise<Record<string, unknown>>;
     /** A filter toolbar's ⋮ row by value, the ⋮ opened first. */

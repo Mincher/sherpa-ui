@@ -19,12 +19,12 @@ interface El extends HTMLElement {
 }
 
 const settled = (page: import('@playwright/test').Page): Promise<void> =>
-  page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
+  page.evaluate(() => window.__settled());
 
 test('a button flipped to icon matches one BORN as icon', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const make = async (icon: boolean): Promise<El> => {
       const el = document.createElement('sherpa-button') as El;
       el.textContent = 'Go';
@@ -60,7 +60,7 @@ test('a button flipped to icon matches one BORN as icon', async ({ page }) => {
 test('data-multiline swaps the input for a textarea, still wired', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const el = document.createElement('sherpa-input-text') as El;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -91,7 +91,7 @@ test('data-multiline swaps the input for a textarea, still wired', async ({ page
 test('a re-stamped nav-item emits its click ONCE', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const make = async (): Promise<El> => {
       const el = document.createElement('sherpa-nav-item') as El;
       el.setAttribute('data-label', 'Home');
@@ -131,7 +131,7 @@ test('a single-template component is never re-stamped', async ({ page }) => {
   await settled(page);
   const stable = await page.evaluate(async () => {
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const el = document.createElement('sherpa-toast') as El;
     el.setAttribute('data-heading', 'First');
     document.getElementById('root')!.appendChild(el);

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-calendar on the reforged base — a single-date month-grid picker. Exercises
@@ -9,13 +9,9 @@ import { test, expect } from './fixture';
  * Not registered by the harness index — the spec imports its module in-page.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type CalEl = HTMLElement & { rendered?: Promise<void>; value?: string };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-calendar/sherpa-calendar.js');
     await customElements.whenDefined('sherpa-calendar');
@@ -176,11 +172,11 @@ test('clicking the label zooms out to the month picker, then the year picker', a
 
     const dayLabel = label();
     (s.querySelector('.cal-label') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const monthLayout = { label: label(), monthsVisible: monthsVisible(), daysVisible: daysVisible(), cells: s.querySelectorAll('.cal-months .cal-cell').length };
 
     (s.querySelector('.cal-label') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const yearLayout = { yearsVisible: yearsVisible(), cells: s.querySelectorAll('.cal-years .cal-cell').length };
 
     return { dayLabel, monthLayout, yearLayout };
@@ -205,7 +201,7 @@ test('picking a month zooms back into that month\'s days', async ({ page }) => {
     // Click "Feb" (month index 1).
     const feb = Array.from(s.querySelectorAll<HTMLElement>('.cal-months .cal-cell')).find((c) => c.dataset['month'] === '1')!;
     feb.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return {
       layout: el.getAttribute('data-view'),
       label: s.querySelector('.cal-label')!.textContent,
@@ -227,7 +223,7 @@ test('picking a year zooms into that year\'s months', async ({ page }) => {
     const s = el.shadowRoot!;
     const y2024 = Array.from(s.querySelectorAll<HTMLElement>('.cal-years .cal-cell')).find((c) => c.dataset['year'] === '2024')!;
     y2024.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { layout: el.getAttribute('data-view'), label: s.querySelector('.cal-label')!.textContent };
   });
   expect(r.layout).toBe('month');
@@ -417,7 +413,7 @@ test('data-type="range" draws two months in one 15-track grid', async ({ page })
     el.setAttribute('data-value-end', '2026-10-05');
     box.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const s = el.shadowRoot!;
     const grid = s.querySelector('.cal-days') as HTMLElement;
@@ -508,7 +504,7 @@ test('data-available disables every day the data does not carry', async ({ page 
       if (available != null) el.setAttribute('data-available', available);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const days = [...el.shadowRoot!.querySelectorAll('sherpa-calendar-cell')].filter(
         (c) => !c.hasAttribute('data-blank'),
       ) as HTMLElement[];
@@ -556,7 +552,7 @@ test('in range mode, data-available bounds the span instead of dotting it', asyn
       el.setAttribute('data-available', available);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return ([...el.shadowRoot!.querySelectorAll('sherpa-calendar-cell')] as HTMLElement[])
         .filter((c) => !c.hasAttribute('data-blank') && !c.hasAttribute('disabled'))
         .map((c) => c.dataset['iso'] ?? '')
@@ -588,7 +584,7 @@ test('the current month and year cells take the today state', async ({ page }) =
       el.setAttribute('value', value);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       return el as HTMLElement & { shadowRoot: ShadowRoot; dataset: DOMStringMap };
     };
 
@@ -598,7 +594,7 @@ test('the current month and year cells take the today state', async ({ page }) =
       sel: string,
     ): Promise<{ state: string | null; fill: string | null; marked: number }> => {
       el.dataset['view'] = view;
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const cells = [
         ...el.shadowRoot.querySelectorAll(`${sel} sherpa-calendar-cell`),
       ] as (HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot })[];
@@ -686,7 +682,7 @@ test('picking a range start does not move the grid; a host-set value still does'
     el.setAttribute('data-type', 'range');
     box.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const label = (): string => sr.querySelector('.cal-label')!.textContent ?? '';
@@ -705,7 +701,7 @@ test('picking a range start does not move the grid; a host-set value still does'
     const start = rightMonth()[10]!;
     const startIso = start.dataset['iso']!;
     start.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const afterStart = label();
     // The day just picked must still be where it was, or the END cannot be
@@ -715,17 +711,17 @@ test('picking a range start does not move the grid; a host-set value still does'
     // Complete the range in that same month.
     const end = rightMonth().find((c) => (c.dataset['iso'] ?? '') > startIso)!;
     end.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterEnd = label();
 
     // A HOST setting a value SHOULD still jump — the day has to be on screen.
     (el as HTMLElement).dataset['valueStart'] = '2025-03-04';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const afterHostSet = label();
 
     // …and the stepper still steps.
     (sr.querySelector('.cal-next') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       before,
@@ -759,7 +755,7 @@ test('picking a range start does not move the grid; a host-set value still does'
  */
 test('the Month and Year views disable what holds no day to pick, and a press on one does nothing', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const settle = (): Promise<void> => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settle = (): Promise<void> => window.__settled();
     const read = async (attrs: Record<string, string>, view: 'month' | 'year'): Promise<{ on: string[]; off: number }> => {
       const el = document.createElement('sherpa-calendar') as CalEl;
       el.setAttribute('value', '2024-03-05');

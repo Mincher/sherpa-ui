@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-list-item on the reforged base — heading / description text from data-*,
@@ -6,13 +6,7 @@ import { test, expect } from './fixture';
  * state, and the item-click event gated on data-interactive.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-list-item'));
 });
 
@@ -57,7 +51,7 @@ test('slotted leading and trailing content set has-* states on the host', async 
     el.innerHTML = '<span slot="leading">L</span><button slot="trailing">Go</button>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const s = el.shadowRoot!;
     return {
       hasLeading: el.matches(':state(has-leading)'),
@@ -194,7 +188,7 @@ test('data-draggable reveals the drag handle and fires item-drag', async ({ page
     let dragged = false;
     el.addEventListener('item-drag', () => (dragged = true));
     drag.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { visible, dragged };
   });
   expect(r.visible).toBe(true);
@@ -215,7 +209,7 @@ test('data-expandable toggle flips data-expanded and fires item-expand', async (
     el.addEventListener('item-expand', (e) => (detail = (e as CustomEvent).detail));
     el.addEventListener('item-select', () => (rowClicked = true));
     expand.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { expandedAfter: el.hasAttribute('data-expanded'), detail, rowClicked };
   });
   expect(r.expandedAfter).toBe(true);
@@ -238,7 +232,7 @@ test('data-selectable control toggles selection and fires item-select', async ({
     let detail: unknown = null;
     el.addEventListener('selection-change', (e) => (detail = (e as CustomEvent).detail));
     checkbox.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { visible, selectedAfter: el.hasAttribute('data-selected'), detail };
   });
   expect(r.visible).toBe(true);

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-layout-canvas — Will, TODO 25: an infinite canvas content area that
@@ -7,8 +7,6 @@ import { test, expect } from './fixture';
  * that moves the view. The canvas OWNS its view and REPORTS each move.
  * TRAP T-a-canvas-owns-its-view
  */
-const HARNESS = '/test/reforged/harness.html';
-
 type Canvas = HTMLElement & {
   rendered: Promise<void>;
   view: { x: number; y: number; zoom: number };
@@ -18,8 +16,6 @@ type Canvas = HTMLElement & {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-layout-canvas') as Canvas;
     el.style.cssText = 'inline-size: 800px; block-size: 500px';
@@ -27,7 +23,7 @@ test.beforeEach(async ({ page }) => {
       + '<div id="b" style="--x: 1400px; --y: 900px; inline-size: 200px; block-size: 100px">B</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
   });
 });
 

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-overlay-panel on the reforged base — a NON-modal floating panel on
@@ -8,21 +8,12 @@ import { test, expect } from './fixture';
  * composed `close`.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 type PanelEl = HTMLElement & {
   rendered?: Promise<void>;
   open?: boolean;
   show?: () => void;
   close?: () => void;
 };
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('show() opens non-modally and reflects open; close() closes it', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -64,7 +55,7 @@ test('closing the panel fires a composed close event', async ({ page }) => {
     el.show!();
     el.close!();
     // The native <dialog> close event is dispatched on a task — let it flush.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return count;
   });
   expect(fired).toBe(1);
@@ -92,7 +83,7 @@ test('data-heading forwards to the header and renders', async ({ page }) => {
     el.setAttribute('open', '');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const header = el.shadowRoot!.querySelector('.header') as HTMLElement | null;
     const before = {
@@ -103,7 +94,7 @@ test('data-heading forwards to the header and renders', async ({ page }) => {
     // CLEARED, not just set: a null value must REMOVE the attribute, or the
     // header keeps showing a title the panel no longer has.
     el.removeAttribute('data-heading');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const after = { attr: header?.dataset['heading'] ?? null };
 
     return { before, after };
@@ -128,7 +119,7 @@ test('the panel opens 640 wide, drags from its left edge within its bounds, and 
     el.setAttribute('open', '');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const heard: number[] = [];
     (window as unknown as { __heard: number[] }).__heard = heard;
     el.addEventListener('panel-resize', (e) => heard.push((e as CustomEvent).detail.width));
@@ -177,7 +168,7 @@ test('an open panel draws nothing over the page beside it', async ({ page }) => 
   const parts = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-overlay-panel') as PanelEl;
     el.show!();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return [...el.shadowRoot!.children].map((n) => n.tagName.toLowerCase());
   });
   const after = await page.screenshot({ clip });
@@ -200,7 +191,7 @@ test('the header buttons are 24px; the pair is one object; a divider needs both 
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       el.show!();
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await window.__settled();
       const sr = el.shadowRoot!;
       const header = sr.querySelector('.header')!.shadowRoot!;
       const size = (n: Element | null) => {
@@ -252,7 +243,7 @@ test('maximise fills the window and shows the trail; minimise brings the panel b
     await el.rendered;
     el.show!();
     // Its composed buttons render after it: wait, then press.
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sr = el.shadowRoot!;
     const read = () => ({
       width: Math.round(sr.querySelector('.root')!.getBoundingClientRect().width),

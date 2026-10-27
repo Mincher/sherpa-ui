@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-pagination on the reforged base — the Figma two-zone control (48:65826):
@@ -6,8 +6,6 @@ import { test, expect } from './fixture';
  * Proves the page input + total render, prev/next/first/last move and disable at the
  * boundaries, page-change / page-size-change fire, and the rows-per-page select works.
  */
-
-const HARNESS = '/test/reforged/harness.html';
 
 type PagerEl = HTMLElement & {
   rendered?: Promise<void>;
@@ -18,10 +16,6 @@ type PagerEl = HTMLElement & {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-pagination'));
 });
 
@@ -33,7 +27,7 @@ test('renders the page input + "of N" total and the rows-per-page select', async
     el.setAttribute('data-rows-options', '10,25,50');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     // A Sherpa number field: its value is the host's, its `max` reaches the inner control.
     const input = el.shadowRoot!.querySelector<HTMLInputElement>('.page-input')!;
     const total = el.shadowRoot!.querySelector('.total')!.textContent ?? '';
@@ -52,7 +46,7 @@ test('with no size named it shows 100 rows a page, from 10, 25, 50 and 100', asy
     const el = document.createElement('sherpa-pagination') as PagerEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const opts = Array.from(el.shadowRoot!.querySelectorAll('.rows option')).map((o) => o.textContent);
     return { size: el.pageSize, opts };
   });
@@ -192,7 +186,7 @@ test('the row-count select and page field are shaped like a Sherpa input', async
     document.getElementById('root')!.replaceChildren(pager, input);
     await pager.rendered;
     await input.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const shape = (el: Element | null | undefined): Record<string, string> | null => {
       if (!el) return null;
@@ -241,7 +235,7 @@ test('the page box is a Sherpa number field: its stepper moves the page, and onl
     el.setAttribute('data-page', '2');
     el.setAttribute('data-total-pages', '3');
     document.getElementById('root')!.appendChild(el);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const box = el.shadowRoot!.querySelector<HTMLElement>('.page-input')!;
     const leaked: string[] = [];
     for (const type of ['change', 'input']) document.addEventListener(type, (e) => { if (e instanceof CustomEvent) leaked.push(type); });

@@ -35,7 +35,7 @@ async function bar(page: import('@playwright/test').Page): Promise<void> {
         options: [{ value: 'all', label: 'All' }],
       },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
   });
 }
 
@@ -331,7 +331,7 @@ test('a chip that did not opt in has NO Advanced mode at all', async ({ page }) 
       id: 'region', label: 'Region', select: 'multiple',
       options: [{ value: 'emea', label: 'EMEA' }, { value: 'apac', label: 'APAC' }],
     }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
   });
 
   const r = await page.evaluate(async () => {
@@ -476,7 +476,7 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
       advanced: true,
       options: [{ value: 'ravi', label: 'Ravi' }, { value: 'dana', label: 'Dana' }],
     }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="owner"]')!;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
@@ -531,7 +531,7 @@ test('the grid marks what a filter matched, from EITHER direction', async ({ pag
       rows: [{ owner: 'Ravi Menon' }, { owner: 'Dana Whitlock' }],
     });
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     await settle();
     const marks = (): string[] =>
       [...el.shadowRoot!.querySelectorAll('mark.match')].map((m) => m.textContent ?? '');
@@ -580,7 +580,7 @@ test('a chain of conditions marks every string it matched, every time', async ({
     const needles = filterNeedles(['or',
       ['owner', 'contains', 'a'], ['owner', 'startswith', 'Ra'], ['owner', 'endswith', 'ck']]);
     el.setAttribute('data-needles', needles);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const cells = [...el.shadowRoot!.querySelectorAll('td')]
       .filter((td) => ['Ravi Menon', 'Dana Whitlock'].includes(td.textContent ?? ''));
     return {
@@ -660,7 +660,7 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
     await el.rendered;
 
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const menu = (): HTMLElement =>
       el.shadowRoot!.querySelector('.head-cell[data-field="owner"] .head-filter sherpa-menu')!;
     /* `---` and `[dim]` would show a divider or a dimmed row if either came
@@ -837,7 +837,7 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       // ONLY — a wall. No list at all, opening on Contains.
       { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const look = (id: string) => {
       const chip = el.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
@@ -859,7 +859,7 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
     const email = el.shadowRoot!.querySelector('.chip[data-id="email"] sherpa-menu') as
       HTMLElement & { mode: string };
     email.mode = 'simple';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       status: look('status'), owner: look('owner'), email: look('email'),

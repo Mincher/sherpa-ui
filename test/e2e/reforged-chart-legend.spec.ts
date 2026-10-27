@@ -17,7 +17,7 @@ test('renders a row per item with label + value and categorical swatches', async
       { label: 'Revenue', value: '48k', colorIndex: 1 },
       { label: 'Cost', value: '12k', colorIndex: 5 },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const rows = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item'));
     const sw = (row: Element): Element => row.querySelector('.entry')!.shadowRoot!.querySelector('.swatch')!;
     return {
@@ -68,7 +68,7 @@ test('clicking an entry fires legend-item-click and toggles its chip\'s aria-pre
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'A' }, { label: 'B' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const detail: Array<{ index: number; active: boolean }> = [];
     el.addEventListener('legend-item-click', (e) =>
@@ -95,7 +95,7 @@ test('clicking an entry fires legend-item-click and toggles its chip\'s aria-pre
       swatchBg: getComputedStyle(chipB.shadowRoot!.querySelector('.swatch')!).backgroundColor,
     };
     entryB.click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return { before, off, backOn: entryB.getAttribute('aria-pressed'), detail };
   });
 
@@ -139,12 +139,12 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
 
     // EXACTLY six: nothing is rolled up, because "Other" would name one category.
     el.populate(Array.from({ length: 6 }, (_, i) => ({ label: `C${i}`, value: i + 1 })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const exact = read();
 
     // NINE: five named + Other = 6 + 7 + 8 + 9 = 30.
     el.populate(Array.from({ length: 9 }, (_, i) => ({ label: `C${i}`, value: i + 1 })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const capped = read();
 
     let detail: { index: number; indices: number[] } | null = null;
@@ -156,7 +156,7 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
     // No numeric values at all → an "Other" row with NO value, rather than a
     // meaningless 0.
     el.populate(Array.from({ length: 9 }, (_, i) => ({ label: `C${i}` })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const noValues = read();
 
     return { exact, capped, detail, noValues };
@@ -196,7 +196,7 @@ test('entries share grid tracks, so labels and values align', async ({ page }) =
       { label: 'A much longer category name', value: '22' },
       { label: 'Mid length', value: '333' },
     ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const legend = getComputedStyle(sr.querySelector('.legend')!);
@@ -258,7 +258,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     await el.rendered;
     // Nine categories → five named + Other covering indices 5..8.
     el.populate(Array.from({ length: 9 }, (_, i) => ({ label: `C${i}`, value: i + 1 })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const rollup = sr.querySelector<HTMLElement>('.rollup')!;
@@ -297,7 +297,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     // committing footer.
     const boxes = Array.from(menu.querySelectorAll<HTMLInputElement>('input'));
     menu.toggle?.(button);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const openedBy = button.shadowRoot?.querySelector('.trigger')?.getAttribute('aria-expanded');
     for (const b of [boxes[0]!, boxes[2]!]) {
       b.checked = false;
@@ -310,7 +310,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
       detail = (e as CustomEvent).detail;
     });
     (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return { structure, openedBy, stillOpen, detail };
   });
@@ -351,7 +351,7 @@ test('label and value carry two inks, and BOTH grey when the entry is off', asyn
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ label: 'Disk', value: 42 }, { label: 'CPU', value: 31 }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const item = el.shadowRoot!.querySelector('.item') as HTMLElement;
     const body = item.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!;
@@ -399,7 +399,7 @@ test('the off-set is kept BY LABEL, and survives a re-populate', async ({ page }
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
 
     el.populate!([
       { label: 'active', value: 24, colorIndex: 1 },
@@ -458,7 +458,7 @@ test('a ROLL-UP row records the real labels it folded, not "Other"', async ({ pa
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
 
     // Seven rows: the legend caps at six and folds the tail into "Other".
     el.populate!(['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((label, i) => ({
@@ -494,7 +494,7 @@ test('a SUSPENDED row stays, at the value it last held', async ({ page }) => {
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     const body = (x: Element) => x.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!;
     const read = () => Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item')).map(
       (x) => `${x.querySelector('.label')!.textContent}=${x.querySelector('.value')!.textContent}` +
@@ -557,7 +557,7 @@ test('an emptied category keeps its row, dimmed and still clickable', async ({ p
     await el.rendered;
 
     const settle = (): Promise<void> =>
-      (window as unknown as { __settled: () => Promise<void> }).__settled();
+      window.__settled();
     const read = (): Array<Record<string, unknown>> =>
       [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')].map((i) => ({
         label: i.querySelector('.label')?.textContent ?? '',
@@ -615,7 +615,7 @@ test('the LAST active row cannot be switched off', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'A' }, { label: 'B' }, { label: 'C' }]);
-    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settled = window.__settled;
     await settled();
 
     const clicks: string[] = [];
@@ -741,7 +741,7 @@ test('a HORIZONTAL legend is a 3x2 grid, roll-up in the last cell', async ({ pag
     // EIGHT, so the roll-up fires — six cells cannot hold eight entries.
     el.populate!(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       .map((label, i) => ({ label, value: (8 - i) * 10 })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const legend = el.shadowRoot!.querySelector('.legend')!;
     const cells = [...el.shadowRoot!.querySelectorAll('.item, .rollup')]
@@ -794,7 +794,7 @@ test('the breakdown button sits ON the Other row, after its value', async ({ pag
     await el.rendered;
     el.populate!(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       .map((label, i) => ({ label, value: (8 - i) * 10 })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     const sr = el.shadowRoot!;
     const at = (sel: string): { x: number; y: number } => {
@@ -839,7 +839,7 @@ test('unticking a folded category puts it in the OFF set, and reports', async ({
     await el.rendered;
     el.populate!(['a', 'b', 'c', 'd', 'e', 'f', 'g']
       .map((label, i) => ({ label, value: i + 1 })));
-    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const settle = window.__settled;
     await settle();
 
     const clicks: Array<{ label: string; indices?: number[] }> = [];
@@ -889,7 +889,7 @@ test('a second click on the breakdown control CLOSES it', async ({ page }) => {
     await el.rendered;
     // Nine categories → five named + Other, which is what carries the menu.
     el.populate(Array.from({ length: 9 }, (_, i) => ({ label: `C${i}`, value: i + 1 })));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
   });
 
   const box = await page.evaluate(() => {

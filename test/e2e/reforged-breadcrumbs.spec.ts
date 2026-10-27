@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-breadcrumbs on the reforged base — populate() rendering from a crumb
@@ -7,13 +7,7 @@ import { test, expect } from './fixture';
  * event on click.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
   await page.evaluate(() => customElements.whenDefined('sherpa-breadcrumbs'));
 });
 
@@ -84,7 +78,7 @@ test('each crumb after the first shows a drawn chevron separator', async ({ page
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ label: 'A', href: '/a' }, { label: 'B', href: '/b' }, { label: 'C' }]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     return Array.from(el.shadowRoot!.querySelectorAll('.crumb')).map((c) => {
       const sep = c.querySelector('.separator') as HTMLElement;
       return { shown: getComputedStyle(sep).display !== 'none', drawn: !!sep.querySelector('svg') };

@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * sherpa-toast on the reforged base — a transient notification. Exercises the
@@ -6,11 +6,7 @@ import { test, expect } from './fixture';
  * auto-dismiss timer, and the static factory helpers.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
 test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(() => customElements.whenDefined('sherpa-toast'));
 });
 
@@ -203,7 +199,7 @@ test('the factory passes the detail line and the action through', async ({ page 
       duration: 0,
     });
     await toast.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
     const sr = toast.shadowRoot!;
     return {
       heading: sr.querySelector('.heading')?.textContent,

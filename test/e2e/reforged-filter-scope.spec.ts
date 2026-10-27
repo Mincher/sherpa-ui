@@ -1,4 +1,4 @@
-import { test, expect } from './fixture';
+import { test, expect } from './harness';
 
 /**
  * A FILTER APPLIES DOWN ITS SCOPE ONLY, NEVER UP.
@@ -14,15 +14,6 @@ import { test, expect } from './fixture';
  *
  * TRAP T-a-filter-applies-down-its-scope
  */
-
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 /** One source over four rows, plus a fake legend bound at the given scope. */
 const SETUP = `

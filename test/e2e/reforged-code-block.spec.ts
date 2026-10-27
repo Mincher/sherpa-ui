@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto(HARNESS);
   await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
+    () => window.__reforgedReady === true,
   );
   await page.evaluate(async () => {
     await import('/dist/components/sherpa-code-block/sherpa-code-block.js');
@@ -80,7 +80,7 @@ test('the copy button fires code-copy with the code and flips its copied state',
     });
 
     (el.shadowRoot!.querySelector('.copy') as HTMLButtonElement).click();
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await window.__settled();
 
     return {
       code: (detail as { code?: string } | null)?.code,
