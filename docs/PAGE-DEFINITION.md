@@ -95,8 +95,14 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **A FETCHING list opens on its first value** — a list the View holds, or any
   on a remote source — so a page never asks for every row as it opens; a View,
   a restore or Reset that leaves it empty puts it back. `"start": "all"` opens
-  it on no filter instead. Nothing ticked while it is on is NO rows, not all
-  (`T-a-fetching-list-opens-on-its-first-value`, `T-none-is-an-answer`).
+  it on ALL instead: every value ticked, on, and no filter. Nothing ticked is NO
+  rows, unless the app's "Select none shows all data" is on
+  (`T-a-fetching-list-opens-on-its-first-value`, `T-all-is-an-answer`, `T-none-is-an-answer`).
+- **A scope's `presets`** are the app's own named conditions, each a boolean
+  chip leading its scope: `"presets": [{ "id": "high-risk", "label": "High
+  risk", "where": { "health": { "lt": 60 }, "openTickets": { "gt": 0 } } }]`.
+  On, its conditions narrow beside the fields', which it never changes; the
+  panel heads them "Presets"; none moves scope (`T-a-preset-is-its-own-part`).
 - **A number field's `thresholds`** are its bands, declared once:
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved

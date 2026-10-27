@@ -325,6 +325,23 @@ sherpa-accordion.scope::part(actions) {
 :host([data-orientation="portrait"]:state(has-organise)) .chips {
   margin-block-start: var(--sherpa-display-mode-space-base, 16px);
 }
+/* PRESETS: one section, each chip a value in it. Will, TODO 493 — side by side
+   under its heading, every other chip keeping its own row… */
+:host([data-orientation="portrait"]:not([data-label-column])) .chips {
+  flex-flow: row wrap;
+  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
+  align-items: flex-end;
+}
+:host([data-orientation="portrait"]:not([data-label-column])) .chips > :not(.chip[data-preset]) { flex: 1 0 100%; }
+:host([data-orientation="portrait"]:not([data-label-column])) .chips > .chip[data-preset] { flex: 0 0 auto; }
+/* …or, headings in a column, one under another in its value column. */
+:host([data-orientation="portrait"][data-label-column]) .chips > .chip[data-preset]:not([data-section-start]) {
+  margin-inline-start: calc(var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px));
+}
+:host([data-orientation="portrait"]) .chips > .chip[data-preset] + .chip[data-preset] {
+  margin-block-start: calc(var(--sherpa-display-mode-space-2xs, 4px) - var(--sherpa-display-mode-space-base, 16px));
+}
+:host([data-orientation="portrait"]:not([data-label-column])) .chips > .chip[data-preset] + .chip[data-preset] { margin-block-start: 0; }
 /* A SECTION's name over the first chip of its run — a named section's, or a
    lone chip's own field's — and "Organise" over Group and Sort: a list field's
    heading, as the chip draws it. Will, TODO 438 · TRAP T-a-section-is-headed-once */

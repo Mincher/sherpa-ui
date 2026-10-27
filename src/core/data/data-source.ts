@@ -26,7 +26,8 @@
  * - .highlightAcross — The highlight reaches every component — or, off, those in its driver's scope alone.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
- * - .declarePresets — A scope's own fields, as its page definition holds them: presets, never dragged.
+ * - .declareOwn — A scope's own fields, as its page definition holds them: never dragged.
+ * - .declarePresets — A scope's presets: the app's own named conditions, each a boolean chip.
  * - .declareUnused — declareUnused(scope, filters) — what a scope's bar draws after its own, that this page has no field for: the…
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
@@ -469,6 +470,10 @@ export class DataSource extends EventTarget {
        ONE order — each set together (D2 A). TRAP T-a-broken-assumption-reports
        TRAP T-one-walk-counts-and-limits-in-order */
     const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], scope).flatMap((e) => (e.held ? [e.id] : []));
+    // The app's presets lead the scope: a boolean chip each. TODO 493
+    const presets: HeldFilter[] = [...this.#presetsOf.get(scope) ?? []].map(([id, p]) => ({
+      id: `preset:${id}`, label: p.label, preset: true, active: !!q.presets?.[id],
+    }));
     const fields: HeldFilter[] = held.map((f) => {
       // Held above, its state is its own kept answer. D2 A
       const kept = q.superseded?.[f];
@@ -477,7 +482,7 @@ export class DataSource extends EventTarget {
       const from = cameFrom(this.#draft, f);
       return {
         ...this.filterDef(f), removable: true,
-        ...(this.#presets.get(scope)?.has(f) ? { preset: true } : {}),
+        ...(this.#own.get(scope)?.has(f) ? { own: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.#context.scopeLabel(VIEW) } : {}),
         ...(down ? { sendTo: {
@@ -491,7 +496,7 @@ export class DataSource extends EventTarget {
     const sets = this.#context.sets(scope);
     const out: ScopeDescription = {
       scope, label: this.#context.scopeLabel(scope), ...(shows ? { shows } : {}), ...(component ? { component } : {}),
-      filters: [...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true }))],
+      filters: [...presets, ...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true }))],
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };
@@ -538,13 +543,23 @@ export class DataSource extends EventTarget {
     this.#recomposeFor([field]);
   }
 
-  /** A scope's own fields, as its page definition holds them: presets, which
-   *  keep their place — a reader drags only what was added. Will, TODO 452 */
-  declarePresets(scope: string, fields: readonly string[]): void {
-    this.#presets.set(scope, new Set(fields));
+  /** A scope's own fields, as its page definition holds them: they keep their
+   *  place — a reader drags only what was added. Will, TODO 452 */
+  declareOwn(scope: string, fields: readonly string[]): void {
+    this.#own.set(scope, new Set(fields));
   }
-  /** Each scope's presets. */
-  #presets = new Map<string, ReadonlySet<string>>();
+  /** Each scope's own fields. */
+  #own = new Map<string, ReadonlySet<string>>();
+
+  /** A scope's PRESETS: the app's own named conditions, each a boolean chip — on,
+   *  its readings filter beside the fields'. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
+  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
+    this.#presetsOf.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading> }])));
+    this.#recompose();
+    this.#binding.drawBars(scope);
+  }
+  /** Each scope's presets, by id. */
+  #presetsOf = new Map<string, Map<string, { label: string; readings: Record<string, FieldReading> }>>();
 
   /** declareUnused(scope, filters) — what a scope's bar draws after its own, that
    *  this page has no field for: the App Context's. Never in the Query. True when
@@ -1006,6 +1021,7 @@ export class DataSource extends EventTarget {
       mine: this.#mine,
       has: this.#has,
       fetched: this.#fetched,
+      preset: (scope, id) => this.#presetsOf.get(scope)?.get(id)?.readings,
       ...(this.#context.previewed ? { highlight: this.#context.previewed } : {}),
     };
   }
@@ -1127,6 +1143,11 @@ export class DataSource extends EventTarget {
         return;
       case 'recompose':
         this.#recompose();
+        return;
+      case 'preset':
+        this.#recompose();
+        this.#binding.drawBars(change.scope);
+        this.#binding.drawScopesSoon();
         return;
       case 'order':
         // No row moves, but each count is counted in this order. TODO 452
@@ -1691,6 +1712,7 @@ export class DataSource extends EventTarget {
       mine: this.#mine,
       has: this.#has,
       ...(this.#countEvery ? { countAll: true } : {}),
+      preset: (scope, id) => this.#presetsOf.get(scope)?.get(id)?.readings,
     });
   }
 

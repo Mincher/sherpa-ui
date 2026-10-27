@@ -101,7 +101,11 @@ export interface HeldFilter extends FieldFilter {
   state?: FieldReading;
   removable?: boolean;
   /** The page's own: its definition holds it here. TODO 452 */
+  own?: boolean;
+  /** An app's PRESET: a boolean chip with its own conditions. Will, TODO 493 */
   preset?: boolean;
+  /** A preset's on. */
+  active?: boolean;
   /** The App Context holds it; this page has no such field. TODO 453 */
   unused?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here,

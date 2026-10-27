@@ -534,8 +534,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const chip of this.#chips()) {
       const def = this.#defOf(chip);
       const own = chip.hasAttribute('data-layout') || chip.hasAttribute('data-persistent') ? '' : def?.label ?? '';
-      const name = def?.section ?? own;
-      const key = def?.section ? `section:${def.section}` : `chip:${chip.dataset['id']}`;
+      // The presets are ONE section, each chip a value in it. Will, TODO 493
+      const section = def?.preset ? this.word('presets') : def?.section;
+      const name = section ?? own;
+      const key = section ? `section:${section}` : `chip:${chip.dataset['id']}`;
       if (portrait && name && key !== run) chip.setAttribute('data-section-start', name);
       else chip.removeAttribute('data-section-start');
       run = key;
@@ -639,10 +641,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     dragToOrder(this, {
       axis: this.dataset['orientation'] === 'portrait' ? 'y' : 'x',
       enabled: () => this.hasAttribute('data-reorder'),
-      // A preset — the page's own field — keeps its place. Will, TODO 452
+      // The page's own field keeps its place, and a preset leads. Will, TODOs 452, 493
       items: () => this.#chips().filter((c) => !c.hasAttribute('data-persistent')
         && !c.hasAttribute('data-folded-away') && !c.hasAttribute('data-superseded')
-        && !this.#defOf(c)?.preset),
+        && !this.#defOf(c)?.own && !this.#defOf(c)?.preset),
       moved: (order) => this.#askOrder(order),
       signal: this.signal,
     });
@@ -1306,6 +1308,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (old && this.#built.get(old) === key) {
         list.appendChild(old);
         this.#nameContext(old);
+        // A preset's on is its source's: drawn each time. TODO 493
+        if (f.preset) old.toggleAttribute('data-current', !!f.active);
         moved.add(f.id);
         continue;
       }
@@ -1330,8 +1334,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-persistent', '');
         chip.setAttribute('data-current', '');
       }
-      // The page's own, apart from what the reader added. Will, TODO 482
+      // An app's preset leads, apart from the rest; its on is its source's. Will, TODOs 482, 493
       chip.toggleAttribute('data-preset', !!f.preset);
+      if (f.preset) chip.toggleAttribute('data-current', !!f.active);
       this.#lock(chip);
       /* THE KIND DECIDES. A boolean has nothing to open; everything else does
          — a date or number carries its own body, and so does an Advanced one,
@@ -1395,6 +1400,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     )).then(() => new Promise<void>((done) => {
       requestAnimationFrame(() => requestAnimationFrame(() => done()));
     })).then(() => { if (this.isConnected) this.#reflow(); });
+    // A chip that GROWS — a pick names itself — folds the bar as a narrower bar does. TODO 493
+    if (this.dataset['orientation'] !== 'portrait') for (const chip of this.#chips()) this.#observer?.observe(chip);
   }
 
   /** What a chip is BUILT from: its def, less the answer it is told and where it
@@ -1698,6 +1705,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     // A selector is locked, and no filter: its body asks for nothing.
     if (chip.hasAttribute('data-persistent')) return;
+    // A PRESET asks for itself, on or off. TODO 493 · TRAP T-a-preset-is-its-own-part
+    if (this.#defOf(chip)?.preset) {
+      const on = chip.hasAttribute('data-locked') ? !chip.current : chip.current;
+      return this.#emitChange({ preset: (chip.dataset['id'] ?? '').slice('preset:'.length), on });
+    }
     /* On or off keeps the answer; a toggle answers no field. A locked chip did
        not flip, so it asks for the other state. TRAP T-grid-suspend-is-not-clear */
     // A date that took its default day asks for that day, not a flip. Will, TODO 394
@@ -2087,7 +2099,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const answered = new Set<string>();
     /* THE ANSWERS AS THEY ARE NOW, read after the waits: a change made while
        this draw waited is in them. TRAP T-a-stale-draw-keeps-the-bars-own-change */
-    for (const { id: field, state } of (live?.() ?? scope).filters) {
+    for (const { id: field, state, preset, active } of (live?.() ?? scope).filters) {
+      // A preset's whole answer is its on. TODO 493 · TRAP T-a-preset-is-its-own-part
+      if (preset) {
+        answered.add(field);
+        this.#chips().find((c) => c.dataset['id'] === field)?.toggleAttribute('data-current', !!active);
+        continue;
+      }
       if (!state) continue;
       const id = this.#idOf(field);
       answered.add(id);

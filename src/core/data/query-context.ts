@@ -46,6 +46,7 @@
  * - .release — A scope lets ONE field go.
  * - .take — A scope TAKES fields: down from the View, or up from a chart with its answer.
  * - .setReading — ONE field's answer — at its home, or a component's own; the answer in force is a no-op.
+ * - .setPreset — A scope's preset on or off: the app's own named conditions, beside the fields'.
  * - .reset — Clear all, Reset all: every answer homed in these scopes goes.
  * - .batch — The doors one act calls are ONE change to the page.
  * - .commit — SEND the draft — Apply, where a scope waits.
@@ -94,6 +95,8 @@ export type QueryChange =
   | { kind: 'mark' }
   /** Only a scope's ORDER moved: count again in it. TODO 452 */
   | { kind: 'order'; scope: string }
+  /** A scope's preset went on or off. TODO 493 */
+  | { kind: 'preset'; scope: string }
   | { kind: 'commit' }
   /** Each field is drawn its answer; then a scope's bars, or each control's pending. */
   | { kind: 'drawn'; fields: string[]; bars?: string; pending?: true }
@@ -785,6 +788,20 @@ export class QueryContext extends EventTarget {
     if (fresh) this.#tell({ kind: 'bars', scope });
   }
 
+  /** A scope's PRESET on or off — the app's own named conditions, in force beside
+   *  the fields', in the draft as a field's answer is. Will, TODO 493
+   *  TRAP T-a-preset-is-its-own-part */
+  setPreset(scope: string, id: string, on: boolean): void {
+    if (!!this.#live.draft.scopes[scope]?.presets?.[id] === on) return;
+    const entry = scopeEntry(this.#live.draft, scope);
+    const { [id]: _was, ...rest } = entry.presets ?? {};
+    if (on) entry.presets = { ...rest, [id]: true };
+    else if (Object.keys(rest).length) entry.presets = rest;
+    else delete entry.presets;
+    prune(this.#live.draft);
+    this.#tell({ kind: 'preset', scope });
+  }
+
   /** Clear all, Reset all: every answer homed in these scopes goes — a
    *  carry-over field's stays, with `carry` — and what a Switch turned off is
    *  forgotten; `organise` clears their sort and group too. The one door that
@@ -795,6 +812,11 @@ export class QueryContext extends EventTarget {
         const s = this.#live.draft.scopes[id];
         if (!s) continue;
         if (s.suspended) s.suspended = { fields: [] };
+        // Presets go off: none is on unless a reader puts it on. TODO 493
+        if (s.presets) {
+          delete s.presets;
+          this.#tell({ kind: 'preset', scope: id });
+        }
         for (const field of Object.keys(s.readings)) {
           if (options.carry && this.#knows(field)?.carriesOver(field)) continue;
           const start = this.#starts.get(id)?.get(field);

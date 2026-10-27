@@ -32,6 +32,10 @@ export interface ScopeDefinition {
   /** Its answers at the start, in the plain form a View writes:
    *  `{ "created": { "last": 12, "unit": "month" } }`. Reset puts them back. Will, TODO 464 */
   where?: Readonly<Record<string, Condition>>;
+  /** Its PRESETS: the app's own named conditions, each a boolean chip leading
+   *  the scope — `{ "id": "high-risk", "label": "High risk", "where": { … } }`,
+   *  `where` in the plain form. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
+  presets?: readonly { id: string; label: string; where: Readonly<Record<string, Condition>> }[];
 }
 
 /** A page's source: which store, how it pages and searches, its fields and
@@ -98,9 +102,12 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
     if (facts.offers) source.query.offer(scope, facts.offers === 'all' ? fields.filter((f) => !children.has(f)) : facts.offers);
     if (facts.holds) {
       source.query.hold(scope, facts.holds);
-      source.declarePresets(scope, facts.holds);
+      source.declareOwn(scope, facts.holds);
     }
     if (facts.where) source.query.declareStart(scope, source.readingsOf(facts.where));
+    if (facts.presets?.length) {
+      source.declarePresets(scope, facts.presets.map((p) => ({ id: p.id, label: p.label, readings: source.readingsOf(p.where) })));
+    }
     for (const set of facts.sets ?? []) {
       for (const field of set.fields) {
         if (facts.holds?.includes(field)) continue;

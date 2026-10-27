@@ -19296,3 +19296,34 @@ The face says "All" for the flag only: a list ticked by hand says its values.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
 - Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-a-preset-is-its-own-part
+
+**A preset is the app's own named conditions, its own part of its scope** —
+Will, TODO 493 (A). A scope's definition lists `presets` (`{ id, label, where }`);
+each is a boolean chip that leads its scope. The Query keeps which are on,
+`presets: { id: true }` per scope, so a draft, a View and the kept Query carry
+them; compile adds an on preset's clauses beside the fields' (`presetClauses`),
+over any fields wherever they are held. It never writes a field chip: that was
+the other way (B), and TODO 366's saved filters still LOAD into the chips.
+
+The walk counts each on preset first in its scope, so the chips after it count
+within it, and it wears its own count. The Switch stops presets and keeps them
+on; Reset turns them off. The plain `where` form of a scope says no preset.
+
+The bar: its press asks `{ preset, on }`; its on is the source's, drawn on every
+draw — `drawScope` would otherwise empty a chip that answers no field. It offers
+no ⋮, so it never moves scope, and it is not dragged. A divider follows the last
+preset on the bar (482); the panel heads them "Presets" (a word in the
+toolbar's markup), stacked in the value column, or side by side under the
+heading. The held fields that 452 called "presets" are `own` now.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/a-preset-is-its-own-part.test.mjs`
+- Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
+- Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/data/page-definition.ts`

@@ -70,6 +70,9 @@ export interface FilterDef extends OffersAdvanced {
   removable?: boolean;
   /** The page's own: its definition holds it here, so it keeps its place — a
    *  reader drags only what was added. Will, TODO 452 */
+  own?: boolean;
+  /** An app's PRESET: a boolean chip with its own conditions, first in its
+   *  scope, never moved or dragged. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
   preset?: boolean;
   /** The App Context holds it, and this page has no such field: drawn
    *  inactive, refused, and saying why. Will, TODO 453 */

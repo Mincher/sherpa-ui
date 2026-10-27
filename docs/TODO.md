@@ -31,45 +31,49 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3 | 388 | PROVIDER ALWAYS — a data grid is never wired by hand: `bindSource()` on a grid with no `<sherpa-provider>` logs a console warning; where it can, Sherpa finds a hand-wired grid and routes its data through a provider before it draws. So the Query and the page number are kept by the provider (Will, 2026-10-27, answering the ask: "We should always use the provider. Never hand wire a data grid.") Done: `bindSource()` reports `grid-without-provider` for a grid bound with no `deliver` (every provider bind passes one); PRINCIPLES, CLAUDE.md and DATA-SOURCE-RULES lead with the provider. NOT re-routed: the binder is DOM-free and a grid never imports the app layer, so it cannot make its own provider; the report names the fix. TRAP `T-a-grid-is-never-wired-by-hand` | data |
 | ✅ | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27. Done: Figma's Metric is FIXED at every density, so the tile's height is the row (76 / 88 / 104) and the space between value and trend takes what is left | bug |
 | ✅ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27). Part 1 DONE: the setting, off by default, in the bar, the panel and a grid heading. Part 2, Will B (2026-10-27): every value ticked and the chip ON — Customer and Region open with nothing ticked — `"start": "all"` means no filter. Ticking every value at start meets Will's 09-22 rule (every value ticked must look like no filter, chip off): A, every value ticked and the chip OFF; B, every value ticked and the chip ON, reading All  Part 2 DONE: ALL is a flag, as none is — `{ all: true }`; Customer and Region open on it, ON, reading All. TRAP `T-all-is-an-answer` | filters |
-| 🚧 | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27). Will A (2026-10-27): a preset chip is its OWN part — on, its conditions narrow beside the field chips  (a) done: the panel draws no divider | filters |
-| ✅ | 7 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27). Done: a state pin on the shut accordion, keyed on `:state(chips-on)` — Firefox misses `:has()` here. TRAP `T-a-shut-scope-wears-its-chips-fill` | filters |
-| ✅ | 8 | 495 | HIGHLIGHT — with 'Highlight matches on hover' on, a pointer resting on a chart LEGEND item highlights its matches too, as a chip does (Will, 2026-10-27). Done: the legend says `legend-hover`; the provider previews the value | filters |
-| ⬜ | 9 | 496 | HIGHLIGHT — on hover, a scope needs NO filter or value on to highlight, when its data is already held on the client (Will, 2026-10-27). Will A (2026-10-27): an OFF chip that holds values previews them, data held on the client only. Probed on :4200 with nothing applied: a rest on a VALUE highlights its rows — bar and panel, View and data. Only a rest on an OFF chip does nothing. Is that it? A: an OFF chip that holds values previews them, data held on the client only; B: something else — show me where | filters |
-| ⬜ | 10 | 497 | A11Y SETTING — 'Show On/Off shapes on toggle components' (on in Demos): every control that toggles shows its on/off state as well as its fill — the words On/Off where it fits, as the Switch does; else a tick icon inside, likely at the start. For now: the simple Switch, filter chips, chips, tags. Menu items and checkboxes have one already (Will, 2026-10-27) | a11y |
-| ⬜ | 11 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27) | a11y |
-| ⬜ | 12 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
-| ⬜ | 13 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
-| ⬜ | 14 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
-| 🚧 | 15 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
-| 🚧 | 16 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
-| ⬜ | 17 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
-| ⬜ | 18 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
-| ⏸️ | 19 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
-| ⬜ | 20 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
-| ⬜ | 21 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
-| 🚧 | 22 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| 🚧 | 23 | 288 | Phase 6 — one copy of each data helper | refactor |
-| 🚧 | 24 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 25 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
-| 🚧 | 26 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ⬜ | 27 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
-| ⬜ | 28 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
+| ✅ | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27). Will A (2026-10-27): a preset chip is its OWN part — on, its conditions narrow beside the field chips  Done: a scope's `presets` (`{ id, label, where }`), each a boolean chip leading it, its own part of the Query; the panel heads them Presets; no ⋮, no drag; Records has three. Also: a chip that grows folds the bar. TRAP `T-a-preset-is-its-own-part` | filters |
+| ⬜ | 7 | 499 | BUG — the data grid's TOP scroll shadow, under its sticky header, does not show while its columns scroll (Will, 2026-10-27; see 478, 481, 486) | bug |
+| ⬜ | 8 | 500 | SETTING — 'Group button in column headings', ON by default: a heading's Group button groups the grid by its field; each group row gets an Ungroup button, at its right (Will, 2026-10-27) | grid |
+| ⬜ | 9 | 501 | SETTING — 'Heading buttons on hover', ON by default: a column heading shows its Group, Filter and Sort buttons only while the pointer is over it (Will, 2026-10-27) | grid |
+| ⬜ | 10 | 502 | GRID — a click anywhere on a column heading no longer cycles its sort; only its Sort button does (Will, 2026-10-27) | grid |
+| ✅ | 11 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27). Done: a state pin on the shut accordion, keyed on `:state(chips-on)` — Firefox misses `:has()` here. TRAP `T-a-shut-scope-wears-its-chips-fill` | filters |
+| ✅ | 12 | 495 | HIGHLIGHT — with 'Highlight matches on hover' on, a pointer resting on a chart LEGEND item highlights its matches too, as a chip does (Will, 2026-10-27). Done: the legend says `legend-hover`; the provider previews the value | filters |
+| ⬜ | 13 | 496 | HIGHLIGHT — on hover, a scope needs NO filter or value on to highlight, when its data is already held on the client (Will, 2026-10-27). Will A (2026-10-27): an OFF chip that holds values previews them, data held on the client only. Probed on :4200 with nothing applied: a rest on a VALUE highlights its rows — bar and panel, View and data. Only a rest on an OFF chip does nothing. Is that it? A: an OFF chip that holds values previews them, data held on the client only; B: something else — show me where | filters |
+| ⬜ | 14 | 497 | A11Y SETTING — 'Show On/Off shapes on toggle components' (on in Demos): every control that toggles shows its on/off state as well as its fill — the words On/Off where it fits, as the Switch does; else a tick icon inside, likely at the start. For now: the simple Switch, filter chips, chips, tags. Menu items and checkboxes have one already (Will, 2026-10-27) | a11y |
+| ⬜ | 15 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27) | a11y |
+| ⬜ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
+| ⬜ | 17 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
+| ⬜ | 18 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
+| 🚧 | 19 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| 🚧 | 20 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ⬜ | 21 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
+| ⬜ | 22 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
+| ⏸️ | 23 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⬜ | 24 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
+| ⬜ | 25 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| 🚧 | 26 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| 🚧 | 27 | 288 | Phase 6 — one copy of each data helper | refactor |
+| 🚧 | 28 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ⬜ | 29 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| 🚧 | 30 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ⬜ | 31 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ⬜ | 32 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
-| ✅ | 29 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
-| ✅ | 30 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
-| ✅ | 31 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
-| ✅ | 32 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
+| ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| ✅ | 34 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
+| ✅ | 35 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
+| ✅ | 36 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | | | | **Later — held or deferred by Will, or big and last** | |
-| ⏸️ | 33 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — Will: better than it was; not a priority now | explore |
-| ⬜ | 34 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
-| 🚧 | 35 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
-| ⬜ | 36 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
-| ⬜ | 37 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
-| ⬜ | 38 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
-| ⬜ | 39 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
-| ⬜ | 40 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
-| ⬜ | 41 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
-| ⬜ | 42 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
+| ⏸️ | 37 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — Will: better than it was; not a priority now | explore |
+| ⬜ | 38 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
+| 🚧 | 39 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| ⬜ | 40 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
+| ⬜ | 41 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
+| ⬜ | 42 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
+| ⬜ | 43 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
+| ⬜ | 44 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
+| ⬜ | 45 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
+| ⬜ | 46 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |
@@ -2345,7 +2349,7 @@ and panel menus only. This is because I'm not 100% sure how we handle a
 combination of advanced and simple filters in a single menu just yet. This
 should also be a Filtering setting and on by default."*
 
-### `[ ]` ❓ 493 — PRESETS: boolean chips that set a whole context
+### `[x]` ✅ 493 — PRESETS: boolean chips that set a whole context
 
 Will, 2026-10-27: *"Ditch the divider between preset & custom filters in the
 panel mode. Update the definitions so that we're not using simple, single,
@@ -2388,6 +2392,13 @@ it out). The rest is new.
 | 4 | The bar: a preset is a BOOLEAN chip, `data-preset`, first in its scope; its press toggles it; its tip lists its conditions; no Send to, no drag | toolbar, `sherpa-quick-filter` |
 | 5 | The panel: a "Presets" section, its value chips the presets | toolbar portrait |
 | 6 | Demos: Records' data scope gets presets (High risk: health under 60 and open tickets; Unassigned; Has open tickets); its held simple fields are the page's chips, after the divider | Demos |
+
+**Done (2026-10-27).** Steps 1–6 as planned; Records' presets are High risk
+(health under 60, open tickets), Enterprise trials (Enterprise and trial) and
+Needs attention (over 2 open tickets, not churned). The held fields 452 called
+"presets" are `own` now. Found on the way: a bar re-folded only when it resized,
+never when a chip grew — a pick naming itself ran the chips under the actions; it
+watches each chip now. Tests: `a-preset-is-its-own-part`, Demos `reforged-presets`.
 
 ### `[ ]` ❓ 489 — SETTING: "Select none shows all data", off by default
 

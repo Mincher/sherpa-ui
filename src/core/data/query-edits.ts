@@ -49,8 +49,9 @@ export function prune(query: Query): void {
     // A scope switched off is kept: its Switch is still OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off
     // …and one that arranges the rows keeps its sort. 366 step 8
     // …and one that keeps an answer the View holds over it. D2 A
+    // …and one with a preset on. TODO 493
     if (!scope.holds.length && !Object.keys(scope.readings).length && !scope.suspended
-      && !arranging(scope) && !scope.superseded) {
+      && !arranging(scope) && !scope.superseded && !Object.values(scope.presets ?? {}).some(Boolean)) {
       Reflect.deleteProperty(query.scopes, id);
     }
   }
@@ -287,14 +288,14 @@ export interface DefinitionFacts {
 }
 
 /** The keys a scope keeps, beside its readings. */
-const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search', 'superseded']);
+const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search', 'superseded', 'presets']);
 
 /**
  * A definition as a whole Query; its sort, group and search stay in it, in
  * ONE scope. A VIEW
  * (`keep`) keeps the chips a scope it does not name holds, and a field it
  * answers is held, so its chip shows it. `copy: false` for a caller that only reads it.
- * A key a scope does not have — a stored `presets` — is left out, said once (D4).
+ * A key a scope does not have is left out, said once (D4).
  */
 export function definitionOf(
   given: Query | QueryDefaults, keep: boolean, base: Query, facts: DefinitionFacts, copy = true,
