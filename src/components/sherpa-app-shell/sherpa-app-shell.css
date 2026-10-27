@@ -183,7 +183,18 @@
   inline-size: 100%;
 }
 
-/* Its frame takes the scroller's place between the panel areas. TODO 478 */
+/* The Context's column between the panel areas: its FIXED region, then its
+   scroll area under it. Will, TODO 484 */
+.context-column {
+  min-inline-size: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+}
+.context-header { flex: none; }
+
+/* Its frame takes the scroller's place under the fixed region. TODO 478 */
 .context-edges {
   min-inline-size: 0;
   flex: 1 1 auto;

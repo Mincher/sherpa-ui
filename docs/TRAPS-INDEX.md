@@ -245,7 +245,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (82)
+## The join and the app layer (83)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -257,6 +257,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — provider
 - [T-a-component-part-narrows-one-component](TRAPS.md#t-a-component-part-narrows-one-component) — provider
 - [T-a-container-shows-its-datas-state](TRAPS.md#t-a-container-shows-its-datas-state) — provider
+- [T-a-context-has-a-fixed-region](TRAPS.md#t-a-context-has-a-fixed-region) — outlet
 - [T-a-context-holds-the-only-query](TRAPS.md#t-a-context-holds-the-only-query) — provider
 - [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — bind-source
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — provider
@@ -888,7 +889,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (108)
+## Other components (109)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -898,6 +899,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-composed-chrome-row-takes-its-inline-padding-from-its-container](TRAPS.md#t-a-composed-chrome-row-takes-its-inline-padding-from-its-container) — container-footer
 - [T-a-composed-native-event-goes-out-twice](TRAPS.md#t-a-composed-native-event-goes-out-twice) — input-text
 - [T-a-container-shows-its-datas-state](TRAPS.md#t-a-container-shows-its-datas-state) — container
+- [T-a-context-has-a-fixed-region](TRAPS.md#t-a-context-has-a-fixed-region) — app-shell
 - [T-a-disabled-button-acts-on-nothing](TRAPS.md#t-a-disabled-button-acts-on-nothing) — button
 - [T-a-document-class-cannot-reach-a-shadow-root](TRAPS.md#t-a-document-class-cannot-reach-a-shadow-root) — group, layout-grid
 - [T-a-document-rule-outranks-an-adopted-host-rule](TRAPS.md#t-a-document-rule-outranks-an-adopted-host-rule) — layout-grid
@@ -999,7 +1001,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (70)
+## Build, tools and the MCP (71)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -1008,6 +1010,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-constructed-event-is-not-a-dispatched-one](TRAPS.md#t-a-constructed-event-is-not-a-dispatched-one) — generate-component-spec
 - [T-a-container-width-is-named-not-counted](TRAPS.md#t-a-container-width-is-named-not-counted) — project-tokens
 - [T-a-content-grid-has-two-row-modes](TRAPS.md#t-a-content-grid-has-two-row-modes) — project-tokens
+- [T-a-context-has-a-fixed-region](TRAPS.md#t-a-context-has-a-fixed-region) — project-tokens
 - [T-a-context-steps-by-its-own-width](TRAPS.md#t-a-context-steps-by-its-own-width) — project-tokens
 - [T-a-css-function-needs-its-longhand-first](TRAPS.md#t-a-css-function-needs-its-longhand-first) — playwright.config
 - [T-a-density-mode-is-one-step](TRAPS.md#t-a-density-mode-is-one-step) — check-extensions, project-tokens

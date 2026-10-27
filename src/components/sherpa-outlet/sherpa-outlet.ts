@@ -74,6 +74,8 @@ export class SherpaOutlet extends SherpaElement {
   #leaving: AbortController | null = null;
   /** What the Context's init handed back. */
   #teardown: (() => void) | null = null;
+  /** What the Context put in the shell's fixed region. TODO 484 */
+  #lifted: Element[] = [];
   /** The nav it keeps, when its shell has one. */
   #nav: OutletNav | null = null;
   /** The Settings page open over it, its token, its signal and its teardown. */
@@ -170,6 +172,7 @@ export class SherpaOutlet extends SherpaElement {
 
   override onDisconnect(): void {
     this.#leave();
+    this.#drop();
     this.#closeSettings();
   }
 
@@ -384,7 +387,9 @@ export class SherpaOutlet extends SherpaElement {
     this.#shell?.toggleAttribute('data-no-header', context.chrome?.header === false);
     // Its filter mode BEFORE it paints. TRAP T-the-filter-mode-is-set-before-the-page-paints
     this.#provider?.prepare(definition);
+    this.#drop();
     this.innerHTML = String(markup ?? '');
+    this.#lift();
     const waits: Promise<unknown>[] = [];
     this.emit('context-markup', { context: name, root: this, waitUntil: (work: Promise<unknown>) => void waits.push(work) });
     await Promise.all(waits);
@@ -440,6 +445,19 @@ export class SherpaOutlet extends SherpaElement {
     this.#leaving?.abort();
     this.#leaving = null;
     this.#provider?.close(options);
+  }
+
+  /** A Context's `slot="context-header"` element goes up into the shell's fixed
+   *  region. TRAP T-a-context-has-a-fixed-region */
+  #lift(): void {
+    this.#lifted = [...this.querySelectorAll(':scope > [slot="context-header"]')];
+    this.#shell?.append(...this.#lifted);
+  }
+
+  /** The lifted region leaves the shell. */
+  #drop(): void {
+    for (const lifted of this.#lifted) lifted.remove();
+    this.#lifted = [];
   }
 
   /** The header says the Context's own row: its name and its icon. */

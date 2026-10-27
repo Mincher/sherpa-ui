@@ -1,13 +1,13 @@
 {
   "app.js": {
-    "js": 457508,
+    "js": 457698,
     "files": 61,
     "fetched": 0
   },
   "components.js": {
-    "js": 931690,
+    "js": 931945,
     "files": 111,
-    "fetched": 208171
+    "fetched": 208813
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
     "js": 245180,
@@ -20,7 +20,7 @@
     "fetched": 0
   },
   "components/sherpa-app-shell/sherpa-app-shell.js": {
-    "js": 249243,
+    "js": 249498,
     "files": 12,
     "fetched": 0
   },
@@ -205,7 +205,7 @@
     "fetched": 0
   },
   "components/sherpa-outlet/sherpa-outlet.js": {
-    "js": 296826,
+    "js": 297016,
     "files": 27,
     "fetched": 0
   },
@@ -345,8 +345,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1119146,
+    "js": 1119591,
     "files": 154,
-    "fetched": 208171
+    "fetched": 208813
   }
 }

@@ -52,7 +52,7 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| (default) | content | the Context's markup, put there by the outlet |
+| (default) | content | the Context's markup, put there by the outlet its own `slot="context-header"` element goes up into the app shell's fixed region, and leaves with the Context |
 
 ## Parts
 

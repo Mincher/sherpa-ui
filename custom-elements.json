@@ -640,6 +640,10 @@
               "description": "a panel BESIDE the Context, on the leading side — a filter panel. (accepts: panel)"
             },
             {
+              "name": "context-header",
+              "description": "a Context's FIXED region, above its scroll area — a metrics row kept in view. (accepts: header)"
+            },
+            {
               "name": "",
               "description": "the Context content (accepts: content)"
             },
@@ -658,6 +662,9 @@
             },
             {
               "name": "content"
+            },
+            {
+              "name": "context-header"
             },
             {
               "name": "frame"
@@ -6774,7 +6781,7 @@
           "slots": [
             {
               "name": "",
-              "description": "the Context's markup, put there by the outlet (accepts: content)"
+              "description": "the Context's markup, put there by the outlet its own `slot=\"context-header\"` element goes up into the app shell's fixed region, and leaves with the Context (accepts: content)"
             }
           ],
           "cssParts": [

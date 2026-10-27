@@ -48,6 +48,36 @@ test('the outlet loads the route\'s Context, hands it one ctx, and tears it down
   expect(r['context']).toBe('beta');
 });
 
+/* A CONTEXT'S FIXED REGION: its `slot="context-header"` element goes up into
+   the shell, over the scroll area, and leaves with it. TRAP T-a-context-has-a-fixed-region */
+test('a Context\'s context-header element is lifted into the shell, above its scroll area, and leaves with it', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(`(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet');
+    const shell = document.querySelector('sherpa-app-shell');
+    const router = document.querySelector('sherpa-router');
+    const base = new URL('/test/reforged/outlet/app.json', location.href);
+    const app = await (await fetch(base)).json();
+    await outlet.start({ app, base, session: new SessionStore({ pinned: true }), stores: () => ({}) });
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    const top = document.querySelector('#alpha-top');
+    const frame = shell.shadowRoot.querySelector('.context-frame');
+    const alpha = {
+      inShell: top?.parentElement === shell, slot: top?.assignedSlot?.name ?? null,
+      above: Math.round(top.getBoundingClientRect().bottom) <= Math.round(frame.getBoundingClientRect().top),
+      gap: [getComputedStyle(document.querySelector('#alpha-top-grid')).paddingBottom,
+        getComputedStyle(document.querySelector('#alpha-grid')).paddingTop],
+    };
+    await router.go({ context: 'beta' });
+    return { alpha, gone: !document.querySelector('#alpha-top') };
+  })()`) as { alpha: Record<string, unknown>; gone: boolean };
+  // One gap between them: the region's grid keeps its bottom edge, the Context's drops its top.
+  expect(r.alpha).toEqual({ inShell: true, slot: 'context-header', above: true, gap: ['16px', '0px'] });
+  expect(r.gone).toBe(true);
+});
+
 /* SETTINGS OPEN OVER THE CONTEXT, which is never reloaded: ?settings=<page>
    opens it in the overlay, and the back arrow asks the router to close it. */
 test('a Settings page opens over the Context and its back arrow closes it', async ({ page }) => {

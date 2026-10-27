@@ -94,31 +94,50 @@
                     },
                     {
                       "el": "div",
-                      "class": "context-edges sherpa-scroll-frame",
+                      "class": "context-column",
                       "children": [
                         {
-                          "el": "span",
-                          "class": "sherpa-scroll-edge-start",
-                          "attrs": {
-                            "aria-hidden": "true"
-                          }
-                        },
-                        {
-                          "el": "span",
-                          "class": "sherpa-scroll-edge-end",
-                          "attrs": {
-                            "aria-hidden": "true"
-                          }
+                          "el": "div",
+                          "class": "context-header",
+                          "part": "context-header",
+                          "children": [
+                            {
+                              "slot": "context-header",
+                              "attrs": {
+                                "data-accepts": "header"
+                              }
+                            }
+                          ]
                         },
                         {
                           "el": "div",
-                          "class": "context-frame sherpa-scroll-shadow",
+                          "class": "context-edges sherpa-scroll-frame",
                           "children": [
                             {
-                              "slot": "",
+                              "el": "span",
+                              "class": "sherpa-scroll-edge-start",
                               "attrs": {
-                                "data-accepts": "content"
+                                "aria-hidden": "true"
                               }
+                            },
+                            {
+                              "el": "span",
+                              "class": "sherpa-scroll-edge-end",
+                              "attrs": {
+                                "aria-hidden": "true"
+                              }
+                            },
+                            {
+                              "el": "div",
+                              "class": "context-frame sherpa-scroll-shadow",
+                              "children": [
+                                {
+                                  "slot": "",
+                                  "attrs": {
+                                    "data-accepts": "content"
+                                  }
+                                }
+                              ]
                             }
                           ]
                         }
@@ -286,6 +305,14 @@
         "panel"
       ],
       "description": "a panel BESIDE the Context, on the leading side — a filter panel."
+    },
+    {
+      "$type": "slot",
+      "name": "context-header",
+      "accepts": [
+        "header"
+      ],
+      "description": "a Context's FIXED region, above its scroll area — a metrics row kept in view."
     },
     {
       "$type": "slot",

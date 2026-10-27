@@ -98,6 +98,9 @@ Plus the app's stores, and its Views as JSON.
   `T-a-component-asks-its-provider`
 - **The outlet draws the route's Context**, keeps the nav, and opens Settings
   over the Context. `T-an-outlet-loads-the-context` · `T-the-outlet-keeps-the-nav`
+- **A row kept in view** — a metrics row — goes in a `<div slot="context-header">`
+  in the Context's markup. The outlet lifts it over the scroll area.
+  `T-a-context-has-a-fixed-region`
 - The View chip is the header bar with `data-type="view"`: it picks the
   Context's Views, and the URL follows.
 

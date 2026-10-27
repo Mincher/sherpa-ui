@@ -15831,6 +15831,35 @@ It waits for animations on the document's own timeline only.
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
 
+### T-a-context-has-a-fixed-region
+
+**A Context can keep a row in view above its scroll area** (Will, TODO 484, B):
+the shell's `context-header` slot sits over `.context-frame`, outside the
+scroller, so what scrolls passes UNDER it and the frame's own scroll shadow
+shades it. It replaced a sticky metrics row inside the grid, which needed its
+own drop shadow.
+
+**The outlet lifts it.** A slot only takes the shell's own children, and a
+Context's markup is the outlet's. So after the markup goes in, each
+`:scope > [slot="context-header"]` element moves up into the shell, and goes
+when the next Context's markup replaces it, or the outlet leaves. A Context
+module's `root` (the outlet) no longer holds it; the provider still answers it,
+since it asks up the tree.
+
+**Wrap its grid.** The region's element is a `sherpa-context` container like
+the Context, so its grid steps by the same width — and a container never
+queries itself, so a `sherpa-layout-grid` with the slot on it reads the
+viewport. Put the slot on a plain `<div>` round it.
+
+**One gap, not two.** The region's grid keeps its bottom padding, and the
+Context's FIRST grid drops its top one while a region is there
+(`sherpa-app-shell:has(> [slot="context-header"])`, in `tokens.css`).
+
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-outlet.spec.ts`
+
 ### T-a-scroll-shadow-is-drawn-over-the-content
 
 **A scroll shadow is two sticky edges drawn OVER the content** (Will, TODO 401,

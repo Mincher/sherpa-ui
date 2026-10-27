@@ -73,6 +73,7 @@ Each one bubbles.
 | `nav` | nav | replace the default &lt;[sherpa-nav](sherpa-nav.md)> |
 | `header` | header, toolbar | replace the default &lt;[sherpa-app-header](sherpa-app-header.md)> |
 | `panel-start` | panel | a panel BESIDE the Context, on the leading side — a filter panel. |
+| `context-header` | header | a Context's FIXED region, above its scroll area — a metrics row kept in view. |
 | (default) | content | the Context content |
 | `panel-end` | panel | a panel on the trailing side — details, or Ask. |
 | `overlay` | dialog | covers the header and content, beside the rail — a &lt;[sherpa-dialog](sherpa-dialog.md) data-type="overlay"> |
@@ -81,7 +82,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `content`, `frame`, `header`, `nav`, `overlay`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
+`body`, `content`, `context-header`, `frame`, `header`, `nav`, `overlay`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
 
 ## CSS custom properties it reads
 

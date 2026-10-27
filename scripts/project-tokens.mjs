@@ -1491,7 +1491,9 @@ const COL_SPANS = {
    TRAP T-a-context-steps-by-its-own-width */
 const CONTEXT = 'sherpa-context';
 const NAV_INSET = 40;
-const IN_CONTEXT = 'sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *';
+// The Context, and its fixed region above the scroll area. TRAP T-a-context-has-a-fixed-region
+const CONTEXT_ROOT = 'sherpa-app-shell > :is(:not([slot]), [slot="context-header"])';
+const IN_CONTEXT = `${CONTEXT_ROOT}, ${CONTEXT_ROOT} *`;
 // The element by NAME too, so its host wears no class from TS. TODO 344
 const GRID_SEL = ':is(.sherpa-grid, sherpa-layout-grid)';
 const GRID = { media: `${GRID_SEL}:where(:not(${IN_CONTEXT}))`, container: GRID_SEL };
@@ -1739,7 +1741,10 @@ ${rootBlock(layers.layout.root)}
   /* The shell's Context is the container its grid steps by. Declared HERE, on
      the light-DOM element: WebKit cannot match a container in the shell's
      shadow tree from a page rule. TRAP T-a-context-steps-by-its-own-width */
-  sherpa-app-shell > :not([slot]) { container: ${CONTEXT} / inline-size; }
+  ${CONTEXT_ROOT} { container: ${CONTEXT} / inline-size; }
+  /* Under a fixed region its grid's bottom edge is the gap, so the Context's
+     first grid starts at the top of the scroll area. TODO 484 */
+  sherpa-app-shell:has(> [slot="context-header"]) > :not([slot]) > ${GRID_SEL}:first-child { padding-block-start: 0; }
 ${layoutBreakpointBlocks.length ? '\n' + layoutBreakpointBlocks.join('\n\n') + '\n' : ''}
 ${gridUtilityBlock}
 ${colBlocks.length ? '\n' + colBlocks.join('\n\n') + '\n' : ''}

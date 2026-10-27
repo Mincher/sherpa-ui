@@ -733,7 +733,10 @@
   /* The shell's Context is the container its grid steps by. Declared HERE, on
      the light-DOM element: WebKit cannot match a container in the shell's
      shadow tree from a page rule. TRAP T-a-context-steps-by-its-own-width */
-  sherpa-app-shell > :not([slot]) { container: sherpa-context / inline-size; }
+  sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) { container: sherpa-context / inline-size; }
+  /* Under a fixed region its grid's bottom edge is the gap, so the Context's
+     first grid starts at the top of the scroll area. TODO 484 */
+  sherpa-app-shell:has(> [slot="context-header"]) > :not([slot]) > :is(.sherpa-grid, sherpa-layout-grid):first-child { padding-block-start: 0; }
 
   /* The narrowest band, for a Context: its own width, never the viewport's. */
   @container sherpa-context (min-width: 0px) {
@@ -898,7 +901,7 @@
      DESKTOP AND UP ONLY. At tablet and mobile a view is read by scrolling, so
      below 1280 the grid behaves as the default does. TRAP T-fit-is-a-desktop-mode */
   @media (min-width: 1280px) {
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'] {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *))[data-rows='fit'] {
       /* Read by the grid's JS, which never asks the viewport. */
       --_grid-fit: 1;
       block-size: 100%;
@@ -908,20 +911,20 @@
       overflow-y: auto;
       grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
     }
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'][data-row-count] {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *))[data-rows='fit'][data-row-count] {
       grid-template-rows:
         repeat(calc(var(--_row-count) - 1), var(--sherpa-layout-grid-row-height, 88px))
         1fr;
     }
     /* repeat(0, …) is invalid, and would drop the whole template. */
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'][data-row-count='1'] {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *))[data-rows='fit'][data-row-count='1'] {
       grid-template-rows: 1fr;
     }
     /* The filler, named by data-grow; with none, the LAST child fills.
        Its FLOOR is two grid rows: below that there is no room for a header and
        a line of content, so scrolling is the honest answer. */
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit'] > [data-grow],
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *))[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *))[data-rows='fit'] > [data-grow],
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *))[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
       min-block-size: calc(
         2 * var(--sherpa-layout-grid-row-height, 88px)
         + var(--sherpa-layout-grid-gap-vertical, 16px)
@@ -963,7 +966,7 @@
   }
 
   @media (min-width: 0px) and (max-width: 767.98px) {
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
       & > [data-col-span='full'] { grid-column: span 4; }
       & > [data-col-span='reading'] { grid-column: span 4; }
       & > [data-col-span='large'] { grid-column: span 4; }
@@ -975,7 +978,7 @@
   }
 
   @media (min-width: 768px) and (max-width: 1279.98px) {
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
       & > [data-col-span='full'] { grid-column: span 8; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 8; }
@@ -991,7 +994,7 @@
   }
 
   @media (min-width: 1280px) and (max-width: 1919.98px) {
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 6; }
@@ -1008,7 +1011,7 @@
   }
 
   @media (min-width: 1920px) {
-    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
+    :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
       & > [data-col-span='large'] { grid-column: span 6; }

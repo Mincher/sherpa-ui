@@ -20,6 +20,10 @@
     nav       replace the default <sherpa-nav>
     header    replace the default <sherpa-app-header>
     (default) the Context content
+    context-header  a Context's FIXED region, above its scroll area — a metrics
+              row kept in view. The outlet lifts a Context's own `slot="context-header"`
+              element here, and takes it away with the Context; what scrolls passes
+              under it, under the shell's scroll shadow. Empty it takes no room.
     Set `--sherpa-panel-area-width` to change how wide a panel area is
     (default 360px), and `--sherpa-panel-area-min-width` its narrowest. The AREA owns them.
 
@@ -54,8 +58,12 @@
             <div class="edge edge-start" part="panel-start-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
           </aside>
-          <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
-          <div class="context-edges sherpa-scroll-frame"><span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span><div class="context-frame sherpa-scroll-shadow"><slot data-accepts="content"></slot></div></div>
+          <!-- The Context's column: a fixed region, then its scroll area. TRAP T-a-context-has-a-fixed-region -->
+          <div class="context-column">
+            <div class="context-header" part="context-header"><slot name="context-header" data-accepts="header"></slot></div>
+            <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
+            <div class="context-edges sherpa-scroll-frame"><span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span><div class="context-frame sherpa-scroll-shadow"><slot data-accepts="content"></slot></div></div>
+          </div>
           <aside class="panel-end" part="panel-end">
             <div class="edge edge-end" part="panel-end-edge" role="separator"
                  aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
