@@ -601,7 +601,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (96)
+## The data grid (98)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -636,6 +636,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — data-grid
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — data-grid
 - [T-a-view-held-heading-shows-and-refuses](TRAPS.md#t-a-view-held-heading-shows-and-refuses) — data-grid
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — data-grid
 - [T-advanced-checkbox-widens-the-select-column](TRAPS.md#t-advanced-checkbox-widens-the-select-column) — data-grid
 - [T-an-external-chip-caret-must-open-its-condition](TRAPS.md#t-an-external-chip-caret-must-open-its-condition) — data-grid
 - [T-bind-locks-what-it-owns](TRAPS.md#t-bind-locks-what-it-owns) — data-grid, pagination
@@ -678,6 +679,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-grid-thead-sticks-as-one-block](TRAPS.md#t-grid-thead-sticks-as-one-block) — data-grid
 - [T-grid-toolbar-chip-borrows-the-menu](TRAPS.md#t-grid-toolbar-chip-borrows-the-menu) — data-grid
 - [T-grid-untyped-column-gets-no-filter-button](TRAPS.md#t-grid-untyped-column-gets-no-filter-button) — data-grid
+- [T-heading-buttons-show-on-hover](TRAPS.md#t-heading-buttons-show-on-hover) — data-grid
 - [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — data-grid
 - [T-nan-is-the-not-given-sentinel](TRAPS.md#t-nan-is-the-not-given-sentinel) — pagination
 - [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — data-grid

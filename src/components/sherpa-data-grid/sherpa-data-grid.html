@@ -29,6 +29,11 @@
     data-column-filters                      a filter button in each column heading, and a
                                              filter chip in the cell under the pointer: it
                                              adds or takes off that cell's value
+    data-heading-group                       a Group button in each list column's heading:
+                                             it groups by that column; a group row offers
+                                             Ungroup. Set by its provider. TODO 500
+    data-heading-hover                       a heading shows its buttons only while hovered
+                                             or focused; one that is on stays. TODO 501
     data-none-shows-all                      a heading's list with nothing ticked is every
                                              row. Without it, a list its reader leaves
                                              empty asks for no rows. Set by its provider. TODO 489
@@ -91,6 +96,8 @@
     column-filter-change — detail: { field, header, op, value, from, to, clause, label }
     filter-change    — detail: { field, value, filters, visible }
     group-toggle     — detail: { value, collapsed }
+    group-change     — detail: { field }   a heading's Group, or a group row's Ungroup
+                       (`field: null`): a REQUEST to group by it. TODO 500
     row-action       — detail: { id, records }   an action was chosen, from the row
                        menu or a host's bulk bar. A REPORT: the grid never acts on
                        the record itself
@@ -160,6 +167,11 @@
     <slot name="no-matches" data-accepts="content">No rows match the current filters.</slot>
   </div>
 
+  <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="group-by">Group by</span>
+  </template>
+
   <template class="head-cell-tpl">
     <th class="head-cell" scope="col">
       <!-- The flex row must be an inner wrapper: `display: flex` on a <th> takes
@@ -180,6 +192,9 @@
         <!-- Sort: no `data-menu` — a sort has nothing to pick, its click cycles
              asc → desc → off; the only control that does. `data-locked` for the reason above. -->
         <sherpa-quick-filter class="head-sort" data-icon-only data-plain
+                             data-no-value data-locked></sherpa-quick-filter>
+        <!-- Group by this column, where the app offers it. Will, TODO 500 -->
+        <sherpa-quick-filter class="head-group" data-icon-only data-plain
                              data-no-value data-locked></sherpa-quick-filter>
       </span>
       <!-- A <th> cannot take `resize` (scroll containers only), so JS does the
@@ -251,13 +266,17 @@
       <!-- The <td> stays a real cell so its colspan keeps reserving every
            column; flexing it would drop it out of table layout. -->
       <td class="group-cell">
-        <span class="group-inner">
-          <sherpa-select-checkbox class="group-select" aria-label="Select group"></sherpa-select-checkbox>
-          <button class="group-toggle" type="button">
-            <i class="sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
-          </button>
-          <span class="group-label"></span>
-          <span class="group-count"></span>
+        <span class="group-line">
+          <span class="group-inner">
+            <sherpa-select-checkbox class="group-select" aria-label="Select group"></sherpa-select-checkbox>
+            <button class="group-toggle" type="button">
+              <i class="sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
+            </button>
+            <span class="group-label"></span>
+            <span class="group-count"></span>
+          </span>
+          <!-- At the row's end: the rows stop grouping. Will, TODO 500 -->
+          <sherpa-button class="group-ungroup" data-size="sm" data-look="transparent">Ungroup</sherpa-button>
         </span>
       </td>
     </tr>

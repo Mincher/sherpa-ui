@@ -363,8 +363,11 @@
    template, shown only for data-column-filters and a type that has a menu. */
 .head-filter { display: none; }
 
+.head-group { display: none; }
+
 :host([data-column-filters]) .head-filter:not([data-unsupported]),
-.head-sort:not([data-unsupported]) {
+.head-sort:not([data-unsupported]),
+:host([data-heading-group]) .head-group:not([data-unsupported]) {
   display: inline-flex;
   flex: 0 0 auto;
   /* The chip scales off this token, so overriding it shrinks the whole control
@@ -393,14 +396,23 @@
      header row instead of stepping in and out with each label's length. */
   .head-name { flex: 1 1 auto; min-inline-size: 0; }
   .head-filter,
-  .head-sort { flex: 0 0 auto; }
+  .head-sort,
+  .head-group { flex: 0 0 auto; }
+}
+
+/* ON HOVER: a heading's buttons show while the pointer or focus is on it; one
+   that is on stays — it says its column is filtered, sorted — and so does one
+   whose menu is open. Will, TODO 501 · TRAP T-heading-buttons-show-on-hover */
+:host([data-heading-hover]) .head-cell:not(:hover, :focus-within) :is(.head-filter, .head-sort, .head-group):not([data-current], [data-open]) {
+  visibility: hidden;
 }
 
 /* `--_status-*` INHERIT into the menu (a light-DOM child of the chip), so a lit
    column painted its own menu purple. @scope does not help — it limits what a
    rule MATCHES, not how far a value inherits. */
 .head-filter,
-.head-sort {
+.head-sort,
+.head-group {
   --_status-surface: initial;
   --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
@@ -666,6 +678,17 @@
 
 /* A group row spans every column, so the ROW cannot be pinned — the inner box
    is, and `max-content` keeps it narrow enough to travel along the <td>. */
+/* The group's name at the start, Ungroup at the end, each held in view. TODO 500 */
+.group-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.group-ungroup {
+  position: sticky;
+  inset-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  flex: 0 0 auto;
+}
 .group-inner {
   position: sticky;
   inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);

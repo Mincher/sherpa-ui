@@ -1344,7 +1344,7 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
   // A NUMBER column offers one too, and leads with the Range switch.
   expect(r.numberShown).not.toBe('none');
   expect(r.numberRange).toBe(true);
-  expect(r.order).toEqual(['head-name', 'head-filter', 'head-sort']);
+  expect(r.order).toEqual(['head-name', 'head-filter', 'head-sort', 'head-group']);
   expect(r.cellDisplay).toBe('table-cell');
   expect(r.sideBySide.rowDisplay).toBe('flex');
   expect(r.sideBySide.sameLine).toBe(true);
@@ -3276,4 +3276,55 @@ test('drawHighlight tints the rows its test matches, through a redraw, and null 
     return { first, redrawn, cleared: lit(), differs: plain !== tinted };
   }, CONFIG);
   expect(r).toEqual({ first: ['Alice', 'Bob'], redrawn: ['Alice', 'Bob'], cleared: [], differs: true });
+});
+
+// Will, TODO 500: a list column's heading groups by it; a group row's Ungroup stops it.
+test('with data-heading-group, a list heading groups by its column, a number\'s does not offer it, and Ungroup stops it', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.setAttribute('data-heading-group', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!({ ...config, rows: config.rows.map((r, i) => ({ ...r, team: i % 2 ? 'Red' : 'Blue' })),
+      columns: [...config.columns, { field: 'team', header: 'Team' }] });
+    await window.__settled();
+    const heard: unknown[] = [];
+    el.addEventListener('group-change', (e) => heard.push((e as CustomEvent).detail));
+    const sr = el.shadowRoot!;
+    const shown = (field: string) => getComputedStyle(sr.querySelector(`.head-cell[data-field="${field}"] .head-group`)!).display !== 'none';
+    const offered = { team: shown('team'), score: shown('score'),
+      label: sr.querySelector(`.head-cell[data-field="team"] .head-group`)!.getAttribute('aria-label') };
+    sr.querySelector<HTMLElement>('.head-cell[data-field="team"] .head-group')!.click();
+    await window.__settled();
+    const grouped = { field: el.dataset['groupField'] ?? null, rows: sr.querySelectorAll('.group-row').length };
+    sr.querySelector<HTMLElement>('.group-row .group-ungroup')!.click();
+    await window.__settled();
+    return { offered, grouped, ungrouped: el.dataset['groupField'] ?? null, heard };
+  }, CONFIG);
+  expect(r.offered).toEqual({ team: true, score: false, label: 'Group by Team' });
+  expect(r.grouped).toEqual({ field: 'team', rows: 2 });
+  expect(r.ungrouped).toBeNull();
+  expect(r.heard).toEqual([{ field: 'team' }, { field: null }]);
+});
+
+// Will, TODO 501: a heading's buttons show only while it is hovered — or focused, or on. TRAP T-heading-buttons-show-on-hover
+test('with data-heading-hover, a heading\'s buttons show only on hover; a sorted column\'s Sort stays', async ({ page }) => {
+  await page.evaluate(async (config) => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.setAttribute('data-heading-hover', '');
+    el.setAttribute('data-sort-field', 'score');
+    el.setAttribute('data-sort-direction', 'asc');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(config);
+    await window.__settled();
+  }, CONFIG);
+  const sort = (field: string) => page.locator(`sherpa-data-grid .head-cell[data-field="${field}"] .head-sort`)
+    .evaluate((c) => getComputedStyle(c).visibility);
+  // Well away from the grid, which sits at the page's top left.
+  await page.mouse.move(1200, 700);
+  expect(await sort('name')).toBe('hidden');
+  expect(await sort('score')).toBe('visible');
+  await page.locator('sherpa-data-grid .head-cell[data-field="name"]').hover();
+  expect(await sort('name')).toBe('visible');
 });

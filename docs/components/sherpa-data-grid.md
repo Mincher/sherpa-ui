@@ -92,6 +92,8 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-filter-fields` | text |  | space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write it too. |
 | `data-filterable` | boolean |  | show a secondary header row of filter inputs |
 | `data-group-field` | text |  | group rows by this column |
+| `data-heading-group` | boolean |  | a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500 |
+| `data-heading-hover` | boolean |  | a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501 |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305 |
 | `data-limit-options` | `on` `off` |  | on \| off — the host's "Limit to matching filters". Written by the provider. |
 | `data-locked` | boolean |  |  |
@@ -158,6 +160,7 @@ Each one bubbles.
 | `column-filter-change` | `{ clause: null \| unknown[]; field: string; from: null \| string; header: string; label: null \| string; op: null \| string; reading: object; to: null \| string; value: null \| string }` |  |
 | `filter-change` | `{ field: string; filters: { [k: string]: string; }; value: string; visible: number }` |  |
 | `group-toggle` | `{ collapsed: boolean; value: string }` |  |
+| `group-change` | `{ field: null \| string }` | A heading's Group, or a group row's Ungroup (`field: null`): a REQUEST to group by it. |
 | `row-action` | `{ id: string; records: GridRow[] }` | An action was chosen, from the row menu or a host's bulk bar. |
 | `page-change` | `{ page: number }` | A Find stepped past this page's first or last match: a REQUEST for the page it goes on to |
 | `grid-pages-change` | `{ page: number; pages: number }` | How many pages the CURRENT fold state makes, while grouped. |
@@ -236,6 +239,7 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.action-item` | `padding` |
 | `--sherpa-style-content-base` | `.action-item` | `color` |
 | `--sherpa-theme-content-size-base` | `.action-icon` | `inline-size` |
+| `--sherpa-display-mode-space-2xs` | `.group-ungroup` | `inset-inline-end` |
 | `--sherpa-display-mode-space-2xs` | `.group-inner` | `inset-inline-start` |
 | `--sherpa-theme-gap-md` | `.group-inner` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.group-inner` | `min-block-size` |

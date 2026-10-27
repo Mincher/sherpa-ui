@@ -1330,6 +1330,7 @@ data is.
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 
 ### T-a-page-sheet-is-for-what-a-component-puts-in-the-page
 
@@ -19335,3 +19336,18 @@ heading. The held fields that 452 called "presets" are `own` now.
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/data/page-definition.ts`
+
+### T-heading-buttons-show-on-hover
+
+**A heading's buttons show while it is hovered or focused — and while one is on
+or open** — Will, TODO 501, with the app's "Heading buttons on hover"
+(`data-heading-hover`, on by default). They go by `visibility`, not `display`,
+so the heading's name never shifts as the pointer crosses. Two stay out:
+an ON one (a sorted or filtered column says so, and the heading itself is
+deliberately unpainted), and an OPEN one — `visibility: hidden` on a chip hides
+its slotted menu too, top layer or not, and the pointer leaves the heading the
+moment it moves into that menu. A heading's Group button (TODO 500,
+`data-heading-group`) groups by its column; a number or a date offers none.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `test/e2e/reforged-data-grid.spec.ts`

@@ -137,6 +137,10 @@ export class SherpaDataGrid extends SherpaElement {
     'data-filterable': { type: 'boolean', kind: 'style' },
     // A list with nothing ticked is every row, not none. Will, TODO 489 · TRAP T-none-is-an-answer
     'data-none-shows-all': { type: 'boolean', kind: 'behaviour' },
+    // A heading offers Group by its field. Will, TODO 500
+    'data-heading-group': { type: 'boolean', kind: 'style' },
+    // A heading shows its buttons only while hovered or focused. Will, TODO 501
+    'data-heading-hover': { type: 'boolean', kind: 'style' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-sort-field': DATA_PROPS['data-sort-field'],
@@ -638,6 +642,14 @@ export class SherpaDataGrid extends SherpaElement {
     // The grid's CSS paints nothing from `active`; a host may style it.
     if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
     else delete th.dataset['status'];
+
+    // GROUP by it: a list column, not a number or a date. Will, TODO 500
+    const groupChip = th.querySelector<HTMLElement>('.head-group');
+    if (groupChip) {
+      groupChip.dataset['iconStart'] = SherpaDataGrid.icons.group;
+      groupChip.toggleAttribute('data-unsupported', col.type === 'number' || col.type === 'date');
+      groupChip.setAttribute('aria-label', `${this.word('group-by')} ${col.header ?? col.field}`);
+    }
 
     // TRAP T-grid-sort-glyph-needs-a-third-state.
     const sortChip = th.querySelector<HTMLElement>('.head-sort');
@@ -1869,6 +1881,12 @@ export class SherpaDataGrid extends SherpaElement {
       event.preventDefault();
       return;
     }
+    // GROUP by this column. Will, TODO 500
+    if ((event.target as HTMLElement).closest('.head-group')) {
+      const field = (event.target as HTMLElement).closest<HTMLElement>('.head-cell')?.dataset['field'];
+      if (field) this.#askGroup(field);
+      return;
+    }
     // Only the SORT chip cycles; it carries no menu, so its click falls through to here.
     if (!(event.target as HTMLElement).closest('.head-sort')) return;
     const th = (event.target as HTMLElement).closest<HTMLElement>('.head-cell');
@@ -1914,6 +1932,8 @@ export class SherpaDataGrid extends SherpaElement {
     const groupRow = (event.target as HTMLElement).closest<HTMLElement>('.group-row');
     if (groupRow) {
       if ((event.target as HTMLElement).closest('.group-select')) return;
+      // …but Ungroup stops the grouping. Will, TODO 500
+      if ((event.target as HTMLElement).closest('.group-ungroup')) return this.#askGroup(null);
       this.#toggleGroup(groupRow);
       return;
     }
@@ -1967,6 +1987,13 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /* ── Grouping ───────────────────────────────────────────────────── */
+
+  /** Group by a field, or stop: written here only while nothing owns it, and
+   *  always asked. TRAP T-bind-locks-what-it-owns */
+  #askGroup(field: string | null): void {
+    if (!this.hasAttribute('data-locked')) this.set('data-group-field', field);
+    this.emit('group-change', { field });
+  }
 
   /** Fold a group. `#collapsed` remembers it across the next body rebuild. */
   #toggleGroup(groupRow: HTMLElement): void {

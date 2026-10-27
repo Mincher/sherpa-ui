@@ -2439,6 +2439,20 @@
               }
             },
             {
+              "name": "data-heading-group",
+              "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-heading-hover",
+              "description": "a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-hide-unmatched",
               "description": "on | off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305",
               "type": {
@@ -2915,6 +2929,13 @@
               "name": "group-toggle",
               "type": {
                 "text": "CustomEvent<{ collapsed: boolean; value: string }>"
+              }
+            },
+            {
+              "name": "group-change",
+              "description": "A heading's Group, or a group row's Ungroup (`field: null`): a REQUEST to group by it.",
+              "type": {
+                "text": "CustomEvent<{ field: null | string }>"
               }
             },
             {
@@ -7653,6 +7674,20 @@
             {
               "kind": "field",
               "name": "noneShowsAll",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "headingGroup",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "headingHover",
               "type": {
                 "text": "boolean"
               }

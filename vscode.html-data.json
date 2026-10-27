@@ -1008,6 +1008,16 @@
           "description": "group rows by this column"
         },
         {
+          "name": "data-heading-group",
+          "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading-hover",
+          "description": "a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501",
+          "valueSet": "v"
+        },
+        {
           "name": "data-hide-unmatched",
           "description": "on | off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305",
           "values": [

@@ -212,6 +212,18 @@
       },
       {
         "el": "template",
+        "class": "words",
+        "children": [
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "group-by"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "head-cell-tpl",
         "children": [
           {
@@ -249,6 +261,16 @@
                   {
                     "el": "sherpa-quick-filter",
                     "class": "head-sort",
+                    "attrs": {
+                      "data-icon-only": "",
+                      "data-plain": "",
+                      "data-no-value": "",
+                      "data-locked": ""
+                    }
+                  },
+                  {
+                    "el": "sherpa-quick-filter",
+                    "class": "head-group",
                     "attrs": {
                       "data-icon-only": "",
                       "data-plain": "",
@@ -430,39 +452,53 @@
                 "children": [
                   {
                     "el": "span",
-                    "class": "group-inner",
+                    "class": "group-line",
                     "children": [
                       {
-                        "el": "sherpa-select-checkbox",
-                        "class": "group-select",
-                        "attrs": {
-                          "aria-label": "Select group"
-                        }
-                      },
-                      {
-                        "el": "button",
-                        "class": "group-toggle",
-                        "attrs": {
-                          "type": "button"
-                        },
+                        "el": "span",
+                        "class": "group-inner",
                         "children": [
                           {
-                            "el": "i",
-                            "class": "sherpa-icon-box",
+                            "el": "sherpa-select-checkbox",
+                            "class": "group-select",
                             "attrs": {
-                              "data-icon": "chevron-down",
-                              "aria-hidden": "true"
+                              "aria-label": "Select group"
                             }
+                          },
+                          {
+                            "el": "button",
+                            "class": "group-toggle",
+                            "attrs": {
+                              "type": "button"
+                            },
+                            "children": [
+                              {
+                                "el": "i",
+                                "class": "sherpa-icon-box",
+                                "attrs": {
+                                  "data-icon": "chevron-down",
+                                  "aria-hidden": "true"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "el": "span",
+                            "class": "group-label"
+                          },
+                          {
+                            "el": "span",
+                            "class": "group-count"
                           }
                         ]
                       },
                       {
-                        "el": "span",
-                        "class": "group-label"
-                      },
-                      {
-                        "el": "span",
-                        "class": "group-count"
+                        "el": "sherpa-button",
+                        "class": "group-ungroup",
+                        "attrs": {
+                          "data-size": "sm",
+                          "data-look": "transparent"
+                        }
                       }
                     ]
                   }
@@ -558,6 +594,24 @@
       "declared": true,
       "kind": "style",
       "description": "group rows by this column"
+    },
+    {
+      "$type": "prop",
+      "name": "data-heading-group",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500"
+    },
+    {
+      "$type": "prop",
+      "name": "data-heading-hover",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501"
     },
     {
       "$type": "prop",
@@ -751,6 +805,16 @@
     },
     {
       "$type": "state",
+      "name": "heading-group",
+      "selector": ":host([data-heading-group])"
+    },
+    {
+      "$type": "state",
+      "name": "heading-hover",
+      "selector": ":host([data-heading-hover])"
+    },
+    {
+      "$type": "state",
       "name": "not-filterable",
       "selector": ":host(:not([data-filterable]))"
     },
@@ -854,6 +918,16 @@
     },
     {
       "$type": "event",
+      "name": "group-change",
+      "description": "A heading's Group, or a group row's Ungroup (`field: null`): a REQUEST to group by it.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "field": "null | string"
+      }
+    },
+    {
+      "$type": "event",
       "name": "row-action",
       "description": "An action was chosen, from the row menu or a host's bulk bar.",
       "bubbles": true,
@@ -951,6 +1025,7 @@
     "action-item.padding": "{sherpa.display-mode-space-xs}",
     "action-item.color": "{sherpa.style-content-base}",
     "action-icon.inline-size": "{sherpa.theme-content-size-base}",
+    "group-ungroup.inset-inline-end": "{sherpa.display-mode-space-2xs}",
     "group-inner.inset-inline-start": "{sherpa.display-mode-space-2xs}",
     "group-inner.gap": "{sherpa.theme-gap-md}",
     "group-inner.min-block-size": "{sherpa.display-mode-size-lg}",

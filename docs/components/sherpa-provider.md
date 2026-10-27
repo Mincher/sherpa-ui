@@ -45,6 +45,8 @@ Put it round the part of a page whose components need data: each component insid
 | `labelColumn` | `boolean` | read and write |  |
 | `countEveryValue` | `boolean` | read and write |  |
 | `noneShowsAll` | `boolean` | read and write |  |
+| `headingGroup` | `boolean` | read and write |  |
+| `headingHover` | `boolean` | read and write |  |
 | `appContext` | `boolean` | read and write |  |
 | `applyEvery` | `boolean` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |

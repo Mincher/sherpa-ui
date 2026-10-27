@@ -390,6 +390,30 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: nothing ticked shows every row. */
   #noneShowsAll = false;
 
+  /** A grid's column heading offers Group by its field; a group row, Ungroup.
+   *  On unless the app says not, from its session. Will, TODO 500 */
+  get headingGroup(): boolean {
+    return this.#headingGroup;
+  }
+  set headingGroup(on: boolean) {
+    this.#headingGroup = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: Group in a heading. */
+  #headingGroup = true;
+
+  /** A grid's column heading shows its buttons only while hovered or focused.
+   *  On unless the app says not, from its session. Will, TODO 501 */
+  get headingHover(): boolean {
+    return this.#headingHover;
+  }
+  set headingHover(on: boolean) {
+    this.#headingHover = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: heading buttons on hover. */
+  #headingHover = true;
+
   /** The View Context is the APP Context: one answer for every page, kept in
    *  the session; a page without a field it holds shows that filter inactive.
    *  Off, each page has its own again. The app sets it, from its session.
@@ -467,6 +491,11 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     el.toggleAttribute('data-none-shows-all', this.#noneShowsAll);
+    // A grid's headings. TODOs 500, 501
+    if ('supersedeColumns' in el) {
+      el.toggleAttribute('data-heading-group', this.#headingGroup);
+      el.toggleAttribute('data-heading-hover', this.#headingHover);
+    }
   }
   /** The app's choice, for every source. */
   #limit = false;
