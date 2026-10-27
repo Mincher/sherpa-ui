@@ -173,6 +173,10 @@
                     }
                   }
                 ]
+              },
+              {
+                "el": "sherpa-tooltip",
+                "class": "tag-tip"
               }
             ]
           }
@@ -517,6 +521,43 @@
             "class": "cell"
           }
         ]
+      },
+      {
+        "el": "template",
+        "class": "cell-tags-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "cell-tags"
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "cell-tag-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "cell-tag",
+            "attrs": {
+              "type": "button"
+            },
+            "children": [
+              {
+                "el": "i",
+                "class": "tag-tick sherpa-icon-box",
+                "attrs": {
+                  "data-icon": "tick",
+                  "aria-hidden": "true"
+                }
+              },
+              {
+                "el": "span",
+                "class": "tag-label"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -646,6 +687,15 @@
       "observed": true,
       "declared": true,
       "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-multi-field",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490"
     },
     {
       "$type": "prop",
@@ -1049,7 +1099,21 @@
     "group-count.font-size": "{sherpa.font-size-body-small}",
     "empty.padding": "{sherpa.display-mode-space-2xl}",
     "empty.color": "{sherpa.theme-content-body-1}",
-    "cell-filter.inset-inline-end": "{sherpa.display-mode-space-2xs}"
+    "cell-filter.inset-inline-end": "{sherpa.display-mode-space-2xs}",
+    "cell-tags.gap": "{sherpa.theme-gap-sm}",
+    "cell-tags.padding-block-start": "{sherpa.display-mode-space-3xs}",
+    "cell-tag.gap": "{sherpa.theme-gap-sm}",
+    "cell-tag.block-size": "{sherpa.display-mode-size-md}",
+    "cell-tag.padding": "{sherpa.theme-padding-md}",
+    "cell-tag.border-width": "{sherpa.display-mode-border-width-base}",
+    "cell-tag.border-color": "{sherpa.style-border-base}",
+    "cell-tag.border-radius": "{sherpa.display-mode-border-rounding-xl}",
+    "cell-tag.background": "{sherpa.style-surface-base}",
+    "cell-tag.color": "{sherpa.style-content-base}",
+    "cell-tag.font-size": "{sherpa.theme-content-size-small}",
+    "cell-tag.line-height": "{sherpa.theme-content-line-height-small}",
+    "tag-tick.inline-size": "{sherpa.theme-content-size-small}",
+    "tag-tick.block-size": "{sherpa.theme-content-size-small}"
   },
   "$extensions": {
     "sherpa": {

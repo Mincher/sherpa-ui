@@ -63,6 +63,13 @@ sherpa-menu:
   # does — re-pointed with it by --sherpa-filter-on-*. Will, TODO 468
   '& .use-advanced[aria-pressed="true"]': active @filter-on
 
+# A grid cell's TAG — a native button wearing the filter chip's look, so a class
+# key, on its blocks: ON, the filters' on colours, re-pointed with them; its field
+# held by the View, inactive. Will, TODO 490
+.cell-tag:
+  '&[data-current]': active @filter-on
+  '&[data-superseded]': inactive
+
 # A MENU ROW — a Menu List Item, slotted light DOM, so a class key: it lives in
 # its menu's tree, not the menu's shadow root. One the filters before it rule out
 # is INACTIVE, ticked or not: the context limits it. Will, 2026-10-20.

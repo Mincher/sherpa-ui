@@ -602,7 +602,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (98)
+## The data grid (100)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -622,6 +622,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-heading-opens-the-chips-menu](TRAPS.md#t-a-heading-opens-the-chips-menu) — data-grid
 - [T-a-held-clause-op-is-not-a-reading-op](TRAPS.md#t-a-held-clause-op-is-not-a-reading-op) — data-grid
 - [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — data-grid
+- [T-a-joined-menu-answers-each-field](TRAPS.md#t-a-joined-menu-answers-each-field) — data-grid
 - [T-a-made-up-key-never-leaves-the-data-layer](TRAPS.md#t-a-made-up-key-never-leaves-the-data-layer) — data-grid
 - [T-a-menu-owns-its-own-bodies](TRAPS.md#t-a-menu-owns-its-own-bodies) — data-grid
 - [T-a-native-select-keeps-its-own-shape](TRAPS.md#t-a-native-select-keeps-its-own-shape) — pagination
@@ -635,6 +636,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — data-grid
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — data-grid
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — data-grid
+- [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — data-grid
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — data-grid
 - [T-a-view-held-heading-shows-and-refuses](TRAPS.md#t-a-view-held-heading-shows-and-refuses) — data-grid
 - [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — data-grid
@@ -749,7 +751,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-hiding-a-series-rescales-the-axis](TRAPS.md#t-hiding-a-series-rescales-the-axis) — barchart, line-chart, radial-chart
 - [T-hotspots-follow-what-was-drawn](TRAPS.md#t-hotspots-follow-what-was-drawn) — gauge-chart
 - [T-legend-caps-at-six-and-rolls-up](TRAPS.md#t-legend-caps-at-six-and-rolls-up) — chart-legend
-- [T-legend-status-swatch-shares-the-band-tokens](TRAPS.md#t-legend-status-swatch-shares-the-band-tokens) — chart-legend
+- [T-legend-status-swatch-shares-the-band-tokens](TRAPS.md#t-legend-status-swatch-shares-the-band-tokens) — chart-legend, chart-parts
 - [T-legend-suspend-remembers-the-set](TRAPS.md#t-legend-suspend-remembers-the-set) — chart-legend
 - [T-metric-status-follows-the-trend](TRAPS.md#t-metric-status-follows-the-trend) — metric
 - [T-nan-is-the-not-given-sentinel](TRAPS.md#t-nan-is-the-not-given-sentinel) — barchart, line-chart

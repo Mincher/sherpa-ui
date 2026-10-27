@@ -20,7 +20,8 @@ import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, define,
 } from '../../core/ui/sherpa-element.js';
 import { markNeedles } from '../../core/ui/mark-text.js';
-import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
+import { paintSwatch } from '../../core/ui/chart-parts.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
 import {
@@ -51,11 +52,19 @@ const CONDITION_ICON = 'function';
 const READING_OPS: Readonly<Record<string, FilterOp>> = { in: 'eq', notin: 'ne', between: DEFAULT_OP };
 const readingOp = (op: string): FilterOp => READING_OPS[op] ?? (op as FilterOp);
 
+/** A joined menu's row: its field, then its value. TODO 490 */
+const JOIN = '\u001f';
+const joinKey = (field: string, value: string): string => `${field}${JOIN}${value}`;
+const keyField = (key: string): string => key.slice(0, key.indexOf(JOIN));
+const keyValue = (key: string): string => key.slice(key.indexOf(JOIN) + 1);
+
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
+import '../sherpa-tooltip/sherpa-tooltip.js';
+import type { SherpaTooltip } from '../sherpa-tooltip/sherpa-tooltip.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 
@@ -71,6 +80,9 @@ export interface GridColumn extends OffersAdvanced {
   op?: FilterOp;
   /** Drawn width in px, clamped. A user drag overrides it for the grid's life. */
   width?: number;
+  /** Fields its cells draw as a second row of TAGS, each value in its series colour;
+   *  its heading menu joins their lists. While `data-multi-field` is set. Will, TODO 490 */
+  tags?: string[];
 }
 
 type GridRow = Record<string, unknown>;
@@ -141,6 +153,8 @@ export class SherpaDataGrid extends SherpaElement {
     'data-heading-group': { type: 'boolean', kind: 'style' },
     // A heading shows its buttons only while hovered or focused. Will, TODO 501
     'data-heading-hover': { type: 'boolean', kind: 'style' },
+    // A column's `tags` draw, and its heading menu joins their lists. Will, TODO 490
+    'data-multi-field': { type: 'boolean', kind: 'behaviour' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-sort-field': DATA_PROPS['data-sort-field'],
@@ -169,13 +183,12 @@ export class SherpaDataGrid extends SherpaElement {
   static override asks: DataAsk = {
     shape: 'rows', own: ['filter-change'], shows: 'grid',
     // Its headings' FILTERS, as the source defines them. TRAP T-a-heading-opens-the-chips-menu
-    filters: (el) => ((el as unknown as { columns?: GridColumn[] }).columns ?? [])
-      .filter((c) => FILTERABLE.has(c.type ?? 'text'))
-      .map((c) => c.field),
-    // What its cells read, and its row key; no columns yet, every field. TRAP T-a-held-set-reads-the-pages-fields
+    filters: (el) => [...new Set(((el as unknown as { columns?: GridColumn[] }).columns ?? [])
+      .flatMap((c) => [...(FILTERABLE.has(c.type ?? 'text') ? [c.field] : []), ...c.tags ?? []]))],
+    // What its cells read, tags too, and its row key; no columns yet, every field. TRAP T-a-held-set-reads-the-pages-fields
     fields: (el) => {
       const { columns = [], key } = el as unknown as { columns?: GridColumn[]; key?: string | null };
-      return columns.length ? [...columns.map((c) => c.field), ...(key ? [key] : [])] : undefined;
+      return columns.length ? [...new Set([...columns.flatMap((c) => [c.field, ...c.tags ?? []]), ...(key ? [key] : [])])] : undefined;
     },
   };
 
@@ -277,6 +290,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.actions-menu')?.addEventListener('menu-select', this.#onActionSelect);
     this.$('.body')?.addEventListener('pointerover', this.#onCellOver);
     this.$('.body')?.addEventListener('pointerleave', this.#onBodyLeave);
+    this.$('.body')?.addEventListener('focusin', this.#tipTag);
     this.#cellChip = this.$<SherpaQuickFilter>('.cell-filter');
     this.#cellChip?.addEventListener('quick-filter-click', this.#onCellFilter);
     if (this.#columns.length) this.#render();
@@ -559,10 +573,13 @@ export class SherpaDataGrid extends SherpaElement {
     const kept = new Map(this.$$<HTMLElement>('.head-row > .head-cell').map((th) => [th.dataset['field'] ?? '', th]));
     // The fixed leading select <th> leads; each cell follows the one before it.
     let before: Element | null = headRow.querySelector(':scope > .select-head');
+    this.#joined.clear();
     this.#shownColumns().forEach((col, i) => {
-      const held = this.#shown(col.field);
+      // A multi-field column's menu JOINS its fields' lists. Will, TODO 490
+      const join = this.#join(col);
+      const held = join ? join.held : this.#shown(col.field);
       // A tiered field's CHILD has no filter of its own: its picks are its parent's. TODO 369
-      const def = FILTERABLE.has(col.type ?? 'text') && !this.#parentOf(col.field) ? this.#filterDef(col, held) : null;
+      const def = join?.def ?? (FILTERABLE.has(col.type ?? 'text') && !this.#parentOf(col.field) ? this.#filterDef(col, held) : null);
       const key = this.#cellKey(col, def);
       let th = kept.get(col.field);
       kept.delete(col.field);
@@ -701,7 +718,8 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip || !menu) return;
     /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where
        it is held. TRAP T-a-view-held-heading-shows-and-refuses */
-    const superseded = this.#superseded.has(col.field);
+    // A joined menu leaves out what the View holds. TODO 490
+    const superseded = !this.#joined.has(col.field) && this.#superseded.has(col.field);
     const was = chip.hasAttribute('data-superseded');
     chip.toggleAttribute('data-superseded', superseded);
     if (superseded && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
@@ -823,10 +841,11 @@ export class SherpaDataGrid extends SherpaElement {
   #markPresent(cell: HTMLElement): void {
     const field = cell.dataset['field']!;
     const menu = cell.querySelector<SherpaMenu>('.head-filter sherpa-menu');
-    if (!menu || this.#superseded.has(field)) return;
+    const joined = this.#joined.get(field);
+    if (!menu || (!joined && this.#superseded.has(field))) return;
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
-    menu.present = this.#present[field] ?? null;
-    menu.offered = this.#offered[field] ?? null;
+    menu.present = joined ? this.#joinedLimit(joined, this.#present) : this.#present[field] ?? null;
+    menu.offered = joined ? this.#joinedLimit(joined, this.#offered) : this.#offered[field] ?? null;
   }
   /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
@@ -883,6 +902,8 @@ export class SherpaDataGrid extends SherpaElement {
     const chip = explicit ?? (event.target as HTMLElement).closest<HTMLElement>('.head-filter');
     const field = chip?.closest<HTMLElement>('.head-cell')?.dataset['field'];
     if (!chip || !field) return;
+    const joined = this.#joined.get(field);
+    if (joined) return this.#commitJoined(chip, field, joined, event.type === 'menu-clear');
 
     const cleared = event.type === 'menu-clear';
     // A list left empty by its reader: none, no rows. TODO 489 · TRAP T-none-is-an-answer
@@ -1228,12 +1249,14 @@ export class SherpaDataGrid extends SherpaElement {
   #lightFilterChip(th: HTMLElement, field: string): void {
     const chip = th.querySelector<HTMLElement>('.head-filter');
     if (!chip) return;
-    chip.toggleAttribute('data-current', this.#isFiltered(field));
+    // A joined menu is on while it ticks anything. TODO 490
+    const joined = this.#joined.get(field);
+    chip.toggleAttribute('data-current', joined ? joined.some((f) => this.#picksOf(f, true).length > 0) : this.#isFiltered(field));
     /* THE GLYPH SAYS WHICH KIND. A column answered by a CONDITION — "contains",
        "starts with" — wears the `fx` glyph, so a reader can tell a typed rule from a ticked list without opening it.
        An icon-only chip falls back to its funnel when no icon is named.
        TRAP T-a-condition-badge-says-that-not-which */
-    const held = this.#shown(field);
+    const held = joined ? undefined : this.#shown(field);
     /* THE SAME ANSWER a toolbar chip reads — `state.condition`, from this
        column's reading. TRAP T-one-condition-system */
     const condition = held ? this.#inForce(field, held).condition : null;
@@ -1331,6 +1354,8 @@ export class SherpaDataGrid extends SherpaElement {
     // honest across the cut. TRAP T-grid-collapsed-group-is-one-slot.
     const { rows, offset, pages } = this.#pageWindow(all);
     let lastGroup: string | null = null;
+    // Each tag field's values, read once a draw.
+    const looks = new Map<string, Map<string, { label: string; swatch: number | string }>>();
     // Each row's selection cell is drawn frozen: no caller has to pin it after.
     const selectable = this.hasAttribute('data-selectable');
 
@@ -1377,6 +1402,8 @@ export class SherpaDataGrid extends SherpaElement {
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
         this.#fillCell(td, value == null ? '' : String(value), col);
+        const tags = this.#tagsOf(col);
+        if (tags.length) this.#drawTags(td, record, tags, looks);
         tr.appendChild(td);
       });
       /* The actions cell is in the template already, so it is MOVED, not
@@ -1414,6 +1441,7 @@ export class SherpaDataGrid extends SherpaElement {
     const { clientX: x, clientY: y } = event as PointerEvent;
     this.#pointer = { x, y };
     this.#placeCellChip(event.target as Element);
+    this.#tipTag(event);
   };
 
   /** The pointer left the rows. */
@@ -1462,7 +1490,9 @@ export class SherpaDataGrid extends SherpaElement {
     const day = kind === 'date' ? /^\d{4}-\d{2}-\d{2}/.exec(raw instanceof Date ? raw.toISOString() : String(raw))?.[0] : undefined;
     if (kind === 'date' && !day) return null;
     const value = day ?? raw;
-    return { field, kind, value, key: valueKey(value), header: col.header ?? field, text: td.textContent?.trim() || String(value),
+    // A multi-field cell's text is its own: its tags are not.
+    const text = td.hasAttribute('data-tags') ? String(value) : td.textContent?.trim() || String(value);
+    return { field, kind, value, key: valueKey(value), header: col.header ?? field, text,
       held: this.#superseded.has(field) };
   }
 
@@ -1499,22 +1529,28 @@ export class SherpaDataGrid extends SherpaElement {
     const at = td?.matches('td.cell') ? this.#cellValue(td) : null;
     // A field the View holds is changed there.
     if (!at || at.held) return;
-    const held = this.#columnFilters.get(at.field);
-    const on = this.#cellOn(at);
+    this.#toggleValue(at, this.#cellOn(at), false);
+  };
+
+  /** Add a value to its field's answer, or take it off. The last let go of a list
+   *  is none, as its menu says it (TODO 489) — from a tag, `clears`: no filter. */
+  #toggleValue(at: CellValue, on: boolean, clears: boolean): void {
+    // All and none end here: a value is picked or let go. TODO 489
+    const { all: _all, none: _none, ...held } = this.#columnFilters.get(at.field) ?? {};
     let next: FieldReading;
     if (this.#byConditions(at.field)) {
       // Its value is an "Is" row, OR'd with the others: the shape its chip holds.
-      const kept = readingRows(held ?? {}).filter((r) => !(r.op === 'eq' && (r.picked ?? []).some((v) => valueKey(v) === at.key)));
+      const kept = readingRows(held).filter((r) => !(r.op === 'eq' && (r.picked ?? []).some((v) => valueKey(v) === at.key)));
       const rows = on ? kept : [...kept, { op: 'eq' as const, picked: [at.value] }];
       next = { ...held, conditions: rows.map(({ join, ...row }, i) => (i ? { ...row, join: join ?? 'or' } : row)), mode: 'advanced' };
     } else {
-      const rest = (held?.picked ?? []).filter((v) => valueKey(v) !== at.key);
+      const rest = (held.picked ?? []).filter((v) => valueKey(v) !== at.key);
       /* One value only where a second would change the question: a day, a number
          (Simple holds one, Will, 375), a single pick. */
       const one = at.kind === 'date' || at.kind === 'number' || this.#givenFilters[at.field]?.select === 'single';
       const picked = on ? rest : one ? [at.value] : [...rest, at.value];
       // The last value let go of a list: none, as its menu says it. TODO 489
-      const none = !one && !picked.length && !!this.#headMenu(at.field)?.hasAttribute('data-empties');
+      const none = !clears && !one && !picked.length && !!this.#headMenu(at.field)?.hasAttribute('data-empties');
       next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}), ...(none ? { none: true } : {}) };
     }
     delete next.suspended;
@@ -1526,7 +1562,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncColumnFilterStatus();
     this.#renderBody();
     this.#reportColumn(at.field, reading);
-  };
+  }
 
   /**
    * Write one cell's text, marking what a TEXT filter matched. TRAP
@@ -1549,6 +1585,157 @@ export class SherpaDataGrid extends SherpaElement {
        TRAP T-a-needle-comes-from-either-direction */
     markNeedles(td, text, [...(own.length ? own : this.#needles.get(col.field) ?? []), ...this.#needles.get('*') ?? []]);
   }
+
+  /* ── MULTI-FIELD columns — Will, TODO 490 · TRAP T-a-joined-menu-answers-each-field ── */
+
+  /** Each joined heading's fields, by its column, as last drawn. */
+  #joined = new Map<string, string[]>();
+
+  /** The fields a column draws as tags, while multi-field columns are on. */
+  #tagsOf(col: GridColumn): string[] {
+    return this.hasAttribute('data-multi-field') ? (col.tags ?? []).filter((f) => f !== col.field) : [];
+  }
+
+  /**
+   * A multi-field column's heading menu: its own list, then each tag field's — a
+   * section each, a row keyed by its field. Simple only: Advanced is the bar's and
+   * the panel's. A field the View holds is left out: it is changed there.
+   */
+  #join(col: GridColumn): { def: FilterMenuDef; held: FieldReading | undefined } | null {
+    const tags = this.#tagsOf(col);
+    if (!tags.length) return null;
+    const own = FILTERABLE.has(col.type ?? 'text') && !this.#parentOf(col.field) ? this.#filterDef(col, undefined) : null;
+    const fields = [...(own && kindOf(own) === 'multi' ? [col.field] : []), ...tags].filter((f) => !this.#superseded.has(f));
+    if (!fields.length) return null;
+    this.#joined.set(col.field, fields);
+    const options = fields.flatMap((f) => this.#optionsOf(f)
+      .map((o) => ({ value: joinKey(f, o.value), label: o.label ?? o.value, section: this.#fieldLabel(f) })));
+    const picked = fields.flatMap((f) => this.#picksOf(f, true).map((v) => joinKey(f, valueKey(v))));
+    return {
+      // Every value of every field is no answer: no Select all.
+      def: { id: col.field, label: col.header ?? col.field, options, select: 'multiple', advanced: false, selectAll: false, commit: true },
+      held: picked.length ? { picked } : undefined,
+    };
+  }
+
+  /** A field's values, in the order a chart colours them: its source's list, else its column's. */
+  #optionsOf(field: string): readonly FilterMenuItem[] {
+    const given = this.#givenFilters[field]?.options;
+    if (given?.length) return given;
+    return (this.#columnValues.get(field) ?? this.#presentValues(field).sort()).map((v) => ({ value: v, label: v }));
+  }
+
+  /** A field's name, as its heading says it: its column's, else its source's. */
+  #fieldLabel(field: string): string {
+    return this.#columns.find((c) => c.field === field)?.header ?? this.#givenFilters[field]?.label ?? field;
+  }
+
+  /** A field's ticked values in force — none while it is suspended or answered by
+   *  conditions; under All, every one when `every` asks. */
+  #picksOf(field: string, every: boolean): readonly unknown[] {
+    const held = this.#shown(field);
+    if (!held || held.suspended || (held.mode ? held.mode === 'advanced' : readingRows(held).length > 0)) return [];
+    if (held.all) return every ? this.#optionsOf(field).map((o) => o.value) : [];
+    return held.picked ?? [];
+  }
+
+  /** A joined menu's limit, keyed: each field's list, or all of a field it does not
+   *  limit; null while it limits none. */
+  #joinedLimit(fields: readonly string[], by: Readonly<Record<string, readonly string[]>>): string[] | null {
+    if (!fields.some((f) => by[f])) return null;
+    return fields.flatMap((f) => (by[f] ?? this.#optionsOf(f).map((o) => o.value)).map((v) => joinKey(f, v)));
+  }
+
+  /** A joined menu's Apply or Clear: each field whose ticks CHANGED is reported as
+   *  its own answer; one it does not show, as conditions, is left alone. */
+  #commitJoined(chip: HTMLElement, field: string, fields: readonly string[], cleared: boolean): void {
+    const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
+    const picks = cleared ? [] : (menu?.reading.picked ?? []).map(String);
+    if (cleared) this.#emptyMenu(chip);
+    const was = (this.#drawn.get(field)?.picked ?? []).map(String);
+    const changed: Array<[string, FieldReading | null]> = [];
+    for (const f of fields) {
+      const mine = picks.filter((k) => keyField(k) === f);
+      const before = new Set(was.filter((k) => keyField(k) === f));
+      if (mine.length === before.size && mine.every((k) => before.has(k))) continue;
+      const { all: _all, none: _none, suspended: _off, ...base } = this.#columnFilters.get(f) ?? {};
+      changed.push([f, mine.length ? { ...base, picked: mine.map(keyValue), mode: 'simple' } : null]);
+    }
+    this.#drawn.set(field, picks.length ? { picked: picks } : null);
+    if (!this.hasAttribute('data-locked')) {
+      for (const [f, reading] of changed) {
+        if (reading) this.#columnFilters.set(f, reading);
+        else this.#columnFilters.delete(f);
+      }
+      this.#renderHead();
+      this.#syncColumnFilterStatus();
+      this.#renderBody();
+    }
+    for (const [f, reading] of changed) this.#reportColumn(f, reading);
+  }
+
+  /** A multi-field cell's second row: a tag per field with a value, in that value's
+   *  series colour — on where it is picked, greyed where the View holds its field. */
+  #drawTags(td: HTMLElement, record: GridRow, fields: readonly string[],
+    looks: Map<string, Map<string, { label: string; swatch: number | string }>>): void {
+    const row = this.clone('template.cell-tags-tpl');
+    if (!row) return;
+    for (const field of fields) {
+      const raw = record[field];
+      if (raw == null || raw === '') continue;
+      const tag = this.clone('template.cell-tag-tpl');
+      if (!tag) return;
+      let look = looks.get(field);
+      if (!look) {
+        look = new Map(this.#optionsOf(field).map((o, i) => [o.value, { label: o.label ?? o.value, swatch: o.swatch ?? i + 1 }]));
+        looks.set(field, look);
+      }
+      const key = valueKey(raw);
+      const seen = look.get(key);
+      const label = seen?.label ?? String(raw);
+      tag.dataset['field'] = field;
+      tag.dataset['value'] = key;
+      const text = tag.querySelector('.tag-label');
+      if (text) text.textContent = label;
+      if (seen) paintSwatch(tag, seen.swatch);
+      const on = this.#tagOn(field, key);
+      const held = this.#superseded.has(field);
+      tag.toggleAttribute('data-current', on);
+      tag.toggleAttribute('data-superseded', held);
+      tag.setAttribute('aria-pressed', String(on));
+      tag.setAttribute('aria-label', `${this.#fieldLabel(field)}: ${label}`);
+      if (held) tag.setAttribute('aria-disabled', 'true');
+      row.appendChild(tag);
+    }
+    td.toggleAttribute('data-tags', true);
+    td.appendChild(row);
+  }
+
+  /** Is this value picked on its field — by its reader, not by All? */
+  #tagOn(field: string, key: string): boolean {
+    return this.#picksOf(field, false).some((v) => valueKey(v) === key);
+  }
+
+  /** A tag pressed: its value is added to its field's answer, or let go — the last
+   *  let go, no filter. One the View holds is refused: its tip says why. */
+  #onTag(tag: HTMLElement): void {
+    const field = tag.dataset['field'];
+    const key = tag.dataset['value'];
+    const row = tag.closest('.row');
+    if (!field || key == null || !row || this.#superseded.has(field)) return;
+    const at: CellValue = { field, kind: 'text', value: this.#rowOf.get(row)?.[field], key, header: this.#fieldLabel(field),
+      text: tag.textContent?.trim() ?? '', held: false };
+    this.#toggleValue(at, this.#tagOn(field, key), true);
+  }
+
+  /** A tag the View holds says where its filter went, on hover or focus — ONE tip, moved. */
+  #tipTag = (event: Event): void => {
+    const tag = (event.target as Element | null)?.closest?.<HTMLElement>('.cell-tag[data-superseded]');
+    const tip = this.$<SherpaTooltip>('.tag-tip');
+    if (!tag || !tip) return;
+    tip.dataset['text'] = movedTo(this.#supersededAt);
+    tip.showFor(tag);
+  };
 
   /* ── FIND ── Will, TODO 136. TRAP T-a-find-asks-its-host-to-step */
 
@@ -1927,6 +2114,9 @@ export class SherpaDataGrid extends SherpaElement {
     if ((event.target as HTMLElement).closest('.actions-cell')) return;
     // …and the cell's filter chip is a filter, not the row.
     if ((event.target as HTMLElement).closest('.cell-filter')) return;
+    // …and a TAG filters by its value. Will, TODO 490
+    const tag = (event.target as HTMLElement).closest<HTMLElement>('.cell-tag');
+    if (tag) return this.#onTag(tag);
 
     // A group row is a heading, not a record: clicking it anywhere folds it.
     const groupRow = (event.target as HTMLElement).closest<HTMLElement>('.group-row');

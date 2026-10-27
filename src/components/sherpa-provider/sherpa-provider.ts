@@ -414,6 +414,18 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: heading buttons on hover. */
   #headingHover = true;
 
+  /** A grid column's `tags` draw in its cells, and its heading menu joins their
+   *  lists. On unless the app says not, from its session. Will, TODO 490 */
+  get multiFieldColumns(): boolean {
+    return this.#multiField;
+  }
+  set multiFieldColumns(on: boolean) {
+    this.#multiField = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: multi-field columns. */
+  #multiField = true;
+
   /** The View Context is the APP Context: one answer for every page, kept in
    *  the session; a page without a field it holds shows that filter inactive.
    *  Off, each page has its own again. The app sets it, from its session.
@@ -491,10 +503,11 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     el.toggleAttribute('data-none-shows-all', this.#noneShowsAll);
-    // A grid's headings. TODOs 500, 501
+    // A grid's headings and tags. TODOs 500, 501, 490
     if ('supersedeColumns' in el) {
       el.toggleAttribute('data-heading-group', this.#headingGroup);
       el.toggleAttribute('data-heading-hover', this.#headingHover);
+      el.toggleAttribute('data-multi-field', this.#multiField);
     }
   }
   /** The app's choice, for every source. */

@@ -34,6 +34,10 @@
                                              Ungroup. Set by its provider. TODO 500
     data-heading-hover                       a heading shows its buttons only while hovered
                                              or focused; one that is on stays. TODO 501
+    data-multi-field                         a column's `tags` draw as a second row in its
+                                             cells, each pressed to filter by its value, and
+                                             its heading menu joins their lists. Set by its
+                                             provider. TODO 490
     data-none-shows-all                      a heading's list with nothing ticked is every
                                              row. Without it, a list its reader leaves
                                              empty asks for no rows. Set by its provider. TODO 489
@@ -155,6 +159,8 @@
          or takes off that cell's value. Will, TODO 373. TRAP T-a-cell-chip-is-one-and-moves -->
     <span class="cell-filter-home"><sherpa-quick-filter class="cell-filter" data-icon-only
       data-no-value data-locked></sherpa-quick-filter></span>
+    <!-- ONE tip for every tag the View holds, moved to the one under the pointer. TODO 490 -->
+    <sherpa-tooltip class="tag-tip"></sherpa-tooltip>
   </div>
   </div>
   <div class="empty" part="empty" role="status">
@@ -284,5 +290,16 @@
 
   <template class="cell-tpl">
     <td class="cell"></td>
+  </template>
+
+  <!-- A MULTI-FIELD cell's second row: a tag per field. Will, TODO 490 -->
+  <template class="cell-tags-tpl">
+    <span class="cell-tags"></span>
+  </template>
+  <template class="cell-tag-tpl">
+    <button class="cell-tag" type="button">
+      <i class="tag-tick sherpa-icon-box" data-icon="tick" aria-hidden="true"></i>
+      <span class="tag-label"></span>
+    </button>
   </template>
 </template>

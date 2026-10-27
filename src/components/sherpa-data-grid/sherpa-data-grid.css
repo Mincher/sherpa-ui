@@ -883,3 +883,54 @@
 }
 /* A pinned cell is sticky, which places the chip already. */
 .cell:not([data-pinned]):has(> .cell-filter) { position: relative; }
+/* On a multi-field cell, it sits by the first line, not between the two. */
+.cell[data-tags] > .cell-filter {
+  inset-block-start: calc(var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-base, 20px) / 2);
+}
+
+/* ── A MULTI-FIELD cell's tags: a second row, each value in the series colour a
+   chart gives it; ON, the filters' on colours (its pin). Will, TODO 490 ── */
+.cell-tags {
+  display: flex;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding-block-start: var(--sherpa-display-mode-space-3xs, 2px);
+}
+/* Figma Tag/Type=full's pill, a step up: small text in a 20px pill. Will, 490 */
+.cell-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  padding: 0 var(--sherpa-theme-padding-md, 8px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border, var(--sherpa-style-border-base, #b3b3c3));
+  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
+  background: var(--_hue, var(--sherpa-style-surface-base, #ffffff));
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font: inherit;
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { box-shadow: inset 0 0 0 1px var(--_border, var(--sherpa-style-border-base, #b3b3c3)); }
+  &:focus-visible {
+    outline: var(--sherpa-focus-ring);
+    outline-offset: var(--sherpa-focus-offset);
+  }
+}
+.cell-tag:is([data-current], [data-superseded]) {
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  color: var(--sherpa-style-content-base, #0c0b11);
+}
+.cell-tag[data-current]:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+.cell-tag[data-superseded] { cursor: not-allowed; }
+/* ON, by a shape too, where the page asks. TODO 497 · TRAP T-a-toggle-shows-its-state-by-a-shape */
+.tag-tick {
+  display: none;
+  inline-size: var(--sherpa-theme-content-size-small, 12px);
+  block-size: var(--sherpa-theme-content-size-small, 12px);
+}
+.cell-tag[data-current] .tag-tick { display: var(--sherpa-toggle-shape, none); }
+/* The one tip is placed by measure: its own box takes no room. */
+.tag-tip { position: absolute; }

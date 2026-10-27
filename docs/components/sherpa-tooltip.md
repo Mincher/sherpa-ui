@@ -34,6 +34,12 @@ For a short hint on hover or focus, such as on an icon-only button. It does not 
 |---|---|---|---|
 | `text` | `string` | read and write |  |
 
+## Methods
+
+| Method | What it does |
+|---|---|
+| `showFor(el: HTMLElement)` | showFor(el) — open the bubble beside `el` now, and shut it when the pointer or focus leaves `el`: ONE tip for many boxes, as a grid's tags. TODO 490 |
+
 ## Slots
 
 | Slot | Accepts | What it holds |

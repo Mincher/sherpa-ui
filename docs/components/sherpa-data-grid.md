@@ -97,6 +97,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-hide-unmatched` | `on` `off` |  | on \| off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305 |
 | `data-limit-options` | `on` `off` |  | on \| off — the host's "Limit to matching filters". Written by the provider. |
 | `data-locked` | boolean |  |  |
+| `data-multi-field` | boolean |  | a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490 |
 | `data-needles` | text |  | what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction |
 | `data-none-shows-all` | boolean |  | a heading's list with nothing ticked is every row. Without it, a list its reader leaves empty asks for no rows. Set by its provider. TODO 489 |
 | `data-page` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
@@ -264,6 +265,20 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-2xl` | `.empty` | `padding` |
 | `--sherpa-theme-content-body-1` | `.empty` | `color` |
 | `--sherpa-display-mode-space-2xs` | `.cell-filter` | `inset-inline-end` |
+| `--sherpa-theme-gap-sm` | `.cell-tags` | `gap` |
+| `--sherpa-display-mode-space-3xs` | `.cell-tags` | `padding-block-start` |
+| `--sherpa-theme-gap-sm` | `.cell-tag` | `gap` |
+| `--sherpa-display-mode-size-md` | `.cell-tag` | `block-size` |
+| `--sherpa-theme-padding-md` | `.cell-tag` | `padding` |
+| `--sherpa-display-mode-border-width-base` | `.cell-tag` | `border-width` |
+| `--sherpa-style-border-base` | `.cell-tag` | `border-color` |
+| `--sherpa-display-mode-border-rounding-xl` | `.cell-tag` | `border-radius` |
+| `--sherpa-style-surface-base` | `.cell-tag` | `background` |
+| `--sherpa-style-content-base` | `.cell-tag` | `color` |
+| `--sherpa-theme-content-size-small` | `.cell-tag` | `font-size` |
+| `--sherpa-theme-content-line-height-small` | `.cell-tag` | `line-height` |
+| `--sherpa-theme-content-size-small` | `.tag-tick` | `inline-size` |
+| `--sherpa-theme-content-size-small` | `.tag-tick` | `block-size` |
 
 ## populate()
 

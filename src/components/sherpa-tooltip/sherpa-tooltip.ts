@@ -40,7 +40,7 @@ export class SherpaTooltip extends SherpaElement {
   /** Hear the anchor — and only the anchor `data-anchor` names NOW: a section's
    *  tip is its header's, not its value chips'. TODO 437 */
   #wire(): void {
-    const anchor = this.#anchor();
+    const anchor = this.#named();
     if (anchor === this.#wired) return;
     const hears = [['pointerenter', this.#onShow], ['pointerleave', this.#onHide], ['focusin', this.#onShow], ['focusout', this.#onHide]] as const;
     for (const [type, fn] of hears) this.#wired?.removeEventListener(type, fn);
@@ -57,8 +57,33 @@ export class SherpaTooltip extends SherpaElement {
     else this.#hide();
   }
 
-  /** What the bubble describes: this element, or the box `data-anchor` names. */
+  /**
+   * showFor(el) — open the bubble beside `el` now, and shut it when the pointer
+   * or focus leaves `el`: ONE tip for many boxes, as a grid's tags. TODO 490
+   */
+  showFor(el: HTMLElement): void {
+    if (el === this.#for) return;
+    this.#hide();
+    this.#for = el;
+    this.#onShow();
+    // Nothing to say: it did not open.
+    if (!this.#openAc) {
+      this.#for = null;
+      return;
+    }
+    for (const type of ['pointerleave', 'focusout']) this.on(el, type, this.#onHide, { while: this.#openAc.signal });
+  }
+
+  /** The box `showFor()` opened it beside, until it shuts. */
+  #for: HTMLElement | null = null;
+
+  /** What the bubble describes now: the box `showFor()` gave, else its own. */
   #anchor(): HTMLElement {
+    return this.#for ?? this.#named();
+  }
+
+  /** Its own box: this element, or the one `data-anchor` names. */
+  #named(): HTMLElement {
     const sel = this.dataset['anchor'];
     if (!sel) return this;
     const root = this.getRootNode() as Document | ShadowRoot;
@@ -101,6 +126,7 @@ export class SherpaTooltip extends SherpaElement {
     if (bubble?.matches(':popover-open')) bubble.hidePopover();
     this.#openAc?.abort();
     this.#openAc = null;
+    this.#for = null;
   }
 
   /** Aborts when the bubble shuts — the viewport listeners' own lifetime. */

@@ -121,6 +121,11 @@
       "$type": "capability",
       "api": "js-property-mirror",
       "description": "read/write JS properties (text). See $extensions.sherpa.jsProps."
+    },
+    {
+      "$type": "capability",
+      "api": "js-methods",
+      "description": "callable from a view definition's state block (showFor). See $extensions.sherpa.methods."
     }
   ],
   "tokens": {
@@ -138,6 +143,14 @@
   "$extensions": {
     "sherpa": {
       "figmaName": "Tooltip (atom)",
+      "methods": [
+        {
+          "$type": "method",
+          "name": "showFor",
+          "args": "el: HTMLElement",
+          "description": "showFor(el) — open the bubble beside `el` now, and shut it when the pointer or focus leaves `el`: ONE tip for many boxes, as a grid's tags. TODO 490"
+        }
+      ],
       "category": "container",
       "jsProps": [
         {

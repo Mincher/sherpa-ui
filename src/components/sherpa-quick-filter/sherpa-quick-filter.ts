@@ -17,8 +17,7 @@ import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-ki
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
-import { paintSeries } from '../../core/ui/chart-parts.js';
-import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
+import { paintSwatch } from '../../core/ui/chart-parts.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { today } from '../../core/ui/temporal.js';
 
@@ -236,11 +235,7 @@ export class SherpaQuickFilter extends SherpaElement {
   #paintSwatch(): void {
     const given = this.dataset['swatch'] ?? '';
     const swatch = this.$<HTMLElement>('.swatch');
-    if (!swatch || !given) return;
-    const n = Number(given);
-    if (Number.isFinite(n)) return paintSeries(swatch, n - 1, n);
-    swatch.style.setProperty('--_hue', statusVar(given));
-    swatch.style.setProperty('--_border', statusBorderVar(given));
+    if (swatch && given) paintSwatch(swatch, given);
   }
 
   /** A toggle says whether it is on. A jump, a selector and a key are no toggle.

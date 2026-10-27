@@ -6292,6 +6292,7 @@ The key chip paints it: `data-swatch` takes a series number or a status name
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/data/format-tick.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/ui/chart-parts.ts`
 
 ### T-rollup-row-has-its-own-prototype
 
@@ -19387,10 +19388,40 @@ Who wears one: an ON filter chip leads with a tick — a bar's, a panel's value
 chip, a legend's item — but not a picker (always on), a section's heading (its
 values are the toggles) or an icon-only button; and the SIMPLE Switch's knob,
 in the track's colour (the default Switch already says ON or OFF). A menu row
-and a checkbox have a tick already. Chip and Tag have no on state today, so
-nothing to mark.
+and a checkbox have a tick already. A grid cell's TAG (TODO 490) is a toggle
+too, and wears one when on. Chip and the Tag component have no on state today,
+so nothing to mark.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-switch/sherpa-switch.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `test/e2e/reforged-toggle-shapes.spec.ts`
 - Site: `scripts/project-tokens.mjs`
+
+### T-a-joined-menu-answers-each-field
+
+**A multi-field column's heading menu is ONE menu over SEVERAL fields, and each
+field keeps its own answer** — Will, TODO 490: *"The column header filter menu
+will need to concatenate each fields values into a single menu. The toolbar and
+panel still show individual chips, sections, and values per field."* A column
+names its `tags`; its menu lists its own values (a plain list only), then each
+tag field's, a section each. A row's value is `field` + U+001F + `value`, so two
+fields that share a value ("active") are two rows. Apply splits the ticks by
+field and reports EACH field whose ticks CHANGED as its own
+`column-filter-change` — never one for the column. A field that did not change
+is not reported: one answered by conditions shows no ticks here, and reporting
+its empty section would wipe the bar's Advanced answer.
+
+Simple only: no Advanced and no Select all (every value of every field answers
+nothing). A field the View holds is LEFT OUT of the menu, since a menu is
+read-only whole or not at all; its tags are greyed, refuse a press, and ONE
+moved tooltip (`showFor()`) says where the filter went.
+
+A TAG is its value's toggle. Pressed, its value is picked — out of All too, so
+"filter by this" narrows even where the field opens on every value; pressed
+again, it is let go, and the last let go is NO filter, not none (Will: "clicking
+the tag again clears the filter value"). Its colour is the series a chart gives
+the value — its place in the field's list, or a band's status (`paintSwatch`).
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-multi-field-column.spec.ts`

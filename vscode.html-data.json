@@ -1046,6 +1046,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-multi-field",
+          "description": "a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490",
+          "valueSet": "v"
+        },
+        {
           "name": "data-needles",
           "description": "what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction"
         },

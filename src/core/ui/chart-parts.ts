@@ -5,11 +5,12 @@
  * Map:
  * - renderValueAxis — Stamp the value axis from its scale, min to max, when shown; the bands it drew.
  * - paintSeries — Give one mark its category's hue and border.
+ * - paintSwatch — Give a value its swatch: a series from 1, or a band's status.
  * - pairAnchor — Name the anchor a dot and its tip share.
  * - fillTip — Write a tip's label and exact value.
  */
 import {
-  formatTick, formatValue, seriesBorderVar, seriesVar, tickPercent, type ChartScale,
+  formatTick, formatValue, seriesBorderVar, seriesVar, statusBorderVar, statusVar, tickPercent, type ChartScale,
 } from '../data/format-tick.js';
 
 /** Stamp the value axis from its scale, min to max, when shown; the bands it drew.
@@ -42,6 +43,15 @@ export function renderValueAxis(
 export function paintSeries(el: HTMLElement | SVGElement, index: number, colorIndex?: number): void {
   el.style.setProperty('--_hue', seriesVar(index, colorIndex));
   el.style.setProperty('--_border', seriesBorderVar(index, colorIndex));
+}
+
+/** Give a value its swatch — a data-viz series from 1, or a band's STATUS — as
+ *  the chart draws it. TRAP T-legend-status-swatch-shares-the-band-tokens */
+export function paintSwatch(el: HTMLElement, swatch: number | string): void {
+  const n = Number(swatch);
+  if (swatch !== '' && Number.isFinite(n)) return paintSeries(el, n - 1, n);
+  el.style.setProperty('--_hue', statusVar(String(swatch)));
+  el.style.setProperty('--_border', statusBorderVar(String(swatch)));
 }
 
 /** Name the anchor a dot and its tip share — on BOTH, or the browser parks the

@@ -723,7 +723,8 @@
   --_status-icon: var(--sherpa-style-critical-indicator-accent);
 }
 
-sherpa-quick-filter[data-current]:not([data-persistent]) {
+sherpa-quick-filter[data-current]:not([data-persistent]),
+:where(.cell-tag:not([part~="trigger"]))[data-current] {
   --sherpa-style-border-base: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
   --sherpa-style-border-base-1: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
   --sherpa-style-border-width: var(--sherpa-filter-on-border-width, var(--sherpa-style-active-border-width));
@@ -968,7 +969,7 @@ sherpa-quick-filter[data-current][data-failed] {
 }
 
 sherpa-quick-filter[data-superseded],
-:where(.menu-row:not([part~="trigger"]))[data-unavailable] {
+:where(.cell-tag:not([part~="trigger"]))[data-superseded] {
   --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
