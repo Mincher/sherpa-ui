@@ -59,6 +59,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   }
 
   const { as: adapt, deliver, into } = options;
+  if (!(options.readonly ?? false)) steered.add(el as unknown as object);
   const readonly = options.readonly ?? false;
   const steering: SteerBind = options.scope ? { scope: options.scope } : {};
   const listeners: Array<[string, EventListener]> = [];
@@ -67,7 +68,14 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
     for (const type of STEERING_EVENTS) {
       // TRAP T-ignore-is-the-scalpel — no listener at all, not an early return.
       if (ignored.has(type)) continue;
-      const handler = ((event: Event) => steer(source, el, steering, type, event as CustomEvent)) as EventListener;
+      const handler = ((event: Event) => {
+        /* A control bound INSIDE this one — a panel's section bar — steers through
+           its own binding: heard here too, it was asked twice. TODO 512
+           TRAP T-a-nested-control-steers-through-its-own-binding */
+        const origin = event.composedPath()[0];
+        if (origin !== el && steered.has(origin as object)) return;
+        steer(source, el, steering, type, event as CustomEvent);
+      }) as EventListener;
       el.addEventListener(type, handler);
       listeners.push([type, handler]);
     }
@@ -110,6 +118,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
     },
     off: () => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
+      steered.delete(el as unknown as object);
       // UNLOCKED on the way out, or a component that outlives its source is mute.
       el.removeAttribute('data-locked');
       el.removeAttribute('data-remote');
@@ -206,6 +215,9 @@ function arranger(detail: Record<string, unknown>, bind: SteerBind | undefined):
   if (typeof detail['scope'] === 'string') return detail['scope'];
   return typeof bind?.scope === 'string' ? bind.scope : undefined;
 }
+
+/** The controls bound to steer, each heard by its OWN binding only. */
+const steered = new WeakSet<object>();
 
 /** Every bar answers a scope: one bound with none has nowhere to put it. */
 function reportUnscoped(el: Populatable): void {

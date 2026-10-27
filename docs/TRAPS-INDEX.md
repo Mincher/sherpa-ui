@@ -245,7 +245,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (81)
+## The join and the app layer (82)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -268,6 +268,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — context, provider
 - [T-a-hovered-chip-previews-the-highlight](TRAPS.md#t-a-hovered-chip-previews-the-highlight) — provider
 - [T-a-legend-toggle-is-a-filter](TRAPS.md#t-a-legend-toggle-is-a-filter) — provider
+- [T-a-nested-control-steers-through-its-own-binding](TRAPS.md#t-a-nested-control-steers-through-its-own-binding) — bind-source
 - [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — provider
 - [T-a-page-is-its-definition](TRAPS.md#t-a-page-is-its-definition) — provider
 - [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — bind-source

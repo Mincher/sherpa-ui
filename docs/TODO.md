@@ -43,7 +43,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 15 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27). Done: the selected row pins the Default look's Active mode — a solid pale fill and its purple edge, inside; Figma pins Transparent/active, so this departs from it on Will's word. TRAP `T-a-selected-nav-row-wears-its-edge` | a11y |
 | ✅ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next). Done: a column's `tags` draw as pills in each value's series colour (bigger, Will, 2026-10-27); a press picks the value, again lets it go; the heading menu joins the lists, a section each, and answers each field; the View's field is greyed with ONE moved tip (`showFor()`); `provider.multiFieldColumns` → `data-multi-field`, on; Demos: Filtering › Multi-field columns, Name 300px. TRAP `T-a-joined-menu-answers-each-field` | grid |
 | ✅ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped). Done (Will A, an off shape too): the Checkbox's box lifted into `sherpa-checkbox-look.css`; each toggle's shape wears it, empty off and ticked on, sized by `--_checkbox-size`. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
-| ⬜ | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27) | bug |
+| 🚧 | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Found and fixed: the panel's binding heard its section bars' events too (`T-a-nested-control-steers-through-its-own-binding`). Not yet reproduced: the glitch itself — ❓ steps asked | bug |
 | ✅ | 19 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
 | ✅ | 20 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493). Done: the panel's chips flow in one wrapping row, every chip but a preset a row of its own; with headings in a column the run sits in the value column, its heading beside the first line. TRAP `T-a-preset-is-its-own-part` | bug |
 | ✅ | 21 | 507 | LOOK — a grid cell's TAGS (490) drop the data-viz colours: they are "not great" (Will, 2026-10-27). Done: the tags wear the plain Tag look; picked, the filters' on colours. TRAP `T-a-joined-menu-answers-each-field` | look |
@@ -2392,6 +2392,18 @@ on, possibly with duplicate or legacy implementations."* "Still": seen before �
 data" is on) is the newest path there. First: reproduce it in Demos — the bar,
 the panel, a heading and a cell chip, each with the last value unticked — and
 read each path for a second writer.
+
+**🚧 2026-10-27.** Probed in Demos Records, each path to the last value let go:
+the View bar (Region, from All), the grid's bar (Status), the panel's value
+chips (data and View scopes, the setting off and on) and a heading's menu. Each
+does what 489 says — off: none, 0 rows, the chip on; on: no filter, every row.
+**Found, a crossed wire:** the panel is a column bar holding a bar per scope,
+each bound on its own, and the column's binding heard every section bar's
+events too — a `bar-without-scope` warning on each press, and any request that
+named its scope asked twice. **Fixed:** a binding skips an event that started in
+another control it bound (`T-a-nested-control-steers-through-its-own-binding`).
+**❓ Asked Will for the steps** of the glitch he sees: where (bar, panel, heading,
+cell, tag), which field, which settings, and what it does.
 
 ### `[x]` ✅ 503 — A11Y: the on/off shape is a Sherpa checkbox
 

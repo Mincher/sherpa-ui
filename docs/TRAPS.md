@@ -19466,3 +19466,20 @@ across the row (Will, TODO 509).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-multi-field-column.spec.ts`
+
+### T-a-nested-control-steers-through-its-own-binding
+
+**A control bound INSIDE another bound control is heard by its own binding
+only.** The panel is a column bar that holds a bar per scope, each in its shadow
+root and each bound to the source on its own. An event leaves a part and stops
+at its host (`T-an-inner-event-stops-at-its-host`) — but that host's OWN
+binding listens there, so every section bar's `quick-filter-change`,
+`filter-add`, `sort-change` reached the column's binding too: a request with no
+scope logged `bar-without-scope` on every press, and one that named its scope
+was asked twice — two commits, two loads, two redraws (found in TODO 512, Will:
+*"crossed wires … duplicate or legacy implementations"*). `bindSource` keeps the
+controls it binds to steer, and a binding skips an event whose ORIGIN
+(`composedPath()[0]`) is another of them.
+
+- Site: `src/core/ui/bind-source.ts`
+- Site: `test/e2e/reforged-nested-binding.spec.ts`
