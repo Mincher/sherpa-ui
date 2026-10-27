@@ -150,6 +150,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-waits': { type: 'boolean', kind: 'style' },
     // …or each field applies on its own: its menu's, or its section's, Apply. Will, TODO 451
     'data-field-apply': { type: 'boolean', kind: 'style' },
+    // A list with nothing ticked is every row, not none. Will, TODO 489 · TRAP T-none-is-an-answer
+    'data-none-shows-all': { type: 'boolean', kind: 'behaviour' },
     'data-dirty': { type: 'boolean', kind: 'behaviour' },
     // The FIELDS whose own read failed: a system error, not 0 matches. TODO 411
     'data-failed': { type: 'string', kind: 'behaviour' },
@@ -1379,7 +1381,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #chipKey(f: FilterDef): string {
     const { state: _state, appliedAt: _at, sendTo: _to, active: _active, ...made } = f as FilterDef & Record<string, unknown>;
     return JSON.stringify([made, this.dataset['bounds'] ?? '', this.hasAttribute('data-remote'), this.dataset['applyOn'] ?? '',
-      this.hasAttribute('data-waits'), this.hasAttribute('data-field-apply')]);
+      this.hasAttribute('data-waits'), this.hasAttribute('data-field-apply'), this.hasAttribute('data-none-shows-all')]);
   }
   /** Each chip's key, as it was built. */
   #built = new WeakMap<Element, string>();
@@ -1394,7 +1396,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       live: this.dataset['applyOn'] === 'input', waits: this.hasAttribute('data-waits'),
       // Each field applies on its own: its menu has Apply. TODO 451
       applies: this.hasAttribute('data-field-apply'),
-      fetches: this.hasAttribute('data-waits') || this.hasAttribute('data-remote'),
+      empties: !this.hasAttribute('data-none-shows-all'),
     });
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
@@ -1792,7 +1794,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#emitChange({ suspended: false });
     }
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
-    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits' || name === 'data-field-apply') && this.#filters.length) this.#render();
+    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits' || name === 'data-field-apply' || name === 'data-none-shows-all')
+      && this.#filters.length) this.#render();
     if (name === 'data-pending' || name === 'data-failed') this.#syncPending();
     // Apply is on while something in the scope waits for it. TODO 406
     if (name === 'data-dirty' || name === 'data-waits') {

@@ -349,8 +349,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const menu = this.#fieldMenu();
     if (!menu) return null;
     const own = menu.reading;
-    // ON at NONE, where a pick fetches: no rows. Will, TODOs 403, 480 · TRAP T-none-is-an-answer
-    const none = this.current && this.#none && this.#fetches() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
+    // ON at NONE: no rows. Will, TODOs 403, 489 · TRAP T-none-is-an-answer
+    const none = this.current && this.#none && this.#empties() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
     // A tiered parent switched OFF keeps its picks. TODO 369, 425 · TRAP T-a-parent-pick-is-the-parent
     const off = this.#off.size ? { off: [...this.#off] } : {};
     return { ...own, ...off, ...(none ? { none: true } : {}), ...(this.current ? {} : { suspended: true }) };
@@ -361,9 +361,9 @@ export class SherpaQuickFilter extends SherpaElement {
   /** NONE was asked — Select all off, or drawn so: ON with nothing ticked. Will, TODO 480 */
   #none = false;
 
-  /** Its picks FETCH: nothing ticked, while on, answers no rows. */
-  #fetches(): boolean {
-    return !!this.#fieldMenu()?.hasAttribute('data-fetches');
+  /** Nothing ticked, while on, answers no rows. TODO 489 */
+  #empties(): boolean {
+    return !!this.#fieldMenu()?.hasAttribute('data-empties');
   }
   set reading(next: FieldReading) {
     const menu = this.#fieldMenu();
@@ -463,8 +463,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The rule, over the picks as given. */
   #answers(values: readonly string[]): boolean {
-    // A TYPING condition answers with text; NONE, asked where picks fetch, too. TODO 480
-    return values.length > 0 || this.#hasTypedAnswer() || (this.#none && this.#fetches());
+    // A TYPING condition answers with text; NONE too. TODOs 480, 489
+    return values.length > 0 || this.#hasTypedAnswer() || (this.#none && this.#empties());
   }
 
   /** Does its menu hold a change not yet sent — a draft its Apply would send?
@@ -705,7 +705,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
     // ON at none is answered: it toggles too (TRAP T-none-is-an-answer); a section's value
     // chip's body is its toggle, its caret its Sites (TODO 425).
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#none && this.#fetches())
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#none && this.#empties())
       && this.slot !== 'values') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
@@ -843,7 +843,7 @@ export class SherpaQuickFilter extends SherpaElement {
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
     const empty = !!menu && this.current && !advanced
-      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !this.#fetches();
+      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !this.#empties();
 
     this.set('data-filters-nothing', empty);
     /* AND CHECK AGAIN. `data-filters-nothing` is the AMBER warning, and a rebuilt menu

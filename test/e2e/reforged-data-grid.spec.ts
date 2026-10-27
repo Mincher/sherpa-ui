@@ -3127,13 +3127,22 @@ test.describe('a cell filter chip', () => {
     await cell(page, 'team', 1).hover();
     await chipOf(page, 'team', 1).locator('.caret').click();
     await expect.poll(async () => (await heard(page)).at(-1)).toEqual({ picked: ['Blue', 'Red'], mode: 'simple' });
-    // …and a press on an ON value takes it off, then the last one ends the filter.
+    // …and a press on an ON value takes it off; the last one let go is NONE, no rows. TODO 489
     await chipOf(page, 'team', 1).locator('.caret').click();
     await cell(page, 'team', 0).hover();
     await chipOf(page, 'team', 0).locator('.caret').click();
-    expect((await heard(page)).slice(-2)).toEqual([{ picked: ['Blue'], mode: 'simple' }, null]);
+    expect((await heard(page)).slice(-2)).toEqual([{ picked: ['Blue'], mode: 'simple' }, { picked: [], mode: 'simple', none: true }]);
     // A press is a filter, not a row.
     expect(await page.evaluate(() => (window as unknown as { rowSelects: number }).rowSelects)).toBe(0);
+  });
+
+  test('with "Select none shows all data", the last value let go ends the filter (TODO 489)', async ({ page }) => {
+    await page.evaluate(() => document.querySelector('sherpa-data-grid')!.setAttribute('data-none-shows-all', ''));
+    await cell(page, 'team', 0).hover();
+    await chipOf(page, 'team', 0).locator('.caret').click();
+    await expect.poll(() => heard(page)).toEqual([{ picked: ['Blue'], mode: 'simple' }]);
+    await chipOf(page, 'team', 0).locator('.caret').click();
+    await expect.poll(async () => (await heard(page)).at(-1)).toBeNull();
   });
 
   test('ON, the cell chip reads as Discard: a cross, in critical (TODO 416)', async ({ page }) => {

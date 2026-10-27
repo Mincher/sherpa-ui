@@ -14456,22 +14456,25 @@ that follows is what makes it read as unset.
 
 Will, TODO 403: *"the Select All in the off state should select none and return
 no results … all Customer and Region data is fetched on page load which would be
-horrible in a real app."* So where a list's picks FETCH — a multiple list in the
-View (the scope that waits for one Apply), or any on a remote source — nothing
-ticked while the chip is ON answers NO rows. Everywhere else the old rule stands:
-nothing ticked is no filter (`T-everything-on-is-no-filter`).
+horrible in a real app."* Then TODO 489: *"Add a filtering setting to have
+'Select none shows all data'. Have this setting off by default. When off, if
+Select All isn't ticked for a filter then no data is returned for that filter."*
+
+So, by default, a reader who leaves a LIST empty asks for NO rows — Select all
+turned off, the last row let go, an Apply with nothing ticked, the last value
+chip or cell value let go (Will, A: "however it came"). With the app's "Select
+none shows all data" on (`provider.noneShowsAll`, written as
+`data-none-shows-all` on each bar, panel and grid), nothing ticked is no filter
+— every row, as 480 had it (`T-everything-on-is-no-filter`).
 
 It is said on purpose, in the reading: `{ picked: [], none: true }`, compiled to
 `[field, 'in', []]`, and written plainly as `{ in: [] }`. Nothing else may mean
-it: a bar or panel reports every field at once, and an untouched field read as
-none would empty the page. So ONLY Select all turned off asks for it: the menu
-says `none` in its `menu-change`, and the chip keeps it (`#none`) — a locked
-chip too, whose host reads its answer.
-
-**The last value let go is NOT none** (Will, TODO 480: *"Toggling all active
-filter values to off … doesn't reset back to the correct 'show all when none
-selected' state"*): the chip goes off, and every row shows — a menu row or a
-column's value chip alike.
+it: a bar or panel reports every field at once, and an UNTOUCHED field read as
+none would empty the page. So only a reader's act asks for it: the menu wears
+`data-empties` (a multi list, the setting off) and says `none` in its
+`menu-change` and `menu-apply`; the chip keeps it (`#none`) — a locked chip too,
+whose host reads its answer — and a grid heading holds it. Clear is not one: it
+removes the filter.
 
 At none the chip stays on, wears 0, and is not the amber "filtering nothing".
 Its body then toggles it: OFF asks for every row, as any chip does (Will's
@@ -14484,6 +14487,9 @@ pick). A pick outranks none; a date, a range and a typed answer have none.
 - Site: `test/unit/none-is-an-answer.test.mjs`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-the-panel-is-the-bar-in-portrait
 

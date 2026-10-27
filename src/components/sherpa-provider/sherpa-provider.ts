@@ -373,6 +373,19 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: count every value. */
   #countEvery = false;
 
+  /** A list with nothing ticked shows every row — or, off, none: a reader who
+   *  leaves a list empty asks for no rows. The app sets it, from its session.
+   *  Will, TODO 489 · TRAP T-none-is-an-answer */
+  get noneShowsAll(): boolean {
+    return this.#noneShowsAll;
+  }
+  set noneShowsAll(on: boolean) {
+    this.#noneShowsAll = on;
+    for (const el of this.#limited()) this.#offerLimit(el);
+  }
+  /** The app's choice: nothing ticked shows every row. */
+  #noneShowsAll = false;
+
   /** The View Context is the APP Context: one answer for every page, kept in
    *  the session; a page without a field it holds shows that filter inactive.
    *  Off, each page has its own again. The app sets it, from its session.
@@ -449,6 +462,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-reorder', this.#reorder);
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
+    el.toggleAttribute('data-none-shows-all', this.#noneShowsAll);
   }
   /** The app's choice, for every source. */
   #limit = false;

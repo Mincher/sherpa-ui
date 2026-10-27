@@ -243,7 +243,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (79)
+## The join and the app layer (80)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -297,6 +297,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-into-merges-on-the-element](TRAPS.md#t-into-merges-on-the-element) — bind-source
 - [T-nav-child-rows-carry-no-icon](TRAPS.md#t-nav-child-rows-carry-no-icon) — outlet
 - [T-navigating-sets-up-the-page](TRAPS.md#t-navigating-sets-up-the-page) — provider
+- [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — provider
 - [T-one-query-builder-in-the-data-layer](TRAPS.md#t-one-query-builder-in-the-data-layer) — bind-source
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — bind-source
 - [T-one-way-to-build-an-element](TRAPS.md#t-one-way-to-build-an-element) — apply-state
@@ -426,7 +427,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — quick-filter
 - [T-menu-anchors-to-the-chip](TRAPS.md#t-menu-anchors-to-the-chip) — quick-filter
 - [T-menu-composes-real-components](TRAPS.md#t-menu-composes-real-components) — filter-menu
-- [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — filter-menu, quick-filter
+- [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — filter-menu, quick-filter, quick-filter-toolbar
 - [T-number-and-date-lead-with-a-range-switch](TRAPS.md#t-number-and-date-lead-with-a-range-switch) — filter-def
 - [T-off-is-not-forgotten](TRAPS.md#t-off-is-not-forgotten) — quick-filter
 - [T-one-condition-system](TRAPS.md#t-one-condition-system) — quick-filter
@@ -593,7 +594,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (95)
+## The data grid (96)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -672,6 +673,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-grid-untyped-column-gets-no-filter-button](TRAPS.md#t-grid-untyped-column-gets-no-filter-button) — data-grid
 - [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — data-grid
 - [T-nan-is-the-not-given-sentinel](TRAPS.md#t-nan-is-the-not-given-sentinel) — pagination
+- [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — data-grid
 - [T-number-of-null-is-zero](TRAPS.md#t-number-of-null-is-zero) — data-grid
 - [T-one-actions-menu-for-every-row](TRAPS.md#t-one-actions-menu-for-every-row) — data-grid
 - [T-one-collator-for-the-library](TRAPS.md#t-one-collator-for-the-library) — data-grid

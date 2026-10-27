@@ -102,7 +102,7 @@ export class SherpaMenu extends SherpaElement {
     'data-no-select-all': { type: 'boolean', kind: 'style' },
     'data-none': { type: 'boolean', kind: 'behaviour' },
     // Its picks FETCH: its host reads nothing ticked, while on, as no rows. Will, TODO 403
-    'data-fetches': { type: 'boolean', kind: 'behaviour' },
+    'data-empties': { type: 'boolean', kind: 'behaviour' },
     // Its rows are still being read. TODO 345
     'data-loading': { type: 'boolean', kind: 'visibility' },
     /* FILTER type only — which ops its condition dropdown offers, and which
@@ -2028,9 +2028,13 @@ export class SherpaMenu extends SherpaElement {
     input.indeterminate = false;
     this.#syncSelectAll();
     this.#followPicks();
-    // Select all OFF, where picks fetch, is NONE: no rows. Letting the last row go is not. TRAP T-none-is-an-answer
-    const none = !this.values.length && this.hasAttribute('data-fetches');
-    if (!this.#commits) this.emit('menu-change', { values: this.values, ...(none ? { none: true } : {}) });
+    if (!this.#commits) this.emit('menu-change', { values: this.values, ...this.#none() });
+  }
+
+  /** A reader's act that leaves the list empty is NONE: no rows — unless the app's
+   *  "Select none shows all data" is on. Clear is not one. Will, TODO 489 · TRAP T-none-is-an-answer */
+  #none(): { none?: true } {
+    return !this.values.length && this.hasAttribute('data-empties') && this.mode !== 'advanced' ? { none: true } : {};
   }
 
   /** What Select all may tick: a value whose box is drawn and not refused. */
@@ -2221,7 +2225,7 @@ export class SherpaMenu extends SherpaElement {
   /** Report the values — or, in a COMMITTING menu, hold them as a DRAFT until Apply. */
   #report(): void {
     if (this.#commits) return;
-    this.emit('menu-change', { values: this.values });
+    this.emit('menu-change', { values: this.values, ...this.#none() });
   }
 
   /** Whether changes wait for Apply. */
@@ -2259,11 +2263,11 @@ export class SherpaMenu extends SherpaElement {
     this.#applying = true;
     this.#settledByAction = true;
     this.#takeBaseline();
-    this.emit('menu-apply', { values: this.values });
+    this.emit('menu-apply', { values: this.values, ...this.#none() });
     /* The ROWS are part of what Apply applies. Without this a committing menu
        held its conditions for ever. TRAP T-a-condition-is-a-draft-too */
     if (this.mode === 'advanced') this.#emitConditions(true);
-    this.emit('menu-change', { values: this.values });
+    this.emit('menu-change', { values: this.values, ...this.#none() });
     this.hide();
     this.#applying = false;
   };

@@ -30,7 +30,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ❓ | 2 | 487 | DEFAULT — the data grid's rows per page start at the 100 option — Will sees 10 rows on load, in the grid and the pager's box (Will, 2026-10-27). Probed 2026-10-27: a FRESH browser on :4200 shows 100 in the source, the grid and the pager's box, after a reload too, and opening Settings writes nothing. Only Settings › Appearance › Items per page writes it, and the browser keeps that choice under `sherpa:session:/grid/pageSize`. ❓ Will: is it 10 there? Pick 100, or run `localStorage.removeItem('sherpa:session:/grid/pageSize')` | data |
 | ✅ | 3 | 388 | PROVIDER ALWAYS — a data grid is never wired by hand: `bindSource()` on a grid with no `<sherpa-provider>` logs a console warning; where it can, Sherpa finds a hand-wired grid and routes its data through a provider before it draws. So the Query and the page number are kept by the provider (Will, 2026-10-27, answering the ask: "We should always use the provider. Never hand wire a data grid.") Done: `bindSource()` reports `grid-without-provider` for a grid bound with no `deliver` (every provider bind passes one); PRINCIPLES, CLAUDE.md and DATA-SOURCE-RULES lead with the provider. NOT re-routed: the binder is DOM-free and a grid never imports the app layer, so it cannot make its own provider; the report names the fix. TRAP `T-a-grid-is-never-wired-by-hand` | data |
 | ✅ | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27. Done: Figma's Metric is FIXED at every density, so the tile's height is the row (76 / 88 / 104) and the space between value and trend takes what is left | bug |
-| ⬜ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
+| ❓ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27). Part 1 DONE: the setting, off by default, in the bar, the panel and a grid heading. Part 2 ❓: Customer and Region open with nothing ticked — `"start": "all"` means no filter. Ticking every value at start meets Will's 09-22 rule (every value ticked must look like no filter, chip off): A, every value ticked and the chip OFF; B, every value ticked and the chip ON, reading All | filters |
 | ⬜ | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27) | filters |
 | ⬜ | 7 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27) | filters |
 | ⬜ | 8 | 495 | HIGHLIGHT — with 'Highlight matches on hover' on, a pointer resting on a chart LEGEND item highlights its matches too, as a chip does (Will, 2026-10-27) | filters |
@@ -2356,6 +2356,29 @@ NOTE: OFF is the opposite of 480 (the last value let go shows every row). On is
 480's rule. Will, 2026-10-27, A: while OFF, nothing ticked is NO rows however it
 came — Select none or the last value let go; the chip stays on at 0. ON, nothing
 ticked is every row (480).
+
+**Plan, 2026-10-27.** Today only a list whose picks FETCH says none, and only
+by Select all off: the toolbar hands `fetches` to `menuFor()`, the menu wears
+`data-fetches`, and the chip and the menu read it for nothing else.
+
+| # | Step | Where |
+|---|---|---|
+| 1 | `fetches` / `data-fetches` become `empties` / `data-empties`: "nothing ticked here is no rows". The toolbar sets it unless its bar wears `data-none-shows-all` | `filter-menu.ts`, toolbar, `sherpa-menu`, `sherpa-quick-filter` |
+| 2 | The menu says `none` on EVERY reader act that leaves a multi list empty — a row let go and an Apply, not only Select all. Clear is not one: it removes the filter | `sherpa-menu` |
+| 3 | A grid heading's list does the same: an Apply with nothing ticked holds `{ picked: [], none: true }`, ON at 0 | `sherpa-data-grid` |
+| 4 | `provider.noneShowsAll` (off by default) writes `data-none-shows-all` on each bar, panel and grid | `sherpa-provider` |
+| 5 | Demos: Settings › Filtering › "Select none shows all data", `/filters/noneShowsAll: false`. Customer and Region already open with Select all ticked (`"start": "all"` in both schemas) — checked on screen | Demos |
+| 6 | Tests: 480's "last value let go shows every row" holds only with the setting ON; OFF gives none | sherpa-ui + Demos |
+
+**Part 1, done (2026-10-27)** — steps 1–4 and 6, and the switch of step 5. A
+grid cell's filter chip follows it too: pressed twice, its value let go, no rows.
+
+❓ **Part 2.** Probed on :4200: Customer and Region open with NOTHING ticked —
+`"start": "all"` means "no filter", drawn as no ticks. Will wants Select all on.
+But Will's 2026-09-22 rule (TRAP `T-everything-on-is-no-filter`) is that every
+value ticked must LOOK like no filter: the chip off. **A (my pick):** every value
+ticked, the chip OFF — all ticked filters nothing, as 09-22 says. **B:** every
+value ticked, the chip ON, reading All — a choice in force.
 
 ### `[ ]` ⬜ 486 — BUG: no bottom shadow over the grid's pinned columns
 

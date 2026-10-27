@@ -135,6 +135,8 @@ export class SherpaDataGrid extends SherpaElement {
     'data-total-pages': DATA_PROPS['data-total-pages'],
     'data-column-filters': { type: 'boolean', kind: 'style' },
     'data-filterable': { type: 'boolean', kind: 'style' },
+    // A list with nothing ticked is every row, not none. Will, TODO 489 · TRAP T-none-is-an-answer
+    'data-none-shows-all': { type: 'boolean', kind: 'behaviour' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-sort-field': DATA_PROPS['data-sort-field'],
@@ -285,6 +287,11 @@ export class SherpaDataGrid extends SherpaElement {
         return;
       // Read when asked, or drawn by CSS.
       case 'data-total-pages': case 'data-locked': case 'data-column-filters': case 'data-filterable':
+        return;
+      case 'data-none-shows-all':
+        for (const menu of this.$$<HTMLElement>('.head-filter > sherpa-menu')) {
+          menu.toggleAttribute('data-empties', this.#empties(menu));
+        }
         return;
       case 'data-needles':
         this.#syncNeedles();
@@ -662,7 +669,9 @@ export class SherpaDataGrid extends SherpaElement {
     const chip = th.querySelector<HTMLElement>('.head-filter');
     if (!chip) return;
     // A top-layer popover escapes the scroller, inside the HOST's named region.
-    const { menu } = menuFor(this.root, def, { bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input' });
+    const { menu } = menuFor(this.root, def, {
+      bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input', empties: !this.hasAttribute('data-none-shows-all'),
+    });
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
     menu.setAttribute('data-removable', '');
     chip.appendChild(menu);
@@ -864,7 +873,9 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip || !field) return;
 
     const cleared = event.type === 'menu-clear';
-    const held = cleared ? null : this.#readColumnFilter(chip);
+    // A list left empty by its reader: none, no rows. TODO 489 · TRAP T-none-is-an-answer
+    const none = !cleared && !!(event as CustomEvent).detail?.none;
+    const held = cleared ? null : none ? { picked: [], none: true } : this.#readColumnFilter(chip);
     // Only an explicit CLEAR empties the controls: Apply lands here on a
     // half-built range, which is unfinished, not wrong.
     if (cleared) this.#emptyMenu(chip);
@@ -1452,6 +1463,17 @@ export class SherpaDataGrid extends SherpaElement {
     return values.some((v) => valueKey(v) === at.key);
   }
 
+  /** A heading's own menu, by its field. */
+  #headMenu(field: string): HTMLElement | null {
+    return this.$(`.head-cell[data-field="${CSS.escape(field)}"] .head-filter > sherpa-menu`);
+  }
+
+  /** Does a heading's menu answer none when its reader leaves it empty? A LIST, while the app's
+   *  "Select none shows all data" is off. TODO 489 */
+  #empties(menu: HTMLElement): boolean {
+    return !this.hasAttribute('data-none-shows-all') && menu.dataset['select'] === 'multiple' && !menu.dataset['body'];
+  }
+
   /** A field with no list to tick answers by conditions only: its value is an "Is" row. */
   #byConditions(field: string): boolean {
     const col = this.#columns.find((c) => c.field === field);
@@ -1479,7 +1501,9 @@ export class SherpaDataGrid extends SherpaElement {
          (Simple holds one, Will, 375), a single pick. */
       const one = at.kind === 'date' || at.kind === 'number' || this.#givenFilters[at.field]?.select === 'single';
       const picked = on ? rest : one ? [at.value] : [...rest, at.value];
-      next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}) };
+      // The last value let go of a list: none, as its menu says it. TODO 489
+      const none = !one && !picked.length && !!this.#headMenu(at.field)?.hasAttribute('data-empties');
+      next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}), ...(none ? { none: true } : {}) };
     }
     delete next.suspended;
     const reading = answersAnything(next) ? next : null;
@@ -2359,7 +2383,7 @@ export class SherpaDataGrid extends SherpaElement {
   #isFiltered(field: string): boolean {
     if (this.#filters.has(field)) return true;
     const held = this.#columnFilters.get(field);
-    if (held && !held.suspended && this.#inForce(field, held).rows.length) return true;
+    if (held && !held.suspended && (held.none || this.#inForce(field, held).rows.length)) return true;
     const external = this.dataset['filterFields'];
     // TRAP T-grid-filter-fields-match-whole — `includes` lights `status` for `substatus`.
     return !!external && external.split(/\s+/).includes(field);
@@ -2429,5 +2453,5 @@ function isRows(reading: FieldReading): FieldCondition[] {
 /** Does a reading hold ANY answer — a tick, typed text or a row — in either mode? */
 function answersAnything(reading: FieldReading): boolean {
   return (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== ''
-    || readingRows(reading).length > 0;
+    || readingRows(reading).length > 0 || !!reading.none;
 }

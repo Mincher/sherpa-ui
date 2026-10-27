@@ -1203,7 +1203,7 @@
     },
     {
       "$type": "prop",
-      "name": "data-fetches",
+      "name": "data-empties",
       "type": "boolean",
       "observed": true,
       "declared": true,
@@ -1606,7 +1606,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "none": "true | undefined",
+        "none": "true",
         "values": "string[]"
       }
     },
@@ -1624,6 +1624,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
+        "none": "true",
         "values": "string[]"
       }
     },
