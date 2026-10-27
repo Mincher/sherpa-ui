@@ -9441,6 +9441,9 @@
               "name": "swatch"
             },
             {
+              "name": "tick"
+            },
+            {
               "name": "values"
             }
           ]

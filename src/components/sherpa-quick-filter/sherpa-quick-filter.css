@@ -256,6 +256,15 @@
   background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
 }
 
+/* ON, by a shape too: a tick first, where the page asks (`--sherpa-toggle-shape`).
+   Not on a picker, a section's heading or an icon-only button. Will, TODO 497
+   TRAP T-a-toggle-shows-its-state-by-a-shape */
+.tick { display: none; }
+:host([data-current]:not([data-persistent], [data-layout="section"], [data-icon-only])) .tick {
+  display: var(--sherpa-toggle-shape, none);
+  --_icon-size: var(--sherpa-theme-content-size-base, 14px);
+}
+
 /* Leading icon — shown only with data-icon-start (Figma "Icon", funnel default). */
 .icon { display: none; }
 /* Box + glyph come from .sherpa-icon-box; Figma "Icon" is content/size/base. */

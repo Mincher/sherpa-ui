@@ -19369,3 +19369,28 @@ the purple edge. Every other row stays Transparent, where the edge is nothing.
 
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
 - Site: `test/e2e/reforged-nav-item.spec.ts`
+
+### T-a-toggle-shows-its-state-by-a-shape
+
+**A toggle shows its state by a SHAPE, not by its fill alone, where the page
+asks** — Will, TODO 497: *"any UI element that toggles must have a visual element
+that indicates to the user its on/off state … Ideally this is a text label …
+In these instances we should show a checkmark icon."* The page sets
+`html[data-toggle-shapes]` (`page.css`), which sets ONE custom property,
+`--sherpa-toggle-shape: inline-flex`; it inherits into every shadow root, and
+each toggle's tick reads `display: var(--sherpa-toggle-shape, none)`. No style
+query: Firefox has none for a custom property, and a property is the one shape
+that reaches a bare host (`T-one-value-one-declaration`). A host that does not
+link `page.css` sets the property itself.
+
+Who wears one: an ON filter chip leads with a tick — a bar's, a panel's value
+chip, a legend's item — but not a picker (always on), a section's heading (its
+values are the toggles) or an icon-only button; and the SIMPLE Switch's knob,
+in the track's colour (the default Switch already says ON or OFF). A menu row
+and a checkbox have a tick already. Chip and Tag have no on state today, so
+nothing to mark.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-switch/sherpa-switch.css`
+- Site: `test/e2e/reforged-toggle-shapes.spec.ts`
+- Site: `scripts/project-tokens.mjs`

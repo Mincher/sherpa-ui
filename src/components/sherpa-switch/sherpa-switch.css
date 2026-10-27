@@ -103,6 +103,20 @@
 }
 /* Value=on binds the thumb to content/base. */
 :host([checked]) .knob { background: var(--sherpa-style-content-base, #ffffff); }
+/* ON, by a shape too: the simple Switch says no ON, so its knob wears a tick,
+   in the track's own colour, where the page asks. Will, TODO 497
+   TRAP T-a-toggle-shows-its-state-by-a-shape */
+.knob {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tick { display: none; }
+:host([data-type="simple"][checked]) .tick {
+  display: var(--sherpa-toggle-shape, none);
+  --_icon-size: calc(var(--sherpa-switch-size-thumb, 16px) * 0.75);
+  color: var(--_fill);
+}
 
 /* The knob and label swap sides ON. An explicit 0, as `auto` does not animate. */
 .knob,

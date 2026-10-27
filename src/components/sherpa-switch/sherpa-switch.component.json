@@ -38,7 +38,16 @@
               "class": "knob",
               "attrs": {
                 "aria-hidden": "true"
-              }
+              },
+              "children": [
+                {
+                  "el": "i",
+                  "class": "tick sherpa-icon-box",
+                  "attrs": {
+                    "data-icon": "tick"
+                  }
+                }
+              ]
             },
             {
               "el": "span",

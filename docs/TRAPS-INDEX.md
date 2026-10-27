@@ -329,7 +329,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (152)
+## Filters (153)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -386,6 +386,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — quick-filter-toolbar
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — quick-filter, quick-filter-toolbar
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — quick-filter
+- [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — quick-filter
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — quick-filter-toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — quick-filter, quick-filter-toolbar
@@ -879,7 +880,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (110)
+## Other components (111)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -920,6 +921,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group, metric-group
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — button
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
+- [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — switch
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — layout-canvas, toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — button
 - [T-a-trigger-shows-what-it-opened](TRAPS.md#t-a-trigger-shows-what-it-opened) — app-header
@@ -992,7 +994,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (69)
+## Build, tools and the MCP (70)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -1033,6 +1035,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — generate, lint-css, project-tokens
 - [T-a-stranded-container-fills-its-row](TRAPS.md#t-a-stranded-container-fills-its-row) — project-tokens
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — check-props, check-usage
+- [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — project-tokens
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](TRAPS.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
 - [T-an-event-name-is-not-always-a-literal](TRAPS.md#t-an-event-name-is-not-always-a-literal) — generate-component-spec, ts-facts
 - [T-an-icon-loads-when-first-drawn](TRAPS.md#t-an-icon-loads-when-first-drawn) — generate-icons
