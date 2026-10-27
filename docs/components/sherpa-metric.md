@@ -73,7 +73,6 @@ What each class's base rule reads:
 | `--sherpa-structure-space-gap` | `.row` | `gap` |
 | `--sherpa-display-mode-border-rounding-lg` | `.row` | `border-radius` |
 | `--sherpa-elevation-offset-x` | `.row` | `box-shadow` |
-| `--sherpa-structure-space-gap` | `.figures` | `gap` |
 | `--sherpa-font-family-mono` | `.value` | `font-family` |
 | `--sherpa-theme-content-size-h1` | `.value` | `font-size` |
 | `--sherpa-font-weight-regular` | `.value` | `font-weight` |

@@ -19221,3 +19221,17 @@ make a provider for itself. The report names the one-line fix instead.
 
 - Site: `src/core/ui/bind-source.ts`
 - Site: `test/unit/a-grid-is-never-wired-by-hand.test.mjs`
+
+### T-a-metric-is-one-row-at-every-density
+
+**A metric's height IS the layout row: `--sherpa-display-mode-size-row`, 76 /
+88 / 104** — Will, TODO 444 part 2. Density moves the spacing and the header
+but not the text's line heights, so a tile sized by its content came out 78 in
+compact and 108 in comfortable, and a held row clipped its trend. Figma's
+Metric is FIXED too (96, at every density), so it gives no other size to copy.
+The card row takes what the row leaves (`flex: 1 1 0`), and the figures stand
+the value at the top and the trend at the foot of it: the space between is 2 /
+8 / 8. A half-row metric (a stuck group) is sized by its content, as before.
+
+- Site: `src/components/sherpa-metric/sherpa-metric.css`
+- Site: `test/e2e/reforged-metric.spec.ts`

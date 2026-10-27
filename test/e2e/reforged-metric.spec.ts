@@ -514,8 +514,8 @@ test('a metric\'s name is its composed Data Viz Header, with no rule, in one lay
   expect(r.fits).toBe(true);
 });
 
-// Will, TODO 444 (A). TRAP T-a-metric-stroke-takes-no-room
-test('a metric is exactly one layout row tall: its edge is drawn inside and takes no room', async ({ page }) => {
+// Will, TODO 444 (A). TRAP T-a-metric-stroke-takes-no-room · TRAP T-a-metric-is-one-row-at-every-density
+test('a metric is exactly one layout row tall at every density, and its trend fits: its edge takes no room', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-metric') as MetricEl;
     el.setAttribute('data-label', 'Seats');
@@ -523,10 +523,20 @@ test('a metric is exactly one layout row tall: its edge is drawn inside and take
     el.setAttribute('data-delta', '+2%');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await window.__settled();
-    const cs = getComputedStyle(el);
-    return { height: el.getBoundingClientRect().height, border: cs.borderTopWidth, inset: cs.boxShadow.includes('inset') };
+    const out: Record<string, unknown> = {};
+    for (const density of ['compact', 'default', 'comfortable']) {
+      document.documentElement.setAttribute('data-density', density);
+      await window.__settled();
+      const tile = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      const trend = el.shadowRoot!.querySelector('.trend')!.getBoundingClientRect();
+      const value = el.shadowRoot!.querySelector('.value')!.getBoundingClientRect();
+      out[density] = { height: tile.height, fits: trend.bottom <= tile.bottom - parseFloat(cs.paddingBlockEnd),
+        apart: trend.top >= value.bottom, border: cs.borderTopWidth, inset: cs.boxShadow.includes('inset') };
+    }
+    document.documentElement.removeAttribute('data-density');
+    return out;
   });
-  // The default density. Compact and comfortable wait for Figma's Metric there (TODO 444).
-  expect(r).toEqual({ height: 88, border: '0px', inset: true });
+  const at = (height: number) => ({ height, fits: true, apart: true, border: '0px', inset: true });
+  expect(r).toEqual({ compact: at(76), default: at(88), comfortable: at(104) });
 });

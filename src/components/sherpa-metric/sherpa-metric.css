@@ -8,9 +8,11 @@
 :host {
   display: flex;
   flex-direction: column;
-  /* 4, not Figma's 8: its header is 20 tall where the label was 16, and the
-     tile must stay one layout row (size/row, 88). Figma's Metric is 96. */
+  /* 4, not Figma's 8: its header is 20 tall where the label was 16. */
   gap: var(--sherpa-display-mode-space-2xs, 4px);
+  /* ONE layout row at every density, as Figma's Metric is FIXED (96 there).
+     TRAP T-a-metric-is-one-row-at-every-density */
+  block-size: var(--sherpa-display-mode-size-row, 88px);
   min-inline-size: 0;
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline: var(--sherpa-display-mode-space-xs, 8px);
@@ -32,12 +34,6 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   container: sherpa-metric / inline-size;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-
-  /* The card's one-line height: value + gap + trend. */
-  --_line: calc(
-    var(--sherpa-theme-content-line-height-h1, 32px)
-    + var(--sherpa-structure-space-gap, 8px)
-    + var(--sherpa-theme-content-line-height-small, 16px));
 }
 
 /* ── Header — the Data Viz Header, composed: its title is the small light
@@ -52,12 +48,10 @@
   align-items: flex-start;
   align-content: flex-start;
   flex-wrap: wrap;
-  /* ONE LINE TALL. --_line is the figures' own height — value, gap, trend — so
-     a wrapped sparkline is pushed past the clip rather than growing the tile.
-     A wrapping flex box measures its WRAPPED height, so max-content cannot say
-     this. TRAP T-a-metric-condenses-by-wrapping */
-  flex: 1 1 auto;
-  block-size: var(--_line);
+  /* What the row leaves, so a wrapped sparkline is pushed past the clip rather
+     than growing the tile. TRAP T-a-metric-condenses-by-wrapping */
+  flex: 1 1 0;
+  min-block-size: 0;
   gap: var(--sherpa-structure-space-gap, 8px);
   min-inline-size: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
@@ -81,8 +75,10 @@
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
+  /* The value at the top, the trend at the foot: the space between is what the
+     row leaves — 8 at the default density. */
+  block-size: 100%;
   justify-content: space-between;
-  gap: var(--sherpa-structure-space-gap, 8px);
   min-inline-size: 120px;
   max-inline-size: 160px;
 }
@@ -168,6 +164,7 @@
   :host {
     flex-direction: row;
     align-items: center;
+    block-size: auto;
     gap: var(--sherpa-display-mode-space-xs, 8px);
   }
 

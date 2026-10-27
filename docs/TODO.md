@@ -29,7 +29,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1 | 491 | TESTS — a full run, then clean up: less complexity and faster runs, with no loss of quality (Will, 2026-10-27). Done: the run was green (sherpa-ui 3266 + 709 node, 4.6m; Demos 669, 2.9m) and Will found the time fine. 48 sherpa-ui specs moved onto the shared `./harness` setup; 531 `window` casts became the typed `window.__settled()` / `__reforgedReady`; Demos' 12 copies of a row-total helper became one `total(page)` in its fixture. The 10 fixed waits stay: each proves that nothing happens, or waits for a hover rest | tests |
 | ❓ | 2 | 487 | DEFAULT — the data grid's rows per page start at the 100 option — Will sees 10 rows on load, in the grid and the pager's box (Will, 2026-10-27). Probed 2026-10-27: a FRESH browser on :4200 shows 100 in the source, the grid and the pager's box, after a reload too, and opening Settings writes nothing. Only Settings › Appearance › Items per page writes it, and the browser keeps that choice under `sherpa:session:/grid/pageSize`. ❓ Will: is it 10 there? Pick 100, or run `localStorage.removeItem('sherpa:session:/grid/pageSize')` | data |
 | ✅ | 3 | 388 | PROVIDER ALWAYS — a data grid is never wired by hand: `bindSource()` on a grid with no `<sherpa-provider>` logs a console warning; where it can, Sherpa finds a hand-wired grid and routes its data through a provider before it draws. So the Query and the page number are kept by the provider (Will, 2026-10-27, answering the ask: "We should always use the provider. Never hand wire a data grid.") Done: `bindSource()` reports `grid-without-provider` for a grid bound with no `deliver` (every provider bind passes one); PRINCIPLES, CLAUDE.md and DATA-SOURCE-RULES lead with the provider. NOT re-routed: the binder is DOM-free and a grid never imports the app layer, so it cannot make its own provider; the report names the fix. TRAP `T-a-grid-is-never-wired-by-hand` | data |
-| 🚧 | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27 | bug |
+| ✅ | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27. Done: Figma's Metric is FIXED at every density, so the tile's height is the row (76 / 88 / 104) and the space between value and trend takes what is left | bug |
 | ⬜ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
 | ⬜ | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27) | filters |
 | ⬜ | 7 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27) | filters |
@@ -2663,7 +2663,7 @@ keeps its heading, "Filters". The classic panel is legacy and keeps its own.
 **✅ Done 2026-10-26,** in the bar and the column. "Edit" is narrower, so a
 test that folds chips at 300px now folds them at 220.
 
-### `[ ]` 🚧 444 — BUG: a metric is taller than its grid row
+### `[x]` ✅ 444 — BUG: a metric is taller than its grid row
 
 Found in 402 (2026-10-26). `sherpa-metric.css` says the tile is exactly one
 grid row. Measured alone in the harness, at 1x and 2x: 89 for an 88 row, 79
@@ -2691,6 +2691,13 @@ and 108 in comfortable (row 104): its value-and-trend block (h1 line + gap +
 small line) is 2–4px taller than those rows leave it; a held row clips that.
 A says take Figma's Metric at those densities — the Desktop Bridge plugin was
 not connected (2026-10-26). Open it, and this is a light pull.
+
+**Part 2, done (2026-10-27).** Read live through the Bridge: Figma's Metric is
+a FIXED frame, 96 tall at every density, so it gives no compact or comfortable
+size. Density moves spacing, not the text's line heights. So the tile's height
+IS the row (`--sherpa-display-mode-size-row`: 76 / 88 / 104), the card row
+takes what is left, and the space between value and trend is 2 / 8 / 8 — the
+default is unchanged. TRAP `T-a-metric-is-one-row-at-every-density`.
 
 ### `[x]` ✅ 441 — FEATURE: Highlight matches
 
