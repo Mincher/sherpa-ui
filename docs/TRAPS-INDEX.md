@@ -47,7 +47,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-heading-holds-a-whole-reading](TRAPS.md#t-a-heading-holds-a-whole-reading) — data, filter-state
 - [T-a-held-set-reads-the-pages-fields](TRAPS.md#t-a-held-set-reads-the-pages-fields) — data-source, data-source-types, held-set, page-definition, read-plan, source-binding, store-cache
 - [T-a-held-set-takes-a-change-in-place](TRAPS.md#t-a-held-set-takes-a-change-in-place) — data-source, held-set, store, store-cache, stores
-- [T-a-hovered-chip-previews-the-highlight](TRAPS.md#t-a-hovered-chip-previews-the-highlight) — data-source, query-context
+- [T-a-hovered-chip-previews-the-highlight](TRAPS.md#t-a-hovered-chip-previews-the-highlight) — data-source, query, query-context
 - [T-a-kept-set-is-checked-each-session](TRAPS.md#t-a-kept-set-is-checked-each-session) — store-cache
 - [T-a-legend-follows-the-view-when-it-holds-the-field](TRAPS.md#t-a-legend-follows-the-view-when-it-holds-the-field) — bind-selection
 - [T-a-legend-row-goes-inactive-it-never-vanishes](TRAPS.md#t-a-legend-row-goes-inactive-it-never-vanishes) — aggregate

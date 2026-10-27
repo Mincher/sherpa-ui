@@ -19065,10 +19065,16 @@ The chip itself previews its whole answer, and only while it is applied and
 counted.
 
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-chip-drives-the-highlight.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+A chip switched OFF previews what it holds too (Will, TODO 496 A), where the
+rows are held here — not on a bar whose source is remote: compile lifts the
+held answer's `suspended` for a preview only; the Query's own driver, off,
+still marks nothing.
 
 A LEGEND row is a value too (Will, TODO 495): while the provider's
 `highlightOnHover` is on, it writes `data-highlight-hover` on each legend that

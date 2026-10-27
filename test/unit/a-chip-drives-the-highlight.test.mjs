@@ -34,6 +34,14 @@ test('compile gives what the driver matches, and still filters by it', () => {
   assert.equal(compile(query).highlight, undefined);
 });
 
+// Will, TODO 496: a chip hovered OFF previews what it holds; the Query's own driver, off, marks nothing.
+test('a hovered chip that is OFF previews what it holds', () => {
+  const query = { v: 1, scopes: { [VIEW]: { holds: ['plan'], readings: { plan: { picked: ['Pro'], suspended: true } } } } };
+  assert.equal(compile(query).filter, undefined);
+  const out = compile(query, { highlight: { scope: VIEW, field: 'plan' } });
+  assert.deepEqual(out.highlight, ['plan', 'eq', 'Pro']);
+});
+
 test('the Query holds ONE driver: a second takes over, and only the driver lets go', () => {
   const query = new QueryContext();
   query.hold(VIEW, ['plan', 'region']);

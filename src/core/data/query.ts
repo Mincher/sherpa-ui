@@ -404,7 +404,9 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
        TRAP T-the-highlight-reaches-the-whole-page */
     const drives = facts.highlight ? (facts.highlight.scope === id ? facts.highlight.field : undefined) : scope.highlight;
     const one = drives ? facts.highlight?.value : undefined;
-    const driver = one !== undefined ? { picked: [one] } : drives && scope.readings[drives];
+    const held = drives ? scope.readings[drives] : undefined;
+    // A chip hovered OFF previews what it holds. Will, TODO 496 · TRAP T-a-hovered-chip-previews-the-highlight
+    const driver = one !== undefined ? { picked: [one] } : held && facts.highlight ? { ...held, suspended: false } : held;
     if (driver && !highlight && (!facts.has || facts.has(drives!))) {
       highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver }, presets: {} }, viewHolds, facts));
     }

@@ -498,7 +498,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const box = row.querySelector<HTMLInputElement>(':scope > input');
       return box?.value && !row.matches('.qf-all, .qf-none') ? { chip, value: box.value } : null;
     }
-    return chip.hasAttribute('data-current') && (chip as SherpaQuickFilter).results != null ? { chip } : null;
+    if (chip.hasAttribute('data-current')) return (chip as SherpaQuickFilter).results != null ? { chip } : null;
+    // OFF, it previews what it holds — where the rows are held here. Will, TODO 496
+    const held = (chip as SherpaQuickFilter).reading;
+    return !this.hasAttribute('data-remote') && held && readingAnswered({ ...held, suspended: false }) ? { chip } : null;
   }
 
   /** Out of the bar: the preview goes. Within it, the next pointermove decides. */
