@@ -108,10 +108,10 @@
     /* Over the scrolling rows, under the pinned cells (2) and the header (3). */
     z-index: 1;
     display: block;
-    block-size: var(--sherpa-display-mode-space-sm, 12px);
-    margin-block-end: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
+    block-size: var(--sherpa-scroll-shadow-size);
+    margin-block-end: calc(-1 * var(--sherpa-scroll-shadow-size));
     pointer-events: none;
-    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    background: linear-gradient(to bottom, var(--sherpa-scroll-shadow-ink), transparent);
     opacity: 0;
     animation: sherpa-scroll-shadow linear both;
     animation-timeline: scroll(nearest block);
@@ -126,9 +126,9 @@
     position: absolute;
     inset-block-start: 100%;
     inset-inline: 0;
-    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    block-size: var(--sherpa-scroll-shadow-size);
     pointer-events: none;
-    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    background: linear-gradient(to bottom, var(--sherpa-scroll-shadow-ink), transparent);
     opacity: 0;
     animation: sherpa-scroll-shadow linear both;
     animation-timeline: scroll(nearest block);
@@ -691,7 +691,8 @@
 }
 .group-inner {
   position: sticky;
-  inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
+  /* A step in from the edge, as the cell's own padding is. Will, TODO 506 */
+  inset-inline-start: var(--sherpa-display-mode-space-xs, 8px);
   max-inline-size: max-content;
   display: flex;
   align-items: center;
@@ -786,6 +787,7 @@
    its colspan stops reserving the columns. */
 .group-cell {
   padding: var(--sherpa-display-mode-space-2xs, 4px);
+  padding-inline-start: var(--sherpa-display-mode-space-xs, 8px);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
   color: var(--sherpa-style-content-base, #0c0b11);
@@ -888,12 +890,13 @@
   inset-block-start: calc(var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-base, 20px) / 2);
 }
 
-/* ── A MULTI-FIELD cell's tags: a second row, each value in the series colour a
-   chart gives it; ON, the filters' on colours (its pin). Will, TODO 490 ── */
+/* ── A MULTI-FIELD cell's tags: a second row in the plain Tag look; ON, the
+   filters' on colours (its pin). Will, TODOs 490, 507 ── */
 .cell-tags {
   display: flex;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding-block-start: var(--sherpa-display-mode-space-3xs, 2px);
+  /* A step clear of the text above it. Will, TODO 508 */
+  padding-block-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 /* Figma Tag/Type=full's pill, a step up: small text in a 20px pill. Will, 490 */
 .cell-tag {
@@ -902,9 +905,9 @@
   gap: var(--sherpa-theme-gap-sm, 4px);
   block-size: var(--sherpa-display-mode-size-md, 20px);
   padding: 0 var(--sherpa-theme-padding-md, 8px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border, var(--sherpa-style-border-base, #b3b3c3));
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
-  background: var(--_hue, var(--sherpa-style-surface-base, #ffffff));
+  background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-style-content-base, #0c0b11);
   font: inherit;
   font-size: var(--sherpa-theme-content-size-small, 12px);
@@ -912,18 +915,12 @@
   white-space: nowrap;
   cursor: pointer;
 
-  &:hover { box-shadow: inset 0 0 0 1px var(--_border, var(--sherpa-style-border-base, #b3b3c3)); }
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
   &:focus-visible {
     outline: var(--sherpa-focus-ring);
     outline-offset: var(--sherpa-focus-offset);
   }
 }
-.cell-tag:is([data-current], [data-superseded]) {
-  background: var(--sherpa-style-surface-base, #ffffff);
-  border-color: var(--sherpa-style-border-base, #b3b3c3);
-  color: var(--sherpa-style-content-base, #0c0b11);
-}
-.cell-tag[data-current]:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 .cell-tag[data-superseded] { cursor: not-allowed; }
 /* ON, by a shape too, where the page asks. TODO 497 · TRAP T-a-toggle-shows-its-state-by-a-shape */
 .tag-tick {

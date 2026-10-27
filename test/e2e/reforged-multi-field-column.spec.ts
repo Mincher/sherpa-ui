@@ -2,7 +2,7 @@ import { test, expect } from './harness';
 
 /**
  * MULTI-FIELD COLUMNS — Will, TODO 490. A column's `tags` draw as a second row
- * in each cell, each value in the series colour a chart gives it; a tag filters
+ * in each cell, in the plain Tag look (TODO 507); a tag filters
  * by its value and, pressed again, lets it go; the heading menu joins the
  * fields' lists, a section each, and answers each field on its own.
  * TRAP T-a-joined-menu-answers-each-field
@@ -34,7 +34,7 @@ const SETUP = `
   const reading = (field) => source.query.applied.scopes.view?.readings?.[field] ?? null;
 `;
 
-test('a cell draws its tags, each value in its series colour; off, none', async ({ page }) => {
+test('a cell draws its tags in the plain Tag look; off, none', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const names = (tr) => [...tr.querySelectorAll('.cell[data-field="name"] .cell-tag')].map((t) => t.textContent.trim());
@@ -43,7 +43,8 @@ test('a cell draws its tags, each value in its series colour; off, none', async 
     const out = {
       tags: [...sr.querySelectorAll('.row')].slice(0, 2).map(names),
       hue: [...second.querySelectorAll('.cell-tag')].map((t) => t.style.getPropertyValue('--_hue')),
-      painted: getComputedStyle(tag).backgroundColor !== 'rgba(0, 0, 0, 0)',
+      plain: getComputedStyle(tag).backgroundColor === getComputedStyle(sr.querySelector('.row')).getPropertyValue('--sherpa-style-surface-base').trim()
+        || getComputedStyle(tag).backgroundColor === 'rgb(255, 255, 255)',
       text: second.querySelector('.cell[data-field="name"]').hasAttribute('data-tags'),
     };
     grid.removeAttribute('data-multi-field');
@@ -52,9 +53,9 @@ test('a cell draws its tags, each value in its series colour; off, none', async 
     return out;
   })()`);
   expect(r.tags).toEqual([['Free', 'active'], ['Pro', 'trial']]);
-  // Pro and trial are each their field's second value: series 2, as a chart draws them.
-  expect(r.hue).toEqual(['var(--sherpa-data-viz-series-2)', 'var(--sherpa-data-viz-series-2)']);
-  expect(r.painted).toBe(true);
+  // No data-viz colour: they were "not great". Will, TODO 507
+  expect(r.hue).toEqual(['', '']);
+  expect(r.plain).toBe(true);
   expect(r.text).toBe(true);
   expect(r.off).toBe(0);
 });

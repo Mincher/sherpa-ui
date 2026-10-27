@@ -15832,18 +15832,28 @@ A). With `data-scroll-shadow` on its host, a scroll box marked
 `.sherpa-scroll-shadow` shows an inner shadow on each edge its content is
 hidden past. An inset `box-shadow`, or a `background-attachment: local` one, is
 painted UNDER the content, so a card hides it. So the box's `::before` and
-`::after` are sticky, 12px of gradient in the shadow colour, `z-index: 1`, and
+`::after` are sticky, 8px of gradient in half the shadow colour, `z-index: 1`, and
 take no room: a negative margin, and a flex box with a `gap` names it in
 `--_scroll-shadow-gap`. Every box sets that to 0 first: a custom property
 inherits, and a stack's gap reached a grid slotted in it and slid its table
 8px up under its sticky header. Each follows the box's own scroll
 (`animation-timeline: scroll(nearest block)`): the top fades in over the first
-16px, the bottom out over the last 16px. No overflow, no timeline: no shadow.
+16px, the bottom out over the last 16px — and the bottom, and a sideways end
+edge, are HIDDEN until the scroll starts: a second animation on `visibility`,
+over its first 1px (Will, TODO 504: *"we don't need to show the shadow until
+scroll start"*). No overflow, no timeline: no shadow.
+
+**Its size and ink are ONE pair of properties**, `--sherpa-scroll-shadow-size`
+and `--sherpa-scroll-shadow-ink`, on `:host` in `sherpa-base.css`
+(`T-one-value-one-declaration`): the edges, the grid's header strip, a stuck
+metric row and a column's scope header all read them. As soft as a small drop
+shadow (Will, 504: *"too harsh … more in line with other sherpa drop shadow
+styles … doesn't need particularly large distance values"*): 8px, half the ink.
 Chromium and WebKit, so iOS; Firefox 155 has no scroll timeline and shows
 none. `scroll-state()` would be Chromium only.
 
-**The bottom edge is held from BOTH sides**, in the box's last 12px
-(`inset-block: calc(100% - 12px) 0`; a sticky inset's percentage is the
+**The bottom edge is held from BOTH sides**, in the box's last 8px
+(`inset-block: calc(100% - 8px) 0`; a sticky inset's percentage is the
 scrollport's). The app shell squeezes its Context to the frame and lets the
 content spill past it, so an edge held only at the bottom rode up mid-box once
 scrolled. Both are pinned across too: a wide grid scrolls sideways under them.
@@ -15859,8 +15869,8 @@ are its frame's (`T-a-sideways-scroll-shadow-is-its-frames`).
 ### T-a-stuck-header-casts-a-shadow
 
 **A sticky header, stuck with content scrolled under it, casts a shadow**
-(Will, TODO 421: *"All possible with CSS."*). The data grid's: a 12px strip of
-the shadow colour under each cell of the header's LAST row (the filter row
+(Will, TODO 421: *"All possible with CSS."*). The data grid's: an 8px strip of
+the scroll shadow's ink under each cell of the header's LAST row (the filter row
 while `data-filterable`, else the heading row), absolutely placed at the cell's
 foot, so the cells draw one even edge. A `box-shadow` per cell cannot: each
 fades at its own sides, and a pinned cell's paints over its neighbour. The
@@ -19438,8 +19448,9 @@ moved tooltip (`showFor()`) says where the filter went.
 A TAG is its value's toggle. Pressed, its value is picked — out of All too, so
 "filter by this" narrows even where the field opens on every value; pressed
 again, it is let go, and the last let go is NO filter, not none (Will: "clicking
-the tag again clears the filter value"). Its colour is the series a chart gives
-the value — its place in the field's list, or a band's status (`paintSwatch`).
+the tag again clears the filter value"). It wears the plain Tag look, and the
+filters' on colours while picked: the data-viz colours were tried first, and
+were "not great" (Will, TODO 507).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-multi-field-column.spec.ts`

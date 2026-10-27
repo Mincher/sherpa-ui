@@ -53,6 +53,12 @@
   /* One step lighter than the outer border, so an inner rule reads as quieter. */
   --sherpa-card-divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --sherpa-card-pad: var(--sherpa-theme-padding-lg, 16px);
+
+  /* A SCROLL SHADOW — an edge over what scrolls under it, or a stuck header's —
+     as soft as a small drop shadow, and as short: half the shadow ink, 8px.
+     Will, TODO 504 */
+  --sherpa-scroll-shadow-size: var(--sherpa-display-mode-space-xs, 8px);
+  --sherpa-scroll-shadow-ink: color-mix(in srgb, var(--sherpa-style-surface-shadow, #35353d4c) 50%, transparent);
 }
 
 :host([hidden]) {
@@ -109,7 +115,7 @@
     display: block;
     flex: none;
     grid-column: 1 / -1;
-    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    block-size: var(--sherpa-scroll-shadow-size);
     pointer-events: none;
     opacity: 0;
     animation: sherpa-scroll-shadow linear both;
@@ -117,18 +123,20 @@
   }
   :host([data-scroll-shadow]) .sherpa-scroll-shadow::before {
     inset-block-start: var(--_scroll-shadow-top, 0px);
-    margin-block-end: calc(-1 * (var(--sherpa-display-mode-space-sm, 12px) + var(--_scroll-shadow-gap, 0px)));
-    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    margin-block-end: calc(-1 * (var(--sherpa-scroll-shadow-size) + var(--_scroll-shadow-gap, 0px)));
+    background: linear-gradient(to bottom, var(--sherpa-scroll-shadow-ink), transparent);
     animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
   }
-  /* Held in the box's last 12px from BOTH sides: a squeezed child, its content
-     spilling past it, leaves this mid-box once scrolled. */
+  /* Held in the box's last 8px from BOTH sides: a squeezed child, its content
+     spilling past it, leaves this mid-box once scrolled. None at rest: it shows
+     once the scroll starts (Will, TODO 504). */
   :host([data-scroll-shadow]) .sherpa-scroll-shadow::after {
-    inset-block: calc(100% - var(--sherpa-display-mode-space-sm, 12px)) 0;
-    margin-block-start: calc(-1 * (var(--sherpa-display-mode-space-sm, 12px) + var(--_scroll-shadow-gap, 0px)));
-    background: linear-gradient(to top, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
-    animation-direction: reverse;
-    animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%;
+    inset-block: calc(100% - var(--sherpa-scroll-shadow-size)) 0;
+    margin-block-start: calc(-1 * (var(--sherpa-scroll-shadow-size) + var(--_scroll-shadow-gap, 0px)));
+    background: linear-gradient(to top, var(--sherpa-scroll-shadow-ink), transparent);
+    animation-name: sherpa-scroll-shadow, sherpa-scroll-started;
+    animation-direction: reverse, normal;
+    animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%, 0 1px;
   }
 }
 /* SIDEWAYS, a FRAME round the scroll box draws its side edges, two empty
@@ -151,7 +159,7 @@
     inset-block: 0;
     /* Over a pinned header corner, which is 4. */
     z-index: 5;
-    inline-size: var(--sherpa-display-mode-space-sm, 12px);
+    inline-size: var(--sherpa-scroll-shadow-size);
     pointer-events: none;
     opacity: 0;
     animation: sherpa-scroll-shadow linear both;
@@ -159,25 +167,31 @@
   }
   :host([data-scroll-shadow]) .sherpa-scroll-edge-start {
     inset-inline-start: var(--_scroll-inset-start, 0px);
-    background: linear-gradient(to right, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    background: linear-gradient(to right, var(--sherpa-scroll-shadow-ink), transparent);
     animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
   }
   :host([data-scroll-shadow]) .sherpa-scroll-edge-end {
     inset-inline-end: var(--_scroll-inset-end, 0px);
-    background: linear-gradient(to left, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
-    animation-direction: reverse;
-    animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%;
+    background: linear-gradient(to left, var(--sherpa-scroll-shadow-ink), transparent);
+    animation-name: sherpa-scroll-shadow, sherpa-scroll-started;
+    animation-direction: reverse, normal;
+    animation-range: calc(100% - var(--sherpa-display-mode-space-base, 16px)) 100%, 0 1px;
   }
   /* Right to left, the start is the right. */
   :host([data-scroll-shadow]) .sherpa-scroll-edge-start:dir(rtl) {
-    background: linear-gradient(to left, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    background: linear-gradient(to left, var(--sherpa-scroll-shadow-ink), transparent);
   }
   :host([data-scroll-shadow]) .sherpa-scroll-edge-end:dir(rtl) {
-    background: linear-gradient(to right, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    background: linear-gradient(to right, var(--sherpa-scroll-shadow-ink), transparent);
   }
 }
 @keyframes sherpa-scroll-shadow {
   to { opacity: 1; }
+}
+/* Hidden at rest, shown from the first pixel scrolled. */
+@keyframes sherpa-scroll-started {
+  from { visibility: hidden; }
+  to { visibility: visible; }
 }
 
 /* ── Disabled ────────────────────────────────────────────────────────────

@@ -108,9 +108,9 @@ slot {
     position: absolute;
     inset-block-start: calc(100% - 50% * var(--_metric-half, 0));
     inset-inline: 0;
-    block-size: var(--sherpa-display-mode-space-sm, 12px);
+    block-size: var(--sherpa-scroll-shadow-size);
     pointer-events: none;
-    background: linear-gradient(to bottom, var(--sherpa-style-surface-shadow, #35353d4c), transparent);
+    background: linear-gradient(to bottom, var(--sherpa-scroll-shadow-ink), transparent);
     opacity: 0;
     animation: sherpa-scroll-shadow linear both;
     animation-timeline: --sherpa-metric-group;
@@ -119,7 +119,7 @@ slot {
 
   /* The first casts none over a second stuck under it: one shadow, at the foot. */
   :host(:nth-child(1 of sherpa-metric-group[data-sticky]))::after {
-    block-size: calc(var(--sherpa-display-mode-space-sm, 12px) * (1 - var(--_metric-half, 0)));
+    block-size: calc(var(--sherpa-scroll-shadow-size) * (1 - var(--_metric-half, 0)));
   }
 }
 

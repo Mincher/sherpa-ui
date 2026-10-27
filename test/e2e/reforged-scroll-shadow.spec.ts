@@ -51,7 +51,8 @@ test('an outer box\'s gap never reaches an inner box\'s edges', async ({ page })
     return CSS.supports('animation-timeline: scroll()') ? getComputedStyle(body, '::before').marginBlockEnd : 'none';
   });
   test.skip(margin === 'none', 'no scroll timeline: no shadow');
-  expect(margin).toBe('-12px');
+  // The shadow's own 8px, never the stack's gap too. Will, TODO 504
+  expect(margin).toBe('-8px');
 });
 
 // TODO 421. TRAP T-a-stuck-header-casts-a-shadow
@@ -210,8 +211,9 @@ test('the header\'s shadow does not stack under a pinned column as columns scrol
 });
 
 /* The BOTTOM edge runs over every column, the pinned ones too, while rows lie
-   below: the rows run on under all of them. TODO 486 */
-test('the grid\'s bottom edge shades its pinned column while more rows lie below, and not at the end', async ({ page }) => {
+   below: the rows run on under all of them. TODO 486. None at rest: it shows
+   once the scroll starts. Will, TODO 504 */
+test('the grid\'s bottom edge shades its pinned column while more rows lie below, once scrolled, and not at the end', async ({ page }) => {
   const at = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
     el.id = 'tall';
@@ -227,7 +229,8 @@ test('the grid\'s bottom edge shades its pinned column while more rows lie below
     const sr = el.shadowRoot!;
     const scroller = sr.querySelector<HTMLElement>('.scroller')!.getBoundingClientRect();
     const pin = sr.querySelector('.head-row > [data-pin-last]')!.getBoundingClientRect();
-    return { y: scroller.bottom - 3, x: pin.left + 6, driven: CSS.supports('animation-timeline: scroll()') };
+    return { y: scroller.bottom - 3, x: pin.left + 6, row: sr.querySelector('.row')!.getBoundingClientRect().height,
+      driven: CSS.supports('animation-timeline: scroll()') };
   });
   test.skip(!at.driven, 'no scroll timeline: no shadow');
   const pixel = async (): Promise<number> => {
@@ -241,13 +244,19 @@ test('the grid\'s bottom edge shades its pinned column while more rows lie below
       return c.getImageData(0, 0, 1, 1).data[0]!;
     }, shot.toString('base64'));
   };
-  const more = await pixel();
-  await page.evaluate(async () => {
+  const scroll = (to: number | 'end') => page.evaluate(async (y) => {
     const s = document.getElementById('tall')!.shadowRoot!.querySelector<HTMLElement>('.scroller')!;
-    s.scrollTop = s.scrollHeight;
+    s.scrollTop = y === 'end' ? s.scrollHeight : y;
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
-  });
+  }, to);
+  const rest = await pixel();
+  // ONE row down: the same content sits under the pixel, so only the shadow differs.
+  await scroll(at.row);
+  const more = await pixel();
+  await scroll('end');
   const end = await pixel();
-  // Shaded while rows lie below; clear at the end.
-  expect(end - more).toBeGreaterThan(20);
+  // Clear at rest; shaded once scrolled while rows lie below; clear at the end.
+  // Half the shadow ink: a soft shade, a few steps darker. Will, TODO 504
+  expect(rest - more).toBeGreaterThan(4);
+  expect(end - more).toBeGreaterThan(4);
 });

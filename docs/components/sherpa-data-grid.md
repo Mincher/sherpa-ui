@@ -241,7 +241,7 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.action-item` | `color` |
 | `--sherpa-theme-content-size-base` | `.action-icon` | `inline-size` |
 | `--sherpa-display-mode-space-2xs` | `.group-ungroup` | `inset-inline-end` |
-| `--sherpa-display-mode-space-2xs` | `.group-inner` | `inset-inline-start` |
+| `--sherpa-display-mode-space-xs` | `.group-inner` | `inset-inline-start` |
 | `--sherpa-theme-gap-md` | `.group-inner` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.group-inner` | `min-block-size` |
 | `--sherpa-style-surface-base` | `.row` | `--_row-base` |
@@ -249,6 +249,7 @@ What each class's base rule reads:
 | `--sherpa-theme-content-line-height-base` | `.cell` | `line-height` |
 | `--sherpa-style-surface-base-1` | `.group-row` | `background` |
 | `--sherpa-display-mode-space-2xs` | `.group-cell` | `padding` |
+| `--sherpa-display-mode-space-xs` | `.group-cell` | `padding-inline-start` |
 | `--sherpa-border-bottom` | `.group-cell` | `border-block-end` |
 | `--sherpa-style-content-base` | `.group-cell` | `color` |
 | `--sherpa-theme-content-line-height-base` | `.group-cell` | `line-height` |
@@ -266,7 +267,7 @@ What each class's base rule reads:
 | `--sherpa-theme-content-body-1` | `.empty` | `color` |
 | `--sherpa-display-mode-space-2xs` | `.cell-filter` | `inset-inline-end` |
 | `--sherpa-theme-gap-sm` | `.cell-tags` | `gap` |
-| `--sherpa-display-mode-space-3xs` | `.cell-tags` | `padding-block-start` |
+| `--sherpa-display-mode-space-2xs` | `.cell-tags` | `padding-block-start` |
 | `--sherpa-theme-gap-sm` | `.cell-tag` | `gap` |
 | `--sherpa-display-mode-size-md` | `.cell-tag` | `block-size` |
 | `--sherpa-theme-padding-md` | `.cell-tag` | `padding` |

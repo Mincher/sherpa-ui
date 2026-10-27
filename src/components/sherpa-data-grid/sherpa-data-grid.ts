@@ -21,7 +21,6 @@ import {
 } from '../../core/ui/sherpa-element.js';
 import { markNeedles } from '../../core/ui/mark-text.js';
 import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
-import { paintSwatch } from '../../core/ui/chart-parts.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
 import {
@@ -80,8 +79,8 @@ export interface GridColumn extends OffersAdvanced {
   op?: FilterOp;
   /** Drawn width in px, clamped. A user drag overrides it for the grid's life. */
   width?: number;
-  /** Fields its cells draw as a second row of TAGS, each value in its series colour;
-   *  its heading menu joins their lists. While `data-multi-field` is set. Will, TODO 490 */
+  /** Fields its cells draw as a second row of TAGS; its heading menu joins their
+   *  lists. While `data-multi-field` is set. Will, TODO 490 */
   tags?: string[];
 }
 
@@ -1354,8 +1353,8 @@ export class SherpaDataGrid extends SherpaElement {
     // honest across the cut. TRAP T-grid-collapsed-group-is-one-slot.
     const { rows, offset, pages } = this.#pageWindow(all);
     let lastGroup: string | null = null;
-    // Each tag field's values, read once a draw.
-    const looks = new Map<string, Map<string, { label: string; swatch: number | string }>>();
+    // Each tag field's value names, read once a draw.
+    const looks = new Map<string, Map<string, string>>();
     // Each row's selection cell is drawn frozen: no caller has to pin it after.
     const selectable = this.hasAttribute('data-selectable');
 
@@ -1674,10 +1673,9 @@ export class SherpaDataGrid extends SherpaElement {
     for (const [f, reading] of changed) this.#reportColumn(f, reading);
   }
 
-  /** A multi-field cell's second row: a tag per field with a value, in that value's
-   *  series colour — on where it is picked, greyed where the View holds its field. */
-  #drawTags(td: HTMLElement, record: GridRow, fields: readonly string[],
-    looks: Map<string, Map<string, { label: string; swatch: number | string }>>): void {
+  /** A multi-field cell's second row: a tag per field with a value — on where it
+   *  is picked, greyed where the View holds its field. */
+  #drawTags(td: HTMLElement, record: GridRow, fields: readonly string[], looks: Map<string, Map<string, string>>): void {
     const row = this.clone('template.cell-tags-tpl');
     if (!row) return;
     for (const field of fields) {
@@ -1687,17 +1685,15 @@ export class SherpaDataGrid extends SherpaElement {
       if (!tag) return;
       let look = looks.get(field);
       if (!look) {
-        look = new Map(this.#optionsOf(field).map((o, i) => [o.value, { label: o.label ?? o.value, swatch: o.swatch ?? i + 1 }]));
+        look = new Map(this.#optionsOf(field).map((o) => [o.value, o.label ?? o.value]));
         looks.set(field, look);
       }
       const key = valueKey(raw);
-      const seen = look.get(key);
-      const label = seen?.label ?? String(raw);
+      const label = look.get(key) ?? String(raw);
       tag.dataset['field'] = field;
       tag.dataset['value'] = key;
       const text = tag.querySelector('.tag-label');
       if (text) text.textContent = label;
-      if (seen) paintSwatch(tag, seen.swatch);
       const on = this.#tagOn(field, key);
       const held = this.#superseded.has(field);
       tag.toggleAttribute('data-current', on);
