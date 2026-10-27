@@ -441,6 +441,14 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     }
   }
 
+  /* A value rested on in a scope the Query has not made yet — a chart's own,
+     made at its first toggle — previews from an empty one.
+     TODO 513 · TRAP T-a-hovered-chip-previews-the-highlight */
+  const rested = facts.highlight;
+  if (!highlight && rested?.value !== undefined && !(rested.scope in query.scopes) && (!facts.has || facts.has(rested.field))) {
+    highlight = andFilter(scopeClauses(rested.scope, { ...emptyScope(), readings: { [rested.field]: { picked: [rested.value] } } }, viewHolds, facts));
+  }
+
   const out: Compiled = {
     scoped,
     only: Object.fromEntries(Object.entries(only)

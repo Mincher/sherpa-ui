@@ -19093,6 +19093,13 @@ row of a chip's open menu — picked or not — previews that value alone:
 The chip itself previews its whole answer, and only while it is applied and
 counted.
 
+
+**A preview needs no scope made first** (Will, TODO 513: *"Hover highlighting on
+legend items only works if one of the legend items has been toggled"*). A
+chart's own scope is made at its legend's first toggle, and `compile` built the
+highlight only from scopes the Query had — so a rest before any toggle asked a
+preview and lit nothing. A rested value whose scope is not made yet is compiled
+from an empty one.
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/data-source.ts`

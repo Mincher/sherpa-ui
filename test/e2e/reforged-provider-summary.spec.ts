@@ -93,7 +93,8 @@ test('a legend reads its chart\'s field; its pick narrows that chart alone', asy
 });
 
 /* With "Highlight matches on hover", a rest on a legend row previews its
-   value's matches, as a chip's value does. Will, TODO 495 */
+   value's matches, as a chip's value does — with no row toggled first, when
+   the chart's own scope is not made yet. Will, TODOs 495, 513 */
 test('a rest on a legend row previews its value while Highlight matches on hover is on', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
@@ -118,13 +119,17 @@ test('a rest on a legend row previews its value while Highlight matches on hover
     provider.highlightOnHover = true;
     const marked = legend.hasAttribute('data-highlight-hover');
     const on = await rest('over');
+    // Its matches LIGHT, not only asked for: nothing was toggled. TODO 513
+    const lit = source.highlight ? [...new Set(source.rows.filter((row) => source.highlight(row)).map((row) => row.plan))] : null;
     const left = await rest('leave');
-    return { off, marked, on, left };
+    return { off, marked, on, lit, left, after: source.highlight };
   })()`) as Record<string, unknown>;
   expect(r['off']).toBeNull();
   expect(r['marked']).toBe(true);
   expect(r['on']).toMatchObject({ field: 'plan', value: 'Free' });
+  expect(r['lit']).toEqual(['Free']);
   expect(r['left']).toBeNull();
+  expect(r['after']).toBeNull();
 });
 
 test('a child uses the nearest data-source above it; a new declaration asks again; a bad one is loud', async ({ page }) => {

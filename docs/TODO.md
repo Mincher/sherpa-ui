@@ -44,30 +44,31 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next). Done: a column's `tags` draw as pills in each value's series colour (bigger, Will, 2026-10-27); a press picks the value, again lets it go; the heading menu joins the lists, a section each, and answers each field; the View's field is greyed with ONE moved tip (`showFor()`); `provider.multiFieldColumns` → `data-multi-field`, on; Demos: Filtering › Multi-field columns, Name 300px. TRAP `T-a-joined-menu-answers-each-field` | grid |
 | ✅ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped). Done (Will A, an off shape too): the Checkbox's box lifted into `sherpa-checkbox-look.css`; each toggle's shape wears it, empty off and ticked on, sized by `--_checkbox-size`. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
 | 🚧 | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Found and fixed: the panel's binding heard its section bars' events too (`T-a-nested-control-steers-through-its-own-binding`). Not yet reproduced: the glitch itself — ❓ steps asked | bug |
-| ✅ | 19 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
-| ✅ | 20 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493). Done: the panel's chips flow in one wrapping row, every chip but a preset a row of its own; with headings in a column the run sits in the value column, its heading beside the first line. TRAP `T-a-preset-is-its-own-part` | bug |
-| ✅ | 21 | 507 | LOOK — a grid cell's TAGS (490) drop the data-viz colours: they are "not great" (Will, 2026-10-27). Done: the tags wear the plain Tag look; picked, the filters' on colours. TRAP `T-a-joined-menu-answers-each-field` | look |
-| ✅ | 22 | 504 | LOOK — the scroll shadow (the inner shadow a box casts over what it scrolls under) is too harsh: softer, in line with the other Sherpa drop shadows, a shorter reach, and none until the scroll starts (Will, 2026-10-27). Done: 8px, half the shadow ink, in ONE pair of properties (`--sherpa-scroll-shadow-size`, `-ink`) the edges, the grid's header, a stuck metric row and a scope header read; the bottom and a sideways end edge hidden until the scroll starts. TRAP `T-a-scroll-shadow-is-drawn-over-the-content` | look |
-| ✅ | 23 | 506 | LOOK — a grid's GROUP row: its leading padding one step more (Will, 2026-10-27). Done: 8px before the group's box, at rest and while it scrolls sideways | look |
-| ✅ | 24 | 508 | LOOK — a multi-field cell: more gap between its text and its tags (Will, 2026-10-27). Done: 4px, a step up from 2 | look |
-| ✅ | 25 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27). Done: `:state(multi-field)` while a shown column draws tags; every cell of a row is two lines tall and top-aligned, its box and ⋮ too. TRAP `T-a-joined-menu-answers-each-field` | look |
-| ✅ | 26 | 511 | LOOK — in a two-line grid (509) a cell's filter button sits by the FIRST line, as the value does, not mid-cell (Will, 2026-10-27). Done: under `:state(multi-field)` the button centres on the first line in every cell | look |
-| ⬜ | 27 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493) | filters |
-| ⬜ | 28 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
-| 🚧 | 29 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
-| 🚧 | 30 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
-| ⬜ | 31 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
-| ⬜ | 32 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
-| ⏸️ | 33 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
-| ⬜ | 34 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
-| ⬜ | 35 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
-| 🚧 | 36 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| 🚧 | 37 | 288 | Phase 6 — one copy of each data helper | refactor |
-| 🚧 | 38 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 39 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
-| 🚧 | 40 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
-| ⬜ | 41 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
-| ⬜ | 42 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
+| ✅ | 19 | 513 | BUG — 'Highlight matches on hover': resting on a chart LEGEND item highlights only once one legend item has been toggled (Will, 2026-10-27; see 495, 496). Done: a chart's own scope is made at its first toggle, and the highlight compiled only from scopes the Query had; a rested value whose scope is not made yet now compiles from an empty one. TRAP `T-a-hovered-chip-previews-the-highlight` | bug |
+| ✅ | 20 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
+| ✅ | 21 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493). Done: the panel's chips flow in one wrapping row, every chip but a preset a row of its own; with headings in a column the run sits in the value column, its heading beside the first line. TRAP `T-a-preset-is-its-own-part` | bug |
+| ✅ | 22 | 507 | LOOK — a grid cell's TAGS (490) drop the data-viz colours: they are "not great" (Will, 2026-10-27). Done: the tags wear the plain Tag look; picked, the filters' on colours. TRAP `T-a-joined-menu-answers-each-field` | look |
+| ✅ | 23 | 504 | LOOK — the scroll shadow (the inner shadow a box casts over what it scrolls under) is too harsh: softer, in line with the other Sherpa drop shadows, a shorter reach, and none until the scroll starts (Will, 2026-10-27). Done: 8px, half the shadow ink, in ONE pair of properties (`--sherpa-scroll-shadow-size`, `-ink`) the edges, the grid's header, a stuck metric row and a scope header read; the bottom and a sideways end edge hidden until the scroll starts. TRAP `T-a-scroll-shadow-is-drawn-over-the-content` | look |
+| ✅ | 24 | 506 | LOOK — a grid's GROUP row: its leading padding one step more (Will, 2026-10-27). Done: 8px before the group's box, at rest and while it scrolls sideways | look |
+| ✅ | 25 | 508 | LOOK — a multi-field cell: more gap between its text and its tags (Will, 2026-10-27). Done: 4px, a step up from 2 | look |
+| ✅ | 26 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27). Done: `:state(multi-field)` while a shown column draws tags; every cell of a row is two lines tall and top-aligned, its box and ⋮ too. TRAP `T-a-joined-menu-answers-each-field` | look |
+| ✅ | 27 | 511 | LOOK — in a two-line grid (509) a cell's filter button sits by the FIRST line, as the value does, not mid-cell (Will, 2026-10-27). Done: under `:state(multi-field)` the button centres on the first line in every cell | look |
+| ❓ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493) | filters |
+| ❓ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
+| 🚧 | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| 🚧 | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
+| ⬜ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry | tests |
+| ⏸️ | 34 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⬜ | 35 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
+| ⬜ | 36 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
+| 🚧 | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ⬜ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ⬜ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| ⬜ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
 | ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 34 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
@@ -2597,7 +2598,7 @@ filter-on colours while picked.
 
 **✅ Done 2026-10-27:** as written; `paintSwatch` stays, the chip's swatch uses it.
 
-### `[ ]` ⬜ 510 — PRESETS: stacked Advanced conditions, in the query
+### `[ ]` ❓ 510 — PRESETS: stacked Advanced conditions, in the query
 
 Will, 2026-10-27: *"Preset filters should be a wrapper around stacked advanced
 filter conditions that get injected into the overall filter query. The filter
@@ -2616,6 +2617,13 @@ out. To settle as it starts (each a short ❓ if the code does not answer it):
 - the reader edits a row a preset put there: the preset turns off, or stays on
   while its rows are all still there?
 - two presets on one field: their rows stack, each removed with its preset.
+
+**❓ Asked Will, 2026-10-27** — the one choice the rest follows from. A preset
+turned on where a field already has the reader's own filter:
+- **A (my pick):** its conditions are ADDED (AND) to the field's own; the preset
+  reads ON while every one of its conditions is still in the query, so editing
+  one away turns it off. One truth: the query.
+- **B:** it REPLACES the field's own filter while on, and gives it back when off.
 
 ### `[x]` ✅ 509 — LOOK: every cell two rows when one is multi-field
 
@@ -2647,13 +2655,25 @@ scroll edge and stuck-header strip reads — five copies of the 12px strip had
 grown. The bottom edge and a sideways end edge show from the first pixel
 scrolled. TRAP `T-a-scroll-shadow-is-drawn-over-the-content`
 
-### `[ ]` ⬜ 484 — LAYOUT: a sticky metrics row sits above the layout grid
+### `[ ]` ❓ 484 — LAYOUT: a sticky metrics row sits above the layout grid
 
 Will, 2026-10-27: *"When a metrics row is sticky, I think we need to move it out
 of the layout grid and place it above it inside the content area. With this done
 we can let the layout-grids scroll under inner shadow conditions handle the
 shadow effect. We no longer need a drop shadow on the metrics row when scrolled
 under."*
+
+**Found 2026-10-27.** The row is the layout grid's first item, sticky in the
+app shell's Context frame (the one scroller, `T-only-the-context-scrolls`), with
+its own shadow strip. It cannot simply leave the grid: its column count, gap and
+row height are the grid's (`:is(.sherpa-grid, sherpa-layout-grid)` re-points
+them per width; outside one it reads the 4-column root and draws joined).
+**❓ Asked Will:**
+- **A:** Demos only — a stack holds the metrics row (fixed, in a one-row grid)
+  and below it the grid in its own scrolling box, with that box's scroll shadow.
+- **B (my pick):** the app shell gets a FIXED region above the Context's scroll
+  area; a page puts its metrics row there, and the shell's own scroll shadow
+  shades what scrolls under it. Any page, one system.
 
 ### `[x]` ✅ 483 — BUG: a section's ⋮ is green while a value is picked
 
