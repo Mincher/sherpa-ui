@@ -1,7 +1,8 @@
 /**
  * ONLY SOME SCOPES ARRANGE — Will, TODO 99 step 4 (B): *"Only certain component
- * scopes, and possibly view scope, will have group and sort."* A scope over a
- * grid or a list arranges; another only if it says so. The source still loads
+ * scopes, and possibly view scope, will have group and sort."* A scope a page
+ * of rows is drawn in arranges; another only if it says so (TODO 341: no
+ * component kind decides it). The source still loads
  * once, and remembers WHICH scope arranged the rows.
  *
  *   node --test test/unit/a-scope-arranges-its-own-rows.test.mjs
@@ -27,8 +28,9 @@ function page() {
   source.declareField('name', { label: 'Name' });
   for (const scope of ['view', 'data', 'chart']) source.query.offer(scope, ['plan', 'name']);
   const grid = control();
-  bindSource(source, grid, { scope: 'data', shows: 'grid' });
-  bindSource(source, control(), { scope: 'chart', shows: 'chart', readonly: true });
+  bindSource(source, grid, { scope: 'data' });
+  // A summary is given every row, not a page.
+  bindSource(source, control(), { scope: 'chart', rows: 'all', readonly: true });
   return { source, grid };
 }
 

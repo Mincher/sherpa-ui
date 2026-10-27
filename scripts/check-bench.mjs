@@ -237,7 +237,7 @@ async function page(L, def, store, columns) {
   const column = control('sherpa-quick-filter-toolbar', 'column');
   L.bindSource(source, view, { steerOnly: true, scope: 'view' });
   L.bindSource(source, data, { steerOnly: true, scope: 'data' });
-  L.bindSource(source, grid, { scope: 'data', shows: 'grid', fields: columns });
+  L.bindSource(source, grid, { scope: 'data', fields: columns });
   L.bindSource(source, chart, { readonly: true, rows: 'all', fields: ['status'] });
   L.bindSource(source, column, { steerOnly: true, scope: ['view', 'data'] });
   return { source, initial, view, data, grid, chart, column };

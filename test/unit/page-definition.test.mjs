@@ -147,7 +147,7 @@ test('describe() gives a scope\'s filters in the ONE order: its fields, each set
   assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['a', 'b', 'c', 'd']);
 });
 
-test('a scope says what it narrows: the View is the view, a bound component names its own', async () => {
+test('a scope names the component it narrows by its tag, and no kind', async () => {
   // TRAP T-a-scope-says-what-it-shows
   const store = new ArrayStore([{ region: 'EMEA', status: 'open' }]);
   const source = await openSource({
@@ -156,14 +156,16 @@ test('a scope says what it narrows: the View is the view, a bound component name
     scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status'] } },
   }, store);
   const grid = {
-    populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
+    localName: 'sherpa-data-grid', populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
   };
-  assert.equal(source.describe('view').shows, 'view');
-  assert.equal(source.describe('data').shows, undefined, 'nothing bound says what it shows');
-  const off = bindSource(source, grid, { scope: 'data', shows: 'grid' });
-  assert.equal(source.describe('data').shows, 'grid');
+  assert.equal(source.describe('data').component, undefined, 'nothing bound');
+  const off = bindSource(source, grid, { scope: 'data' });
+  assert.equal(source.describe('data').component, 'sherpa-data-grid');
+  // The data layer knows no kind of component. Will, TODO 341
+  assert.equal('shows' in source.describe('data'), false);
+  assert.equal('shows' in source.describe('view'), false);
   off();
-  assert.equal(source.describe('data').shows, undefined, 'unbound, it says nothing');
+  assert.equal(source.describe('data').component, undefined, 'unbound, it names none');
 });
 
 /* Will, TODO 172: "For multi value filters in the filter panel each chip

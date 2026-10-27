@@ -57,7 +57,10 @@ export interface ProvideOptions {
  *  and where its Query is kept. */
 export interface OpenOptions {
   stores: Record<string, Store>;
-  /** The page's own Views; a reader's saved ones join them by the page's id. */
+  /** What the page's saved Views, filters and drafts are kept under: an outlet
+   *  gives its Context's name. Default: the definition's id. TODO 321 */
+  key?: string;
+  /** The page's own Views; a reader's saved ones join them by its key. */
   views?: ViewLibrary;
   view?: string;
   session?: ProvideOptions['session'];
@@ -627,10 +630,11 @@ export class SherpaProvider extends SherpaElement {
         return undefined;
       }
       const shipped = options.views;
-      const library = shipped ? (): ViewLibrary => viewLibrary(definition.id, shipped) : null;
+      const key = options.key ?? definition.id;
+      const library = shipped ? (): ViewLibrary => viewLibrary(key, shipped) : null;
       // The page as DEFINED, before a kept Query: what Reset all on view starts from.
       this.#pages.begin({
-        id: definition.id, store: def.store, source, query: source.query, library, initial: source.query.applied,
+        id: key, store: def.store, source, query: source.query, library, initial: source.query.applied,
         savedFilters: savedFiltersOf(definition),
       });
       this.#pages.sharing = this.#sharedStore();
@@ -644,8 +648,8 @@ export class SherpaProvider extends SherpaElement {
         sources: { [definition.id]: source },
         ...(library ? {
           views: library, ...(view ? { view } : {}),
-          ...(options.session ? { session: options.session } : {}), key: `/filters/${definition.id}`,
-          ...(options.drafts ? { drafts: { page: definition.id, mode: options.drafts } } : {}),
+          ...(options.session ? { session: options.session } : {}), key: `/filters/${key}`,
+          ...(options.drafts ? { drafts: { page: key, mode: options.drafts } } : {}),
         } : {}),
       });
       if (!page.signal.aborted) opened = source;
@@ -1075,7 +1079,6 @@ export class SherpaProvider extends SherpaElement {
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',
       ...(asks.own ? { ignore: asks.own } : {}),
       ...(scope ? { scope } : {}),
-      ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
       ...(spec ? { readonly: true, as: (rows, src) => {
         const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope));

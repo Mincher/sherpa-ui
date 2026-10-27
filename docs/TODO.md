@@ -55,7 +55,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 27 | 511 | LOOK — in a two-line grid (509) a cell's filter button sits by the FIRST line, as the value does, not mid-cell (Will, 2026-10-27). Done: under `:state(multi-field)` the button centres on the first line in every cell | look |
 | ✅ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A. Done: on writes its rows into each field's answer (at its home, ANDed into every run); off takes them out; its on is read from the fields; no `presets` flag. TRAP `T-a-preset-is-its-own-part` | filters |
 | ✅ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B. DONE 2026-10-27: the app shell's `context-header` slot, a FIXED region over the Context's scroll area; the outlet lifts a Context's `slot="context-header"` element into it and takes it out with the Context. Demos' Dashboard and Records put their metrics row there, with no `data-sticky`. TRAP T-a-context-has-a-fixed-region | look |
-| ⬜ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A | bug |
+| ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | 🚧 | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
 | ⬜ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry. Measured 2026-10-27, idle machine: 1 in 40 (Settings never opened — the click was lost), then 0 in 120 (all four ways out) and 0 in 60 (a scripted loop with Navigation-API logging). Load-bound, as 390 said; next time, run it with `--trace=retain-on-failure` | tests |
@@ -65,7 +65,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
 | 🚧 | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
-| ⬜ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B | refactor |
+| ✅ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B. DONE 2026-10-27: a scope arranges when a PAGE of rows is drawn in it (`pagedIn`: a bind given `rows: 'page'`, not steer-only), never because a grid or a list is; `shows` / `ScopeShows` / `DataAsk.shows` are gone from the asks, the binds and `describe()`, which names a scope's component by its tag only. The colour words are 514 | refactor |
 | 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ✅ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one. Will, 2026-10-27: "Leave 339" — the file stays as it is; closed with nothing done | figma |
 | ✅ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate. Done 2026-10-27: `tsconfig.tests.json` maps `/dist/*` to the source (not `tsconfig.json`: Playwright reads that one and would rewrite the imports a spec hands the browser); 261 errors to 0 across 30 specs — casts, unused helpers, a stale `await src.ready`, a fallback import of a file that never existed; `npm run type-check:tests`, ~3s, in the pre-commit hook | tests |
@@ -85,6 +85,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 44 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
 | ⬜ | 45 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | ⬜ | 46 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
+| ⬜ | 47 | 514 | DATA (from 341, Will 2026-10-27: 3 B, its own item) — two colour words in formatted data: `colorIndex` (aggregate.ts, on `ChartDatum`) and a part's `swatch` (data-source.ts). Each is the value's place in its field's declared order, 1-based: name it that, an ordinal, and let the chart pick the colour. Large public churn: `ChartDatum` and every chart | refactor |
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |
@@ -11475,7 +11476,14 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 sideways, the selection column keeps its pin and its place through a header
 filter change — all 27 of its cells.
 
-### `[ ]` ⬜ 341 — DATA: a component is only a TYPE in the data layer
+### `[x]` ✅ 341 — DATA: a component is only a TYPE in the data layer
+
+**✅ Done 2026-10-27** (Will: 1 A, 2 A, 3 B). A scope arranges when a page of
+rows is drawn in it (`SourceBinding.pagedIn`, `QueryMember.pagedIn`); `shows`
+is removed outright from `DataAsk`, `AttachFacts`, `Bound` and
+`ScopeDescription`, and the five component asks; `componentOf` names the first
+bind drawn rows. Node tests that bound a bar into a scope by hand did not need
+`steerOnly`. `colorIndex` / `swatch` are their own item, 514.
 
 Will, 2026-10-16: *"Charts and metrics are just visual representations of
 data. The definition of a 'chart' or 'metric', or any other UI component,
@@ -11700,7 +11708,11 @@ bar). My pick: A.
 hands out is read-only. Opening a page makes one copy per saved filter (bench
 `*/open` clones 7 → 10, recorded). Test: `every-declare-reads-back`.
 
-### `[~]` 🚧 321 — BUG: a Context's saved Views have two keys
+### `[x]` ✅ 321 — BUG: a Context's saved Views have two keys
+
+**✅ Done 2026-10-27** (Will A): `open(definition, { key })` keeps the page's
+saved Views, filters, kept Query and drafts under `key`, its definition's id by
+default; the outlet passes its Context's name. Test: `reforged-a-page-keeps-one-key`.
 
 The outlet reads a Context's saved Views by the Context's NAME
 (`viewsOf(context)`); the provider keeps them by the definition's `id`. Equal

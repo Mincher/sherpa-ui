@@ -31,7 +31,7 @@ import {
   modeOf, readingRows,
   type FieldReading,
 } from '../../core/data/filter-state.js';
-import type { FilterSet, OrganiseColumn, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
+import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { dragToOrder } from '../../core/ui/drag-order.js';
@@ -940,7 +940,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** nameScope(scope) — its source names its scope: a portrait bar's heading,
    *  and the component it narrows. TODO 425 */
-  nameScope(scope: { scope?: string; label: string; shows?: ScopeShows | undefined; component?: string | undefined }): void {
+  nameScope(scope: { scope?: string; label: string; component?: string | undefined }): void {
     if (scope.scope) this.#scope = scope.scope;
     if (scope.label) this.set('data-heading', scope.label);
     this.#component = scope.component;

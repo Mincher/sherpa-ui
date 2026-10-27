@@ -62,7 +62,7 @@ test('a chip asks for it by request; the source tests a row, and pushes the mark
   const bar = marker('bar');
   const grid = marker('grid');
   bindSource(source, bar, { scope: 'data' });
-  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
+  bindSource(source, grid, { scope: VIEW });
   await source.load();
   query.hold('data', ['plan']);
   query.setReading('data', 'plan', { picked: ['Pro'] });
@@ -92,7 +92,7 @@ test('a chip HOVERED previews the highlight: never in the Query, no query-change
   const bar = marker('bar');
   const grid = marker('grid');
   bindSource(source, bar, { scope: 'data' });
-  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
+  bindSource(source, grid, { scope: VIEW });
   query.hold('data', ['plan', 'region']);
   query.setReading('data', 'plan', { picked: ['Pro'] });
   query.setReading('data', 'region', { picked: ['EMEA'] });
@@ -127,7 +127,7 @@ test('ONE value hovered previews only that value — picked or not (TODO 459)', 
   const bar = marker('bar');
   const grid = marker('grid');
   bindSource(source, bar, { scope: 'data' });
-  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
+  bindSource(source, grid, { scope: VIEW });
   query.hold('data', ['plan', 'region']);
   query.setReading('data', 'region', { picked: ['EMEA', 'AMER'] });
   await source.load();
@@ -173,8 +173,8 @@ test('across every scope, or only the driver\'s: off, a local driver lights its 
   const grid = marker('grid');
   const own = marker('own');
   bindSource(source, bar, { scope: 'data' });
-  bindSource(source, grid, { scope: VIEW, shows: 'grid' });
-  bindSource(source, own, { scope: 'data', shows: 'grid' });
+  bindSource(source, grid, { scope: VIEW });
+  bindSource(source, own, { scope: 'data' });
   query.hold(VIEW, ['region']);
   query.hold('data', ['plan']);
   query.setReading('data', 'plan', { picked: ['Pro'] });

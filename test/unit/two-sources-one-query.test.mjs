@@ -39,8 +39,8 @@ async function page({ remote = false, declare = true } = {}) {
   }
   query.offer('alerts', ['severity', 'region']);
   query.offer('customers', ['name', 'region']);
-  bindSource(alerts, grid('alerts-grid'), { scope: 'alerts', shows: 'grid' });
-  bindSource(customers, grid('customers-grid'), { scope: 'customers', shows: 'grid' });
+  bindSource(alerts, grid('alerts-grid'), { scope: 'alerts' });
+  bindSource(customers, grid('customers-grid'), { scope: 'customers' });
   await Promise.all([alerts.load(), customers.load()]);
   return { query, alerts, customers };
 }

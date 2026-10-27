@@ -48,7 +48,7 @@ export class SherpaLineChart extends SherpaElement {
     new URL('./sherpa-line-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'series', shows: 'chart' };
+  static override asks: DataAsk = { shape: 'series' };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.plot';

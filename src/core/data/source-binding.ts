@@ -16,9 +16,8 @@
  * - .fieldsRead — The fields the bound components read from a row, or null — every field.
  * - .freeSets — Each set of fields a bind is free of, once.
  * - .wantsAllRows — Is any bind asking for the unpaged set?
- * - .showsOf — What the first component bound into a scope says it shows.
- * - .componentOf — The tag of the first component bound into a scope that says what it shows.
- * - .showsRows — Is a grid or a list bound into this scope?
+ * - .componentOf — The tag of the first component drawn rows in a scope.
+ * - .pagedIn — Is a page of rows drawn in this scope?
  * - .publish — Push rows and state to every bound component.
  * - .push — Give one component the rows and the view state.
  * - .pushTo — Push to the components bound by these ids.
@@ -53,7 +52,6 @@ export interface Bound {
   /** The filter narrowing ONLY this component it was last pushed with — see `push`. */
   lastOwn?: string;
   scope?: string | readonly string[];
-  shows?: AttachFacts['shows'];
   /** See AttachFacts.fields. */
   fields?: readonly string[];
   /** See AttachFacts.free. */
@@ -108,7 +106,6 @@ export class SourceBinding {
       rows: facts.rows ?? 'page',
       sink,
       ...(facts.scope ? { scope: facts.scope } : {}),
-      ...(facts.shows ? { shows: facts.shows } : {}),
       ...(facts.fields ? { fields: [...facts.fields] } : {}),
       ...(facts.free?.length ? { free: [...facts.free].sort() } : {}),
     });
@@ -169,19 +166,14 @@ export class SourceBinding {
     return false;
   }
 
-  /** What the first component bound into a scope says it shows. */
-  showsOf(scope: string): AttachFacts['shows'] {
-    return [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows;
-  }
-
-  /** The tag of the first component bound into a scope that says what it shows. TODO 457 */
+  /** The tag of the first component drawn rows in a scope. TRAP T-a-scope-says-what-it-shows */
   componentOf(scope: string): string | undefined {
-    return tagOf([...this.#bound].find(([, b]) => b.scope === scope && b.shows)?.[0]);
+    return tagOf([...this.#bound].find(([, b]) => b.scope === scope && !b.steerOnly)?.[0]);
   }
 
-  /** Is a grid or a list bound into this scope? */
-  showsRows(scope: string): boolean {
-    return [...this.#bound.values()].some((b) => b.scope === scope && (b.shows === 'grid' || b.shows === 'list'));
+  /** Is a page of rows drawn in this scope? TODO 341 */
+  pagedIn(scope: string): boolean {
+    return [...this.#bound.values()].some((b) => b.scope === scope && !b.steerOnly && b.rows === 'page');
   }
 
   /** Push rows and state to every bound component. */

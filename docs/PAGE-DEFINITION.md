@@ -79,7 +79,7 @@ One JSON document per page. The same rule as a View: **a definition is data**
   order, each set together
   (`T-one-walk-counts-and-limits-in-order`).
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
-  out, a scope over a grid or a list does, and the View does not
+  out, a scope a page of rows is drawn in does, and the View does not
   (`T-group-and-sort-are-component-scope`).
 - **A field's `child`** names the field holding its CHILD values — a
   Customer's Site: `"customer": { "label": "Customer", "child": "site" }`,

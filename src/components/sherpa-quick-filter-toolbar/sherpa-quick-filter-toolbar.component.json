@@ -1308,7 +1308,7 @@
         {
           "$type": "method",
           "name": "nameScope",
-          "args": "scope: { scope?: string; label: string; shows?: ScopeShows | undefined; component?: string | undefined }",
+          "args": "scope: { scope?: string; label: string; component?: string | undefined }",
           "description": "nameScope(scope) — its source names its scope: a portrait bar's heading, and the component it narrows. TODO 425"
         },
         {

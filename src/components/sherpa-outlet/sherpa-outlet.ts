@@ -396,16 +396,9 @@ export class SherpaOutlet extends SherpaElement {
     const module = context.module ? (await import(this.#url(context.module))) as Partial<ContextModule> : null;
     await options.ready;
     if (token !== this.#token) return;
-    // Saved Views are kept under the page's id and read here under the Context's name. TODO 321
-    if (definition && definition.id !== name) {
-      report({
-        code: 'outlet-view-key',
-        message: "sherpa-outlet: a Context's definition id is not its name, so its saved Views are kept under one and read under the other.",
-        at: { context: name, id: definition.id },
-      });
-    }
     const source: DataSource | undefined = definition && this.#provider ? await this.#provider.open(definition, {
-      stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
+      // ONE key: its saved Views are kept and read under the Context's name. TODO 321
+      key: name, stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
       session: options.session, ...(options.drafts ? { drafts: options.drafts } : {}),
     }) : undefined;
     if (token !== this.#token) return;

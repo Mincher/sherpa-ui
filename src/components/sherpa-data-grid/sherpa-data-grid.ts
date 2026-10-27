@@ -183,7 +183,7 @@ export class SherpaDataGrid extends SherpaElement {
      itself, so its source never hears `filter-change`.
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = {
-    shape: 'rows', own: ['filter-change'], shows: 'grid',
+    shape: 'rows', own: ['filter-change'],
     // Its headings' FILTERS, as the source defines them. TRAP T-a-heading-opens-the-chips-menu
     filters: (el) => [...new Set(((el as unknown as { columns?: GridColumn[] }).columns ?? [])
       .flatMap((c) => [...(FILTERABLE.has(c.type ?? 'text') ? [c.field] : []), ...c.tags ?? []]))],

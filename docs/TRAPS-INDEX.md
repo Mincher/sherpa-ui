@@ -74,7 +74,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — data-source, spoof-remote, store, store-cache, stores
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-context, source-counts, store, stores, walk
 - [T-a-scope-is-a-place-not-a-reach](TRAPS.md#t-a-scope-is-a-place-not-a-reach) — data-source
-- [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — data-source-types
+- [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — data-source-types, source-binding
 - [T-a-series-has-a-value-at-every-point](TRAPS.md#t-a-series-has-a-value-at-every-point) — aggregate
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — data-source, data-source-types
 - [T-a-source-compiles-only-what-it-has](TRAPS.md#t-a-source-compiles-only-what-it-has) — data-source, query, source-counts
@@ -245,7 +245,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (83)
+## The join and the app layer (82)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -281,7 +281,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — provider
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — outlet, provider
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — provider
-- [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — context
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — provider
 - [T-a-setting-is-a-pointer](TRAPS.md#t-a-setting-is-a-pointer) — bind-settings
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — bind-source

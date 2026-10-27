@@ -117,7 +117,7 @@
           "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" }
         },
         "arranges": {
-          "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope over a grid or a list does, and the View does not.",
+          "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope a page of rows is drawn in does, and the View does not.",
           "type": "boolean"
         },
         "sets": {

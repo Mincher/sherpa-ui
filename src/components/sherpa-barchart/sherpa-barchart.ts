@@ -26,7 +26,7 @@ export class SherpaBarchart extends SherpaElement {
     new URL('./sherpa-barchart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'segments', shows: 'chart' };
+  static override asks: DataAsk = { shape: 'segments' };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.plot';

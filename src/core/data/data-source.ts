@@ -97,7 +97,7 @@ import type {
 } from './data-source-types.js';
 export type {
   AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
-  FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, ScopeShows, QueryState, ViewState,
+  FilterSet, HeldFilter, OrganiseColumn, ScopeDescription, QueryState, ViewState,
 } from './data-source-types.js';
 
 export class DataSource extends EventTarget {
@@ -193,7 +193,7 @@ export class DataSource extends EventTarget {
     // REMOTE: the reader edits a copy, and Apply sends it — the context splits it.
     this.#context = options.query ?? new QueryContext();
     this.#member = this.#context.join({
-      remote: this.#remote, showsRows: (scope) => this.#binding.showsRows(scope), bindOf: (el) => this.#binding.get(el),
+      remote: this.#remote, pagedIn: (scope) => this.#binding.pagedIn(scope), bindOf: (el) => this.#binding.get(el),
       heard: (change) => this.#hear(change),
       has: (field) => this.#catalogue.has(field),
       carriesOver: (field) => this.#catalogue.carriesOver(field),
@@ -255,9 +255,9 @@ export class DataSource extends EventTarget {
     return arrangementOf(this.#applied, this.#mine);
   }
 
-  /** Is a scope this source's — no OTHER source shows rows in it? With one
+  /** Is a scope this source's — no OTHER source draws a page in it? With one
    *  source, every scope is. 366 step 25 · TRAP T-a-source-compiles-only-what-it-has */
-  #mine = (scope: string): boolean => !this.#member.showsRows(scope) || this.#binding.showsRows(scope);
+  #mine = (scope: string): boolean => !this.#member.pagedIn(scope) || this.#binding.pagedIn(scope);
 
   /** Does this source have the field — declared, its values declared, in its
    *  store's contract, its time, or in a row it loaded? Alone on its Query, or
@@ -455,7 +455,7 @@ export class DataSource extends EventTarget {
       const { advanced: _a, kind: _k, options, ...def } = this.filterDef(part.field);
       const reading = q.readings[part.field];
       return {
-        scope, label: part.label ?? def.label, shows: 'chart', part: true, available: [],
+        scope, label: part.label ?? def.label, part: true, available: [],
         ...(tagOf(part.only) ? { component: tagOf(part.only)! } : {}),
         filters: options?.length ? [{
           ...def,
@@ -490,12 +490,10 @@ export class DataSource extends EventTarget {
         } } : {}),
       };
     });
-    const shows = scope === VIEW ? 'view'
-      : this.#binding.showsOf(scope);
     const component = scope === VIEW ? undefined : this.#binding.componentOf(scope);
     const sets = this.#context.sets(scope);
     const out: ScopeDescription = {
-      scope, label: this.#context.scopeLabel(scope), ...(shows ? { shows } : {}), ...(component ? { component } : {}),
+      scope, label: this.#context.scopeLabel(scope), ...(component ? { component } : {}),
       filters: [...presets, ...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true }))],
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),

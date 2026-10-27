@@ -27,7 +27,7 @@ export interface ScopeDefinition {
   /** Fields drawn as one group; a `serial` set chains them. TRAP T-a-filter-set-groups-or-chains */
   sets?: readonly FilterSet[];
   /** Group and Sort arrange its rows: its Organise chips. Left out, a scope
-   *  over a grid or a list does, and the View does not. Will, TODO 99 */
+   *  a page of rows is drawn in does, and the View does not. Will, TODO 99, 341 */
   arranges?: boolean;
   /** Its answers at the start, in the plain form a View writes:
    *  `{ "created": { "last": 12, "unit": "month" } }`. Reset puts them back. Will, TODO 464 */

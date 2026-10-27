@@ -50,7 +50,6 @@ test('a part is ONE Simple filter: a chip per value, each with its series, and n
   const { source, drawn } = await setup();
   const part = source.describe('picks:bar');
   assert.equal(part.label, 'Alerts by severity');
-  assert.equal(part.shows, 'chart');
   assert.equal(part.part, true);
   assert.deepEqual(part.available, []);
   assert.equal(part.filters.length, 1);

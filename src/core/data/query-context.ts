@@ -115,8 +115,8 @@ export type QueryChange =
 export interface QueryMember {
   /** Its store waits for Apply. */
   readonly remote: boolean;
-  /** Does it show rows — a grid, a list — in this scope? */
-  showsRows(scope: string): boolean;
+  /** Does it draw a page of rows in this scope? */
+  pagedIn(scope: string): boolean;
   /** How it bound this control, if it did. */
   bindOf(el: BoundControl): MemberBind | undefined;
   /** What the context did: its follow-ups. Called at once, in join order. */
@@ -194,8 +194,8 @@ export interface QueryHandle {
   mintId(): string;
   /** Moves with each declaration a walk reads — a part, a set. */
   walkVersion(): number;
-  /** Does any member show rows in this scope? */
-  showsRows(scope: string): boolean;
+  /** Does any member draw a page of rows in this scope? */
+  pagedIn(scope: string): boolean;
   /** How any member bound this control. */
   bindOf(el: BoundControl): MemberBind | undefined;
   /** Leave the context. */
@@ -337,11 +337,11 @@ export class QueryContext extends EventTarget {
   }
 
   /** Does Group and Sort arrange this scope's rows? As declared — else a
-   *  component scope that shows a grid or a list does, and the View does not.
+   *  component scope a page of rows is drawn in does, and the View does not.
    *  Will, TODO 99. TRAP T-group-and-sort-are-component-scope */
   arranges(scope: string): boolean {
     return this.#live.arranges.get(scope)
-      ?? (scope !== VIEW && [...this.#members].some((m) => m.showsRows(scope)));
+      ?? (scope !== VIEW && [...this.#members].some((m) => m.pagedIn(scope)));
   }
 
   /** A scope's filter sets, as declared. */
@@ -1115,7 +1115,7 @@ export class QueryContext extends EventTarget {
    *  else the one that arranges now, else the View; every other scope loses
    *  it. It compiles nothing. 366 step 8 · TRAP T-group-and-sort-are-component-scope */
   #arrange(next: ArrangeEdit, scope?: string): void {
-    /* ONE arranging scope per SOURCE: a scope another source shows rows in
+    /* ONE arranging scope per SOURCE: a scope another source draws a page in
        keeps its own. With one source, every scope is its. 366 step 25 */
     const owner = scope ? this.#owner(scope) : undefined;
     const theirs = (id: string): boolean => !!owner && !!this.#owner(id) && this.#owner(id) !== owner;
@@ -1149,9 +1149,9 @@ export class QueryContext extends EventTarget {
     return { ...answerOf(reading), picked: raws(picked), ...(reading.off ? { off: raws(reading.off) } : {}) };
   }
 
-  /** The source that shows rows in a scope; none for a scope of the page's. */
+  /** The source that draws a page of rows in a scope; none for a scope of the page's. */
   #owner(scope: string): QueryMember | undefined {
-    return [...this.#members].find((m) => m.showsRows(scope));
+    return [...this.#members].find((m) => m.pagedIn(scope));
   }
 
   /** A View's plain conditions as readings: each field by the member that knows it. */
@@ -1225,7 +1225,7 @@ export class QueryContext extends EventTarget {
       live: () => this.#live,
       mintId: () => `bind-${++this.#binds}`,
       walkVersion: () => this.#walks,
-      showsRows: (scope) => [...this.#members].some((m) => m.showsRows(scope)),
+      pagedIn: (scope) => [...this.#members].some((m) => m.pagedIn(scope)),
       bindOf: (el) => this.#bindOf(el),
       leave: () => { this.#members.delete(member); },
     };

@@ -43,7 +43,7 @@ export class SherpaGaugeChart extends SherpaElement {
     new URL('./sherpa-gauge-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'aggregate', shows: 'chart', thresholds: true };
+  static override asks: DataAsk = { shape: 'aggregate', thresholds: true };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.gauge';

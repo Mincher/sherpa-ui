@@ -7,7 +7,6 @@
  * - FieldFilter — A field's filter as any bar or panel draws it — its declaration and values.
  * - QueryState — A Query's whole question as JSON: the Query as applied, with its arrangement.
  * - HeldFilter — One filter a scope holds, as a control draws it.
- * - ScopeShows — What a scope's filters narrow: the View, or the content one component shows.
  * - FilterSet — Fields a scope draws as ONE group.
  * - OrganiseColumn — One column a Group or Sort chip offers: the field it reports, and its name.
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
@@ -117,9 +116,6 @@ export interface HeldFilter extends FieldFilter {
   sendTo?: { scope: string; label: string; origin?: boolean };
 }
 
-/** What a scope's filters narrow: the View, or the content one component shows. */
-export type ScopeShows = 'view' | 'grid' | 'chart' | 'form' | 'list';
-
 /** Fields a scope draws as ONE group. `serial` chains them: each offers only
  *  what the answers of the fields above it leave. TODO 99 · TRAP T-a-filter-set-groups-or-chains */
 export interface FilterSet {
@@ -142,9 +138,8 @@ export interface OrganiseColumn {
 export interface ScopeDescription {
   scope: string;
   label: string;
-  /** What it narrows, as its bound component says. TRAP T-a-scope-says-what-it-shows */
-  shows?: ScopeShows;
-  /** …and WHICH component, by its tag: a panel says it under the scope's name. TODO 457 */
+  /** The component it narrows, by its tag: a panel says it under the scope's name.
+   *  TODO 457 · TRAP T-a-scope-says-what-it-shows */
   component?: string;
   /** A PART: one component's own answer to ONE field — a chart's legend field.
    *  Nothing is added to it or saved from it. TRAP T-a-chart-scope-is-its-legend-field */
@@ -219,8 +214,6 @@ export interface AttachFacts {
    *  report is its scope's whole answer, so a field raised out is not its to
    *  clear. A LIST is for a control that draws several — the filter panel. */
   scope?: string | readonly string[];
-  /** What this component SHOWS, so a panel can name its scope. TRAP T-a-scope-says-what-it-shows */
-  shows?: Exclude<ScopeShows, 'view'>;
   /**
    * Which rows this component is given. `'page'` (the default) is the window a
    * grid draws; `'all'` is every row matching the filter, unpaged — what a

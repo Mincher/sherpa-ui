@@ -55,8 +55,6 @@ export interface DataAsk {
   /** It PICKS values of its segment field, through its `picked` property: the
    *  event it fires, and what a pick narrows — its `host` (a legend's chart). */
   picks?: { event: string; narrows: 'host' | 'self' };
-  /** What it SHOWS, so a filter panel can name its scope. TRAP T-a-scope-says-what-it-shows */
-  shows?: 'grid' | 'chart' | 'form' | 'list';
   /** The fields whose FILTER it draws — each comes as its source defines it,
    *  the whole value list too, so a heading opens the chip's own menu.
    *  TRAP T-a-heading-opens-the-chips-menu */

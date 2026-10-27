@@ -1714,20 +1714,18 @@ them once per scope that counts.
 
 ### T-a-scope-says-what-it-shows
 
-**A filter panel section's icon names WHAT its filters narrow** — the View
-(`monitor`), or the content one component shows: a grid (`table-columns`), a
-chart, a form (`file-lines`), a list (`list`). Will, TODO 97; in its header,
-caret, icon, label. The kind comes from the COMPONENT: its `asks.shows`, which
-the provider passes to `bindSource()`, and `describe(scope)` reports as
-`shows` — never a tag name, so a new grid-like component says what it is
-itself. Figma has no chart glyph of its own yet, so a chart's section wears
-`reports` (three bars), and `table-columns` stands in for a table glyph.
+**A scope names the component its filters narrow, by its TAG** —
+`describe(scope).component`, the first bind drawn rows in that scope. The
+filter panel column says it under the scope's name ("Bar Chart", "Data Grid";
+TODO 457) and wears no icon (Will, TODO 472).
 
-The filter panel COLUMN (the toolbar's portrait accordions) wears no icon —
-Will, TODO 472: its description names the component instead ("Bar Chart",
-TODO 457). The classic panel keeps its icons.
+**The data layer knows no KIND of component** (Will, TODO 341, 2 A). A
+`shows: 'grid' | 'chart' | …` once went from each component's ask through
+`bindSource()` into `describe()`; nothing read it after the classic panel and
+its icons went, so it was removed outright. A bind says only data shapes:
+`rows`, `steerOnly`, `scope`, `part`.
 
-- Site: `src/core/ui/context.ts`
+- Site: `src/core/data/source-binding.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
 
@@ -7845,10 +7843,13 @@ steers one arbitrary component.
 **Only SOME scopes arrange** — Will, TODO 99 step 4 (B): *"Only certain
 component scopes, and possibly view scope, will have group and sort."*
 `source.query.arranges(scope)` is what the scope declares (`arranges` in the page
-JSON, or `declareScope`); left out, a scope over a grid or a list arranges, and
-the View and a chart's scope do not. A scope that starts to arrange when its
-grid joins redraws its bars and panel, and a bar's `drawScope` draws its Group
-and Sort.
+JSON, or `declareScope`); left out, a scope a PAGE of rows is drawn in
+arranges — a bind given `rows: 'page'` that is not steer-only (`pagedIn`) —
+and the View and a summary's scope (`rows: 'all'`) do not. No component kind
+decides it (Will, TODO 341, 1 A). A scope that starts to arrange when its
+page joins redraws its bars and panel, and a bar's `drawScope` draws its Group
+and Sort. So a bar bound by hand into a scope is `steerOnly`, as the provider
+binds one, or that scope arranges.
 
 **One arrangement, in the Query.** A source still has one sort, group and
 page, loaded once. The sort, the group, a suspended sort and the search are

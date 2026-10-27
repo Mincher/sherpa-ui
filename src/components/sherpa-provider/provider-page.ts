@@ -56,13 +56,14 @@ export type Bar = HTMLElement & {
   available?(defs: unknown[]): void;
   organise?(def: { group?: unknown[]; sort?: unknown[] }): void;
   groupSets?(sets: readonly unknown[]): void;
-  nameScope?(scope: { label: string; shows?: string | undefined }): void;
+  nameScope?(scope: { label: string }): void;
   heldFields?: string[];
   report?(): void;
 };
 
 /** The page `open()` set up: its id, store, source, Views and first Query. */
 export interface OpenedPage {
+  /** What its saved Views, filters and drafts are kept under. TODO 321 */
   id: string;
   store: string;
   source: DataSource;

@@ -32,7 +32,7 @@ export class SherpaRadialChart extends SherpaElement {
     new URL('./sherpa-radial-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'segments', shows: 'chart' };
+  static override asks: DataAsk = { shape: 'segments' };
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.ring';
   static override props = {

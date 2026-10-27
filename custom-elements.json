@@ -8556,7 +8556,7 @@
                 {
                   "name": "scope",
                   "type": {
-                    "text": "{ scope?: string; label: string; shows?: ScopeShows | undefined; component?: string | undefined }"
+                    "text": "{ scope?: string; label: string; component?: string | undefined }"
                   }
                 }
               ],
