@@ -9,10 +9,11 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**Open:** every ⬜, 🚧 and ❓ row below — never a hand-typed count. The work in
-hand (2026-10-15) is group L, the code review. Its plan is
-`docs/CODE-REVIEW-PLAN.md`; its section 6, "Order, size and how the work runs",
-gives the order. Numbers are ids, not order; the table IS the order.
+**Open:** every ⬜, 🚧, ❓ and ⏸️ row — all of them in the table's first three
+groups since the review of 2026-10-27: **Next** (in order), **Waits on Will**,
+and **Later**. Numbers are ids, not order; the table IS the order. The code
+review's open rows (group L) are in those groups now; its plan is
+`docs/CODE-REVIEW-PLAN.md`.
 
 **Status:** ✅ done · 🚧 in progress · ⬜ not started · ❓ waits on a ruling from Will.
 An item's section heading says the same: `[x]` ✅ · `[~]` 🚧 · `[ ]` ⬜ · `[ ]` ❓.
@@ -24,6 +25,43 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
+| | | | **Next — open work, in this order** (Will asked for a review, 2026-10-27) | |
+| ⬜ | 1 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
+| ⬜ | 2 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
+| ⬜ | 3 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
+| ⬜ | 4 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
+| 🚧 | 5 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
+| 🚧 | 6 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ⬜ | 7 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
+| ⬜ | 8 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
+| ⏸️ | 9 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
+| ⬜ | 10 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
+| ⬜ | 11 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
+| 🚧 | 12 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| 🚧 | 13 | 288 | Phase 6 — one copy of each data helper | refactor |
+| 🚧 | 14 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ⬜ | 15 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
+| 🚧 | 16 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ⬜ | 17 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
+| | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
+| ❓ | 18 | 487 | DEFAULT — the data grid's rows per page start at the 100 option (Will, 2026-10-27) | data |
+| ❓ | 19 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| 🚧 | 20 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Cause found — ❓ A or B | bug |
+| ❓ | 21 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — ❓ Will's look by eye | explore |
+| ❓ | 22 | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
+| ⬜ | 23 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
+| ⬜ | 24 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
+| ⬜ | 25 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
+| | | | **Later — held or deferred by Will, or big and last** | |
+| ⬜ | 26 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
+| 🚧 | 27 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| ⬜ | 28 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
+| ⬜ | 29 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
+| ⬜ | 30 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
+| ⬜ | 31 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
+| ⬜ | 32 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
+| ⬜ | 33 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
+| ⬜ | 34 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |
@@ -31,7 +69,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
 | ✅ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
 | ✅ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
-| ❓ | 0f | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — ❓ Will's look by eye | explore |
 | ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
 | ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
 | ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
@@ -45,12 +82,10 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0q | 361 | UX — a value the context rules out has an INACTIVE checkbox, even when ticked (Will) | filters |
 | ✅ | 0r | 362 | UX — an inactive value is not interactive: a ticked ruled-out menu row or an on value chip refuses a press (Will) | filters |
 | ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
-| ⬜ | 9z | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
 | ✅ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Done 2026-10-21: 26 steps | explore |
 | ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
 | ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
-| 🚧 | 0y | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
 | ✅ | 0z | 370 | RULE — a filter setup crosses tabs, windows and sessions ONLY once the reader saves it: drafts and the kept Query are the tab's own (Will) | filters |
 | ✅ | 0za | 371 | UX — a scrollbar's track is white on a dark page; make every track clear (Will) | look |
 | ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
@@ -60,20 +95,15 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
 | ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
 | ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
-| ⬜ | 0zi | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends | filters |
 | ✅ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later; 10-27: drop the × only) | filters |
 | ✅ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
 | ✅ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
 | ✅ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
-| ⬜ | 0zn | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later) | look |
 | ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
 | ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
 | ✅ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
-| ❓ | 0zr | 388 | ASK — after a reload, a page with NO provider keeps neither its filters (366 step 10) nor its page number (step 11, `setState` goes). The provider keeps the Query; nothing keeps the page number. Want a door for either? | data |
 | ✅ | 0zs | 389 | FLAKE — Demos `reforged-layout-resize.spec.ts:109` ("with the nav pinned…") fails ~3 in 10 alone in Chromium, at HEAD before 366 step 13 too: it reads `/layout/dashboard` two frames after a drag, where the test above it polls for the save | tests |
-| ⬜ | 0zt | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366 | tests |
 | ✅ | 0zu | 391 | BUG — a DRILLED tree (the Filters menu's door into a tiered field, bar or panel) cannot open a parent: its children stamp into the home menu, which the drill emptied. Its picks keep a child it did not show (369) | filters |
-| ⬜ | 0zv | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
 | ✅ | 0zw | 393 | BUG — a `fetch: "server"` field does not light its grid heading: the source names the KEY its answer matched (`email in […]`), not the field. Found when Demos' Customer and Region became server fields | filters |
 | ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
 | ✅ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
@@ -94,11 +124,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
 | ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
 | ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
-| ❓ | 0zzq | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
 | ✅ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
 | ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
-| ⬜ | 0zzu | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22) | look |
 | ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
 | ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
 | ✅ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
@@ -110,7 +138,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
-| ⬜ | 1zzg | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23) | demos |
 | ✅ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
 | ✅ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
 | ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
@@ -125,7 +152,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
 | ✅ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
 | ✅ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
-| 🚧 | 1zzv | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Cause found — ❓ A or B | bug |
 | ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
 | ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
 | ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
@@ -151,7 +177,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
 | ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
 | ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
-| ⏸️ | 2zzv | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
 | ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
 | ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
 | ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
@@ -165,13 +190,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
 | ✅ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
 | ✅ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
-| ⬜ | 3j | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27) | look |
-| ⬜ | 3k | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27) | filters |
 | ✅ | 3l | 486 | BUG — the grid's pinned columns show no inner shadow at the BOTTOM while more rows lie below; then CHECK every scroll shadow in the grid — top, bottom, start, end — over pinned and unpinned columns (Will, 2026-10-27) | look |
-| ❓ | 3m | 487 | DEFAULT — the data grid's rows per page start at the 100 option (Will, 2026-10-27) | data |
 | ✅ | 3n | 488 | UX — with 'Show view context in panel mode' OFF, the View Context toolbar has no panel-mode button; only Local Context toolbars show it (Will, 2026-10-27) | filters |
-| ⬜ | 3o | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27) | filters |
-| ⬜ | 3p | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next) | grid |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -264,7 +284,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ✅ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
 | ✅ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
-| ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ✅ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ✅ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -365,7 +384,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ✅ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
 | ✅ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
 | ✅ | 50 | 28 | A Figma component is NOT always a web component | tidy |
@@ -378,9 +396,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ✅ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
-| ⬜ | 58 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
-| ⬜ | 59 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
-| ⬜ | 60 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | | | | **L — The code review** | |
 | ✅ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`, ruled; its work is rows 256–296 | explore |
 | ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
@@ -427,13 +442,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
 | ✅ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
 | ✅ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
-| 🚧 | 62.32 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| 🚧 | 62.33 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ✅ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
 | ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
-| 🚧 | 62.36 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
-| 🚧 | 62.38 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ✅ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
 | ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
 | ✅ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
@@ -442,7 +453,6 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
 | ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
 | ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
-| ⬜ | 62.47 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
 | ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
 | ✅ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
 | ✅ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
@@ -451,19 +461,15 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
 | ✅ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
 | ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
-| ⬜ | 62.56 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
 | ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
 | ✅ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
 | ✅ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
-| ⬜ | 62.60 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
 | ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
 | ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
 | ✅ | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
 | ✅ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
 | ✅ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour. Closed with 366: its steps 20–22 did it (Will, 2026-10-21: A) | refactor |
-| 🚧 | 62.66 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised | bug |
 | ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
-| 🚧 | 62.68 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
 | ✅ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
 | ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
@@ -479,9 +485,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
 | ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
 | ✅ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
-| ⬜ | 62.84 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
 | ✅ | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
-| ⬜ | 62.86 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
 | ✅ | 62.87 | 342 | The "No matches" banner above a kept card goes (Will: never asked for) | fix |
 | ✅ | 62.88 | 343 | A slow page opening shows its cards loading again — 340's whole read had hidden it | fix |
 | | | | **✅ Done — newest first** | |
