@@ -343,8 +343,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const menu = this.#fieldMenu();
     if (!menu) return null;
     const own = menu.reading;
-    // ON with nothing ticked, where a pick fetches: no rows. Will, TODO 403 · TRAP T-none-is-an-answer
-    const none = this.current && this.#fetches() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
+    // ON at NONE, where a pick fetches: no rows. Will, TODOs 403, 480 · TRAP T-none-is-an-answer
+    const none = this.current && this.#none && this.#fetches() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
     // A tiered parent switched OFF keeps its picks. TODO 369, 425 · TRAP T-a-parent-pick-is-the-parent
     const off = this.#off.size ? { off: [...this.#off] } : {};
     return { ...own, ...off, ...(none ? { none: true } : {}), ...(this.current ? {} : { suspended: true }) };
@@ -352,6 +352,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Picks a tiered parent switched OFF keeps for when it comes back on, by key. */
   #off = new Set<string>();
+  /** NONE was asked — Select all off, or drawn so: ON with nothing ticked. Will, TODO 480 */
+  #none = false;
 
   /** Its picks FETCH: nothing ticked, while on, answers no rows. */
   #fetches(): boolean {
@@ -405,6 +407,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** Picks, and OFF where there are none or the answer is suspended — ON for none.
    *  TRAP T-everything-on-is-no-filter · TRAP T-none-is-an-answer */
   #setPicks(picks: readonly string[], off = false, none = false): void {
+    this.#none = none && !off;
     this.values = picks;
     if (none && !off) this.current = true;
     else if (!picks.length || off) this.current = false;
@@ -454,8 +457,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The rule, over the picks as given. */
   #answers(values: readonly string[]): boolean {
-    // A TYPING condition answers with text; a chip whose picks fetch STAYS on as its last goes.
-    return values.length > 0 || this.#hasTypedAnswer() || (this.current && this.#fetches());
+    // A TYPING condition answers with text; NONE, asked where picks fetch, too. TODO 480
+    return values.length > 0 || this.#hasTypedAnswer() || (this.#none && this.#fetches());
   }
 
   /** Does its menu hold a change not yet sent — a draft its Apply would send?
@@ -696,7 +699,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
     // ON at none is answered: it toggles too (TRAP T-none-is-an-answer); a section's value
     // chip's body is its toggle, its caret its Sites (TODO 425).
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#fetches())
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#none && this.#fetches())
       && this.slot !== 'values') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
@@ -781,6 +784,8 @@ export class SherpaQuickFilter extends SherpaElement {
        reports by its own name. A filter waits for Apply.
        TRAP T-a-chip-knows-what-kind-it-is */
     if (this.#arranges()) { this.#arrangeFromMenu(); return; }
+    // Select all off asks for none; any other change does not — locked or not. TODO 480
+    this.#none = !!(event as CustomEvent).detail?.none;
     // A locked chip's menu rows are not its values: relay, change nothing.
     if (this.hasAttribute('data-locked')) {
       this.emit('quick-filter-change', { scope: 'chip', values });

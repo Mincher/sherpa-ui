@@ -161,8 +161,9 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
 | ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
 | ⬜ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
-| ⬜ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
+| ✅ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
 | ⬜ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
+| ⬜ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
 | | | | **B — The foundation: what is left** | |
 | ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
@@ -2306,6 +2307,11 @@ save rows. Tests: sherpa-ui `reforged-reset-at-default`,
 `reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
 `reforged-reset-*` and `reforged-filter-coordination`.
 
+### `[ ]` ⬜ 482 — LOOK: a divider between preset and added chips
+
+Will, 2026-10-27: *"Put a divider between preset and user added filter chips in
+the toolbar mode. Consider an equivalent visual in the Panel mode, too."*
+
 ### `[ ]` ⬜ 481 — BUG: shadows stack on the grid's pinned columns
 
 Will, 2026-10-27: *"There's some inner shadow stacking on pinned columns when
@@ -2313,13 +2319,20 @@ other columns are scrolled under them horizontally. Perhaps because cells don't
 have a default white background and are transparent instead?"* Likely 478's
 side edges or 421's header shadow.
 
-### `[ ]` ⬜ 480 — BUG: every value toggled off is not "show all"
+### `[x]` ✅ 480 — BUG: every value toggled off is not "show all"
 
 Will, 2026-10-27: *"Toggling all active filter values to off, in the panel
 mode, doesn't reset back to the correct 'show all when none selected' state that
 I'd expect. I have to manually choose the reset action to correct it. I think
 this is just at the view scope but it's worth checking, and correcting, across
 all scopes."*
+
+**Found:** 403's "Select all off answers no rows" had grown to any list
+emptied while on: a View field's last value let go stayed ON at none, and the
+page showed 0 rows. **Done:** only Select all off says none (the menu reports
+it; the chip keeps it, locked or not). The last value let go turns the chip off:
+every row, in the bar and the panel, every scope. TRAP `T-none-is-an-answer`.
+Tests: sherpa-ui `reforged-menu`; Demos `reforged-none-is-an-answer`.
 
 ### `[ ]` ⬜ 479 — FILTER: a gauge's zones highlight; its needle stays
 

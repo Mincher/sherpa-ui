@@ -474,7 +474,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (112)
+## Menus, tips and overlays (113)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — menu
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
@@ -562,6 +562,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-menu-search-is-a-substring-find](TRAPS.md#t-menu-search-is-a-substring-find) — menu
 - [T-menu-value-is-not-always-rows](TRAPS.md#t-menu-value-is-not-always-rows) — menu
 - [T-native-change-stops-at-the-host](TRAPS.md#t-native-change-stops-at-the-host) — menu
+- [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — menu
 - [T-one-comparison-rule-for-query-and-ui](TRAPS.md#t-one-comparison-rule-for-query-and-ui) — menu
 - [T-one-condition-system](TRAPS.md#t-one-condition-system) — menu
 - [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — menu

@@ -2028,7 +2028,9 @@ export class SherpaMenu extends SherpaElement {
     input.indeterminate = false;
     this.#syncSelectAll();
     this.#followPicks();
-    if (!this.#commits) this.emit('menu-change', { values: this.values });
+    // Select all OFF, where picks fetch, is NONE: no rows. Letting the last row go is not. TRAP T-none-is-an-answer
+    const none = !this.values.length && this.hasAttribute('data-fetches');
+    if (!this.#commits) this.emit('menu-change', { values: this.values, ...(none ? { none: true } : {}) });
   }
 
   /** What Select all may tick: a value whose box is drawn and not refused. */

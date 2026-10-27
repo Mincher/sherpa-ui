@@ -107,7 +107,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `menu-change` | `{ values: string[] }` | The selection was COMMITTED. |
+| `menu-change` | `{ none: true \| undefined; values: string[] }` | The selection was COMMITTED. |
 | `change` |  | The number body's field or slider changed. It stops at the shadow root. |
 | `menu-apply` | `{ values: string[] }` | Apply was clicked. |
 | `menu-discard` |  | Discard put the values back as they were when the menu opened; it stays open. |

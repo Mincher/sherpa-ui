@@ -1606,6 +1606,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
+        "none": "true | undefined",
         "values": "string[]"
       }
     },

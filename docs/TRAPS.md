@@ -14464,19 +14464,26 @@ nothing ticked is no filter (`T-everything-on-is-no-filter`).
 It is said on purpose, in the reading: `{ picked: [], none: true }`, compiled to
 `[field, 'in', []]`, and written plainly as `{ in: [] }`. Nothing else may mean
 it: a bar or panel reports every field at once, and an untouched field read as
-none would empty the page. So the CHIP adds `none` only while it is on, and the
-panel only for a field whose last value the READER let go (`held.none`).
+none would empty the page. So ONLY Select all turned off asks for it: the menu
+says `none` in its `menu-change`, and the chip keeps it (`#none`) — a locked
+chip too, whose host reads its answer.
 
-The chip stays on as its last value goes — Select all off too — wears 0, and
-is not the amber "filtering nothing". Its body then toggles it: OFF asks for
-every row, as any chip does (Will's pick). A pick outranks none; a date, a
-range and a typed answer have none.
+**The last value let go is NOT none** (Will, TODO 480: *"Toggling all active
+filter values to off … doesn't reset back to the correct 'show all when none
+selected' state"*): the chip goes off, and every row shows — a menu row or a
+column's value chip alike.
+
+At none the chip stays on, wears 0, and is not the amber "filtering nothing".
+Its body then toggles it: OFF asks for every row, as any chip does (Will's
+pick). A pick outranks none; a date, a range and a typed answer have none.
 
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/where.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/unit/none-is-an-answer.test.mjs`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu.spec.ts`
 
 ### T-the-panel-is-the-bar-in-portrait
 

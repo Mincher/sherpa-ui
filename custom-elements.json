@@ -5564,7 +5564,7 @@
               "name": "menu-change",
               "description": "The selection was COMMITTED.",
               "type": {
-                "text": "CustomEvent<{ values: string[] }>"
+                "text": "CustomEvent<{ none: true | undefined; values: string[] }>"
               }
             },
             {

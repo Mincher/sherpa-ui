@@ -944,3 +944,36 @@ test('a filter menu offers Highlight matches where its host asks, and reports a 
   });
   expect(r).toEqual({ hidden: 'none', shown: 'flex', heard: [{ on: true }], changed: false, on: true, off: false });
 });
+
+/* NONE is Select all OFF, where picks fetch — never the last row let go: that is
+   no filter. Will, TODOs 403, 480 · TRAP T-none-is-an-answer */
+test('a fetching menu says none for Select all off, and not for its last row let go', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { menuFor } = await import('/dist/core/ui/filter-menu.js');
+    const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> };
+    document.body.append(g);
+    await g.rendered;
+    const { menu, items } = menuFor(g.shadowRoot!, {
+      id: 'region', label: 'Region', select: 'multiple',
+      options: [{ value: 'EMEA', label: 'EMEA' }, { value: 'APAC', label: 'APAC' }],
+    } as never, { fetches: true, remote: false });
+    document.getElementById('root')!.replaceChildren(menu);
+    const m = menu as HTMLElement & { rendered: Promise<void>; items?(i: unknown): void };
+    await m.rendered;
+    m.items?.(items);
+    await window.__settled();
+    const heard: unknown[] = [];
+    m.addEventListener('menu-change', (e) => heard.push((e as CustomEvent).detail));
+    const box = (v: string) => m.querySelector<HTMLInputElement>(`.menu-row input[value="${v}"]`)!;
+    box('EMEA').click();
+    box('EMEA').click();
+    const all = m.querySelector<HTMLInputElement>('.qf-all input')!;
+    all.click();
+    all.click();
+    return heard;
+  });
+  expect(r).toEqual([
+    { values: ['EMEA'] }, { values: [] },
+    { values: ['EMEA', 'APAC'] }, { values: [], none: true },
+  ]);
+});
