@@ -73,7 +73,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
     for (const [kind, { def, facts }] of Object.entries(kinds)) {
       const { menu, items } = menuFor(host, def as never);
       document.getElementById('root')!.replaceChildren(menu);
-      const m = menu as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[]; items?(i: unknown): void };
+      const m = menu as unknown as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[]; items?(i: unknown): void };
       await m.rendered;
       if (items.length) m.items?.(items);
       await settle();
@@ -98,7 +98,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
         }
         await settle();
         out[`${kind}:${op}`] = [shown.join('+'),
-          readingClause({ field: def.id as string, ...facts }, { conditions: [m.conditions[0]!], mode: 'advanced' })];
+          readingClause({ field: def.id as string, ...facts } as never, { conditions: [m.conditions[0]!], mode: 'advanced' } as never)];
         for (const box of row.querySelectorAll<HTMLElement & { value: string }>('.condition-value, .condition-value-to, .condition-date, .condition-date-to, .condition-time, .condition-time-to, .condition-count')) box.value = '';
         delete row.dataset['want'];
       }
@@ -117,7 +117,7 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
     const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
     const { menu, items } = menuFor(host, def as never);
     document.getElementById('root')!.replaceChildren(menu);
-    const m = menu as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[];
+    const m = menu as unknown as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[];
       items?(i: unknown): void };
     await m.rendered;
     m.items?.(items);
@@ -131,7 +131,7 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
       inner.dispatchEvent(new Event('input', { bubbles: true }));
       inner.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    const clause = () => readingClause({ field: 'owner' }, { conditions: m.conditions, mode: 'advanced' });
+    const clause = () => readingClause({ field: 'owner' }, { conditions: m.conditions, mode: 'advanced' } as never);
     set(rows()[0]!, 'condition-pick', 'Ravi');
     m.shadowRoot!.querySelector<HTMLElement>('.add-condition')!.click();
     await settle();

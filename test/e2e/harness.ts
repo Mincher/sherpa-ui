@@ -45,7 +45,7 @@ export async function gotoHarness(page: Page): Promise<void> {
  * its first assertion still adds its own `beforeEach` — this fixture runs
  * first, so the two compose.
  */
-export const test = base.extend<Record<string, never>>({
+export const test = base.extend({
   page: async ({ page }, use) => {
     await gotoHarness(page);
     await use(page);
@@ -100,6 +100,8 @@ export type Bar = SherpaEl & {
   removeFilter(id: string): void;
   supersede(ids: readonly string[]): void;
   allowFields(list: readonly string[] | null): void;
+  /** Steer ONE chip with a whole reading. */
+  setChipReading(id: string, reading: Record<string, unknown>): void;
   active: string[];
   values: Record<string, string[]>;
   /** Each field's answer, ON or off — `picked` survives a chip switched off. */

@@ -73,7 +73,7 @@ test('a native input event re-dispatches as input with { value }', async ({ page
 
     const events: Array<{ type: string; value: number }> = [];
     el.addEventListener('input', (e) =>
-      events.push({ type: 'input', value: (e as CustomEvent).detail.value }),
+      events.push({ type: 'input', value: (e as unknown as CustomEvent).detail.value }),
     );
     el.addEventListener('change', (e) =>
       events.push({ type: 'change', value: (e as CustomEvent).detail.value }),

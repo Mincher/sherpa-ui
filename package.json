@@ -98,6 +98,7 @@
     "build:dev": "node scripts/build-reforged.mjs --dev",
     "build:watch:ts": "tsc -p tsconfig.reforged.json --watch",
     "type-check": "tsc -p tsconfig.reforged.json --noEmit",
+    "type-check:tests": "tsc -p tsconfig.tests.json",
     "icons": "node scripts/generate-icons.mjs",
     "lint": "eslint 'src/**/*.ts' --max-warnings 0",
     "lint:fix": "eslint 'src/**/*.ts' --fix",

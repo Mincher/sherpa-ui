@@ -1,0 +1,14 @@
+{
+  /* The SPECS' type check — `npm run type-check:tests`. A file of its own, not
+     `tsconfig.json`: Playwright reads that one, and would rewrite the `/dist/`
+     imports a spec hands the browser. `/dist/*` maps to the source, so no build
+     is needed to check. TODO 492 */
+  "extends": "./tsconfig.reforged.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node"],
+    "paths": { "/dist/*": ["./src/*"] }
+  },
+  "include": ["test/e2e/**/*.ts"]
+}

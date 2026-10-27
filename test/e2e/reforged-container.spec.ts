@@ -178,7 +178,7 @@ test('each data state shows its own default, and its buttons ask or dismiss', as
     press('.dismiss');
     await settle();
     out['dismissed'] = { state: el.dataset['state'] ?? null, body: on('.state') };
-    return { ...out, heard };
+    return { ...out, heard } as Record<string, unknown>;
   });
   const none = { loading: false, empty: false, error: false, cover: false };
   expect(r['empty']).toEqual({ ...none, empty: true, cover: true });

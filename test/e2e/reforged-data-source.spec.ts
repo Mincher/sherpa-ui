@@ -571,11 +571,11 @@ test('source: steerOnly sends events but never pushes rows', async ({ page }) =>
 
     // Two consumers: one ordinary, one steer-only.
     const fed: unknown[] = [];
-    const grid = document.createElement('div') as HTMLElement & { populate(d: unknown): void };
+    const grid = document.createElement('div') as unknown as HTMLElement & { populate(d: unknown): void };
     grid.populate = (d) => fed.push(d);
 
     const steererFed: unknown[] = [];
-    const toolbar = document.createElement('div') as HTMLElement & { populate(d: unknown): void };
+    const toolbar = document.createElement('div') as unknown as HTMLElement & { populate(d: unknown): void };
     toolbar.populate = (d) => steererFed.push(d);
 
     document.getElementById('root')!.replaceChildren(grid, toolbar);

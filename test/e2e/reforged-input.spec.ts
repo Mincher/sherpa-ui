@@ -55,8 +55,8 @@ test('re-dispatches input/change with the value in detail', async ({ page }) => 
     await el.rendered;
 
     const events: Array<{ type: string; value: unknown }> = [];
-    el.addEventListener('input', (e) => events.push({ type: 'input', value: (e as CustomEvent).detail.value }));
-    el.addEventListener('change', (e) => events.push({ type: 'change', value: (e as CustomEvent).detail.value }));
+    el.addEventListener('input', (e) => events.push({ type: 'input', value: (e as unknown as CustomEvent).detail.value }));
+    el.addEventListener('change', (e) => events.push({ type: 'change', value: (e as unknown as CustomEvent).detail.value }));
 
     const control = el.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
     control.value = 'typed';
@@ -151,7 +151,7 @@ test('minimal style keeps the value property + input/change events', async ({ pa
     await el.rendered;
     const control = el.shadowRoot!.querySelector('.control') as HTMLInputElement;
     let last: string | null = null;
-    el.addEventListener('input', (e) => (last = (e as CustomEvent).detail.value));
+    el.addEventListener('input', (e) => (last = (e as unknown as CustomEvent).detail.value));
     control.value = 'abc';
     control.dispatchEvent(new Event('input', { bubbles: true }));
     return { fired: last, prop: el.value };

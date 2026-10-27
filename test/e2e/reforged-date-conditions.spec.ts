@@ -25,7 +25,7 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
     const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
     const { menu } = menuFor(host, { id: 'created', label: 'Created', kind: 'date', advanced: true });
     document.getElementById('root')!.replaceChildren(menu);
-    const m = menu as Menu;
+    const m = menu as unknown as Menu;
     await m.rendered;
     m.mode = 'advanced';
     m.conditions = rows;
@@ -65,7 +65,7 @@ test('the switch to Advanced carries the calendar\'s day over as On', async ({ p
     const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
     const { menu } = menuFor(host, { id: 'created', label: 'Created', kind: 'date', advanced: true });
     document.getElementById('root')!.replaceChildren(menu);
-    const m = menu as Menu;
+    const m = menu as unknown as Menu;
     await m.rendered;
     m.values = ['2026-09-03'];
     await window.__settled();

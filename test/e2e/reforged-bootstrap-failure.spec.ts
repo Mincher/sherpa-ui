@@ -27,7 +27,7 @@ for (const [name, how] of MODES) {
         : route.fulfill({ status: 404, body: '<p>not found</p>' }));
 
     const settled = await page.evaluate(async (tag) => {
-      const { SherpaElement } = await import('/dist/index.js') as {
+      const { SherpaElement } = await import('/dist/index.js') as unknown as {
         SherpaElement: typeof HTMLElement & { html?: URL };
       };
       class Probe extends (SherpaElement as unknown as typeof HTMLElement) {
@@ -52,7 +52,7 @@ test('a 404 does not stamp the server error page as the template', async ({ page
     route.fulfill({ status: 404, body: '<p id="server-error">not found</p>' }));
 
   const html = await page.evaluate(async () => {
-    const { SherpaElement } = await import('/dist/index.js') as {
+    const { SherpaElement } = await import('/dist/index.js') as unknown as {
       SherpaElement: typeof HTMLElement & { html?: URL };
     };
     class Probe extends (SherpaElement as unknown as typeof HTMLElement) {

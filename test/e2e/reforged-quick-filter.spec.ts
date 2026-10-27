@@ -546,7 +546,7 @@ test('an EMPTY chip opens its menu; one holding a value still toggles', async ({
     // Pick one, so the chip now HOLDS a value.
     chip.values = ['pro'];
     await settle();
-    chip.menu?.hide?.();
+    (chip.menu as (HTMLElement & { hide?(): void }) | null | undefined)?.hide?.();
     await settle();
     const picked = snap();
 

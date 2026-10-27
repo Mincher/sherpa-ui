@@ -427,7 +427,6 @@ test('the trend, delta and status all follow a filter', async ({ page }) => {
     }
 
     const src = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
-    await src.ready;
     src.declareValues('region', ['EMEA', 'AMER']);
 
     const el = document.createElement('sherpa-metric') as HTMLElement & {

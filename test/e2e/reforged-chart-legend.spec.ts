@@ -147,7 +147,7 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
     await window.__settled();
     const capped = read();
 
-    let detail: { index: number; indices: number[] } | null = null;
+    let detail = null as { index: number; indices: number[] } | null;
     el.addEventListener('legend-item-click', (e) => {
       detail = (e as CustomEvent).detail;
     });
@@ -305,7 +305,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     }
     const stillOpen = menu.shadowRoot!.querySelector('.menu')!.matches(':popover-open');
 
-    let detail: { active: boolean; indices: number[] } | null = null;
+    let detail = null as { active: boolean; indices: number[] } | null;
     el.addEventListener('legend-item-click', (e) => {
       detail = (e as CustomEvent).detail;
     });

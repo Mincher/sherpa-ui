@@ -251,7 +251,7 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
   const r = await page.evaluate(async () => {
     const probe = async (type?: string) => {
       // Filled, though empty: the Filters menu draws then.
-      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': type });
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], type ? { 'data-type': type } : {});
       const sr = el.shadowRoot!;
       const shown = (sel: string) => {
         const n = sr.querySelector(sel) as HTMLElement | null;
@@ -1302,7 +1302,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     });
 
     const rows = [...chip.querySelectorAll('.menu-row[data-drill]')] as HTMLElement[];
-    const list = {
+    const list: Record<string, unknown> = {
       ...snap(),
       // No badge. TODO 447
       badge: chip.getAttribute('data-badge'),

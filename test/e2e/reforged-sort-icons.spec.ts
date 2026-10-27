@@ -81,9 +81,9 @@ test('a sortable header cycles none → asc → desc, each a different painted g
     return { unsorted, asc, desc };
   });
 
-  const name = (s: { field?: string }[]) => s.find((x) => x.field === 'name')!;
-  const other = (s: { field?: string }[]) => s.find((x) => x.field === 'n')!;
-  const fixed = (s: { field?: string }[]) => s.find((x) => x.field === 'x')!;
+  const name = <T extends { field?: string | undefined }>(s: T[]) => s.find((x) => x.field === 'name')!;
+  const other = <T extends { field?: string | undefined }>(s: T[]) => s.find((x) => x.field === 'n')!;
+  const fixed = <T extends { field?: string | undefined }>(s: T[]) => s.find((x) => x.field === 'x')!;
 
   // THE THIRD STATE, which the border triangle could not express: a sortable
   // column that is not the current sort still says so.

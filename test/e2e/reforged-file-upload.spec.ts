@@ -5,13 +5,6 @@ import { test, expect } from './harness';
 
 test('renders a drop zone and mirrors accept/multiple to the input', async ({ page }) => {
   const r = await page.evaluate(async () => {
-  /** Click a composed sherpa-button: await its own render, hit its inner trigger. */
-  async function pressComposed(host: Element | null): Promise<void> {
-    const btn = host as (HTMLElement & { rendered?: Promise<void>; shadowRoot?: ShadowRoot }) | null;
-    await btn?.rendered;
-    (btn?.shadowRoot?.querySelector('button') as HTMLElement | null)?.click();
-  }
-  
     const el = document.createElement('sherpa-file-upload') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('accept', 'image/*');
     el.setAttribute('multiple', '');
@@ -27,13 +20,6 @@ test('renders a drop zone and mirrors accept/multiple to the input', async ({ pa
 
 test('dropping files renders the list and fires file-add', async ({ page }) => {
   const r = await page.evaluate(async () => {
-  /** Click a composed sherpa-button: await its own render, hit its inner trigger. */
-  async function pressComposed(host: Element | null): Promise<void> {
-    const btn = host as (HTMLElement & { rendered?: Promise<void>; shadowRoot?: ShadowRoot }) | null;
-    await btn?.rendered;
-    (btn?.shadowRoot?.querySelector('button') as HTMLElement | null)?.click();
-  }
-  
     const el = document.createElement('sherpa-file-upload') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('multiple', '');
     document.getElementById('root')!.appendChild(el);
@@ -65,13 +51,6 @@ type FileEl = HTMLElement & { rendered?: Promise<void> };
 
 test('adding files fires file-add; the actions row and details appear', async ({ page }) => {
   const r = await page.evaluate(async () => {
-  /** Click a composed sherpa-button: await its own render, hit its inner trigger. */
-  async function pressComposed(host: Element | null): Promise<void> {
-    const btn = host as (HTMLElement & { rendered?: Promise<void>; shadowRoot?: ShadowRoot }) | null;
-    await btn?.rendered;
-    (btn?.shadowRoot?.querySelector('button') as HTMLElement | null)?.click();
-  }
-  
     const el = document.createElement('sherpa-file-upload') as FileEl;
     el.setAttribute('multiple', '');
     el.setAttribute('data-max-size', '4 MB');
@@ -165,7 +144,7 @@ test('removing a file fires file-remove with the removed file', async ({ page })
     await window.__settled();
     let removedName: string | null = null;
     el.addEventListener('file-remove', (e) => (removedName = (e as CustomEvent).detail.removed.name));
-    await pressComposed(el.shadowRoot!.querySelectorAll('.file-remove')[1]);
+    await pressComposed(el.shadowRoot!.querySelectorAll('.file-remove')[1] ?? null);
     await window.__settled();
     return { removedName, rows: el.shadowRoot!.querySelectorAll('.file-item').length };
   });

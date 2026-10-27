@@ -10,7 +10,7 @@ type Edge = { size: number; log: string[]; aria: Record<string, string | null> }
 
 const wire = (page: import('@playwright/test').Page, axis: 'x' | 'y', describe: boolean) =>
   page.evaluate(async ([axis, describe]) => {
-    const { resizeByEdge } = await import('/dist/core/ui/edge-resize.js') as {
+    const { resizeByEdge } = await import('/dist/core/ui/edge-resize.js') as unknown as {
       resizeByEdge(edge: HTMLElement, o: Record<string, unknown>): void;
     };
     const edge = document.createElement('div');

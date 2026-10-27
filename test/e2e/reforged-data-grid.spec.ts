@@ -882,7 +882,6 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
     const sr = grid.shadowRoot!;
     const pick = (field: string) => {
       const th = sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
-      const td = sr.querySelector(`.cell[data-type], .row .cell`) as HTMLElement;
       return {
         type: th.dataset['type'] ?? null,
         header: getComputedStyle(th.querySelector('.head-name')!).justifyContent,

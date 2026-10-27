@@ -51,7 +51,7 @@ test('a cell draws its tags in the plain Tag look; off, none', async ({ page }) 
     await settle();
     out.off = sr.querySelectorAll('.cell-tag').length;
     return out;
-  })()`);
+  })()`) as Record<string, unknown>;
   expect(r.tags).toEqual([['Free', 'active'], ['Pro', 'trial']]);
   // No data-viz colour: they were "not great". Will, TODO 507
   expect(r.hue).toEqual(['', '']);
@@ -71,7 +71,7 @@ test('a tag filters by its value, and pressed again lets it go', async ({ page }
     tag().click();
     await settle();
     return { on, off: { total: source.total, reading: reading('plan') } };
-  })()`);
+  })()`) as Record<string, unknown>;
   expect(r.on).toEqual({ total: 4, current: true, pressed: 'true', picked: ['Pro'] });
   expect(r.off).toEqual({ total: 12, reading: null });
 });
@@ -90,7 +90,7 @@ test('the heading menu joins its fields, a section each; Apply answers each that
     return { items, sections, selectAll, advanced: menu.hasAttribute('data-advanced'), plan: reading('plan')?.picked,
       status: reading('status')?.picked, total: source.total,
       on: sr.querySelector('.head-cell[data-field="name"] .head-filter').hasAttribute('data-current') };
-  })()`);
+  })()`) as Record<string, unknown>;
   expect(r.items).toEqual([2, 'Free', 'Pro', 'Team', 'active', 'trial']);
   expect(r.sections).toEqual(['Plan', 'Status']);
   // Every value of every field is no answer: no Select all.
@@ -115,7 +115,7 @@ test('a tag whose field the View holds is greyed, refused, and says where it wen
       tip: tip.shadowRoot.querySelector('.bubble').matches(':popover-open') ? tip.dataset.text : null,
       sections: [...menu.querySelectorAll('.menu-section')].map((h) => h.textContent.trim()),
     };
-  })()`);
+  })()`) as Record<string, unknown>;
   expect(r).toEqual({ held: true, reading: null, tip: 'Filter moved to View scope.', sections: ['Status'] });
 });
 

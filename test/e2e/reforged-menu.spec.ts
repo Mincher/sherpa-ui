@@ -716,7 +716,7 @@ test('a committing menu\'s Apply and Cancel wait for a change', async ({ page })
 test('a committing Advanced menu turns Apply on when a condition is added, off when it goes', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; show(): void };
-    for (const [k, v] of [['data-commit', ''], ['data-type', 'filter'], ['data-advanced', ''], ['data-mode', 'advanced']]) menu.setAttribute(k, v);
+    for (const [k, v] of [['data-commit', ''], ['data-type', 'filter'], ['data-advanced', ''], ['data-mode', 'advanced']] as const) menu.setAttribute(k, v);
     menu.innerHTML = '<label><input type="checkbox" value="a" />A</label>';
     document.getElementById('root')!.replaceChildren(menu);
     await menu.rendered;

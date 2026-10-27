@@ -59,7 +59,7 @@ test('once moved, a slider, a tooltip, a nav and a dialog still hear', async ({ 
     await Promise.all(els.map((el) => el.rendered));
     root.querySelector('.b')!.append(...els);
     await window.__settled();
-    const [slider, tooltip, nav, dialog] = els as [HTMLElement, HTMLElement, HTMLElement, HTMLElement & { open: boolean }];
+    const [slider, tooltip, nav, dialog] = els as unknown as [HTMLElement, HTMLElement, HTMLElement, HTMLElement & { open: boolean }];
 
     const range = slider.shadowRoot!.querySelector<HTMLInputElement>('.range')!;
     let changed: unknown = null;

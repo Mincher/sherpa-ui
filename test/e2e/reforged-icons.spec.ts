@@ -101,9 +101,7 @@ test('the Font Awesome vocabulary is gone', async () => {
  */
 test('no rendered leaf is an icon name in plain text', async ({ page }) => {
   const wordy = await page.evaluate(async () => {
-    const mod = await import('/dist/render-icon.js').catch(() =>
-      import('/dist/core/ui/render-icon.js'),
-    ) as { hasIcon: (v: string) => boolean };
+    const mod = await import('/dist/core/ui/render-icon.js') as unknown as { hasIcon: (v: string) => boolean };
 
     const root = document.getElementById('root')!;
     root.replaceChildren();

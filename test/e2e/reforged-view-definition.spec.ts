@@ -599,8 +599,8 @@ test('saveViewAs stores a named view, and the id is derived from the label', asy
     source.declareField('region', { label: 'Region' });
     source.query.setReading('view', 'region', { picked: ['EMEA'] });
     // What a saved view says of its region, in whichever scope holds it.
-    const regionOf = (v: { query: { scopes: Record<string, { where?: Record<string, unknown> }> } }) =>
-      Object.values(v.query.scopes).map((s) => s.where?.['region']).find(Boolean);
+    const regionOf = (v: { query?: { scopes: Record<string, { where?: Record<string, unknown> }> } } | undefined) =>
+      Object.values(v?.query?.scopes ?? {}).map((s) => s.where?.['region']).find(Boolean);
 
     const first = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
       { chip: ['values'] });
@@ -650,7 +650,7 @@ test('an empty label saves nothing, and unreadable storage yields no views', asy
     localStorage.removeItem('sherpa:views:probe2');
 
     // A reader who cancels the naming prompt has not saved anything.
-    const blank = saveViewAs('probe2', '   ', { source: { state: {} } }, {});
+    const blank = saveViewAs('probe2', '   ', { source: { state: {} } } as never, {});
 
     // A stored value this code no longer understands is not a crash. A saved
     // view outlives the code that wrote it, and a hand-edited one is a string.

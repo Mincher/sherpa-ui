@@ -9,6 +9,16 @@ if [ $TYPE_CHECK_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# The SPECS, type-checked against the source they drive (TODO 492): 220 errors
+# had grown where nothing looked. About 3s.
+echo "🧪 Type-checking the specs..."
+SPEC_TYPES_OUT=$(npm run type-check:tests --silent 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$SPEC_TYPES_OUT"
+  echo "❌ The specs' type-check failed. Commit blocked."
+  exit 1
+fi
+
 # Rule 13: the data layer touches no DOM. eslint holds that boundary, and it
 # ran in no hook until TODO 188. About 2s.
 echo "🧹 Linting TypeScript (the DOM-free boundary)..."

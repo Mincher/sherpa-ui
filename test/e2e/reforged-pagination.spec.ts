@@ -214,9 +214,9 @@ test('the row-count select and page field are shaped like a Sherpa input', async
      token: an inset control rounds 1px outside the box it sits in, so the two
      read concentric. Asserting a number would pin that idiom by accident. */
   for (const field of [r.rows!, r.pageInput!]) {
-    expect(parseFloat(field.radius)).toBeGreaterThan(0);
+    expect(parseFloat(field.radius ?? '')).toBeGreaterThan(0);
     // Every corner, so a shorthand cannot hide a missing one.
-    expect(new Set(field.corners.split(' ')).size).toBe(1);
+    expect(new Set((field.corners ?? '').split(' ')).size).toBe(1);
   }
   // The two pager fields agree with EACH OTHER — they sit side by side.
   expect(r.rows!.corners).toBe(r.pageInput!.corners);

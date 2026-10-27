@@ -68,7 +68,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data | refactor |
 | 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ⬜ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one | figma |
-| ⬜ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate | tests |
+| ✅ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate. Done 2026-10-27: `tsconfig.tests.json` maps `/dist/*` to the source (not `tsconfig.json`: Playwright reads that one and would rewrite the imports a spec hands the browser); 261 errors to 0 across 30 specs — casts, unused helpers, a stale `await src.ready`, a fallback import of a file that never existed; `npm run type-check:tests`, ~3s, in the pre-commit hook | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
 | ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
 | ✅ | 34 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |

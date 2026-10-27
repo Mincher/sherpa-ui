@@ -222,7 +222,7 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
     };
 
     // OPEN, so a control in it can take focus.
-    (menu as HTMLElement & { show(): void }).show();
+    (menu as unknown as HTMLElement & { show(): void }).show();
     sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
 

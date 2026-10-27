@@ -50,7 +50,7 @@ test('a heading switches both ways, each mode filters by its own answer, and a r
 
     // OPEN, as a reader must: a shut menu's Apply is off. TRAP T-a-disabled-button-acts-on-nothing
     const open = async (): Promise<void> => {
-      const m = menu() as HTMLElement & { show(t: Element): void; hasAttribute(n: string): boolean };
+      const m = menu() as unknown as HTMLElement & { show(t: Element): void; hasAttribute(n: string): boolean };
       if (!m.hasAttribute('open')) m.show(sr.querySelector('.head-cell[data-field="owner"] .head-filter')!);
       await wait();
     };

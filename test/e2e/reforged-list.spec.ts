@@ -20,8 +20,6 @@ interface ListEl extends HTMLElement {
   populate: (data: unknown) => void;
 }
 
-const settle = () => new Promise((res) => setTimeout(res, 20));
-
 test('populate stamps one sherpa-list-item per row from the prototype', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;

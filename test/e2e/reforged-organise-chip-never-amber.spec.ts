@@ -12,14 +12,6 @@ import { test, expect } from './harness';
  * TRAP T-a-chip-knows-what-kind-it-is
  */
 
-type Bar = HTMLElement & {
-  rendered?: Promise<void>;
-  populate(d: unknown): void;
-  organise(d: unknown): void;
-};
-
-const settled = () => window.__settled();
-
 const BUILD = `
   const el = document.createElement('sherpa-quick-filter-toolbar');
   document.getElementById('root').replaceChildren(el);

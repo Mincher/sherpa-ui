@@ -1,4 +1,4 @@
-import { test, expect } from './harness';
+import { test, expect, type Page } from './harness';
 
 /**
  * A REMOTE STORE'S SET IS KEPT ON THE DEVICE — TODO 345 phase 4.7, Will's D2 B
@@ -22,12 +22,16 @@ const SESSION = (opts: { rows: number; down?: boolean; version?: number; name: s
   return { first, last: seen.at(-1), reach: source.reach };
 })()`;
 
+/** One SESSION, typed: what the page saw first and last, and the store's reach. */
+type Seen = { first: Record<string, unknown>; last: unknown; reach: string };
+const session = (page: Page, script: string): Promise<Seen> => page.evaluate(script) as Promise<Seen>;
+
 test('a reload while the store is down shows the kept rows, stale, keyed as before', async ({ page }) => {
   const name = 'kept-down-' + Date.now();
-  const one = await page.evaluate(SESSION({ rows: 6, name }));
+  const one = await session(page, SESSION({ rows: 6, name }));
   expect(one.first).toMatchObject({ total: 6, stale: false });
   await page.reload();
-  const two = await page.evaluate(SESSION({ rows: 9, down: true, name }));
+  const two = await session(page, SESSION({ rows: 9, down: true, name }));
   // At once: the kept rows, unconfirmed, keyed as before…
   expect(two.first).toMatchObject({ total: 6, stale: true, key: '1' });
   // …and once the check behind has failed, the page says it cannot reach the store.
@@ -37,26 +41,26 @@ test('a reload while the store is down shows the kept rows, stale, keyed as befo
 
 test("a reload online shows the kept rows at once, then the store's, and keeps those", async ({ page }) => {
   const name = 'kept-up-' + Date.now();
-  await page.evaluate(SESSION({ rows: 6, name }));
+  await session(page, SESSION({ rows: 6, name }));
   await page.reload();
-  const two = await page.evaluate(SESSION({ rows: 7, name }));
+  const two = await session(page, SESSION({ rows: 7, name }));
   expect(two.first).toMatchObject({ total: 6, stale: true });
   expect(two.last).toEqual([7, false]);
   await page.reload();
-  const three = await page.evaluate(SESSION({ rows: 8, down: true, name }));
+  const three = await session(page, SESSION({ rows: 8, down: true, name }));
   // What the second session confirmed is what the third starts from.
   expect(three.first).toMatchObject({ total: 7, stale: true });
 });
 
 test('another version, or clearKept(), starts from nothing', async ({ page }) => {
   const name = 'kept-gone-' + Date.now();
-  await page.evaluate(SESSION({ rows: 6, name }));
+  await session(page, SESSION({ rows: 6, name }));
   await page.reload();
-  const bumped = await page.evaluate(SESSION({ rows: 6, version: 2, name }));
+  const bumped = await session(page, SESSION({ rows: 6, version: 2, name }));
   expect(bumped.first).toMatchObject({ total: 6, stale: false });
   await page.evaluate(`(async () => { const { clearKept } = await import('/dist/index.js'); await clearKept(); })()`);
   await page.reload();
-  const cleared = await page.evaluate(SESSION({ rows: 6, down: true, version: 2, name }));
+  const cleared = await session(page, SESSION({ rows: 6, down: true, version: 2, name }));
   expect(cleared.first).toMatchObject({ total: 0, reach: 'down' });
 });
 
@@ -90,13 +94,13 @@ test('a sign-out keeps nothing more under the old name, though the store is read
     await new Promise((d) => setTimeout(d, 3200));
   })()`);
   await page.reload();
-  const after = await page.evaluate(SESSION({ rows: 2, down: true, name }));
+  const after = await session(page, SESSION({ rows: 2, down: true, name }));
   expect(after.first).toMatchObject({ total: 0, reach: 'down' });
 });
 
 test('a save made while the store cannot be read leaves the kept copy for the next reload', async ({ page }) => {
   const name = 'kept-save-' + Date.now();
-  await page.evaluate(SESSION({ rows: 6, name }));
+  await session(page, SESSION({ rows: 6, name }));
   await page.reload();
   await page.evaluate(`(async () => {
     const { ArrayStore, DataSource, spoofRemote, keepCache } = await import('/dist/index.js');
@@ -111,6 +115,6 @@ test('a save made while the store cannot be read leaves the kept copy for the ne
     await new Promise((d) => setTimeout(d, 3200));
   })()`);
   await page.reload();
-  const after = await page.evaluate(SESSION({ rows: 6, down: true, name }));
+  const after = await session(page, SESSION({ rows: 6, down: true, name }));
   expect(after.first).toMatchObject({ total: 6, stale: true });
 });

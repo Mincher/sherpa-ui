@@ -53,6 +53,7 @@ node scripts/build-reforged.mjs --no-minify  # as shipped, with readable names â
 
 # Type check (no emit)
 npm run type-check
+npm run type-check:tests  # the specs, against the source they drive â€” in the hook (TODO 492)
 
 # Lint TypeScript. Includes the DOM-FREE BOUNDARY: every module in
 # src/core/data/ (and bind-source.ts) may not touch document/window/

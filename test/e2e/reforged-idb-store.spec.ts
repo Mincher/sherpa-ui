@@ -400,10 +400,10 @@ test('every store: a changed key moves the row; a key another row holds is refus
     const idb = new IdbStore({ name: 'people', key: 'email', database });
     localStorage.removeItem('contract-people');
     const out = {
-      idb: await run(idb),
-      array: await run(new ArrayStore([], { key: 'email' })),
-      local: await run(new LocalStore({ name: 'contract-people', key: 'email' })),
-      json: await run(new JsonStore({ url: 'data:application/json,[]', key: 'email' })),
+      idb: await run(idb as never),
+      array: await run(new ArrayStore([], { key: 'email' }) as never),
+      local: await run(new LocalStore({ name: 'contract-people', key: 'email' }) as never),
+      json: await run(new JsonStore({ url: 'data:application/json,[]', key: 'email' }) as never),
     };
     idb.close();
     localStorage.removeItem('contract-people');

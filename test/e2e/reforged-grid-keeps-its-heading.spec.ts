@@ -63,7 +63,7 @@ test('a bound filter pick draws the body at most twice, and makes no heading cel
     source.query.setReading('view', 'status', { picked: ['active'] });
     await settle();
     return { ...seen, total: source.total };
-  })()`);
+  })()`) as { total: number; body: number; heads: number };
   expect(r.total).toBe(20);
   expect(r.body).toBeLessThanOrEqual(2);
   // The heading is KEPT: no cell made again (C5).
