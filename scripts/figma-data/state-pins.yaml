@@ -104,7 +104,9 @@ sherpa-nav-item:
   # Navigation Item pins Transparent=default at its root. A promo is its own
   # bordered card, in the default look.
   '&:not([data-type="promo"])': transparent
-  '&[data-current]': transparent/active
+  # SELECTED: the Default look's Active mode — its edge and a solid fill; the
+  # Transparent look's tint alone was far too low contrast. Will, TODO 498
+  '&[data-current]': active
   '&[disabled]': transparent/inactive
   # Its Tag instance pins Saturated=success; the dot is Indicator, Style=active.
   '& .badge': saturated/success

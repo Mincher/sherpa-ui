@@ -879,7 +879,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (109)
+## Other components (110)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -915,6 +915,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — app-header
 - [T-a-second-container-type-drops-the-first](TRAPS.md#t-a-second-container-type-drops-the-first) — app-header
+- [T-a-selected-nav-row-wears-its-edge](TRAPS.md#t-a-selected-nav-row-wears-its-edge) — nav-item
 - [T-a-shadow-reach-is-a-missing-door](TRAPS.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
 - [T-a-shared-edge-is-halved-on-both-sides](TRAPS.md#t-a-shared-edge-is-halved-on-both-sides) — group, metric-group
 - [T-a-shared-enum-is-not-every-enum](TRAPS.md#t-a-shared-enum-is-not-every-enum) — button

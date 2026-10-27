@@ -49,6 +49,9 @@
   /* The Style names Figma binds; the look and every state are PINS in
      scripts/figma-data/state-pins.yaml. TRAP T-a-state-colour-binds-the-style-mode */
   background: var(--sherpa-style-surface-base, transparent);
+  /* Its edge, inside: none in the Transparent look; the selected row's pin shows
+     it. Will, TODO 498 · TRAP T-a-selected-nav-row-wears-its-edge */
+  box-shadow: inset 0 0 0 var(--sherpa-display-mode-border-width-base, 1px) var(--sherpa-style-border-base, transparent);
   color: var(--sherpa-style-content-base, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* On the box, so the label, the tag and both controls inherit it. */

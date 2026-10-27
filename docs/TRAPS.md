@@ -19357,3 +19357,15 @@ moment it moves into that menu. A heading's Group button (TODO 500,
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-selected-nav-row-wears-its-edge
+
+**The selected nav row is the Default look's Active mode, not the Transparent
+look's** — Will, TODO 498: *"The fill on its own is far too low contrast."* The
+Transparent look's Active tint is a 30% wash, and its border is 0%. So the row
+binds its edge — an inset shadow from `--sherpa-style-border-base`, which takes
+no room — and the selected row's state pin is `active`: a solid pale fill and
+the purple edge. Every other row stays Transparent, where the edge is nothing.
+
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `test/e2e/reforged-nav-item.spec.ts`

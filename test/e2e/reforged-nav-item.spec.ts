@@ -86,24 +86,28 @@ test('current setter reflects to data-current and styles the row', async ({ page
     // The HOST is the row box now (Figma's Navigation Item contains the tag and
     // the chevron), so the active fill and ink live there, not on the inner control.
     const cs = getComputedStyle(el);
-    const styled = { bg: cs.backgroundColor, color: cs.color, weight: cs.fontWeight };
+    const styled = { bg: cs.backgroundColor, color: cs.color, weight: cs.fontWeight, edge: cs.boxShadow };
     el.current = false;
     // The mode's own tokens, resolved the same way, so the check follows Figma.
     const probe = document.createElement('div');
-    probe.style.background = 'var(--sherpa-style-transparent-active-surface-base)';
-    probe.style.color = 'var(--sherpa-style-transparent-active-content-base)';
+    probe.style.background = 'var(--sherpa-style-active-surface-base)';
+    probe.style.color = 'var(--sherpa-style-active-content-base)';
+    probe.style.borderColor = 'var(--sherpa-style-active-border-base)';
     document.body.appendChild(probe);
-    const mode = { bg: getComputedStyle(probe).backgroundColor, color: getComputedStyle(probe).color };
+    const mode = { bg: getComputedStyle(probe).backgroundColor, color: getComputedStyle(probe).color, edge: getComputedStyle(probe).borderTopColor };
     probe.remove();
     return { on, off: el.hasAttribute('data-current'), ...styled, mode };
   });
   expect(r.on).toBe(true);
   expect(r.off).toBe(false);
-  // Figma pins Transparent=active on the current row: that look's face and ink.
-  // The label weight binds Theme weight/light (300) and does NOT change with the
-  // mode. TRAP T-a-state-colour-binds-the-style-mode
+  // The current row is the Default look's Active mode: its face, its ink and its
+  // edge, inside (Will, TODO 498). The label weight binds Theme weight/light (300)
+  // and does NOT change with the mode. TRAP T-a-state-colour-binds-the-style-mode
+  // · TRAP T-a-selected-nav-row-wears-its-edge
   expect(r.bg).toBe(r.mode.bg);
   expect(r.color).toBe(r.mode.color);
+  expect(r.edge).toContain(r.mode.edge);
+  expect(r.edge).toContain('inset');
   expect(r.weight).toBe('300');
 });
 
