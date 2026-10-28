@@ -11429,7 +11429,6 @@ the field header's: read as a run, the chip's own id was sent as the pick.
 
 ---
 
-- Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/ui/filter-kind.ts`
 
 ### T-an-edge-resizes-its-box
@@ -17054,7 +17053,6 @@ reaching into the bar's shadow root.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
-- Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/data/data-source-types.ts`
 
 ### T-a-bar-reports-its-holds

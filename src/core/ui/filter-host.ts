@@ -46,11 +46,11 @@ export function pendingFields(host: HTMLElement, list: 'pending' | 'failed' = 'p
  *  TRAP T-a-pending-chip-reads-as-a-warning */
 export function markField(
   chips: Iterable<Element | null | undefined>, menus: Iterable<Element | null | undefined>,
-  said: { pending: boolean; failed: boolean; drafting?: boolean; changed?: ReadonlySet<Element> },
+  said: { pending: boolean; failed: boolean; changed?: ReadonlySet<Element> },
 ): void {
   for (const chip of chips) {
     if (!chip) continue;
-    chip.toggleAttribute('data-pending', (said.pending && (said.changed?.has(chip) ?? true)) || !!said.drafting);
+    chip.toggleAttribute('data-pending', said.pending && (said.changed?.has(chip) ?? true));
     chip.toggleAttribute('data-failed', said.failed);
   }
   for (const menu of menus) menu?.toggleAttribute('data-pending', said.pending);

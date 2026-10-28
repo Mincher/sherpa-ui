@@ -71,7 +71,7 @@ with a failing test where it is a bug, before it is changed.
 | U14 | 2 | duplicate | two `SavedSets` and two headers per toolbar; `data-saveable` redraws only the bar's | toolbar; toolbar-column.ts |
 | U15 | ✅ 1 | conflict | a column's Reset is enabled by scopes it does not reset | provider-page.ts `data-nothing-to-reset` |
 | U16 | 2 | duplicate | about 18 near-identical provider setters | sherpa-provider.ts |
-| U17 | 2 | dead | `data-folded`, `menu-range-change`, `FilterDef.asChip`, three save rows in `FILTER_ACTIONS`, `markField`'s `drafting`, `close()`, `HeldFilter.appliedAt` | toolbar, sherpa-menu.ts, filter-def.ts, more-menu.ts, filter-host.ts, data-source.ts |
+| U17 | ✅ 2: `FilterDef.asChip`, `FilterDef.appliedAt` and `markField`'s `drafting` go. KEPT, not dead: `data-folded` (tests read it), `menu-range-change` (a date's Range switch, public), `FILTER_ACTIONS` save rows (live with the Saved menu off), `HeldFilter.appliedAt` (public `describe()`); `close()` was already gone | dead | `data-folded`, `menu-range-change`, `FilterDef.asChip`, three save rows in `FILTER_ACTIONS`, `markField`'s `drafting`, `close()`, `HeldFilter.appliedAt` | toolbar, sherpa-menu.ts, filter-def.ts, more-menu.ts, filter-host.ts, data-source.ts |
 | U18 | 2 | contract | props declared `kind: 'style'` that only JS reads; `data-filters-nothing` written but not declared | chip and toolbar props |
 | U19 | 2 | duplicate | the toolbar finds a chip's menu and organise state its own ways, not `chip.menu`/`column`/`direction` | toolbar |
 | U20 | 1 | conflict | the `empties` rule three ways; the toolbar re-renders every chip on its change and loses open drafts | filter-menu.ts; sherpa-data-grid.ts; toolbar |

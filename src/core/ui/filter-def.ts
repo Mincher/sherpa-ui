@@ -96,12 +96,6 @@ export interface FilterDef extends OffersAdvanced {
   loading?: boolean;
   /** The bar's: defer picks behind Apply. TRAP T-commit-follows-select-mode */
   commit?: boolean;
-  /** The panel's: ONE chip with its menu, not a run — a date's menu IS a
-   *  calendar. TRAP T-only-group-and-sort-stay-one-chip */
-  asChip?: boolean;
-  /** The panel's: a scope ABOVE holds it now. It keeps its heading here, and
-   *  draws no values. TRAP T-a-panel-asks-for-its-scopes */
-  appliedAt?: string;
   /** The panel's: the ONE scope a View field is SENT DOWN to — `origin` when
    *  it came UP from there. TRAP T-send-to-view-filters */
   sendTo?: { scope: string; label: string; origin?: boolean };

@@ -131,7 +131,7 @@
   "src/core/ui/disclosure.ts": 80,
   "src/core/ui/drag-order.ts": 123,
   "src/core/ui/edge-resize.ts": 117,
-  "src/core/ui/filter-def.ts": 109,
+  "src/core/ui/filter-def.ts": 103,
   "src/core/ui/filter-host.ts": 146,
   "src/core/ui/filter-kind.ts": 101,
   "src/core/ui/filter-menu.ts": 206,

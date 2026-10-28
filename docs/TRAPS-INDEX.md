@@ -330,7 +330,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (153)
+## Filters (152)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -364,7 +364,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-number-has-advanced-rows](TRAPS.md#t-a-number-has-advanced-rows) — filter-menu, quick-filter
 - [T-a-number-waits-for-apply](TRAPS.md#t-a-number-waits-for-apply) — filter-menu
 - [T-a-panel-adds-through-the-bar-that-owns-the-list](TRAPS.md#t-a-panel-adds-through-the-bar-that-owns-the-list) — quick-filter-toolbar
-- [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — filter-def
 - [T-a-panel-builds-its-own-menus](TRAPS.md#t-a-panel-builds-its-own-menus) — filter-def, filter-menu
 - [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — quick-filter
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, quick-filter, quick-filter-toolbar
@@ -448,7 +447,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — quick-filter
 - [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — quick-filter-toolbar
 - [T-only-five-filter-chips-carry-an-icon](TRAPS.md#t-only-five-filter-chips-carry-an-icon) — filter-def
-- [T-only-group-and-sort-stay-one-chip](TRAPS.md#t-only-group-and-sort-stay-one-chip) — filter-def, filter-kind
+- [T-only-group-and-sort-stay-one-chip](TRAPS.md#t-only-group-and-sort-stay-one-chip) — filter-kind
 - [T-organise-chips-lead-the-bar](TRAPS.md#t-organise-chips-lead-the-bar) — quick-filter-toolbar
 - [T-organise-glyphs-are-named-not-inline](TRAPS.md#t-organise-glyphs-are-named-not-inline) — quick-filter-toolbar
 - [T-overflowing-needs-1px-slack](TRAPS.md#t-overflowing-needs-1px-slack) — quick-filter-toolbar
