@@ -189,11 +189,9 @@ export function validateDef(def, opts = {}) {
 
   /* ── events well-formed ──
      A NATIVE event name is a single word by definition, and re-dispatching one
-     is the convention, not a breach of it: CLAUDE.md's naming contract lists
-     `change`/`input` as standard shared events in the same sentence that sets
-     the `noun-verb` rule. The rule demanded a hyphen from all of them and
-     produced 12 warnings across 10 components, every one false. A component
-     that re-dispatches `change` is doing exactly what the contract asks. */
+     is the convention, not a breach of it: PRINCIPLES 18 keeps a re-dispatched
+     native event's own name beside the `noun-verb` rule. Demanding a hyphen
+     gave 12 warnings across 10 components, every one false. */
   const NATIVE_EVENTS = new Set([
     'change', 'input', 'close', 'open', 'toggle', 'submit', 'reset', 'select',
     'focus', 'blur', 'invalid', 'cancel', 'search',

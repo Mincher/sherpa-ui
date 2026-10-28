@@ -98,6 +98,12 @@ Plus the app's stores, and its Views as JSON.
   `T-a-component-asks-its-provider`
 - **The outlet draws the route's Context**, keeps the nav, and opens Settings
   over the Context. `T-an-outlet-loads-the-context` · `T-the-outlet-keeps-the-nav`
+- **Settings opens ON TOP of the Context**, which is never reloaded, so closing
+  Settings keeps its View. The URL carries both:
+  `?context=records&view=risk&settings=application`. A Settings page is ONE
+  page with no Views: a section heading before each set of settings, a Jump to
+  chip (`sherpa-quick-filter data-type="jump"`) in its header, and a footer only
+  where typed values need Save.
 - **A row kept in view** — a metrics row — goes in a `<div slot="context-header">`
   in the Context's markup. The outlet lifts it over the scroll area.
   `T-a-context-has-a-fixed-region`
@@ -330,6 +336,9 @@ provider.addEventListener('filters-delete', () => provider.deleteFilters());
 - A dialog or an overlay panel that only opens and shuts needs no script:
   `<sherpa-button commandfor="edit" command="--show">Edit</sherpa-button>`, and
   `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
+- From a script, call `dialog.show()`, never the native `showModal()`: the
+  component owns modality and `open`. An add or edit flow is that dialog, its
+  fields read on save, and a `sherpa-toast` to say it is done.
 - **Save filters** keeps EVERY scope's filters under one name, with the page
   beside its Views. The Filters menu's Saved section takes one: every scope
   then matches it, and its values load into the chips. No chip names it; Save

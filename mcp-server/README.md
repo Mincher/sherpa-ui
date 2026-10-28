@@ -165,8 +165,7 @@ its example and its stories. `SHERPA_GALLERY_URL` points it at another.
 own source). Tokens come from `src/styles/tokens/tokens.css`, re-projected from
 Figma.
 
-Tools are thin wrappers over `scripts/lib/generation/*` — one implementation,
-two surfaces (this server and the `generate-sherpa-component` skill).
+Tools are thin wrappers over `scripts/lib/generation/*`, the one implementation.
 
 To add a tool, edit the module it belongs to and register it there;
 `server.js` wires the five modules up.

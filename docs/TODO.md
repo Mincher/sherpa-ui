@@ -11295,10 +11295,21 @@ part; a second checked each plan against the files.
   commands verbatim, the stack, a "where each thing is stated" table, and an
   `@docs/PRINCIPLES.md` import so each session still loads the rules; B — keep
   it as it is, and let PRINCIPLES be the statement. My pick: A.
+- **✅ Part B step 3, 2026-10-28 (Will: A):** CLAUDE.md is 864 → 183 lines: the
+  doc table, the commands byte for byte, the stack, the four entry points, one
+  paragraph on a component, and a "where each thing is stated" table. It imports
+  `@docs/PRINCIPLES.md`, so each session still reads the rules. Checked fact by
+  fact first; what only CLAUDE.md said moved: the rules doc gains `pageCss`,
+  the words template, family markup, all six family sheets, `--core-*`, pin
+  hooks, `figma.extensions.json` and "an option needs three uses"; APP-GUIDE
+  gains the Settings page shape and `dialog.show()`. **Fixed on the way:** the
+  rules doc said `onRender` runs once; it runs after each stamp
+  (`T-restamp-does-not-abort`). Two code comments named a CLAUDE.md section;
+  they name PRINCIPLES 18 and 19.
+- **✅ Step 5, 2026-10-28 (Will: A):** the generate-sherpa-component skill is
+  removed; the MCP's README and `server.js` no longer name it.
 - **Waits:** step 4 (the MCP's def-named tools renamed to today's spec names —
-  needs a test run), and step 5 (the stale generate-sherpa-component skill —
-  **for Will:** A — remove it; B — cut it to a 10-line pointer. My pick: A).
-  Found reading: 332–336.
+  needs a test run, and names for Will). Found reading: 332–336.
 
 ### `[x]` ✅ 332 — TOOLING: the MCP server's version
 

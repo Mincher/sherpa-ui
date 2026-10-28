@@ -189,6 +189,5 @@ readable profile.
 
 ## Waiting on Will (❓ and looks)
 
-305, 319, 321, 327, 338 (two UX choices), 293 (CLAUDE.md cut, old skill), 339
-(Figma clean-up), 290 (rename `fakeRemote`), and looks by eye for 313, 323,
-324 and 340. The stock-take's "What is still to do" lists each with a pick.
+293 step 4 (the MCP's `*_def` tool names), and a look by eye at 323 (the
+sparkline's seams). 2026-10-28.

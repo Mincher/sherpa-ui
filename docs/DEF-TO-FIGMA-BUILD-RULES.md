@@ -45,7 +45,7 @@ export class SherpaFoo extends SherpaElement {
   // Native attributes, and attributes the component handles itself.
   static override observed = ['disabled'];
 
-  override onRender() { /* once: the shadow DOM is ready */ }
+  override onRender() { /* the shadow DOM is ready — after each stamp */ }
   override onConnect() { /* each time it is connected, after the first render; pair it with onDisconnect */ }
   override onDisconnect() { /* stop timers and observers */ }
   override onChange(name: string) { /* an attribute changed */ }
@@ -53,8 +53,10 @@ export class SherpaFoo extends SherpaElement {
 define('sherpa-foo', SherpaFoo);
 ```
 
-- `onRender` runs once. Props are written BEFORE it, and `onChange` still fires
-  after.
+- `onRender` runs after each stamp: the first render, a variant re-stamp and a
+  live reload. A host listener added there is a stable arrow field, so it does
+  not bind twice (`T-restamp-does-not-abort`). Props are written BEFORE it, and
+  `onChange` still fires after.
 - A prop's `kind` matches the spec's: `content` (the base class writes the text
   into `to`), `style` (CSS selects on it, and it gets no JS branch),
   `visibility` (presence toggles a CSS rule), `behaviour` (only the component's
@@ -63,6 +65,7 @@ define('sherpa-foo', SherpaFoo);
   property, `T-a-flag-brings-the-base-methods`), `as` (`'text'`, `'icon'` or
   `'attr'`, `T-icon-value-takes-two-forms`), `values`. A `content` prop's default
   is its target's own text in the template (`T-the-templates-text-is-the-default`).
+  Add an option only with three or more uses.
 - An attribute more than one component declares is in the shared vocabulary in
   `sherpa-element.ts` (`T-the-shared-vocabulary-is-declared-once`). Spread it;
   do not declare it again.
@@ -77,6 +80,9 @@ define('sherpa-foo', SherpaFoo);
 - The build carries each template and sheet inside the JS
   (`T-the-text-is-in-the-js`); a consumer's own files go through `useTemplate`,
   and `SherpaElement.reload(tag)` reloads them live (`T-a-templater-owns-the-files`).
+- A component that puts light DOM in the PAGE styles it with `static pageCss`,
+  adopted into the document before the first stamp
+  (`T-a-page-sheet-is-for-what-a-component-puts-in-the-page`).
 - Reach for the doors on `SherpaElement` before you write the same thing again:
   PRINCIPLES, "The doors".
 
@@ -94,6 +100,11 @@ define('sherpa-foo', SherpaFoo);
 - Default text is the template's own: a `content` prop's target holds it
   (`T-the-templates-text-is-the-default`). A label that swaps with a host
   attribute holds both values, as `data-swap-*` (`T-a-swapped-label-is-in-the-markup`).
+- A fixed word the code hands on as data (a section title, a placeholder) is in
+  a `<template class="words">` as `<span data-word="x">…</span>`, read with
+  `this.word('x')` (`T-a-word-is-in-the-markup`).
+- A family's shared markup is a file in `static html`'s list, before the
+  component's own (`T-a-family-shares-markup`).
 
 ## The CSS
 
@@ -120,8 +131,11 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
 - **Colour** binds the Style name Figma binds: `var(--sherpa-style-surface-base)`.
   `base`, `+1` and `+2` are default, hover and down. A state (on, current, open)
   is a pin in `state-pins.yaml`, never a colour rule. A pin works at any depth.
-  The `--_status-*` names are the old door (PRINCIPLES 8).
-- **Tokens** read `var(--sherpa-x, <its value>)` (PRINCIPLES 20). The cascade
+  The `--_status-*` names are the old door (PRINCIPLES 8). A pin may carry a
+  hook (`active @filter-on`) that a page re-points once, by
+  `--sherpa-filter-on-*` (`T-a-pin-a-page-can-re-point`).
+- **Tokens** read `var(--sherpa-x, <its value>)` (PRINCIPLES 20). Never a
+  `--core-*` primitive in component CSS. The cascade
   layers, in order: core, display-mode, theme, layout, structure, border, style,
   elevation, components. Four collections are projected into the component that
   owns them: `structure` into `sherpa-button.css`, `input` into
@@ -137,8 +151,10 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   chain), `sherpa-icon.css`, `sherpa-group-positions.css`,
   `sherpa-style-modes.css`, `sherpa-anchor.css` (`.sherpa-tip`, `.sherpa-anchor`,
   `.sherpa-anchor-point`) and `sherpa-motion.css`. A family sheet is listed first in a
-  component's `static css`: the chart frame, chart axes, chart segments and
-  container regions sheets in `src/core/`.
+  component's `static css`: in `src/core/`, `sherpa-chart-frame.css`, then
+  `sherpa-chart-axes.css` or `sherpa-chart-segments.css`;
+  `sherpa-container-regions.css`; `sherpa-filter-more.css`; and
+  `sherpa-checkbox-look.css`, the Checkbox's box as `.sherpa-checkbox`.
 
 ## Events
 
@@ -191,7 +207,10 @@ Names as exported on 2026-09-09; confirm them in the file before a build.
   touch an instance's internals. The MCP's `token_for` and `check_bindings`, and
   `scripts/audit-bindings.mjs`, do it.
 - An override collection is keyed by its parent's mode ids
-  (`T-an-override-collection-is-keyed-by-its-parent`).
+  (`T-an-override-collection-is-keyed-by-its-parent`), so the export cannot
+  read the ten overrides. They are hand-kept in
+  `src/styles/tokens/figma.extensions.json`, read live from Figma, and
+  `npm run check:extensions` guards the file.
 
 ## Check it
 

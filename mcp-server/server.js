@@ -2,8 +2,7 @@
  * Sherpa UI MCP server — the def-driven design-system surface.
  *
  * The def (`<name>.component.json`) is the hub; the tools are thin wrappers over the
- * shared generation lib (scripts/lib/generation/*) — one implementation, two
- * surfaces (this MCP + the generate-sherpa-component skill).
+ * shared generation lib (scripts/lib/generation/*), the one implementation.
  *
  *   Discover  list_components · find_token · get_component
  *   Generate  scaffold_def · validate_def · compile_def · token_for · scaffold_app
