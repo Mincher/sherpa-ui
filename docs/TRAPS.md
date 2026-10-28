@@ -2241,8 +2241,9 @@ the day it is OPENED. Compiled to dates at once, it would freeze on the day
 it was saved — and `whereOf` writes a View from the compiled clause, so the
 freeze would be silent.
 
-They are worked out when MATCHED: `matchesFilter` turns one into the
-`between` it means today (`absoluteDates`), in whole UTC days as a date
+They are worked out when MATCHED: `filterTest` turns one into the
+`between` it means today (`absoluteDates`) as it makes the filter's test —
+once per pass over the rows, never per row (TODO 291) — in whole UTC days as a date
 reads, with the last day's end so a value with a time still falls inside.
 A `RestStore` sends the `between`, so a server never meets `last` or `next`.
 

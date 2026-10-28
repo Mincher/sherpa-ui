@@ -14,6 +14,7 @@ export {
   groupRows,
   groupSummaries,
   matchesFilter,
+  filterTest,
   andFilter,
   picksClause,
   readField,

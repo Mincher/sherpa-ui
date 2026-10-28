@@ -33,7 +33,8 @@
  * - sortRows — Sort by specs, first wins and later ones break ties.
  * - filterFields — Every FIELD a filter touches, first-appearance order; a clause that stands for a field is named by it.
  * - filterNeedles — every substring clause in a filter, so a view can mark what matched
- * - matchesFilter — Does one row satisfy one filter?
+ * - matchesFilter — Does one row satisfy one filter? For one row; a loop makes its test once, with `filterTest`.
+ * - filterTest — A filter as ONE test, worked out once, so each row is only read and compared.
  * - sameKey — Do two KEYS name the same row?
  * - valueKey — A value as the string a CONTROL can put in an attribute.
  * - valueSet — A set of values to test against, using the query's own comparison.
@@ -405,56 +406,72 @@ export function filterNeedles(filter: Filter | undefined): string {
   return out.join('\n');
 }
 
-/** Does one row satisfy one filter? Groups recurse. */
+/** Does one row satisfy one filter? For one row; a loop makes its test once, with `filterTest`. */
 export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
-  if (!filter) return true;
+  return filterTest(filter)(row);
+}
+
+/** A filter as ONE test, worked out once — its values read, its dates made
+ *  absolute, a range ordered — so each row is only read and compared. TODO 291 */
+export function filterTest(filter: Filter | undefined): (row: Row) => boolean {
+  if (!filter) return () => true;
   const [head, ...rest] = filter;
-  if (head === 'and') return (rest as Filter[]).every((f) => matchesFilter(row, f));
-  if (head === 'or') return (rest as Filter[]).some((f) => matchesFilter(row, f));
-
+  if (head === 'and' || head === 'or') {
+    const tests = (rest as Filter[]).map(filterTest);
+    return head === 'and' ? (row) => tests.every((t) => t(row)) : (row) => tests.some((t) => t(row));
+  }
   const [field, op, value] = filter as FilterClause;
-  const actual = readField(row, field);
-
+  const read = (row: Row): unknown => readField(row, field);
+  const typed = (): string => text(value);
   switch (op) {
     case 'eq':
-      return looseEqual(actual, value);
+      return (row) => looseEqual(read(row), value);
     case 'ne':
-      return !looseEqual(actual, value);
+      return (row) => !looseEqual(read(row), value);
     case 'lt':
-      return actual != null && compareValues(actual, value) < 0;
+      return (row) => { const a = read(row); return a != null && compareValues(a, value) < 0; };
     case 'lte':
-      return actual != null && compareValues(actual, value) <= 0;
+      return (row) => { const a = read(row); return a != null && compareValues(a, value) <= 0; };
     case 'gt':
-      return actual != null && compareValues(actual, value) > 0;
+      return (row) => { const a = read(row); return a != null && compareValues(a, value) > 0; };
     case 'gte':
-      return actual != null && compareValues(actual, value) >= 0;
-    case 'contains':
-      return text(actual).includes(text(value));
-    case 'notcontains':
-      return !text(actual).includes(text(value));
-    case 'startswith':
-      return text(actual).startsWith(text(value));
-    case 'endswith':
-      return text(actual).endsWith(text(value));
+      return (row) => { const a = read(row); return a != null && compareValues(a, value) >= 0; };
+    case 'contains': {
+      const v = typed();
+      return (row) => text(read(row)).includes(v);
+    }
+    case 'notcontains': {
+      const v = typed();
+      return (row) => !text(read(row)).includes(v);
+    }
+    case 'startswith': {
+      const v = typed();
+      return (row) => text(read(row)).startsWith(v);
+    }
+    case 'endswith': {
+      const v = typed();
+      return (row) => text(read(row)).endsWith(v);
+    }
     case 'in':
-      return Array.isArray(value) && inList(actual, value);
+      return Array.isArray(value) ? (row) => inList(read(row), value) : () => false;
     case 'notin':
-      return !Array.isArray(value) || !inList(actual, value);
+      return Array.isArray(value) ? (row) => !inList(read(row), value) : () => true;
     case 'last':
     case 'next':
-      return matchesFilter(row, absoluteDates(filter));
+      return filterTest(absoluteDates(filter));
     // Outside the two ends — and, as `ne` does, a row with no value. TODO 375
-    case 'notbetween':
-      return !matchesFilter(row, [field, 'between', value]);
+    case 'notbetween': {
+      const within = filterTest([field, 'between', value]);
+      return (row) => !within(row);
+    }
     case 'between': {
+      if (!Array.isArray(value) || value.length !== 2) return () => false;
       // A backwards pair is still a range — order the bounds, do not reject.
-      if (!Array.isArray(value) || value.length !== 2 || actual == null) return false;
-      const [lo, hi] = compareValues(value[0], value[1]) <= 0
-        ? [value[0], value[1]]
-        : [value[1], value[0]];
-      return compareValues(actual, lo) >= 0 && compareValues(actual, hi) <= 0;
+      const [lo, hi] = compareValues(value[0], value[1]) <= 0 ? [value[0], value[1]] : [value[1], value[0]];
+      return (row) => { const a = read(row); return a != null && compareValues(a, lo) >= 0 && compareValues(a, hi) <= 0; };
     }
   }
+  return () => false;
 }
 
 /** Compare for filtering, not sorting. TRAP T-loose-equal-is-case-insensitive */
@@ -583,7 +600,7 @@ export function picksClause(
 
 /** Rows matching a filter. */
 export function filterRows(rows: readonly Row[], filter?: Filter): Row[] {
-  return filter ? rows.filter((r) => matchesFilter(r, filter)) : [...rows];
+  return filter ? rows.filter(filterTest(filter)) : [...rows];
 }
 
 /** Rows matching a free-text search — `fields` when given, else every value. */

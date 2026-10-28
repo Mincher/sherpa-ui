@@ -294,8 +294,8 @@ export function register(server) {
       if (!Array.isArray(rowList)) return err("rows must be a JSON array of objects.");
       if (!rowList.length) return err("rows is empty — pass at least one record.");
 
-      /* CHECK THE OPERATORS FIRST. `matchesFilter`'s switch has no `default`,
-         so an unknown op rejects EVERY row — a silent empty grid that reads as
+      /* CHECK THE OPERATORS FIRST. `filterTest` gives an unknown op a test that
+         fails, so it rejects EVERY row — a silent empty grid that reads as
          missing data. Catch it here until the layer throws. */
       const OPS = new Set(['eq','ne','lt','lte','gt','gte','contains','notcontains',
         'startswith','endswith','in','notin','between','notbetween']);

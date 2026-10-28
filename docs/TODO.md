@@ -64,7 +64,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⏸️ | 36 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23). Paused: Will, 2026-10-23, "discard for now. We'll do it later" — both commits reverted | demos |
 | 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
 | 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
-| 🚧 | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ✅ | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B. DONE 2026-10-27: a scope arranges when a PAGE of rows is drawn in it (`pagedIn`: a bind given `rows: 'page'`, not steer-only), never because a grid or a list is; `shows` / `ScopeShows` / `DataAsk.shows` are gone from the asks, the binds and `describe()`, which names a scope's component by its tag only. The colour words are 514 | refactor |
 | 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ✅ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one. Will, 2026-10-27: "Leave 339" — the file stays as it is; closed with nothing done | figma |
@@ -11766,7 +11766,7 @@ its presets with `preset()`. DATA-SOURCE-RULES §6 has one read-back table.
 `a-bar-report-never-rewrites-a-saved-filter`, which guards `export()`. Found
 reading: 319.
 
-### `[~]` 🚧 291 — Phase 6: faster
+### `[x]` ✅ 291 — Phase 6: faster
 
 **🚧 Steps 1–6 done 2026-10-15**, each safe by reading and measured by the bench.
 1. An `ArrayStore` count copies no rows: it counts in place.
@@ -11799,6 +11799,13 @@ present-limits-each-field, page-definition and the stores' unit tests.
 **2026-10-27:** every step has run in the full suites since. Step 8 is met: the
 bench reads ONE compile per pick on a local source, two on a remote or REST one.
 Step 7 stays open.
+
+**2026-10-28: step 7 done** — one test per filter. `filterTest(filter)` makes a
+filter into ONE test: its text lower-cased, its `last`/`next` made dates, its
+range ordered — once. The walk makes each step's test once per pass,
+`filterRows` once per call, and the highlight once; `matchesFilter` is the
+one-row door. Measured over 10,000 rows with four clauses: 1.8 ms → 0.6 ms.
+`filterTest` is exported beside `matchesFilter`, for an app's own loop.
 
 ### `[x]` ✅ 290 — Phase 6: honest entry points
 

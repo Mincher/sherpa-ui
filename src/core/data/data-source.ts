@@ -66,7 +66,7 @@
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
-  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, filterWithout, groupSummaries, matchesFilter, readField, valueKey,
+  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, filterTest, filterWithout, groupSummaries, readField, valueKey,
 } from './store.js';
 import { readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
@@ -396,7 +396,7 @@ export class DataSource extends EventTarget {
   /** Does a row match the highlight's driver? Null while no chip drives it. Will, TODO 441 */
   get highlight(): ((row: Row) => boolean) | null {
     const filter = this.#highlight;
-    return filter ? (row) => matchesFilter(row, filter) : null;
+    return filter ? filterTest(filter) : null;
   }
 
   /** A field's picks in force on one component, as value keys: its own part's,

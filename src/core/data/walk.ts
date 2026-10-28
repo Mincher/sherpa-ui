@@ -19,7 +19,7 @@
  * - passOver — One scan of rows through a scope's steps, from one step on.
  * - walkInOrder — Walk the rows, scope by scope.
  */
-import { absoluteDates, filterFields, matchesFilter, readField, valueKey, type Filter, type Row } from './store.js';
+import { absoluteDates, filterFields, filterTest, readField, valueKey, type Filter, type Row } from './store.js';
 import { bandOf, type Threshold } from './threshold.js';
 
 /** A tiered field's child, and each path's parent key: a tally holds both tiers. TODO 369 */
@@ -230,8 +230,11 @@ function countAt(scan: Scan, at: number, row: Row): void {
  *  reaches, and stops at the first step in force it fails. Gives the step each
  *  row stopped at — the step count for a row that passed them all. */
 export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32Array {
-  const { steps, tests } = scan;
+  const { steps } = scan;
   const n = steps.length;
+  // Each test made once for the pass, not read again for each row. TODO 291
+  const tests = scan.tests.map((t) => t && filterTest(t));
+  const eachTests = scan.eachTests.map((e) => e?.map(filterTest) ?? null);
   const stopped = new Uint32Array(rows.length);
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r]!;
@@ -247,11 +250,11 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
         const key = keyOf(row, step.field!, scan.bandsOf);
         if (key !== null) all.set(key, (all.get(key) ?? 0) + 1);
       }
-      const each = scan.eachTests[i];
-      if (each) for (let k = 0; k < each.length; k++) if (matchesFilter(row, each[k])) scan.each[i]![k]!++;
+      const each = eachTests[i];
+      if (each) for (let k = 0; k < each.length; k++) if (each[k]!(row)) scan.each[i]![k]!++;
       const test = tests[i];
       if (!test) continue;
-      const hit = matchesFilter(row, test);
+      const hit = test(row);
       if (hit && step.counts) scan.count[i]!++;
       if (step.on && !hit) break;
     }
