@@ -14469,12 +14469,16 @@ horrible in a real app."* Then TODO 489: *"Add a filtering setting to have
 'Select none shows all data'. Have this setting off by default. When off, if
 Select All isn't ticked for a filter then no data is returned for that filter."*
 
-So, by default, a reader who leaves a LIST empty asks for NO rows — Select all
-turned off, the last row let go, an Apply with nothing ticked, the last value
-chip or cell value let go (Will, A: "however it came"). With the app's "Select
-none shows all data" on (`provider.noneShowsAll`, written as
-`data-none-shows-all` on each bar, panel and grid), nothing ticked is no filter
-— every row, as 480 had it (`T-everything-on-is-no-filter`).
+Then TODO 517 (Will, 2026-10-28): *"If no values are selected then the field
+should be no longer included in the query."* In the panel, none looked like the
+start (every value chip off) and emptied the page and every field after it. So
+the app's "Select none shows all data" is ON by default
+(`provider.noneShowsAll`, written as `data-none-shows-all` on each bar, panel
+and grid): nothing ticked leaves the query — every row, as 480 had it
+(`T-everything-on-is-no-filter`). Off, a reader who leaves a LIST empty asks
+for NO rows — Select all turned off, the last row let go, an Apply with nothing
+ticked, the last value chip or cell value let go (489, Will A: "however it
+came"). A bar, panel or grid with no provider has no attribute, so it is off.
 
 It is said on purpose, in the reading: `{ picked: [], none: true }`, compiled to
 `[field, 'in', []]`, and written plainly as `{ in: [] }`. Nothing else may mean

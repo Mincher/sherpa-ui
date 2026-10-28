@@ -56,7 +56,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A. Done: on writes its rows into each field's answer (at its home, ANDed into every run); off takes them out; its on is read from the fields; no `presets` flag. TRAP `T-a-preset-is-its-own-part` | filters |
 | ✅ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B. DONE 2026-10-27: the app shell's `context-header` slot, a FIXED region pinned first in the Context's scroll area, with its own edge shadow while scrolled; the outlet lifts a Context's `slot="context-header"` element into it and takes it out with the Context. Fixed on the way: the first version sat ABOVE the scroller and moved it, CLS 0.08 at 4x; now 0.009. Demos' Dashboard and Records put their metrics row there, with no `data-sticky`. TRAP T-a-context-has-a-fixed-region | look |
 | ✅ | 29a | 515 | BUG — in Demos the data grid's card fills only ONE row of Records (Will, 2026-10-28). DONE 2026-10-28. Found: a row count KEPT by a drag before 484 (5: metrics, charts, the card) outlived the metrics row moving to the fixed region; the grid now has 4, so the card sat in a fixed 88px row with the `1fr` row empty below. Fix: a kept count is counted again as it is put back. TRAP T-a-fit-grid-counts-its-resized-rows | bug |
-| ❓ | 29a1 | 517 | BUG (Will, 2026-10-28, a screenshot of Records' filter column) — deselecting values in a filter makes that field's section in the panel go empty and show 0 matches: Customer records' Plan, Tier and Owner show no values; Status and Tier wear 0 | bug |
+| ✅ | 29a1 | 517 | BUG (Will, 2026-10-28, a screenshot of Records' filter column) — deselecting values in a filter makes that field's section in the panel go empty and show 0 matches: Customer records' Plan, Tier and Owner show no values; Status and Tier wear 0 | bug |
 | ✅ | 29b | 516 | CLEAN-UP (found closing 369) — `quick-filter-open` has no listener: only the filter panel answered it, and 476 removed the panel. Remove the event and the caret's branch that waits for a host to build a menu. DONE 2026-10-28: the event, its caret branch, its Fires line and its trap paragraph are gone; a caret with no menu does nothing, as `#openMenu()` did with none | refactor |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
@@ -2452,7 +2452,7 @@ move). Every pick ruled out at once: as before, it stays at 0. The bench's two
 back), `the-walk-holds-under-change` (a failed walk lets nothing go); Demos
 `reforged-limit-options` (Will's case: AMER + APAC, then Proseware).
 
-### `[ ]` ❓ 517 — BUG: letting go of a value empties the panel
+### `[x]` ✅ 517 — BUG: letting go of a value empties the panel
 
 Will, 2026-10-28: *"Still issues where deselecting values from a filter makes
 that filter field section in the panel disappear and show 0 matches for field."*
@@ -2477,6 +2477,23 @@ off, so none LOOKS like the start (every value unticked) and shows nothing.
 - **B:** keep 489 A in the panel too, and make it plain: the field's row says
   "None selected: no rows", and each field after it says "Limited by the filters
   before it: no matches." in place of an empty row.
+
+**Will, 2026-10-28: A**, then: *"If no values are selected then the field
+should be no longer included in the query."* — in the bar and the panel alike.
+
+**✅ Done 2026-10-28.** That is what "Select none shows all data" does, so it is
+ON by default now (`provider.noneShowsAll`, and Demos' session default): the
+last value let go — a value chip, a menu row, Select all off, an empty Apply —
+takes the field out of the query, and the chip goes off. Will's case: Status
+trial picked, then let go → Status gone from the readings, 100 rows, and Plan,
+Tier and Owner keep every value. Off, it is 489's none. A tiered parent let go
+keeps its pick OFF for its next press (369 Q2), in force nowhere. And a panel
+field whose every value is hidden says "Limited by the filters before it: no
+matches." in their place (`data-spent`, written by the toolbar). Tests: Demos
+`reforged-none-is-an-answer` (7: the default leaves the query in the bar, the
+panel and Will's case; setting off keeps none; the words), sherpa-ui
+`reforged-quick-filter` (the words). A browser that kept "off" from Settings
+keeps it: switch it on in Settings › Filtering.
 
 ### `[x]` ✅ 503 — A11Y: the on/off shape is a Sherpa checkbox
 

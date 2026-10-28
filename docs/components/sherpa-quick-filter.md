@@ -52,6 +52,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-persistent` | boolean |  | a SELECTOR rather than a toggle: always on, and never "empty". Set by [sherpa-quick-filter-toolbar](sherpa-quick-filter-toolbar.md) from a filter definition's `persistent` flag. The view chip is the case — you are always in SOME view, so the amber "on but filtering by nothing" state is one it cannot be in. |
 | `data-plain` | boolean |  |  |
 | `data-readonly` | boolean |  | a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter |
+| `data-spent` | boolean |  | a SECTION whose every value its host hides: it says "Limited by the filters before it: no matches." in their place. Written by the host. Will, TODO 517 |
 | `data-superseded` | boolean |  |  |
 | `data-swatch` | text |  | a data-viz series, from 1, or a status name: the chip leads with that swatch, as a chart's legend does — one value of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field |
 | `data-type` | `default` `ai` `jump` `key` |  | default \| ai \| jump \| key `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view. `key` is a chart legend's row: no border, mono 12px, 16 tall. Its ON is SHOWN, so at rest every key is on. TODO 149 |

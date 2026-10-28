@@ -59,6 +59,8 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    // A section whose every value its host hides says why. Will, TODO 517
+    'data-spent': { type: 'boolean', kind: 'style' },
     'data-unused': { type: 'boolean', kind: 'style' },
     /* The filters before it rule this value out: greyed and refused, on or off —
        inactive is not interactive. Written by its host. Will, TODO 174 and
@@ -223,14 +225,18 @@ export class SherpaQuickFilter extends SherpaElement {
     else if (name === 'data-superseded' || name === 'data-applied-at') {
       this.#syncCountTip(this.menu?.values ?? []);
       this.#drawMoved();
-    } else this.#syncText();
+    } else if (name === 'data-spent') this.#drawMoved();
+    else this.#syncText();
   }
 
   /** A section held above says where its filter went, in its values' place —
-   *  held before its first render too. TODOs 426, 479 */
+   *  held before its first render too — and one with every value hidden says
+   *  why. TODOs 426, 479, 517 */
   #drawMoved(): void {
     const moved = this.$('.moved');
-    if (moved) moved.textContent = this.hasAttribute('data-superseded') ? movedTo(this.dataset['appliedAt']) : '';
+    if (!moved) return;
+    moved.textContent = this.hasAttribute('data-superseded') ? movedTo(this.dataset['appliedAt'])
+      : this.hasAttribute('data-spent') ? RULED_OUT : '';
   }
 
   /** Give the swatch its series' hue and stroke — the legend's own paint. A

@@ -1067,8 +1067,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const field = this.#fieldOf(id);
     if (!chip.querySelector('sherpa-menu') || chip.hasAttribute('data-superseded')) return;
     // A section's value chips are greyed too. TODO 425
-    limitField(chip.querySelectorAll<HTMLElement>(':scope > .value'), [(chip as SherpaQuickFilter).menu],
+    const values = [...chip.querySelectorAll<HTMLElement>(':scope > .value')];
+    limitField(values, [(chip as SherpaQuickFilter).menu],
       { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
+    // Every value hidden: the section says why, not an empty row. Will, TODO 517
+    chip.toggleAttribute('data-spent', values.length > 0 && values.every((v) => v.hasAttribute('data-removed')));
   }
 
   /**

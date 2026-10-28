@@ -822,3 +822,22 @@ test('a chip with no icon pads its label as wide as an icon chip reads; a sectio
   });
   expect(r).toEqual({ plain: '8px', icon: '4px', section: '0px' });
 });
+
+test('a section whose every value is hidden says why, in their place', async ({ page }) => {
+  // Will, TODO 517: not an empty row.
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount('sherpa-quick-filter', undefined, { 'data-label': 'Plan', 'data-layout': 'section' });
+    const moved = el.shadowRoot!.querySelector<HTMLElement>('.moved')!;
+    const read = () => ({ text: moved.textContent, shown: moved.checkVisibility() });
+    const before = read();
+    el.setAttribute('data-spent', '');
+    await window.__settled();
+    const spent = read();
+    el.removeAttribute('data-spent');
+    await window.__settled();
+    return { before, spent, after: read() };
+  });
+  expect(r.before).toEqual({ text: '', shown: false });
+  expect(r.spent).toEqual({ text: 'Limited by the filters before it: no matches.', shown: true });
+  expect(r.after).toEqual({ text: '', shown: false });
+});

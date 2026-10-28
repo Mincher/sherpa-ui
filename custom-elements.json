@@ -9190,6 +9190,13 @@
               }
             },
             {
+              "name": "data-spent",
+              "description": "a SECTION whose every value its host hides: it says \"Limited by the filters before it: no matches.\" in their place. Written by the host. Will, TODO 517",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-superseded",
               "type": {
                 "text": "boolean"

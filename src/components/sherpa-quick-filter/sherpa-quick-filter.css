@@ -132,7 +132,8 @@
 .moved { display: none; }
 /* HELD ABOVE: the View answers it, so its values give way to where it went. TODO 426 */
 :host([data-layout="section"][data-superseded]) .values { display: none; }
-:host([data-layout="section"][data-superseded]) .moved {
+/* …and every value hidden: why, in their place. Will, TODO 517 */
+:host([data-layout="section"]:is([data-superseded], [data-spent])) .moved {
   display: block;
   grid-column: 1 / -1;
   color: var(--sherpa-style-content-secondary, #35353d);

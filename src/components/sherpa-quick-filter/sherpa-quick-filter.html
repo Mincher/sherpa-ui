@@ -60,6 +60,9 @@
     data-unavailable  the filters before it rule this value out: greyed, refused,
                     and its tooltip says why. Written by the host.
                     TRAP T-a-ruled-out-value-is-greyed
+    data-spent      a SECTION whose every value its host hides: it says
+                    "Limited by the filters before it: no matches." in their
+                    place. Written by the host. Will, TODO 517
     disabled        greyed and refused; its tooltip says "Not available here."
     data-menu       Figma State=menu — snap on the caret button
     data-icon-only  the chip reduced to JUST its menu button — a 24 square with
@@ -137,7 +140,8 @@
          menu's. Shown only in `data-layout="section"`. TODO 425 -->
     <!-- `default`: a value chip shows ITS state, never its field chip's. -->
     <div class="values" part="values" data-status="default"><slot name="values" data-accepts="item"></slot></div>
-    <!-- …and, held above, where its filter went, in their place. TODO 426 -->
+    <!-- …and, held above, where its filter went, in their place — or, every
+         value hidden, why. TODOs 426, 517 -->
     <span class="moved sherpa-text-small" part="moved"></span>
 
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>

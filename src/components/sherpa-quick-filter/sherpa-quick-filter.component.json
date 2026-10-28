@@ -486,6 +486,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-spent",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a SECTION whose every value its host hides: it says \"Limited by the filters before it: no matches.\" in their place. Written by the host. Will, TODO 517"
+    },
+    {
+      "$type": "prop",
       "name": "data-superseded",
       "type": "boolean",
       "observed": true,
