@@ -977,3 +977,25 @@ test('a page change while GROUPED reaches the components, without a load', async
   // …and it did NOT cost a load, because the question did not change.
   expect(r.extraLoads).toBe(0);
 });
+
+test('a grid bound with no adapter keeps the columns its page set: rows alone are rows (TODO 518 R5)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/index.js');
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; columns: unknown[] };
+    root.appendChild(grid);
+    await grid.rendered;
+    grid.columns = [{ field: 'name', header: 'Name' }, { field: 'plan', header: 'Plan' }];
+    const source = new DataSource({ store: new ArrayStore([{ id: 1, name: 'Ada', plan: 'Pro' }, { id: 2, name: 'Bo', plan: 'Free' }], { key: 'id' }) });
+    bindSource(source, grid, { scope: 'view' });
+    await source.load();
+    await window.__settled();
+    const sr = grid.shadowRoot!;
+    return {
+      heads: [...sr.querySelectorAll<HTMLElement>('.head-cell')].map((h) => h.dataset['field']),
+      rows: sr.querySelectorAll('.row').length,
+    };
+  });
+  expect(r).toEqual({ heads: ['name', 'plan'], rows: 2 });
+});

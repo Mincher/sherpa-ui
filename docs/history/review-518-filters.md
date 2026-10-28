@@ -89,7 +89,7 @@ with a failing test where it is a bug, before it is changed.
 | R2 | 3 ❓ | only the provider turns a component's `static asks` into a bind; alone, charts, metrics and the legend ignore their own attributes, the legend cannot filter, a grid heading lists one page's values |
 | R3 | 3 | a lone value chip sends no request; a menu's reading has no path in |
 | R4 | 3 ❓ | the defaults Will ratified ON (517, 500, 501, 490) are written only by the provider; alone a component has the old ones |
-| R5 | 1 | a bare `bindSource(src, grid)` wipes the grid's columns |
+| R5 | ✅ 1 | a bare `bindSource(src, grid)` wipes the grid's columns |
 | R6 | 3 | the outlet needs a provider, silently, and a header View chip to follow `?view=` |
 | R7 | 1 | a bar alone offers "Reset all on view", which nothing answers |
 

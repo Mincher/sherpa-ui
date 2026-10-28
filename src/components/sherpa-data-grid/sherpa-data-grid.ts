@@ -395,7 +395,9 @@ export class SherpaDataGrid extends SherpaElement {
   /** populate({ columns, rows }) — the rows, over the configuration the page set. */
   protected override renderData(data: unknown): void {
     this.#awaitingData = false;
-    const cfg = (data ?? {}) as Partial<GridConfig>;
+    // Rows alone — a bind with no adapter — are rows, under the columns the page set. TODO 518
+    const cfg = (Array.isArray(data) ? { columns: this.columns, key: this.key, actions: this.actions, rows: data }
+      : data ?? {}) as Partial<GridConfig>;
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
