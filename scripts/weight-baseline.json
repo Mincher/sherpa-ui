@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 933456,
+    "js": 933555,
     "files": 111,
     "fetched": 208813
   },
@@ -180,7 +180,7 @@
     "fetched": 0
   },
   "components/sherpa-metric/sherpa-metric.js": {
-    "js": 259285,
+    "js": 259384,
     "files": 15,
     "fetched": 0
   },
@@ -295,7 +295,7 @@
     "fetched": 0
   },
   "components/sherpa-sparkline/sherpa-sparkline.js": {
-    "js": 250061,
+    "js": 250160,
     "files": 13,
     "fetched": 0
   },
@@ -340,12 +340,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 152807,
+    "js": 152802,
     "files": 40,
     "fetched": 0
   },
   "index.js": {
-    "js": 1120781,
+    "js": 1120875,
     "files": 154,
     "fetched": 208813
   }

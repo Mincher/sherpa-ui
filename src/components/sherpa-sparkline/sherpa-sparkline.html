@@ -2,7 +2,8 @@
   sherpa-sparkline — a compact inline trend chart (line area or bars).
 
   JS stamps a shape per value pair and a dot per value, each with its own
-  numbers, and sets --_min and --_range on the host; CSS does the rest.
+  numbers, lists the line's points, and sets --_min and --_range on the host;
+  CSS does the rest.
 
   Public API:
     data-values   — comma-separated or JSON array (e.g. "10,25,15,30")
@@ -13,6 +14,9 @@
 -->
 <template id="default">
   <div class="chart" part="chart" role="img" aria-label="Sparkline trend">
+    <!-- The line and its fill, one shape each. TRAP T-a-trend-line-is-one-shape -->
+    <div class="fill"></div>
+    <div class="line"></div>
     <div class="shapes"></div>
     <!--
       Hover dots + tooltip anchors. HTML, not SVG: an SVG element accepts

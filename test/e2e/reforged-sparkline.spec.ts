@@ -115,3 +115,44 @@ test('empty values, or one, stamp nothing', async ({ page }) => {
   // One value is no trend.
   expect(r).toEqual({ empty: 0, one: 0 });
 });
+
+test('the fill shows no seam where the chart starts on a part pixel', async ({ page }) => {
+  // TODO 323: pieces per pair left a pale column at each point. TRAP T-a-trend-line-is-one-shape
+  const box = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.style.cssText = 'padding: 8px 0 0 8.5px; background: #fff';
+    const el = document.createElement('sherpa-sparkline') as SparkEl;
+    el.style.cssText = 'display: block; inline-size: 113px; block-size: 40px';
+    el.setAttribute('data-values', '3,9,4,12,7,15,10,14');
+    root.appendChild(el);
+    await el.rendered;
+    await window.__settled();
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  });
+  const png = await page.screenshot({ clip: { x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) } });
+  const weakest = await page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height).data;
+    // Ink per column over the bottom fifth, where the fill covers every column.
+    const ink: number[] = [];
+    for (let x = 3; x < c.width - 4; x++) {
+      let sum = 0;
+      for (let y = Math.floor(c.height * 0.8); y < c.height - 1; y++) {
+        const i = (y * c.width + x) * 4;
+        sum += 765 - (d[i]! + d[i + 1]! + d[i + 2]!);
+      }
+      ink.push(sum);
+    }
+    const median = [...ink].sort((a, b) => a - b)[Math.floor(ink.length / 2)]!;
+    return Math.min(...ink) / median;
+  }, png.toString('base64'));
+  expect(weakest).toBeGreaterThan(0.85);
+});

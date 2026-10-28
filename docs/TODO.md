@@ -57,7 +57,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B. DONE 2026-10-27: the app shell's `context-header` slot, a FIXED region pinned first in the Context's scroll area, with its own edge shadow while scrolled; the outlet lifts a Context's `slot="context-header"` element into it and takes it out with the Context. Fixed on the way: the first version sat ABOVE the scroller and moved it, CLS 0.08 at 4x; now 0.009. Demos' Dashboard and Records put their metrics row there, with no `data-sticky`. TRAP T-a-context-has-a-fixed-region | look |
 | ✅ | 29a | 515 | BUG — in Demos the data grid's card fills only ONE row of Records (Will, 2026-10-28). DONE 2026-10-28. Found: a row count KEPT by a drag before 484 (5: metrics, charts, the card) outlived the metrics row moving to the fixed region; the grid now has 4, so the card sat in a fixed 88px row with the `1fr` row empty below. Fix: a kept count is counted again as it is put back. TRAP T-a-fit-grid-counts-its-resized-rows | bug |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
-| 🚧 | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
 | ✅ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry. Measured 2026-10-27, idle machine: 1 in 40 (Settings never opened — the click was lost), then 0 in 120 (all four ways out) and 0 in 60 (a scripted loop with Navigation-API logging). Load-bound, as 390 said; next time, run it with `--trace=retain-on-failure` | tests |
 | ⏸️ | 34 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
@@ -11672,7 +11672,7 @@ Filters menu turns no chip on while off. **Not run yet.**
 
 **Will, 2026-10-20: keep both as built.** Done.
 
-### `[ ]` 🚧 323 — BUG: hairline gaps between the sparkline's segments
+### `[x]` ✅ 323 — BUG: hairline gaps between the sparkline's segments
 
 Each segment is a `clip-path` polygon on a flex child of fractional width
 (`sherpa-sparkline.css`), so a hairline of background shows between neighbours.
@@ -11687,6 +11687,16 @@ bar keeps equal widths: its gap means no two bars share an edge. **Waits for a
 look**: Demos' records page, the metric tiles' sparklines, at a width that does
 not divide by 7. One limit: an edge is whole RELATIVE to the chart, so a chart
 that starts on a fractional pixel still seams at 1x.
+
+**✅ Done 2026-10-28 (Will: look).** Measured before the look: the limit was
+the whole bug. In Records (4 tiles, five window widths), 5 of 20 sparklines at
+1x and 6 of 20 at 2x start on a part pixel and showed up to 6 seams each (a
+whole empty column at 2x in Chromium and Firefox). The
+line and its fill are now one `clip-path: polygon()` each; JS lists the points,
+and CSS still scales each from `--_min` and `--_range`. 0 seams in 84 probe
+cases (three engines, 1x and 2x, whole and part-pixel starts, seven widths) and
+in all 40 Records measures. The `round()` edges are gone; the bars are unchanged.
+A new test reads the pixels. `T-a-trend-line-is-one-shape`.
 
 ### `[x]` ✅ 324 — The app header: one more design pass, against Figma
 

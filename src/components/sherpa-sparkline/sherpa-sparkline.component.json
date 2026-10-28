@@ -29,6 +29,14 @@
         "children": [
           {
             "el": "div",
+            "class": "fill"
+          },
+          {
+            "el": "div",
+            "class": "line"
+          },
+          {
+            "el": "div",
             "class": "shapes"
           },
           {

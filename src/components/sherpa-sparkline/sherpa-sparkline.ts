@@ -17,6 +17,10 @@ const LINE_SHARE = 0.62;
 const trendText = (v: readonly number[]): string =>
   `Trend: ${formatValue(v[0]!)} to ${formatValue(v.at(-1)!)}, low ${formatValue(Math.min(...v))}, high ${formatValue(Math.max(...v))}`;
 
+/** One point of the line, as a polygon vertex; CSS scales the value. `dy` moves it by the stroke. */
+const vertex = (x: number, v: number, dy = ''): string =>
+  `${x}% calc(100% - (${v} - var(--_min)) / var(--_range) * 100%${dy})`;
+
 export class SherpaSparkline extends SherpaElement {
   static override css = new URL('./sherpa-sparkline.css', import.meta.url);
   static override html = new URL('./sherpa-sparkline.html', import.meta.url);
@@ -58,7 +62,7 @@ export class SherpaSparkline extends SherpaElement {
     return parsed.map(Number).filter((n) => Number.isFinite(n));
   }
 
-  /** Stamp a shape per value pair and a dot per value, each with its own numbers. */
+  /** Stamp a shape per value pair and a dot per value, each with its own numbers, and list the line's points. */
   #apply(): void {
     const values = this.#parse().slice(-SLOTS);
     const count = values.length;
@@ -85,7 +89,19 @@ export class SherpaSparkline extends SherpaElement {
     const chart = this.$('.chart');
     if (drawn.length) chart?.setAttribute('aria-description', trendText(drawn));
     else chart?.removeAttribute('aria-description');
-    if (!drawn.length) return;
+    if (!drawn.length) {
+      this.style.removeProperty('--_fill-shape');
+      this.style.removeProperty('--_line-shape');
+      return;
+    }
+
+    /* The line and its fill, one polygon each: CSS cannot count the points.
+       TRAP T-a-trend-line-is-one-shape */
+    const x = drawn.map((_, i) => (i / (count - 1)) * 100);
+    const top = drawn.map((v, i) => vertex(x[i]!, v, ' - var(--_stroke)'));
+    const under = drawn.map((v, i) => vertex(x[i]!, v, ' + var(--_stroke)')).reverse();
+    this.style.setProperty('--_fill-shape', `polygon(0% 100%, ${drawn.map((v, i) => vertex(x[i]!, v)).join(', ')}, 100% 100%)`);
+    this.style.setProperty('--_line-shape', `polygon(${[...top, ...under].join(', ')})`);
 
     /* FITS ITS OWN RANGE — a sparkline shows a SHAPE, so `zero: false`: a
        floor at zero would flatten a series that never goes near it.

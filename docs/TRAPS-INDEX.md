@@ -738,6 +738,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-chart-segments
 - [T-a-tooltip-is-not-an-axis](TRAPS.md#t-a-tooltip-is-not-an-axis) — chart-parts, metric, radial-chart, sparkline
 - [T-a-total-says-so-in-its-label](TRAPS.md#t-a-total-says-so-in-its-label) — metric
+- [T-a-trend-line-is-one-shape](TRAPS.md#t-a-trend-line-is-one-shape) — sparkline
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — chart-legend
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — chart-legend
 - [T-at-property-needs-the-document](TRAPS.md#t-at-property-needs-the-document) — barchart, gauge-chart, sparkline
@@ -762,7 +763,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-populate-label-not-name](TRAPS.md#t-populate-label-not-name) — metric
 - [T-readonly-legend-is-a-key-not-a-filter](TRAPS.md#t-readonly-legend-is-a-key-not-a-filter) — chart-legend
 - [T-rollup-row-has-its-own-prototype](TRAPS.md#t-rollup-row-has-its-own-prototype) — chart-legend
-- [T-round-is-for-dynamic-sizes-only](TRAPS.md#t-round-is-for-dynamic-sizes-only) — sparkline
 - [T-slot-guards-only-when-filled](TRAPS.md#t-slot-guards-only-when-filled) — gauge-chart
 - [T-sparkline-headroom-is-a-share-of-the-box](TRAPS.md#t-sparkline-headroom-is-a-share-of-the-box) — sparkline
 - [T-the-breakdown-button-shares-the-other-row](TRAPS.md#t-the-breakdown-button-shares-the-other-row) — chart-legend

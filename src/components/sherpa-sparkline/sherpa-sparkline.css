@@ -45,7 +45,37 @@
 /* The stamped shapes stay flex items of .chart. */
 .shapes { display: contents; }
 
-/* ── Shapes: one per adjacent value pair ───────────────────────────── */
+/* ── The line and its fill: one shape each, from the points JS lists ── */
+/* Pieces per pair seam where the chart starts on a part pixel. TRAP T-a-trend-line-is-one-shape */
+.fill,
+.line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.fill {
+  /* No fill where color-mix is absent; the line still shows. */
+  background: transparent;
+  clip-path: var(--_fill-shape, inset(50%));
+}
+/* `transparent` is transparent BLACK in some engines, which greys the
+   mid-tones — an explicit 0%-alpha of the same hue keeps the ramp clean. */
+@supports (color: color-mix(in srgb, red, blue)) {
+  .fill {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, currentColor 45%, transparent),
+      color-mix(in srgb, currentColor 0%, transparent)
+    );
+  }
+}
+.line {
+  background: currentColor;
+  clip-path: var(--_line-shape, inset(50%));
+}
+:host([data-type="bar"]) :is(.fill, .line) { display: none; }
+
+/* ── Shapes: one per adjacent value pair — a bar, and the line's end dots ── */
 .shape {
   --_v-start: var(--_from, 0);
   --_v-end: var(--_to, 0);
@@ -53,63 +83,21 @@
   --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
   --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
 
-  /* Each EDGE on a whole pixel: neighbours meet with no hairline, and a vertex
-     stays within half a pixel of its dot. TRAP T-round-is-for-dynamic-sizes-only */
-  --_segs: max(1, var(--_len, 2) - 1);
-  --_edge-start: round(calc(var(--_i, 0) / var(--_segs) * 100%), 1px);
-  --_edge-end: round(calc((var(--_i, 0) + 1) / var(--_segs) * 100%), 1px);
-
   position: relative;
-  flex: 0 0 calc(var(--_edge-end) - var(--_edge-start));
+  flex: 1 1 0%;
   min-inline-size: 0;
-
-  /* Pseudo so points aren't clipped. */
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    /* No fill where color-mix is absent; the stroke still shows. */
-    background: transparent;
-    clip-path: polygon(
-      0% calc(100% - var(--_n-start) * 1%),
-      100% calc(100% - var(--_n-end) * 1%),
-      100% 100%,
-      0% 100%
-    );
-  }
-  /* `transparent` is transparent BLACK in some engines, which greys the
-     mid-tones — an explicit 0%-alpha of the same hue keeps the ramp clean. */
-  @supports (color: color-mix(in srgb, red, blue)) {
-    &::before {
-      background: linear-gradient(
-        to bottom,
-        color-mix(in srgb, currentColor 45%, transparent),
-        color-mix(in srgb, currentColor 0%, transparent)
-      );
-    }
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: currentColor;
-    clip-path: polygon(
-      0% calc(100% - var(--_n-start) * 1% - var(--_stroke)),
-      100% calc(100% - var(--_n-end) * 1% - var(--_stroke)),
-      100% calc(100% - var(--_n-end) * 1% + var(--_stroke)),
-      0% calc(100% - var(--_n-start) * 1% + var(--_stroke))
-    );
-  }
 }
 
-/* ── Bar variant: flat-topped columns (both corners share the end value) ─ */
-/* The gap parts the bars, so they share no edge and keep equal widths. */
-:host([data-type="bar"]) .shape { --_v-start: var(--_v-end); flex: 1 1 0%; }
+/* ── Bar variant: flat-topped columns ─────────────────────────────── */
+/* The gap parts the bars, so they share no edge. */
 :host([data-type="bar"]) .shape::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: calc(var(--_n-end) * 1%);
   background: currentColor;
 }
-:host([data-type="bar"]) .shape::after { display: none; }
 
 /* ── Points: dots at each vertex, revealed on hover ────────────────── */
 .point {

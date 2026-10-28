@@ -16388,13 +16388,36 @@ So: reach for `round()` when dynamic content produces a fractional SIZE that
 should sit on the grid. Do not wrap tokens in it, and do not wrap a measured
 offset that is deliberately sub-pixel.
 
-A sparkline's segment IS one: its width is the chart's width over the count, so
-two neighbours met on a fractional pixel and a hairline showed between them.
-Each EDGE is rounded, not each width, so no vertex drifts more than half a pixel
-from its dot (TODO 323).
+A sparkline's segments were rounded this way once (TODO 323). It held only
+where the chart starts on a whole pixel, so the line is one shape now
+(`T-a-trend-line-is-one-shape`).
 
 - Site: `src/core/sherpa-grouping.css`
+
+### T-a-trend-line-is-one-shape
+
+A sparkline's line and its fill are ONE `clip-path: polygon()` each, on two
+elements that span the chart. JS lists the points, because CSS cannot count
+them; each point's height is still a `calc()` of `--_min` and `--_range`, so CSS
+scales the values.
+
+They were one piece per pair of values, side by side. Where two pieces met on a
+part pixel, each drew its edge at part strength, and the two did not add up to
+a full pixel: a pale column through the fill at each point. Rounding each edge
+to a whole pixel (TODO 323's first fix) closed it only where the chart starts on
+a whole pixel. In Demos' Records page (4 tiles, five window widths), 5 of 20
+sparklines at 1x and 6 of 20 at 2x started on a part pixel (x = 201.59,
+555.50…) and showed up to 6 seams each. With one shape: 0 seams in Chromium,
+Firefox and WebKit, at 1x and 2x, on any start.
+
+Overlapping the pieces is no fix: the fill is see-through, so an overlap draws
+a dark column instead. The bars keep one piece each: their gap means no two
+share an edge. The pieces stay for the line too, as the boxes of its end dots.
+
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.css`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.html`
+- Site: `test/e2e/reforged-sparkline.spec.ts`
 
 ### T-a-wrapping-span-hides-its-own-row
 
