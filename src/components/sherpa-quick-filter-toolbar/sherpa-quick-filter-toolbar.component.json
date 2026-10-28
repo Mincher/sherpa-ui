@@ -598,7 +598,7 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231."
     },
     {
@@ -749,7 +749,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "values": [
         "on",
         "off"
@@ -823,7 +823,7 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231."
     },
     {
@@ -873,7 +873,7 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style"
+      "kind": "behaviour"
     },
     {
       "$type": "prop",
@@ -881,7 +881,7 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style"
+      "kind": "behaviour"
     },
     {
       "$type": "prop",

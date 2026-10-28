@@ -105,7 +105,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A chip hovered previews what it matches: the app's choice. Will, TODO 449
     'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
     // A chip, or a section, is dragged into its place in the query: the app's choice. Will, TODO 452
-    'data-reorder': { type: 'boolean', kind: 'style' },
+    'data-reorder': { type: 'boolean', kind: 'behaviour' },
     // In portrait, each field's heading in a column at its start: the app's choice. Will, TODO 460
     'data-label-column': { type: 'boolean', kind: 'behaviour' },
     // Every value's count, in a chip's menu too, picked or not: the app's choice. Will, TODO 466
@@ -116,13 +116,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-heading': { type: 'string', kind: 'content', to: '.scope', as: 'attr' },
     /* The host offers "Limit to matching filters", on or off. Will, TODO 178.
        TRAP T-the-more-menu-holds-what-folded */
-    'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
+    'data-limit-options': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
     // …and, while it is on, hides what it rules out. Will, TODO 205.
     'data-hide-unmatched': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
     /* The host says a Reset to default would change nothing, so it is not
        offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
-    'data-at-default': { type: 'boolean', kind: 'style' },
-    'data-nothing-to-reset': { type: 'boolean', kind: 'style' },
+    'data-at-default': { type: 'boolean', kind: 'behaviour' },
+    'data-nothing-to-reset': { type: 'boolean', kind: 'behaviour' },
     'data-no-actions': { type: 'boolean', kind: 'style' },
     // Shows Figma's filter Switch, on a data bar. TRAP T-the-filter-switch-keeps-what-it-turned-off
     'data-switchable': { type: 'boolean', kind: 'visibility' },
@@ -137,7 +137,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* The HOST owns this component's state; report, never write. */
     'data-locked': DATA_PROPS['data-locked'],
     /* Clear the chips when a new field set arrives, rather than keeping them. */
-    'data-reset-on-populate': { type: 'boolean', kind: 'style' },
+    'data-reset-on-populate': { type: 'boolean', kind: 'behaviour' },
     'data-sort-field': DATA_PROPS['data-sort-field'],
     'data-sort-direction': DATA_PROPS['data-sort-direction'],
     'data-group-field': DATA_PROPS['data-group-field'],

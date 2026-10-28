@@ -241,7 +241,7 @@
       "type": "string",
       "observed": true,
       "declared": true,
-      "kind": "style"
+      "kind": "behaviour"
     },
     {
       "$type": "prop",
@@ -249,7 +249,7 @@
       "type": "string",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "description": "which column a group or sort chip arranges by, for a host that draws the choice without a menu. A menu, where there is one, is the answer."
     },
     {
@@ -258,7 +258,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "values": [
         "simple",
         "advanced"
@@ -290,7 +290,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "values": [
         "asc",
         "desc"
@@ -305,6 +305,15 @@
       "declared": true,
       "kind": "style",
       "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411"
+    },
+    {
+      "$type": "prop",
+      "name": "data-filters-nothing",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "written BY the chip: on, but filtering nothing — the amber warning."
     },
     {
       "$type": "prop",
@@ -354,7 +363,7 @@
       "type": "string",
       "observed": true,
       "declared": true,
-      "kind": "style"
+      "kind": "behaviour"
     },
     {
       "$type": "prop",
@@ -371,7 +380,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "values": [
         "boolean",
         "single",
@@ -548,7 +557,7 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style"
+      "kind": "behaviour"
     },
     {
       "$type": "prop",

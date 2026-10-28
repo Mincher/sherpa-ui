@@ -61,14 +61,16 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-superseded': { type: 'boolean', kind: 'style' },
     // A section whose every value its host hides says why. Will, TODO 517
     'data-spent': { type: 'boolean', kind: 'style' },
-    'data-unused': { type: 'boolean', kind: 'style' },
+    'data-unused': { type: 'boolean', kind: 'behaviour' },
+    // Written BY the chip: on, filtering nothing — the amber warning a state pin draws.
+    'data-filters-nothing': { type: 'boolean', kind: 'style' },
     /* The filters before it rule this value out: greyed and refused, on or off —
        inactive is not interactive. Written by its host. Will, TODO 174 and
        2026-10-20. TRAP T-a-ruled-out-value-is-greyed */
     'data-unavailable': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-active */
-    'data-condition': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
+    'data-condition': { type: 'enum', kind: 'behaviour', values: ['simple', 'advanced'] },
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
        the one writer. TRAP T-a-pending-chip-reads-as-a-warning */
     'data-pending': { type: 'boolean', kind: 'style' },
@@ -79,14 +81,14 @@ export class SherpaQuickFilter extends SherpaElement {
        inactive chip that says nothing tells a reader their filter vanished.
        The HOST names the place; the chip cannot know it.
        TRAP T-an-inactive-chip-says-where-its-filter-went */
-    'data-applied-at': { type: 'string', kind: 'style' },
+    'data-applied-at': { type: 'string', kind: 'behaviour' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
     // A field's whole answer in the flow: its menu's rows as value chips. TODO 425
     'data-layout': { type: 'enum', kind: 'behaviour', values: ['chip', 'section'] },
     'data-label-start': { type: 'boolean', kind: 'style' },
     /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
        selects on it; the chip reads it to name its own state. */
-    'data-id': { type: 'string', kind: 'style' },
+    'data-id': { type: 'string', kind: 'behaviour' },
     'data-locked': DATA_PROPS['data-locked'],
     /* The chip stays on the bar when off, instead of being removed. */
     'data-persistent': { type: 'boolean', kind: 'style' },
@@ -95,15 +97,15 @@ export class SherpaQuickFilter extends SherpaElement {
        gesture — group toggles, sort cycles asc → desc → off.
        "Organise" is NOT a kind: it is a heading a panel draws above the two.
        TRAP T-a-chip-knows-what-kind-it-is */
-    'data-kind': { type: 'enum', kind: 'style', values: [...FILTER_KINDS] },
+    'data-kind': { type: 'enum', kind: 'behaviour', values: [...FILTER_KINDS] },
     /* WHICH COLUMN a group or sort chip arranges by, for a host that draws the
        choice without a menu. A menu, where there is one, is the answer.
        TRAP T-a-chip-knows-what-kind-it-is */
-    'data-column': { type: 'string', kind: 'style' },
+    'data-column': { type: 'string', kind: 'behaviour' },
     /* WHICH WAY a sort chip points. It REMEMBERS the direction; `data-current`
        says whether it runs, so a suspended sort resumes the way it was.
        TRAP T-off-is-not-forgotten */
-    'data-direction': { type: 'enum', kind: 'style', values: ['asc', 'desc'] },
+    'data-direction': { type: 'enum', kind: 'behaviour', values: ['asc', 'desc'] },
     'data-label': { type: 'string', kind: 'content' },
     'data-icon-start': { type: 'string', kind: 'content' },
     'data-current': { type: 'boolean', kind: 'style' },

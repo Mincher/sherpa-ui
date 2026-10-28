@@ -9063,6 +9063,13 @@
               }
             },
             {
+              "name": "data-filters-nothing",
+              "description": "written BY the chip: on, but filtering nothing — the amber warning.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-full-value",
               "type": {
                 "text": "boolean"

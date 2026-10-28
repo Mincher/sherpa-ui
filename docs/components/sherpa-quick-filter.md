@@ -33,6 +33,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-current` | boolean | `false` | selected/on state |
 | `data-direction` | `asc` `desc` |  | asc \| desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten |
 | `data-failed` | boolean |  | its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 |
+| `data-filters-nothing` | boolean |  | written BY the chip: on, but filtering nothing — the amber warning. |
 | `data-full-value` | boolean |  |  |
 | `data-highlight` | boolean |  |  |
 | `data-icon` | text |  | start leading icon — an FA class list (Figma default is a funnel) |
