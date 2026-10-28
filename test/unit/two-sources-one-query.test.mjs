@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, onReport, fakeRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, fakeRemote } from '../../dist/data.js';
 
 const ALERTS = [
   { id: 1, severity: 'critical', region: 'EMEA' }, { id: 2, severity: 'info', region: 'EMEA' },
@@ -79,20 +79,13 @@ test('a View reading on a field both have narrows both', async () => {
   assert.deepEqual(ids(customers), [1]);
 });
 
-test('each source sorts its own rows, and neither sees two arranging scopes', async () => {
+test('each source sorts its own rows', async () => {
   const { query, alerts, customers } = await page();
-  const seen = [];
-  const undo = onReport((r) => seen.push(r.code));
-  try {
-    query.setSort('severity', 'desc', 'alerts');
-    query.setSort('name', 'asc', 'customers');
-    await settle(alerts, customers);
-  } finally {
-    undo();
-  }
+  query.setSort('severity', 'desc', 'alerts');
+  query.setSort('name', 'asc', 'customers');
+  await settle(alerts, customers);
   assert.deepEqual(alerts.rows.map((r) => r.severity), ['warning', 'info', 'critical', 'critical']);
   assert.deepEqual(customers.rows.map((r) => r.name), ['Contoso', 'Litware', 'Tailspin']);
-  assert.equal(seen.includes('two-arranging-scopes'), false);
 });
 
 test('bind ids never clash across the sources', async () => {

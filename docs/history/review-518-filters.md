@@ -32,7 +32,7 @@ with a failing test where it is a bug, before it is changed.
 | D5 | 2 | conflict, probed | "Advanced" judged three ways: `modeOf` (one-condition form is advanced), `fieldState.mode` (simple), `FilterState.condition` (op ≠ eq) | filter-state.ts `modeOf`, `fieldState`; where.ts |
 | D6 | ✅ 1 | conflict, probed | `letGo` writes the applied picks' remainder into the DRAFT too, skipping `#write`'s prune: a waiting draft loses an unapplied pick and keeps an empty reading | query-context.ts `letGo` |
 | D7 | ✅ 1 | conflict, probed | `pickedFor` lights Simple picks while the field is Advanced | data-source.ts `pickedFor` → source-binding.ts |
-| D8 | 2 | dead, probed | `compile()` works out sort/group/search and a `two-arranging-scopes` report nobody reads; it disagrees with `arrangementOf` | query.ts `compile` |
+| D8 | ✅ 2: kept in the public answer, but read through `arrangementOf`; the report that could not fire goes | dead, probed | `compile()` works out sort/group/search and a `two-arranging-scopes` report nobody reads; it disagrees with `arrangementOf` | query.ts `compile` |
 | D9 | ✅ 1 | conflict, probed | `FieldCatalogue.facts()` drops a field's own value labels: `selection()` and `filterFace` show the raw value | field-catalogue.ts `facts` |
 | D10 | ✅ 1 | conflict, probed | a pick outside the declared values: compile drops it, the walk counts it | filter-state.ts `declared`; source-counts.ts `each` |
 | D11 | ✅ 2 | dead | `savedReading` has no caller | filter-state.ts |

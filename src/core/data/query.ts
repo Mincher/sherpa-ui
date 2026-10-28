@@ -43,7 +43,6 @@
  */
 import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
-import { report } from './report.js';
 import type { Where } from './where.js';
 
 /** Every scope's setup, as plain data — what a page's data is under. */
@@ -393,7 +392,6 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   const only: Record<string, Filter[]> = {};
   const viewHolds = heldInView(query);
   const skipped: string[] = [];
-  let arranged: ScopeQuery | undefined;
   let highlight: Filter | undefined;
 
   for (const [id, scope] of Object.entries(query.scopes)) {
@@ -426,18 +424,6 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
         if (own) scoped[id] = own;
       }
     }
-
-    if (arranging(scope) && mine) {
-      if (arranged) {
-        report({
-          code: 'two-arranging-scopes',
-          message: 'compile: two scopes on one source arrange its rows; the first is used.',
-          at: { scope: id },
-        });
-      } else {
-        arranged = scope;
-      }
-    }
   }
 
   /* A value rested on in a scope the Query has not made yet — a chart's own,
@@ -453,9 +439,8 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     only: Object.fromEntries(Object.entries(only)
       .map(([el, clauses]) => [el, andFilter(clauses)] as const)
       .filter((e): e is readonly [string, Filter] => !!e[1])),
-    sort: arranged?.sort ?? [],
-    group: arranged?.group ?? null,
-    search: arranged?.search ?? '',
+    // How the rows are arranged: the one rule the source reads. TODO 518
+    ...(({ sort, group, search }) => ({ sort, group, search }))(arrangementOf(query, facts.mine)),
   };
   const filter = andFilter(shared);
   if (filter) out.filter = filter;
