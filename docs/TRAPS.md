@@ -17130,10 +17130,19 @@ chip counts within the View's subset, its menu is greyed by it — with Limit of
 as well — and its serial chain starts inside it
 (`T-one-walk-counts-and-limits-in-order`).
 
+**So does a search** (Will, TODO 519: *"The data grid toolbar search input
+filters at the view scope but it should be at the local scope."*). A summary's
+load spread the page's load options and swapped only the filter, so it kept the
+grid's search; and with no window the summary reused the page's rows, searched.
+A search held in a component scope now stays out of a summary's rows, and counts
+as a split, so the summary is asked on its own. A search at the View still
+reaches everything.
+
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/unit/query.test.mjs`
+- Site: `test/unit/a-search-stays-in-its-scope.test.mjs`
 
 ### T-a-field-is-declared-once
 

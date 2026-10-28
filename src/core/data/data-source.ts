@@ -1571,12 +1571,20 @@ export class DataSource extends EventTarget {
          never a summary beside them. TRAP T-only-the-view-trickles-down */
       const windowed = this.#state.pageSize != null && !this.#arrangement().group;
       const viewed = this.#viewFilter;
-      const split = !sameFilter(viewed, this.#filter);
+      // A search in a component scope is its components' too, never a summary's. Will, TODO 519
+      const { search, scope: searchedAt } = this.#arrangement();
+      const searchedHere = !!search && searchedAt !== VIEW;
+      const split = !sameFilter(viewed, this.#filter) || searchedHere;
+      const underView = (): LoadOptions => {
+        const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
+        if (searchedHere) { delete rest.search; delete rest.searchFields; }
+        return rest;
+      };
       if (!this.#binding.wantsAllRows() || (!windowed && !split)) {
         this.#allRows = this.#binding.wantsAllRows() ? result.rows : [];
         this.#allFor = '';
       } else {
-        const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
+        const rest = underView();
         const asked = viewed ? { ...rest, filter: viewed } : rest;
         // The same question over the same rows — a page turned — is not asked again.
         const allKey = JSON.stringify([this.#age, this.#allAge, asked]);
@@ -1592,7 +1600,7 @@ export class DataSource extends EventTarget {
       const sets = this.#binding.freeSets();
       for (const key of [...this.#freeRows.keys()]) if (!sets.some((f) => f.join('\n') === key)) this.#freeRows.delete(key);
       for (const fields of sets) {
-        const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
+        const rest = underView();
         const without = filterWithout(viewed, new Set(fields));
         const asked = without ? { ...rest, filter: without } : rest;
         const freeKey = JSON.stringify([this.#age, this.#allAge, asked]);
