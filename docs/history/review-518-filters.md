@@ -33,7 +33,7 @@ with a failing test where it is a bug, before it is changed.
 | D6 | ✅ 1 | conflict, probed | `letGo` writes the applied picks' remainder into the DRAFT too, skipping `#write`'s prune: a waiting draft loses an unapplied pick and keeps an empty reading | query-context.ts `letGo` |
 | D7 | ✅ 1 | conflict, probed | `pickedFor` lights Simple picks while the field is Advanced | data-source.ts `pickedFor` → source-binding.ts |
 | D8 | 2 | dead, probed | `compile()` works out sort/group/search and a `two-arranging-scopes` report nobody reads; it disagrees with `arrangementOf` | query.ts `compile` |
-| D9 | 1 | conflict, probed | `FieldCatalogue.facts()` drops a field's own value labels: `selection()` and `filterFace` show the raw value | field-catalogue.ts `facts` |
+| D9 | ✅ 1 | conflict, probed | `FieldCatalogue.facts()` drops a field's own value labels: `selection()` and `filterFace` show the raw value | field-catalogue.ts `facts` |
 | D10 | 1 | conflict, probed | a pick outside the declared values: compile drops it, the walk counts it | filter-state.ts `declared`; source-counts.ts `each` |
 | D11 | 2 | dead | `savedReading` has no caller | filter-state.ts |
 | D12 | 2 | dead | number-range leftovers after 375: a branch that cannot run, redundant terms, a doc that contradicts the code | filter-state.ts `range` |

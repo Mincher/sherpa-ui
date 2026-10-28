@@ -97,7 +97,7 @@
   "src/core/data/data-source.ts": 2058,
   "src/core/data/failure.ts": 46,
   "src/core/data/fake-remote.ts": 91,
-  "src/core/data/field-catalogue.ts": 265,
+  "src/core/data/field-catalogue.ts": 264,
   "src/core/data/filter-face.ts": 176,
   "src/core/data/filter-state.ts": 719,
   "src/core/data/format-date.ts": 43,

@@ -140,13 +140,12 @@ export class FieldCatalogue {
     // …and its values are the TREE: each parent, then its paths.
     const tree = paths.length && values
       ? values.flatMap((v) => [v, ...paths.filter((p) => p.parent === valueKey(v)).map((p) => p.path)]) : values;
+    // Its own values' names, and its paths'. TODO 518
+    const labels = { ...facts.labels, ...Object.fromEntries(paths.map((p) => [p.key, childLabels?.[valueKey(p.child)] ?? valueKey(p.child)])) };
     return {
       ...(tree ? { values: tree } : {}),
-      ...(paths.length ? {
-        child: facts.child!,
-        parentOf: new Map(paths.map((p) => [p.key, p.parent])),
-        labels: Object.fromEntries(paths.map((p) => [p.key, childLabels?.[valueKey(p.child)] ?? valueKey(p.child)])),
-      } : {}),
+      ...(paths.length ? { child: facts.child!, parentOf: new Map(paths.map((p) => [p.key, p.parent])) } : {}),
+      ...(Object.keys(labels).length ? { labels } : {}),
       ...(facts.type ? { type: facts.type } : {}),
       ...(facts.time ? { time: true } : {}),
       ...(facts.range ? { range: true } : {}),

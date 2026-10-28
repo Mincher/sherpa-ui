@@ -130,3 +130,14 @@ test('valuesFor gives a control the rows to draw', async () => {
   assert.deepEqual(source.valuesFor('plan'), PLANS);
   assert.deepEqual(source.valuesFor('nothing'), [], 'an undeclared field is empty, never broken');
 });
+
+test('a field\'s own value labels name its values in its selection (TODO 518)', async () => {
+  const { ArrayStore: Store, DataSource: Source, VIEW: V } = await import('../../dist/data.js');
+  const source = new Source({ store: new Store([{ id: 1, plan: 'pro' }, { id: 2, plan: 'free' }], { key: 'id' }) });
+  source.declareField('plan', { label: 'Plan', values: ['pro', 'free'], labels: { pro: 'Professional' } });
+  source.query.hold(V, ['plan']);
+  source.query.setReading(V, 'plan', { picked: ['pro'] });
+  await source.load();
+  const labels = Object.fromEntries(source.selection('plan').values.map((v) => [v.value, v.label]));
+  assert.equal(labels.pro, 'Professional');
+});
