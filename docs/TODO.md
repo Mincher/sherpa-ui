@@ -93,6 +93,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 45 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
 | ⬜ | 46 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | ⬜ | 47 | 514 | DATA (from 341, Will 2026-10-27: 3 B, its own item) — two colour words in formatted data: `colorIndex` (aggregate.ts, on `ChartDatum`) and a part's `swatch` (data-source.ts). Each is the value's place in its field's declared order, 1-based: name it that, an ordinal, and let the chart pick the colour. Large public churn: `ChartDatum` and every chart | refactor |
+| ⬜ | 48 | 522 | LOOK, later (Will, 2026-10-28) — with the accessibility setting on ("Show state by shape", `html[data-toggle-shapes]`, TODO 497/503), the checkbox inside a chip is a bit too small and its check icon is hard to read | look |
 | | | | **A — In hand** | |
 | ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
 | ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |

@@ -46,7 +46,7 @@ with a failing test where it is a bug, before it is changed.
 | D19 | — | two names | two "starts": the page's and the first-value one; `reset()` ignores the page's | query-context.ts |
 | D20 | 2 | one word, three meanings | "off": a FieldState, a tiered parent's kept picks, a suspended Condition | filter-state.ts, where.ts |
 | D21 | 2 | two shapes | picks stored as keys by `#write`, as raw values by `#select`; bindSelection reads with `String` | query-context.ts; bind-selection.ts |
-| D22 | 1 | conflict | the context's `has` is the catalogue's narrow one; with two sources a field known by its values falls to member 0 | data-source.ts; query-context.ts `#knows` |
+| D22 | no change: not shown — a source that knows a field only by its rows holds no value list, so the answer is the same | conflict | the context's `has` is the catalogue's narrow one; with two sources a field known by its values falls to member 0 | data-source.ts; query-context.ts `#knows` |
 | D23 | 2 | duplicate | `answered()` and `appliedCount()` repeat one predicate | data-source.ts |
 | D24 | 2 | dead | `Walk.ends`, `BoundControl.superseded`/`report`, public `pathOf`/`sameRow`; `search-change` has no emitter | walk.ts, data-source-types.ts, bind-source.ts |
 | D25 | 2 | stale | four comments | query-edits.ts, store.ts, filter-face.ts, query.ts |
