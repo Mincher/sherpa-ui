@@ -223,3 +223,12 @@ test('clauseConditions reads picks as a list row, and refuses what rows cannot s
   assert.equal(clauseConditions(['and', ['or', ['a', 'eq', 1], ['a', 'eq', 2]], ['a', 'eq', 3]]), undefined);
 });
 
+
+test('a pick outside the declared values is still a pick: the query and the counts agree (TODO 518 D10)', async () => {
+  const { readingClause: clause } = await import('../../dist/core/data/filter-state.js');
+  const facts = { field: 'f', values: ['A', 'B', 'C'] };
+  assert.deepEqual(clause(facts, { picked: ['Z'] }), ['f', 'eq', 'Z']);
+  assert.deepEqual(clause(facts, { picked: ['A', 'Z'] }), ['f', 'in', ['A', 'Z']]);
+  // Every declared value ticked is still no filter.
+  assert.equal(clause(facts, { picked: ['A', 'B', 'C'] }) ?? null, null);
+});

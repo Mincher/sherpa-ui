@@ -396,10 +396,11 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   /* A RANGE's ends are its values, and a DATE's day is one whatever the rows
      hold: a day with no rows is a real answer — 0 matches, still on. Will,
      2026-10-22. TRAP T-no-rows-is-still-an-answer */
+  /* …and a pick outside a declared list is still a pick, whatever the type: the
+     counts count it, so the query asks it. An EMPTY list is nothing to pick. TODO 518 */
   const picks = reading.picked ?? [];
   const declared = range ? picks
-    : type === 'date' && facts.values
-      ? [...facts.values, ...picks.filter((p) => !facts.values!.some((v) => valueKey(v) === valueKey(p)))]
+    : facts.values?.length ? [...facts.values, ...picks.filter((p) => !facts.values!.some((v) => valueKey(v) === valueKey(p)))]
       : facts.values ?? picks;
   /* The string form is what a control puts in an attribute; `raw` is what the
      row holds. TRAP T-a-value-can-be-an-object */
