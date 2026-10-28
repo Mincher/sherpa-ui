@@ -38,7 +38,6 @@
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
- * - savedReading — a field's answer as it can be SAVED, and put back as it was
  * - clauseConditions — a one-field chained clause back as its rows — the inverse of the chain
  */
 import {
@@ -196,9 +195,9 @@ export interface FieldReading {
    *  redrawn as the picks change, until the reader edits a row. */
   mirror?: boolean;
   /**
-   * A DATE's picks are the ENDS of a range, not a list of days. Left out, a
-   * date with no declared value list is read as ends. A number has no Simple
-   * range: two numbers are a list, and a range is an Advanced row (TODO 375).
+   * A DATE's picks are the ENDS of a range, not a list of days. Left out, the
+   * field's own `range` says. A number has no Simple range: two numbers are a
+   * list, and a range is an Advanced row (TODO 375).
    * TRAP T-the-field-type-decides-the-clause
    */
   range?: boolean;
@@ -385,10 +384,8 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   /* A RANGE field has no value LIST to tick — a reader types an end, or drags
      one. So its own picks ARE its values, and every rule below then works
      unchanged. TRAP T-the-field-type-decides-the-clause */
-  /* ENDS or a LIST. Said plainly when a control knows; otherwise a ranged
-     field with nothing to tick can only be answering with ends. */
-  // A date's picks are DAYS unless the reading or its field says range. TRAP T-a-date-picks-days-unless-it-says-range
-  const range = isRanged(type) && (reading.range ?? (type === 'date' ? !!facts.range : !facts.values?.length));
+  // ENDS or a LIST: a date's picks are DAYS unless the reading or its field says range. TRAP T-a-date-picks-days-unless-it-says-range
+  const range = isRanged(type) && (reading.range ?? !!facts.range);
   /* NO DECLARED LIST means the picks ARE the values. "Everything ticked is no
      filter" can only be judged against a list someone named — a column menu
      that set `plan in [Pro, Free]` is filtering, whatever else exists.
@@ -407,7 +404,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const raws = [...declared];
   const all = raws.map(valueKey);
   // ALL ticks every value it has, whichever come. TRAP T-all-is-an-answer
-  const every = !!reading.all && !range && type !== 'date' && reading.mode !== 'advanced' && (OP_TAKES[reading.op ?? DEFAULT_OP] ?? 'list') === 'list';
+  const every = !!reading.all && type !== 'date' && reading.mode !== 'advanced' && (OP_TAKES[reading.op ?? DEFAULT_OP] ?? 'list') === 'list';
   /* The QUERY's comparison — a chip's option values may be spelled differently
      from the data. TRAP T-one-comparison-rule-for-query-and-ui */
   const picked = valueSet(every ? raws : reading.picked ?? []);
@@ -445,10 +442,10 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const chosen = tops.filter((v) => v.state === 'picked').length;
   const paths = parentOf ? values.filter((v) => v.parent && own(v)).length : 0;
   // Nothing ticked on purpose: an answer, of no rows. TRAP T-none-is-an-answer
-  const none = !!reading.none && !takesText && !range && type !== 'date' && chosen + paths === 0;
+  const none = !!reading.none && !takesText && type !== 'date' && chosen + paths === 0;
   const answered = none || (takesText
     ? text !== ''
-    : range || !facts.values || type === 'date'
+    : !facts.values || type === 'date'
       ? chosen + paths > 0
       : (chosen > 0 && chosen < tops.length) || paths > 0);
 
@@ -513,20 +510,6 @@ export function stateClause(state: FilterState): Filter | undefined {
  */
 export function readingClause(facts: FieldFacts, reading: FieldReading): Filter | undefined {
   return stateClause(fieldState(facts, reading));
-}
-
-/**
- * A field's answer as it can be SAVED, and put back as it was: its rows when it
- * is Advanced, its ticks or ends when it is Simple. Nothing when it has no answer.
- * TRAP T-saved-filters-are-every-scope
- */
-export function savedReading(state: FilterState): FieldReading | undefined {
-  if (state.all) return { picked: [], all: true };
-  if (!state.rows.length) return undefined;
-  if (state.none) return { picked: [], none: true };
-  if (state.condition === 'advanced') return { conditions: state.rows.map((row) => ({ ...row })) };
-  const picked = [...(state.rows[0]?.picked ?? [])];
-  return state.range ? { picked, range: true } : { picked };
 }
 
 /** Picks as the data holds them — a number column's values are numbers. */

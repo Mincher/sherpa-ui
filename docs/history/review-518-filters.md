@@ -35,12 +35,12 @@ with a failing test where it is a bug, before it is changed.
 | D8 | 2 | dead, probed | `compile()` works out sort/group/search and a `two-arranging-scopes` report nobody reads; it disagrees with `arrangementOf` | query.ts `compile` |
 | D9 | ✅ 1 | conflict, probed | `FieldCatalogue.facts()` drops a field's own value labels: `selection()` and `filterFace` show the raw value | field-catalogue.ts `facts` |
 | D10 | ✅ 1 | conflict, probed | a pick outside the declared values: compile drops it, the walk counts it | filter-state.ts `declared`; source-counts.ts `each` |
-| D11 | 2 | dead | `savedReading` has no caller | filter-state.ts |
-| D12 | 2 | dead | number-range leftovers after 375: a branch that cannot run, redundant terms, a doc that contradicts the code | filter-state.ts `range` |
-| D13 | 2 | dead | `asRows`/`withRows`/`withoutRows` take a `type` no caller passes | filter-state.ts |
+| D11 | ✅ 2 | dead | `savedReading` has no caller | filter-state.ts |
+| D12 | ✅ 2 | dead | number-range leftovers after 375: a branch that cannot run, redundant terms, a doc that contradicts the code | filter-state.ts `range` |
+| D13 | → 521 (rewrites the preset helpers) | dead | `asRows`/`withRows`/`withoutRows` take a `type` no caller passes | filter-state.ts |
 | D14 | no change: 288 step 9 (Will) keeps a half range in the draft | duplicate | "does a reading answer?" six ways; a half range is "answered" yet compiles to nothing, and blocks a fetching list's start (403) | query.ts `readingAnswered`; filter-state.ts `rowAnswered` |
 | D15 | 2 | duplicate | four case-blind membership helpers; `holdsKey` scans the whole tally per pick | filter-state.ts, walk.ts, store.ts, source-counts.ts |
-| D16 | 2 | duplicate | "split rows at each `or`" twice | filter-state.ts `runsOf`, `chainRows` |
+| D16 | no change: `chainRows` skips an unanswered row BEFORE it splits at `or`; `runsOf` would turn `A or (unanswered) and C` into A or C | duplicate | "split rows at each `or`" twice | filter-state.ts `runsOf`, `chainRows` |
 | D17 | 2 | duplicate | the four arrangement keys listed about nine times | query.ts, query-edits.ts, query-context.ts |
 | D18 | — | duplicate | "is it a list?" in four places; `openOnFirst` skips a banded number | field-catalogue.ts `isList`; data-source.ts |
 | D19 | — | two names | two "starts": the page's and the first-value one; `reset()` ignores the page's | query-context.ts |

@@ -15040,7 +15040,6 @@ reader's set under a page id is the reader's.
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
-- Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 
 ### T-saved-filters-are-the-last-section
