@@ -59,6 +59,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 29a1 | 517 | BUG (Will, 2026-10-28, a screenshot of Records' filter column) — deselecting values in a filter makes that field's section in the panel go empty and show 0 matches: Customer records' Plan, Tier and Owner show no values; Status and Tier wear 0 | bug |
 | ✅ | 29b | 516 | CLEAN-UP (found closing 369) — `quick-filter-open` has no listener: only the filter panel answered it, and 476 removed the panel. Remove the event and the caret's branch that waits for a host to build a menu. DONE 2026-10-28: the event, its caret branch, its Fires line and its trap paragraph are gone; a caret with no menu does nothing, as `#openMenu()` did with none | refactor |
 | 🚧 | 29c | 518 | REVIEW (Will, 2026-10-28) — all the filtering code and behaviour: many waves of fixes left conflicts, duplication and needless complexity. Optimise without changing the architecture or what it does; and every UI component works ALONE with the data layer, never relying on another UI component | refactor |
+| ⬜ | 29d | 519 | BUG (Will, 2026-10-28) — the data grid toolbar's search input filters at the VIEW scope; it should filter at the grid's own (local) scope. LIKELY CAUSE (read, not yet proved): Records writes the search into the grid's scope (`setSearch(term, 'data')`), but the source's unpaged loads for the charts and metrics — under the View alone, and each chart's free set — spread `#loadOptions()` and swap only its `filter`, so they keep the grid's `search` (`data-source.ts` ~1579, ~1595). Fix after 518's reviewers finish | bug |
+| ⬜ | 29e | 520 | BEHAVIOUR (Will, 2026-10-28) — match highlighting applies only to content in the SAME scope as its filter. Today `highlightAcross` (TODO 467) is ON by default, so a local filter lights the whole page (458). PLAN: off by default in sherpa-ui and Demos, as 517 did for none; a View filter still lights every scope under it. Do after 518's reviewers finish | filters |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
@@ -2452,6 +2454,21 @@ move). Every pick ruled out at once: as before, it stays at 0. The bench's two
 `a-serial-set-chains-its-fields` (let go; the Customer cleared brings nothing
 back), `the-walk-holds-under-change` (a failed walk lets nothing go); Demos
 `reforged-limit-options` (Will's case: AMER + APAC, then Proseware).
+
+### `[~]` 🚧 518 — REVIEW: the filtering code, and each component alone
+
+Will, 2026-10-28: review all the filtering code and behaviour for conflicts,
+duplication and needless complexity; optimise without changing the
+architecture or what it does; and every UI component works ALONE with the data
+layer. Three read-only reviewers; their 57 findings, each with its phase, are
+in [history/review-518-filters.md](history/review-518-filters.md). Phase 0 is
+Will's 519 and 520; 1 the bugs against rules already made; 2 the same
+behaviour, simpler; 3 each component alone, after Will's two choices.
+
+**❓ For Will:** R2 (one shared ask-to-bind helper, or the provider stays the
+only join), R4 (flip the provider-only defaults' attributes, or leave them),
+U1 (every site ticked: paths everywhere, or the parent everywhere), U9 (Apply
+with one end of a date range: that day everywhere, or clear everywhere).
 
 ### `[x]` ✅ 517 — BUG: letting go of a value empties the panel
 
