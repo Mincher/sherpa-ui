@@ -338,7 +338,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const label = this.#defById(id)?.label ?? chip.dataset['label'] ?? id;
 
     // An on/off chip has no menu: its row's tick answers it. TODO 54
-    const from = chip.querySelector<SherpaMenu>('sherpa-menu');
+    const from = (chip as SherpaQuickFilter).menu;
     if (!from) return;
 
     /* NOTHING TO DRILL. An advanced-only menu answers with its condition
@@ -359,7 +359,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #onDatePicked = (event: Event): void => {
     const chip = this.#chipOf(event);
     // A committing menu's pick is a draft: its Apply asks. TRAP T-commit-follows-select-mode
-    if (!chip || chip.querySelector('sherpa-menu')?.hasAttribute('data-commit')) return;
+    if (!chip || (chip as SherpaQuickFilter).menu?.hasAttribute('data-commit')) return;
     // A date chip turns itself ON by picking — it has no body toggle. Locked, it is drawn.
     if (!chip.hasAttribute('data-locked')) chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0 || (chip as SherpaQuickFilter).answered);
     this.#emitChange(this.#answerRequest(chip));
@@ -1065,7 +1065,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';
     const field = this.#fieldOf(id);
-    if (!chip.querySelector('sherpa-menu') || chip.hasAttribute('data-superseded')) return;
+    if (!(chip as SherpaQuickFilter).menu || chip.hasAttribute('data-superseded')) return;
     // A section's value chips are greyed too. TODO 425
     const values = [...chip.querySelectorAll<HTMLElement>(':scope > .value')];
     limitField(values, [(chip as SherpaQuickFilter).menu],
@@ -1091,7 +1091,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        carries the answer instead of clearing it.
        TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
     const chip = this.#chips().find((c) => c.dataset['id'] === id);
-    const menu = chip?.querySelector('sherpa-menu');
+    const menu = (chip as SherpaQuickFilter | undefined)?.menu;
     if (chip && (!chip.shadowRoot?.childElementCount || (menu && !menu.shadowRoot?.childElementCount))) {
       /* Only the LATEST held draw of a field lands, and a draw made meanwhile
          drops it: a stale one put a section's Advanced back to Simple. TODO 426 */
@@ -1215,7 +1215,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #chipPicks(chip: HTMLElement): string[] {
     // A chip drilled into the Filters menu reports from there — its own menu is
     // empty while the rows are away.
-    if (this.#drill.home && this.#drill.home === chip.querySelector('sherpa-menu')) {
+    if (this.#drill.home && this.#drill.home === (chip as SherpaQuickFilter).menu) {
       const menu = this.$('.add-btn')?.querySelector<SherpaMenu>('sherpa-menu');
       if (menu) return menu.values;
     }
@@ -1701,7 +1701,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!id) return;
     event.stopImmediatePropagation();
     // Shut it first: a popover destroyed while open leaves the top layer confused.
-    chip.querySelector<SherpaMenu>('sherpa-menu')?.hide?.();
+    (chip as SherpaQuickFilter).menu?.hide?.();
     this.#removeFilter(id);
   };
 
@@ -1967,7 +1967,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #filterMenu(id: string): SherpaMenu | null {
     for (const chip of this.#chips()) {
       if (chip.dataset['id'] !== id) continue;
-      const menu = chip.querySelector<SherpaMenu>('sherpa-menu');
+      const menu = (chip as SherpaQuickFilter).menu;
       return menu?.getAttribute('data-type') === 'filter' ? menu : null;
     }
     return null;
