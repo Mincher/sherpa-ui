@@ -333,8 +333,9 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: Highlight matches on hover. */
   #highlightHover = false;
 
-  /** The highlight reaches every component on the page — or, off, those in its
-   *  filter's own scope alone. The app sets it, from its session. Will, TODO 467 */
+  /** The highlight reaches every component on the page — or, off (the
+   *  default), those in its filter's own scope alone. The app sets it, from its
+   *  session. Will, TODOs 467, 520 */
   get highlightAcross(): boolean {
     return this.#across;
   }
@@ -343,7 +344,7 @@ export class SherpaProvider extends SherpaElement {
     for (const source of Object.values(this.#sources)) source.highlightAcross = on;
   }
   /** The app's choice: highlight across every scope. */
-  #across = true;
+  #across = false;
 
   /** ONE Apply and Discard for a scope that waits — or, off, each field's own,
    *  in its menu or its panel section. The app sets it, from its session. Will, TODO 451 */

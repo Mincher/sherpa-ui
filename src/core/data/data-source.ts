@@ -427,8 +427,8 @@ export class DataSource extends EventTarget {
     return typeof scope === 'string' ? scope === driver : !!scope?.includes(driver);
   }
 
-  /** The highlight reaches every component — or, off, those in its driver's
-   *  scope alone. The app's setting. Will, TODO 467 */
+  /** The highlight reaches every component — or, off (the default), those in
+   *  its driver's scope alone. The app's setting. Will, TODOs 467, 520 */
   get highlightAcross(): boolean {
     return this.#across;
   }
@@ -438,7 +438,7 @@ export class DataSource extends EventTarget {
     this.#binding.publish();
   }
   /** The setting: does the highlight reach every scope? */
-  #across = true;
+  #across = false;
 
   /**
    * One scope as a control draws it WHOLE: each field it holds — a field held

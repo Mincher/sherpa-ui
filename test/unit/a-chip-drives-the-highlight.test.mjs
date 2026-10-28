@@ -61,6 +61,8 @@ test('a chip asks for it by request; the source tests a row, and pushes the mark
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), query });
   const bar = marker('bar');
   const grid = marker('grid');
+  // Across every scope, as 458 had it: off by default since 520.
+  source.highlightAcross = true;
   bindSource(source, bar, { scope: 'data' });
   bindSource(source, grid, { scope: VIEW });
   await source.load();
@@ -91,6 +93,8 @@ test('a chip HOVERED previews the highlight: never in the Query, no query-change
   const source = new DataSource({ store, query });
   const bar = marker('bar');
   const grid = marker('grid');
+  // Across every scope, as 458 had it: off by default since 520.
+  source.highlightAcross = true;
   bindSource(source, bar, { scope: 'data' });
   bindSource(source, grid, { scope: VIEW });
   query.hold('data', ['plan', 'region']);
@@ -126,6 +130,8 @@ test('ONE value hovered previews only that value — picked or not (TODO 459)', 
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), query });
   const bar = marker('bar');
   const grid = marker('grid');
+  // Across every scope, as 458 had it: off by default since 520.
+  source.highlightAcross = true;
   bindSource(source, bar, { scope: 'data' });
   bindSource(source, grid, { scope: VIEW });
   query.hold('data', ['plan', 'region']);
@@ -182,7 +188,10 @@ test('across every scope, or only the driver\'s: off, a local driver lights its 
   await source.load();
   query.highlight('data', 'plan', true);
   await source.load();
-  assert.equal(source.highlightAcross, true, 'on by default');
+  // Off by default: a filter's matches stay in its own scope. Will, TODO 520
+  assert.equal(source.highlightAcross, false, 'off by default');
+  assert.equal(grid.test, null, 'off: not the driver\'s scope');
+  source.highlightAcross = true;
   assert.equal(grid.test(ROWS[0]), true, 'across: the View\'s grid is lit');
   source.highlightAcross = false;
   assert.equal(grid.test, null, 'off: not the driver\'s scope');

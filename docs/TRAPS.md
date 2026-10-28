@@ -19143,10 +19143,12 @@ A page with SEVERAL sources compiles only its own scopes (`facts.mine`), so
 source has the field (`facts.has`); one without it marks nothing.
 
 **Or only within the filter's scope** — TODO 467, the app's setting,
-`highlightAcross` on the provider and the source (on by default). Off, a
-component outside the driver's scope is given no test (`highlightFor(scope)`),
-and the binding's push key carries that answer, so flipping it pushes again. A
-View driver is every scope's, on or off.
+`highlightAcross` on the provider and the source. It is OFF by default since
+TODO 520 (Will: *"Match highlighting should only apply to content in the same
+scope as the filter."*), so the whole page lights only when an app turns it on.
+Off, a component outside the driver's scope is given no test
+(`highlightFor(scope)`), and the binding's push key carries that answer, so
+flipping it pushes again. A View driver is every scope's, on or off.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
