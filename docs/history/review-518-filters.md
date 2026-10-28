@@ -38,7 +38,7 @@ with a failing test where it is a bug, before it is changed.
 | D11 | 2 | dead | `savedReading` has no caller | filter-state.ts |
 | D12 | 2 | dead | number-range leftovers after 375: a branch that cannot run, redundant terms, a doc that contradicts the code | filter-state.ts `range` |
 | D13 | 2 | dead | `asRows`/`withRows`/`withoutRows` take a `type` no caller passes | filter-state.ts |
-| D14 | 1 | duplicate | "does a reading answer?" six ways; a half range is "answered" yet compiles to nothing, and blocks a fetching list's start (403) | query.ts `readingAnswered`; filter-state.ts `rowAnswered` |
+| D14 | no change: 288 step 9 (Will) keeps a half range in the draft | duplicate | "does a reading answer?" six ways; a half range is "answered" yet compiles to nothing, and blocks a fetching list's start (403) | query.ts `readingAnswered`; filter-state.ts `rowAnswered` |
 | D15 | 2 | duplicate | four case-blind membership helpers; `holdsKey` scans the whole tally per pick | filter-state.ts, walk.ts, store.ts, source-counts.ts |
 | D16 | 2 | duplicate | "split rows at each `or`" twice | filter-state.ts `runsOf`, `chainRows` |
 | D17 | 2 | duplicate | the four arrangement keys listed about nine times | query.ts, query-edits.ts, query-context.ts |
@@ -61,7 +61,7 @@ with a failing test where it is a bug, before it is changed.
 | U4 | 2 | writers | the grid writes a heading chip's `data-condition`, which the chip writes itself | sherpa-data-grid.ts `#lightFilterChip` |
 | U5 | ✅ 1 | conflict | `onConnect` writes a pick count over the results badge; the html doc still describes the old badge | sherpa-quick-filter.ts onConnect |
 | U6 | 1 | conflict | a value chip and a menu row give different reasons for one ruled-out value; `available: false` is refused in the menu, not on the chip | filter-host.ts `limitField`; sherpa-menu.ts |
-| U7 | 1 | duplicate | "answered" six ways in the UI; a number or list chip given an Advanced reading before its menu draws is switched off | sherpa-quick-filter.ts `reading` setter; sherpa-data-grid.ts `answersAnything` |
+| U7 | ✅ 1 | duplicate | "answered" six ways in the UI; a number or list chip given an Advanced reading before its menu draws is switched off | sherpa-quick-filter.ts `reading` setter; sherpa-data-grid.ts `answersAnything` |
 | U8 | 2 | duplicate | the grid writes its own filter label, unlike the chip's `filterFace`; nothing reads it | sherpa-data-grid.ts `#columnFilterLabel` |
 | U9 | ❓ | conflict | Apply with one end of a date range: a heading clears the field, a chip filters that day | sherpa-data-grid.ts `#readColumnFilter`; filter-state.ts |
 | U10 | 2 | complex | one menu change redraws the chip's face about 5 times (`#state`, `#writeTip`, `#syncEmpty`) | sherpa-quick-filter.ts `#applySelection` |

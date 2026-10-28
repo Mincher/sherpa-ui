@@ -378,12 +378,15 @@ export class SherpaQuickFilter extends SherpaElement {
     const menu = this.#fieldMenu();
     if (!menu) return;
     const body = menu.dataset['body'];
+    /* Its own mode, else rows say Advanced, else the menu's — read once the menu
+       has it: a menu not yet drawn still says Simple. Will, TODO 464; every body, 518 */
+    const advanced = (): boolean => (next.mode ?? (readingRows(next).length ? 'advanced' : menu.mode)) === 'advanced';
     /* A NUMBER takes its WHOLE reading: its one value, and its rows.
        TRAP T-a-menu-owns-its-own-bodies */
     if (body === 'number') {
       menu.reading = next;
       // In Advanced its ROWS answer it. TRAP T-a-number-has-advanced-rows
-      const answered = menu.mode === 'advanced' ? readingRows(next).length > 0
+      const answered = advanced() ? readingRows(next).length > 0
         : (next.picked ?? []).length > 0 || (next.text ?? '').trim() !== '';
       this.current = answered && !next.suspended;
       // TRAP T-a-silent-steer-still-redraws-its-chip
@@ -395,9 +398,8 @@ export class SherpaQuickFilter extends SherpaElement {
     if (body === 'date') {
       menu.reading = next;
       this.#applySelection(menu.values ?? []);
-      /* In Advanced its ROWS answer it — "In the last 12 months" is ON. The
-         reading's own mode first: a menu not yet drawn still says Simple. Will, TODO 464 */
-      const answered = (next.mode ?? menu.mode) === 'advanced' ? readingRows(next).length > 0
+      // In Advanced its ROWS answer it — "In the last 12 months" is ON.
+      const answered = advanced() ? readingRows(next).length > 0
         : (next.text ?? '').trim() !== '' || (next.picked ?? []).length > 0;
       this.current = answered && !next.suspended;
       this.refresh();
@@ -409,7 +411,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const rows = readingRows(next);
     if (rows.length) menu.setAttribute('data-advanced', '');
     menu.reading = next;
-    if (menu.mode === 'advanced') {
+    if (advanced()) {
       this.current = rows.length > 0 && !next.suspended;
       this.refresh();
       return;

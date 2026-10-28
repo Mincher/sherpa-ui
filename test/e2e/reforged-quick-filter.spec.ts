@@ -884,3 +884,19 @@ test('a LOCKED chip never turns itself on from a condition row: its owner says',
   });
   expect(r).toEqual({ on: false, mode: 'advanced' });
 });
+
+test('an Advanced answer given before the menu draws turns its chip on — a list as a date does (TODO 518 U7, 464)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void>; reading: unknown };
+    el.setAttribute('data-label', 'Owner');
+    el.setAttribute('data-menu', '');
+    el.innerHTML = '<sherpa-menu slot="menu" data-type="filter" data-advanced data-select="multiple"><label><input type="checkbox" value="Ravi" /> Ravi</label></sherpa-menu>';
+    document.getElementById('root')!.appendChild(el);
+    // The menu has not drawn yet: the reading's own mode decides.
+    el.reading = { mode: 'advanced', conditions: [{ op: 'contains', text: 'Ra' }] };
+    await el.rendered;
+    await window.__settled();
+    return el.hasAttribute('data-current');
+  });
+  expect(r).toBe(true);
+});
