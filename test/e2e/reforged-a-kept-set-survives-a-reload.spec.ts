@@ -7,9 +7,9 @@ import { test, expect, type Page } from './harness';
  * TRAP T-a-kept-set-is-checked-each-session
  */
 const SESSION = (opts: { rows: number; down?: boolean; version?: number; name: string }) => `(async () => {
-  const { ArrayStore, DataSource, spoofRemote, keepCache, rowKey } = await import('/dist/index.js');
+  const { ArrayStore, DataSource, fakeRemote, keepCache, rowKey } = await import('/dist/index.js');
   const rows = Array.from({ length: ${opts.rows} }, (_, i) => ({ id: i + 1, name: 'n' + i }));
-  const store = spoofRemote(new ArrayStore(rows, { key: 'id' }), { delay: 50, fail: ${opts.down ? 1 : 0}, announcesAll: false });
+  const store = fakeRemote(new ArrayStore(rows, { key: 'id' }), { delay: 50, fail: ${opts.down ? 1 : 0}, announcesAll: false });
   const keep = keepCache(store, { name: ${JSON.stringify(opts.name)}, version: ${opts.version ?? 1} });
   await keep.ready;
   const source = new DataSource({ store });
@@ -68,10 +68,10 @@ test('with no IndexedDB, the set is held in memory only — and nothing breaks',
   await page.addInitScript(() => { Object.defineProperty(globalThis, 'indexedDB', { get() { throw new Error('blocked'); } }); });
   await page.reload();
   const r = await page.evaluate(`(async () => {
-    const { ArrayStore, DataSource, spoofRemote, keepCache, onReport } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, fakeRemote, keepCache, onReport } = await import('/dist/index.js');
     const codes = [];
     onReport((x) => codes.push(x.code));
-    const store = spoofRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0 });
+    const store = fakeRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0 });
     await keepCache(store, { name: 'no-idb' }).ready;
     const source = new DataSource({ store });
     await source.load();
@@ -83,8 +83,8 @@ test('with no IndexedDB, the set is held in memory only — and nothing breaks',
 test('a sign-out keeps nothing more under the old name, though the store is read again', async ({ page }) => {
   const name = 'kept-signout-' + Date.now();
   await page.evaluate(`(async () => {
-    const { ArrayStore, DataSource, spoofRemote, keepCache, clearKept } = await import('/dist/index.js');
-    const store = spoofRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0, announcesAll: false });
+    const { ArrayStore, DataSource, fakeRemote, keepCache, clearKept } = await import('/dist/index.js');
+    const store = fakeRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0, announcesAll: false });
     await keepCache(store, { name: ${JSON.stringify(name)} }).ready;
     const source = new DataSource({ store });
     await source.load();
@@ -103,10 +103,10 @@ test('a save made while the store cannot be read leaves the kept copy for the ne
   await session(page, SESSION({ rows: 6, name }));
   await page.reload();
   await page.evaluate(`(async () => {
-    const { ArrayStore, DataSource, spoofRemote, keepCache } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, fakeRemote, keepCache } = await import('/dist/index.js');
     const inner = new ArrayStore(Array.from({ length: 6 }, (_, i) => ({ id: i + 1, name: 'n' + i })), { key: 'id' });
     // Reads fail; a save still goes through.
-    const store = spoofRemote(inner, { delay: 0, fail: 1, announcesAll: false });
+    const store = fakeRemote(inner, { delay: 0, fail: 1, announcesAll: false });
     await keepCache(store, { name: ${JSON.stringify(name)} }).ready;
     const source = new DataSource({ store });
     await source.load();

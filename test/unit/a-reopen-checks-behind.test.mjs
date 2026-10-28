@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, fakeRemote } from '../../dist/data.js';
 
 const ROWS = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, tier: i % 2 ? 'gold' : 'silver' }));
 const tick = (ms = 20) => new Promise((done) => setTimeout(done, ms));
@@ -18,7 +18,7 @@ function remote(delay) {
   const load = inner.load.bind(inner);
   const seen = { loads: 0 };
   inner.load = (o) => { seen.loads++; return load(o); };
-  const store = spoofRemote(inner, { delay, announcesAll: false });
+  const store = fakeRemote(inner, { delay, announcesAll: false });
   // A store that cannot say what moved: a RestStore with no changesUrl. TRAP T-a-remote-store-says-what-changed
   delete store.changes;
   return { inner, store, seen };

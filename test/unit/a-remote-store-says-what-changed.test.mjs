@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, RestStore, bindSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, RestStore, bindSource, fakeRemote } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, owner: 'Ann', plan: 'Pro' }, { id: 2, owner: 'Bo', plan: 'Free' }];
 const shown = (id) => Object.assign(new EventTarget(), {
@@ -23,7 +23,7 @@ test('a write the page missed shows after a recheck, by its column alone', async
   const load = inner.load.bind(inner);
   inner.load = (o = {}) => { loads.push(o.fields ?? 'all'); return load(o); };
   let deaf = false;
-  const store = spoofRemote(inner, { delay: 0, announcesAll: false, missed: () => deaf });
+  const store = fakeRemote(inner, { delay: 0, announcesAll: false, missed: () => deaf });
   const source = new DataSource({ store });
   bindSource(source, shown('grid'), {});
   await source.load();
@@ -70,7 +70,7 @@ test('a page opened again asks what moved: nothing, so it reads nothing, and its
   let loads = 0;
   const load = inner.load.bind(inner);
   inner.load = (o) => { loads++; return load(o); };
-  const store = spoofRemote(inner, { delay: 0, announcesAll: false });
+  const store = fakeRemote(inner, { delay: 0, announcesAll: false });
   const first = new DataSource({ store });
   await first.load();
   first.close();

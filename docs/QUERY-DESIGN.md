@@ -215,7 +215,7 @@ source.query.draft     // what the reader is editing
   components to use"*). A store says `remote: true`; every field on that
   source then edits the `draft` and waits for Apply. A local store applies at
   once, as today.
-- **The spoof lives in the data layer**: `spoofRemote(store, { delay: 800,
+- **The fake lives in the data layer**: `fakeRemote(store, { delay: 800,
   fail: 0 })` wraps any store, marks it remote, waits `delay` ms per load and
   fails at the rate given. The example wraps one Context's store with it. 58
   (loading, empty and error states) uses the same wrapper to show each state.
@@ -369,7 +369,7 @@ a bar must be drawn FROM the Query before a restore can draw it.
   (a Region pick by hand now filters); its own axes sit in a `page` scope no
   bar answers. `saveViewAs` saves JSON. A view's LAYOUT as JSON waits for the
   Templater (68) — `content` markup until then.
-- 6: a remote store (`spoofRemote`, `?remote`) gives the source a DRAFT;
+- 6: a remote store (`fakeRemote`, `?remote`) gives the source a DRAFT;
   `commit` / `discard` take a field, a scope or all; `pending` and `dirty`
   reach bound controls as `data-pending` / `data-dirty`. Apply is ONLY for a
   remote fetch (Will, 2026-09-27, choice A): locally every pick applies at
@@ -389,7 +389,7 @@ drawn copy of the reading. Next: step 8 (segment and aggregate).
 | # | question | answer |
 |---|---|---|
 | 1 | the view definition's format | ~~**A** — markup for layout, JSON for the Query only~~ → **B, 2026-09-27**: ONE JSON definition. *"JSON is the de facto universal standard for configuration data … we can much more readily send and receive content from other services."* The Templater (68) builds the layout from it |
-| 2 | where "remote" is decided | **B** — on the STORE: remote data comes into the data layer to be formatted, so the spoof is a wrapping store there (§5) |
+| 2 | where "remote" is decided | **B** — on the STORE: remote data comes into the data layer to be formatted, so the fake is a wrapping store there (§5) |
 | 3 | build order | **A** — steps 1–5 first (one owner), then 6–8 |
 
 The questions as asked, kept for the reasoning:
@@ -404,7 +404,7 @@ The questions as asked, kept for the reasoning:
 
 **2. Where a field's "remote" is decided.**
 - **A — on the field** (`declareField(f, { remote })`), with the debug store
-  spoofing it per field. Matches the ask. *(Recommended.)*
+  faking it per field. Matches the ask. *(Recommended.)*
 - **B — on the store** — a whole source is remote or not. Simpler, but every
   field then needs Apply.
 

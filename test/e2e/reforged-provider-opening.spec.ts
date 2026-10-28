@@ -7,7 +7,7 @@ import { test, expect } from './harness';
  * TRAP T-a-container-shows-its-datas-state
  */
 const RUN = (leaveAt: number | null) => `(async () => {
-  const { ArrayStore, spoofRemote } = await import('/dist/index.js');
+  const { ArrayStore, fakeRemote } = await import('/dist/index.js');
   const root = document.getElementById('root');
   root.innerHTML = '';
   const provider = document.createElement('sherpa-provider');
@@ -15,7 +15,7 @@ const RUN = (leaveAt: number | null) => `(async () => {
   root.append(provider);
   const card = provider.querySelector('sherpa-container');
   const rows = Array.from({ length: 5 }, (_, i) => ({ id: i + 1, name: 'n' + i }));
-  const store = spoofRemote(new ArrayStore(rows, { key: 'id' }), { delay: 700 });
+  const store = fakeRemote(new ArrayStore(rows, { key: 'id' }), { delay: 700 });
   const page = { v: 1, id: 't', source: { store: 's', fields: { name: { label: 'Name' } } } };
   const seen = [];
   const watch = setInterval(() => seen.push(card.hasAttribute('data-loading')), 25);

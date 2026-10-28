@@ -6,7 +6,7 @@ import { test, expect } from './harness';
  * TRAP T-the-provider-says-the-pages-reach
  */
 const SETUP = `
-  const { ArrayStore, HttpError, spoofRemote } = await import('/dist/index.js');
+  const { ArrayStore, HttpError, fakeRemote } = await import('/dist/index.js');
   const settle = () => window.__settled();
   const tick = (ms = 60) => new Promise((d) => setTimeout(d, ms));
   const root = document.getElementById('root');
@@ -17,7 +17,7 @@ const SETUP = `
   const rows = Array.from({ length: 5 }, (_, i) => ({ id: i + 1, name: 'n' + i }));
   const net = { down: false, refuse: false };
   const inner = new ArrayStore(rows, { key: 'id' });
-  const store = spoofRemote(inner, { delay: 0, fail: () => (net.down ? 1 : 0) });
+  const store = fakeRemote(inner, { delay: 0, fail: () => (net.down ? 1 : 0) });
   const page = { v: 1, id: 't', source: { store: 's', fields: { name: { label: 'Name' } } } };
   const heard = [];
   provider.addEventListener('reach-change', (e) => heard.push(e.detail.reach + (e.detail.failure ? ':' + e.detail.failure.kind : '')));

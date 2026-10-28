@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, RestStore, rowKey, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, RestStore, rowKey, fakeRemote } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, tier: 'gold', owner: 'Ann' }, { id: 2, tier: 'silver', owner: 'Bob' }, { id: 3, tier: 'gold', owner: 'Cy' }];
 const tick = () => new Promise((done) => setTimeout(done, 20));
@@ -19,7 +19,7 @@ async function held(options = {}) {
   const load = inner.load.bind(inner);
   const seen = { loads: 0 };
   inner.load = (o) => { seen.loads++; return load(o); };
-  const store = spoofRemote(inner, { delay: 0 });
+  const store = fakeRemote(inner, { delay: 0 });
   const source = new DataSource({ store });
   await source.load();
   seen.loads = 0;

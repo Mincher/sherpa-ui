@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { compile, VIEW, DataSource, bindSource, ArrayStore, filterRows, spoofRemote } =
+const { compile, VIEW, DataSource, bindSource, ArrayStore, filterRows, fakeRemote } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = [
@@ -262,7 +262,7 @@ test('an EMPTY condition row is no answer — a cleared menu keeps one', async (
    TRAP T-apply-and-discard-wait-for-a-change */
 
 const remote = async (fail = 0) => {
-  const src = new DataSource({ store: spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail }) });
+  const src = new DataSource({ store: fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail }) });
   await src.load();
   return src;
 };
@@ -338,13 +338,13 @@ test('a legend narrows its chart at once, even on a remote source — its rows a
   assert.deepEqual(Object.keys(src.debugState().only), ['chart']);
 });
 
-test('spoofRemote waits, fails when told, and marks the store remote', async () => {
-  const slow = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 30 });
+test('fakeRemote waits, fails when told, and marks the store remote', async () => {
+  const slow = fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 30 });
   assert.equal(slow.remote, true);
   const t = Date.now();
   assert.equal((await slow.load()).total, 5);
   assert.ok(Date.now() - t >= 25);
-  const broken = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: 1 });
+  const broken = fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: 1 });
   await assert.rejects(() => broken.load(), /the fetch failed/);
 });
 

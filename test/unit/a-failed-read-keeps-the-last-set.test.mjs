@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, HttpError, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, HttpError, fakeRemote } from '../../dist/data.js';
 
 const ROWS = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, tier: i % 2 ? 'gold' : 'silver' }));
 const tick = (ms = 20) => new Promise((done) => setTimeout(done, ms));
@@ -20,7 +20,7 @@ function flaky() {
   const load = inner.load.bind(inner);
   const seen = { loads: 0 };
   inner.load = (o) => { seen.loads++; return load(o); };
-  const store = spoofRemote(inner, { delay: 0, fail: () => (net.down ? 1 : 0) });
+  const store = fakeRemote(inner, { delay: 0, fail: () => (net.down ? 1 : 0) });
   return { net, inner, store, seen };
 }
 

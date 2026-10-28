@@ -12,7 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote, VIEW } from '../../dist/data.js';
 
 /** The customers each region holds. */
 const REGION_ORGS = {
@@ -166,7 +166,7 @@ test('a remote store not held is asked step by step: its distinct values, per fi
   const asked = [];
   const distinct = inner.distinct.bind(inner);
   inner.distinct = (fields, o) => { asked.push(fields); return distinct(fields, o); };
-  const source = new DataSource({ store: spoofRemote(inner, { delay: 0 }), limitOptions: true, holdRows: 0 });
+  const source = new DataSource({ store: fakeRemote(inner, { delay: 0 }), limitOptions: true, holdRows: 0 });
   await source.declareFromRows(['customer', 'region']);
   asked.length = 0;
   const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);

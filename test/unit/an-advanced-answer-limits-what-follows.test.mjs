@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote, VIEW } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, region: 'EMEA', customer: 'Contoso', seats: 5 },
@@ -70,7 +70,7 @@ for (const [name, reading] of Object.entries(ADVANCED)) {
   });
 
   test(`step by step (remote, not held): region ${name} narrows what Customer offers`, async () => {
-    const store = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0 });
+    const store = fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0 });
     const { bar } = await page(store, reading, { holdRows: 0 });
     assert.deepEqual([...(bar.present?.customer ?? [])].sort(), [...WANT[name].customer].sort());
   });

@@ -113,7 +113,7 @@
   "src/core/data/row-key.ts": 50,
   "src/core/data/source-binding.ts": 336,
   "src/core/data/source-counts.ts": 336,
-  "src/core/data/spoof-remote.ts": 91,
+  "src/core/data/fake-remote.ts": 91,
   "src/core/data/store-cache.ts": 469,
   "src/core/data/store-history.ts": 85,
   "src/core/data/store.ts": 692,

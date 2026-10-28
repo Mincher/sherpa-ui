@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ArrayStore, EventStore, JsonStore, LocalStore, RestStore, StoreHistory, changedFields, spoofRemote,
+  ArrayStore, EventStore, JsonStore, LocalStore, RestStore, StoreHistory, changedFields, fakeRemote,
 } from '../../dist/data.js';
 import { cacheOf } from '../../dist/core/data/store-cache.js';
 
@@ -92,12 +92,12 @@ test('a RestStore update with no old row names no field, so it moves everything'
 
 test('every wrapper hands on the same History', async (t) => {
   const inner = new ArrayStore(rows(), { key: 'id' });
-  assert.equal(spoofRemote(inner, { delay: 0 }).history, inner.history);
+  assert.equal(fakeRemote(inner, { delay: 0 }).history, inner.history);
   const live = new EventStore({ url: 'http://test/live', into: inner });
   assert.equal(live.history, inner.history);
   assert.equal(live.announcesAll, true);
   // A held set passes the store's own change on.
-  const remote = spoofRemote(inner, { delay: 0 });
+  const remote = fakeRemote(inner, { delay: 0 });
   const cache = cacheOf(remote);
   const heard = [];
   cache.addEventListener('change', (e) => heard.push(e.detail.change?.fields));

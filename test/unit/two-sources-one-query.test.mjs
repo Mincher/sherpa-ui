@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, onReport, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, onReport, fakeRemote } from '../../dist/data.js';
 
 const ALERTS = [
   { id: 1, severity: 'critical', region: 'EMEA' }, { id: 2, severity: 'info', region: 'EMEA' },
@@ -32,7 +32,7 @@ async function page({ remote = false, declare = true } = {}) {
   const query = new QueryContext();
   const alerts = new DataSource({ store: new ArrayStore(ALERTS, { key: 'id' }), query });
   const store = new ArrayStore(CUSTOMERS, { key: 'id' });
-  const customers = new DataSource({ store: remote ? spoofRemote(store, { delay: 0 }) : store, query });
+  const customers = new DataSource({ store: remote ? fakeRemote(store, { delay: 0 }) : store, query });
   if (declare) {
     for (const f of ['severity', 'region']) alerts.declareField(f);
     for (const f of ['name', 'region']) customers.declareField(f);

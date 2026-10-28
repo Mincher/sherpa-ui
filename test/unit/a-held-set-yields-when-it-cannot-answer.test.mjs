@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, HttpError, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, HttpError, fakeRemote } from '../../dist/data.js';
 import { cacheOf } from '../../dist/core/data/store-cache.js';
 
 const tick = (ms = 20) => new Promise((done) => setTimeout(done, ms));
@@ -108,7 +108,7 @@ test('a kept copy that lands after a refusal is never shown', async () => {
 test('an unconfirmed copy that takes a change leaves the device copy as it is', async () => {
   const net = { down: true };
   const inner = new ArrayStore(rowsOf(3), { key: 'id' });
-  const store = spoofRemote(inner, { delay: 0, fail: () => (net.down ? 1 : 0) });
+  const store = fakeRemote(inner, { delay: 0, fail: () => (net.down ? 1 : 0) });
   const keep = port({ rows: rowsOf(3) });
   cacheOf(store).keep(keep);
   const page = new DataSource({ store });

@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, EventStore, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, EventStore, fakeRemote } from '../../dist/data.js';
 import { HeldSet } from '../../dist/core/data/held-set.js';
 
 const ROWS = [{ id: 1, name: 'a' }, { id: 2, name: 'b' }, { id: 3, name: '' }];
@@ -47,5 +47,5 @@ test('a live store scans its inner rows', async () => {
 });
 
 test('a remote store has no scan: it is held, or asked', () => {
-  assert.equal(spoofRemote(new ArrayStore(plain(ROWS), { key: 'id' }), { delay: 0 }).scan, undefined);
+  assert.equal(fakeRemote(new ArrayStore(plain(ROWS), { key: 'id' }), { delay: 0 }).scan, undefined);
 });

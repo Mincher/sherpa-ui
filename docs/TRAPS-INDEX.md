@@ -21,7 +21,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — cycle
 - [T-a-chip-counts-within-the-filters-before-it](TRAPS.md#t-a-chip-counts-within-the-filters-before-it) — data-source
 - [T-a-chip-says-its-own-answer](TRAPS.md#t-a-chip-says-its-own-answer) — filter-face
-- [T-a-closed-source-hears-nothing](TRAPS.md#t-a-closed-source-hears-nothing) — data-source, spoof-remote
+- [T-a-closed-source-hears-nothing](TRAPS.md#t-a-closed-source-hears-nothing) — data-source, fake-remote
 - [T-a-component-default-outlives-a-view](TRAPS.md#t-a-component-default-outlives-a-view) — query, query-context, query-edits
 - [T-a-component-part-narrows-one-component](TRAPS.md#t-a-component-part-narrows-one-component) — bind-selection, query, query-context, source-binding
 - [T-a-condition-badge-says-that-not-which](TRAPS.md#t-a-condition-badge-says-that-not-which) — data, filter-face
@@ -34,7 +34,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-date-reads-one-way](TRAPS.md#t-a-date-reads-one-way) — data, filter-face, format-date
 - [T-a-delta-is-derived-not-declared](TRAPS.md#t-a-delta-is-derived-not-declared) — aggregate
 - [T-a-failed-read-keeps-the-last-set](TRAPS.md#t-a-failed-read-keeps-the-last-set) — data-source, store-cache
-- [T-a-failure-has-a-kind](TRAPS.md#t-a-failure-has-a-kind) — data-source, failure, spoof-remote
+- [T-a-failure-has-a-kind](TRAPS.md#t-a-failure-has-a-kind) — data-source, failure, fake-remote
 - [T-a-fetching-list-opens-on-its-first-value](TRAPS.md#t-a-fetching-list-opens-on-its-first-value) — data-source, data-source-types, query-context
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — data-source-types, query-context, query-edits
 - [T-a-field-is-declared-once](TRAPS.md#t-a-field-is-declared-once) — data-source, data-source-types
@@ -71,7 +71,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-relative-date-stays-relative](TRAPS.md#t-a-relative-date-stays-relative) — filter-state, store, stores, where
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — data-source, query-context
 - [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-set, page-definition, store, store-cache
-- [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — data-source, spoof-remote, store, store-cache, stores
+- [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — data-source, fake-remote, store, store-cache, stores
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-context, source-counts, store, stores, walk
 - [T-a-scope-is-a-place-not-a-reach](TRAPS.md#t-a-scope-is-a-place-not-a-reach) — data-source
 - [T-a-scope-says-what-it-shows](TRAPS.md#t-a-scope-says-what-it-shows) — data-source-types, source-binding
@@ -79,7 +79,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — data-source, data-source-types
 - [T-a-source-compiles-only-what-it-has](TRAPS.md#t-a-source-compiles-only-what-it-has) — data-source, query, source-counts
 - [T-a-store-has-one-cache](TRAPS.md#t-a-store-has-one-cache) — data-source, store, store-cache
-- [T-a-store-keeps-its-history](TRAPS.md#t-a-store-keeps-its-history) — base-store, data, live-stores, spoof-remote, store, store-history
+- [T-a-store-keeps-its-history](TRAPS.md#t-a-store-keeps-its-history) — base-store, data, fake-remote, live-stores, store, store-history
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, query, query-context, query-edits, source-binding
 - [T-a-suspended-answer-is-drawn-as-off](TRAPS.md#t-a-suspended-answer-is-drawn-as-off) — data-source
@@ -102,7 +102,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-open-panel-follows-the-data-layer](TRAPS.md#t-an-open-panel-follows-the-data-layer) — source-binding
 - [T-an-operator-decides-pick-or-type](TRAPS.md#t-an-operator-decides-pick-or-type) — store
 - [T-an-untouched-select-is-not-an-answer](TRAPS.md#t-an-untouched-select-is-not-an-answer) — filter-state
-- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — data, data-source, data-source-types, query-context, spoof-remote, store, stores
+- [T-apply-and-discard-wait-for-a-change](TRAPS.md#t-apply-and-discard-wait-for-a-change) — data, data-source, data-source-types, fake-remote, query-context, store, stores
 - [T-array-store-copies-both-ways](TRAPS.md#t-array-store-copies-both-ways) — stores
 - [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — filter-face, filter-state, query
 - [T-coalesce-microtask-not-debounce](TRAPS.md#t-coalesce-microtask-not-debounce) — data-source, data-source-types, timing

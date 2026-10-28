@@ -8,12 +8,12 @@ import { test, expect } from './harness';
  */
 test('a remote bar drawn again while a menu is open keeps that menu\'s draft', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, bindSource, spoofRemote } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, fakeRemote } = await import('/dist/index.js');
     const rows = [
       { id: 1, plan: 'Pro', status: 'active', region: 'EMEA' },
       { id: 2, plan: 'Free', status: 'trial', region: 'AMER' },
     ];
-    const source = new DataSource({ store: spoofRemote(new ArrayStore(rows, { key: 'id' }), { delay: 0 }) });
+    const source = new DataSource({ store: fakeRemote(new ArrayStore(rows, { key: 'id' }), { delay: 0 }) });
     source.declareValues('plan', ['Pro', 'Free']);
     source.declareValues('status', ['active', 'trial']);
     source.declareValues('region', ['EMEA', 'AMER']);

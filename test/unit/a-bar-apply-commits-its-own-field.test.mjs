@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, plan: 'Pro', status: 'active' }, { id: 2, plan: 'Free', status: 'trial' }];
 
@@ -23,7 +23,7 @@ class Bar extends EventTarget {
 }
 
 test('a bar request for status applies status, and the panel\'s plan stays pending', () => {
-  const source = new DataSource({ store: spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0 }) });
+  const source = new DataSource({ store: fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0 }) });
   source.query.hold('data', ['plan', 'status']);
   // The panel's edit, not yet applied.
   source.query.setReading('data', 'plan', { picked: ['Pro'] });

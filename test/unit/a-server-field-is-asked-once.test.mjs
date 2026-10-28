@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote } from '../../dist/data.js';
 
 const ROWS = Array.from({ length: 10 }, (_, i) => ({ id: i + 1, seats: (i + 1) * 10 }));
 const settle = () => new Promise((r) => setTimeout(r, 10));
@@ -20,7 +20,7 @@ test('Apply asks the store once for the keys; off and on ask nothing; a new answ
   const asked = [];
   const load = inner.load.bind(inner);
   inner.load = (o) => { asked.push(o?.filter ?? null); return load(o); };
-  const source = new DataSource({ store: spoofRemote(inner, { delay: 0 }) });
+  const source = new DataSource({ store: fakeRemote(inner, { delay: 0 }) });
   source.declareField('seats', { type: 'number', fetch: 'server' });
   assert.equal(source.filterDef('seats').commit, true, 'its menus have Apply');
   await source.load();

@@ -42,7 +42,7 @@ const counters = { loads: 0, counts: 0, distinct: 0, changes: 0, fields: 0, rows
 const ENTRY = `
 export { openSource } from './src/core/data/page-definition.ts';
 export { ArrayStore } from './src/core/data/stores.ts';
-export { spoofRemote } from './src/core/data/spoof-remote.ts';
+export { fakeRemote } from './src/core/data/fake-remote.ts';
 export { onReport } from './src/core/data/report.ts';
 export { bindSource } from './src/core/ui/bind-source.ts';
 export { takeSet } from './src/core/data/query-edits.ts';
@@ -211,13 +211,13 @@ async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tier
   const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
   // While on, a change is MISSED: another client's write. 345 phase 9
   const deaf = { on: false };
-  const spoof = remote && L.spoofRemote(store, { delay: 0, missed: () => deaf.on, ...(announcesAll === false ? { announcesAll } : {}) });
+  const fake = remote && L.fakeRemote(store, { delay: 0, missed: () => deaf.on, ...(announcesAll === false ? { announcesAll } : {}) });
   // Each ask of what moved, counted. TRAP T-a-remote-store-says-what-changed
-  if (spoof?.changes) {
-    const changes = spoof.changes;
-    spoof.changes = (since) => { counters.changes++; return changes(since); };
+  if (fake?.changes) {
+    const changes = fake.changes;
+    fake.changes = (since) => { counters.changes++; return changes(since); };
   }
-  const seen = spoof || store;
+  const seen = fake || store;
   // The fields its grid shows, as the provider names them. 345 phase 8
   const columns = (whole.ui?.grid?.columns ?? []).map((c) => c.field);
   return { L, def, columns, deaf, inner: store, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen, columns) };

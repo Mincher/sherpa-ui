@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote, VIEW } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, region: 'EMEA', customer: 'Contoso', lastSeen: '2025-01-01' },
@@ -71,9 +71,9 @@ test('an update to a field the walk reads counts again, and counts right', async
 });
 
 test('a store that may miss a writer, or with no History, walks again on every change', async () => {
-  // Held, through a spoof that says it may miss a writer.
+  // Held, through a fake remote that says it may miss a writer.
   const inner = new ArrayStore(ROWS, { key: 'id' });
-  const held = await page(spoofRemote(inner, { delay: 0, announcesAll: false }));
+  const held = await page(fakeRemote(inner, { delay: 0, announcesAll: false }));
   await inner.update(1, { lastSeen: '2030-01-01' });
   await sleep(40);
   assert.ok(held.bar.counted > 0, 'a store that may miss a writer');
@@ -105,7 +105,7 @@ test('over a remote store not held, an unread field asks no count and no distinc
   const distinct = inner.distinct.bind(inner);
   inner.totalCount = (o) => { asks.counts++; return total(o); };
   inner.distinct = (...a) => { asks.distinct++; return distinct(...a); };
-  const { bar } = await page(spoofRemote(inner, { delay: 0 }), { holdRows: 0 });
+  const { bar } = await page(fakeRemote(inner, { delay: 0 }), { holdRows: 0 });
   await sleep(30);
   asks.counts = 0;
   asks.distinct = 0;
@@ -125,7 +125,7 @@ test('a walk that failed is asked again on any change, even one it does not read
   let asks = 0;
   const total = inner.totalCount.bind(inner);
   inner.totalCount = (o) => { asks++; return total(o); };
-  const { source } = await page(spoofRemote(inner, { delay: 0, fail: () => (failing ? 1 : 0) }), { holdRows: 0 });
+  const { source } = await page(fakeRemote(inner, { delay: 0, fail: () => (failing ? 1 : 0) }), { holdRows: 0 });
   // The walk fails, and is kept for its key.
   failing = true;
   source.setPage(1);

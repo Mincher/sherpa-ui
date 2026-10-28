@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, RestStore, required, rules, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, RestStore, required, rules, fakeRemote } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, name: 'Ada', plan: 'Pro', seats: 5 }, { id: 2, name: 'Bob', plan: 'Free', seats: 9 }];
 
@@ -19,8 +19,8 @@ test('an ArrayStore sends the key and the fields named', async () => {
   assert.equal(store.projects, true);
   const { rows } = await store.load({ fields: ['plan'] });
   assert.deepEqual(rows, [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }]);
-  // A spoofed remote passes it on, and says so.
-  const remote = spoofRemote(store, { delay: 0 });
+  // A faked remote passes it on, and says so.
+  const remote = fakeRemote(store, { delay: 0 });
   assert.equal(remote.projects, true);
   assert.deepEqual((await remote.load({ fields: ['seats'] })).rows, [{ id: 1, seats: 5 }, { id: 2, seats: 9 }]);
 });

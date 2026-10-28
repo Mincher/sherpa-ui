@@ -9,12 +9,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, region: 'EMEA', owner: 'Dana' }, { id: 2, region: 'AMER', owner: 'Ravi' }];
 const make = (remote = false) => {
   const store = new ArrayStore(ROWS, { key: 'id' });
-  return new DataSource({ store: remote ? spoofRemote(store, { delay: 0 }) : store });
+  return new DataSource({ store: remote ? fakeRemote(store, { delay: 0 }) : store });
 };
 
 test('select copies the caller\'s rows: a change to them leaves the Query as it was', async () => {

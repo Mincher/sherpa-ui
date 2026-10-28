@@ -3619,7 +3619,7 @@ announces; the patch keys every one.
 **Where a new row goes is the store's to say:** `Store.rowOrder` is the order a
 whole read returns rows in, asked no sort — `insertion` (ArrayStore, LocalStore,
 JsonStore) or `key` (IdbStore, IndexedDB's order). A RestStore says it only
-with its `rowOrder` option, and `spoofRemote` passes it on. Unsaid, an insert or
+with its `rowOrder` option, and `fakeRemote` passes it on. Unsaid, an insert or
 a changed key reads the whole set again: in an unsorted, paged view a guessed
 place is a row on the wrong page.
 
@@ -3676,7 +3676,7 @@ can ask "did any field I read move since change N?".
 - **It is noted before it is announced**, in `BaseStore.announce`, so a store
   that dispatches a `change` by hand is not in its History.
 - **Every wrapper hands on the same History:** a live store its inner store's,
-  `spoofRemote` the store's, and a held set passes the store's change on as
+  `fakeRemote` the store's, and a held set passes the store's change on as
   `change` in its own `change` detail.
 
 A History is the TAB's: a write from another tab to IndexedDB or localStorage
@@ -3686,7 +3686,7 @@ is not in it (TODO 345, D2).
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/base-store.ts`
 - Site: `src/core/data/live-stores.ts`
-- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/fake-remote.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-store-keeps-its-history.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
@@ -3885,7 +3885,7 @@ its rows in well under 800 ms.
   for its facts — DROPS it: `set` fires and every page asks the store. A set
   that stayed would answer, stale, for good, with no banner.
 
-The bench's `rest/` page (a spoof that does not announce every change) holds the
+The bench's `rest/` page (a fake remote that does not announce every change) holds the
 rule exactly: `rest/open` and `rest/reopen` make ONE load each, every other act
 none (`asked()`).
 
@@ -3917,7 +3917,7 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
   first open is 1 load of 10,000 rows). A closed source asks the store itself
   and never touches the shared set, so its Refresh cannot mark it due.
 - **Trust needs `announcesAll`.** A store whose every change comes through it
-  (`ArrayStore`; `spoofRemote` passes its store's say on) is trusted as held.
+  (`ArrayStore`; `fakeRemote` passes its store's say on) is trusted as held.
   Any other may have missed a writer — another tab, another client — so a set
   held before a page opened is shown at once, STALE, and read again behind it
   (`T-a-read-is-planned`).
@@ -3976,15 +3976,15 @@ says the machine has a network, not that the store answers, and the lint bans
 `navigator` in the DOM-free data layer. A `TypeError` from a bug in a custom
 store reads as offline — the message is kept, so it can be told apart.
 
-`spoofRemote` fails as fetch does, with a `TypeError`, and its `totalCount`
+`fakeRemote` fails as fetch does, with a `TypeError`, and its `totalCount`
 fails too. Its `delay` and `fail` may be functions, read at each load, so one
 wrapper serves an app while a debug setting changes.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/failure.ts`
-- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/fake-remote.ts`
 - Site: `test/unit/a-failure-has-a-kind.test.mjs`
-- Site: `test/unit/a-spoof-fails-when-told.test.mjs`
+- Site: `test/unit/a-fake-remote-fails-when-told.test.mjs`
 
 ### T-a-closed-source-hears-nothing
 
@@ -4006,7 +4006,7 @@ source the APP passes to `provide()` is the app's: the provider never closes it.
 A provider taken out of the page closes nothing — moved, it must still work.
 
 **A wrapper made per open leaked too** (corrected 2026-10-19, 345 phase 4.1).
-This note once said `spoofRemote`'s listener was no leak, as it was made once
+This note once said `fakeRemote`'s listener was no leak, as it was made once
 per store. It was not: Demos' `stores()` made a NEW wrapper at every Context
 open, and each one's relay on the inner store kept it — and everything it held
 — alive. Now the relay holds its wrapper through a `WeakRef` and removes itself
@@ -4015,7 +4015,7 @@ the app's life. An app hands its outlet the SAME store object each time
 (`OutletOptions.stores`).
 
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/fake-remote.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-closed-source-hears-nothing.test.mjs`
 - Site: `test/e2e/reforged-provider-closes-its-sources.spec.ts`
@@ -10476,14 +10476,14 @@ rechecks — a Retry, `online`, the tab shown. Never inside a toggle (340): a
 toggle can show data one step old. A change the cache heard is asked about
 again at the next check; it costs a read then, never a wrong row.
 `RestStore` says `changes` with a `changesUrl` (`GET …?since=<at>` →
-`{ at, rows, fields }`); `spoofRemote` answers it from its store's History, and
+`{ at, rows, fields }`); `fakeRemote` answers it from its store's History, and
 its `missed` drops a change as another client's write. There is no timer: a page
 that wants one calls `provider.recheck()`.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/stores.ts`
-- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/fake-remote.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-remote-store-says-what-changed.test.mjs`
@@ -10536,7 +10536,7 @@ with it. `rules()` keeps its map of field checks (`rulesOf`), and a projected
 row is run through `validateField` per field it carries. A schema from
 another library can only judge a whole row, so a store with one says
 `projects: false` and a caller sends whole rows to it. `RestStore` asks with
-`fields=`; a spoofed remote passes on what its store says. Today only the
+`fields=`; a faked remote passes on what its store says. Today only the
 fetched field's ask (`T-a-server-field-is-asked-once-per-answer`) names
 fields, and asks for the key alone.
 
@@ -16571,8 +16571,8 @@ at once and has nothing to apply.
 
 **Step 6 of the Query moves the rule into the data layer.** Apply is only for
 a REMOTE fetch (Will, 2026-09-26), and remote is a fact about the STORE
-(`store.remote`: `RestStore` says so, and `spoofRemote()` makes any store
-act remote — before 2026-10-14 only `spoofRemote()` did). Over a remote store the
+(`store.remote`: `RestStore` says so, and `fakeRemote()` makes any store
+act remote — before 2026-10-14 only `fakeRemote()` did). Over a remote store the
 source keeps a DRAFT Query beside the applied one: every write lands in the
 draft, the rows wait, and `commit(scope?)` sends it; `discard(scope?)` puts
 the applied answers back and draws them. `pending(field)` and `dirty(scope?)`
@@ -16597,7 +16597,7 @@ still said it waits, and a bar kept its Apply.
 - Site: `test/unit/a-waiting-scope-holds-its-picks.test.mjs`
 - Site: `test/e2e/reforged-the-view-waits-for-one-apply.spec.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/fake-remote.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `src/data.ts`

@@ -185,7 +185,7 @@ A refactor deletes what it replaced. One commit per area.
 **Kept on purpose:** chip, tag, tabs, select-card, transfer-list,
 step-tracker, layout-canvas, file-upload and nav-section have no user in
 Demos. They are library parts, not dead code. The gallery gives each one a
-live example. `spoofRemote` stays too: it is generic, any store, and it is the
+live example. `fakeRemote` stays too: it is generic, any store, and it is the
 gallery's slow and failing backend.
 
 ### Phase 3: one name per idea (the lexicon). Size: M
@@ -256,7 +256,7 @@ one imported helper or one family sheet.
 | **6.1 Split `data-source.ts`** | Along the seams it already marks: types; **pure Query edits** (functions over a `Query`, testable with no source); the field catalogue; counts and limits (about 390 lines and 13 fields); binding and publishing; the core (load, paging, steering). For consumers it stays one class with the same API |
 | **6.2 One copy of each** | `eachScope`/`emptyScope` (16 + 9 sites); view holds as a Set (6); preset clauses (3); `READING_KEYS` (one copy since TODO 266; now typed so it cannot drift); `answers()` re-written beside `rowAnswered`; two different functions both called `canonical`; `modeOf(reading)` (7 sites, two rules); `sameReading`; one `keyedStore(prefix, guard?)` for saved views, saved filters and drafts (3 copies; the kind is per call, and `kindOf` — a name filter-kind.ts also uses — was written 5 times); `coalesce()` and `latest()` (3 and 4 copies, plus the base class's `#reconfigure`); the chip's `#hasTypedAnswer` uses `rowAnswered`; the pure half of the menu's `#seedFromPicks` moves to `filter-state.ts`. 27 `JSON.stringify` comparisons in data-source (34 in `src/core/data`) become `sameFilter` plus one version counter for the applied Query |
 | **6.3 Each layer does its own job** | (a) **The source calls 11 component draw methods directly** (26 calls) and imports `Populatable` from `ui/`. It should publish ONE description per scope, which a component draws. That also ends the two ways a bar is drawn on open, and the provider's double-frame echo guard. (b) **The provider is 1,245 lines, and its real job, answering an ask, is about 230.** Views, saved filter sets, reset, drafts and session move to an app-layer module that it imports; the panel/toolbar mode moves to a small helper. (c) **Data meaning leaves the UI**: the `applyFilters` merge, empty against no-matches, band edges (`threshold.ts` already has `bandEdges`), bind-source's unscoped steer branch, and the `saved:` part keys, a second saved-filter model beside presets. (d) The View library is built in two places; the `'view'` chip id is known in 4 |
-| **6.4 Honest entry points** | `sherpa-ui/data` re-exports 41 app-layer names, among them `bindSource` and `onViewPicked`, which touch the DOM. `/data` keeps only DOM-free modules, and a unit test checks where each export comes from. `spoofRemote` goes under one clear name for test and gallery fakes |
+| **6.4 Honest entry points** | `sherpa-ui/data` re-exports 41 app-layer names, among them `bindSource` and `onViewPicked`, which touch the DOM. `/data` keeps only DOM-free modules, and a unit test checks where each export comes from. `fakeRemote` goes under one clear name for test and gallery fakes |
 | **6.5 Measure, then make it faster** | A bench in node (ArrayStore, 10k rows) counts loads per click, compiles per report and clones per frame, against a baseline that may only fall, like `check:weight` but over `src/`, so the hook runs it. Known costs: one bar report recompiles k+c+1 times local and k+c+2 remote, with k the chips on the bar (one batch would make it 1); a count for each answered chip AND each picked value, each one an unpaged load; `Store.distinct` is implemented by no store, so every list field loads every row; 27 `structuredClone` calls in data-source (33 in `src/`), and the `state` getter clones on every change; 3 loops that grow with the square of their input; the provider's per-frame compiles and storage parses |
 | **6.6 One door per job (86 holds)** | Name the irregular members (`scope()`/`scopes`/`describe`; `rows` is live where `state` is a clone; `limitOptions` has a setter where `applyOn` is constructor-only). Add the missing read-backs (`declarePreset`, `declarePart`, `declareDefault`, `contributions`, `declareScope`) |
 
@@ -362,7 +362,7 @@ it can be**, and it should be — Demos already proves the pattern.
   per-story arg lists. The native pages read the same file.
 - **What a story covers:** every value of every enum in the spec; mode (light,
   dark, hc), density and theme, through page-level switches; a fake data layer
-  (`<sherpa-provider>` + `ArrayStore`, and `spoofRemote` for slow and failing);
+  (`<sherpa-provider>` + `ArrayStore`, and `fakeRemote` for slow and failing);
   and nesting inside `sherpa-app-shell`, a dialog, a panel and a grid.
 - **What stays in sherpa-ui:** the specs, `custom-elements.json`, and ONE small
   example per component, shipped beside its spec. This is component

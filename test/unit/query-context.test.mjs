@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, spoofRemote, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, fakeRemote, VIEW } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }];
 const store = () => new ArrayStore(ROWS, { key: 'id' });
@@ -36,7 +36,7 @@ test('a source joins the context it is given, and source.query IS it', () => {
 
 test('a remote source splits the draft once; a draft that exists is kept', () => {
   const query = new QueryContext();
-  const remote = new DataSource({ store: spoofRemote(store(), { delay: 0 }), query });
+  const remote = new DataSource({ store: fakeRemote(store(), { delay: 0 }), query });
   assert.equal(query.remote, true);
   remote.query.hold(VIEW, ['plan']);
   remote.query.setReading('view', 'plan', { picked: ['Free'] });
@@ -44,7 +44,7 @@ test('a remote source splits the draft once; a draft that exists is kept', () =>
   assert.deepEqual(picked(query.draft), ['Free']);
   assert.equal(picked(query.applied), undefined);
   // A second remote source keeps the draft as it is.
-  new DataSource({ store: spoofRemote(store(), { delay: 0 }), query });
+  new DataSource({ store: fakeRemote(store(), { delay: 0 }), query });
   assert.deepEqual(picked(query.draft), ['Free']);
   remote.query.commit();
   assert.deepEqual(picked(query.applied), ['Free']);
@@ -84,7 +84,7 @@ test('each read of the Query is the context\'s (366 step 13)', () => {
 
 test('pending and dirty: a remote member\'s edit, until Apply', () => {
   const query = new QueryContext();
-  const remote = new DataSource({ store: spoofRemote(store(), { delay: 0 }), query });
+  const remote = new DataSource({ store: fakeRemote(store(), { delay: 0 }), query });
   remote.query.hold(VIEW, ['plan']);
   remote.query.setReading('view', 'plan', { picked: ['Free'] });
   assert.equal(query.pending('plan'), true);

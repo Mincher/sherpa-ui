@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote } from '../../dist/data.js';
 import { cacheOf } from '../../dist/core/data/store-cache.js';
 import { HeldSet } from '../../dist/core/data/held-set.js';
 
@@ -75,7 +75,7 @@ const settle = () => new Promise((r) => setTimeout(r, 0));
 
 test('a source reads what its page needs, and a component bound later its own column', async () => {
   const { s, asked } = store();
-  const source = new DataSource({ store: spoofRemote(s, { delay: 0 }), pageFields: true });
+  const source = new DataSource({ store: fakeRemote(s, { delay: 0 }), pageFields: true });
   source.declareField('plan');
   bindSource(source, shown('grid'), { fields: ['name'] });
   await source.load();
@@ -95,7 +95,7 @@ test('a source reads what its page needs, and a component bound later its own co
 
 test('a source made by hand reads every field, as before', async () => {
   const { s, asked } = store();
-  const source = new DataSource({ store: spoofRemote(s, { delay: 0 }) });
+  const source = new DataSource({ store: fakeRemote(s, { delay: 0 }) });
   source.declareField('plan');
   bindSource(source, shown('grid'), { fields: ['name'] });
   await source.load();

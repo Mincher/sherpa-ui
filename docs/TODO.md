@@ -901,7 +901,7 @@ against the code). The full plan, with every file:line, is
   4.7 the IndexedDB keep.
 
   - ✅ **4.1** (2026-10-19) — `failureOf()` / `unreached()` (`failure.ts`, in
-    `sherpa-ui/data`); `navigator` banned in the data layer; `spoofRemote` takes
+    `sherpa-ui/data`); `navigator` banned in the data layer; `fakeRemote` takes
     `delay` and `fail` as functions, fails as fetch does (a `TypeError`), fails
     a count too, and relays through a `WeakRef` (100 dropped wrappers: 100
     relays removed); Demos makes ONE wrapper. TRAP `T-a-failure-has-a-kind`.
@@ -1015,7 +1015,7 @@ against the code). The full plan, with every file:line, is
   browsers (10x less testing): node tests only, until the end of 345.
 - ✅ **Phase 9 — remote History (D1 A).** **Done 2026-10-21:**
   `Store.changes(since)` → `{ at, rows, fields }`; `RestStore` says it with a
-  `changesUrl`; `spoofRemote` answers from its store's History, and its `missed`
+  `changesUrl`; `fakeRemote` answers from its store's History, and its `missed`
   drops a change as another client's write. A store that may miss a writer
   keeps a MARK with each whole read; a page opened again, a Retry, `online` or
   the tab shown asks what moved: nothing — confirmed; fields — those columns
@@ -1402,8 +1402,8 @@ provider makes a NEW source each time a Context opens (`openSource()` in
 `open()`), over the same store, and drops the old one. So every visit leaves one
 more source listening, and each store change runs `load({ force: true })` in ALL
 of them: wasted loads (a whole read each on a remote store), and memory that is
-never freed. `spoofRemote` leaks its own listener the same way
-(`spoof-remote.ts:29`). The fix (345 phase 1): the source keeps its listener,
+never freed. `fakeRemote` leaks its own listener the same way
+(`fake-remote.ts:29`). The fix (345 phase 1): the source keeps its listener,
 `DataSource.close()` removes it and drops the held set, and the provider closes
 the old source in `open()` and `close()`. Proof: two opens over one store, the
 first closed, one insert — one load, not two. A 350 lead, too.
@@ -1413,7 +1413,7 @@ load waiting and drops the held set; a closed source never holds again, but can
 still be asked. The provider keeps `#made`, the sources `open()` built, and
 closes one when `provide()` no longer gives it (the next page, `close()`) or
 when its open is overtaken first. A source the app passes to `provide()` is
-never closed. ~~`spoofRemote` is NOT a leak~~ — WRONG, corrected 2026-10-19 by
+never closed. ~~`fakeRemote` is NOT a leak~~ — WRONG, corrected 2026-10-19 by
 345 phase 4.1: Demos made a new wrapper at each Context open, and each relay
 kept its wrapper; the relay is weak now, and Demos makes one. Proof: `test/unit/a-closed-source-hears-nothing.test.mjs`
 (2) and `test/e2e/reforged-provider-closes-its-sources.spec.ts` (3 × 3 engines):
@@ -10662,7 +10662,7 @@ test failed on the old build in three engines. Nothing outside tests calls
 
 ### `[x]` ✅ 246 — A `RestStore` is remote
 
-Only `spoofRemote()` said `remote: true`, so a source over a real HTTP store
+Only `fakeRemote()` said `remote: true`, so a source over a real HTTP store
 applied every pick live: no draft, no Apply, and a full request per move.
 
 **✅ Done 2026-10-14.** `RestStore` says `remote = true`, so its source keeps a
@@ -11772,7 +11772,7 @@ reading: 319.
 **🚧 Steps 1–6 done 2026-10-15**, each safe by reading and measured by the bench.
 1. An `ArrayStore` count copies no rows: it counts in place.
 2. `Store.distinct`: `ArrayStore` and the live stores read a field's values in
-   place, and a `spoofRemote` store forwards it. `declareFromRows` asks it too.
+   place, and a `fakeRemote` store forwards it. `declareFromRows` asks it too.
 3. Fewer `structuredClone` copies: one for `source.query`, none for the first
    `#defaults` entry, none in the provider's change listener.
 4. Recency is a Map of change numbers, not an array rebuilt on each change.
@@ -11820,8 +11820,9 @@ fewer modules. A new test, `the-data-entry-loads-no-dom`, reads each export's
 module and walks what `dist/data.js` loads, against the lint's own file list;
 `T-the-data-entry-loads-no-dom` says why the lint alone cannot catch it.
 **Not run yet:** that test, headless-data-layer, a-scope-arranges-its-own-rows,
-the-package-surface, weight. **Waits for Will:** Q2, `spoofRemote` →
-`fakeRemote` (a rename outside the lexicon; my pick A).
+the-package-surface, weight. **✅ Q2 done 2026-10-28 (Will: yes):** `spoofRemote` is `fakeRemote`, in
+`src/core/data/fake-remote.ts`, and its options are `FakeRemoteOptions`. No alias
+(`T-a-rename-drops-the-old-name`); Demos and Gallery moved in the same change.
 
 ### `[~]` 🚧 288 — Phase 6: one copy of each data helper
 

@@ -7,12 +7,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, clearKept, keepCache, onReport, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, clearKept, keepCache, onReport, fakeRemote } from '../../dist/data.js';
 
 test('no IndexedDB: a miss, said once, and the page answers as before', async () => {
   const codes = [];
   const undo = onReport((r) => codes.push(r.code));
-  const store = spoofRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0 });
+  const store = fakeRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0 });
   await keepCache(store, { name: 'node' }).ready;
   await keepCache(store, { name: 'node-again' }).ready;
   const source = new DataSource({ store });

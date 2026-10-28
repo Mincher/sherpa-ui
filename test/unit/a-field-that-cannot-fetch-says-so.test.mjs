@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, spoofRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, region: 'EU' }, { id: 2, region: 'US' }];
 
@@ -25,7 +25,7 @@ class Bar extends EventTarget {
 
 test('a failed values read marks its field; the next good one clears it', async () => {
   let down = true;
-  const store = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: () => (down ? 1 : 0) });
+  const store = fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: () => (down ? 1 : 0) });
   const source = new DataSource({ store, autoLoad: false });
   source.query.hold('data', ['region']);
   const bar = new Bar();
