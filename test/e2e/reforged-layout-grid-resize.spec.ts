@@ -256,6 +256,28 @@ test('a fit grid: a row grows from the filler, only down to its floor; the row c
   expect(r.rowCount).toBe(1 + chartRows + 1);
 });
 
+/* A count KEPT under another layout is counted again as it is put back: Records'
+   count of 5 outlived its metrics row (484). TODO 515 · TRAP T-a-fit-grid-counts-its-resized-rows */
+test('a kept row count from another layout is counted again, so the filler still ends at the foot', async ({ page }) => {
+  await build(page, card('c1', 'medium', 2, 3) + card('c2', 'medium', 2, 3) + card('c3', 'medium', 2, 3)
+    + '<div id="table" data-col-span="full" data-grow>records</div>',
+  'data-rows="fit" data-row-count="4"', 'block-size: 900px');
+  const r = await page.evaluate(() => {
+    const grid = document.querySelector('#root sherpa-layout-grid') as HTMLElement & { layout: { byCount: object; rowCount?: number } | null };
+    // Kept while a metrics row sat above the charts: one row too many.
+    grid.layout = { byCount: {}, rowCount: 5 };
+    const t = document.getElementById('table')!.getBoundingClientRect();
+    const g = grid.getBoundingClientRect();
+    return {
+      tableBottom: Math.round(t.bottom), gridBottom: Math.round(g.bottom - parseFloat(getComputedStyle(grid).paddingBottom)),
+      rowCount: grid.layout!.rowCount ?? null,
+    };
+  });
+  expect(r.tableBottom).toBe(r.gridBottom);
+  // Counted again, it is the authored 4: nothing inline.
+  expect(r.rowCount).toBe(null);
+});
+
 test('keys move one track and report once; Home and End go to the ends; a drag reports once, on release', async ({ page }) => {
   await build(page, ['c1', 'c2', 'c3'].map((id) => card(id, 'medium', 2)).join(''));
   const p = await pitch(page);

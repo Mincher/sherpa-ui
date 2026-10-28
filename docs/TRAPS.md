@@ -18662,6 +18662,14 @@ The count is the rows before the filler, as laid out, plus what moved — not
 a sum of every band: a tall card beside two stacked ones is three bands and
 three rows, not five.
 
+**A KEPT count is counted again as it is put back** (TODO 515). It is a
+number worked out from the layout, and the layout can change under it: Demos'
+Records lost its metrics row to the fixed region (484), and a count of 5 kept
+before that left the grid's card in a fixed 88px row with the `1fr` empty
+below it. So `writeLayout` lays the kept spans out, then counts the rows before
+the filler as they land, plus one, and drops the inline count where it equals
+the authored one. Only while fit is on: below it the count draws nothing.
+
 - Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 - Site: `test/e2e/reforged-layout-grid-resize.spec.ts`
 

@@ -337,5 +337,25 @@ export function writeLayout(grid: HTMLElement, layout: GridLayout | null): void 
     }
   }
   const n = layout.rowCount;
-  if (grid.dataset['rows'] === 'fit' && Number.isInteger(n) && n! >= 2) grid.style.setProperty('--_row-count', String(n));
+  if (grid.dataset['rows'] === 'fit' && Number.isInteger(n) && n! >= 2) {
+    grid.style.setProperty('--_row-count', String(n));
+    settleRowCount(grid);
+  }
+}
+
+/** A kept row count, counted again as laid out: the rows before the filler, and
+ *  its own. Kept under another layout — a row moved out — it would leave the
+ *  filler in a fixed row, short of the foot. TRAP T-a-fit-grid-counts-its-resized-rows */
+function settleRowCount(grid: HTMLElement): void {
+  const cs = getComputedStyle(grid);
+  if (cs.getPropertyValue('--_grid-fit').trim() !== '1') return;
+  const kids = kidsOf(grid);
+  const last = grid.lastElementChild;
+  const filler = kids.find((k) => k.hasAttribute('data-grow')) ?? (last instanceof HTMLElement && kids.includes(last) ? last : null);
+  if (!filler) return;
+  const pitchY = (parseFloat(cs.getPropertyValue('--sherpa-layout-grid-row-height')) || 88) + (parseFloat(cs.rowGap) || 0);
+  const top = Math.min(...kids.map((k) => k.getBoundingClientRect().top));
+  const total = Math.round((filler.getBoundingClientRect().top - top) / pitchY) + 1;
+  if (String(total) === grid.getAttribute('data-row-count')) grid.style.removeProperty('--_row-count');
+  else grid.style.setProperty('--_row-count', String(total));
 }
