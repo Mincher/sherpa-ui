@@ -753,13 +753,6 @@ export class SherpaQuickFilter extends SherpaElement {
     // A chip with a MENU always opens it: its rows say what is left.
     if (this.hasAttribute('disabled') || (this.#refused() && !this.hasAttribute('data-menu'))) return;
     event.stopPropagation(); // opening the menu must not toggle the chip
-    // A menu its host builds only when asked: appended now, shown once it has drawn. TODO 369
-    if (!this.menu) {
-      this.emit('quick-filter-open');
-      const built = this.menu as SherpaMenu | null;
-      void Promise.resolve(built?.rendered).then(() => this.#openMenu());
-      return;
-    }
     this.#openMenu();
   };
 

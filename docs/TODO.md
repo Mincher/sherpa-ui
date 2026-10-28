@@ -56,6 +56,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A. Done: on writes its rows into each field's answer (at its home, ANDed into every run); off takes them out; its on is read from the fields; no `presets` flag. TRAP `T-a-preset-is-its-own-part` | filters |
 | ✅ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B. DONE 2026-10-27: the app shell's `context-header` slot, a FIXED region pinned first in the Context's scroll area, with its own edge shadow while scrolled; the outlet lifts a Context's `slot="context-header"` element into it and takes it out with the Context. Fixed on the way: the first version sat ABOVE the scroller and moved it, CLS 0.08 at 4x; now 0.009. Demos' Dashboard and Records put their metrics row there, with no `data-sticky`. TRAP T-a-context-has-a-fixed-region | look |
 | ✅ | 29a | 515 | BUG — in Demos the data grid's card fills only ONE row of Records (Will, 2026-10-28). DONE 2026-10-28. Found: a row count KEPT by a drag before 484 (5: metrics, charts, the card) outlived the metrics row moving to the fixed region; the grid now has 4, so the card sat in a fixed 88px row with the `1fr` row empty below. Fix: a kept count is counted again as it is put back. TRAP T-a-fit-grid-counts-its-resized-rows | bug |
+| ❓ | 29a1 | 517 | BUG (Will, 2026-10-28, a screenshot of Records' filter column) — deselecting values in a filter makes that field's section in the panel go empty and show 0 matches: Customer records' Plan, Tier and Owner show no values; Status and Tier wear 0 | bug |
+| ✅ | 29b | 516 | CLEAN-UP (found closing 369) — `quick-filter-open` has no listener: only the filter panel answered it, and 476 removed the panel. Remove the event and the caret's branch that waits for a host to build a menu. DONE 2026-10-28: the event, its caret branch, its Fires line and its trap paragraph are gone; a caret with no menu does nothing, as `#openMenu()` did with none | refactor |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
@@ -78,7 +80,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | | | | **Later — held or deferred by Will, or big and last** | |
 | ⏸️ | 37 | 350 | PERFORMANCE — Sherpa is slow under 4x CPU throttling: find the costs, the fixes and the options. 10-22: GOOD at 4x on localhost, gate `check:perf` in Demos; the slow load is the network (221 requests). D1 A, built 10-22: `dist/bundle/`, 33 requests — Will: better than it was; not a priority now | explore |
 | ⏸️ | 38 | 379 | FILTERS — 375's DATE half, held by Will: a date range as an Advanced Between, the View's Date chip, and Contains / Does not contain picking a weekday, Weekdays or Weekends. Will, 2026-10-27: "Skip 379 for now" | filters |
-| 🚧 | 39 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| ✅ | 39 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
 | ⬜ | 40 | 392 | 369's LAST part — a remote store NOT held reads one customer's sites when its row first opens (Q4 A). It needs a twisty on a parent whose children are unread, a new menu event relayed by the bar, the panel and the grid, and a source door. No app has such a store (Demos holds its data). **A (pick):** wait until a real remote tiered store needs it. **B:** build it now. **Will, 2026-10-21: A** — waits | filters |
 | ⬜ | 41 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20) | bug |
 | ⬜ | 42 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
@@ -2450,6 +2452,32 @@ move). Every pick ruled out at once: as before, it stays at 0. The bench's two
 back), `the-walk-holds-under-change` (a failed walk lets nothing go); Demos
 `reforged-limit-options` (Will's case: AMER + APAC, then Proseware).
 
+### `[ ]` ❓ 517 — BUG: letting go of a value empties the panel
+
+Will, 2026-10-28: *"Still issues where deselecting values from a filter makes
+that filter field section in the panel disappear and show 0 matches for field."*
+A screenshot of Records' column: Customer records' Status and Tier wear 0;
+Plan, Tier and Owner show no values.
+
+**Reproduced** (Demos Records, panel mode, Limit and Hide unmatching on): Tier
+Bronze picked, 22 rows; Status trial picked, 6; trial let go, **0** — Status is
+ON at none (`{ picked: [], none: true }`), as 489 A says ("the last value let go
+… the chip stays on at 0"). Every field after it has no rows, so Hide unmatching
+hides Plan's 4 values and Owner's 8, and Tier keeps only its picked Bronze. The
+code does what 489 says; the rule is what reads as broken here. In the column a
+field is a row of value chips, with no Select all and no chip body to press
+off, so none LOOKS like the start (every value unticked) and shows nothing.
+
+**❓ For Will:**
+- **A (my pick):** in the panel, letting go of the last value turns the field
+  OFF — every row, as at the start, which is what it looks like. None stays for
+  a menu: Select all off or an empty Apply, where the chip wears 0 and its body
+  presses it off. A field with no values left says "Limited by the filters
+  before it: no matches." in place of an empty row.
+- **B:** keep 489 A in the panel too, and make it plain: the field's row says
+  "None selected: no rows", and each field after it says "Limited by the filters
+  before it: no matches." in place of an empty row.
+
 ### `[x]` ✅ 503 — A11Y: the on/off shape is a Sherpa checkbox
 
 Will, 2026-10-27, on 490's tags: *"I think we should try using something like a
@@ -4641,7 +4669,7 @@ definition."* Two things broke it:
 per tab; its suite 454 pass. TRAPs `T-a-view-keeps-a-draft`,
 `T-a-reload-replays-the-readers-answers`.
 
-### `[~]` 🚧 369 — FILTERS: tiered values, and a tree menu
+### `[x]` ✅ 369 — FILTERS: tiered values, and a tree menu
 
 Will, 2026-10-20: *"In the demo app, customers should be able to have sites
 (e.g. office locations). This makes the menu for the customer filter chip a
@@ -4713,6 +4741,11 @@ of a parent's children when its row opens — waits for 345 phase 5.**
 its sites were picked — the walk counted each pick by its own key. A parent not
 picked itself now counts its picked children together (`bf3f294e`). Demos'
 Customer and Region are `fetch: "server"` now, to simulate a re-fetch (Will).
+
+**✅ Closed 2026-10-28.** The one part left, a remote store's read of a
+parent's children when its row opens, is 392, which waits (Will: A). "Greys
+reach an open sites menu (not yet tested)" went with the filter panel (476);
+so did the only host that answered `quick-filter-open`, which TODO 516 removes.
 
 ### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
 

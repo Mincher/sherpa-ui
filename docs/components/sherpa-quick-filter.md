@@ -94,7 +94,6 @@ Each one bubbles.
 |---|---|---|
 | `quick-filter-click` | `{ active: boolean \| true; picked: true }` | The chip body is toggled. |
 | `quick-filter-change` | `{ scope: 'chip'; values: string[] }` | The menu selection changed. |
-| `quick-filter-open` |  | The caret was pressed on a chip with no menu yet: its host appends one now, and the chip opens it. |
 | `jump-select` | `{ label: string; value: string }` | A jump row was picked, and its target scrolled into view. |
 | `group-change` | `{ field: null \| string }` | A GROUP chip picked or cleared its column. |
 | `sort-change` | `{ clear: true \| undefined; direction: SortDirection; field: null \| string }` | A SORT chip picked its column or way. |
