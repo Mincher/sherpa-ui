@@ -799,19 +799,19 @@ export class QueryContext extends EventTarget {
 
   /**
    * letGo(scope, field, keys) — the filters before a field rule these picks out:
-   * they leave its answer, applied and drafted alike, and no Apply is asked — the
-   * rows had them out already. Will, TODO 512 (A) · TRAP T-a-ruled-out-value-is-greyed
+   * they leave its APPLIED answer, and no Apply is asked — the rows had them out
+   * already. A draft follows only while it is still the applied answer: one the
+   * reader changed is theirs. Will, TODO 512 (A); 518 · TRAP T-a-ruled-out-value-is-greyed
    */
   letGo(scope: string, field: string, keys: readonly string[]): void {
-    let moved = false;
-    for (const query of new Set([this.#live.applied, this.#live.draft])) {
-      const reading = query.scopes[scope]?.readings[field];
-      const kept = reading?.picked?.filter((v) => !keys.includes(valueKey(v)));
-      if (!reading || !kept || kept.length === reading.picked!.length) continue;
-      query.scopes[scope]!.readings[field] = { ...reading, picked: kept };
-      moved = true;
+    const { applied, draft } = this.#live;
+    const was = applied.scopes[scope]?.readings[field];
+    const kept = was?.picked?.filter((v) => !keys.includes(valueKey(v)));
+    if (!was || !kept || kept.length === was.picked!.length) return;
+    if (draft !== applied && sameReading(draft.scopes[scope]?.readings[field], was)) {
+      draft.scopes[scope]!.readings[field] = { ...was, picked: kept };
     }
-    if (!moved) return;
+    applied.scopes[scope]!.readings[field] = { ...was, picked: kept };
     // ONE compile: what is applied moved; then the field is drawn its answer.
     this.#tell({ kind: 'commit' });
     this.#tell({ kind: 'drawn', fields: [field] });

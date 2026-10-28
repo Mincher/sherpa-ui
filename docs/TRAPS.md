@@ -7943,8 +7943,10 @@ cannot be picked** — Will, TODO 174 (110's B), made ONE WAY by TODO 349 (D4 A)
 a field's scopes and the filters before it in the one order limit it, never
 the ones after. A value already picked is LET GO (Will, TODO 512 A): the walk
 sets it aside — out of the compiled filter (`CompileFacts.drop`), so the load
-is right — and the source then takes it out of the reading, applied and drafted
-alike (`QueryContext.letGo`), asking no Apply. Until 512 it stayed in the
+is right — and the source then takes it out of the APPLIED reading
+(`QueryContext.letGo`), asking no Apply. The draft follows only while it is
+still the applied answer: a draft the reader changed and has not applied keeps
+their picks (TODO 518; it was emptied). Until 512 it stayed in the
 reading, ticked, greyed and disabled, and came back when the earlier filter
 went: a chip named a pick that filtered nothing, and unticking the rest left
 that pick alone holding the field at 0 rows (Will: *"some filters are still
@@ -8036,6 +8038,7 @@ in the Query that could only come back matching nothing (TODO 465).
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
+- Site: `test/unit/a-let-go-pick-leaves-the-draft-alone.test.mjs`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
