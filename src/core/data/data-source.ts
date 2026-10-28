@@ -74,7 +74,7 @@ import { SourceBinding, tagOf } from './source-binding.js';
 import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, readingAnswered,
+  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, readingAnswered, sameFilter,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -990,9 +990,9 @@ export class DataSource extends EventTarget {
     const next = filter;
     const viewed = view;
     // The SHARED filter stood still: no load follows, whatever one component's own did.
-    const still = JSON.stringify(next) === JSON.stringify(this.#filter);
+    const still = sameFilter(next, this.#filter);
     // A draft edit loads nothing: remote, or a scope that waits. TODO 406
-    const same = this.#context.waiting() && still && JSON.stringify(only) === JSON.stringify(this.#only);
+    const same = this.#context.waiting() && still && sameFilter(only, this.#only);
     this.#only = only;
     this.#filter = next;
     this.#viewFilter = viewed;
@@ -1571,7 +1571,7 @@ export class DataSource extends EventTarget {
          never a summary beside them. TRAP T-only-the-view-trickles-down */
       const windowed = this.#state.pageSize != null && !this.#arrangement().group;
       const viewed = this.#viewFilter;
-      const split = JSON.stringify(viewed) !== JSON.stringify(this.#filter);
+      const split = !sameFilter(viewed, this.#filter);
       if (!this.#binding.wantsAllRows() || (!windowed && !split)) {
         this.#allRows = this.#binding.wantsAllRows() ? result.rows : [];
         this.#allFor = '';

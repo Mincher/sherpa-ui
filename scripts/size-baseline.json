@@ -107,7 +107,7 @@
   "src/core/data/pointer.ts": 62,
   "src/core/data/query-context.ts": 1234,
   "src/core/data/query-edits.ts": 449,
-  "src/core/data/query.ts": 460,
+  "src/core/data/query.ts": 468,
   "src/core/data/read-plan.ts": 61,
   "src/core/data/report.ts": 71,
   "src/core/data/row-key.ts": 50,

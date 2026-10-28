@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { ArrayStore, DataSource } from '../../dist/data.js';
-import { sameReading } from '../../dist/core/data/query.js';
+import { sameFilter, sameReading } from '../../dist/core/data/query.js';
 
 const NW = { customer: 'Northwind', site: 'Leeds' };
 
@@ -28,4 +28,16 @@ test('an applied pick re-sent in another order is not pending', async () => {
   source.query.setReading('view', 'customer', { picked: ['Contoso', NW, 'Northwind'] });
   assert.equal(source.query.pending('customer'), false);
   assert.equal(source.query.dirty(), false);
+});
+
+/* The same for a compiled FILTER: its AND and OR children in another order are
+   the same filter, so nothing reloads. TODO 288 */
+test('a filter, or a filter by id, in another clause order is the same filter', () => {
+  const a = ['and', ['plan', 'eq', 'Pro'], ['or', ['tier', 'eq', 'Gold'], ['tier', 'eq', 'Silver']]];
+  const b = ['and', ['or', ['tier', 'eq', 'Silver'], ['tier', 'eq', 'Gold']], ['plan', 'eq', 'Pro']];
+  assert.equal(sameFilter(a, b), true);
+  assert.equal(sameFilter(a, ['plan', 'eq', 'Pro']), false);
+  assert.equal(sameFilter(undefined, undefined), true);
+  assert.equal(sameFilter({ g: a, c: ['x', 'eq', 1] }, { c: ['x', 'eq', 1], g: b }), true);
+  assert.equal(sameFilter({ g: a }, { g: a, c: ['x', 'eq', 1] }), false);
 });

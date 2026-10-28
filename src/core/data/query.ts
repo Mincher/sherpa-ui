@@ -35,6 +35,7 @@
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
  * - sameReading — Do two readings give the same answer? Only the answer keys count.
  * - filterKey — A filter as one string, its AND and OR children in one order.
+ * - sameFilter — Two filters, or two filters by id, the same in any clause order.
  * - appliesIn — Does a scope's reading of a field apply?
  * - scopeClauses — One scope's clauses: each reading that applies, each saved filter on.
  * - presetClause — A preset's own conditions as one clause — its chip's count.
@@ -332,6 +333,13 @@ export function filterKey(filter: Filter | undefined): string {
     ? [f[0], ...(f.slice(1) as Filter[]).map((c) => JSON.stringify(walk(c))).sort()]
     : f);
   return filter ? JSON.stringify(walk(filter)) : '';
+}
+
+/** Two filters, or two filters by id, the same in any clause order. TODO 288 */
+export function sameFilter(a: Filter | Record<string, Filter> | undefined, b: Filter | Record<string, Filter> | undefined): boolean {
+  if (Array.isArray(a) || Array.isArray(b) || !a || !b) return filterKey(a as Filter | undefined) === filterKey(b as Filter | undefined);
+  const ids = Object.keys(a);
+  return ids.length === Object.keys(b).length && ids.every((id) => filterKey(a[id]) === filterKey(b[id]));
 }
 
 /** Does a scope's reading of a field apply? One field, one scope: in a component

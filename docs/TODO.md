@@ -11839,6 +11839,14 @@ looked at again: each of the three is one read and one write, already over
 `web-storage.ts`'s `readJson`/`writeJson` — a keyed store would add a layer to
 save about ten lines. My pick: drop 8b. 9 and 10 stay open.
 
+**2026-10-28:** step 10 done — `sameFilter(a, b)` in `query.ts` (a filter, or a
+filter by id, the same in any clause order), at the three sites in
+`data-source.ts` that compared filters as text: `still`, `same` and `split`.
+The bench did not move. Step 9 looked at: `readingAnswered` tests a condition
+row as "has text or picks", blind to its op, and that keeps a half-typed range
+(one end) in the draft, where `rowAnswered` would drop the first click of a
+date range. My pick: drop 9.
+
 ### `[~]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
 
 **🚧 Steps 1–5a and 6 done 2026-10-15**, one commit each, each safe by reading.
