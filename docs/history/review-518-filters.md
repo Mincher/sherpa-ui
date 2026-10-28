@@ -68,7 +68,7 @@ with a failing test where it is a bug, before it is changed.
 | U11 | 2 | complex, high risk | four held-state layers in the toolbar, older than the menu's own early state; each to be removed only with proof | toolbar `#held`, `#heldDraws`, `#pendingAnswers`, `#painted` |
 | U12 | ✅ half 2: add, remove and allow draw once (render ends with the Add list); `drawScope`'s batching still open | complex | add, remove and allow render the bar twice; `drawScope` can render it 5+ times | toolbar `allowFields`, `#addFilters`, `#removeFilter`, `drawScope` |
 | U13 | 2 | duplicate | the Filters menu is built two ways (bar, column); the bar runs chip code on its Edit button | toolbar; toolbar-column.ts |
-| U14 | 2 | duplicate | two `SavedSets` and two headers per toolbar; `data-saveable` redraws only the bar's | toolbar; toolbar-column.ts |
+| U14 | ✅ half 2: `data-saveable` and `data-no-saves` share one handler, as `saves()` reads both — the save rows follow either. Two headers stay: the bar and the column templates differ | duplicate | two `SavedSets` and two headers per toolbar; `data-saveable` redraws only the bar's | toolbar; toolbar-column.ts |
 | U15 | ✅ 1 | conflict | a column's Reset is enabled by scopes it does not reset | provider-page.ts `data-nothing-to-reset` |
 | U16 | 2 | duplicate | about 18 near-identical provider setters | sherpa-provider.ts |
 | U17 | ✅ 2: `FilterDef.asChip`, `FilterDef.appliedAt` and `markField`'s `drafting` go. KEPT, not dead: `data-folded` (tests read it), `menu-range-change` (a date's Range switch, public), `FILTER_ACTIONS` save rows (live with the Saved menu off), `HeldFilter.appliedAt` (public `describe()`); `close()` was already gone | dead | `data-folded`, `menu-range-change`, `FilterDef.asChip`, three save rows in `FILTER_ACTIONS`, `markField`'s `drafting`, `close()`, `HeldFilter.appliedAt` | toolbar, sherpa-menu.ts, filter-def.ts, more-menu.ts, filter-host.ts, data-source.ts |
@@ -77,7 +77,7 @@ with a failing test where it is a bug, before it is changed.
 | U20 | 1 | conflict | the `empties` rule three ways; the toolbar re-renders every chip on its change and loses open drafts | filter-menu.ts; sherpa-data-grid.ts; toolbar |
 | U21 | 2 | complex | every bar act works out `active` and `values` that only the View chip's entry is read from | toolbar; sherpa-outlet.ts; persist-view.ts |
 | U22 | — | writers, unsure | `clearAll` empties locked chips itself; the column's Reset only asks | toolbar `clearAll`; toolbar-column.ts |
-| U23 | 2 | writers | the chip keeps its own copy of the menu's `all` | sherpa-quick-filter.ts |
+| U23 | no change: told "not All", the chip does not reset its menu's flag, so the copies can differ today — reading the menu's would change behaviour | writers | the chip keeps its own copy of the menu's `all` | sherpa-quick-filter.ts |
 | U24 | — | latent | two ways to read a bar's scope (own vs inherited `data-scope`) | provider-mode.ts; sherpa-provider.ts |
 | U25 | ✅ 2 | stale | doc lines, a "ONE door for both hosts" left from the panel, `filter-panel` in check-traps | several |
 

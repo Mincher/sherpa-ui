@@ -1849,9 +1849,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       syncHide(this, this.root);
     }
     this.#syncArrangement();
-    if (name === 'data-saveable') this.#header.drawSave();
-    // Its provider keeps saving off it, or lets it save again. TODO 485
-    if (name === 'data-no-saves') {
+    // Saving on or off — its own, or its provider keeping it off: every save row follows. TODO 485, 518
+    if (name === 'data-saveable' || name === 'data-no-saves') {
       if (this.#columned) this.#column.saved(this.#saved.all);
       else this.#renderAvailable();
       this.#header.drawSave();
