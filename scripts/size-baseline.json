@@ -94,7 +94,7 @@
   "src/core/data/chart-datum.ts": 76,
   "src/core/data/cycle.ts": 60,
   "src/core/data/data-source-types.ts": 308,
-  "src/core/data/data-source.ts": 2056,
+  "src/core/data/data-source.ts": 2058,
   "src/core/data/failure.ts": 46,
   "src/core/data/fake-remote.ts": 91,
   "src/core/data/field-catalogue.ts": 265,

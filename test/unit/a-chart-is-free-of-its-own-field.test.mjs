@@ -59,3 +59,17 @@ test('a chart free of its field is narrowed by the View\'s other filters, never 
   assert.deepEqual(seen.at(-1), [1, 2, 3]);
   assert.deepEqual(source.pickedFor(gauge, 'health'), ['At risk']);
 });
+
+test('only picks in force are lit: none while the field is Advanced or says "is not" (TODO 518)', async () => {
+  const { ArrayStore: Store, DataSource, VIEW } = await import('../../dist/data.js');
+  const source = new DataSource({ store: new Store([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' }) });
+  const chart = Object.assign(new EventTarget(), { setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {} });
+  bindSource(source, chart, { scope: 'chart', rows: 'all', readonly: true, free: ['plan'] });
+  source.query.hold(VIEW, ['plan']);
+  source.query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  assert.deepEqual(source.pickedFor(chart, 'plan'), ['Pro']);
+  source.query.setReading(VIEW, 'plan', { picked: ['Pro'], mode: 'advanced', conditions: [{ op: 'eq', picked: ['Free'] }] });
+  assert.deepEqual(source.pickedFor(chart, 'plan'), [], 'Advanced is in force, not the Simple picks');
+  source.query.setReading(VIEW, 'plan', { op: 'ne', picked: ['Pro'] });
+  assert.deepEqual(source.pickedFor(chart, 'plan'), [], '"is not Pro" lights no Pro');
+});

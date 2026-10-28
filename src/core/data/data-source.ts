@@ -68,7 +68,7 @@
 import {
   andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, filterTest, filterWithout, groupSummaries, readField, valueKey,
 } from './store.js';
-import { readingClause } from './filter-state.js';
+import { modeOf, readingClause } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding, tagOf } from './source-binding.js';
 import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
@@ -403,7 +403,9 @@ export class DataSource extends EventTarget {
    *  else the View's — applied, not drafted. A chart FREE of its field lights
    *  them. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
   pickedFor(el: BoundControl, field: string): string[] {
-    const picks = (r: FieldReading | undefined): string[] => (r && !r.suspended ? (r.picked ?? []).map(valueKey) : []);
+    // Only picks in FORCE: not while Advanced answers, nor under "is not". TODO 518
+    const picks = (r: FieldReading | undefined): string[] =>
+      (r && !r.suspended && modeOf(r) !== 'advanced' && (r.op ?? DEFAULT_OP) === DEFAULT_OP ? (r.picked ?? []).map(valueKey) : []);
     for (const [scope, part] of this.#narrowing) {
       if (part.only === el && part.field === field) {
         const own = picks(this.#applied.scopes[scope]?.readings[field]);
