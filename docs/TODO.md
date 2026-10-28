@@ -59,12 +59,12 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | 🚧 | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
-| ❓ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry. Measured 2026-10-27, idle machine: 1 in 40 (Settings never opened — the click was lost), then 0 in 120 (all four ways out) and 0 in 60 (a scripted loop with Navigation-API logging). Load-bound, as 390 said; next time, run it with `--trace=retain-on-failure` | tests |
+| ✅ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry. Measured 2026-10-27, idle machine: 1 in 40 (Settings never opened — the click was lost), then 0 in 120 (all four ways out) and 0 in 60 (a scripted loop with Navigation-API logging). Load-bound, as 390 said; next time, run it with `--trace=retain-on-failure` | tests |
 | ⏸️ | 34 | 470 | TEST — WebKit flake: leaving Settings (Back or Esc) restores the Context and its View times out now and then (Demos `reforged-settings-overlay:55`); passes on retry, seen in two full runs 2026-10-26 | tests |
 | ✅ | 35 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22). Done: `trash` leads every Discard — the bar's, a portrait scope's and the flat View row's Discard all, a field's own, and both menu footers' | look |
 | ⏸️ | 36 | 429 | DEMOS — a SHAREABLE build of Sherpa Demos: the receiver opens index.html, with nothing to install. After 425–428 (Will, 2026-10-23). Paused: Will, 2026-10-23, "discard for now. We'll do it later" — both commits reverted | demos |
-| 🚧 | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
-| 🚧 | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
+| ✅ | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| ✅ | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ✅ | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B. DONE 2026-10-27: a scope arranges when a PAGE of rows is drawn in it (`pagedIn`: a bind given `rows: 'page'`, not steer-only), never because a grid or a list is; `shows` / `ScopeShows` / `DataAsk.shows` are gone from the asks, the binds and `describe()`, which names a scope's component by its tag only. The colour words are 514 | refactor |
 | 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
@@ -1860,7 +1860,7 @@ for the `8` key the same way, then see whether the save itself is late.
 (Demos `reforged-layout-resize`): 10 of 10 in Chromium. The save lands within
 the poll; it was only read too soon.
 
-### `[ ]` ❓ 390 — FLAKE: Settings sometimes does not open in WebKit
+### `[x]` ✅ 390 — FLAKE: Settings sometimes does not open in WebKit
 
 Found 2026-10-21, running Demos for 366 step 18: `reforged-settings-overlay.spec.ts`
 (the back-arrow case of its `:53` group) fails about 1 run in 40 in WebKit, at
@@ -1889,6 +1889,10 @@ passed 60 of 60 with 2 workers and 120 of 120 with 7. The full run keeps a
 trace only of a retry, which passed, so there is none of the fail. **For
 Will:** A — close it as load-bound; B — keep tracing: Demos keeps a trace of
 every failure (`retain-on-failure`, a slower run). My pick: A.
+
+**✅ Closed 2026-10-28 (Will: A)** — load-bound. It fails only in a full run on
+a loaded machine, and passes alone 180 of 180. Reopen it if it fails on a quiet
+machine.
 
 ### `[x]` ✅ 393 — BUG: a `fetch: "server"` field does not light its grid heading
 
@@ -11824,7 +11828,7 @@ the-package-surface, weight. **✅ Q2 done 2026-10-28 (Will: yes):** `spoofRemot
 `src/core/data/fake-remote.ts`, and its options are `FakeRemoteOptions`. No alias
 (`T-a-rename-drops-the-old-name`); Demos and Gallery moved in the same change.
 
-### `[~]` 🚧 288 — Phase 6: one copy of each data helper
+### `[x]` ✅ 288 — Phase 6: one copy of each data helper
 
 **🚧 Steps 1–8a done 2026-10-15**, one commit each, each safe by reading. A
 read-only agent planned it; a second checked the plan against the code. The
@@ -11864,7 +11868,13 @@ row as "has text or picks", blind to its op, and that keeps a half-typed range
 (one end) in the draft, where `rowAnswered` would drop the first click of a
 date range. My pick: drop 9.
 
-### `[~]` 🚧 287 — Phase 6: split `data-source.ts` along its seams
+**✅ Closed 2026-10-28 (Will: yes).** 8b and 9 are dropped, for the reasons
+above. 11 is dropped too: the walk key is a cache guard, and a version counter
+that one edit forgets to bump draws old counts with no error, where the text of
+the applied Query is small. The 13 `JSON.stringify` calls left in
+`data-source.ts` are cache keys, not filter compares.
+
+### `[x]` ✅ 287 — Phase 6: split `data-source.ts` along its seams
 
 **🚧 Steps 1–5a and 6 done 2026-10-15**, one commit each, each safe by reading.
 A read-only agent planned it; a second checked the plan against the code.
@@ -11893,6 +11903,9 @@ left: the walk reads about 25 of the source's parts (its age, binding, catalogue
 sets, defaults, parts, held rows, compile, requery…), so a `CountHost` would be
 25 hooks to move 280 lines. My pick: leave it until the walk changes for a reason
 of its own.
+
+**✅ Closed 2026-10-28 (Will: yes)** — 5b is left until the walk changes for a
+reason of its own.
 
 ### `[x]` ✅ 286 — Phase 6: the bench
 
