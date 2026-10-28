@@ -2154,10 +2154,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   allowFields(list: AllowList): void {
     this.#allowedFields = list ?? null;
-    // RENDER FIRST: it replaces the chip run, and the Add button's menu is
-    // stamped into that same DOM. The other two callers order it this way too.
+    // The run, then the Add menu it ends with. TRAP T-the-add-menu-is-the-whole-list
     this.#render();
-    this.#renderAvailable();
   }
 
   /** The fields this bar may offer, or null for all. */
@@ -2297,7 +2295,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A field lands at the end.
     this.#filters = [...this.#filters, ...added];
     this.#render();
-    this.#renderAvailable();
     if (silent) return;
     // ONE event for the batch — a host re-queries once. TRAP T-add-menu-batches
     this.emit('filter-add', { ids: added.map((f) => f.id), filters: added, holds: this.heldFields });
@@ -2327,7 +2324,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const { active: _active, ...clean } = def!;
     this.#available = [...this.#available, clean as FilterDef];
     this.#render();
-    this.#renderAvailable();
     if (silent) return;
     this.emit('filter-remove', { id, filter: clean, holds: this.heldFields });
   }

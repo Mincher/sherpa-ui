@@ -66,7 +66,7 @@ with a failing test where it is a bug, before it is changed.
 | U9 | ❓ | conflict | Apply with one end of a date range: a heading clears the field, a chip filters that day | sherpa-data-grid.ts `#readColumnFilter`; filter-state.ts |
 | U10 | 2 | complex | one menu change redraws the chip's face about 5 times (`#state`, `#writeTip`, `#syncEmpty`) | sherpa-quick-filter.ts `#applySelection` |
 | U11 | 2 | complex, high risk | four held-state layers in the toolbar, older than the menu's own early state; each to be removed only with proof | toolbar `#held`, `#heldDraws`, `#pendingAnswers`, `#painted` |
-| U12 | 2 | complex | add, remove and allow render the bar twice; `drawScope` can render it 5+ times | toolbar `allowFields`, `#addFilters`, `#removeFilter`, `drawScope` |
+| U12 | ✅ half 2: add, remove and allow draw once (render ends with the Add list); `drawScope`'s batching still open | complex | add, remove and allow render the bar twice; `drawScope` can render it 5+ times | toolbar `allowFields`, `#addFilters`, `#removeFilter`, `drawScope` |
 | U13 | 2 | duplicate | the Filters menu is built two ways (bar, column); the bar runs chip code on its Edit button | toolbar; toolbar-column.ts |
 | U14 | 2 | duplicate | two `SavedSets` and two headers per toolbar; `data-saveable` redraws only the bar's | toolbar; toolbar-column.ts |
 | U15 | ✅ 1 | conflict | a column's Reset is enabled by scopes it does not reset | provider-page.ts `data-nothing-to-reset` |
