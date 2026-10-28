@@ -8041,6 +8041,7 @@ in the Query that could only come back matching nothing (TODO 465).
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `test/unit/a-let-go-pick-leaves-the-draft-alone.test.mjs`
+- Site: `test/unit/a-pick-that-matches-is-never-ruled-out.test.mjs`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`

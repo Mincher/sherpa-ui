@@ -348,7 +348,13 @@ export function walkInOrder(rows: readonly Row[], plan: WalkPlan): Walk {
         if (!inForce(j) || !step.picks?.length || !step.less || !step.field) continue;
         const ruled = step.ruler === 'here' ? scan.tally[j] : step.ruler === 'start' ? scan.start.get(step.field) ?? new Set() : null;
         const offered = step.offers && narrowedAt(j) ? scan.tally[j] : null;
-        const ruledOut = step.picks.filter((k) => (ruled && !holdsKey(ruled, k)) || (offered && !holdsKey(offered, k)));
+        /* Over the rows that reach it, a pick matches by its OWN clause — the
+           filter's own test, so a number on a banded field and a blank count
+           too; the key tally knows bands only, and no blank. TODO 518 */
+        const own = new Map((step.each ?? []).map(([key], k) => [key, scan.each[j]![k]!] as const));
+        const holdsHere = (keys: Set<string>, k: string): boolean => (own.has(k) ? own.get(k)! > 0 : holdsKey(keys, k));
+        const ruledOut = step.picks.filter((k) => (ruled && !(step.ruler === 'here' ? holdsHere(ruled, k) : holdsKey(ruled, k)))
+          || (offered && !holdsHere(offered, k)));
         /* Every pick ruled out: the filter STAYS in force — its chip active, its
            count 0 — so the reader sees it, and clears it or turns it off.
            Will, 2026-10-20. TRAP T-a-ruled-out-value-is-greyed */
