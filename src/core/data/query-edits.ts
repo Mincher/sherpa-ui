@@ -31,7 +31,6 @@
  * - takeSet — A saved filter TAKEN: the screen then matches it exactly; every other scope's filters go, unless it is local.
  * - dropSet — A saved filter TAKEN OFF: the scopes it names lose their filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
- * - answersOf — A scope's answers, as one comparable value.
  */
 import { answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
@@ -439,10 +438,4 @@ export function answerIn(query: Query, field: string): FieldReading | null {
     if (held) return answerOf(held);
   }
   return null;
-}
-
-/** A scope's answers, as one comparable value. */
-export function answersOf(scope: ScopeQuery | undefined): unknown {
-  if (!scope) return null;
-  return Object.fromEntries(Object.entries(scope.readings).map(([f, r]) => [f, answerOf(r)]));
 }

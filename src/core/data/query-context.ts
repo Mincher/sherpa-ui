@@ -77,7 +77,7 @@ import {
   type Arrangement, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
-  answerIn, answersOf, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
+  answerIn, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
   copyHolds, sameField, sameScope, scopeEntry, setCameFrom, setReading,
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
@@ -409,13 +409,17 @@ export class QueryContext extends EventTarget {
     return !sameReading(answerIn(this.#live.applied, field), answerIn(this.#live.draft, field));
   }
 
-  /** Has anything in this scope — or in any scope — been changed and not applied? */
+  /** Has anything in this scope — or in any scope — been changed and not applied?
+   *  Field by field, as `pending` reads: the order they were written in is no change. */
   dirty(scope?: string): boolean {
     if (!this.waiting()) return false;
-    const ids = scope ? [scope]
-      : [...new Set([...Object.keys(this.#live.applied.scopes), ...Object.keys(this.#live.draft.scopes)])];
-    return ids.some((id) => JSON.stringify(answersOf(this.#live.applied.scopes[id]))
-      !== JSON.stringify(answersOf(this.#live.draft.scopes[id])));
+    const { applied, draft } = this.#live;
+    const ids = scope ? [scope] : [...new Set([...Object.keys(applied.scopes), ...Object.keys(draft.scopes)])];
+    return ids.some((id) => {
+      const was = applied.scopes[id]?.readings ?? {};
+      const now = draft.scopes[id]?.readings ?? {};
+      return [...new Set([...Object.keys(was), ...Object.keys(now)])].some((f) => !sameReading(was[f], now[f]));
+    });
   }
 
   /**
