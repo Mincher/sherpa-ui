@@ -5953,6 +5953,7 @@ This is the `data-locked` half of the state-ownership rule: `data-<thing>` in,
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-quick-filter.spec.ts`
 
 **A PERSISTENT chip is a locked chip.** "Always on, and its body does not flip
 it" — the toolbar's own words at its `data-persistent` site — is exactly what
@@ -5968,8 +5969,8 @@ Measured with a real mouse click on a persistent chip with no menu: **two
 off, which is a different fact from who owns its state.
 
 **366 step 22: in a BOUND bar every chip whose state the source keeps is
-locked** — each field chip and Group and Sort. Its click and its menu ask; the
-source draws it back. A toggle answers no field, so nothing would ever draw
+locked** — each field chip and Group and Sort. Its click, its menu and its
+condition rows ask (a row too, TODO 518); the source draws it back. A toggle answers no field, so nothing would ever draw
 it: it stays unlocked.
 
 ### T-empty-flag-needs-rows-to-count

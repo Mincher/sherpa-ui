@@ -1168,6 +1168,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** A condition row changed: re-derive the face from it. */
   #onCondition = (): void => {
+    // A locked chip's owner hears the row too, and says: only the face redraws. TODO 518
+    if (this.#drawn()) return this.refresh();
     this.#applySelection(this.menu?.values ?? []);
   };
 

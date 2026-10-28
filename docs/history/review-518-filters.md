@@ -56,7 +56,7 @@ with a failing test where it is a bug, before it is changed.
 | id | phase | kind | finding | sites |
 |---|---|---|---|---|
 | U1 | ❓ | conflict | the panel's Sites menu picks the PARENT when every site is ticked; 369 Q1 A says it must not, and the bar's tree and the grid heading keep paths | sherpa-quick-filter.ts `#onKidsChange`; tree-picks.ts |
-| U2 | 1 | writers | a locked chip turns itself on when a condition row changes (`#onCondition` → `#applySelection`, no lock check) | sherpa-quick-filter.ts |
+| U2 | ✅ 1 | writers | a locked chip turns itself on when a condition row changes (`#onCondition` → `#applySelection`, no lock check) | sherpa-quick-filter.ts |
 | U3 | 2 | writers | the toolbar writes the chip's `data-current` again after the chip did; dates go another way | toolbar `#onChipChange`, `#onDatePicked` |
 | U4 | 2 | writers | the grid writes a heading chip's `data-condition`, which the chip writes itself | sherpa-data-grid.ts `#lightFilterChip` |
 | U5 | ✅ 1 | conflict | `onConnect` writes a pick count over the results badge; the html doc still describes the old badge | sherpa-quick-filter.ts onConnect |

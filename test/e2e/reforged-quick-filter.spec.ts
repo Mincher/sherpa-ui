@@ -863,3 +863,24 @@ test('a chip with two picks shows its results on its badge, never a count of its
   expect(r.before).not.toBe('2');
   expect(r.after).toBe('7');
 });
+
+test('a LOCKED chip never turns itself on from a condition row: its owner says', async ({ page }) => {
+  // TODO 518 (U2). TRAP T-locked-chip-relays-and-nothing-else
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-label', 'Owner');
+    el.setAttribute('data-menu', '');
+    el.setAttribute('data-locked', '');
+    el.innerHTML = '<sherpa-menu slot="menu" data-type="filter" data-advanced data-select="multiple"><label><input type="checkbox" value="Ravi" /> Ravi</label></sherpa-menu>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const menu = el.querySelector('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; mode: string; conditions: unknown[] };
+    await menu.rendered;
+    menu.mode = 'advanced';
+    menu.conditions = [{ op: 'contains', text: 'Ra' }];
+    menu.dispatchEvent(new CustomEvent('condition-change', { bubbles: true, composed: true }));
+    await window.__settled();
+    return { on: el.hasAttribute('data-current'), mode: menu.mode };
+  });
+  expect(r).toEqual({ on: false, mode: 'advanced' });
+});
