@@ -900,3 +900,21 @@ test('an Advanced answer given before the menu draws turns its chip on — a lis
   });
   expect(r).toBe(true);
 });
+
+test('a section value on and ruled out says "no matches", as its menu row does (TODO 518 U6)', async ({ page }) => {
+  // After 512 a pick set aside is let go: one still on is every pick ruled out, in force.
+  const tip = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('slot', 'values');
+    el.className = 'value';
+    el.setAttribute('data-label', 'Pro');
+    el.setAttribute('data-locked', '');
+    el.setAttribute('data-current', '');
+    el.setAttribute('data-unavailable', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await window.__settled();
+    return el.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'];
+  });
+  expect(tip).toBe('Limited by the filters before it: no matches.');
+});

@@ -822,7 +822,9 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #tipText(values: string): string {
     // A greyed chip says WHY, in a few words. Will, TODO 176.
-    if (this.hasAttribute('data-unavailable')) return this.current && !this.#isKey() ? SET_ASIDE : RULED_OUT;
+    /* A section's value on and ruled out is every pick ruled out — one beside a
+       pick that stands is let go (512) — so in force: "no matches", as its row says. TODO 518 */
+    if (this.hasAttribute('data-unavailable')) return this.current && !this.#isKey() && this.slot !== 'values' ? SET_ASIDE : RULED_OUT;
     if (this.hasAttribute('data-unused')) return unusedHere(this.dataset['label']);
     if (this.hasAttribute('disabled')) return NOT_AVAILABLE;
     if (this.hasAttribute('data-superseded')) {
