@@ -334,18 +334,18 @@ export class DataSource extends EventTarget {
     // An arrangement is its own scope's to reset, never another's. TODO 518
     const { sort, group, scope: arrangedAt } = this.#arrangement();
     if ((sort.length || group) && (scope == null || (arrangedAt != null && ids.includes(arrangedAt)))) return true;
-    const facts = this.#compileFacts();
-    return ids.some((id) => {
-      const at = this.#applied.scopes[id];
-      return !!at && Object.entries(at.readings).some(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading));
-    });
+    return this.#filtering(ids) > 0;
   }
 
   /** How many fields FILTER, by their applied readings, in these scopes — and
    *  every chart's own, with `parts` — or in every scope. Will, TODO 436 */
   appliedCount(scopes?: readonly string[], parts = false): number {
+    return this.#filtering(scopes ? [...scopes, ...(parts ? this.#narrowing.keys() : [])] : Object.keys(this.#applied.scopes));
+  }
+
+  /** How many applied readings in these scopes filter: the one test both ask. */
+  #filtering(ids: Iterable<string>): number {
     const facts = this.#compileFacts();
-    const ids = scopes ? [...scopes, ...(parts ? this.#narrowing.keys() : [])] : Object.keys(this.#applied.scopes);
     let n = 0;
     for (const id of new Set(ids)) {
       const at = this.#applied.scopes[id];
