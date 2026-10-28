@@ -48,7 +48,7 @@ with a failing test where it is a bug, before it is changed.
 | D21 | 2 | two shapes | picks stored as keys by `#write`, as raw values by `#select`; bindSelection reads with `String` | query-context.ts; bind-selection.ts |
 | D22 | no change: not shown — a source that knows a field only by its rows holds no value list, so the answer is the same | conflict | the context's `has` is the catalogue's narrow one; with two sources a field known by its values falls to member 0 | data-source.ts; query-context.ts `#knows` |
 | D23 | ✅ 2 | duplicate | `answered()` and `appliedCount()` repeat one predicate | data-source.ts |
-| D24 | 2 | dead | `Walk.ends`, `BoundControl.superseded`/`report`, public `pathOf`/`sameRow`; `search-change` has no emitter | walk.ts, data-source-types.ts, bind-source.ts |
+| D24 | ✅ 2: `BoundControl.superseded` goes. KEPT: `report` (the provider calls a bar's), `search-change` (a public steer an app control may send), `Walk.ends` (the tier test reads it), `pathOf`/`sameRow` (small; private gains little) | dead | `Walk.ends`, `BoundControl.superseded`/`report`, public `pathOf`/`sameRow`; `search-change` has no emitter | walk.ts, data-source-types.ts, bind-source.ts |
 | D25 | ✅ 2 | stale | four comments | query-edits.ts, store.ts, filter-face.ts, query.ts |
 
 ## U — the filter UI
