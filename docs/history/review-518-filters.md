@@ -59,7 +59,7 @@ with a failing test where it is a bug, before it is changed.
 | U2 | 1 | writers | a locked chip turns itself on when a condition row changes (`#onCondition` → `#applySelection`, no lock check) | sherpa-quick-filter.ts |
 | U3 | 2 | writers | the toolbar writes the chip's `data-current` again after the chip did; dates go another way | toolbar `#onChipChange`, `#onDatePicked` |
 | U4 | 2 | writers | the grid writes a heading chip's `data-condition`, which the chip writes itself | sherpa-data-grid.ts `#lightFilterChip` |
-| U5 | 1 | conflict | `onConnect` writes a pick count over the results badge; the html doc still describes the old badge | sherpa-quick-filter.ts onConnect |
+| U5 | ✅ 1 | conflict | `onConnect` writes a pick count over the results badge; the html doc still describes the old badge | sherpa-quick-filter.ts onConnect |
 | U6 | 1 | conflict | a value chip and a menu row give different reasons for one ruled-out value; `available: false` is refused in the menu, not on the chip | filter-host.ts `limitField`; sherpa-menu.ts |
 | U7 | 1 | duplicate | "answered" six ways in the UI; a number or list chip given an Advanced reading before its menu draws is switched off | sherpa-quick-filter.ts `reading` setter; sherpa-data-grid.ts `answersAnything` |
 | U8 | 2 | duplicate | the grid writes its own filter label, unlike the chip's `filterFace`; nothing reads it | sherpa-data-grid.ts `#columnFilterLabel` |

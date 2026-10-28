@@ -188,7 +188,6 @@ export class SherpaQuickFilter extends SherpaElement {
     if (initial.length) {
       this.#syncLabelForSelection(initial);
       this.#syncCountTip(initial);
-      if (initial.length > 1) this.set('data-count', String(initial.length));
     } else {
       /* …and a TYPED answer, which ticks nothing — asked once its menu has
          rendered; its row remembers its op, so it reads at once. It only ever

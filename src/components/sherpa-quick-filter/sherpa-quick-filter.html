@@ -41,14 +41,9 @@
     aria-label      the name of a chip that shows no label. Its tooltip says it.
                     TRAP T-a-chip-says-its-own-answer
     data-indicator  show the leading status dot (Figma "Indicator (atom)", opt-in)
-    data-count      leading count chip (shown when present). A menu sets it
-                    only at TWO or more picked values — at one the label already
-                    names the value, so a "1" badge would be noise.
-                    Hovering the badge reveals .count-tip ABOVE it, listing the
-                    chosen values. The bubble is a local copy of the
-                    sherpa-tooltip look rather than a nested instance: the badge
-                    lives in this shadow root, so a light-DOM wrapper component
-                    cannot reach it. Reveal is pure CSS on .count-wrap:hover.
+    data-count      written BY the chip: its RESULTS, the rows its answer
+                    matches, once its host tells it `results` — never a count of
+                    its picks. TODOs 60, 123
     data-condition  written BY the chip: simple | advanced — which condition
                     it holds, absent when it holds none. No colour follows
                     it: an Advanced chip is active, as a Simple one.

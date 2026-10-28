@@ -841,3 +841,25 @@ test('a section whose every value is hidden says why, in their place', async ({ 
   expect(r.spent).toEqual({ text: 'Limited by the filters before it: no matches.', shown: true });
   expect(r.after).toEqual({ text: '', shown: false });
 });
+
+test('a chip with two picks shows its results on its badge, never a count of its picks', async ({ page }) => {
+  // TODO 518: onConnect wrote the pick count over the results. TODO 60, 123
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void>; results: number | null };
+    el.setAttribute('data-label', 'Region');
+    el.setAttribute('data-menu', '');
+    el.innerHTML = `<sherpa-menu slot="menu" data-heading="Region" data-select="multiple">
+      <label><input type="checkbox" value="emea" checked /> EMEA</label>
+      <label><input type="checkbox" value="apac" checked /> APAC</label>
+      <label><input type="checkbox" value="amer" /> AMER</label></sherpa-menu>`;
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await window.__settled();
+    const before = el.getAttribute('data-count');
+    el.results = 7;
+    await window.__settled();
+    return { before, after: el.getAttribute('data-count') };
+  });
+  expect(r.before).not.toBe('2');
+  expect(r.after).toBe('7');
+});

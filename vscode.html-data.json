@@ -2952,7 +2952,7 @@
         },
         {
           "name": "data-count",
-          "description": "leading count chip (shown when present). A menu sets it only at TWO or more picked values — at one the label already names the value, so a \"1\" badge would be noise. Hovering the badge reveals .count-tip ABOVE it, listing the chosen values. The bubble is a local copy of the sherpa-tooltip look rather than a nested instance: the badge lives in this shadow root, so a light-DOM wrapper component cannot reach it. Reveal is pure CSS on .count-wrap:hover."
+          "description": "written BY the chip: its RESULTS, the rows its answer matches, once its host tells it `results` — never a count of its picks. TODOs 60, 123"
         },
         {
           "name": "data-current",
