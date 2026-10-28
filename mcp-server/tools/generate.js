@@ -1,7 +1,8 @@
 /**
  * Generate tools — thin wrappers over scripts/lib/generation/*.
  *
- *   scaffold_def  — a starter def with the right shape (schemas/component.v1.json)
+ *   scaffold_def  — a starter def with the right shape. A def is the MCP's working
+ *                   form of a component, made from its spec; a raw spec is not one
  *   validate_def  — run every design-system rule; returns errors + warnings
  *   compile_def   — def → { ts, html, css }
  *   token_for     — which Core token to bind for a hardcoded property=value (the meticulous rule)
@@ -210,7 +211,7 @@ export function register(server) {
     {
       title: "Scaffold a Component Def",
       description:
-        "Return a starter def matching schemas/component.v1.json — the right skeleton for the category: a control or a container gets real Style-tier tokens for its surface, border and content, so a status pin re-points them. Edit the TODOs, then validate_def → compile_def.",
+        "Return a starter def — the right skeleton for the category: a control or a container gets real Style-tier tokens for its surface, border and content, so a status pin re-points them. Edit the TODOs, then validate_def → compile_def. A def is the MCP's working form of a component, made from its spec (<name>.component.json): read a built one from sherpa://def/{name}. A raw spec is not a def.",
       inputSchema: {
         name: z.string().describe("Component element name (sherpa-<kebab>, e.g. sherpa-badge)"),
         category: z.enum(["control", "container", "content", "data", "nav", "chart"])
@@ -238,7 +239,7 @@ export function register(server) {
     {
       title: "Validate a Component Def",
       description:
-        "Check a def against the design-system rules it can check (docs/DEF-TO-FIGMA-BUILD-RULES.md): its name and shape; nested components are real ones (Rule 1); every token name is a real token in tokens.css or the component's projected region (Rule 8); owned buttons set a size (Rule 6). Token ROLE and scope are not checked. Returns errors (must fix) + warnings.",
+        "Check a def against the design-system rules it can check (docs/DEF-TO-FIGMA-BUILD-RULES.md): its name and shape; nested components are real ones (Rule 1); every token name is a real token in tokens.css or the component's projected region (Rule 8); owned buttons set a size (Rule 6). Token ROLE and scope are not checked. Returns errors (must fix) + warnings. A def is the MCP's working form of a component, made from its spec (<name>.component.json): read a built one from sherpa://def/{name}. A raw spec is not a def.",
       inputSchema: {
         def: z.string().describe("The component def as a JSON string (the shape loadDef returns from <name>.component.json)"),
       },
@@ -268,7 +269,7 @@ export function register(server) {
     {
       title: "Compile a Def to Code",
       description:
-        "Compile a def to its three component files (TS / HTML / CSS). Needs an `anatomy` block. The compiler is a scaffolder, not a replicator — hand-finish the CSS after (hex fallbacks, edge-case rules).",
+        "Compile a def to its three component files (TS / HTML / CSS). Needs an `anatomy` block. The compiler is a scaffolder, not a replicator — hand-finish the CSS after (hex fallbacks, edge-case rules). A def is the MCP's working form of a component, made from its spec (<name>.component.json): read a built one from sherpa://def/{name}. A raw spec is not a def.",
       inputSchema: {
         def: z.string().describe("The component def as a JSON string (must carry an `anatomy` block)"),
       },

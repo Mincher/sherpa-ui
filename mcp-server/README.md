@@ -72,11 +72,16 @@ source — does this name exist — from the generated `tokens.css`.
 
 | Tool | Arguments | Answers |
 |---|---|---|
-| `scaffold_def` | `name`, `category` | A starter spec with the right shape for its category |
+| `scaffold_def` | `name`, `category` | A starter def with the right shape for its category |
 | `validate_def` | `def` | Every design-system rule, checked |
-| `compile_def` | `def` | Spec → TS + HTML + CSS |
+| `compile_def` | `def` | Def → TS + HTML + CSS |
 | `token_for` | `property`, `value` | Which token resolves to this pixel value |
 | `scaffold_app` | `name?` | A new app as files — one folder, no build; what `npm create sherpa-ui` writes |
+
+A **def** is the MCP's working form of a component — `name`, `props`, `events`,
+`figma` — made from its spec, the DTCG-dialect `<name>.component.json`. Read a
+built one from `sherpa://def/{name}`. A raw spec is not a def: `validate_def`
+fails it, and `compile_def` cannot build from it.
 
 ### Verify — check a built one · `tools/verify.js`
 
@@ -143,7 +148,7 @@ its example and its stories. `SHERPA_GALLERY_URL` points it at another.
 | `sherpa://data-rules` | What Sherpa expects of your data — the row shape, the filter grammar, where validation belongs |
 | `sherpa://app-guide` | How to build an app on Sherpa, step by step |
 | `sherpa://rules` | The def→Figma build rules, plus the component spec schema |
-| `sherpa://def/{name}` | One component's def, read from its `.component.json` |
+| `sherpa://def/{name}` | One component's def, made from its `.component.json` |
 | `sherpa://component/{name}/ts` · `/html` · `/css` | The shipped source |
 
 ## Prompts

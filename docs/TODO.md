@@ -69,7 +69,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
 | ✅ | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
 | ✅ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B. DONE 2026-10-27: a scope arranges when a PAGE of rows is drawn in it (`pagedIn`: a bind given `rows: 'page'`, not steer-only), never because a grid or a list is; `shows` / `ScopeShows` / `DataAsk.shows` are gone from the asks, the binds and `describe()`, which names a scope's component by its tag only. The colour words are 514 | refactor |
-| 🚧 | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ✅ | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
 | ✅ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one. Will, 2026-10-27: "Leave 339" — the file stays as it is; closed with nothing done | figma |
 | ✅ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate. Done 2026-10-27: `tsconfig.tests.json` maps `/dist/*` to the source (not `tsconfig.json`: Playwright reads that one and would rewrite the imports a spec hands the browser); 261 errors to 0 across 30 specs — casts, unused helpers, a stale `await src.ready`, a fallback import of a file that never existed; `npm run type-check:tests`, ~3s, in the pre-commit hook | tests |
 | | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
@@ -11295,7 +11295,7 @@ copyright holder and the year.
 contributors" — in sherpa-ui and in `mcp-server/` (npm ships a root LICENSE in
 every package, whatever `files` lists). The README points to it.
 
-### `[~]` 🚧 293 — Phase 8.1: the doc set
+### `[x]` ✅ 293 — Phase 8.1: the doc set
 
 The plan's §8.1. Part A: a TRAPS index by area, made and gated by
 check:traps; TODO's head made true; PRINCIPLES' open work moved here; the four
@@ -11358,8 +11358,17 @@ part; a second checked each plan against the files.
   they name PRINCIPLES 18 and 19.
 - **✅ Step 5, 2026-10-28 (Will: A):** the generate-sherpa-component skill is
   removed; the MCP's README and `server.js` no longer name it.
-- **Waits:** step 4 (the MCP's def-named tools renamed to today's spec names —
-  needs a test run, and names for Will). Found reading: 332–336.
+- **✅ Step 4, 2026-10-28 — B, not A.** Will picked A (rename the `*_def` tools to
+  `*_spec`), but reading them showed A's premise was wrong: a def is NOT an old
+  name for the spec. It is the MCP's working form of a component (`name`,
+  `props`, `events`, `figma`), made from its DTCG-dialect spec by `specToDef`; a
+  raw spec fails `validate_def` (no `name`) and `compile_def` throws on it, and
+  `sherpa://def/{name}` serves the def. So the names stay, and each tool, the
+  README (which called its output a "spec") and `server.js` say what a def is
+  and where to read one. `check:mcp-pack`: 19 tools, 267 resources, 3 prompts,
+  0 failures. Found reading: 332–336.
+
+**✅ Done 2026-10-28.**
 
 ### `[x]` ✅ 332 — TOOLING: the MCP server's version
 

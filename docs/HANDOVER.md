@@ -189,5 +189,5 @@ readable profile.
 
 ## Waiting on Will (❓ and looks)
 
-293 step 4 (the MCP's `*_def` tool names), and a look by eye at 323 (the
-sparkline's seams). 2026-10-28.
+Nothing, 2026-10-28. Waiting by Will's choice: 392 (a remote tiered store's
+read on open) and 364 (one tooltip system, much later).
