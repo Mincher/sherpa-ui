@@ -8684,7 +8684,7 @@
                   }
                 }
               ],
-              "description": "addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a panel's Add and the bar's own Add cannot drift."
+              "description": "addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a host's Add and the bar's own Add cannot drift."
             },
             {
               "kind": "method",
@@ -8697,7 +8697,7 @@
                   }
                 }
               ],
-              "description": "removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a filter panel draws its own Remove and cannot reach this shadow root."
+              "description": "removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a host draws its own Remove and cannot reach this shadow root."
             },
             {
               "kind": "method",
@@ -9057,7 +9057,7 @@
             },
             {
               "name": "data-failed",
-              "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
+              "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411",
               "type": {
                 "text": "boolean"
               }
@@ -9164,7 +9164,7 @@
             },
             {
               "name": "data-pending",
-              "description": "changed, not yet applied: the warning look.",
+              "description": "changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
               "type": {
                 "text": "boolean"
               }

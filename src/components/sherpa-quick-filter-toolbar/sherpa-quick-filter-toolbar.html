@@ -7,8 +7,8 @@
   Per-filter flags:
     data-reset-on-populate  populate() REPLACES chips; live picks do not survive.
     data-bounds  CSS selector the chip's menu must stay inside (else viewport).
-    kind         values (default) | number | date — number/date lead with a
-                 Range switch.
+    kind         worked out from the filter (core/ui/filter-kind.ts) — a list,
+                 a number, a date, Group or Sort; a date leads with a Range switch.
     removable    opt-in; the row DELETES the chip.
     persistent   always on, never removable, defaults to its FIRST option.
     commit       opt-in Apply/Cancel footer; chips auto-apply by default.

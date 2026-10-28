@@ -48,7 +48,6 @@ export function prune(query: Query): void {
     // A scope switched off is kept: its Switch is still OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off
     // …and one that arranges the rows keeps its sort. 366 step 8
     // …and one that keeps an answer the View holds over it. D2 A
-    // …and one with a preset on. TODO 493
     if (!scope.holds.length && !Object.keys(scope.readings).length && !scope.suspended
       && !arranging(scope) && !scope.superseded) {
       Reflect.deleteProperty(query.scopes, id);

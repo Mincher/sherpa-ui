@@ -46,14 +46,14 @@ export interface FilterFace {
   tip: string;
 }
 
+/** What a list with every value ticked says. */
+const ALL = 'All';
+
 /**
  * How one field's state READS, for any control that draws it. `eq` shows no
  * badge — a mark on every ordinary control is noise.
  * TRAP T-one-state-per-filtered-field
  */
-/** What a list with every value ticked says. */
-const ALL = 'All';
-
 export function filterFace(state: FilterState): FilterFace {
   /* The answer IN FORCE: Advanced speaks for its first row, Simple for its
      picks — the two can differ now both are kept. TRAP T-both-answers-are-kept */

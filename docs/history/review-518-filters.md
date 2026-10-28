@@ -49,7 +49,7 @@ with a failing test where it is a bug, before it is changed.
 | D22 | no change: not shown — a source that knows a field only by its rows holds no value list, so the answer is the same | conflict | the context's `has` is the catalogue's narrow one; with two sources a field known by its values falls to member 0 | data-source.ts; query-context.ts `#knows` |
 | D23 | 2 | duplicate | `answered()` and `appliedCount()` repeat one predicate | data-source.ts |
 | D24 | 2 | dead | `Walk.ends`, `BoundControl.superseded`/`report`, public `pathOf`/`sameRow`; `search-change` has no emitter | walk.ts, data-source-types.ts, bind-source.ts |
-| D25 | 2 | stale | four comments | query-edits.ts, store.ts, filter-face.ts, query.ts |
+| D25 | ✅ 2 | stale | four comments | query-edits.ts, store.ts, filter-face.ts, query.ts |
 
 ## U — the filter UI
 
@@ -79,7 +79,7 @@ with a failing test where it is a bug, before it is changed.
 | U22 | — | writers, unsure | `clearAll` empties locked chips itself; the column's Reset only asks | toolbar `clearAll`; toolbar-column.ts |
 | U23 | 2 | writers | the chip keeps its own copy of the menu's `all` | sherpa-quick-filter.ts |
 | U24 | — | latent | two ways to read a bar's scope (own vs inherited `data-scope`) | provider-mode.ts; sherpa-provider.ts |
-| U25 | 2 | stale | doc lines, a "ONE door for both hosts" left from the panel, `filter-panel` in check-traps | several |
+| U25 | ✅ 2 | stale | doc lines, a "ONE door for both hosts" left from the panel, `filter-panel` in check-traps | several |
 
 ## R — each component alone
 

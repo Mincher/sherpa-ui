@@ -1,6 +1,6 @@
 /**
- * filter-host.ts — what a filter bar and the filter panel both read off their
- * own host: the arrangement its source writes, and the fields that wait.
+ * filter-host.ts — what a filter bar, in a row or a column, reads off its own
+ * host: the arrangement its source writes, and the fields that wait.
  *
  * Map:
  * - organiseOptions — A Group or Sort chip's rows: each column, the one in force ticked.
@@ -42,7 +42,7 @@ export function pendingFields(host: HTMLElement, list: 'pending' | 'failed' = 'p
 /** One field's chips and menus — a bar's one chip, or a panel's every chip of
  *  the field — told it waits for Apply (`warning`, and Discard on) and whether
  *  its read failed (`critical`). Where it says which chips its draft `changed`,
- *  only those read as pending. ONE door for both hosts. TODO 424 ·
+ *  only those read as pending. TODO 424 ·
  *  TRAP T-a-pending-chip-reads-as-a-warning */
 export function markField(
   chips: Iterable<Element | null | undefined>, menus: Iterable<Element | null | undefined>,
@@ -59,7 +59,7 @@ export function markField(
 /** One field's value chips — a panel run's — and its menus, told what the
  *  filters before it leave and what its chain offers. A value they rule out
  *  reads inactive and is refused, on or off; one the chain does not offer goes,
- *  unless ticked (Will, 2026-10-20). ONE door for both hosts. TODO 424 ·
+ *  unless ticked (Will, 2026-10-20). TODO 424 ·
  *  TRAP T-a-ruled-out-value-is-greyed */
 export function limitField(
   values: Iterable<HTMLElement>, menus: Iterable<SherpaMenu | null | undefined>,

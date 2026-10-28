@@ -474,14 +474,6 @@ export function filterTest(filter: Filter | undefined): (row: Row) => boolean {
   return () => false;
 }
 
-/** Compare for filtering, not sorting. TRAP T-loose-equal-is-case-insensitive */
-/**
- * ONE comparison rule for the whole system — the query and the UI must agree.
- *
- * LOOSE: `['plan','in',['free']]` matches a row holding `'Free'`. `valueSet`
- * is the set form, and is what a control usually wants.
- * TRAP T-one-comparison-rule-for-query-and-ui
- */
 /** A list's values as `looseEqual` reads them, worked out ONCE per list. */
 const listKeys = new WeakMap<readonly unknown[], { keys: Set<string>; nul: boolean; undef: boolean }>();
 
@@ -500,6 +492,12 @@ function inList(actual: unknown, list: readonly unknown[]): boolean {
   return known.keys.has(text(actual));
 }
 
+/**
+ * Compare for filtering, not sorting: ONE comparison rule for the whole system —
+ * the query and the UI must agree. LOOSE: `['plan','in',['free']]` matches a row
+ * holding `'Free'`; `valueSet` is the set form, what a control usually wants.
+ * TRAP T-loose-equal-is-case-insensitive · TRAP T-one-comparison-rule-for-query-and-ui
+ */
 function looseEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;

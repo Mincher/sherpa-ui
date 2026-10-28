@@ -32,7 +32,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-count` | text |  | written BY the chip: its RESULTS, the rows its answer matches, once its host tells it `results` — never a count of its picks. TODOs 60, 123 |
 | `data-current` | boolean | `false` | selected/on state |
 | `data-direction` | `asc` `desc` |  | asc \| desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten |
-| `data-failed` | boolean |  | its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning |
+| `data-failed` | boolean |  | its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 |
 | `data-full-value` | boolean |  |  |
 | `data-highlight` | boolean |  |  |
 | `data-icon` | text |  | start leading icon — an FA class list (Figma default is a funnel) |
@@ -48,7 +48,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-menu` | boolean | `false` | Figma State=menu — snap on the caret button |
 | `data-no-value` | boolean |  |  |
 | `data-open` | boolean |  |  |
-| `data-pending` | boolean |  | changed, not yet applied: the warning look. |
+| `data-pending` | boolean |  | changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning |
 | `data-persistent` | boolean |  | a SELECTOR rather than a toggle: always on, and never "empty". Set by [sherpa-quick-filter-toolbar](sherpa-quick-filter-toolbar.md) from a filter definition's `persistent` flag. The view chip is the case — you are always in SOME view, so the amber "on but filtering by nothing" state is one it cannot be in. |
 | `data-plain` | boolean |  |  |
 | `data-readonly` | boolean |  | a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter |

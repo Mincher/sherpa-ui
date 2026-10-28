@@ -2973,7 +2973,7 @@
         },
         {
           "name": "data-failed",
-          "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
+          "description": "its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411",
           "valueSet": "v"
         },
         {
@@ -3075,7 +3075,7 @@
         },
         {
           "name": "data-pending",
-          "description": "changed, not yet applied: the warning look.",
+          "description": "changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning",
           "valueSet": "v"
         },
         {

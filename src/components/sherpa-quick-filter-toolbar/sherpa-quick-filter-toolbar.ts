@@ -807,8 +807,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * setChipActive(id, on) — steer one ON/OFF chip: a toggle, or a chip the Switch turned off.
-   * SILENT, like every steer, so `report()` when it should be heard. A chip
+   * Steer one ON/OFF chip: a toggle, or a chip the Switch turned off. Its own,
+   * not a door. SILENT, like every steer, so `report()` when it should be heard. A chip
    * answered by its menu takes `setChipValues` or `setChipReading` instead.
    * TRAP T-a-silent-write-still-needs-a-way-to-report
    */
@@ -1982,7 +1982,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * addFilters([...ids]) — put offered filters on this bar, as the Add button
-   * does. The one door, so a panel's Add and the bar's own Add cannot drift.
+   * does. The one door, so a host's Add and the bar's own Add cannot drift.
    * TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
    */
   addFilters(ids: readonly string[]): void {
@@ -1991,8 +1991,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * removeFilter(id) — take one filter off this bar, as its menu's Remove
-   * does. The other half of `addFilters`, for the same reason: a filter panel
-   * draws its own Remove and cannot reach this shadow root.
+   * does. The other half of `addFilters`, for the same reason: a host draws its
+   * own Remove and cannot reach this shadow root.
    * TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
    */
   removeFilter(id: string): void {

@@ -187,8 +187,8 @@ export interface CompileFacts {
   /** A component's OWN scopes — its `data-where` — which are what it IS, not a
    *  chip: a field the View holds never sets them aside. TRAP T-a-component-default-outlives-a-view */
   fixed?: ReadonlySet<string>;
-  /** The picked values the filters BEFORE them rule out, as value keys: they stay
-   *  in the reading and leave the filter. TRAP T-a-ruled-out-value-is-greyed */
+  /** The picked values the filters BEFORE them rule out, as value keys: they
+   *  leave the filter, and then the reading (`letGo`). TRAP T-a-ruled-out-value-is-greyed */
   drop?: (scope: string, field: string) => readonly string[] | undefined;
   /** Is a scope this source's — no other source shows rows in it? Absent, every
    *  one is. The View's answers reach every source. TRAP T-a-source-compiles-only-what-it-has */

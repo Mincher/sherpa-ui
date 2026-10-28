@@ -138,8 +138,8 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `supersede(ids: readonly string[], appliedAt?: string)` | supersede([...ids]) — the VIEW now owns these fields. |
 | `report()` | report() — announce the bar with no request: its `values` and `active`, for a host that follows the View chip. Bound, each door already asked. |
 | `available(defs: FilterDef[])` | available([...]) — the filters the Add chip offers, over the populate() set. |
-| `addFilters(ids: readonly string[])` | addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a panel's Add and the bar's own Add cannot drift. |
-| `removeFilter(id: string)` | removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a filter panel draws its own Remove and cannot reach this shadow root. |
+| `addFilters(ids: readonly string[])` | addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a host's Add and the bar's own Add cannot drift. |
+| `removeFilter(id: string)` | removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a host draws its own Remove and cannot reach this shadow root. |
 | `groupSets(sets: readonly FilterSet[])` | groupSets([...]) — the scope's filter SETS: each set's chips are drawn together, in its order — plain chips, never grouped (Will, TODO 241). TODO 99 |
 | `drawScope(scope: ScopeDescription, live?: () => ScopeDescription)` | drawScope(scope, live) — draw what a scope holds, SILENTLY, from the description the panel is drawn each of: its chips and each field's answer. Nothing is reported — the source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it is left alone. |
 | `allowFields(list: AllowList)` | allowFields([...]) — the ONLY fields this bar may offer, or `null` for all. |

@@ -1357,13 +1357,13 @@
           "$type": "method",
           "name": "addFilters",
           "args": "ids: readonly string[]",
-          "description": "addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a panel's Add and the bar's own Add cannot drift."
+          "description": "addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one door, so a host's Add and the bar's own Add cannot drift."
         },
         {
           "$type": "method",
           "name": "removeFilter",
           "args": "id: string",
-          "description": "removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a filter panel draws its own Remove and cannot reach this shadow root."
+          "description": "removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a host draws its own Remove and cannot reach this shadow root."
         },
         {
           "$type": "method",
