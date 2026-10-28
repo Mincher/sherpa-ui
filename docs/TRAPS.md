@@ -1958,6 +1958,7 @@ Saved menu read it as they draw.
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-header.ts`
+- Site: `test/unit/a-reset-is-offered-for-its-own-scopes.test.mjs`
 
 ### T-a-value-before-the-first-render-is-held
 

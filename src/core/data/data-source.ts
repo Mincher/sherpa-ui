@@ -327,13 +327,15 @@ export class DataSource extends EventTarget {
     return arranged(at) === arranged(this.#applied);
   }
 
-  /** Is there anything a Reset would clear — in one scope, or any: a reading
-   *  that filters, or the rows arranged? TODO 231 */
-  answered(scope?: string): boolean {
-    const { sort, group } = this.#arrangement();
-    if (sort.length || group) return true;
+  /** Is there anything a Reset would clear — in one scope, these, or any: a
+   *  reading that filters, or the rows arranged there? TODO 231 */
+  answered(scope?: string | readonly string[]): boolean {
+    const ids = scope == null ? Object.keys(this.#applied.scopes) : typeof scope === 'string' ? [scope] : scope;
+    // An arrangement is its own scope's to reset, never another's. TODO 518
+    const { sort, group, scope: arrangedAt } = this.#arrangement();
+    if ((sort.length || group) && (scope == null || (arrangedAt != null && ids.includes(arrangedAt)))) return true;
     const facts = this.#compileFacts();
-    return (scope ? [scope] : Object.keys(this.#applied.scopes)).some((id) => {
+    return ids.some((id) => {
       const at = this.#applied.scopes[id];
       return !!at && Object.entries(at.readings).some(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading));
     });

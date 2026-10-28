@@ -69,7 +69,7 @@ with a failing test where it is a bug, before it is changed.
 | U12 | 2 | complex | add, remove and allow render the bar twice; `drawScope` can render it 5+ times | toolbar `allowFields`, `#addFilters`, `#removeFilter`, `drawScope` |
 | U13 | 2 | duplicate | the Filters menu is built two ways (bar, column); the bar runs chip code on its Edit button | toolbar; toolbar-column.ts |
 | U14 | 2 | duplicate | two `SavedSets` and two headers per toolbar; `data-saveable` redraws only the bar's | toolbar; toolbar-column.ts |
-| U15 | 1 | conflict | a column's Reset is enabled by scopes it does not reset | provider-page.ts `data-nothing-to-reset` |
+| U15 | ✅ 1 | conflict | a column's Reset is enabled by scopes it does not reset | provider-page.ts `data-nothing-to-reset` |
 | U16 | 2 | duplicate | about 18 near-identical provider setters | sherpa-provider.ts |
 | U17 | 2 | dead | `data-folded`, `menu-range-change`, `FilterDef.asChip`, three save rows in `FILTER_ACTIONS`, `markField`'s `drafting`, `close()`, `HeldFilter.appliedAt` | toolbar, sherpa-menu.ts, filter-def.ts, more-menu.ts, filter-host.ts, data-source.ts |
 | U18 | 2 | contract | props declared `kind: 'style'` that only JS reads; `data-filters-nothing` written but not declared | chip and toolbar props |

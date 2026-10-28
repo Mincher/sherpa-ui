@@ -429,10 +429,7 @@ export class ProviderPage {
     const source = this.#opened?.source;
     if (!source) return;
     for (const bar of this.#host.bars()) bar.setAttribute('data-applied', String(source.appliedCount([this.#host.scopeOf(bar) ?? ''])));
-    for (const panel of this.#host.panels()) {
-      const scopes = 'drawScope' in panel ? (panel.getAttribute('data-scope') ?? '').split(/\s+/).filter(Boolean) : undefined;
-      panel.setAttribute('data-applied', String(source.appliedCount(scopes, true)));
-    }
+    for (const panel of this.#host.panels()) panel.setAttribute('data-applied', String(source.appliedCount(scopesOf(panel), true)));
   }
 
   /** Tell each bar and panel whether its Resets would change nothing: then they
@@ -452,7 +449,8 @@ export class ProviderPage {
     for (const bar of this.#host.bars()) {
       bar.toggleAttribute('data-nothing-to-reset', !answered(this.#host.scopeOf(bar) ?? undefined));
     }
-    for (const panel of this.#host.panels()) panel.toggleAttribute('data-nothing-to-reset', !answered());
+    // A column resets its own scopes: only theirs offer it. TODO 518
+    for (const panel of this.#host.panels()) panel.toggleAttribute('data-nothing-to-reset', !opened.source.answered(scopesOf(panel)));
   }
 
   /** Draw every bar — or these — from its scope, as the source describes it:
@@ -758,6 +756,11 @@ export interface SharedStore {
 /** What a page keeps across a reload: the View, the Query applied, and —
  *  while a pick waits for Apply — the draft; while the App Context shares the
  *  View, its own View in both. Will, TODOs 410, 453 */
+/** A column's scopes, from its `data-scope` list. */
+function scopesOf(panel: Element): string[] {
+  return (panel.getAttribute('data-scope') ?? '').split(/\s+/).filter(Boolean);
+}
+
 function keptEntry(source: DataSource, view: string | undefined, own?: ScopeQuery): { view?: string; query: Query; draft?: Query } {
   const mine = (q: Query): Query => (own ? withView(q, own) : q);
   return { ...(view ? { view } : {}), query: mine(source.query.applied), ...(source.query.dirty() ? { draft: mine(source.query.draft) } : {}) };
