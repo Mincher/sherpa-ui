@@ -12,6 +12,8 @@
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
  * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
+ * - ARRANGE_KEYS — The keys that arrange a scope's rows, written once.
+ * - stripArrangement — A scope without its arrangement, in place.
  * - arranging — Does a scope arrange — a sort, a group, a suspended sort or a search?
  * - arrangementOf — How a Query arranges its rows; none, an empty arrangement.
  * - withoutArrangement — The Query with no arrangement: what filters, and nothing of the order.
@@ -93,6 +95,14 @@ export interface Arrangement {
   sortSuspended?: SortSpec;
   search: string;
   scope?: string;
+}
+
+/** The keys that arrange a scope's rows, written once. TODO 518 */
+export const ARRANGE_KEYS = ['sort', 'group', 'sortSuspended', 'search'] as const;
+
+/** A scope without its arrangement, in place. */
+export function stripArrangement(s: ScopeQuery): void {
+  for (const key of ARRANGE_KEYS) Reflect.deleteProperty(s, key);
 }
 
 /** Does a scope arrange — a sort, a group, a suspended sort or a search? */

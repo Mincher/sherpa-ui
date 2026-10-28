@@ -32,7 +32,7 @@
  * - dropSet — A saved filter TAKEN OFF: the scopes it names lose their filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
  */
-import { answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
+import { ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, stripArrangement, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
 import type { Condition, Where } from './where.js';
 import { report } from './report.js';
@@ -316,7 +316,7 @@ export function definitionOf(
   /* A VIEW that names NO arrangement keeps the one on screen; one that names
      it — `sort: []` too — sets it. ONE scope arranges.
      TRAP T-group-and-sort-are-component-scope */
-  const names = Object.values(given.scopes).some((s) => 'sort' in s || 'group' in s || 'sortSuspended' in s || 'search' in s);
+  const names = Object.values(given.scopes).some((s) => ARRANGE_KEYS.some((key) => key in s));
   const kept = keep && !names ? arrangementOf(base) : undefined;
   if (kept?.scope) {
     const to = (next.scopes[kept.scope] ??= emptyScope());
@@ -328,7 +328,7 @@ export function definitionOf(
   let first = true;
   for (const s of Object.values(next.scopes)) {
     if (first && arranging(s)) first = false;
-    else { delete s.sort; delete s.group; delete s.sortSuspended; delete s.search; }
+    else stripArrangement(s);
   }
   if (strays.size) {
     report({

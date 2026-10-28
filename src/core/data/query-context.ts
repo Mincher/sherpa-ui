@@ -73,7 +73,7 @@
  */
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
-  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, VIEW,
+  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, stripArrangement, VIEW,
   type Arrangement, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -1131,11 +1131,7 @@ export class QueryContext extends EventTarget {
     const search = next.search ?? now.search;
     for (const query of new Set([this.#live.applied, this.#live.draft])) {
       for (const [id, s] of Object.entries(query.scopes)) {
-        if (theirs(id)) continue;
-        delete s.sort;
-        delete s.group;
-        delete s.sortSuspended;
-        delete s.search;
+        if (!theirs(id)) stripArrangement(s);
       }
       if (!sort.length && group == null && !sortSuspended && !search) continue;
       const s = scopeEntry(query, at);
