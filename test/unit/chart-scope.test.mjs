@@ -162,3 +162,19 @@ test('while the VIEW holds its field, a legend shows the View\'s answer and chan
   assert.deepEqual(source.query.applied.scopes['picks:bar'].readings.sev.picked, ['critical']);
   assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
 });
+
+test('a component binding draws a pick that is an object by its key, as every other control does (TODO 518)', async () => {
+  const { bindSelection } = await import(new URL('bind-selection.js', core));
+  const { valueKey } = await import(new URL('store.js', core));
+  const { source, chart } = await setup();
+  const site = { customer: 'Northwind', site: 'Leeds' };
+  const legend = Object.assign(new EventTarget(), { picked: [] });
+  bindSelection(legend, source, {
+    field: 'site', values: [valueKey(site)],
+    read: (c) => c.picked, draw: (c, picked) => { c.picked = [...picked]; },
+    event: 'legend-item-click', reach: 'component', only: chart, key: 'picks:site',
+  });
+  source.query.setReading('picks:site', 'site', { picked: [site] }, { only: chart });
+  await tick();
+  assert.deepEqual(legend.picked, [valueKey(site)]);
+});

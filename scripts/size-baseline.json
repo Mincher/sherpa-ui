@@ -90,7 +90,7 @@
   "src/core/data/allow.ts": 125,
   "src/core/data/app-definition.ts": 114,
   "src/core/data/base-store.ts": 197,
-  "src/core/data/bind-selection.ts": 190,
+  "src/core/data/bind-selection.ts": 192,
   "src/core/data/chart-datum.ts": 76,
   "src/core/data/cycle.ts": 60,
   "src/core/data/data-source-types.ts": 307,

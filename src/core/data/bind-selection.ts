@@ -20,6 +20,7 @@ import { report } from './report.js';
 import type { BoundControl } from './data-source-types.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import { VIEW } from './query.js';
+import { valueKey } from './store.js';
 import type { QueryChangeDetail } from './query-context.js';
 
 /**
@@ -127,7 +128,8 @@ export function bindSelection<T extends EventTarget>(
    */
   const picked = (): string[] => {
     // ITS OWN SCOPE's answer, from the source — so a restored Query draws it.
-    if (reach === 'component' && !raised()) return (source.query.reading(key, field)?.picked ?? []).map(String);
+    // By KEY, as every control reads a pick: an object's String is "[object Object]". TODO 422, 518
+    if (reach === 'component' && !raised()) return (source.query.reading(key, field)?.picked ?? []).map(valueKey);
     return source.selection(field).values.filter((v) => v.state === 'picked').map((v) => v.value);
   };
 
